@@ -1,6 +1,6 @@
 import { createBrowserClient } from "@supabase/ssr";
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { isSupabaseConfigured } from "./config";
+import { getSupabaseConfig, isSupabaseConfigured } from "./config";
 
 let browserClient: SupabaseClient | null = null;
 
@@ -8,10 +8,8 @@ export function getSupabaseBrowserClient() {
   if (!isSupabaseConfigured()) return null;
 
   if (!browserClient) {
-    browserClient = createBrowserClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!,
-    );
+    const { url, publishableKey } = getSupabaseConfig();
+    browserClient = createBrowserClient(url, publishableKey);
   }
 
   return browserClient;
