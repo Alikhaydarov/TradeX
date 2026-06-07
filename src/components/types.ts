@@ -12,6 +12,7 @@ export interface Post {
   side?: "LONG" | "SHORT";
   price?: string;
   target?: string;
+  imageUrl?: string | null;
   likes: number;
   replies: number;
   reposts: number;
