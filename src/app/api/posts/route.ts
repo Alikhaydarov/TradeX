@@ -3,6 +3,63 @@ import { getSupabaseServerClient } from "@/lib/supabase/server";
 
 export const runtime = "nodejs";
 
+interface ProfileRecord {
+  full_name: string;
+  username: string;
+  avatar_url: string | null;
+}
+
+function makeUsername(user: { id: string; email?: string; user_metadata?: Record<string, unknown> }) {
+  const rawUsername =
+    typeof user.user_metadata?.user_name === "string"
+      ? user.user_metadata.user_name
+      : typeof user.user_metadata?.preferred_username === "string"
+        ? user.user_metadata.preferred_username
+        : user.email?.split("@")[0] ?? "trader";
+
+  const clean = rawUsername.toLowerCase().replace(/[^a-z0-9_]/g, "").slice(0, 20) || "trader";
+  return `${clean}_${user.id.slice(0, 6)}`;
+}
+
+async function ensureProfile(auth: NonNullable<Awaited<ReturnType<typeof authenticateRequest>>>) {
+  const { data: existing, error: selectError } = await auth.supabase
+    .from("profiles")
+    .select("full_name, username, avatar_url")
+    .eq("id", auth.user.id)
+    .maybeSingle<ProfileRecord>();
+
+  if (selectError) throw new Error(selectError.message);
+  if (existing) return existing;
+
+  const fullName = String(
+    auth.user.user_metadata.full_name ??
+    auth.user.user_metadata.name ??
+    auth.user.email?.split("@")[0] ??
+    "TradeUp Trader",
+  );
+
+  const avatarUrl = typeof auth.user.user_metadata.avatar_url === "string"
+    ? auth.user.user_metadata.avatar_url
+    : null;
+
+  const { data: created, error: insertError } = await auth.supabase
+    .from("profiles")
+    .insert({
+      id: auth.user.id,
+      username: makeUsername(auth.user),
+      full_name: fullName,
+      avatar_url: avatarUrl,
+      bio: "",
+      trading_style: "Price Action",
+      location: "",
+    })
+    .select("full_name, username, avatar_url")
+    .single<ProfileRecord>();
+
+  if (insertError) throw new Error(insertError.message);
+  return created;
+}
+
 export async function GET(request: Request) {
   const supabase = await getSupabaseServerClient();
   if (!supabase) return serverError("Database ulanmagan.");
@@ -52,19 +109,18 @@ export async function POST(request: Request) {
     return badRequest("Post matni 280 belgidan oshmasin yoki rasm yuklang.");
   }
 
-  const { data: profile, error: profileError } = await auth.supabase
-    .from("profiles")
-    .select("full_name, username, avatar_url")
-    .eq("id", auth.user.id)
-    .single();
-
-  if (profileError || !profile) return serverError(profileError?.message);
+  let profile: ProfileRecord;
+  try {
+    profile = await ensureProfile(auth);
+  } catch (error) {
+    return serverError(error instanceof Error ? error.message : undefined);
+  }
 
   const initials = profile.full_name
     .split(" ")
     .map((part: string) => part[0])
     .join("")
-    .slice(0, 2);
+    .slice(0, 2) || "TU";
 
   const { data, error } = await auth.supabase
     .from("posts")
