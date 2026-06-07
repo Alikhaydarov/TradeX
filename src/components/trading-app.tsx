@@ -8,7 +8,7 @@ import { AuthModal } from "./auth-modal";
 import { AuthProvider, useAuth } from "./auth-context";
 import { Backtest } from "./backtest";
 import { ChatV4 } from "./chat-v4";
-import { FeedV2 } from "./feed-v2";
+import { FeedV3 } from "./feed-v3";
 import { Journal } from "./journal";
 import { NotificationListener } from "./notification-listener";
 import { RightPanel } from "./right-panel";
@@ -56,7 +56,7 @@ function TradingAppShell() {
     if (section === "backtest") return <Backtest />;
     if (section === "account") return <Account onLogin={openLogin} />;
     if (section === "admin") return <AdminPanel onLogin={openLogin} />;
-    return <FeedV2 onLogin={openLogin} />;
+    return <FeedV3 onLogin={openLogin} />;
   };
 
   return (
