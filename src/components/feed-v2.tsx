@@ -241,7 +241,7 @@ export function FeedV2({ onLogin }: { onLogin: () => void }) {
       <header className="sticky top-0 z-20 flex items-center border-b border-white/8 bg-[#0b1424]/45 px-5 py-4 backdrop-blur-2xl">
         <div>
           <p className="text-[10px] font-bold uppercase tracking-[.22em] text-cyan-300/70">TradeUp workspace</p>
-          <h1 className="mt-1 text-2xl font-black tracking-tight">TradeUp Pulse</h1>
+          <h1 className="mt-1 text-2xl font-black tracking-tight">TradeUp</h1>
         </div>
         <span className="ml-auto hidden items-center gap-1.5 rounded-full border border-emerald-300/15 bg-emerald-300/8 px-3 py-1.5 text-[10px] font-bold text-emerald-300 sm:flex">
           <Radio size={11} /> LIVE DATA
