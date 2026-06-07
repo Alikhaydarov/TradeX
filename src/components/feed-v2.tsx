@@ -90,7 +90,7 @@ export function FeedV2({ onLogin }: { onLogin: () => void }) {
   useEffect(() => {
     let active = true;
     setLoading(true);
-    apiRequest<{ posts: PostRecord[]; likedPostIds: string[]; bookmarkedPostIds: string[] }>("/api/posts")
+    apiRequest<{ posts: PostRecord[]; likedPostIds: string[]; bookmarkedPostIds: string[] }>("/api/feed-posts")
       .then((data) => {
         if (!active) return;
         const liked = new Set(data.likedPostIds);
