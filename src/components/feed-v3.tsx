@@ -68,6 +68,8 @@ export function FeedV3({ onLogin }: { onLogin: () => void }) {
   const [saving, setSaving] = useState(false);
   const [uploadingImage, setUploadingImage] = useState(false);
   const [actingId, setActingId] = useState<string | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<Post | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const viewed = useRef(new Set<string>());
   const observer = useRef<IntersectionObserver | null>(null);
@@ -96,6 +98,26 @@ export function FeedV3({ onLogin }: { onLogin: () => void }) {
 
   useEffect(() => {
     loadPosts();
+  }, [user]);
+
+  useEffect(() => {
+    if (!user) {
+      setIsAdmin(false);
+      return;
+    }
+
+    let active = true;
+    apiRequest<{ isAdmin: boolean }>("/api/admin/me")
+      .then((response) => {
+        if (active) setIsAdmin(response.isAdmin);
+      })
+      .catch(() => {
+        if (active) setIsAdmin(false);
+      });
+
+    return () => {
+      active = false;
+    };
   }, [user]);
 
   const recordView = (postId: string) => {
@@ -198,18 +220,23 @@ export function FeedV3({ onLogin }: { onLogin: () => void }) {
     }
   };
 
-  const archivePost = async (post: Post) => {
+  const openDeleteModal = (post: Post) => {
     if (!user) return onLogin();
-    if (!window.confirm("Post o'chirilsinmi?")) return;
+    setDeleteTarget(post);
+  };
 
-    setActingId(post.id);
+  const archivePost = async () => {
+    if (!user || !deleteTarget) return;
+
+    setActingId(deleteTarget.id);
     setError(null);
     try {
       await apiRequest<{ success: boolean }>("/api/post-actions", {
         method: "POST",
-        body: JSON.stringify({ action: "archive", postId: post.id }),
+        body: JSON.stringify({ action: "archive", postId: deleteTarget.id }),
       });
-      setPosts((current) => current.filter((item) => item.id !== post.id));
+      setPosts((current) => current.filter((item) => item.id !== deleteTarget.id));
+      setDeleteTarget(null);
     } catch (nextError) {
       setError(nextError instanceof Error ? nextError.message : "Post o'chirilmadi. Faqat muallif yoki katta admin o'chira oladi.");
     } finally {
@@ -287,8 +314,8 @@ export function FeedV3({ onLogin }: { onLogin: () => void }) {
                         <p className="truncate text-sm font-bold">{post.name}</p>
                         <p className="truncate text-[11px] text-slate-500">{post.handle} · {post.time}</p>
                       </div>
-                      {post.userId === user?.id || user ? (
-                        <button onClick={() => void archivePost(post)} disabled={actingId === post.id} className="grid h-8 w-8 place-items-center rounded-xl text-slate-500 hover:bg-rose-400/10 hover:text-rose-200" aria-label="Postni o'chirish">
+                      {(post.userId === user?.id || isAdmin) ? (
+                        <button onClick={() => openDeleteModal(post)} disabled={actingId === post.id} className="grid h-8 w-8 place-items-center rounded-xl text-slate-500 hover:bg-rose-400/10 hover:text-rose-200" aria-label="Postni o'chirish">
                           {actingId === post.id ? <XSpinner size="sm" /> : <Trash2 size={16} />}
                         </button>
                       ) : null}
@@ -326,6 +353,42 @@ export function FeedV3({ onLogin }: { onLogin: () => void }) {
           </div>
         )}
       </div>
+
+      {deleteTarget ? (
+        <div className="fixed inset-0 z-[90] grid place-items-center bg-black/65 px-4 backdrop-blur-sm">
+          <div className="w-full max-w-sm rounded-[28px] border border-white/10 bg-[#0b1220] p-5 text-white shadow-2xl shadow-black/50">
+            <div className="flex items-start gap-3">
+              <span className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-rose-400/10 text-rose-200">
+                <Trash2 size={20} />
+              </span>
+              <div className="min-w-0 flex-1">
+                <h3 className="text-base font-black">Postni o'chirish?</h3>
+                <p className="mt-1 text-sm leading-6 text-slate-400">
+                  Bu post feed’dan olib tashlanadi. Bu amalni faqat post egasi yoki admin bajarishi mumkin.
+                </p>
+                {deleteTarget.text ? <p className="mt-3 line-clamp-2 rounded-2xl bg-white/[.04] px-3 py-2 text-xs text-slate-300">{deleteTarget.text}</p> : null}
+              </div>
+            </div>
+
+            <div className="mt-5 flex gap-2">
+              <button
+                onClick={() => setDeleteTarget(null)}
+                disabled={actingId === deleteTarget.id}
+                className="h-11 flex-1 rounded-2xl border border-white/10 bg-white/[.04] text-sm font-bold text-slate-200 hover:bg-white/[.08] disabled:opacity-60"
+              >
+                Bekor qilish
+              </button>
+              <button
+                onClick={() => void archivePost()}
+                disabled={actingId === deleteTarget.id}
+                className="h-11 flex-1 rounded-2xl bg-rose-500 text-sm font-black text-white hover:bg-rose-400 disabled:opacity-60"
+              >
+                {actingId === deleteTarget.id ? <span className="inline-flex items-center gap-2"><XSpinner size="sm" /> O'chirilmoqda</span> : "O'chirish"}
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }
