@@ -9,6 +9,9 @@ interface MessageRecord {
   sender_name: string;
   sender_avatar: string | null;
   content: string;
+  reply_to_id: string | null;
+  reply_to_name: string | null;
+  reply_to_content: string | null;
   created_at: string;
 }
 
@@ -29,7 +32,7 @@ export async function POST(request: Request) {
     .update({ content })
     .eq("id", body.messageId)
     .eq("user_id", auth.user.id)
-    .select("id, group_id, user_id, sender_name, sender_avatar, content, created_at")
+    .select("id, group_id, user_id, sender_name, sender_avatar, content, reply_to_id, reply_to_name, reply_to_content, created_at")
     .single<MessageRecord>();
 
   if (error) return serverError(error.message);
