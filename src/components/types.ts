@@ -1,4 +1,4 @@
-export type Section = "feed" | "chat" | "journal" | "backtest" | "account";
+export type Section = "feed" | "chat" | "journal" | "backtest" | "account" | "admin";
 
 export interface Post {
   id: string;
@@ -17,6 +17,7 @@ export interface Post {
   reposts: number;
   liked?: boolean;
   bookmarked?: boolean;
+  isVerified?: boolean;
 }
 
 export interface Group {
@@ -36,6 +37,7 @@ export interface GroupMessage {
   avatar: string;
   text: string;
   createdAt: string;
+  isVerified?: boolean;
 }
 
 export interface ChatMember {
@@ -43,6 +45,7 @@ export interface ChatMember {
   name: string;
   username: string;
   avatar: string | null;
+  isVerified?: boolean;
 }
 
 export interface UserOption {
@@ -50,6 +53,7 @@ export interface UserOption {
   name: string;
   username: string;
   avatar: string | null;
+  isVerified?: boolean;
 }
 
 export interface Profile {
@@ -60,6 +64,18 @@ export interface Profile {
   bio: string;
   tradingStyle: string;
   location: string;
+  isVerified?: boolean;
+  isAdmin?: boolean;
+}
+
+export interface AdminUser {
+  id: string;
+  username: string;
+  fullName: string;
+  avatarUrl: string | null;
+  isVerified: boolean;
+  isAdmin: boolean;
+  createdAt: string | null;
 }
 
 export interface JournalEntry {
