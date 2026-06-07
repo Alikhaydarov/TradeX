@@ -23,12 +23,15 @@ export async function PATCH(request: Request) {
   const body = (await request.json()) as {
     fullName?: string;
     username?: string;
+    avatarUrl?: string | null;
     bio?: string;
     tradingStyle?: string;
     location?: string;
   };
   const fullName = body.fullName?.trim();
   const username = body.username?.trim().toLowerCase().replace(/[^a-z0-9_]/g, "");
+  const avatarUrl = typeof body.avatarUrl === "string" ? body.avatarUrl.trim().slice(0, 1000) : null;
+
   if (!fullName || fullName.length > 80 || !username || username.length < 3 || username.length > 30) {
     return badRequest("Ism va username qiymatlarini tekshiring.");
   }
@@ -38,6 +41,7 @@ export async function PATCH(request: Request) {
     .update({
       full_name: fullName,
       username,
+      avatar_url: avatarUrl || null,
       bio: body.bio?.trim().slice(0, 160) ?? "",
       trading_style: body.tradingStyle?.trim().slice(0, 50) || "Price Action",
       location: body.location?.trim().slice(0, 80) ?? "",
