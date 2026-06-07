@@ -10,6 +10,7 @@ export async function GET(request: Request) {
   const { data: posts, error } = await supabase
     .from("posts")
     .select("*")
+    .eq("is_archived", false)
     .order("created_at", { ascending: false })
     .limit(50);
 
@@ -38,14 +39,17 @@ export async function POST(request: Request) {
 
   const body = (await request.json()) as {
     content?: string;
+    imageUrl?: string | null;
     symbol?: string;
     side?: "LONG" | "SHORT";
     entryPrice?: string;
     targetPrice?: string;
   };
   const content = body.content?.trim();
-  if (!content || content.length > 280) {
-    return badRequest("Post 1 dan 280 tagacha belgi bo'lishi kerak.");
+  const imageUrl = typeof body.imageUrl === "string" ? body.imageUrl.trim().slice(0, 1000) : null;
+
+  if ((!content && !imageUrl) || (content && content.length > 280)) {
+    return badRequest("Post matni 280 belgidan oshmasin yoki rasm yuklang.");
   }
 
   const { data: profile, error: profileError } = await auth.supabase
@@ -61,11 +65,13 @@ export async function POST(request: Request) {
     .map((part: string) => part[0])
     .join("")
     .slice(0, 2);
+
   const { data, error } = await auth.supabase
     .from("posts")
     .insert({
       user_id: auth.user.id,
-      content,
+      content: content || "",
+      image_url: imageUrl || null,
       author_name: profile.full_name,
       author_handle: profile.username,
       author_avatar: profile.avatar_url || initials,
@@ -73,6 +79,8 @@ export async function POST(request: Request) {
       side: body.side || null,
       entry_price: body.entryPrice?.trim() || null,
       target_price: body.targetPrice?.trim() || null,
+      views_count: 0,
+      is_archived: false,
     })
     .select()
     .single();
@@ -80,4 +88,3 @@ export async function POST(request: Request) {
   if (error) return serverError(error.message);
   return Response.json({ post: data }, { status: 201 });
 }
-
