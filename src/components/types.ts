@@ -15,6 +15,7 @@ export interface Post {
   likes: number;
   replies: number;
   reposts: number;
+  views: number;
   liked?: boolean;
   bookmarked?: boolean;
   isVerified?: boolean;
