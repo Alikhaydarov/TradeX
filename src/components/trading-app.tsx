@@ -7,7 +7,7 @@ import { AppLoader } from "./app-loader";
 import { AuthModal } from "./auth-modal";
 import { AuthProvider, useAuth } from "./auth-context";
 import { Backtest } from "./backtest";
-import { Chat } from "./chat";
+import { ChatV2 } from "./chat-v2";
 import { Feed } from "./feed";
 import { Journal } from "./journal";
 import { RightPanel } from "./right-panel";
@@ -50,7 +50,7 @@ function TradingAppShell() {
   };
 
   const render = () => {
-    if (section === "chat") return <Chat onLogin={openLogin} onBack={() => changeSection("feed")} />;
+    if (section === "chat") return <ChatV2 onLogin={openLogin} onBack={() => changeSection("feed")} />;
     if (section === "journal") return <Journal onLogin={openLogin} />;
     if (section === "backtest") return <Backtest />;
     if (section === "account") return <Account onLogin={openLogin} />;
