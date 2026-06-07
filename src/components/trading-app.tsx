@@ -28,9 +28,9 @@ function TradingAppShell() {
 
   return (
     <>
-      <div className={`mx-auto flex min-h-screen bg-black text-[#e7e9ea] ${section === "chat" ? "max-w-none" : "max-w-[1265px]"}`}>
+      <div className={`mx-auto flex min-h-screen bg-xsurface/88 text-[#edf3ff] shadow-[0_0_80px_rgba(18,41,78,.35)] backdrop-blur-sm ${section === "chat" ? "max-w-none" : "max-w-[1265px]"}`}>
         <Sidebar active={section} onChange={setSection} onPost={() => setSection("feed")} onLogin={openLogin} user={user} />
-        <main className={`min-h-screen min-w-0 flex-1 border-x border-xborder pb-16 lg:pb-0 ${section === "chat" ? "" : "lg:max-w-[650px] xl:max-w-[650px]"}`}>{render()}</main>
+        <main className={`min-h-screen min-w-0 flex-1 border-x border-xborder bg-xsurface/72 pb-16 lg:pb-0 ${section === "chat" ? "" : "lg:max-w-[650px] xl:max-w-[650px]"}`}>{render()}</main>
         {section !== "chat" && <RightPanel />}
       </div>
       <AuthModal open={authOpen} onClose={() => setAuthOpen(false)} />

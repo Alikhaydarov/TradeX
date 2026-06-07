@@ -7,10 +7,12 @@
 @theme inline {
   --font-sans: "Geist", "Geist Fallback", ui-sans-serif, system-ui, sans-serif;
   --font-mono: "Geist Mono", "Geist Mono Fallback", ui-monospace, monospace;
-  --color-xblue: #1d9bf0;
-  --color-xborder: #2f3336;
-  --color-xmuted: #71767b;
-  --color-xpanel: #16181c;
+  --color-xblue: #4f8cff;
+  --color-xborder: #263653;
+  --color-xmuted: #91a0b8;
+  --color-xpanel: #121d31;
+  --color-xsurface: #0c1424;
+  --color-xcard: #111d31;
   --font-heading: "Geist", "Geist Fallback", ui-sans-serif, system-ui, sans-serif;
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
@@ -57,14 +59,18 @@
 }
 
 html {
-  background: #000;
+  background: #080d18;
   color-scheme: dark;
 }
 
 body {
   margin: 0;
-  background: #000;
-  color: #e7e9ea;
+  background:
+    radial-gradient(circle at 12% 8%, rgb(45 91 160 / 18%), transparent 30rem),
+    radial-gradient(circle at 88% 18%, rgb(112 70 190 / 12%), transparent 28rem),
+    #080d18;
+  color: #edf3ff;
+  min-height: 100vh;
 }
 
 button,
@@ -79,7 +85,7 @@ select {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #2f3336;
+  background: #31425f;
   border-radius: 999px;
 }
 
@@ -119,24 +125,24 @@ select {
 }
 
 .dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
+  --background: #080d18;
+  --foreground: #edf3ff;
+  --card: #111d31;
+  --card-foreground: #edf3ff;
+  --popover: #111d31;
+  --popover-foreground: #edf3ff;
   --primary: oklch(0.922 0 0);
   --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
+  --secondary: #17243a;
   --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
+  --muted: #17243a;
+  --muted-foreground: #91a0b8;
+  --accent: #20304c;
   --accent-foreground: oklch(0.985 0 0);
   --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
+  --border: #263653;
+  --input: #2d3d5a;
+  --ring: #4f8cff;
   --chart-1: oklch(0.87 0 0);
   --chart-2: oklch(0.556 0 0);
   --chart-3: oklch(0.439 0 0);

@@ -52,7 +52,7 @@ export function Account({ onLogin }: { onLogin: () => void }) {
   if (!user) {
     return (
       <>
-        <header className="sticky top-0 z-10 flex h-14 items-center border-b border-xborder bg-black/85 px-4 backdrop-blur">
+        <header className="sticky top-0 z-10 flex h-14 items-center border-b border-xborder bg-[#0c1424]/88 px-4 backdrop-blur-xl">
           <h1 className="text-xl font-extrabold">Account</h1>
         </header>
         <div className="flex min-h-[70vh] flex-col items-center justify-center px-8 text-center">
@@ -91,7 +91,7 @@ export function Account({ onLogin }: { onLogin: () => void }) {
 
   return (
     <>
-      <header className="sticky top-0 z-10 flex h-14 items-center border-b border-xborder bg-black/85 px-4 backdrop-blur">
+      <header className="sticky top-0 z-10 flex h-14 items-center border-b border-xborder bg-[#0c1424]/88 px-4 backdrop-blur-xl">
         <h1 className="text-xl font-extrabold">Account</h1>
         <span className="ml-auto flex items-center gap-1.5 text-xs text-emerald-400">
           <Database size={14} /> {configured ? "Node API ulangan" : "Backend offline"}
@@ -112,7 +112,7 @@ export function Account({ onLogin }: { onLogin: () => void }) {
         <p className="text-sm text-xmuted">@{activeProfile.username}</p>
         <p className="mt-1 text-xs text-xmuted">{user.email}</p>
 
-        <section className="mt-7 rounded-2xl border border-xborder p-4">
+        <section className="mt-7 rounded-2xl border border-xborder bg-xcard/65 p-4 shadow-xl shadow-slate-950/20">
           <div className="flex items-center gap-2"><Settings2 size={18} /><h3 className="font-bold">Profil sozlamalari</h3></div>
           <div className="mt-5 grid gap-4 sm:grid-cols-2">
             <label className="text-xs text-xmuted">Ism
@@ -122,7 +122,7 @@ export function Account({ onLogin }: { onLogin: () => void }) {
               <div className="mt-1 flex rounded-xl border border-xborder px-3 focus-within:border-xblue"><span className="py-2.5 text-xmuted">@</span><input value={activeProfile.username} onChange={(event) => setProfile({ ...activeProfile, username: event.target.value.replace(/\s/g, "") })} className="min-w-0 flex-1 bg-transparent py-2.5 text-sm outline-none" /></div>
             </label>
             <label className="text-xs text-xmuted">Trading uslubi
-              <select value={activeProfile.tradingStyle} onChange={(event) => setProfile({ ...activeProfile, tradingStyle: event.target.value })} className="mt-1 block w-full rounded-xl border border-xborder bg-black px-3 py-2.5 text-sm text-white">
+              <select value={activeProfile.tradingStyle} onChange={(event) => setProfile({ ...activeProfile, tradingStyle: event.target.value })} className="mt-1 block w-full rounded-xl border border-xborder bg-xpanel px-3 py-2.5 text-sm text-white">
                 <option>Price Action</option><option>Scalping</option><option>Swing Trading</option><option>Algorithmic</option>
               </select>
             </label>

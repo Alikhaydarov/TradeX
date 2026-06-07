@@ -100,14 +100,14 @@ export function Feed({ onLogin }: { onLogin: () => void }) {
 
   return (
     <>
-      <header className="sticky top-0 z-20 border-b border-xborder bg-black/80 backdrop-blur-md">
+      <header className="sticky top-0 z-20 border-b border-xborder bg-[#0c1424]/88 backdrop-blur-xl">
         <div className="flex items-center px-4 py-3">
           <h1 className="text-xl font-bold">Bosh sahifa</h1>
           <span className="ml-auto flex items-center gap-1.5 text-[11px] text-emerald-400"><Cloud size={13} />Node API</span>
         </div>
       </header>
       {error && <div className="border-b border-rose-500/20 bg-rose-500/10 px-4 py-2 text-sm text-rose-300">{error}</div>}
-      <div className="flex gap-3 border-b border-xborder p-4">
+      <div className="m-3 flex gap-3 rounded-2xl border border-xborder bg-xcard/65 p-4 shadow-lg shadow-slate-950/20">
         <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-sky-500 to-violet-600 font-bold">{String(user?.user_metadata.name ?? "T")[0]}</div>
         <div className="flex-1">
           <Textarea value={text} onChange={(event) => setText(event.target.value)} maxLength={280} placeholder="Trading fikringizni ulashing..." className="min-h-20 resize-none border-0 bg-transparent px-0 text-lg shadow-none focus-visible:ring-0" />
@@ -121,12 +121,12 @@ export function Feed({ onLogin }: { onLogin: () => void }) {
       </div>
       {loading && <div className="p-8 text-center text-sm text-xmuted">Postlar yuklanmoqda...</div>}
       {!loading && posts.map((post) => (
-        <article key={post.id} className="flex gap-3 border-b border-xborder px-4 py-3 hover:bg-white/[.015]">
+        <article key={post.id} className="mx-3 mb-3 flex gap-3 rounded-2xl border border-xborder bg-xcard/55 px-4 py-4 shadow-lg shadow-slate-950/10 transition hover:border-blue-400/30 hover:bg-xcard/85">
           <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#202327] text-sm font-bold">{post.avatar}</div>
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-1 text-[15px]"><span className="truncate font-bold">{post.name}</span><span className="truncate text-xmuted">{post.handle}</span><span className="text-xmuted">· {post.time}</span><span className="ml-auto text-xmuted">•••</span></div>
             <p className="mt-1 whitespace-pre-line text-[15px] leading-6">{post.text}</p>
-            {post.symbol && <div className="mt-3 rounded-2xl border border-xborder bg-gradient-to-br from-[#111820] to-black p-4"><div className="flex items-center"><b>{post.symbol}</b><span className={`ml-2 rounded px-2 py-0.5 text-[10px] font-black ${post.side === "LONG" ? "bg-emerald-500/15 text-emerald-400" : "bg-rose-500/15 text-rose-400"}`}>{post.side}</span><BarChart2 className="ml-auto text-xmuted" size={20} /></div><div className="mt-5 flex gap-10"><div><p className="text-xs text-xmuted">Entry</p><b className="font-mono">{post.price}</b></div><div><p className="text-xs text-xmuted">Target</p><b className="font-mono text-emerald-400">{post.target}</b></div></div></div>}
+            {post.symbol && <div className="mt-3 rounded-2xl border border-blue-400/20 bg-gradient-to-br from-blue-500/10 via-[#111d31] to-violet-500/10 p-4"><div className="flex items-center"><b>{post.symbol}</b><span className={`ml-2 rounded px-2 py-0.5 text-[10px] font-black ${post.side === "LONG" ? "bg-emerald-500/15 text-emerald-400" : "bg-rose-500/15 text-rose-400"}`}>{post.side}</span><BarChart2 className="ml-auto text-xmuted" size={20} /></div><div className="mt-5 flex gap-10"><div><p className="text-xs text-xmuted">Entry</p><b className="font-mono">{post.price}</b></div><div><p className="text-xs text-xmuted">Target</p><b className="font-mono text-emerald-400">{post.target}</b></div></div></div>}
             <div className="mt-3 flex max-w-[430px] justify-between text-xmuted">
               <button className="flex items-center gap-2 text-xs"><MessageCircle size={18} />{post.replies}</button>
               <button className="flex items-center gap-2 text-xs"><Repeat2 size={19} />{post.reposts}</button>

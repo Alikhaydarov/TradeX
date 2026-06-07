@@ -33,8 +33,8 @@ export function AuthModal({
   };
 
   return (
-    <div className="fixed inset-0 z-[80] flex items-center justify-center bg-black/75 p-4 backdrop-blur-sm">
-      <section className="w-full max-w-md rounded-3xl border border-xborder bg-black p-6 shadow-2xl">
+    <div className="fixed inset-0 z-[80] flex items-center justify-center bg-[#050914]/80 p-4 backdrop-blur-md">
+      <section className="w-full max-w-md rounded-3xl border border-blue-400/25 bg-[#101a2d] p-6 shadow-2xl shadow-blue-950/50">
         <div className="flex items-center">
           <span className="text-2xl font-black tracking-tighter">TX</span>
           <button onClick={onClose} className="ml-auto rounded-full p-2 hover:bg-white/10" aria-label="Yopish">
