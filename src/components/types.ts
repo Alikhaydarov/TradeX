@@ -24,6 +24,8 @@ export interface Group {
   name: string;
   description: string;
   avatar: string;
+  isPrivate?: boolean;
+  members?: ChatMember[];
 }
 
 export interface GroupMessage {
@@ -34,6 +36,20 @@ export interface GroupMessage {
   avatar: string;
   text: string;
   createdAt: string;
+}
+
+export interface ChatMember {
+  id: string;
+  name: string;
+  username: string;
+  avatar: string | null;
+}
+
+export interface UserOption {
+  id: string;
+  name: string;
+  username: string;
+  avatar: string | null;
 }
 
 export interface Profile {

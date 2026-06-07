@@ -17,9 +17,10 @@ function TradingAppShell() {
   const [authOpen, setAuthOpen] = useState(false);
   const { user } = useAuth();
   const openLogin = () => setAuthOpen(true);
+  const chatOpen = section === "chat";
 
   const render = () => {
-    if (section === "chat") return <Chat onLogin={openLogin} />;
+    if (section === "chat") return <Chat onLogin={openLogin} onBack={() => setSection("feed")} />;
     if (section === "journal") return <Journal onLogin={openLogin} />;
     if (section === "backtest") return <Backtest />;
     if (section === "account") return <Account onLogin={openLogin} />;
@@ -28,9 +29,13 @@ function TradingAppShell() {
 
   return (
     <>
-      <div className={`mx-auto flex min-h-screen max-w-[1500px] gap-4 p-0 text-[#edf3ff] lg:p-4 ${section === "chat" ? "xl:max-w-[1600px]" : ""}`}>
-        <Sidebar active={section} onChange={setSection} onPost={() => setSection("feed")} onLogin={openLogin} user={user} />
-        <main className="min-h-screen min-w-0 flex-1 overflow-hidden bg-[#0d1627]/38 pb-20 shadow-2xl shadow-slate-950/20 backdrop-blur-2xl lg:min-h-[calc(100vh-2rem)] lg:rounded-[28px] lg:border lg:border-white/9 lg:pb-0">{render()}</main>
+      <div className={`mx-auto flex min-h-screen max-w-[1500px] gap-4 p-0 text-[#edf3ff] lg:p-4 ${chatOpen ? "xl:max-w-[1600px]" : ""}`}>
+        <Sidebar active={section} onChange={setSection} onPost={() => setSection("feed")} onLogin={openLogin} user={user} hideMobile={chatOpen} />
+        <main className={
+          chatOpen
+            ? "fixed inset-0 z-50 min-w-0 flex-1 overflow-hidden bg-[#101827] shadow-2xl shadow-slate-950/20 backdrop-blur-2xl lg:static lg:z-auto lg:min-h-[calc(100vh-2rem)] lg:rounded-[28px] lg:border lg:border-white/9"
+            : "min-h-screen min-w-0 flex-1 overflow-hidden bg-[#0d1627]/38 pb-20 shadow-2xl shadow-slate-950/20 backdrop-blur-2xl lg:min-h-[calc(100vh-2rem)] lg:rounded-[28px] lg:border lg:border-white/9 lg:pb-0"
+        }>{render()}</main>
         {section !== "chat" && <RightPanel />}
       </div>
       <AuthModal open={authOpen} onClose={() => setAuthOpen(false)} />

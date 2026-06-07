@@ -28,12 +28,14 @@ export function Sidebar({
   onPost,
   onLogin,
   user,
+  hideMobile = false,
 }: {
   active: Section;
   onChange: (section: Section) => void;
   onPost: () => void;
   onLogin: () => void;
   user: User | null;
+  hideMobile?: boolean;
 }) {
   const name = String(user?.user_metadata.full_name ?? user?.user_metadata.name ?? "Mehmon trader");
   const handle = user?.email ? `@${user.email.split("@")[0]}` : "Google bilan kirish";
@@ -93,13 +95,15 @@ export function Sidebar({
         </div>
       </aside>
 
-      <nav className="fixed inset-x-3 bottom-3 z-50 flex h-16 items-center justify-around rounded-2xl border border-white/10 bg-[#0b1220]/62 px-2 shadow-2xl backdrop-blur-2xl lg:hidden">
-        {nav.map(({ id, label, icon: Icon }) => (
-          <button key={id} onClick={() => onChange(id)} className={`grid h-11 w-11 place-items-center rounded-xl ${active === id ? "bg-blue-500/20 text-cyan-300" : "text-slate-500"}`} aria-label={label}>
-            <Icon size={21} strokeWidth={active === id ? 2.6 : 2} />
-          </button>
-        ))}
-      </nav>
+      {!hideMobile && (
+        <nav className="fixed inset-x-3 bottom-3 z-50 flex h-16 items-center justify-around rounded-2xl border border-white/10 bg-[#0b1220]/62 px-2 shadow-2xl backdrop-blur-2xl lg:hidden">
+          {nav.map(({ id, label, icon: Icon }) => (
+            <button key={id} onClick={() => onChange(id)} className={`grid h-11 w-11 place-items-center rounded-xl ${active === id ? "bg-blue-500/20 text-cyan-300" : "text-slate-500"}`} aria-label={label}>
+              <Icon size={21} strokeWidth={active === id ? 2.6 : 2} />
+            </button>
+          ))}
+        </nav>
+      )}
     </>
   );
 }
