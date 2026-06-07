@@ -283,11 +283,15 @@ const filteredUsers = useMemo(() => {
                       </button>
                     );
                   })}
-                  {!filteredUsers.length && (
-                    <div className="rounded-2xl border border-dashed border-white/10 p-3 text-center text-[11px] leading-5 text-slate-500">
-                      Ro&apos;yxatdan o&apos;tgan boshqa foydalanuvchi topilmadi. Nom yozib shaxsiy chat yaratishingiz mumkin.
-                    </div>
-                  )}
+{query.trim().length < 2 ? (
+  <div className="rounded-2xl border border-dashed border-white/10 p-3 text-center text-[11px] leading-5 text-slate-500">
+    Foydalanuvchi qidirish uchun kamida 2 ta harf yozing.
+  </div>
+) : !filteredUsers.length ? (
+  <div className="rounded-2xl border border-dashed border-white/10 p-3 text-center text-[11px] leading-5 text-slate-500">
+    Bunday foydalanuvchi topilmadi.
+  </div>
+) : null}
                 </div>
                 <Button disabled={loading} onClick={() => void createChat()} className="mt-3 w-full rounded-2xl bg-gradient-to-r from-cyan-500 to-blue-600 text-xs font-bold">
                   {loading ? <LoaderCircle className="animate-spin" size={14} /> : <Plus size={14} />} Chat yaratish
