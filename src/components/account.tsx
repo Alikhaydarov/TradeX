@@ -1,7 +1,6 @@
 "use client";
 
 import {
-  BarChart3,
   Bookmark,
   Camera,
   Check,
@@ -13,12 +12,11 @@ import {
   MessageCircle,
   PenLine,
   ShieldCheck,
-  Sparkles,
   TrendingUp,
   UserRound,
   X,
 } from "lucide-react";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { apiRequest } from "@/lib/api-client";
 import { XSpinner } from "./app-loader";
 import { useAuth } from "./auth-context";
@@ -54,8 +52,18 @@ interface PostRecord {
   created_at: string;
 }
 
+type ProfileTab = "posts" | "replies" | "media" | "saved";
+
+const tabs: Array<{ id: ProfileTab; label: string }> = [
+  { id: "posts", label: "Posts" },
+  { id: "replies", label: "Replies" },
+  { id: "media", label: "Media" },
+  { id: "saved", label: "Saved" },
+];
+
 function profileFromUser(user: NonNullable<ReturnType<typeof useAuth>["user"]>): Profile {
   const fullName = String(user.user_metadata.full_name ?? user.user_metadata.name ?? "Trader");
+
   return {
     id: user.id,
     username: String(user.user_metadata.user_name ?? user.email?.split("@")[0] ?? "trader"),
@@ -89,7 +97,7 @@ function toPost(record: PostRecord): Post {
     name: record.author_name,
     handle: record.author_handle.startsWith("@") ? record.author_handle : `@${record.author_handle}`,
     avatar: record.author_avatar || record.author_name.slice(0, 2).toUpperCase(),
-    time: minutes < 1 ? "hozir" : minutes < 60 ? `${minutes}m` : createdAt.toLocaleDateString("uz-UZ", { day: "numeric", month: "short" }),
+    time: minutes < 1 ? "now" : minutes < 60 ? `${minutes}m` : createdAt.toLocaleDateString("en-US", { day: "numeric", month: "short" }),
     text: record.content,
     imageUrl: record.image_url ?? null,
     symbol: record.symbol ?? undefined,
@@ -114,8 +122,29 @@ function ProfileScreenLoader() {
     <div className="grid min-h-[calc(100dvh-4rem)] place-items-center px-6 text-center">
       <div className="rounded-[34px] border border-white/10 bg-white/[.045] px-10 py-9 shadow-2xl shadow-slate-950/30 backdrop-blur-2xl">
         <XSpinner size="lg" />
-        <p className="mt-4 text-sm font-black text-white">Profil yuklanmoqda</p>
-        <p className="mt-1 text-xs text-slate-500">Postlar va profilingiz tayyorlanmoqda...</p>
+        <p className="mt-4 text-sm font-black text-white">Loading profile</p>
+        <p className="mt-1 text-xs text-slate-500">Preparing your profile...</p>
+      </div>
+    </div>
+  );
+}
+
+function EmptyTab({ tab }: { tab: ProfileTab }) {
+  const title = tab === "posts" ? "No posts yet" : tab === "replies" ? "No replies yet" : tab === "media" ? "No media yet" : "No saved posts yet";
+  const description = tab === "posts"
+    ? "Posts you share will appear here."
+    : tab === "replies"
+      ? "Your replies will appear here later."
+      : tab === "media"
+        ? "Posts with images will appear here."
+        : "Saved posts will appear here later.";
+
+  return (
+    <div className="grid min-h-64 place-items-center px-8 text-center">
+      <div>
+        <ImageIcon className="mx-auto text-slate-600" size={36} />
+        <h3 className="mt-4 text-2xl font-black">{title}</h3>
+        <p className="mt-2 text-sm text-slate-500">{description}</p>
       </div>
     </div>
   );
@@ -126,6 +155,7 @@ export function Account({ onLogin }: { onLogin: () => void }) {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [draftProfile, setDraftProfile] = useState<Profile | null>(null);
   const [posts, setPosts] = useState<Post[]>([]);
+  const [activeTab, setActiveTab] = useState<ProfileTab>("posts");
   const [loadingProfile, setLoadingProfile] = useState(true);
   const [editOpen, setEditOpen] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -153,13 +183,13 @@ export function Account({ onLogin }: { onLogin: () => void }) {
         if (profileResult.status === "fulfilled") {
           setProfile(toProfile(profileResult.value.profile));
         } else {
-          setError(profileResult.reason instanceof Error ? profileResult.reason.message : "Profil yuklanmadi.");
+          setError(profileResult.reason instanceof Error ? profileResult.reason.message : "Profile failed to load.");
         }
 
         if (postsResult.status === "fulfilled") {
           setPosts(postsResult.value.posts.filter((post) => post.user_id === user.id).map(toPost));
         } else {
-          setError(postsResult.reason instanceof Error ? postsResult.reason.message : "Postlar yuklanmadi.");
+          setError(postsResult.reason instanceof Error ? postsResult.reason.message : "Posts failed to load.");
         }
       })
       .finally(() => {
@@ -181,14 +211,14 @@ export function Account({ onLogin }: { onLogin: () => void }) {
           <div className="flex h-20 w-20 items-center justify-center rounded-3xl border border-white/10 bg-white/[.04] backdrop-blur-2xl">
             <UserRound size={36} className="text-xmuted" />
           </div>
-          <h2 className="mt-6 text-2xl font-black">Profilingizni yarating</h2>
+          <h2 className="mt-6 text-2xl font-black">Create your profile</h2>
           <p className="mt-2 max-w-sm text-sm leading-6 text-xmuted">
-            Google orqali ro&apos;yxatdan o&apos;ting. Postlar, chat va trading profilingiz cloud&apos;da saqlanadi.
+            Sign in with Google to save your posts, chats, and trading profile in the cloud.
           </p>
           <button onClick={onLogin} className="mt-6 rounded-full bg-white px-7 py-3 font-bold text-black">
-            Google orqali kirish
+            Sign in with Google
           </button>
-          {!configured && <p className="mt-4 text-xs text-amber-300">Hozir demo rejim faol.</p>}
+          {!configured && <p className="mt-4 text-xs text-amber-300">Demo mode is active.</p>}
         </div>
       </>
     );
@@ -208,8 +238,7 @@ export function Account({ onLogin }: { onLogin: () => void }) {
   const activeProfile = profile?.id === user.id ? profile : profileFromUser(user);
   const profilePosts = posts.filter((post) => post.userId === user.id);
   const mediaPosts = profilePosts.filter((post) => post.imageUrl);
-  const totalViews = profilePosts.reduce((sum, post) => sum + post.views, 0);
-  const totalLikes = profilePosts.reduce((sum, post) => sum + post.likes, 0);
+  const visiblePosts = activeTab === "posts" ? profilePosts : activeTab === "media" ? mediaPosts : [];
 
   const openEdit = () => {
     setDraftProfile(activeProfile);
@@ -229,7 +258,7 @@ export function Account({ onLogin }: { onLogin: () => void }) {
       window.setTimeout(() => setSaved(false), 1800);
       setEditOpen(false);
     } catch (nextError) {
-      setError(nextError instanceof Error ? nextError.message : "Profil saqlanmadi.");
+      setError(nextError instanceof Error ? nextError.message : "Profile was not saved.");
     }
   };
 
@@ -249,7 +278,7 @@ export function Account({ onLogin }: { onLogin: () => void }) {
       });
 
       const payload = (await response.json()) as { avatarUrl?: string; error?: string };
-      if (!response.ok || !payload.avatarUrl) throw new Error(payload.error || "Rasm yuklanmadi.");
+      if (!response.ok || !payload.avatarUrl) throw new Error(payload.error || "Avatar upload failed.");
 
       const nextProfile = { ...(draftProfile ?? activeProfile), avatarUrl: payload.avatarUrl };
       setDraftProfile(nextProfile);
@@ -257,12 +286,40 @@ export function Account({ onLogin }: { onLogin: () => void }) {
       setSaved(true);
       window.setTimeout(() => setSaved(false), 1800);
     } catch (nextError) {
-      setError(nextError instanceof Error ? nextError.message : "Rasm yuklanmadi.");
+      setError(nextError instanceof Error ? nextError.message : "Avatar upload failed.");
     } finally {
       setUploadingAvatar(false);
       if (fileInputRef.current) fileInputRef.current.value = "";
     }
   };
+
+  const renderPost = (post: Post) => (
+    <article key={post.id} className="border-b border-white/8 px-4 py-4 last:border-b-0 hover:bg-white/[.025] sm:px-5">
+      <div className="flex gap-3">
+        <TraderAvatar name={post.name} value={post.avatar} className="h-10 w-10 shrink-0 rounded-2xl text-xs" />
+        <div className="min-w-0 flex-1">
+          <div className="flex items-start gap-2">
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-sm font-black text-white">{post.name}</p>
+              <p className="truncate text-xs text-slate-500">{post.handle} · {post.time}</p>
+            </div>
+          </div>
+          {post.text ? <p className="mt-2 whitespace-pre-line text-[15px] leading-6 text-slate-100">{post.text}</p> : null}
+          {post.imageUrl ? (
+            <div className="mt-3 flex max-h-[520px] min-h-40 w-full items-center justify-center overflow-hidden rounded-[24px] border border-white/10 bg-black/25">
+              <img src={post.imageUrl} alt="Post media" className="max-h-[520px] max-w-full object-contain object-center" loading="lazy" />
+            </div>
+          ) : null}
+          <div className="mt-3 flex max-w-md items-center justify-between text-slate-500">
+            <span className="flex items-center gap-1.5 text-[12px]"><MessageCircle size={16} />{post.replies}</span>
+            <span className="flex items-center gap-1.5 text-[12px]"><Heart size={16} />{post.likes}</span>
+            <span className="flex items-center gap-1.5 text-[12px]"><Eye size={16} />{formatCount(post.views)}</span>
+            <span className="flex items-center gap-1.5 text-[12px]"><Bookmark size={16} /></span>
+          </div>
+        </div>
+      </div>
+    </article>
+  );
 
   return (
     <div className="min-h-full bg-[radial-gradient(circle_at_top_left,rgba(14,165,233,.12),transparent_32%),linear-gradient(135deg,rgba(15,23,42,.35),rgba(2,6,23,.8))]">
@@ -272,17 +329,17 @@ export function Account({ onLogin }: { onLogin: () => void }) {
         </div>
         <div className="min-w-0">
           <h1 className="truncate text-lg font-black leading-5">TradeUp Profile</h1>
-          <p className="text-[11px] text-slate-500">{profilePosts.length} ta post</p>
+          <p className="text-[11px] text-slate-500">{profilePosts.length} posts</p>
         </div>
         <button onClick={() => void signOut()} className="ml-auto hidden items-center gap-2 rounded-full border border-white/15 px-4 py-2 text-xs font-bold text-slate-200 hover:bg-white/[.06] sm:flex">
-          <LogOut size={15} /> Chiqish
+          <LogOut size={15} /> Sign out
         </button>
       </header>
 
       {loadingProfile ? (
         <div className="fixed inset-x-0 top-14 z-30 grid place-items-center bg-[#0b1220]/65 py-3 backdrop-blur-xl">
           <div className="flex items-center gap-2 rounded-full border border-white/10 bg-black/35 px-4 py-2 text-xs font-bold text-slate-200">
-            <XSpinner size="sm" /> Yangilanmoqda
+            <XSpinner size="sm" /> Updating
           </div>
         </div>
       ) : null}
@@ -290,14 +347,14 @@ export function Account({ onLogin }: { onLogin: () => void }) {
       {error && <div className="mx-auto mt-3 max-w-5xl rounded-2xl border border-rose-300/15 bg-rose-400/10 px-4 py-3 text-sm text-rose-200">{error}</div>}
 
       <div className="mx-auto grid max-w-6xl gap-4 px-3 py-4 sm:px-5 xl:grid-cols-[360px_1fr]">
-        <aside className="space-y-4">
+        <aside>
           <section className="overflow-hidden rounded-[34px] border border-white/10 bg-white/[.045] shadow-2xl shadow-slate-950/20 backdrop-blur-2xl">
             <div className="h-32 bg-[radial-gradient(circle_at_20%_30%,rgba(34,211,238,.35),transparent_24%),radial-gradient(circle_at_85%_10%,rgba(139,92,246,.26),transparent_28%),linear-gradient(135deg,#0f172a,#111827_48%,#082f49)]" />
             <div className="px-5 pb-5">
               <div className="-mt-14 flex items-end justify-between gap-3">
                 <TraderAvatar name={activeProfile.fullName} value={activeProfile.avatarUrl} className="h-28 w-28 rounded-[30px] border-4 border-[#0b1220] bg-black text-3xl shadow-xl" />
                 <button onClick={openEdit} className="mb-2 inline-flex items-center gap-2 rounded-full border border-cyan-200/20 bg-cyan-300/8 px-4 py-2 text-xs font-black text-cyan-100 hover:bg-cyan-300/12">
-                  <PenLine size={14} /> Tahrirlash
+                  <PenLine size={14} /> Edit profile
                 </button>
               </div>
 
@@ -317,80 +374,32 @@ export function Account({ onLogin }: { onLogin: () => void }) {
               </div>
             </div>
           </section>
-
-          <section className="grid grid-cols-2 gap-3">
-            <div className="rounded-[24px] border border-white/10 bg-white/[.04] p-4 backdrop-blur-xl">
-              <p className="text-[10px] font-bold uppercase tracking-[.18em] text-slate-500">Posts</p>
-              <b className="mt-2 block text-2xl">{profilePosts.length}</b>
-            </div>
-            <div className="rounded-[24px] border border-white/10 bg-white/[.04] p-4 backdrop-blur-xl">
-              <p className="text-[10px] font-bold uppercase tracking-[.18em] text-slate-500">Media</p>
-              <b className="mt-2 block text-2xl">{mediaPosts.length}</b>
-            </div>
-            <div className="rounded-[24px] border border-white/10 bg-white/[.04] p-4 backdrop-blur-xl">
-              <p className="text-[10px] font-bold uppercase tracking-[.18em] text-slate-500">Views</p>
-              <b className="mt-2 block text-2xl">{formatCount(totalViews)}</b>
-            </div>
-            <div className="rounded-[24px] border border-white/10 bg-white/[.04] p-4 backdrop-blur-xl">
-              <p className="text-[10px] font-bold uppercase tracking-[.18em] text-slate-500">Likes</p>
-              <b className="mt-2 block text-2xl">{formatCount(totalLikes)}</b>
-            </div>
-          </section>
         </aside>
 
         <main className="min-w-0">
-          <section className="rounded-[34px] border border-white/10 bg-white/[.035] shadow-2xl shadow-slate-950/20 backdrop-blur-2xl">
-            <div className="flex items-center gap-3 border-b border-white/8 px-5 py-4">
-              <span className="grid h-10 w-10 place-items-center rounded-2xl bg-cyan-300/10 text-cyan-200">
-                <Sparkles size={18} />
-              </span>
-              <div>
-                <h3 className="font-black">Mening postlarim</h3>
-                <p className="text-xs text-slate-500">Profilingizda yozgan postlar shu yerda turadi.</p>
-              </div>
+          <section className="overflow-hidden rounded-[34px] border border-white/10 bg-white/[.035] shadow-2xl shadow-slate-950/20 backdrop-blur-2xl">
+            <div className="grid grid-cols-4 border-b border-white/8">
+              {tabs.map((tab) => {
+                const active = activeTab === tab.id;
+                return (
+                  <button
+                    key={tab.id}
+                    onClick={() => setActiveTab(tab.id)}
+                    className={`relative px-2 py-4 text-xs font-black transition sm:text-sm ${active ? "text-white" : "text-slate-500 hover:bg-white/[.03] hover:text-slate-300"}`}
+                  >
+                    {tab.label}
+                    {active ? <span className="absolute inset-x-6 bottom-0 h-1 rounded-full bg-cyan-300" /> : null}
+                  </button>
+                );
+              })}
             </div>
 
             {loadingProfile ? (
               <div className="grid min-h-64 place-items-center text-slate-500"><XSpinner size="lg" /></div>
-            ) : profilePosts.length ? (
-              <div>
-                {profilePosts.map((post) => (
-                  <article key={post.id} className="border-b border-white/8 px-4 py-4 last:border-b-0 hover:bg-white/[.025] sm:px-5">
-                    <div className="flex gap-3">
-                      <TraderAvatar name={post.name} value={post.avatar} className="h-10 w-10 shrink-0 rounded-2xl text-xs" />
-                      <div className="min-w-0 flex-1">
-                        <div className="flex items-start gap-2">
-                          <div className="min-w-0 flex-1">
-                            <p className="truncate text-sm font-black text-white">{post.name}</p>
-                            <p className="truncate text-xs text-slate-500">{post.handle} · {post.time}</p>
-                          </div>
-                          <BarChart3 size={16} className="shrink-0 text-slate-500" />
-                        </div>
-                        {post.text ? <p className="mt-2 whitespace-pre-line text-[15px] leading-6 text-slate-100">{post.text}</p> : null}
-                        {post.imageUrl ? (
-                          <div className="mt-3 flex max-h-[520px] min-h-40 w-full items-center justify-center overflow-hidden rounded-[24px] border border-white/10 bg-black/25">
-                            <img src={post.imageUrl} alt="Post rasmi" className="max-h-[520px] max-w-full object-contain object-center" loading="lazy" />
-                          </div>
-                        ) : null}
-                        <div className="mt-3 flex max-w-md items-center justify-between text-slate-500">
-                          <span className="flex items-center gap-1.5 text-[12px]"><MessageCircle size={16} />{post.replies}</span>
-                          <span className="flex items-center gap-1.5 text-[12px]"><Heart size={16} />{post.likes}</span>
-                          <span className="flex items-center gap-1.5 text-[12px]"><Eye size={16} />{formatCount(post.views)}</span>
-                          <span className="flex items-center gap-1.5 text-[12px]"><Bookmark size={16} /></span>
-                        </div>
-                      </div>
-                    </div>
-                  </article>
-                ))}
-              </div>
+            ) : visiblePosts.length ? (
+              <div>{visiblePosts.map(renderPost)}</div>
             ) : (
-              <div className="grid min-h-64 place-items-center px-8 text-center">
-                <div>
-                  <ImageIcon className="mx-auto text-slate-600" size={36} />
-                  <h3 className="mt-4 text-2xl font-black">Hali post yo&apos;q</h3>
-                  <p className="mt-2 text-sm text-slate-500">Feed sahifasida post yozsangiz, shu yerda ko&apos;rinadi.</p>
-                </div>
-              </div>
+              <EmptyTab tab={activeTab} />
             )}
           </section>
         </main>
@@ -400,8 +409,8 @@ export function Account({ onLogin }: { onLogin: () => void }) {
         <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/65 p-4 backdrop-blur-sm">
           <div className="max-h-[calc(100dvh-2rem)] w-full max-w-xl overflow-y-auto rounded-[30px] border border-white/10 bg-[#0b1220] text-white shadow-2xl shadow-black/60">
             <div className="sticky top-0 z-10 flex h-14 items-center gap-3 border-b border-white/8 bg-[#0b1220]/90 px-4 backdrop-blur-xl">
-              <button onClick={() => setEditOpen(false)} className="grid h-9 w-9 place-items-center rounded-full hover:bg-white/[.08]" aria-label="Yopish"><X size={18} /></button>
-              <h3 className="text-lg font-black">Profilni tahrirlash</h3>
+              <button onClick={() => setEditOpen(false)} className="grid h-9 w-9 place-items-center rounded-full hover:bg-white/[.08]" aria-label="Close"><X size={18} /></button>
+              <h3 className="text-lg font-black">Edit profile</h3>
               <button onClick={() => void save()} className="ml-auto rounded-full bg-white px-5 py-2 text-sm font-black text-black hover:bg-slate-200">
                 {saved ? "Saved" : "Save"}
               </button>
@@ -418,7 +427,7 @@ export function Account({ onLogin }: { onLogin: () => void }) {
                   </button>
                 </div>
                 <button onClick={() => void signOut()} className="ml-auto mb-3 flex items-center gap-2 rounded-full border border-white/15 px-4 py-2 text-xs font-bold hover:bg-white/[.06]">
-                  <LogOut size={15} /> Chiqish
+                  <LogOut size={15} /> Sign out
                 </button>
               </div>
 
@@ -436,14 +445,17 @@ export function Account({ onLogin }: { onLogin: () => void }) {
                 </label>
                 <label className="text-xs text-slate-500">Trading style
                   <select value={draftProfile.tradingStyle} onChange={(event) => setDraftProfile({ ...draftProfile, tradingStyle: event.target.value })} className="mt-1 block w-full rounded-2xl border border-white/15 bg-[#050b16] px-4 py-3 text-sm text-white outline-none focus:border-cyan-400">
-                    <option>Price Action</option><option>Scalping</option><option>Swing Trading</option><option>Algorithmic</option>
+                    <option>Price Action</option>
+                    <option>Scalping</option>
+                    <option>Swing Trading</option>
+                    <option>Algorithmic</option>
                   </select>
                 </label>
                 <label className="text-xs text-slate-500">Location
                   <div className="mt-1 flex rounded-2xl border border-white/15 px-4 focus-within:border-cyan-400"><MapPin className="mt-3 text-slate-500" size={16} /><input value={draftProfile.location} onChange={(event) => setDraftProfile({ ...draftProfile, location: event.target.value })} placeholder="Korea" className="min-w-0 flex-1 bg-transparent px-2 py-3 text-sm outline-none" /></div>
                 </label>
                 <label className="text-xs text-slate-500">Bio
-                  <textarea value={draftProfile.bio} onChange={(event) => setDraftProfile({ ...draftProfile, bio: event.target.value })} maxLength={160} className="mt-1 min-h-24 w-full resize-none rounded-2xl border border-white/15 bg-transparent px-4 py-3 text-sm text-white outline-none focus:border-cyan-400" placeholder="Trading tajribangiz haqida..." />
+                  <textarea value={draftProfile.bio} onChange={(event) => setDraftProfile({ ...draftProfile, bio: event.target.value })} maxLength={160} className="mt-1 min-h-24 w-full resize-none rounded-2xl border border-white/15 bg-transparent px-4 py-3 text-sm text-white outline-none focus:border-cyan-400" placeholder="Write something about your trading journey..." />
                 </label>
               </div>
 
