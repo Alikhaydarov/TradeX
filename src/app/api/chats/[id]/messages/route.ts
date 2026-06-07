@@ -9,6 +9,9 @@ interface MessageRecord {
   sender_name: string;
   sender_avatar: string | null;
   content: string;
+  reply_to_id: string | null;
+  reply_to_name: string | null;
+  reply_to_content: string | null;
   created_at: string;
 }
 
@@ -48,7 +51,7 @@ export async function GET(
 
     const { data, error } = await auth.supabase
       .from("group_messages")
-      .select("id, group_id, user_id, sender_name, sender_avatar, content, created_at")
+      .select("id, group_id, user_id, sender_name, sender_avatar, content, reply_to_id, reply_to_name, reply_to_content, created_at")
       .eq("group_id", id)
       .order("created_at", { ascending: true })
       .limit(120)
@@ -69,7 +72,7 @@ export async function POST(
   if (!auth) return unauthorized();
 
   const { id } = await params;
-  const body = (await request.json()) as { content?: string };
+  const body = (await request.json()) as { content?: string; replyToId?: string | null };
   const content = body.content?.trim();
   if (!content || content.length > 1000) return badRequest("Xabar matni 1-1000 belgi bo'lishi kerak.");
 
@@ -84,6 +87,28 @@ export async function POST(
 
     if (profileError) return serverError(profileError.message);
 
+    let replyPayload: Pick<MessageRecord, "reply_to_id" | "reply_to_name" | "reply_to_content"> = {
+      reply_to_id: null,
+      reply_to_name: null,
+      reply_to_content: null,
+    };
+
+    if (body.replyToId) {
+      const { data: reply, error: replyError } = await auth.supabase
+        .from("group_messages")
+        .select("id, sender_name, content")
+        .eq("id", body.replyToId)
+        .eq("group_id", id)
+        .single<{ id: string; sender_name: string; content: string }>();
+
+      if (replyError) return badRequest("Reply qilinayotgan xabar topilmadi.");
+      replyPayload = {
+        reply_to_id: reply.id,
+        reply_to_name: reply.sender_name,
+        reply_to_content: reply.content.slice(0, 160),
+      };
+    }
+
     const { data, error } = await auth.supabase
       .from("group_messages")
       .insert({
@@ -92,8 +117,9 @@ export async function POST(
         sender_name: profile.full_name,
         sender_avatar: profile.avatar_url,
         content,
+        ...replyPayload,
       })
-      .select("id, group_id, user_id, sender_name, sender_avatar, content, created_at")
+      .select("id, group_id, user_id, sender_name, sender_avatar, content, reply_to_id, reply_to_name, reply_to_content, created_at")
       .single<MessageRecord>();
 
     if (error) return serverError(error.message);
