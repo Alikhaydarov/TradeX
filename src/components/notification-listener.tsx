@@ -22,13 +22,18 @@ interface ToastState {
   body: string;
 }
 
+type AudioWindow = Window & typeof globalThis & {
+  webkitAudioContext?: typeof AudioContext;
+};
+
 function shortText(value: string, max = 90) {
   return value.length > max ? `${value.slice(0, max - 1)}…` : value;
 }
 
 function playNotificationSound() {
   try {
-    const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+    const audioWindow = window as AudioWindow;
+    const AudioContextClass = audioWindow.AudioContext ?? audioWindow.webkitAudioContext;
     if (!AudioContextClass) return;
 
     const audioContext = new AudioContextClass();
@@ -45,7 +50,6 @@ function playNotificationSound() {
 
     oscillator.connect(gain);
     gain.connect(audioContext.destination);
-
     oscillator.start();
     oscillator.stop(audioContext.currentTime + 0.24);
 
@@ -126,10 +130,7 @@ export function NotificationListener() {
             const seen = seenMessageIds.current.has(message.id);
             if (!seen) {
               seenMessageIds.current.add(message.id);
-
-              if (initialized.current && message.user_id !== user.id) {
-                notify(chat, message);
-              }
+              if (initialized.current && message.user_id !== user.id) notify(chat, message);
             }
           }
         }
