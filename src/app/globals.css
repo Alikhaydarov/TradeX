@@ -66,9 +66,11 @@ html {
 body {
   margin: 0;
   background:
-    radial-gradient(circle at 12% 8%, rgb(45 91 160 / 18%), transparent 30rem),
-    radial-gradient(circle at 88% 18%, rgb(112 70 190 / 12%), transparent 28rem),
+    radial-gradient(circle at 8% 12%, rgb(24 156 184 / 20%), transparent 28rem),
+    radial-gradient(circle at 86% 16%, rgb(124 72 210 / 22%), transparent 30rem),
+    radial-gradient(circle at 55% 90%, rgb(40 91 190 / 16%), transparent 34rem),
     #080d18;
+  background-attachment: fixed;
   color: #edf3ff;
   min-height: 100vh;
 }

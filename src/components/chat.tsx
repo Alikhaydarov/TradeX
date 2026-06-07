@@ -2,30 +2,24 @@
 
 import {
   Bell,
-  ChevronDown,
-  Gift,
-  Hash,
-  Headphones,
-  HelpCircle,
+  ChevronRight,
   ImagePlus,
-  Inbox,
   LoaderCircle,
   LockKeyhole,
-  Mic,
-  Plus,
+  MessageSquareText,
+  MoreHorizontal,
+  Paperclip,
+  Pin,
   Search,
   Send,
-  Settings,
-  Smile,
-  Sticker,
-  UserPlus,
+  Sparkles,
   Users,
-  Volume2,
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { apiRequest } from "@/lib/api-client";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "./auth-context";
+import { TraderAvatar } from "./trader-avatar";
 import type { Group, GroupMessage } from "./types";
 
 const demoGroups: Group[] = [
@@ -42,11 +36,10 @@ const demoMessages: GroupMessage[] = [
 ];
 
 const members = [
-  { name: "Sardor Capital", status: "BTC tahlil qilmoqda", avatar: "SC", color: "bg-emerald-500" },
-  { name: "Malika FX", status: "London session", avatar: "M", color: "bg-fuchsia-500" },
-  { name: "Quant Uz", status: "Backtest ishlayapti", avatar: "QU", color: "bg-sky-500" },
-  { name: "Akmal Crypto", status: "Online", avatar: "AK", color: "bg-amber-500" },
-  { name: "Trader Bek", status: "Idle", avatar: "TB", color: "bg-indigo-500" },
+  { name: "Sardor Capital", status: "BTC tahlil qilmoqda", avatar: "SC" },
+  { name: "Malika FX", status: "London session", avatar: "MF" },
+  { name: "Quant Uz", status: "Backtest ishlayapti", avatar: "QU" },
+  { name: "Akmal Crypto", status: "Online", avatar: "AK" },
 ];
 
 interface GroupRecord {
@@ -66,6 +59,10 @@ interface MessageRecord {
   created_at: string;
 }
 
+function isDatabaseId(value: string) {
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value);
+}
+
 function toMessage(record: MessageRecord): GroupMessage {
   return {
     id: record.id,
@@ -81,102 +78,11 @@ function toMessage(record: MessageRecord): GroupMessage {
   };
 }
 
-function ServerRail({
-  groups,
-  activeGroupId,
-  onSelect,
-}: {
-  groups: Group[];
-  activeGroupId: string;
-  onSelect: (id: string) => void;
-}) {
-  return (
-    <aside className="hidden w-[72px] shrink-0 flex-col items-center gap-2 bg-[#1e1f22] py-3 sm:flex">
-      <button className="group flex h-12 w-12 items-center justify-center rounded-[16px] bg-[#5865f2] font-black text-white transition hover:rounded-[12px]" aria-label="TradeX chat">
-        TX
-      </button>
-      <div className="h-0.5 w-8 bg-white/10" />
-      {groups.map((group) => {
-        const active = group.id === activeGroupId;
-        return (
-          <div key={group.id} className="relative">
-            {active && <span className="absolute -left-3 top-1/2 h-10 w-1 -translate-y-1/2 rounded-r bg-white" />}
-            <button
-              onClick={() => onSelect(group.id)}
-              className={`flex h-12 w-12 items-center justify-center text-xs font-bold transition ${
-                active
-                  ? "rounded-[12px] bg-[#5865f2] text-white"
-                  : "rounded-[24px] bg-[#313338] text-[#dbdee1] hover:rounded-[12px] hover:bg-[#5865f2] hover:text-white"
-              }`}
-              aria-label={group.name}
-            >
-              {group.avatar}
-            </button>
-          </div>
-        );
-      })}
-      <button className="flex h-12 w-12 items-center justify-center rounded-[24px] bg-[#313338] text-[#23a55a] transition hover:rounded-[12px] hover:bg-[#23a55a] hover:text-white" aria-label="Server qo'shish">
-        <Plus size={22} />
-      </button>
-    </aside>
-  );
-}
-
-function ChannelSidebar({ activeGroup }: { activeGroup: Group | undefined }) {
-  const channels = ["umumiy", "savdo-goyalari", "bozor-tahlili", "natijalar"];
-  return (
-    <aside className="hidden w-[240px] shrink-0 flex-col bg-[#2b2d31] md:flex">
-      <button className="flex h-12 items-center border-b border-black/30 px-4 text-left font-bold text-white shadow-sm">
-        <span className="truncate">{activeGroup?.name}</span>
-        <ChevronDown className="ml-auto" size={18} />
-      </button>
-      <div className="flex-1 overflow-y-auto px-2 pt-4">
-        <div className="mb-1 flex items-center px-1 text-[11px] font-bold uppercase text-[#949ba4]">
-          <ChevronDown size={12} /> Text kanallari
-          <Plus className="ml-auto" size={16} />
-        </div>
-        {channels.map((channel, index) => (
-          <button
-            key={channel}
-            className={`mb-0.5 flex w-full items-center rounded px-2 py-1.5 text-left font-medium ${
-              index === 0
-                ? "bg-[#404249] text-white"
-                : "text-[#949ba4] hover:bg-[#35373c] hover:text-[#dbdee1]"
-            }`}
-          >
-            <Hash className="mr-1.5" size={20} />
-            {channel}
-            {index === 0 && <UserPlus className="ml-auto opacity-0 group-hover:opacity-100" size={15} />}
-          </button>
-        ))}
-        <div className="mb-1 mt-5 flex items-center px-1 text-[11px] font-bold uppercase text-[#949ba4]">
-          <ChevronDown size={12} /> Ovozli kanallar
-          <Plus className="ml-auto" size={16} />
-        </div>
-        {["Trading room", "London session"].map((channel) => (
-          <button key={channel} className="mb-0.5 flex w-full items-center rounded px-2 py-1.5 text-left font-medium text-[#949ba4] hover:bg-[#35373c] hover:text-[#dbdee1]">
-            <Volume2 className="mr-1.5" size={19} />{channel}
-          </button>
-        ))}
-      </div>
-      <div className="flex h-[53px] items-center bg-[#232428] px-2">
-        <div className="relative flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-sky-500 to-violet-600 text-xs font-bold">AT<span className="absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-[#232428] bg-[#23a55a]" /></div>
-        <div className="ml-2 min-w-0 leading-tight"><p className="truncate text-xs font-bold text-white">Aziz Trader</p><p className="text-[11px] text-[#b5bac1]">Online</p></div>
-        <div className="ml-auto flex text-[#b5bac1]"><button className="rounded p-1.5 hover:bg-[#3b3d44]"><Mic size={16} /></button><button className="rounded p-1.5 hover:bg-[#3b3d44]"><Headphones size={16} /></button><button className="rounded p-1.5 hover:bg-[#3b3d44]"><Settings size={16} /></button></div>
-      </div>
-    </aside>
-  );
-}
-
 export function Chat({ onLogin }: { onLogin: () => void }) {
   const { user, configured } = useAuth();
   const [groups, setGroups] = useState<Group[]>(demoGroups);
   const [activeGroupId, setActiveGroupId] = useState(demoGroups[0].id);
-  const [messages, setMessages] = useState<GroupMessage[]>(() => {
-    if (typeof window === "undefined") return demoMessages;
-    const stored = localStorage.getItem("tradex-messages");
-    return stored ? JSON.parse(stored) as GroupMessage[] : demoMessages;
-  });
+  const [messages, setMessages] = useState<GroupMessage[]>(demoMessages);
   const [text, setText] = useState("");
   const [sending, setSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -186,22 +92,32 @@ export function Chat({ onLogin }: { onLogin: () => void }) {
   );
 
   useEffect(() => {
-    apiRequest<{ groups: GroupRecord[] }>("/api/groups").then(({ groups: cloudGroups }) => {
-      if (!cloudGroups.length) return;
-      setGroups(cloudGroups);
-      setActiveGroupId(cloudGroups[0].id);
-    }).catch((nextError: Error) => setError(nextError.message));
+    apiRequest<{ groups: GroupRecord[] }>("/api/groups")
+      .then(({ groups: cloudGroups }) => {
+        if (!cloudGroups.length) return;
+        setGroups(cloudGroups);
+        setActiveGroupId(cloudGroups[0].id);
+        setError(null);
+      })
+      .catch((nextError: Error) => setError(nextError.message));
   }, []);
 
   useEffect(() => {
-    if (!activeGroupId) return;
+    if (!activeGroupId || !isDatabaseId(activeGroupId)) return;
     let active = true;
     const load = () => apiRequest<{ messages: MessageRecord[] }>(`/api/groups/${activeGroupId}/messages`)
-      .then(({ messages: records }) => { if (active) setMessages(records.map(toMessage)); })
-      .catch((nextError: Error) => { if (active) setError(nextError.message); });
+      .then(({ messages: records }) => {
+        if (active) setMessages(records.map(toMessage));
+      })
+      .catch((nextError: Error) => {
+        if (active) setError(nextError.message);
+      });
     void load();
     const timer = window.setInterval(load, 5000);
-    return () => { active = false; window.clearInterval(timer); };
+    return () => {
+      active = false;
+      window.clearInterval(timer);
+    };
   }, [activeGroupId]);
 
   const send = async () => {
@@ -210,7 +126,6 @@ export function Chat({ onLogin }: { onLogin: () => void }) {
       onLogin();
       return;
     }
-
     setSending(true);
     try {
       const { message } = await apiRequest<{ message: MessageRecord }>(`/api/groups/${activeGroupId}/messages`, {
@@ -221,94 +136,168 @@ export function Chat({ onLogin }: { onLogin: () => void }) {
       setText("");
     } catch (nextError) {
       setError(nextError instanceof Error ? nextError.message : "Xabar yuborilmadi.");
-    } finally { setSending(false); }
+    } finally {
+      setSending(false);
+    }
   };
 
   const visibleMessages = messages.filter((message) => message.groupId === activeGroupId);
 
   return (
-    <div className="flex h-screen min-h-[650px] overflow-hidden bg-[#313338] text-[#dbdee1]">
-      <ServerRail groups={groups} activeGroupId={activeGroupId} onSelect={setActiveGroupId} />
-      <ChannelSidebar activeGroup={activeGroup} />
-      <section className="flex min-w-0 flex-1 flex-col">
-        <header className="flex h-12 shrink-0 items-center border-b border-black/30 bg-[#313338] px-4 shadow-sm">
-          <Hash className="mr-2 text-[#80848e]" size={24} />
-          <h1 className="font-bold text-white">umumiy</h1>
-          <span className="ml-3 hidden h-6 w-px bg-[#3f4147] sm:block" />
-          <p className="ml-3 hidden truncate text-sm text-[#b5bac1] sm:block">{activeGroup?.description}</p>
-          <div className="ml-auto flex items-center gap-4 text-[#b5bac1]">
-            <Bell className="hidden hover:text-white sm:block" size={20} />
-            <Users className="hover:text-white" size={21} />
-            <label className="hidden h-6 w-36 items-center rounded bg-[#1e1f22] px-2 text-xs lg:flex">
-              <input className="min-w-0 flex-1 bg-transparent outline-none" placeholder="Qidirish" />
-              <Search size={14} />
-            </label>
-            <Inbox className="hidden hover:text-white sm:block" size={20} />
-            <HelpCircle className="hidden hover:text-white sm:block" size={20} />
+    <div className="flex min-h-screen flex-col lg:h-[calc(100vh-2rem)] lg:min-h-[680px]">
+      <header className="flex items-center border-b border-white/8 bg-[#0b1424]/35 px-5 py-4 backdrop-blur-2xl">
+        <div>
+          <p className="text-[10px] font-bold uppercase tracking-[.22em] text-violet-300/70">Live collaboration</p>
+          <h1 className="mt-1 text-2xl font-black tracking-tight">Trading Rooms</h1>
+        </div>
+        <label className="ml-auto hidden h-10 w-52 items-center gap-2 rounded-2xl border border-white/8 bg-white/[.035] px-3 text-slate-500 md:flex">
+          <Search size={15} />
+          <input placeholder="Xabarlardan izlash" className="min-w-0 flex-1 bg-transparent text-xs text-white outline-none" />
+        </label>
+        <button className="ml-2 grid h-10 w-10 place-items-center rounded-2xl border border-white/8 bg-white/[.035] text-slate-400" aria-label="Bildirishnomalar"><Bell size={17} /></button>
+      </header>
+
+      {error && <div className="mx-4 mt-3 rounded-2xl border border-rose-300/15 bg-rose-400/10 px-4 py-2 text-xs text-rose-200 backdrop-blur-xl">{error}</div>}
+
+      <div className="flex min-h-0 flex-1 gap-3 p-3">
+        <aside className="hidden w-[250px] shrink-0 flex-col rounded-[24px] border border-white/9 bg-white/[.035] p-3 backdrop-blur-2xl md:flex">
+          <div className="flex items-center px-2 py-2">
+            <MessageSquareText size={16} className="text-cyan-300" />
+            <strong className="ml-2 text-xs">Roomlar</strong>
+            <span className="ml-auto rounded-full bg-white/[.05] px-2 py-0.5 text-[9px] text-slate-500">{groups.length}</span>
           </div>
-        </header>
-        {error && <div className="bg-rose-500/10 px-4 py-2 text-xs text-rose-300">{error}</div>}
-        <div className="flex min-h-0 flex-1">
-          <div className="flex min-w-0 flex-1 flex-col">
-            <div className="flex-1 overflow-y-auto pb-4">
-              <div className="px-4 pb-4 pt-10">
-                <div className="flex h-16 w-16 items-center justify-center rounded-full bg-[#41434a]"><Hash size={38} /></div>
-                <h2 className="mt-3 text-3xl font-bold text-white">#umumiy kanaliga xush kelibsiz!</h2>
-                <p className="mt-2 text-sm text-[#b5bac1]">Bu {activeGroup?.name} serverining boshlanishi.</p>
-              </div>
-              <div className="my-3 flex items-center px-4 text-xs font-semibold text-[#949ba4]"><span className="h-px flex-1 bg-[#3f4147]" /><span className="px-2">2026-yil 7-iyun</span><span className="h-px flex-1 bg-[#3f4147]" /></div>
-              {!visibleMessages.length && <div className="px-4 py-10 text-center text-sm text-[#949ba4]">Bu kanalda hali xabar yo&apos;q.</div>}
-              {visibleMessages.map((message) => (
-                <article key={message.id} className="group flex px-4 py-1 hover:bg-[#2e3035]">
-                  <div className="mr-4 mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-[#5865f2] to-[#eb459e] text-xs font-bold text-white">{message.avatar}</div>
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-baseline gap-2"><span className="font-semibold text-white hover:underline">{message.name}</span><span className="text-[11px] text-[#949ba4]">Bugun, {message.createdAt}</span></div>
-                    <p className="break-words text-[15px] leading-[1.375rem] text-[#dbdee1]">{message.text}</p>
+          <div className="mt-2 space-y-2 overflow-y-auto">
+            {groups.map((group, index) => {
+              const active = group.id === activeGroupId;
+              return (
+                <button
+                  key={group.id}
+                  onClick={() => setActiveGroupId(group.id)}
+                  className={`w-full rounded-2xl border p-3 text-left transition ${
+                    active
+                      ? "border-cyan-300/20 bg-gradient-to-br from-blue-500/16 to-violet-500/10"
+                      : "border-transparent bg-black/5 hover:border-white/8 hover:bg-white/[.035]"
+                  }`}
+                >
+                  <div className="flex items-center">
+                    <span className={`grid h-9 w-9 place-items-center rounded-xl text-[10px] font-black ${active ? "bg-cyan-300/15 text-cyan-200" : "bg-white/[.05] text-slate-400"}`}>{group.avatar}</span>
+                    <div className="ml-3 min-w-0">
+                      <strong className="block truncate text-xs">{group.name}</strong>
+                      <small className="text-[9px] text-slate-500">{index + 2} faol trader</small>
+                    </div>
+                    <ChevronRight className="ml-auto text-slate-600" size={15} />
                   </div>
-                </article>
-              ))}
+                  <p className="mt-2 line-clamp-2 text-[10px] leading-4 text-slate-500">{group.description}</p>
+                </button>
+              );
+            })}
+          </div>
+          <div className="mt-auto rounded-2xl border border-white/8 bg-black/10 p-3">
+            <div className="flex items-center gap-2 text-violet-200"><Sparkles size={14} /><strong className="text-[10px]">Room qoidasi</strong></div>
+            <p className="mt-2 text-[9px] leading-4 text-slate-500">Signal yuborsangiz, risk va invalidation nuqtasini ham yozing.</p>
+          </div>
+        </aside>
+
+        <section className="flex min-w-0 flex-1 flex-col overflow-hidden rounded-[24px] border border-white/9 bg-white/[.028] backdrop-blur-2xl">
+          <div className="flex items-center border-b border-white/8 px-4 py-3">
+            <span className="grid h-10 w-10 place-items-center rounded-xl bg-gradient-to-br from-cyan-400/20 to-violet-500/20 text-xs font-black text-cyan-200">{activeGroup?.avatar}</span>
+            <div className="ml-3 min-w-0">
+              <h2 className="truncate text-sm font-bold">{activeGroup?.name}</h2>
+              <p className="truncate text-[10px] text-slate-500">{activeGroup?.description}</p>
             </div>
+            <span className="ml-auto flex items-center gap-1.5 rounded-full bg-emerald-300/8 px-2.5 py-1 text-[9px] font-bold text-emerald-300"><Users size={11} /> {members.length} online</span>
+            <button className="ml-2 grid h-8 w-8 place-items-center rounded-xl text-slate-500 hover:bg-white/[.05]" aria-label="Room menyusi"><MoreHorizontal size={17} /></button>
+          </div>
+
+          <div className="flex-1 overflow-y-auto px-3 py-4 sm:px-5">
+            <div className="mb-6 rounded-[22px] border border-cyan-300/12 bg-gradient-to-r from-cyan-300/7 to-violet-400/7 p-4">
+              <div className="flex items-center gap-2 text-cyan-200"><Pin size={14} /><strong className="text-xs">Room context</strong></div>
+              <p className="mt-2 max-w-2xl text-xs leading-5 text-slate-400">Bu yerda setup, chart kuzatuvi va bozor fikrlarini real vaqtda muhokama qilasiz.</p>
+            </div>
+
+            {!visibleMessages.length && (
+              <div className="grid min-h-48 place-items-center text-center">
+                <div>
+                  <MessageSquareText className="mx-auto text-slate-600" size={30} />
+                  <p className="mt-3 text-sm font-bold">{"Suhbatni birinchi bo'lib boshlang"}</p>
+                  <p className="mt-1 text-[10px] text-slate-500">Room hali sokin.</p>
+                </div>
+              </div>
+            )}
+
+            <div className="space-y-3">
+              {visibleMessages.map((message) => {
+                const own = message.userId === user?.id;
+                return (
+                  <article key={message.id} className={`flex gap-3 ${own ? "flex-row-reverse" : ""}`}>
+                    <TraderAvatar name={message.name} value={message.avatar} className="h-9 w-9 rounded-xl text-[10px]" />
+                    <div className={`max-w-[78%] ${own ? "text-right" : ""}`}>
+                      <div className={`mb-1 flex items-center gap-2 ${own ? "justify-end" : ""}`}>
+                        <strong className="text-[10px]">{own ? "Siz" : message.name}</strong>
+                        <span className="text-[9px] text-slate-600">{message.createdAt}</span>
+                      </div>
+                      <p className={`rounded-2xl px-3.5 py-2.5 text-left text-xs leading-5 shadow-lg shadow-slate-950/10 ${
+                        own
+                          ? "rounded-tr-md border border-blue-300/15 bg-blue-500/16 text-blue-50"
+                          : "rounded-tl-md border border-white/8 bg-white/[.045] text-slate-200"
+                      }`}>{message.text}</p>
+                    </div>
+                  </article>
+                );
+              })}
+            </div>
+          </div>
+
+          <div className="p-3 sm:p-4">
             {configured && !user && (
-              <button onClick={onLogin} className="mx-4 mb-2 flex items-center justify-center gap-2 rounded bg-[#2b2d31] py-2 text-sm font-semibold hover:bg-[#232428]">
-                <LockKeyhole size={16} />Xabar yozish uchun Google bilan kiring
+              <button onClick={onLogin} className="mb-2 flex w-full items-center justify-center gap-2 rounded-2xl border border-amber-300/15 bg-amber-300/7 py-2 text-[10px] font-bold text-amber-200">
+                <LockKeyhole size={13} /> Xabar yozish uchun Google bilan kiring
               </button>
             )}
-            <div className="mx-4 mb-6 flex min-h-11 items-center rounded-lg bg-[#383a40] px-3">
-              <button className="mr-3 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[#b5bac1] text-[#383a40] hover:bg-white" aria-label="Fayl qo'shish"><Plus size={18} /></button>
-              <input
+            <div className="flex items-end gap-2 rounded-[20px] border border-white/10 bg-black/12 p-2 backdrop-blur-xl focus-within:border-blue-300/25">
+              <button className="grid h-9 w-9 shrink-0 place-items-center rounded-xl text-slate-500 hover:bg-white/[.05] hover:text-white" aria-label="Fayl biriktirish"><Paperclip size={17} /></button>
+              <textarea
                 value={text}
                 onChange={(event) => setText(event.target.value)}
-                onKeyDown={(event) => event.key === "Enter" && void send()}
-                placeholder={`#umumiy kanaliga xabar yuborish`}
-                className="min-w-0 flex-1 bg-transparent py-3 text-[15px] text-[#dbdee1] outline-none placeholder:text-[#6d6f78]"
+                onKeyDown={(event) => {
+                  if (event.key === "Enter" && !event.shiftKey) {
+                    event.preventDefault();
+                    void send();
+                  }
+                }}
+                rows={1}
+                placeholder={`${activeGroup?.name ?? "Room"} uchun xabar...`}
+                className="max-h-28 min-h-9 min-w-0 flex-1 resize-none bg-transparent py-2 text-xs text-white outline-none placeholder:text-slate-600"
               />
-              <div className="ml-2 flex items-center gap-3 text-[#b5bac1]">
-                <Gift className="hidden hover:text-white sm:block" size={20} />
-                <ImagePlus className="hidden hover:text-white sm:block" size={20} />
-                <Sticker className="hidden hover:text-white sm:block" size={20} />
-                <Smile className="hover:text-white" size={20} />
-                <Button disabled={sending || !text.trim()} onClick={() => void send()} size="icon-sm" className="h-7 w-7 rounded bg-[#5865f2] hover:bg-[#4752c4]" aria-label="Yuborish">
-                  {sending ? <LoaderCircle className="animate-spin" size={16} /> : <Send size={15} />}
-                </Button>
-              </div>
+              <button className="grid h-9 w-9 shrink-0 place-items-center rounded-xl text-slate-500 hover:bg-white/[.05] hover:text-white" aria-label="Rasm qo'shish"><ImagePlus size={17} /></button>
+              <Button disabled={sending || !text.trim()} onClick={() => void send()} size="icon-sm" className="h-9 w-9 shrink-0 rounded-xl bg-gradient-to-br from-blue-500 to-violet-600" aria-label="Yuborish">
+                {sending ? <LoaderCircle className="animate-spin" size={15} /> : <Send size={15} />}
+              </Button>
             </div>
           </div>
-          <aside className="hidden w-[240px] shrink-0 overflow-y-auto bg-[#2b2d31] px-2 py-5 xl:block">
-            <p className="px-2 text-[11px] font-bold uppercase text-[#949ba4]">Online — {members.length}</p>
-            <div className="mt-2 space-y-0.5">
-              {members.map((member) => (
-                <button key={member.name} className="flex w-full items-center rounded px-2 py-1.5 text-left hover:bg-[#35373c]">
-                  <div className={`relative flex h-8 w-8 shrink-0 items-center justify-center rounded-full ${member.color} text-[10px] font-bold text-white`}>
-                    {member.avatar}
-                    <span className="absolute bottom-0 right-0 h-3 w-3 rounded-full border-[3px] border-[#2b2d31] bg-[#23a55a]" />
-                  </div>
-                  <div className="ml-3 min-w-0"><p className="truncate text-sm font-semibold text-[#b5bac1]">{member.name}</p><p className="truncate text-[11px] text-[#949ba4]">{member.status}</p></div>
-                </button>
-              ))}
-            </div>
-          </aside>
-        </div>
-      </section>
+        </section>
+
+        <aside className="hidden w-[220px] shrink-0 rounded-[24px] border border-white/9 bg-white/[.03] p-3 backdrop-blur-2xl 2xl:block">
+          <div className="flex items-center px-2 py-2">
+            <Users size={15} className="text-violet-300" />
+            <strong className="ml-2 text-xs">Faol traderlar</strong>
+          </div>
+          <div className="mt-2 space-y-1">
+            {members.map((member) => (
+              <button key={member.name} className="flex w-full items-center rounded-2xl p-2 text-left hover:bg-white/[.04]">
+                <span className="relative">
+                  <TraderAvatar name={member.name} value={member.avatar} className="h-9 w-9 rounded-xl text-[9px]" />
+                  <span className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full border-2 border-[#172033] bg-emerald-300" />
+                </span>
+                <span className="ml-2 min-w-0">
+                  <strong className="block truncate text-[10px]">{member.name}</strong>
+                  <small className="block truncate text-[9px] text-slate-600">{member.status}</small>
+                </span>
+              </button>
+            ))}
+          </div>
+        </aside>
+      </div>
     </div>
   );
 }

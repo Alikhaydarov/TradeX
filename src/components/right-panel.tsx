@@ -1,36 +1,62 @@
-import { Search, TrendingUp } from "lucide-react";
+import { Activity, Clock3, Radio, Search, Sparkles } from "lucide-react";
 
-const trends = [
-  ["O'zbekistonda trendda", "#BTC", "2,481 post"],
-  ["Kripto · Trend", "$SOL", "1,209 post"],
-  ["Forex · Trend", "XAUUSD", "986 post"],
-  ["Trading", "#PriceAction", "614 post"],
+const markets = [
+  { coin: "BTC", price: "$104,250", change: "+2.8%", color: "bg-orange-400" },
+  { coin: "ETH", price: "$3,864", change: "+1.4%", color: "bg-indigo-400" },
+  { coin: "XAU", price: "$2,354", change: "-0.3%", color: "bg-amber-300" },
 ];
 
 export function RightPanel() {
   return (
-    <aside className="sticky top-0 hidden h-screen w-[350px] shrink-0 px-5 py-2 xl:block">
-      <label className="flex h-11 items-center gap-3 rounded-2xl border border-xborder bg-xpanel px-4 text-xmuted focus-within:ring-1 focus-within:ring-xblue">
-        <Search size={19} /><input placeholder="Izlash" className="w-full bg-transparent text-[15px] text-white outline-none" />
+    <aside className="sticky top-4 hidden h-[calc(100vh-2rem)] w-[300px] shrink-0 space-y-3 overflow-y-auto xl:block">
+      <label className="flex h-12 items-center gap-3 rounded-2xl border border-white/9 bg-[#0b1220]/42 px-4 text-slate-500 backdrop-blur-2xl focus-within:border-blue-400/30">
+        <Search size={17} />
+        <input placeholder="Workspace bo'ylab izlash" className="w-full bg-transparent text-sm text-white outline-none" />
       </label>
-      <section className="mt-4 overflow-hidden rounded-2xl border border-xborder bg-xcard/70 shadow-xl shadow-slate-950/20">
-        <h2 className="px-4 py-3 text-xl font-extrabold">{"Nimalar bo'lyapti"}</h2>
-        {trends.map(([category, title, count]) => (
-          <button key={title} className="block w-full px-4 py-3 text-left transition hover:bg-white/[.03]">
-            <p className="text-xs text-xmuted">{category}</p>
-            <p className="mt-0.5 font-bold">{title}</p>
-            <p className="mt-0.5 text-xs text-xmuted">{count}</p>
-          </button>
-        ))}
-        <button className="px-4 py-4 text-sm text-xblue">{"Ko'proq ko'rsatish"}</button>
+
+      <section className="rounded-[24px] border border-white/9 bg-[#0b1220]/42 p-4 shadow-xl shadow-slate-950/20 backdrop-blur-2xl">
+        <div className="flex items-center gap-2">
+          <Activity className="text-cyan-300" size={18} />
+          <div>
+            <h2 className="text-sm font-bold">Market radar</h2>
+            <p className="text-[10px] text-slate-500">{"Kuzatuv ro'yxati"}</p>
+          </div>
+          <span className="ml-auto flex items-center gap-1 rounded-full bg-emerald-400/10 px-2 py-1 text-[9px] font-bold text-emerald-300">
+            <Radio size={10} /> LIVE
+          </span>
+        </div>
+        <div className="mt-4 space-y-2">
+          {markets.map((market) => (
+            <div key={market.coin} className="flex items-center rounded-2xl bg-white/[.025] p-3">
+              <span className={`h-2.5 w-2.5 rounded-full ${market.color}`} />
+              <strong className="ml-3 text-sm">{market.coin}</strong>
+              <span className="ml-auto font-mono text-xs">{market.price}</span>
+              <span className={`ml-3 text-[10px] font-bold ${market.change.startsWith("+") ? "text-emerald-300" : "text-rose-300"}`}>{market.change}</span>
+            </div>
+          ))}
+        </div>
       </section>
-      <section className="mt-4 rounded-2xl border border-xborder bg-xcard/70 p-4 shadow-xl shadow-slate-950/20">
-        <div className="flex items-center gap-2"><TrendingUp className="text-emerald-400" size={20} /><h2 className="text-lg font-extrabold">Bozor holati</h2></div>
-        {[["BTC", "$104,250", "+2.8%"], ["ETH", "$3,864", "+1.4%"], ["XAU", "$2,354", "-0.3%"]].map(([coin, price, change]) => (
-          <div key={coin} className="mt-4 flex items-center"><span className="font-bold">{coin}</span><span className="ml-auto font-mono text-sm">{price}</span><span className={`ml-3 text-xs font-bold ${change.startsWith("+") ? "text-emerald-400" : "text-rose-400"}`}>{change}</span></div>
-        ))}
+
+      <section className="overflow-hidden rounded-[24px] border border-white/9 bg-gradient-to-br from-blue-500/14 via-[#0b1220]/35 to-violet-500/12 p-4 backdrop-blur-2xl">
+        <div className="flex items-center gap-2 text-violet-200">
+          <Sparkles size={17} />
+          <h2 className="text-sm font-bold">Bugungi fokus</h2>
+        </div>
+        <p className="mt-3 text-lg font-black leading-tight">London open oldidan riskni qayta tekshiring.</p>
+        <p className="mt-2 text-xs leading-5 text-slate-400">{"Yuqori ta'sirli yangiliklar 16:30 da kutilmoqda."}</p>
       </section>
-      <p className="mt-4 px-3 text-xs leading-5 text-xmuted">Foydalanish shartlari · Maxfiylik · Cookie siyosati · © 2026 TradeX</p>
+
+      <section className="rounded-[24px] border border-white/9 bg-[#0b1220]/42 p-4 backdrop-blur-2xl">
+        <div className="flex items-center gap-2">
+          <Clock3 size={17} className="text-blue-300" />
+          <h2 className="text-sm font-bold">Sessiyalar</h2>
+        </div>
+        <div className="mt-4 space-y-3 text-xs">
+          <div className="flex items-center"><span className="text-slate-500">London</span><strong className="ml-auto text-emerald-300">Ochiq</strong></div>
+          <div className="flex items-center"><span className="text-slate-500">New York</span><strong className="ml-auto">2s 14d</strong></div>
+          <div className="flex items-center"><span className="text-slate-500">Asia</span><strong className="ml-auto text-slate-500">Yopiq</strong></div>
+        </div>
+      </section>
     </aside>
   );
 }
