@@ -21,6 +21,19 @@ function makeUsername(user: { id: string; email?: string; user_metadata?: Record
   return `${clean}_${user.id.slice(0, 6)}`;
 }
 
+function profileFromAuth(auth: NonNullable<Awaited<ReturnType<typeof authenticateRequest>>>): ProfileRecord {
+  return {
+    full_name: String(
+      auth.user.user_metadata.full_name ??
+      auth.user.user_metadata.name ??
+      auth.user.email?.split("@")[0] ??
+      "TradeUp Trader",
+    ),
+    username: makeUsername(auth.user),
+    avatar_url: typeof auth.user.user_metadata.avatar_url === "string" ? auth.user.user_metadata.avatar_url : null,
+  };
+}
+
 async function ensureProfile(auth: NonNullable<Awaited<ReturnType<typeof authenticateRequest>>>) {
   const { data: existing, error: selectError } = await auth.supabase
     .from("profiles")
@@ -31,24 +44,14 @@ async function ensureProfile(auth: NonNullable<Awaited<ReturnType<typeof authent
   if (selectError) throw new Error(selectError.message);
   if (existing) return existing;
 
-  const fullName = String(
-    auth.user.user_metadata.full_name ??
-    auth.user.user_metadata.name ??
-    auth.user.email?.split("@")[0] ??
-    "TradeUp Trader",
-  );
-
-  const avatarUrl = typeof auth.user.user_metadata.avatar_url === "string"
-    ? auth.user.user_metadata.avatar_url
-    : null;
-
-  const { data: created, error: insertError } = await auth.supabase
+  const nextProfile = profileFromAuth(auth);
+  const { data: created } = await auth.supabase
     .from("profiles")
     .insert({
       id: auth.user.id,
-      username: makeUsername(auth.user),
-      full_name: fullName,
-      avatar_url: avatarUrl,
+      username: nextProfile.username,
+      full_name: nextProfile.full_name,
+      avatar_url: nextProfile.avatar_url,
       bio: "",
       trading_style: "Price Action",
       location: "",
@@ -56,8 +59,7 @@ async function ensureProfile(auth: NonNullable<Awaited<ReturnType<typeof authent
     .select("full_name, username, avatar_url")
     .single<ProfileRecord>();
 
-  if (insertError) throw new Error(insertError.message);
-  return created;
+  return created ?? nextProfile;
 }
 
 export async function GET(request: Request) {
@@ -112,8 +114,8 @@ export async function POST(request: Request) {
   let profile: ProfileRecord;
   try {
     profile = await ensureProfile(auth);
-  } catch (error) {
-    return serverError(error instanceof Error ? error.message : undefined);
+  } catch {
+    profile = profileFromAuth(auth);
   }
 
   const initials = profile.full_name
