@@ -5,7 +5,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { apiRequest } from "@/lib/api-client";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { XSpinner } from "./app-loader";
+import { SkeletonBlock, XSpinner } from "./app-loader";
 import { useAuth } from "./auth-context";
 import { TraderAvatar } from "./trader-avatar";
 import type { Post } from "./types";
@@ -27,6 +27,31 @@ interface PostRecord {
   reposts_count: number;
   views_count?: number | null;
   created_at: string;
+}
+
+function FeedSkeleton() {
+  return (
+    <div className="mt-3 overflow-hidden rounded-[28px] border border-white/10 bg-white/[.025] backdrop-blur-2xl">
+      {Array.from({ length: 4 }).map((_, index) => (
+        <div key={index} className="border-b border-white/8 p-4 last:border-b-0 sm:p-5">
+          <div className="flex gap-3">
+            <SkeletonBlock className="h-11 w-11 shrink-0 rounded-full" />
+            <div className="min-w-0 flex-1">
+              <SkeletonBlock className="h-4 w-36" />
+              <SkeletonBlock className="mt-2 h-3 w-24" />
+              <SkeletonBlock className="mt-4 h-4 w-full" />
+              <SkeletonBlock className="mt-2 h-4 w-4/5" />
+              <div className="mt-4 flex gap-4">
+                <SkeletonBlock className="h-4 w-12" />
+                <SkeletonBlock className="h-4 w-12" />
+                <SkeletonBlock className="h-4 w-12" />
+              </div>
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
 }
 
 function formatCount(value: number) {
@@ -311,7 +336,7 @@ export function FeedV3({ onLogin }: { onLogin: () => void }) {
         </div>
 
         {loading ? (
-          <div className="mt-10 grid place-items-center py-10 text-slate-500"><XSpinner size="lg" /></div>
+          <FeedSkeleton />
         ) : (
           <div className="mt-3 overflow-hidden rounded-[28px] border border-white/10 bg-white/[.025] backdrop-blur-2xl">
             {posts.map((post) => (
