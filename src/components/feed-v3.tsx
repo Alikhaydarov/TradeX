@@ -120,6 +120,20 @@ export function FeedV3({ onLogin }: { onLogin: () => void }) {
     };
   }, [user]);
 
+  useEffect(() => {
+    if (!deleteTarget) return;
+
+    const bodyOverflow = document.body.style.overflow;
+    const htmlOverflow = document.documentElement.style.overflow;
+    document.body.style.overflow = "hidden";
+    document.documentElement.style.overflow = "hidden";
+
+    return () => {
+      document.body.style.overflow = bodyOverflow;
+      document.documentElement.style.overflow = htmlOverflow;
+    };
+  }, [deleteTarget]);
+
   const recordView = (postId: string) => {
     if (!user || viewed.current.has(postId)) return;
     viewed.current.add(postId);
@@ -355,11 +369,12 @@ export function FeedV3({ onLogin }: { onLogin: () => void }) {
       </div>
 
       {deleteTarget ? (
-        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 px-4 backdrop-blur-[2px]">
-          <div className="w-full max-w-[320px] rounded-[28px] bg-black p-7 text-white shadow-2xl shadow-black/60 ring-1 ring-white/10">
-            <h3 className="text-xl font-black leading-6 tracking-tight">Delete post?</h3>
+        <div className="fixed inset-0 z-[99999] flex h-[100dvh] w-screen items-center justify-center overflow-hidden bg-black/75 p-4 backdrop-blur-md">
+          <div className="absolute inset-0" aria-hidden="true" onClick={() => actingId ? undefined : setDeleteTarget(null)} />
+          <div role="dialog" aria-modal="true" aria-labelledby="delete-post-title" className="relative z-10 w-full max-w-[340px] rounded-[30px] border border-white/10 bg-[#05070d]/95 p-7 text-white shadow-2xl shadow-black/70">
+            <h3 id="delete-post-title" className="text-xl font-black leading-6 tracking-tight">Delete post?</h3>
             <p className="mt-2 text-[14px] leading-5 text-slate-400">
-              This can't be undone and it will be removed from your profile, the timeline of any accounts that follow you, and from search results.
+              This can&apos;t be undone. This post will be removed from the timeline and your profile.
             </p>
 
             <button
