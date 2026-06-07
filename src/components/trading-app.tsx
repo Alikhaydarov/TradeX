@@ -2,6 +2,7 @@
 
 import { LockKeyhole, ShieldCheck, TrendingUp, Users } from "lucide-react";
 import { useEffect, useState, useTransition } from "react";
+import { usePathname, useRouter } from "next/navigation";
 import { Account } from "./account";
 import { AdminPanel } from "./admin-panel";
 import { AppLoader } from "./app-loader";
@@ -16,6 +17,24 @@ import { RightPanel } from "./right-panel";
 import { Sidebar } from "./sidebar";
 import { apiRequest } from "@/lib/api-client";
 import type { Section } from "./types";
+
+function sectionFromPath(pathname: string): Section {
+  if (pathname.startsWith("/chat")) return "chat";
+  if (pathname.startsWith("/journal")) return "journal";
+  if (pathname.startsWith("/backtest")) return "backtest";
+  if (pathname.startsWith("/profile") || pathname.startsWith("/account")) return "account";
+  if (pathname.startsWith("/admin")) return "admin";
+  return "feed";
+}
+
+function pathFromSection(section: Section) {
+  if (section === "chat") return "/chat";
+  if (section === "journal") return "/journal";
+  if (section === "backtest") return "/backtest";
+  if (section === "account") return "/profile";
+  if (section === "admin") return "/admin";
+  return "/";
+}
 
 function AuthGate({ onLogin }: { onLogin: () => void }) {
   return (
@@ -58,7 +77,9 @@ function AuthGate({ onLogin }: { onLogin: () => void }) {
 }
 
 function TradingAppShell() {
-  const [section, setSection] = useState<Section>("feed");
+  const router = useRouter();
+  const pathname = usePathname();
+  const section = sectionFromPath(pathname || "/");
   const [authOpen, setAuthOpen] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [isPending, startTransition] = useTransition();
@@ -86,9 +107,13 @@ function TradingAppShell() {
     };
   }, [user]);
 
+  useEffect(() => {
+    if (section === "admin" && user && !isAdmin) router.replace("/");
+  }, [section, user, isAdmin, router]);
+
   const changeSection = (nextSection: Section) => {
     if (nextSection === "admin" && !isAdmin) return;
-    startTransition(() => setSection(nextSection));
+    startTransition(() => router.push(pathFromSection(nextSection)));
   };
 
   const render = () => {
@@ -96,7 +121,7 @@ function TradingAppShell() {
     if (section === "journal") return <Journal onLogin={openLogin} />;
     if (section === "backtest") return <Backtest />;
     if (section === "account") return <Account onLogin={openLogin} />;
-    if (section === "admin") return <AdminPanel onLogin={openLogin} />;
+    if (section === "admin" && isAdmin) return <AdminPanel onLogin={openLogin} />;
     return <FeedV3 onLogin={openLogin} />;
   };
 
