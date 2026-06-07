@@ -19,18 +19,41 @@ interface AuthContextValue {
   signOut: () => Promise<void>;
 }
 
+const AUTH_CACHE_KEY = "tradeup:user";
 const AuthContext = createContext<AuthContextValue | null>(null);
+
+function readCachedUser() {
+  if (typeof window === "undefined") return null;
+
+  try {
+    const cached = window.localStorage.getItem(AUTH_CACHE_KEY);
+    return cached ? (JSON.parse(cached) as User) : null;
+  } catch {
+    return null;
+  }
+}
+
+function writeCachedUser(user: User | null) {
+  if (typeof window === "undefined") return;
+
+  try {
+    if (user) window.localStorage.setItem(AUTH_CACHE_KEY, JSON.stringify(user));
+    else window.localStorage.removeItem(AUTH_CACHE_KEY);
+  } catch {
+    // Ignore storage errors; server auth remains the source of truth.
+  }
+}
 
 export function AuthProvider({
   children,
   initialUser = null,
-  initialConfigured = false,
+  initialConfigured = true,
 }: {
   children: ReactNode;
   initialUser?: User | null;
   initialConfigured?: boolean;
 }) {
-  const [user, setUser] = useState<User | null>(initialUser);
+  const [user, setUser] = useState<User | null>(() => initialUser ?? readCachedUser());
   const [configured, setConfigured] = useState(initialConfigured);
   const [loading] = useState(false);
 
@@ -39,10 +62,14 @@ export function AuthProvider({
 
     apiRequest<{ user: User | null }>("/api/auth/me")
       .then((auth) => {
-        if (active) setUser(auth.user);
+        if (!active) return;
+        setUser(auth.user);
+        writeCachedUser(auth.user);
       })
       .catch(() => {
-        if (active) setUser(null);
+        if (!active) return;
+        setUser(null);
+        writeCachedUser(null);
       });
 
     apiRequest<{ ok: boolean }>("/api/health")
@@ -71,6 +98,7 @@ export function AuthProvider({
       async signOut() {
         await apiRequest<{ ok: boolean }>("/api/auth/signout", { method: "POST" });
         setUser(null);
+        writeCachedUser(null);
       },
     }),
     [configured, loading, user],
