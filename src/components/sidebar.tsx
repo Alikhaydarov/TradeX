@@ -53,10 +53,10 @@ export function Sidebar({
   return (
     <>
       <aside className="sticky top-4 hidden h-[calc(100vh-2rem)] w-[238px] shrink-0 flex-col rounded-[28px] border border-white/9 bg-[#0b1220]/48 p-4 shadow-2xl shadow-slate-950/30 backdrop-blur-2xl lg:flex">
-        <button onClick={() => onChange("feed")} className="flex items-center gap-3 rounded-2xl px-2 py-2 text-left" aria-label="TradeX bosh sahifa">
-          <span className="grid h-11 w-11 place-items-center rounded-[15px] bg-gradient-to-br from-cyan-400 via-blue-500 to-violet-600 text-lg font-black shadow-lg shadow-blue-950/50">TX</span>
+        <button onClick={() => onChange("feed")} className="flex items-center gap-3 rounded-2xl px-2 py-2 text-left" aria-label="TradeUp bosh sahifa">
+          <span className="grid h-11 w-11 place-items-center rounded-[15px] bg-gradient-to-br from-cyan-400 via-blue-500 to-violet-600 text-lg font-black shadow-lg shadow-blue-950/50">TU</span>
           <span>
-            <strong className="block text-base tracking-tight">TradeX</strong>
+            <strong className="block text-base tracking-tight">TradeUp</strong>
             <small className="text-[11px] text-slate-500">Trader workspace</small>
           </span>
         </button>
