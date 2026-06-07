@@ -19,7 +19,6 @@ function TradingAppShell() {
   const [section, setSection] = useState<Section>("feed");
   const [authOpen, setAuthOpen] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
-  const [checkingAdmin, setCheckingAdmin] = useState(false);
   const [isPending, startTransition] = useTransition();
   const { user } = useAuth();
   const openLogin = () => setAuthOpen(true);
@@ -32,16 +31,12 @@ function TradingAppShell() {
     }
 
     let active = true;
-    setCheckingAdmin(true);
     apiRequest<{ isAdmin: boolean }>("/api/admin/me")
       .then((response) => {
         if (active) setIsAdmin(response.isAdmin);
       })
       .catch(() => {
         if (active) setIsAdmin(false);
-      })
-      .finally(() => {
-        if (active) setCheckingAdmin(false);
       });
 
     return () => {
@@ -55,7 +50,6 @@ function TradingAppShell() {
   };
 
   const render = () => {
-    if (checkingAdmin) return <AppLoader label="Profil huquqlari tekshirilmoqda" />;
     if (section === "chat") return <Chat onLogin={openLogin} onBack={() => changeSection("feed")} />;
     if (section === "journal") return <Journal onLogin={openLogin} />;
     if (section === "backtest") return <Backtest />;
