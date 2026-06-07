@@ -21,25 +21,41 @@ interface AuthContextValue {
 
 const AuthContext = createContext<AuthContextValue | null>(null);
 
-export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
-  const [configured, setConfigured] = useState(false);
-  const [loading, setLoading] = useState(true);
+export function AuthProvider({
+  children,
+  initialUser = null,
+  initialConfigured = false,
+}: {
+  children: ReactNode;
+  initialUser?: User | null;
+  initialConfigured?: boolean;
+}) {
+  const [user, setUser] = useState<User | null>(initialUser);
+  const [configured, setConfigured] = useState(initialConfigured);
+  const [loading] = useState(false);
 
   useEffect(() => {
-    Promise.all([
-      apiRequest<{ user: User | null }>("/api/auth/me"),
-      apiRequest<{ ok: boolean }>("/api/health"),
-    ])
-      .then(([auth, health]) => {
-        setUser(auth.user);
-        setConfigured(health.ok);
+    let active = true;
+
+    apiRequest<{ user: User | null }>("/api/auth/me")
+      .then((auth) => {
+        if (active) setUser(auth.user);
       })
       .catch(() => {
-        setUser(null);
-        setConfigured(false);
+        if (active) setUser(null);
+      });
+
+    apiRequest<{ ok: boolean }>("/api/health")
+      .then((health) => {
+        if (active) setConfigured(health.ok);
       })
-      .finally(() => setLoading(false));
+      .catch(() => {
+        if (active) setConfigured(false);
+      });
+
+    return () => {
+      active = false;
+    };
   }, []);
 
   const value = useMemo<AuthContextValue>(
