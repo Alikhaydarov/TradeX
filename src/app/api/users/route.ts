@@ -7,6 +7,7 @@ interface ProfileRecord {
   username: string;
   full_name: string;
   avatar_url: string | null;
+  is_verified?: boolean | null;
 }
 
 export async function GET(request: Request) {
@@ -15,7 +16,7 @@ export async function GET(request: Request) {
 
   const { data, error } = await auth.supabase
     .from("profiles")
-    .select("id, username, full_name, avatar_url")
+    .select("id, username, full_name, avatar_url, is_verified")
     .neq("id", auth.user.id)
     .order("full_name", { ascending: true })
     .limit(80)
@@ -29,6 +30,7 @@ export async function GET(request: Request) {
       username: profile.username,
       name: profile.full_name,
       avatar: profile.avatar_url,
+      isVerified: Boolean(profile.is_verified),
     })),
   });
 }
