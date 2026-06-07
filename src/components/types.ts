@@ -30,6 +30,12 @@ export interface Group {
   members?: ChatMember[];
 }
 
+export interface MessageReply {
+  id: string;
+  name: string;
+  text: string;
+}
+
 export interface GroupMessage {
   id: string;
   groupId: string;
@@ -39,6 +45,7 @@ export interface GroupMessage {
   text: string;
   createdAt: string;
   isVerified?: boolean;
+  replyTo?: MessageReply | null;
 }
 
 export interface ChatMember {
