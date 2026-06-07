@@ -14,12 +14,12 @@ export async function POST(request: Request) {
   if (!body.postId || !body.action) return badRequest("Post va amal tanlanmadi.");
 
   if (body.action === "view") {
-    const { error } = await auth.supabase.rpc("record_post_view", {
+    const { data, error } = await auth.supabase.rpc("record_post_view", {
       target_post_id: body.postId,
     });
 
     if (error) return serverError(error.message);
-    return Response.json({ success: true });
+    return Response.json({ success: true, counted: Boolean(data) });
   }
 
   if (body.action === "archive") {
