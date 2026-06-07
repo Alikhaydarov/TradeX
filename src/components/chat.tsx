@@ -23,7 +23,7 @@ import {
   Volume2,
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
-import { getSupabaseBrowserClient } from "@/lib/supabase/client";
+import { apiRequest } from "@/lib/api-client";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "./auth-context";
 import type { Group, GroupMessage } from "./types";
@@ -179,42 +179,29 @@ export function Chat({ onLogin }: { onLogin: () => void }) {
   });
   const [text, setText] = useState("");
   const [sending, setSending] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const activeGroup = useMemo(
     () => groups.find((group) => group.id === activeGroupId) ?? groups[0],
     [activeGroupId, groups],
   );
 
   useEffect(() => {
-    const supabase = getSupabaseBrowserClient();
-    if (!supabase) return;
-
-    supabase.from("groups").select("id, name, description, avatar").order("created_at").then(({ data }) => {
-      if (!data?.length) return;
-      const cloudGroups = data as GroupRecord[];
+    apiRequest<{ groups: GroupRecord[] }>("/api/groups").then(({ groups: cloudGroups }) => {
+      if (!cloudGroups.length) return;
       setGroups(cloudGroups);
       setActiveGroupId(cloudGroups[0].id);
-    });
+    }).catch((nextError: Error) => setError(nextError.message));
   }, []);
 
   useEffect(() => {
-    const supabase = getSupabaseBrowserClient();
-    if (!supabase || !activeGroupId) return;
-
-    supabase.from("group_messages").select("*").eq("group_id", activeGroupId).order("created_at").limit(100).then(({ data }) => {
-      setMessages(data?.length ? (data as MessageRecord[]).map(toMessage) : []);
-    });
-
-    const channel = supabase
-      .channel(`group-${activeGroupId}`)
-      .on("postgres_changes", { event: "INSERT", schema: "public", table: "group_messages", filter: `group_id=eq.${activeGroupId}` }, (payload) => {
-        const incoming = toMessage(payload.new as MessageRecord);
-        setMessages((current) => current.some((message) => message.id === incoming.id) ? current : [...current, incoming]);
-      })
-      .subscribe();
-
-    return () => {
-      void supabase.removeChannel(channel);
-    };
+    if (!activeGroupId) return;
+    let active = true;
+    const load = () => apiRequest<{ messages: MessageRecord[] }>(`/api/groups/${activeGroupId}/messages`)
+      .then(({ messages: records }) => { if (active) setMessages(records.map(toMessage)); })
+      .catch((nextError: Error) => { if (active) setError(nextError.message); });
+    void load();
+    const timer = window.setInterval(load, 5000);
+    return () => { active = false; window.clearInterval(timer); };
   }, [activeGroupId]);
 
   const send = async () => {
@@ -225,35 +212,16 @@ export function Chat({ onLogin }: { onLogin: () => void }) {
     }
 
     setSending(true);
-    const name = String(user?.user_metadata.full_name ?? user?.user_metadata.name ?? "Aziz Trader");
-    const avatar = name.split(" ").map((part) => part[0]).join("").slice(0, 2);
-    const supabase = getSupabaseBrowserClient();
-
-    if (supabase && user) {
-      await supabase.from("group_messages").insert({
-        group_id: activeGroupId,
-        user_id: user.id,
-        sender_name: name,
-        sender_avatar: avatar,
-        content: text.trim(),
+    try {
+      const { message } = await apiRequest<{ message: MessageRecord }>(`/api/groups/${activeGroupId}/messages`, {
+        method: "POST",
+        body: JSON.stringify({ content: text.trim() }),
       });
-    } else {
-      const created: GroupMessage = {
-        id: crypto.randomUUID(),
-        groupId: activeGroupId,
-        name,
-        avatar,
-        text: text.trim(),
-        createdAt: "hozir",
-      };
-      setMessages((current) => {
-        const next = [...current, created];
-        localStorage.setItem("tradex-messages", JSON.stringify(next));
-        return next;
-      });
-    }
-    setText("");
-    setSending(false);
+      setMessages((current) => [...current, toMessage(message)]);
+      setText("");
+    } catch (nextError) {
+      setError(nextError instanceof Error ? nextError.message : "Xabar yuborilmadi.");
+    } finally { setSending(false); }
   };
 
   const visibleMessages = messages.filter((message) => message.groupId === activeGroupId);
@@ -279,6 +247,7 @@ export function Chat({ onLogin }: { onLogin: () => void }) {
             <HelpCircle className="hidden hover:text-white sm:block" size={20} />
           </div>
         </header>
+        {error && <div className="bg-rose-500/10 px-4 py-2 text-xs text-rose-300">{error}</div>}
         <div className="flex min-h-0 flex-1">
           <div className="flex min-w-0 flex-1 flex-col">
             <div className="flex-1 overflow-y-auto pb-4">

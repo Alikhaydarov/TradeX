@@ -9,8 +9,7 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import { getSupabaseBrowserClient } from "@/lib/supabase/client";
-import { isSupabaseConfigured } from "@/lib/supabase/config";
+import { apiRequest } from "@/lib/api-client";
 
 interface AuthContextValue {
   user: User | null;
@@ -24,24 +23,23 @@ const AuthContext = createContext<AuthContextValue | null>(null);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
-  const configured = isSupabaseConfigured();
-  const [loading, setLoading] = useState(configured);
+  const [configured, setConfigured] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const supabase = getSupabaseBrowserClient();
-    if (!supabase) return;
-
-    supabase.auth.getUser().then(({ data }) => {
-      setUser(data.user);
-      setLoading(false);
-    });
-
-    const { data } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null);
-      setLoading(false);
-    });
-
-    return () => data.subscription.unsubscribe();
+    Promise.all([
+      apiRequest<{ user: User | null }>("/api/auth/me"),
+      apiRequest<{ ok: boolean }>("/api/health"),
+    ])
+      .then(([auth, health]) => {
+        setUser(auth.user);
+        setConfigured(health.ok);
+      })
+      .catch(() => {
+        setUser(null);
+        setConfigured(false);
+      })
+      .finally(() => setLoading(false));
   }, []);
 
   const value = useMemo<AuthContextValue>(
@@ -50,20 +48,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       loading,
       configured,
       async signInWithGoogle() {
-        const supabase = getSupabaseBrowserClient();
-        if (!supabase) return "Supabase kalitlari hali kiritilmagan.";
-
-        const { error } = await supabase.auth.signInWithOAuth({
-          provider: "google",
-          options: {
-            redirectTo: `${window.location.origin}/auth/callback`,
-          },
-        });
-        return error?.message ?? null;
+        if (!configured) return "Backend auth hali sozlanmagan.";
+        window.location.assign("/api/auth/google");
+        return null;
       },
       async signOut() {
-        const supabase = getSupabaseBrowserClient();
-        if (supabase) await supabase.auth.signOut();
+        await apiRequest<{ ok: boolean }>("/api/auth/signout", { method: "POST" });
         setUser(null);
       },
     }),

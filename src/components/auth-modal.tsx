@@ -54,13 +54,13 @@ export function AuthModal({
         </button>
         {!configured && (
           <div className="mt-4 rounded-2xl border border-amber-500/30 bg-amber-500/10 p-3 text-sm text-amber-200">
-            Demo rejim faol. Google login uchun <code className="font-mono text-xs">.env.local</code> fayliga Supabase kalitlarini kiriting.
+            Backend hozir mavjud emas. Server konfiguratsiyasini tekshiring.
           </div>
         )}
         {error && <p className="mt-3 text-sm text-rose-400">{error}</p>}
         <div className="mt-6 grid grid-cols-2 gap-3 text-xs text-xmuted">
           <div className="rounded-xl border border-xborder p-3"><ShieldCheck className="mb-2 text-emerald-400" size={18} />Xavfsiz OAuth</div>
-          <div className="rounded-xl border border-xborder p-3"><Database className="mb-2 text-xblue" size={18} />Cloud saqlash</div>
+          <div className="rounded-xl border border-xborder p-3"><Database className="mb-2 text-xblue" size={18} />Node API orqali cloud</div>
         </div>
         <p className="mt-5 text-center text-xs leading-5 text-xmuted">
           Davom etish orqali foydalanish shartlari va maxfiylik siyosatiga rozilik bildirasiz.
@@ -69,4 +69,3 @@ export function AuthModal({
     </div>
   );
 }
-

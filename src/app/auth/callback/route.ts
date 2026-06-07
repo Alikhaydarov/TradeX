@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { getSupabaseServerClient } from "@/lib/supabase/server";
 
+export const runtime = "nodejs";
+
 export async function GET(request: Request) {
   const { origin, searchParams } = new URL(request.url);
   const code = searchParams.get("code");
@@ -19,4 +21,3 @@ export async function GET(request: Request) {
 
   return NextResponse.redirect(`${origin}/?auth_error=oauth`);
 }
-

@@ -7,23 +7,19 @@
 3. `.env.example` nusxasidan `.env.local` yarating va qiymatlarni kiriting.
 
 ```env
-NEXT_PUBLIC_SUPABASE_URL=https://YOUR_PROJECT.supabase.co
-NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=sb_publishable_YOUR_KEY
+SUPABASE_URL=https://YOUR_PROJECT.supabase.co
+SUPABASE_PUBLISHABLE_KEY=sb_publishable_YOUR_KEY
 ```
 
 ## 2. Database
 
-Supabase SQL Editor ichida `supabase/migrations/001_tradex.sql` faylini to'liq ishga tushiring.
+Supabase SQL Editor ichida migrationlarni tartib bilan ishga tushiring:
 
-Bu migration quyidagilarni yaratadi:
+1. `supabase/migrations/001_tradex.sql`
+2. `supabase/migrations/002_product_features.sql`
 
-- `profiles`
-- `posts`
-- `groups`
-- `group_messages`
-- RLS xavfsizlik siyosatlari
-- yangi Google user uchun avtomatik profil
-- post va chat uchun Realtime publication
+Bu migrationlar profil, post, guruh chatlari, like/bookmark, trading jurnal,
+backtest natijalari va RLS xavfsizlik siyosatlarini yaratadi.
 
 ## 3. Google OAuth
 
@@ -42,5 +38,5 @@ Bu migration quyidagilarni yaratadi:
 npm run dev
 ```
 
-Supabase kalitlari bo'lmasa ilova demo rejimda `localStorage` orqali ishlaydi.
-
+Frontend Supabase bilan bevosita bog'lanmaydi. Google OAuth va barcha database
+amallari bir xil domendagi Node.js `/api/*` route'lari orqali bajariladi.

@@ -16,6 +16,7 @@ export interface Post {
   replies: number;
   reposts: number;
   liked?: boolean;
+  bookmarked?: boolean;
 }
 
 export interface Group {
@@ -46,12 +47,30 @@ export interface Profile {
 }
 
 export interface JournalEntry {
-  id: number;
+  id: string;
   symbol: string;
   side: "Long" | "Short";
   entry: number;
   exit: number;
+  quantity: number;
+  fees: number;
   pnl: number;
   date: string;
   note: string;
+}
+
+export interface BacktestResult {
+  id?: string;
+  createdAt?: string;
+  asset: string;
+  strategy: string;
+  timeframe: string;
+  period: string;
+  initialBalance: number;
+  netReturn: number;
+  winRate: number;
+  maxDrawdown: number;
+  profitFactor: number;
+  tradesCount: number;
+  equityCurve: Array<{ step: number; equity: number }>;
 }

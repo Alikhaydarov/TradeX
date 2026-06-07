@@ -2,7 +2,7 @@
 
 import { Check, Database, LogOut, MapPin, Settings2, UserRound } from "lucide-react";
 import { useEffect, useState } from "react";
-import { getSupabaseBrowserClient } from "@/lib/supabase/client";
+import { apiRequest } from "@/lib/api-client";
 import { useAuth } from "./auth-context";
 import type { Profile } from "./types";
 
@@ -23,18 +23,11 @@ export function Account({ onLogin }: { onLogin: () => void }) {
   const { user, configured, signOut } = useAuth();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [saved, setSaved] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!user) return;
-    const supabase = getSupabaseBrowserClient();
-    if (!supabase) return;
-
-    supabase
-      .from("profiles")
-      .select("id, username, full_name, avatar_url, bio, trading_style, location")
-      .eq("id", user.id)
-      .single()
-      .then(({ data }: { data: {
+    apiRequest<{ profile: {
         id: string;
         username: string;
         full_name: string;
@@ -42,8 +35,8 @@ export function Account({ onLogin }: { onLogin: () => void }) {
         bio: string;
         trading_style: string;
         location: string;
-      } | null }) => {
-        if (!data) return;
+      } }>("/api/profile")
+      .then(({ profile: data }) => {
         setProfile({
           id: data.id,
           username: data.username,
@@ -53,7 +46,7 @@ export function Account({ onLogin }: { onLogin: () => void }) {
           tradingStyle: data.trading_style,
           location: data.location,
         });
-      });
+      }).catch((nextError: Error) => setError(nextError.message));
   }, [user]);
 
   if (!user) {
@@ -83,21 +76,17 @@ export function Account({ onLogin }: { onLogin: () => void }) {
   const initials = activeProfile.fullName.split(" ").map((part) => part[0]).join("").slice(0, 2);
 
   const save = async () => {
-    const supabase = getSupabaseBrowserClient();
-    if (supabase) {
-      await supabase.from("profiles").update({
-        full_name: activeProfile.fullName,
-        username: activeProfile.username,
-        bio: activeProfile.bio,
-        trading_style: activeProfile.tradingStyle,
-        location: activeProfile.location,
-        updated_at: new Date().toISOString(),
-      }).eq("id", user.id);
-    } else {
-      localStorage.setItem("tradex-profile", JSON.stringify(activeProfile));
+    setError(null);
+    try {
+      await apiRequest("/api/profile", {
+        method: "PATCH",
+        body: JSON.stringify(activeProfile),
+      });
+      setSaved(true);
+      window.setTimeout(() => setSaved(false), 1800);
+    } catch (nextError) {
+      setError(nextError instanceof Error ? nextError.message : "Profil saqlanmadi.");
     }
-    setSaved(true);
-    window.setTimeout(() => setSaved(false), 1800);
   };
 
   return (
@@ -105,11 +94,12 @@ export function Account({ onLogin }: { onLogin: () => void }) {
       <header className="sticky top-0 z-10 flex h-14 items-center border-b border-xborder bg-black/85 px-4 backdrop-blur">
         <h1 className="text-xl font-extrabold">Account</h1>
         <span className="ml-auto flex items-center gap-1.5 text-xs text-emerald-400">
-          <Database size={14} /> {configured ? "Supabase ulangan" : "Demo storage"}
+          <Database size={14} /> {configured ? "Node API ulangan" : "Backend offline"}
         </span>
       </header>
       <div className="h-32 bg-gradient-to-r from-sky-700 via-blue-600 to-violet-700" />
       <div className="px-5">
+        {error && <div className="mt-4 rounded-lg bg-rose-500/10 p-3 text-sm text-rose-300">{error}</div>}
         <div className="-mt-12 flex items-end">
           <div className="flex h-24 w-24 items-center justify-center rounded-full border-4 border-black bg-gradient-to-br from-sky-500 to-violet-600 text-2xl font-black">
             {initials}
@@ -143,7 +133,7 @@ export function Account({ onLogin }: { onLogin: () => void }) {
               <textarea value={activeProfile.bio} onChange={(event) => setProfile({ ...activeProfile, bio: event.target.value })} maxLength={160} className="mt-1 min-h-24 w-full resize-none rounded-xl border border-xborder bg-transparent px-3 py-2.5 text-sm text-white outline-none focus:border-xblue" placeholder="Trading tajribangiz haqida..." />
             </label>
           </div>
-          <button onClick={save} className="mt-4 flex items-center gap-2 rounded-full bg-xblue px-5 py-2.5 text-sm font-bold">
+          <button onClick={() => void save()} className="mt-4 flex items-center gap-2 rounded-full bg-xblue px-5 py-2.5 text-sm font-bold">
             {saved ? <Check size={17} /> : null}{saved ? "Saqlandi" : "O'zgarishlarni saqlash"}
           </button>
         </section>

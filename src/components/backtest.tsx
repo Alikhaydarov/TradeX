@@ -1,30 +1,24 @@
 "use client";
 
-import { Play, RefreshCw, TrendingUp } from "lucide-react";
-import { useState } from "react";
+import { LoaderCircle, Play, Server } from "lucide-react";
+import { useEffect, useState } from "react";
 import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import { apiRequest } from "@/lib/api-client";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { useAuth } from "./auth-context";
+import type { BacktestResult } from "./types";
 
-function makeCurve(seed = 10000, rate = 0.56, trades = 100) {
-  let equity = seed;
-  return Array.from({ length: 24 }, (_, i) => {
-    for (let j = 0; j < trades / 24; j++) equity *= 1 + (Math.random() < rate ? 0.012 : -0.009);
-    return { month: `M${i + 1}`, equity: Math.round(equity) };
-  });
-}
-
+interface Run { id:string; asset:string; strategy:string; timeframe:string; period:string; net_return:string; win_rate:string; profit_factor:string; created_at:string }
 export function Backtest() {
-  const [loading, setLoading] = useState(false);
-  const [curve, setCurve] = useState(() => makeCurve());
-  const [stats, setStats] = useState({ returnValue: 34.8, winRate: 56.2, drawdown: 8.4, factor: 1.72 });
-  const run = () => { setLoading(true); setTimeout(() => { const winRate = 48 + Math.random() * 15; const next = makeCurve(10000, winRate / 100, 120); const ret = (next.at(-1)!.equity / 10000 - 1) * 100; setCurve(next); setStats({ returnValue: ret, winRate, drawdown: 6 + Math.random() * 8, factor: 1.3 + Math.random() * .8 }); setLoading(false); }, 700); };
-  return (
-    <>
-      <header className="sticky top-0 z-10 flex h-14 items-center border-b border-xborder bg-black/85 px-4 backdrop-blur"><h1 className="text-xl font-extrabold">Strategiya backtesti</h1></header>
-      <div className="p-4">
-        <section className="rounded-2xl border border-xborder p-4"><div className="flex items-center gap-2"><TrendingUp className="text-xblue" size={20} /><h2 className="font-bold">Parametrlar</h2></div><div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">{[["Aktiv", "BTC/USDT"], ["Strategiya", "EMA Crossover"], ["Timeframe", "4 soat"], ["Davr", "2 yil"]].map(([label, value]) => <label key={label} className="text-xs text-xmuted">{label}<select className="mt-1 block w-full rounded-lg border border-xborder bg-black px-3 py-2.5 text-sm text-white"><option>{value}</option><option>ETH/USDT</option><option>XAU/USD</option></select></label>)}</div><button onClick={run} disabled={loading} className="mt-4 flex items-center gap-2 rounded-full bg-xblue px-5 py-2.5 text-sm font-bold disabled:opacity-60">{loading ? <RefreshCw className="animate-spin" size={17} /> : <Play size={17} fill="currentColor" />}{loading ? "Hisoblanmoqda..." : "Backtestni boshlash"}</button></section>
-        <div className="mt-4 grid grid-cols-2 gap-3 md:grid-cols-4">{[["Net return", `${stats.returnValue.toFixed(1)}%`, "text-emerald-400"], ["Win rate", `${stats.winRate.toFixed(1)}%`, "text-white"], ["Max drawdown", `-${stats.drawdown.toFixed(1)}%`, "text-rose-400"], ["Profit factor", stats.factor.toFixed(2), "text-white"]].map(([label, value, color]) => <div key={label} className="rounded-2xl border border-xborder p-4"><p className="text-xs text-xmuted">{label}</p><p className={`mt-2 font-mono text-2xl font-bold ${color}`}>{value}</p></div>)}</div>
-        <section className="mt-4 rounded-2xl border border-xborder p-4"><div className="flex items-center"><h2 className="font-bold">Equity curve</h2><span className="ml-auto text-xs text-xmuted">Boshlang‘ich balans: $10,000</span></div><div className="mt-5 h-[320px]"><ResponsiveContainer width="100%" height="100%"><AreaChart data={curve}><defs><linearGradient id="equity" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#1d9bf0" stopOpacity={.35}/><stop offset="100%" stopColor="#1d9bf0" stopOpacity={0}/></linearGradient></defs><CartesianGrid stroke="#2f3336" strokeDasharray="3 3" vertical={false}/><XAxis dataKey="month" stroke="#71767b" fontSize={10} tickLine={false}/><YAxis stroke="#71767b" fontSize={10} tickLine={false} tickFormatter={(v) => `$${Math.round(v / 1000)}k`}/><Tooltip contentStyle={{ background: "#000", border: "1px solid #2f3336", borderRadius: 10 }} formatter={(v) => [`$${Number(v).toLocaleString()}`, "Equity"]}/><Area type="monotone" dataKey="equity" stroke="#1d9bf0" strokeWidth={2.5} fill="url(#equity)"/></AreaChart></ResponsiveContainer></div></section>
-      </div>
-    </>
-  );
+  const { user } = useAuth();
+  const [result,setResult]=useState<BacktestResult|null>(null); const [runs,setRuns]=useState<Run[]>([]); const [loading,setLoading]=useState(false); const [error,setError]=useState<string|null>(null);
+  const [form,setForm]=useState({asset:"BTC/USDT",strategy:"EMA Crossover",timeframe:"4 soat",period:"2 yil",initialBalance:10000,riskPercent:1});
+  useEffect(()=>{apiRequest<{runs:Run[]}>("/api/backtests").then(d=>setRuns(d.runs)).catch(()=>setRuns([]));},[user]);
+  const run=async()=>{setLoading(true);setError(null);try{const d=await apiRequest<{result:BacktestResult}>("/api/backtests",{method:"POST",body:JSON.stringify(form)});setResult(d.result);if(user){const h=await apiRequest<{runs:Run[]}>("/api/backtests");setRuns(h.runs);}}catch(e){setError(e instanceof Error?e.message:"Backtest bajarilmadi");}finally{setLoading(false);}};
+  const set=(key:string,value:string|number)=>setForm(v=>({...v,[key]:value}));
+  return <><header className="sticky top-0 z-10 flex h-14 items-center border-b border-xborder bg-black/85 px-4"><div><h1 className="text-xl font-extrabold">Strategiya backtesti</h1><p className="text-xs text-xmuted">Node.js hisoblash serveri</p></div><span className="ml-auto flex items-center gap-1 text-xs text-emerald-400"><Server size={14}/>Online</span></header>
+  <div className="space-y-4 p-4">{error&&<div className="rounded-lg bg-rose-500/10 p-3 text-sm text-rose-300">{error}</div>}<section className="rounded-xl border border-xborder p-4"><div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">{[["asset",["BTC/USDT","ETH/USDT","XAU/USD"]],["strategy",["EMA Crossover","Breakout","RSI Reversal"]],["timeframe",["15 daqiqa","1 soat","4 soat","1 kun"]],["period",["2 yil","3 yil","5 yil"]]].map(([key,opts])=><label key={String(key)} className="text-xs text-xmuted">{String(key)}<select value={String(form[key as keyof typeof form])} onChange={e=>set(String(key),e.target.value)} className="mt-1 h-9 w-full rounded-md border border-xborder bg-black px-3 text-white">{(opts as string[]).map(o=><option key={o}>{o}</option>)}</select></label>)}<label className="text-xs text-xmuted">Balans<Input type="number" value={form.initialBalance} onChange={e=>set("initialBalance",+e.target.value)}/></label><label className="text-xs text-xmuted">Risk %<Input type="number" step=".1" max="5" value={form.riskPercent} onChange={e=>set("riskPercent",+e.target.value)}/></label></div><Button onClick={()=>void run()} disabled={loading} className="mt-4 rounded-full bg-xblue text-white">{loading?<LoaderCircle className="animate-spin"/>:<Play/>}Backtestni boshlash</Button></section>
+  {result&&<><div className="grid grid-cols-2 gap-3 md:grid-cols-4">{[["Net return",`${result.netReturn}%`],["Win rate",`${result.winRate}%`],["Drawdown",`-${result.maxDrawdown}%`],["Profit factor",`${result.profitFactor}`]].map(([l,v])=><div key={l} className="rounded-xl border border-xborder p-4"><p className="text-xs text-xmuted">{l}</p><p className="mt-2 font-mono text-2xl font-bold">{v}</p></div>)}</div><section className="rounded-xl border border-xborder p-4"><h2 className="font-bold">Equity curve · {result.tradesCount} trade</h2><div className="mt-4 h-72"><ResponsiveContainer><AreaChart data={result.equityCurve}><CartesianGrid stroke="#2f3336" vertical={false}/><XAxis dataKey="step" stroke="#71767b"/><YAxis stroke="#71767b"/><Tooltip contentStyle={{background:"#000",border:"1px solid #2f3336"}}/><Area dataKey="equity" stroke="#1d9bf0" fill="#1d9bf033"/></AreaChart></ResponsiveContainer></div></section></>}
+  <section className="rounded-xl border border-xborder"><h2 className="border-b border-xborder p-4 font-bold">Saqlangan natijalar</h2>{!runs.length?<p className="p-8 text-center text-sm text-xmuted">{user?"Hali natija yo'q.":"Kirsangiz natijalar saqlanadi."}</p>:runs.map(r=><div key={r.id} className="flex items-center border-b border-xborder p-3 last:border-0"><div><b>{r.asset} · {r.strategy}</b><p className="text-xs text-xmuted">{new Date(r.created_at).toLocaleDateString("uz-UZ")}</p></div><span className="ml-auto font-mono text-emerald-400">{+r.net_return>0?"+":""}{r.net_return}%</span></div>)}</section></div></>;
 }

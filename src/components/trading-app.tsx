@@ -20,7 +20,7 @@ function TradingAppShell() {
 
   const render = () => {
     if (section === "chat") return <Chat onLogin={openLogin} />;
-    if (section === "journal") return <Journal />;
+    if (section === "journal") return <Journal onLogin={openLogin} />;
     if (section === "backtest") return <Backtest />;
     if (section === "account") return <Account onLogin={openLogin} />;
     return <Feed onLogin={openLogin} />;
