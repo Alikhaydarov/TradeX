@@ -355,37 +355,27 @@ export function FeedV3({ onLogin }: { onLogin: () => void }) {
       </div>
 
       {deleteTarget ? (
-        <div className="fixed left-0 top-0 z-[9999] flex h-[100dvh] w-screen items-center justify-center bg-black/70 p-4 backdrop-blur-md">
-          <div className="mx-auto max-h-[calc(100dvh-2rem)] w-full max-w-sm overflow-y-auto rounded-[28px] border border-white/10 bg-[#0b1220] p-5 text-white shadow-2xl shadow-black/50">
-            <div className="flex items-start gap-3">
-              <span className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-rose-400/10 text-rose-200">
-                <Trash2 size={20} />
-              </span>
-              <div className="min-w-0 flex-1">
-                <h3 className="text-base font-black">Postni o'chirish?</h3>
-                <p className="mt-1 text-sm leading-6 text-slate-400">
-                  Bu post feed’dan olib tashlanadi. Bu amalni faqat post egasi yoki admin bajarishi mumkin.
-                </p>
-                {deleteTarget.text ? <p className="mt-3 line-clamp-2 rounded-2xl bg-white/[.04] px-3 py-2 text-xs text-slate-300">{deleteTarget.text}</p> : null}
-              </div>
-            </div>
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 px-4 backdrop-blur-[2px]">
+          <div className="w-full max-w-[320px] rounded-[28px] bg-black p-7 text-white shadow-2xl shadow-black/60 ring-1 ring-white/10">
+            <h3 className="text-xl font-black leading-6 tracking-tight">Delete post?</h3>
+            <p className="mt-2 text-[14px] leading-5 text-slate-400">
+              This can't be undone and it will be removed from your profile, the timeline of any accounts that follow you, and from search results.
+            </p>
 
-            <div className="mt-5 flex gap-2">
-              <button
-                onClick={() => setDeleteTarget(null)}
-                disabled={actingId === deleteTarget.id}
-                className="h-11 flex-1 rounded-2xl border border-white/10 bg-white/[.04] text-sm font-bold text-slate-200 hover:bg-white/[.08] disabled:opacity-60"
-              >
-                Bekor qilish
-              </button>
-              <button
-                onClick={() => void archivePost()}
-                disabled={actingId === deleteTarget.id}
-                className="h-11 flex-1 rounded-2xl bg-rose-500 text-sm font-black text-white hover:bg-rose-400 disabled:opacity-60"
-              >
-                {actingId === deleteTarget.id ? <span className="inline-flex items-center gap-2"><XSpinner size="sm" /> O'chirilmoqda</span> : "O'chirish"}
-              </button>
-            </div>
+            <button
+              onClick={() => void archivePost()}
+              disabled={actingId === deleteTarget.id}
+              className="mt-6 flex h-12 w-full items-center justify-center rounded-full bg-[#f4212e] text-[15px] font-black text-white transition hover:bg-[#dc1f2b] disabled:cursor-not-allowed disabled:opacity-70"
+            >
+              {actingId === deleteTarget.id ? <span className="inline-flex items-center gap-2"><XSpinner size="sm" /> Deleting</span> : "Delete"}
+            </button>
+            <button
+              onClick={() => setDeleteTarget(null)}
+              disabled={actingId === deleteTarget.id}
+              className="mt-3 h-12 w-full rounded-full border border-[#536471] bg-transparent text-[15px] font-black text-white transition hover:bg-white/[.06] disabled:cursor-not-allowed disabled:opacity-70"
+            >
+              Cancel
+            </button>
           </div>
         </div>
       ) : null}
