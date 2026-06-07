@@ -26,6 +26,35 @@ function shortText(value: string, max = 90) {
   return value.length > max ? `${value.slice(0, max - 1)}…` : value;
 }
 
+function playNotificationSound() {
+  try {
+    const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+    if (!AudioContextClass) return;
+
+    const audioContext = new AudioContextClass();
+    const oscillator = audioContext.createOscillator();
+    const gain = audioContext.createGain();
+
+    oscillator.type = "sine";
+    oscillator.frequency.setValueAtTime(880, audioContext.currentTime);
+    oscillator.frequency.setValueAtTime(660, audioContext.currentTime + 0.09);
+
+    gain.gain.setValueAtTime(0.0001, audioContext.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.18, audioContext.currentTime + 0.02);
+    gain.gain.exponentialRampToValueAtTime(0.0001, audioContext.currentTime + 0.22);
+
+    oscillator.connect(gain);
+    gain.connect(audioContext.destination);
+
+    oscillator.start();
+    oscillator.stop(audioContext.currentTime + 0.24);
+
+    window.setTimeout(() => void audioContext.close(), 350);
+  } catch {
+    // Audio is best-effort because browsers can block autoplay before user interaction.
+  }
+}
+
 export function NotificationListener() {
   const { user } = useAuth();
   const [permission, setPermission] = useState<NotificationPermission | "unsupported">("default");
@@ -33,10 +62,12 @@ export function NotificationListener() {
   const seenMessageIds = useRef(new Set<string>());
   const initialized = useRef(false);
   const polling = useRef(false);
+  const soundEnabled = useRef(false);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
     setPermission("Notification" in window ? Notification.permission : "unsupported");
+    soundEnabled.current = localStorage.getItem("tradeup-notification-sound") === "on";
   }, []);
 
   useEffect(() => {
@@ -52,6 +83,8 @@ export function NotificationListener() {
       const body = shortText(message.content);
       setToast({ title: `${message.sender_name} · ${chat.name}`, body });
       window.setTimeout(() => setToast(null), 4500);
+
+      if (soundEnabled.current) playNotificationSound();
 
       if (
         "Notification" in window &&
@@ -126,6 +159,12 @@ export function NotificationListener() {
 
     const result = await Notification.requestPermission();
     setPermission(result);
+
+    if (result === "granted") {
+      soundEnabled.current = true;
+      localStorage.setItem("tradeup-notification-sound", "on");
+      playNotificationSound();
+    }
   };
 
   if (!user) return null;
@@ -138,7 +177,7 @@ export function NotificationListener() {
             <Bell size={16} className="mt-0.5 shrink-0 text-cyan-200" />
             <div>
               <p className="font-bold">Chat notification yoqilsinmi?</p>
-              <p className="mt-1 leading-5 text-slate-400">Chatga yangi xabar kelsa brauzer xabarnomasi chiqadi.</p>
+              <p className="mt-1 leading-5 text-slate-400">Yangi xabar kelsa notification va ovoz chiqadi.</p>
             </div>
           </div>
           <Button onClick={() => void enableNotifications()} className="mt-3 h-9 w-full rounded-xl bg-cyan-300 text-xs font-bold text-slate-950 hover:bg-cyan-200">
