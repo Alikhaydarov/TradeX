@@ -61,8 +61,6 @@ export function NotificationListener() {
         const notification = new Notification(`${message.sender_name} · ${chat.name}`, {
           body,
           tag: `tradeup-chat-${chat.id}`,
-          renotify: true,
-          silent: false,
         });
 
         notification.onclick = () => {
