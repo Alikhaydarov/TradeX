@@ -355,8 +355,8 @@ export function FeedV3({ onLogin }: { onLogin: () => void }) {
       </div>
 
       {deleteTarget ? (
-        <div className="fixed inset-0 z-[90] grid place-items-center bg-black/65 px-4 backdrop-blur-sm">
-          <div className="w-full max-w-sm rounded-[28px] border border-white/10 bg-[#0b1220] p-5 text-white shadow-2xl shadow-black/50">
+        <div className="fixed left-0 top-0 z-[9999] flex h-[100dvh] w-screen items-center justify-center bg-black/70 p-4 backdrop-blur-md">
+          <div className="mx-auto max-h-[calc(100dvh-2rem)] w-full max-w-sm overflow-y-auto rounded-[28px] border border-white/10 bg-[#0b1220] p-5 text-white shadow-2xl shadow-black/50">
             <div className="flex items-start gap-3">
               <span className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-rose-400/10 text-rose-200">
                 <Trash2 size={20} />
