@@ -36,10 +36,10 @@ const demoMessages: GroupMessage[] = [
 ];
 
 const members = [
-  { name: "Sardor Capital", status: "BTC tahlil qilmoqda", avatar: "SC" },
-  { name: "Malika FX", status: "London session", avatar: "MF" },
-  { name: "Quant Uz", status: "Backtest ishlayapti", avatar: "QU" },
-  { name: "Akmal Crypto", status: "Online", avatar: "AK" },
+  { name: "Murod pattern", status: "BTC tahlil qilmoqda", avatar: "SC" },
+  { name: "Firdavs tu tu", status: "London session", avatar: "MF" },
+  { name: "Ganisher idk", status: "Backtest ishlayapti", avatar: "QU" },
+  { name: "Kaze hamilton", status: "Online", avatar: "AK" },
 ];
 
 interface GroupRecord {
