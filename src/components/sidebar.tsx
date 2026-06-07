@@ -9,12 +9,13 @@ import {
   LogIn,
   MessageCircle,
   Plus,
+  ShieldCheck,
   UserRound,
 } from "lucide-react";
 import { TraderAvatar } from "./trader-avatar";
 import type { Section } from "./types";
 
-const nav = [
+const baseNav = [
   { id: "feed" as const, label: "Pulse", hint: "Community feed", icon: Home },
   { id: "chat" as const, label: "Rooms", hint: "Trader suhbatlari", icon: MessageCircle },
   { id: "journal" as const, label: "Jurnal", hint: "Natijalar tarixi", icon: BookOpen },
@@ -29,6 +30,7 @@ export function Sidebar({
   onLogin,
   user,
   hideMobile = false,
+  isAdmin = false,
 }: {
   active: Section;
   onChange: (section: Section) => void;
@@ -36,12 +38,17 @@ export function Sidebar({
   onLogin: () => void;
   user: User | null;
   hideMobile?: boolean;
+  isAdmin?: boolean;
 }) {
   const name = String(user?.user_metadata.full_name ?? user?.user_metadata.name ?? "Mehmon trader");
   const handle = user?.email ? `@${user.email.split("@")[0]}` : "Google bilan kirish";
   const avatar = typeof user?.user_metadata.avatar_url === "string"
     ? user.user_metadata.avatar_url
     : null;
+
+  const nav = isAdmin
+    ? [...baseNav, { id: "admin" as const, label: "Admin", hint: "User galochkalari", icon: ShieldCheck }]
+    : baseNav;
 
   return (
     <>
