@@ -75,13 +75,15 @@ export function Chat({ onLogin, onBack }: { onLogin: () => void; onBack: () => v
     [activeChatId, chats],
   );
 
-  const filteredUsers = useMemo(() => {
-    const value = query.trim().toLowerCase();
-    if (!value) return users;
-    return users.filter((option) =>
-      `${option.name} ${option.username}`.toLowerCase().includes(value),
-    );
-  }, [query, users]);
+const filteredUsers = useMemo(() => {
+  const value = query.trim().toLowerCase();
+
+  if (value.length < 2) return [];
+
+  return users.filter((option) =>
+    `${option.name} ${option.username}`.toLowerCase().includes(value),
+  );
+}, [query, users]);
 
   useEffect(() => {
     if (!user) {
