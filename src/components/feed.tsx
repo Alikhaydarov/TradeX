@@ -3,6 +3,7 @@
 import {
   BarChart3,
   Bookmark,
+  Eye,
   Heart,
   LoaderCircle,
   MessageCircle,
@@ -22,8 +23,8 @@ import { TraderAvatar } from "./trader-avatar";
 import type { Post } from "./types";
 
 const seedPosts: Post[] = [
-  { id: "seed-1", name: "Sardor Capital", handle: "@sardorcap", avatar: "SC", time: "12m", text: "BTC 4H da liquidity sweep'dan keyin bullish structure tasdiqlandi. Entry uchun retest kutyapman.", symbol: "BTC/USDT", side: "LONG", price: "103,840", target: "108,200", likes: 128, replies: 24, reposts: 31 },
-  { id: "seed-2", name: "Malika FX", handle: "@malikafx", avatar: "MF", time: "38m", text: "Setup bo'lmasa bozorga kirmaslik ham strategiyaning bir qismi.", symbol: "XAU/USD", side: "SHORT", price: "2,358", target: "2,347", likes: 87, replies: 12, reposts: 9 },
+  { id: "seed-1", name: "Sardor Capital", handle: "@sardorcap", avatar: "SC", time: "12m", text: "BTC 4H da liquidity sweep'dan keyin bullish structure tasdiqlandi. Entry uchun retest kutyapman.", symbol: "BTC/USDT", side: "LONG", price: "103,840", target: "108,200", likes: 128, replies: 24, reposts: 31, views: 1200 },
+  { id: "seed-2", name: "Malika FX", handle: "@malikafx", avatar: "MF", time: "38m", text: "Setup bo'lmasa bozorga kirmaslik ham strategiyaning bir qismi.", symbol: "XAU/USD", side: "SHORT", price: "2,358", target: "2,347", likes: 87, replies: 12, reposts: 9, views: 764 },
 ];
 
 interface PostRecord {
@@ -40,7 +41,14 @@ interface PostRecord {
   likes_count: number;
   replies_count: number;
   reposts_count: number;
+  views_count?: number | null;
   created_at: string;
+}
+
+function formatCount(value: number) {
+  if (value >= 1_000_000) return `${(value / 1_000_000).toFixed(1)}M`;
+  if (value >= 1000) return `${(value / 1000).toFixed(value >= 10_000 ? 0 : 1)}K`;
+  return String(value);
 }
 
 function toPost(record: PostRecord, liked = false, bookmarked = false): Post {
@@ -60,6 +68,7 @@ function toPost(record: PostRecord, liked = false, bookmarked = false): Post {
     likes: record.likes_count,
     replies: record.replies_count,
     reposts: record.reposts_count,
+    views: record.views_count ?? 0,
     liked,
     bookmarked,
   };
@@ -150,8 +159,8 @@ export function Feed({ onLogin }: { onLogin: () => void }) {
     <div className="min-h-full">
       <header className="sticky top-0 z-20 flex items-center border-b border-white/8 bg-[#0b1424]/45 px-5 py-4 backdrop-blur-2xl">
         <div>
-          <p className="text-[10px] font-bold uppercase tracking-[.22em] text-cyan-300/70">Community workspace</p>
-          <h1 className="mt-1 text-2xl font-black tracking-tight">Trader Pulse</h1>
+          <p className="text-[10px] font-bold uppercase tracking-[.22em] text-cyan-300/70">TradeUp workspace</p>
+          <h1 className="mt-1 text-2xl font-black tracking-tight">TradeUp Pulse</h1>
         </div>
         <span className="ml-auto flex items-center gap-1.5 rounded-full border border-emerald-300/15 bg-emerald-300/8 px-3 py-1.5 text-[10px] font-bold text-emerald-300">
           <Radio size={11} /> LIVE DATA
@@ -230,19 +239,4 @@ export function Feed({ onLogin }: { onLogin: () => void }) {
 
                 <div className="mt-4 flex items-center gap-1 border-t border-white/7 pt-3 text-slate-500">
                   <button className="flex items-center gap-1.5 rounded-xl px-2 py-1.5 text-[10px] hover:bg-white/[.05] hover:text-white"><MessageCircle size={15} />{post.replies}</button>
-                  <button onClick={() => void toggleLike(post)} className={`flex items-center gap-1.5 rounded-xl px-2 py-1.5 text-[10px] hover:bg-white/[.05] ${post.liked ? "text-rose-300" : "hover:text-white"}`}><Heart size={15} fill={post.liked ? "currentColor" : "none"} />{post.likes}</button>
-                  <button className="grid h-8 w-8 place-items-center rounded-xl hover:bg-white/[.05] hover:text-white" aria-label="Ulashish"><Share2 size={15} /></button>
-                  <button onClick={() => void toggleBookmark(post)} className={`ml-auto grid h-8 w-8 place-items-center rounded-xl hover:bg-white/[.05] ${post.bookmarked ? "text-cyan-300" : "hover:text-white"}`} aria-label="Saqlash"><Bookmark size={15} fill={post.bookmarked ? "currentColor" : "none"} /></button>
-                </div>
-              </article>
-            ))}
-          </div>
-        )}
-
-        <div className="mt-4 flex items-center justify-center gap-2 text-[10px] text-slate-600">
-          <TrendingUp size={13} /> TradeX community pulse
-        </div>
-      </div>
-    </div>
-  );
-}
+                  <button onClick={() => void toggleLike(post)} className={`flex items-center gap-1.5 rounded-xl px-2 py-1.5 text-[10px] hover:bg-white/[.05] ${post.liked ? "text-rose-300" : "hover:text-white"}`}><Heart size={15} fill={post.liked ? "currentColor" : "none
