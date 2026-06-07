@@ -1,7 +1,7 @@
 "use client";
 
 import { LockKeyhole, ShieldCheck, TrendingUp, Users } from "lucide-react";
-import { useEffect, useState, useTransition } from "react";
+import { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { Account } from "./account";
 import { AdminPanel } from "./admin-panel";
@@ -82,7 +82,6 @@ function TradingAppShell() {
   const section = sectionFromPath(pathname || "/");
   const [authOpen, setAuthOpen] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
-  const [isPending, startTransition] = useTransition();
   const { user, loading } = useAuth();
   const openLogin = () => setAuthOpen(true);
   const chatOpen = section === "chat";
@@ -113,7 +112,7 @@ function TradingAppShell() {
 
   const changeSection = (nextSection: Section) => {
     if (nextSection === "admin" && !isAdmin) return;
-    startTransition(() => router.push(pathFromSection(nextSection)));
+    router.push(pathFromSection(nextSection));
   };
 
   const render = () => {
@@ -147,7 +146,7 @@ function TradingAppShell() {
             ? "fixed inset-0 z-50 min-w-0 flex-1 overflow-hidden bg-[#101827] shadow-2xl shadow-slate-950/20 backdrop-blur-2xl lg:static lg:z-auto lg:min-h-[calc(100dvh-2rem)] lg:rounded-[28px] lg:border lg:border-white/9"
             : "min-h-[100dvh] min-w-0 flex-1 overflow-hidden bg-[#0d1627]/38 pb-20 shadow-2xl shadow-slate-950/20 backdrop-blur-2xl lg:min-h-[calc(100dvh-2rem)] lg:rounded-[28px] lg:border lg:border-white/9 lg:pb-0"
         }>
-          {isPending ? <AppLoader /> : render()}
+          {render()}
         </main>
         {section !== "chat" && <RightPanel />}
       </div>
