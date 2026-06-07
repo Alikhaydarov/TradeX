@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { AppShell } from "@/components/app-shell";
 import { AuthProvider } from "@/components/auth-context";
-import { getInitialAuth } from "@/lib/server/get-initial-auth";
 import "./globals.css";
 
 const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
@@ -14,13 +13,11 @@ export const metadata: Metadata = {
   applicationName: "TradeUp",
 };
 
-export default async function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  const auth = await getInitialAuth();
-
+export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en" className={`dark ${geistSans.variable} ${geistMono.variable}`}>
       <body className="font-sans antialiased">
-        <AuthProvider {...auth}>
+        <AuthProvider>
           <AppShell />
           <div className="hidden">{children}</div>
         </AuthProvider>
