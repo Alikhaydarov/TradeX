@@ -269,8 +269,8 @@ export function FeedV3({ onLogin }: { onLogin: () => void }) {
               />
 
               {imageUrl ? (
-                <div className="relative mt-3 overflow-hidden rounded-3xl border border-white/10 bg-black/10">
-                  <img src={imageUrl} alt="Post rasmi" className="max-h-[460px] w-full object-cover" />
+                <div className="relative mt-3 aspect-video w-full overflow-hidden rounded-3xl border border-white/10 bg-black/20">
+                  <img src={imageUrl} alt="Post rasmi" className="h-full w-full object-cover object-center" />
                   <button onClick={() => setImageUrl(null)} className="absolute right-3 top-3 grid h-9 w-9 place-items-center rounded-full bg-black/70 text-white backdrop-blur-xl" aria-label="Rasmni olib tashlash">
                     <X size={17} />
                   </button>
@@ -324,8 +324,8 @@ export function FeedV3({ onLogin }: { onLogin: () => void }) {
                     {post.text ? <p className="mt-3 whitespace-pre-line text-[15px] leading-6 text-slate-100">{post.text}</p> : null}
 
                     {post.imageUrl ? (
-                      <div className="mt-3 overflow-hidden rounded-[28px] border border-white/10 bg-black/10">
-                        <img src={post.imageUrl} alt="Post rasmi" className="max-h-[560px] w-full object-cover" loading="lazy" />
+                      <div className="mt-3 aspect-video w-full overflow-hidden rounded-[28px] border border-white/10 bg-black/20">
+                        <img src={post.imageUrl} alt="Post rasmi" className="h-full w-full object-cover object-center" loading="lazy" />
                       </div>
                     ) : null}
 
