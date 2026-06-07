@@ -1,21 +1,22 @@
 "use client";
 
 import { LockKeyhole, ShieldCheck, TrendingUp, Users } from "lucide-react";
-import { useEffect, useState } from "react";
-import { usePathname, useRouter } from "next/navigation";
-import { Account } from "./account";
-import { AdminPanel } from "./admin-panel";
+import dynamic from "next/dynamic";
+import { useEffect, useMemo, useState } from "react";
 import { AuthModal } from "./auth-modal";
-import { Backtest } from "./backtest";
-import { ChatV4 } from "./chat-v4";
-import { FeedV3 } from "./feed-v3";
-import { Journal } from "./journal";
 import { NotificationListener } from "./notification-listener";
 import { RightPanel } from "./right-panel";
 import { Sidebar } from "./sidebar";
 import { useAuth } from "./auth-context";
 import { apiRequest } from "@/lib/api-client";
 import type { Section } from "./types";
+
+const FeedV3 = dynamic(() => import("./feed-v3").then((mod) => mod.FeedV3), { ssr: false, loading: () => null });
+const ChatV4 = dynamic(() => import("./chat-v4").then((mod) => mod.ChatV4), { ssr: false, loading: () => null });
+const Journal = dynamic(() => import("./journal").then((mod) => mod.Journal), { ssr: false, loading: () => null });
+const Backtest = dynamic(() => import("./backtest").then((mod) => mod.Backtest), { ssr: false, loading: () => null });
+const Account = dynamic(() => import("./account").then((mod) => mod.Account), { ssr: false, loading: () => null });
+const AdminPanel = dynamic(() => import("./admin-panel").then((mod) => mod.AdminPanel), { ssr: false, loading: () => null });
 
 function sectionFromPath(pathname: string): Section {
   if (pathname.startsWith("/chat")) return "chat";
@@ -33,6 +34,11 @@ function pathFromSection(section: Section) {
   if (section === "account") return "/profile";
   if (section === "admin") return "/admin";
   return "/";
+}
+
+function getCurrentSection() {
+  if (typeof window === "undefined") return "feed" as Section;
+  return sectionFromPath(window.location.pathname);
 }
 
 function AuthGate({ onLogin }: { onLogin: () => void }) {
@@ -58,14 +64,37 @@ function AuthGate({ onLogin }: { onLogin: () => void }) {
 }
 
 export function AppShell() {
-  const router = useRouter();
-  const pathname = usePathname();
-  const section = sectionFromPath(pathname || "/");
+  const [section, setSection] = useState<Section>(getCurrentSection);
   const [authOpen, setAuthOpen] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [notificationsMounted, setNotificationsMounted] = useState(false);
   const { user } = useAuth();
   const openLogin = () => setAuthOpen(true);
   const chatOpen = section === "chat";
+
+  useEffect(() => {
+    const handlePopState = () => setSection(getCurrentSection());
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, []);
+
+  useEffect(() => {
+    const preload = () => {
+      void import("./feed-v3");
+      void import("./chat-v4");
+      void import("./journal");
+      void import("./backtest");
+      void import("./account");
+    };
+
+    const timer = window.setTimeout(preload, 700);
+    return () => window.clearTimeout(timer);
+  }, []);
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => setNotificationsMounted(true), 2500);
+    return () => window.clearTimeout(timer);
+  }, []);
 
   useEffect(() => {
     if (!user) {
@@ -74,36 +103,45 @@ export function AppShell() {
     }
 
     let active = true;
-    apiRequest<{ isAdmin: boolean }>("/api/admin/me")
-      .then((response) => {
-        if (active) setIsAdmin(response.isAdmin);
-      })
-      .catch(() => {
-        if (active) setIsAdmin(false);
-      });
+    const timer = window.setTimeout(() => {
+      void apiRequest<{ isAdmin: boolean }>("/api/admin/me")
+        .then((response) => {
+          if (active) setIsAdmin(response.isAdmin);
+        })
+        .catch(() => {
+          if (active) setIsAdmin(false);
+        });
+    }, 1200);
 
     return () => {
       active = false;
+      window.clearTimeout(timer);
     };
   }, [user]);
 
   useEffect(() => {
-    if (section === "admin" && user && !isAdmin) router.replace("/");
-  }, [section, user, isAdmin, router]);
+    if (section === "admin" && user && !isAdmin) {
+      window.history.replaceState(null, "", "/");
+      setSection("feed");
+    }
+  }, [section, user, isAdmin]);
 
   const changeSection = (nextSection: Section) => {
     if (nextSection === "admin" && !isAdmin) return;
-    router.push(pathFromSection(nextSection));
+    if (nextSection === section) return;
+
+    setSection(nextSection);
+    window.history.pushState(null, "", pathFromSection(nextSection));
   };
 
-  const renderSection = () => {
+  const activeSection = useMemo(() => {
     if (section === "chat") return <ChatV4 onLogin={openLogin} onBack={() => changeSection("feed")} />;
     if (section === "journal") return <Journal onLogin={openLogin} />;
     if (section === "backtest") return <Backtest />;
     if (section === "account") return <Account onLogin={openLogin} />;
     if (section === "admin" && isAdmin) return <AdminPanel onLogin={openLogin} />;
     return <FeedV3 onLogin={openLogin} />;
-  };
+  }, [section, isAdmin]);
 
   if (!user) {
     return (
@@ -119,11 +157,11 @@ export function AppShell() {
       <div className={`mx-auto flex min-h-[100dvh] max-w-[1500px] gap-4 p-0 text-[#edf3ff] lg:p-4 ${chatOpen ? "xl:max-w-[1600px]" : ""}`}>
         <Sidebar active={section} onChange={changeSection} onPost={() => changeSection("feed")} onLogin={openLogin} user={user} hideMobile={chatOpen} isAdmin={isAdmin} />
         <main className={chatOpen ? "fixed inset-0 z-50 min-w-0 flex-1 overflow-hidden bg-[#101827] shadow-2xl shadow-slate-950/20 backdrop-blur-2xl lg:static lg:z-auto lg:min-h-[calc(100dvh-2rem)] lg:rounded-[28px] lg:border lg:border-white/9" : "min-h-[100dvh] min-w-0 flex-1 overflow-hidden bg-[#0d1627]/38 pb-20 shadow-2xl shadow-slate-950/20 backdrop-blur-2xl lg:min-h-[calc(100dvh-2rem)] lg:rounded-[28px] lg:border lg:border-white/9 lg:pb-0"}>
-          {renderSection()}
+          {activeSection}
         </main>
-        {section !== "chat" && <RightPanel />}
+        {!chatOpen && <RightPanel />}
       </div>
-      <NotificationListener />
+      {notificationsMounted && <NotificationListener />}
       <AuthModal open={authOpen} onClose={() => setAuthOpen(false)} />
     </>
   );
