@@ -10,6 +10,7 @@ import { Backtest } from "./backtest";
 import { ChatV3 } from "./chat-v3";
 import { FeedV2 } from "./feed-v2";
 import { Journal } from "./journal";
+import { NotificationListener } from "./notification-listener";
 import { RightPanel } from "./right-panel";
 import { Sidebar } from "./sidebar";
 import { apiRequest } from "@/lib/api-client";
@@ -71,6 +72,7 @@ function TradingAppShell() {
         </main>
         {section !== "chat" && <RightPanel />}
       </div>
+      <NotificationListener />
       <AuthModal open={authOpen} onClose={() => setAuthOpen(false)} />
     </>
   );
