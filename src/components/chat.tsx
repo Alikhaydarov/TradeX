@@ -48,10 +48,13 @@ function toMessage(record: MessageRecord): GroupMessage {
 
 function memberLine(members: ChatMember[] = []) {
   if (!members.length) return "A'zolar hali yuklanmadi";
-  return members
+
+  const names = members
     .slice(0, 3)
     .map((member) => member.name)
     .join(", ");
+
+  return members.length > 3 ? `${names} +${members.length - 3}` : names;
 }
 
 export function Chat({ onLogin, onBack }: { onLogin: () => void; onBack: () => void }) {
@@ -65,6 +68,10 @@ export function Chat({ onLogin, onBack }: { onLogin: () => void; onBack: () => v
   const [query, setQuery] = useState("");
   const [selectedUserIds, setSelectedUserIds] = useState<string[]>([]);
   const [creating, setCreating] = useState(false);
+  const [addMembersOpen, setAddMembersOpen] = useState(false);
+  const [addMemberQuery, setAddMemberQuery] = useState("");
+  const [selectedAddUserIds, setSelectedAddUserIds] = useState<string[]>([]);
+  const [addingMembers, setAddingMembers] = useState(false);
   const [loading, setLoading] = useState(false);
   const [loadingMessages, setLoadingMessages] = useState(false);
   const [sending, setSending] = useState(false);
@@ -75,15 +82,32 @@ export function Chat({ onLogin, onBack }: { onLogin: () => void; onBack: () => v
     [activeChatId, chats],
   );
 
-const filteredUsers = useMemo(() => {
-  const value = query.trim().toLowerCase();
+  const filteredUsers = useMemo(() => {
+    const value = query.trim().toLowerCase();
 
-  if (value.length < 2) return [];
+    if (value.length < 2) return [];
 
-  return users.filter((option) =>
-    `${option.name} ${option.username}`.toLowerCase().includes(value),
+    return users.filter((option) =>
+      `${option.name} ${option.username}`.toLowerCase().includes(value),
+    );
+  }, [query, users]);
+
+  const existingMemberIds = useMemo(
+    () => new Set(activeChat?.members?.map((member) => member.id) ?? []),
+    [activeChat],
   );
-}, [query, users]);
+
+  const filteredAddUsers = useMemo(() => {
+    const value = addMemberQuery.trim().toLowerCase();
+
+    if (value.length < 2) return [];
+
+    return users.filter(
+      (option) =>
+        !existingMemberIds.has(option.id) &&
+        `${option.name} ${option.username}`.toLowerCase().includes(value),
+    );
+  }, [addMemberQuery, users, existingMemberIds]);
 
   useEffect(() => {
     if (!user) {
@@ -118,6 +142,12 @@ const filteredUsers = useMemo(() => {
       active = false;
     };
   }, [user]);
+
+  useEffect(() => {
+    setAddMembersOpen(false);
+    setAddMemberQuery("");
+    setSelectedAddUserIds([]);
+  }, [activeChatId]);
 
   useEffect(() => {
     if (!activeChatId || !user) {
@@ -155,11 +185,25 @@ const filteredUsers = useMemo(() => {
     );
   };
 
+  const toggleAddUser = (id: string) => {
+    setSelectedAddUserIds((current) =>
+      current.includes(id)
+        ? current.filter((userId) => userId !== id)
+        : [...current, id],
+    );
+  };
+
   const resetCreateForm = () => {
     setChatName("");
     setQuery("");
     setSelectedUserIds([]);
     setCreating(false);
+  };
+
+  const resetAddMembersForm = () => {
+    setAddMemberQuery("");
+    setSelectedAddUserIds([]);
+    setAddMembersOpen(false);
   };
 
   const createChat = async () => {
@@ -185,6 +229,25 @@ const filteredUsers = useMemo(() => {
       setError(nextError instanceof Error ? nextError.message : "Chat yaratilmadi.");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const addMembers = async () => {
+    if (!activeChatId || !selectedAddUserIds.length) return;
+
+    setAddingMembers(true);
+    setError(null);
+    try {
+      const { chat } = await apiRequest<{ chat: Group }>(`/api/chats/${activeChatId}/members`, {
+        method: "POST",
+        body: JSON.stringify({ memberIds: selectedAddUserIds }),
+      });
+      setChats((current) => current.map((item) => (item.id === chat.id ? chat : item)));
+      resetAddMembersForm();
+    } catch (nextError) {
+      setError(nextError instanceof Error ? nextError.message : "A'zo qo'shilmadi.");
+    } finally {
+      setAddingMembers(false);
     }
   };
 
@@ -283,15 +346,15 @@ const filteredUsers = useMemo(() => {
                       </button>
                     );
                   })}
-{query.trim().length < 2 ? (
-  <div className="rounded-2xl border border-dashed border-white/10 p-3 text-center text-[11px] leading-5 text-slate-500">
-    Foydalanuvchi qidirish uchun kamida 2 ta harf yozing.
-  </div>
-) : !filteredUsers.length ? (
-  <div className="rounded-2xl border border-dashed border-white/10 p-3 text-center text-[11px] leading-5 text-slate-500">
-    Bunday foydalanuvchi topilmadi.
-  </div>
-) : null}
+                  {query.trim().length < 2 ? (
+                    <div className="rounded-2xl border border-dashed border-white/10 p-3 text-center text-[11px] leading-5 text-slate-500">
+                      Foydalanuvchi qidirish uchun kamida 2 ta harf yozing.
+                    </div>
+                  ) : !filteredUsers.length ? (
+                    <div className="rounded-2xl border border-dashed border-white/10 p-3 text-center text-[11px] leading-5 text-slate-500">
+                      Bunday foydalanuvchi topilmadi.
+                    </div>
+                  ) : null}
                 </div>
                 <Button disabled={loading} onClick={() => void createChat()} className="mt-3 w-full rounded-2xl bg-gradient-to-r from-cyan-500 to-blue-600 text-xs font-bold">
                   {loading ? <LoaderCircle className="animate-spin" size={14} /> : <Plus size={14} />} Chat yaratish
@@ -346,10 +409,60 @@ const filteredUsers = useMemo(() => {
                     <h2 className="truncate text-sm font-bold sm:text-base">{activeChat.name}</h2>
                     <p className="truncate text-[10px] text-slate-500">{memberLine(activeChat.members)}</p>
                   </div>
-                  <span className="ml-auto hidden items-center gap-1.5 rounded-full border border-emerald-300/12 bg-emerald-300/7 px-2.5 py-1 text-[10px] font-bold text-emerald-200 sm:flex">
+                  <Button onClick={() => setAddMembersOpen((value) => !value)} size="sm" className="ml-auto rounded-2xl bg-white/[.06] px-3 text-[10px] font-bold text-cyan-100 hover:bg-white/[.1]">
+                    <UserPlus size={13} /> <span className="hidden sm:inline">A&apos;zo qo&apos;shish</span>
+                  </Button>
+                  <span className="hidden items-center gap-1.5 rounded-full border border-emerald-300/12 bg-emerald-300/7 px-2.5 py-1 text-[10px] font-bold text-emerald-200 sm:flex">
                     <ShieldCheck size={12} /> Private
                   </span>
                 </div>
+
+                {addMembersOpen && (
+                  <div className="border-b border-white/8 bg-black/10 p-3 sm:p-4">
+                    <div className="rounded-[24px] border border-cyan-200/12 bg-cyan-300/[.055] p-3">
+                      <div className="flex items-center gap-2">
+                        <UserPlus size={15} className="text-cyan-200" />
+                        <strong className="text-xs">Chatga odam qo&apos;shish</strong>
+                        <button onClick={resetAddMembersForm} className="ml-auto grid h-7 w-7 place-items-center rounded-xl text-slate-500 hover:bg-white/[.06]" aria-label="Yopish">
+                          <X size={15} />
+                        </button>
+                      </div>
+                      <label className="mt-3 flex h-10 items-center gap-2 rounded-2xl border border-white/10 bg-black/15 px-3 text-slate-500">
+                        <Search size={14} />
+                        <input value={addMemberQuery} onChange={(event) => setAddMemberQuery(event.target.value)} placeholder="Qo&apos;shiladigan userni izlash" className="min-w-0 flex-1 bg-transparent text-xs text-white outline-none placeholder:text-slate-500" />
+                      </label>
+                      <div className="mt-3 max-h-52 space-y-1 overflow-y-auto pr-1">
+                        {filteredAddUsers.map((option) => {
+                          const selected = selectedAddUserIds.includes(option.id);
+                          return (
+                            <button key={option.id} onClick={() => toggleAddUser(option.id)} className={`flex w-full items-center gap-2 rounded-2xl border p-2 text-left transition ${selected ? "border-cyan-200/25 bg-cyan-300/10" : "border-transparent bg-white/[.025] hover:bg-white/[.05]"}`}>
+                              <TraderAvatar name={option.name} value={option.avatar} className="h-9 w-9 rounded-xl text-[10px]" />
+                              <span className="min-w-0 flex-1">
+                                <strong className="block truncate text-xs">{option.name}</strong>
+                                <small className="block truncate text-[10px] text-slate-500">@{option.username}</small>
+                              </span>
+                              <span className={`grid h-6 w-6 place-items-center rounded-full border ${selected ? "border-cyan-200 bg-cyan-200 text-slate-950" : "border-white/10 text-transparent"}`}>
+                                <Check size={13} />
+                              </span>
+                            </button>
+                          );
+                        })}
+                        {addMemberQuery.trim().length < 2 ? (
+                          <div className="rounded-2xl border border-dashed border-white/10 p-3 text-center text-[11px] leading-5 text-slate-500">
+                            Qo&apos;shish uchun kamida 2 ta harf yozing.
+                          </div>
+                        ) : !filteredAddUsers.length ? (
+                          <div className="rounded-2xl border border-dashed border-white/10 p-3 text-center text-[11px] leading-5 text-slate-500">
+                            Bunday user topilmadi yoki u allaqachon chatda bor.
+                          </div>
+                        ) : null}
+                      </div>
+                      <Button disabled={addingMembers || !selectedAddUserIds.length} onClick={() => void addMembers()} className="mt-3 w-full rounded-2xl bg-gradient-to-r from-cyan-500 to-blue-600 text-xs font-bold">
+                        {addingMembers ? <LoaderCircle className="animate-spin" size={14} /> : <UserPlus size={14} />} Tanlanganlarni qo&apos;shish
+                      </Button>
+                    </div>
+                  </div>
+                )}
 
                 <div className="min-h-0 flex-1 overflow-y-auto px-3 py-4 sm:px-5">
                   {loadingMessages && !messages.length && (
