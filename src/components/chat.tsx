@@ -23,7 +23,7 @@ import { TraderAvatar } from "./trader-avatar";
 import type { Group, GroupMessage } from "./types";
 
 const demoGroups: Group[] = [
-  { id: "crypto", name: "Crypto Uzbekistan", description: "Kripto bozor tahlili va savdo g'oyalari", avatar: "CU" },
+  { id: "crypto", name: "Pattern Traders", description: "fuck barca", avatar: "CU" },
   { id: "forex", name: "Forex Masters", description: "Forex traderlar uchun muhokama", avatar: "FX" },
   { id: "price", name: "Price Action", description: "Toza grafik va setup'lar", avatar: "PA" },
   { id: "algo", name: "Algo Traders", description: "Algoritmik trading va backtesting", avatar: "AI" },
