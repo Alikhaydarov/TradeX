@@ -6,6 +6,7 @@ import { apiRequest } from "@/lib/api-client";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { SkeletonBlock, XSpinner } from "./app-loader";
+import { SocialActions } from "./social-actions";
 import { useAuth } from "./auth-context";
 import { TraderAvatar } from "./trader-avatar";
 import type { Post } from "./types";
@@ -286,9 +287,12 @@ export function FeedV3({ onLogin }: { onLogin: () => void }) {
   return (
     <div className="min-h-full">
       <header className="sticky top-0 z-20 border-b border-white/8 bg-[#0b1424]/45 px-4 py-4 backdrop-blur-2xl sm:px-6">
-        <div className="mx-auto max-w-3xl">
-          <p className="text-[10px] font-bold uppercase tracking-[.22em] text-cyan-300/70">TradeUp workspace</p>
-          <h1 className="mt-1 text-2xl font-black tracking-tight">TradeUp</h1>
+        <div className="mx-auto flex max-w-3xl items-center gap-3">
+          <div className="min-w-0 flex-1">
+            <p className="text-[10px] font-bold uppercase tracking-[.22em] text-cyan-300/70">TradeUp workspace</p>
+            <h1 className="mt-1 text-2xl font-black tracking-tight">TradeUp</h1>
+          </div>
+          <SocialActions className="lg:hidden" />
         </div>
       </header>
 
