@@ -1,6 +1,6 @@
 "use client";
 
-import { Bookmark, Eye, Heart, ImageIcon, MessageCircle, Send, Trash2, X } from "lucide-react";
+import { Bookmark, Eye, Heart, ImageIcon, MessageCircle, Send, ShieldCheck, Trash2, X } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { apiRequest } from "@/lib/api-client";
 import { Button } from "@/components/ui/button";
@@ -18,6 +18,7 @@ interface PostRecord {
   author_name: string;
   author_handle: string;
   author_avatar: string | null;
+  author_is_verified?: boolean | null;
   image_url?: string | null;
   symbol: string | null;
   side: "LONG" | "SHORT" | null;
@@ -82,6 +83,7 @@ function toPost(record: PostRecord, liked = false, bookmarked = false): Post {
     views: record.views_count ?? 0,
     liked,
     bookmarked,
+    isVerified: Boolean(record.author_is_verified),
   };
 }
 
@@ -354,7 +356,10 @@ export function FeedV3({ onLogin }: { onLogin: () => void }) {
                   <div className="min-w-0 flex-1">
                     <div className="flex items-start gap-3">
                       <div className="min-w-0 flex-1">
-                        <p className="truncate text-sm font-bold">{post.name}</p>
+                        <p className="flex items-center gap-1 truncate text-sm font-bold">
+                          {post.name}
+                          {post.isVerified && <ShieldCheck size={13} className="shrink-0 text-cyan-400" />}
+                        </p>
                         <p className="truncate text-[11px] text-slate-500">{post.handle} · {post.time}</p>
                       </div>
                       {(post.userId === user?.id || isAdmin) ? (
