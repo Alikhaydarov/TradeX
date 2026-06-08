@@ -20,7 +20,7 @@ export async function GET(request: Request) {
 
   const { data, error } = await auth.supabase
     .from("profiles")
-    .select("id, username, full_name, avatar_url, bio, trading_style, location")
+    .select("id, username, full_name, avatar_url, bio, trading_style, location, is_verified")
     .eq("id", auth.user.id)
     .single();
 
@@ -62,13 +62,31 @@ export async function PATCH(request: Request) {
       updated_at: new Date().toISOString(),
     })
     .eq("id", auth.user.id)
-    .select("id, username, full_name, avatar_url, bio, trading_style, location")
+    .select("id, username, full_name, avatar_url, bio, trading_style, location, is_verified")
     .single();
 
   if (error) {
     if (error.code === "23505") return badRequest("Bu username band.");
     return serverError(error.message);
   }
+
+  await Promise.all([
+    auth.supabase
+      .from("posts")
+      .update({
+        author_name: data.full_name,
+        author_handle: data.username,
+        author_avatar: data.avatar_url || fullName.slice(0, 2).toUpperCase(),
+      })
+      .eq("user_id", auth.user.id),
+    auth.supabase
+      .from("group_messages")
+      .update({
+        name: data.full_name,
+        avatar: data.avatar_url || fullName.slice(0, 2).toUpperCase(),
+      })
+      .eq("user_id", auth.user.id),
+  ]);
 
   const counts = await getFollowCounts(auth, auth.user.id);
   return Response.json({ profile: { ...data, ...counts } });
