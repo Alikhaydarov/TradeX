@@ -15,13 +15,14 @@ import { TraderAvatar } from "./trader-avatar";
 import { useAuth } from "./auth-context";
 import { apiRequest } from "@/lib/api-client";
 import type { Section } from "./types";
+import { VerifiedBadge } from "./verified-badge";
 
 interface SearchUser {
   id: string;
   username: string;
   fullName: string;
   avatarUrl: string | null;
-  isVerified?: boolean;
+  isfied?: boolean;
 }
 
 interface Notification {
@@ -78,7 +79,7 @@ function SearchPanel({ onOpenProfile }: { onOpenProfile: (username: string) => v
                 <div className="min-w-0 flex-1">
                   <p className="flex items-center gap-1 truncate text-sm font-bold">
                     {u.fullName}
-                    {u.isVerified && <ShieldCheck size={13} className="shrink-0 text-cyan-400" />}
+                    {u.isfied && <ShieldCheck size={13} className="shrink-0 text-cyan-400" />}
                   </p>
                   <p className="truncate text-[11px] text-slate-500">@{u.username}</p>
                 </div>
