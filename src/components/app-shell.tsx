@@ -53,12 +53,12 @@ function getCurrentProfileUsername() {
   if (typeof window === "undefined") return "";
   return usernameFromPath(window.location.pathname);
 }
+
 function AuthGate({ onLogin }: { onLogin: () => void }) {
   return (
     <main className="flex min-h-[100dvh] items-center justify-center overflow-x-hidden bg-[radial-gradient(circle_at_15%_15%,rgba(14,165,233,.18),transparent_28%),radial-gradient(circle_at_88%_0%,rgba(139,92,246,.16),transparent_30%),linear-gradient(135deg,#050914,#0b1220_45%,#111827)] px-3 py-[max(1rem,env(safe-area-inset-top))] pb-[max(1rem,env(safe-area-inset-bottom))] text-white sm:px-6 sm:py-10">
       <section className="w-full max-w-[520px] overflow-hidden rounded-[28px] border border-white/10 bg-white/[.045] shadow-2xl shadow-slate-950/40 backdrop-blur-2xl sm:rounded-[36px]">
         <div className="h-24 bg-[radial-gradient(circle_at_20%_30%,rgba(34,211,238,.35),transparent_26%),radial-gradient(circle_at_85%_10%,rgba(139,92,246,.28),transparent_28%),linear-gradient(135deg,#0f172a,#111827_48%,#082f49)] sm:h-28" />
-        <Sidebar active={section} onChange={changeSection} onPost={() => changeSection("feed")} onLogin={openLogin} onOpenProfile={openProfile} user={user} hideMobile={chatOpen} isAdmin={isAdmin} />
         <div className="px-4 pb-5 sm:px-6 sm:pb-6">
           <div className="-mt-9 grid h-18 w-18 place-items-center rounded-[22px] border-4 border-[#0b1220] bg-gradient-to-br from-cyan-400 via-blue-500 to-violet-600 text-xl font-black shadow-xl shadow-blue-950/40 sm:-mt-10 sm:h-20 sm:w-20 sm:rounded-[26px] sm:text-2xl">TU</div>
           <p className="mt-4 text-[10px] font-black uppercase tracking-[.22em] text-cyan-200/70 sm:mt-5 sm:text-[11px] sm:tracking-[.25em]">Private workspace</p>
@@ -107,7 +107,6 @@ export function AppShell() {
       void import("./backtest");
       void import("./account");
     };
-
     const timer = window.setTimeout(preload, 700);
     return () => window.clearTimeout(timer);
   }, []);
@@ -122,18 +121,12 @@ export function AppShell() {
       setIsAdmin(false);
       return;
     }
-
     let active = true;
     const timer = window.setTimeout(() => {
       void apiRequest<{ isAdmin: boolean }>("/api/admin/me")
-        .then((response) => {
-          if (active) setIsAdmin(response.isAdmin);
-        })
-        .catch(() => {
-          if (active) setIsAdmin(false);
-        });
+        .then((response) => { if (active) setIsAdmin(response.isAdmin); })
+        .catch(() => { if (active) setIsAdmin(false); });
     }, 1200);
-
     return () => {
       active = false;
       window.clearTimeout(timer);
@@ -150,7 +143,6 @@ export function AppShell() {
   const changeSection = (nextSection: Section) => {
     if (nextSection === "admin" && !isAdmin) return;
     if (nextSection === section && nextSection !== "account") return;
-
     setProfileUsername("");
     setSection(nextSection);
     window.history.pushState(null, "", pathFromSection(nextSection));
@@ -180,7 +172,6 @@ export function AppShell() {
       </>
     );
   }
-// Oldin:
 
   return (
     <>
