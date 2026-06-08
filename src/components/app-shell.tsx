@@ -180,7 +180,11 @@ export function AppShell() {
       </>
     );
   }
+// Oldin:
+<Sidebar active={section} onChange={changeSection} onPost={() => changeSection("feed")} onLogin={openLogin} user={user} hideMobile={chatOpen} isAdmin={isAdmin} />
 
+// Keyin:
+<Sidebar active={section} onChange={changeSection} onPost={() => changeSection("feed")} onLogin={openLogin} onOpenProfile={openProfile} user={user} hideMobile={chatOpen} isAdmin={isAdmin} />
   return (
     <>
       <div className={`mx-auto flex min-h-[100dvh] max-w-[1500px] gap-4 p-0 text-[#edf3ff] lg:p-4 ${chatOpen ? "xl:max-w-[1600px]" : ""}`}>
