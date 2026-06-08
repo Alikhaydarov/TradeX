@@ -1,7 +1,8 @@
 "use client";
 
 import { Bell, Check, Search, UserPlus, Users, X } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ReactNode } from "react";
+import { createPortal } from "react-dom";
 import { apiRequest } from "@/lib/api-client";
 import { XSpinner } from "./app-loader";
 import { TraderAvatar } from "./trader-avatar";
@@ -49,7 +50,13 @@ function openProfile(username: string) {
   window.dispatchEvent(new Event("tradeup:open-profile"));
 }
 
-function Modal({ title, subtitle, onClose, children }: { title: string; subtitle: string; onClose: () => void; children: React.ReactNode }) {
+function Modal({ title, subtitle, onClose, children }: { title: string; subtitle: string; onClose: () => void; children: ReactNode }) {
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   useEffect(() => {
     const body = document.body.style.overflow;
     const html = document.documentElement.style.overflow;
@@ -61,10 +68,12 @@ function Modal({ title, subtitle, onClose, children }: { title: string; subtitle
     };
   }, []);
 
-  return (
-    <div className="fixed inset-0 z-[99999] flex h-[100dvh] w-screen items-start justify-center overflow-y-auto bg-black/70 p-3 pt-[max(1rem,env(safe-area-inset-top))] backdrop-blur-md sm:items-center sm:p-4">
+  if (!mounted || typeof document === "undefined") return null;
+
+  return createPortal(
+    <div className="fixed inset-0 isolate z-[2147483647] flex h-[100dvh] w-screen items-start justify-center overflow-y-auto bg-black/75 p-3 pt-[max(1rem,env(safe-area-inset-top))] backdrop-blur-md sm:items-center sm:p-4">
       <div className="absolute inset-0" onClick={onClose} aria-hidden="true" />
-      <section className="relative z-10 w-full max-w-lg overflow-hidden rounded-[30px] border border-white/10 bg-[#07101d]/95 text-white shadow-2xl shadow-black/70">
+      <section className="relative z-10 w-full max-w-lg overflow-hidden rounded-[30px] border border-white/10 bg-[#07101d]/98 text-white shadow-2xl shadow-black/80">
         <header className="flex items-center gap-3 border-b border-white/8 px-4 py-4">
           <div className="min-w-0 flex-1">
             <h2 className="text-xl font-black leading-6">{title}</h2>
@@ -74,7 +83,8 @@ function Modal({ title, subtitle, onClose, children }: { title: string; subtitle
         </header>
         {children}
       </section>
-    </div>
+    </div>,
+    document.body,
   );
 }
 
