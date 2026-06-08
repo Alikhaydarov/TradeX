@@ -12,22 +12,34 @@ import {
   ShieldCheck,
   UserRound,
 } from "lucide-react";
+import { SocialActions } from "./social-actions";
 import { TraderAvatar } from "./trader-avatar";
 import type { Section } from "./types";
 
 const baseNav = [
   { id: "feed" as const, label: "Pulse", hint: "Community feed", icon: Home },
   { id: "chat" as const, label: "Rooms", hint: "Trader suhbatlari", icon: MessageCircle },
-  { id: "journal" as const, label: "Jurnal", hint: "Natijalar tarixi", icon: BookOpen },
+  { id: "journal" as const, label: "Journal", hint: "Natijalar tarixi", icon: BookOpen },
   { id: "backtest" as const, label: "Lab", hint: "Strategiya sinovi", icon: BarChart3 },
   { id: "account" as const, label: "Profil", hint: "Account va sozlama", icon: UserRound },
 ];
+
+function usernameFromUser(user: User | null) {
+  const raw = String(
+    user?.user_metadata.user_name ??
+    user?.user_metadata.preferred_username ??
+    user?.email?.split("@")[0] ??
+    "profile",
+  );
+  return raw.toLowerCase().replace(/[^a-z0-9_]/g, "").slice(0, 30) || "profile";
+}
 
 export function Sidebar({
   active,
   onChange,
   onPost,
   onLogin,
+  onOpenProfile,
   user,
   hideMobile = false,
   isAdmin = false,
@@ -36,12 +48,14 @@ export function Sidebar({
   onChange: (section: Section) => void;
   onPost: () => void;
   onLogin: () => void;
+  onOpenProfile?: (username: string) => void;
   user: User | null;
   hideMobile?: boolean;
   isAdmin?: boolean;
 }) {
   const name = String(user?.user_metadata.full_name ?? user?.user_metadata.name ?? "Mehmon trader");
-  const handle = user?.email ? `@${user.email.split("@")[0]}` : "Google bilan kirish";
+  const username = usernameFromUser(user);
+  const handle = user ? `@${username}` : "Google bilan kirish";
   const avatar = typeof user?.user_metadata.avatar_url === "string"
     ? user.user_metadata.avatar_url
     : null;
@@ -90,15 +104,25 @@ export function Sidebar({
           <Plus size={18} /> {"Yangi g'oya"}
         </button>
 
-        <div className="mt-auto rounded-2xl border border-white/8 bg-white/[.025] p-2">
-          <button onClick={() => user ? onChange("account") : onLogin()} className="flex w-full items-center gap-3 rounded-xl p-2 text-left hover:bg-white/[.04]">
-            <TraderAvatar name={name} value={avatar} className="h-10 w-10 text-xs" />
-            <span className="min-w-0 flex-1">
-              <strong className="block truncate text-xs">{name}</strong>
-              <small className="block truncate text-[10px] text-slate-500">{handle}</small>
-            </span>
-            {user ? <Bell size={16} className="text-slate-500" /> : <LogIn size={16} className="text-slate-500" />}
-          </button>
+        <div className="mt-auto space-y-3">
+          <div className="rounded-2xl border border-white/8 bg-white/[.025] p-3">
+            <div className="mb-2 flex items-center justify-between gap-2">
+              <span className="text-[10px] font-black uppercase tracking-[.2em] text-slate-500">Social</span>
+              <SocialActions />
+            </div>
+            <p className="text-[10px] leading-4 text-slate-600">Search traders and follow notifications.</p>
+          </div>
+
+          <div className="rounded-2xl border border-white/8 bg-white/[.025] p-2">
+            <button onClick={() => user ? (onOpenProfile ? onOpenProfile(username) : onChange("account")) : onLogin()} className="flex w-full items-center gap-3 rounded-xl p-2 text-left hover:bg-white/[.04]">
+              <TraderAvatar name={name} value={avatar} className="h-10 w-10 text-xs" />
+              <span className="min-w-0 flex-1">
+                <strong className="block truncate text-xs">{name}</strong>
+                <small className="block truncate text-[10px] text-slate-500">{handle}</small>
+              </span>
+              {user ? <Bell size={16} className="text-slate-500" /> : <LogIn size={16} className="text-slate-500" />}
+            </button>
+          </div>
         </div>
       </aside>
 
