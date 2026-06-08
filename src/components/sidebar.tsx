@@ -11,7 +11,7 @@ import {
   ShieldCheck,
   UserRound,
 } from "lucide-react";
-import { SocialActions } from "./social-actions";
+import { SocialActions } from "./social-actions-v2";
 import { TraderAvatar } from "./trader-avatar";
 import type { Section } from "./types";
 
