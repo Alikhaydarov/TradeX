@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { apiRequest } from "@/lib/api-client";
 import { XSpinner } from "./app-loader";
 import { TraderAvatar } from "./trader-avatar";
+import { VerifiedBadge } from "./verified-badge";
 
 interface SearchUser {
   id: string;
@@ -16,6 +17,7 @@ interface SearchUser {
   followersCount: number;
   followingCount: number;
   isFollowing: boolean;
+  isVerified?: boolean;
 }
 
 interface NotificationItem {
@@ -23,7 +25,7 @@ interface NotificationItem {
   message: string;
   isRead: boolean;
   createdAt: string;
-  actor: { id: string; username: string; fullName: string; avatarUrl: string | null } | null;
+  actor: { id: string; username: string; fullName: string; avatarUrl: string | null; isVerified?: boolean } | null;
 }
 
 function compact(value: number) {
@@ -39,6 +41,12 @@ function ago(value: string) {
   const hours = Math.round(minutes / 60);
   if (hours < 24) return `${hours}h`;
   return `${Math.round(hours / 24)}d`;
+}
+
+function openProfile(username: string) {
+  const clean = username.replace(/^@/, "").toLowerCase();
+  window.history.pushState(null, "", `/${clean}`);
+  window.dispatchEvent(new Event("tradeup:open-profile"));
 }
 
 function Modal({ title, subtitle, onClose, children }: { title: string; subtitle: string; onClose: () => void; children: React.ReactNode }) {
@@ -133,11 +141,34 @@ function SearchDialog({ onClose }: { onClose: () => void }) {
       </div>
       <div className="grid max-h-[70dvh] min-h-[420px] overflow-hidden sm:grid-cols-[1fr_1.05fr]">
         <div className="overflow-y-auto border-white/8 sm:border-r">
-          {users.map((item) => <button key={item.id} onClick={() => setSelected(item)} className={`flex w-full items-center gap-3 border-b border-white/6 px-4 py-3 text-left transition ${selected?.id === item.id ? "bg-cyan-300/8" : "hover:bg-white/[.035]"}`}><TraderAvatar name={item.fullName} value={item.avatarUrl} className="h-11 w-11 text-xs" /><span className="min-w-0 flex-1"><span className="block truncate text-sm font-black">{item.fullName}</span><span className="block truncate text-xs text-slate-500">@{item.username}</span></span>{item.isFollowing ? <Check size={16} className="text-cyan-200" /> : null}</button>)}
+          {users.map((item) => (
+            <button key={item.id} onClick={() => setSelected(item)} className={`flex w-full items-center gap-3 border-b border-white/6 px-4 py-3 text-left transition ${selected?.id === item.id ? "bg-cyan-300/8" : "hover:bg-white/[.035]"}`}>
+              <TraderAvatar name={item.fullName} value={item.avatarUrl} className="h-11 w-11 text-xs" />
+              <span className="min-w-0 flex-1">
+                <span className="flex min-w-0 items-center gap-1.5"><span className="truncate text-sm font-black">{item.fullName}</span>{item.isVerified ? <VerifiedBadge /> : null}</span>
+                <span className="block truncate text-xs text-slate-500">@{item.username}</span>
+              </span>
+              {item.isFollowing ? <Check size={16} className="text-cyan-200" /> : null}
+            </button>
+          ))}
           {!loading && !users.length ? <div className="grid min-h-40 place-items-center px-6 text-center text-sm text-slate-500">No traders found.</div> : null}
         </div>
         <div className="overflow-y-auto p-4">
-          {selected ? <div className="rounded-[28px] border border-white/10 bg-white/[.035] p-4"><div className="flex items-start gap-3"><TraderAvatar name={selected.fullName} value={selected.avatarUrl} className="h-16 w-16 text-lg" /><div className="min-w-0 flex-1"><h3 className="truncate text-lg font-black">{selected.fullName}</h3><p className="truncate text-xs text-slate-500">@{selected.username}</p><p className="mt-2 inline-flex rounded-full bg-cyan-300/10 px-3 py-1 text-[10px] font-bold text-cyan-200">{selected.tradingStyle || "Trader"}</p></div></div>{selected.bio ? <p className="mt-4 text-sm leading-6 text-slate-300">{selected.bio}</p> : null}<div className="mt-4 grid grid-cols-2 gap-2"><div className="rounded-2xl bg-black/15 p-3"><p className="text-[10px] uppercase tracking-[.18em] text-slate-500">Followers</p><b className="mt-1 block text-xl">{compact(selected.followersCount)}</b></div><div className="rounded-2xl bg-black/15 p-3"><p className="text-[10px] uppercase tracking-[.18em] text-slate-500">Following</p><b className="mt-1 block text-xl">{compact(selected.followingCount)}</b></div></div><button onClick={() => void toggleFollow(selected)} disabled={actingId === selected.id} className={`mt-4 flex h-11 w-full items-center justify-center gap-2 rounded-2xl text-sm font-black transition ${selected.isFollowing ? "border border-white/12 bg-white/[.04] text-white hover:bg-rose-400/10 hover:text-rose-200" : "bg-white text-slate-950 hover:bg-slate-200"}`}>{actingId === selected.id ? <XSpinner size="sm" /> : selected.isFollowing ? <Check size={17} /> : <UserPlus size={17} />}{selected.isFollowing ? "Following" : "Follow"}</button></div> : <div className="grid h-full place-items-center text-center text-sm text-slate-500">Select a trader to view profile.</div>}
+          {selected ? (
+            <div className="rounded-[28px] border border-white/10 bg-white/[.035] p-4">
+              <div className="flex items-start gap-3">
+                <button onClick={() => openProfile(selected.username)}><TraderAvatar name={selected.fullName} value={selected.avatarUrl} className="h-16 w-16 text-lg" /></button>
+                <div className="min-w-0 flex-1">
+                  <button onClick={() => openProfile(selected.username)} className="flex min-w-0 items-center gap-1.5 text-left"><h3 className="truncate text-lg font-black">{selected.fullName}</h3>{selected.isVerified ? <VerifiedBadge /> : null}</button>
+                  <p className="truncate text-xs text-slate-500">@{selected.username}</p>
+                  <p className="mt-2 inline-flex rounded-full bg-cyan-300/10 px-3 py-1 text-[10px] font-bold text-cyan-200">{selected.tradingStyle || "Trader"}</p>
+                </div>
+              </div>
+              {selected.bio ? <p className="mt-4 text-sm leading-6 text-slate-300">{selected.bio}</p> : null}
+              <div className="mt-4 grid grid-cols-2 gap-2"><div className="rounded-2xl bg-black/15 p-3"><p className="text-[10px] uppercase tracking-[.18em] text-slate-500">Followers</p><b className="mt-1 block text-xl">{compact(selected.followersCount)}</b></div><div className="rounded-2xl bg-black/15 p-3"><p className="text-[10px] uppercase tracking-[.18em] text-slate-500">Following</p><b className="mt-1 block text-xl">{compact(selected.followingCount)}</b></div></div>
+              <button onClick={() => void toggleFollow(selected)} disabled={actingId === selected.id} className={`mt-4 flex h-11 w-full items-center justify-center gap-2 rounded-2xl text-sm font-black transition ${selected.isFollowing ? "border border-white/12 bg-white/[.04] text-white hover:bg-rose-400/10 hover:text-rose-200" : "bg-white text-slate-950 hover:bg-slate-200"}`}>{actingId === selected.id ? <XSpinner size="sm" /> : selected.isFollowing ? <Check size={17} /> : <UserPlus size={17} />}{selected.isFollowing ? "Following" : "Follow"}</button>
+            </div>
+          ) : <div className="grid h-full place-items-center text-center text-sm text-slate-500">Select a trader to view profile.</div>}
         </div>
       </div>
     </Modal>
@@ -172,7 +203,7 @@ function NotificationsDialog({ onClose, onRead }: { onClose: () => void; onRead:
         {loading ? <div className="grid min-h-52 place-items-center"><XSpinner size="lg" /></div> : null}
         {error ? <p className="rounded-2xl border border-rose-300/15 bg-rose-400/10 px-3 py-2 text-xs text-rose-200">{error}</p> : null}
         {!loading && !items.length ? <div className="grid min-h-52 place-items-center px-6 text-center"><div><Bell className="mx-auto text-slate-600" size={34} /><h3 className="mt-3 text-lg font-black">No notifications yet</h3><p className="mt-1 text-sm text-slate-500">New follows will appear here.</p></div></div> : null}
-        <div className="space-y-2">{items.map((item) => <article key={item.id} className={`flex gap-3 rounded-2xl border border-white/8 p-3 ${item.isRead ? "bg-white/[.025]" : "bg-cyan-300/8"}`}><TraderAvatar name={item.actor?.fullName ?? "TradeUp"} value={item.actor?.avatarUrl ?? null} className="h-11 w-11 text-xs" /><div className="min-w-0 flex-1"><p className="text-sm font-bold text-white">{item.message}</p><p className="mt-1 text-xs text-slate-500">{ago(item.createdAt)}</p></div></article>)}</div>
+        <div className="space-y-2">{items.map((item) => <article key={item.id} className={`flex gap-3 rounded-2xl border border-white/8 p-3 ${item.isRead ? "bg-white/[.025]" : "bg-cyan-300/8"}`}><TraderAvatar name={item.actor?.fullName ?? "TradeUp"} value={item.actor?.avatarUrl ?? null} className="h-11 w-11 text-xs" /><div className="min-w-0 flex-1"><p className="flex items-center gap-1.5 text-sm font-bold text-white">{item.message}{item.actor?.isVerified ? <VerifiedBadge /> : null}</p><p className="mt-1 text-xs text-slate-500">{ago(item.createdAt)}</p></div></article>)}</div>
       </div>
     </Modal>
   );
