@@ -38,7 +38,7 @@ export async function GET(request: Request) {
 
   const actorIds = Array.from(new Set((data ?? []).map((item: NotificationRow) => item.actor_id).filter(Boolean))) as string[];
   const profiles = actorIds.length
-    ? await auth.supabase.from("profiles").select("id, username, full_name, avatar_url").in("id", actorIds)
+    ? await auth.supabase.from("profiles").select("id, username, full_name, avatar_url, is_verified").in("id", actorIds)
     : { data: [], error: null };
 
   if (profiles.error) return serverError(profiles.error.message);
@@ -59,6 +59,7 @@ export async function GET(request: Request) {
           username: actor.username,
           fullName: actor.full_name,
           avatarUrl: actor.avatar_url,
+          isVerified: Boolean(actor.is_verified),
         } : null,
       };
     }),
