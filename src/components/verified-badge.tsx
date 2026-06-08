@@ -1,11 +1,11 @@
-export function VerifiedBadge({ size = 16 }: { size?: number }) {
+export function VerifiedBadge({ size = 16, className = "" }: { size?: number; className?: string }) {
   return (
     <svg
       width={size}
       height={size}
       viewBox="0 0 24 24"
       fill="none"
-      className="inline-block shrink-0"
+      className={`inline-block shrink-0 ${className}`}
       aria-label="Tasdiqlangan hisob"
     >
       <title>Tasdiqlangan hisob</title>
