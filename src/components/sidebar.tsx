@@ -16,8 +16,6 @@ import { useAuth } from "./auth-context";
 import { apiRequest } from "@/lib/api-client";
 import type { Section } from "./types";
 
-// ─── Types ──────────────────────────────────────────────────────────────────
-
 interface SearchUser {
   id: string;
   username: string;
@@ -35,8 +33,6 @@ interface Notification {
   createdAt: string;
   read: boolean;
 }
-
-// ─── Search Panel ────────────────────────────────────────────────────────────
 
 function SearchPanel({ onOpenProfile }: { onOpenProfile: (username: string) => void }) {
   const [query, setQuery] = useState("");
@@ -98,8 +94,6 @@ function SearchPanel({ onOpenProfile }: { onOpenProfile: (username: string) => v
   );
 }
 
-// ─── Notifications Panel ─────────────────────────────────────────────────────
-
 function NotificationsPanel() {
   const [items, setItems] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(true);
@@ -136,8 +130,6 @@ function NotificationsPanel() {
   );
 }
 
-// ─── Profile Panel ───────────────────────────────────────────────────────────
-
 function ProfilePanel({
   user,
   onChange,
@@ -168,8 +160,6 @@ function ProfilePanel({
   );
 }
 
-// ─── Main Sidebar ─────────────────────────────────────────────────────────────
-
 type PanelTab = "search" | "notifications" | "profile" | null;
 
 interface SidebarProps {
@@ -194,7 +184,6 @@ export function Sidebar({
   const [panel, setPanel] = useState<PanelTab>(null);
   const [unread, setUnread] = useState(0);
 
-  // Load unread notification count
   useEffect(() => {
     if (!user) return;
     apiRequest<{ notifications: Notification[] }>("/api/social/notifications")
@@ -202,8 +191,7 @@ export function Sidebar({
       .catch(() => {});
   }, [user]);
 
-  const togglePanel = (tab: PanelTab) =>
-    setPanel((prev) => (prev === tab ? null : tab));
+  const togglePanel = (tab: PanelTab) => setPanel((prev) => (prev === tab ? null : tab));
 
   const handleSectionClick = (section: Section) => {
     setPanel(null);
@@ -215,7 +203,6 @@ export function Sidebar({
     onOpenProfile(username);
   };
 
-  // Main nav items
   const navItems: { section: Section; icon: React.ReactNode; label: string }[] = [
     { section: "feed",     icon: <LayoutDashboard size={20} />, label: "Feed" },
     { section: "chat",     icon: <MessageSquare size={20} />,   label: "Chatlar" },
@@ -227,11 +214,10 @@ export function Sidebar({
     navItems.push({ section: "admin", icon: <ShieldCheck size={20} />, label: "Admin" });
   }
 
-  // Panel trigger items (Search, Notifications, Profile) — visible on desktop only
   const panelItems: { tab: PanelTab; icon: React.ReactNode; label: string; badge?: number }[] = [
-    { tab: "search",        icon: <Search size={20} />,  label: "Qidirish" },
-    { tab: "notifications", icon: <Bell size={20} />,    label: "Bildirishnomalar", badge: unread },
-    { tab: "profile",       icon: <User size={20} />,    label: "Profil" },
+    { tab: "search",        icon: <Search size={20} />, label: "Qidirish" },
+    { tab: "notifications", icon: <Bell size={20} />,   label: "Bildirishnomalar", badge: unread },
+    { tab: "profile",       icon: <User size={20} />,   label: "Profil" },
   ];
 
   const name = user ? String(user.user_metadata.full_name ?? user.user_metadata.name ?? "T") : "T";
@@ -239,16 +225,13 @@ export function Sidebar({
 
   return (
     <>
-      {/* ── Desktop sidebar ───────────────────────────────────────────────── */}
+      {/* Desktop sidebar */}
       <aside className="hidden lg:flex lg:flex-row lg:gap-0">
-        {/* Icon column */}
         <nav className="flex w-[72px] flex-col items-center gap-1 py-4">
-          {/* Logo */}
           <div className="mb-4 grid h-10 w-10 place-items-center rounded-2xl bg-gradient-to-br from-cyan-400 via-blue-500 to-violet-600 text-[11px] font-black shadow-lg shadow-blue-950/40">
             TX
           </div>
 
-          {/* Main sections */}
           {navItems.map(({ section, icon, label }) => (
             <button
               key={section}
@@ -264,10 +247,8 @@ export function Sidebar({
             </button>
           ))}
 
-          {/* Spacer */}
           <div className="flex-1" />
 
-          {/* Panel triggers: Search, Notifications, Profile */}
           {panelItems.map(({ tab, icon, label, badge }) => (
             <button
               key={tab}
@@ -288,19 +269,13 @@ export function Sidebar({
             </button>
           ))}
 
-          {/* Avatar at bottom */}
           {user && (
-            <button
-              onClick={() => togglePanel("profile")}
-              title="Profil"
-              className="mt-2"
-            >
+            <button onClick={() => togglePanel("profile")} title="Profil" className="mt-2">
               <TraderAvatar name={name} value={avatar} className="h-9 w-9 text-[10px]" />
             </button>
           )}
         </nav>
 
-        {/* Slide-out panel */}
         {panel !== null && (
           <div className="w-72 overflow-y-auto rounded-r-[28px] border-l border-white/8 bg-[#0d1627]/60 backdrop-blur-xl">
             {panel === "search" && <SearchPanel onOpenProfile={handleOpenProfile} />}
@@ -310,25 +285,22 @@ export function Sidebar({
         )}
       </aside>
 
-      {/* ── Mobile bottom nav ─────────────────────────────────────────────── */}
+      {/* Mobile bottom nav */}
       {!hideMobile && (
-        <nav className="fixed bottom-0 inset-x-0 z-40 flex items-center justify-around border-t border-white/8 bg-[#0b1220]/90 px-2 pb-[env(safe-area-inset-bottom)] pt-2 backdrop-blur-2xl lg:hidden">
+        <nav className="fixed inset-x-0 bottom-0 z-40 flex items-center justify-around border-t border-white/8 bg-[#0b1220]/90 px-2 pb-[env(safe-area-inset-bottom)] pt-2 backdrop-blur-2xl lg:hidden">
           {navItems.map(({ section, icon, label }) => (
             <button
               key={section}
               onClick={() => handleSectionClick(section)}
               aria-label={label}
               className={`flex flex-col items-center gap-0.5 px-3 py-1.5 text-[10px] font-bold transition-colors ${
-                active === section
-                  ? "text-cyan-300"
-                  : "text-slate-600 hover:text-slate-400"
+                active === section ? "text-cyan-300" : "text-slate-600 hover:text-slate-400"
               }`}
             >
               {icon}
               {label}
             </button>
           ))}
-          {/* Search on mobile */}
           <button
             onClick={() => togglePanel(panel === "search" ? null : "search")}
             aria-label="Qidirish"
