@@ -1,12 +1,21 @@
-import { ShieldCheck } from "lucide-react";
-
-export function VerifiedBadge({ className = "" }: { className?: string }) {
+// components/VerifiedBadge.jsx
+export default function VerifiedBadge() {
   return (
-    <span
-      title="Verified trader"
-      className={`inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-cyan-300/12 text-cyan-200 ring-1 ring-cyan-200/20 ${className}`}
+    <svg
+      width="16" height="16"
+      viewBox="0 0 24 24"
+      fill="none"
+      className="inline-block ml-1"
+      title="Tasdiqlangan hisob"
     >
-      <ShieldCheck size={11} strokeWidth={2.6} />
-    </span>
+      <circle cx="12" cy="12" r="12" fill="#1D9BF0" />
+      <path
+        d="M9 12.5L11 14.5L15.5 10"
+        stroke="white"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
   );
 }
