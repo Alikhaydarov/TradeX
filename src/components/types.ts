@@ -73,6 +73,8 @@ export interface Profile {
   bio: string;
   tradingStyle: string;
   location: string;
+  followersCount?: number;
+  followingCount?: number;
   isVerified?: boolean;
   isAdmin?: boolean;
 }
