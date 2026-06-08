@@ -53,7 +53,7 @@ function getCurrentProfileUsername() {
   if (typeof window === "undefined") return "";
   return usernameFromPath(window.location.pathname);
 }
-
+<Sidebar active={section} onChange={changeSection} onPost={() => changeSection("feed")} onLogin={openLogin} onOpenProfile={openProfile} user={user} hideMobile={chatOpen} isAdmin={isAdmin} />
 function AuthGate({ onLogin }: { onLogin: () => void }) {
   return (
     <main className="flex min-h-[100dvh] items-center justify-center overflow-x-hidden bg-[radial-gradient(circle_at_15%_15%,rgba(14,165,233,.18),transparent_28%),radial-gradient(circle_at_88%_0%,rgba(139,92,246,.16),transparent_30%),linear-gradient(135deg,#050914,#0b1220_45%,#111827)] px-3 py-[max(1rem,env(safe-area-inset-top))] pb-[max(1rem,env(safe-area-inset-bottom))] text-white sm:px-6 sm:py-10">
@@ -181,10 +181,7 @@ export function AppShell() {
     );
   }
 // Oldin:
-<Sidebar active={section} onChange={changeSection} onPost={() => changeSection("feed")} onLogin={openLogin} user={user} hideMobile={chatOpen} isAdmin={isAdmin} />
 
-// Keyin:
-<Sidebar active={section} onChange={changeSection} onPost={() => changeSection("feed")} onLogin={openLogin} onOpenProfile={openProfile} user={user} hideMobile={chatOpen} isAdmin={isAdmin} />
   return (
     <>
       <div className={`mx-auto flex min-h-[100dvh] max-w-[1500px] gap-4 p-0 text-[#edf3ff] lg:p-4 ${chatOpen ? "xl:max-w-[1600px]" : ""}`}>
