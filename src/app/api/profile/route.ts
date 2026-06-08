@@ -2,6 +2,18 @@ import { authenticateRequest, badRequest, serverError, unauthorized } from "@/li
 
 export const runtime = "nodejs";
 
+async function getFollowCounts(auth: NonNullable<Awaited<ReturnType<typeof authenticateRequest>>>, userId: string) {
+  const [followers, following] = await Promise.all([
+    auth.supabase.from("user_follows").select("*", { count: "exact", head: true }).eq("following_id", userId),
+    auth.supabase.from("user_follows").select("*", { count: "exact", head: true }).eq("follower_id", userId),
+  ]);
+
+  return {
+    followersCount: followers.count ?? 0,
+    followingCount: following.count ?? 0,
+  };
+}
+
 export async function GET(request: Request) {
   const auth = await authenticateRequest(request);
   if (!auth) return unauthorized();
@@ -13,7 +25,9 @@ export async function GET(request: Request) {
     .single();
 
   if (error) return serverError(error.message);
-  return Response.json({ profile: data });
+
+  const counts = await getFollowCounts(auth, auth.user.id);
+  return Response.json({ profile: { ...data, ...counts } });
 }
 
 export async function PATCH(request: Request) {
@@ -55,5 +69,7 @@ export async function PATCH(request: Request) {
     if (error.code === "23505") return badRequest("Bu username band.");
     return serverError(error.message);
   }
-  return Response.json({ profile: data });
+
+  const counts = await getFollowCounts(auth, auth.user.id);
+  return Response.json({ profile: { ...data, ...counts } });
 }
