@@ -126,30 +126,6 @@ function TradingAppShell() {
   );
 }
 
-  const render = () => {
-    if (section === "chat") return <ChatV4 onLogin={openLogin} onBack={() => changeSection("feed")} />;
-    if (section === "journal") return <Journal onLogin={openLogin} />;
-    if (section === "backtest") return <Backtest />;
-    if (section === "account") return <Account onLogin={openLogin} />;
-    if (section === "admin" && isAdmin) return <AdminPanel onLogin={openLogin} />;
-    return <FeedV3 onLogin={openLogin} />;
-  };
-
-  if (!user) return <><AuthGate onLogin={openLogin} /><AuthModal open={authOpen} onClose={() => setAuthOpen(false)} /></>;
-
-  return (
-    <>
-      <div className={`mx-auto flex min-h-[100dvh] max-w-[1500px] gap-4 p-0 text-[#edf3ff] lg:p-4 ${chatOpen ? "xl:max-w-[1600px]" : ""}`}>
-        <Sidebar active={section} onChange={changeSection} onPost={() => changeSection("feed")} onLogin={openLogin} user={user} hideMobile={chatOpen} isAdmin={isAdmin} />
-        <main className={chatOpen ? "fixed inset-0 z-50 min-w-0 flex-1 overflow-hidden bg-[#101827] shadow-2xl shadow-slate-950/20 backdrop-blur-2xl lg:static lg:z-auto lg:min-h-[calc(100dvh-2rem)] lg:rounded-[28px] lg:border lg:border-white/9" : "min-h-[100dvh] min-w-0 flex-1 overflow-hidden bg-[#0d1627]/38 pb-20 shadow-2xl shadow-slate-950/20 backdrop-blur-2xl lg:min-h-[calc(100dvh-2rem)] lg:rounded-[28px] lg:border lg:border-white/9 lg:pb-0"}>{render()}</main>
-        {section !== "chat" && <RightPanel />}
-      </div>
-      <NotificationListener />
-      <AuthModal open={authOpen} onClose={() => setAuthOpen(false)} />
-    </>
-  );
-}
-
 export function TradingApp({ initialUser = null, initialConfigured = false }: { initialUser?: User | null; initialConfigured?: boolean }) {
   return <AuthProvider initialUser={initialUser} initialConfigured={initialConfigured}><TradingAppShell /></AuthProvider>;
 }
