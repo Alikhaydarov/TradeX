@@ -18,11 +18,19 @@ const Backtest = dynamic(() => import("./backtest").then((mod) => mod.Backtest),
 const Account = dynamic(() => import("./account").then((mod) => mod.Account), { ssr: false, loading: () => null });
 const AdminPanel = dynamic(() => import("./admin-panel").then((mod) => mod.AdminPanel), { ssr: false, loading: () => null });
 
+const reservedPaths = new Set(["", "chat", "journal", "backtest", "profile", "account", "admin"]);
+
+function usernameFromPath(pathname: string) {
+  const first = pathname.replace(/^\//, "").split("/")[0] ?? "";
+  if (reservedPaths.has(first)) return "";
+  return first.toLowerCase();
+}
+
 function sectionFromPath(pathname: string): Section {
   if (pathname.startsWith("/chat")) return "chat";
   if (pathname.startsWith("/journal")) return "journal";
   if (pathname.startsWith("/backtest")) return "backtest";
-  if (pathname.startsWith("/profile") || pathname.startsWith("/account")) return "account";
+  if (pathname.startsWith("/profile") || pathname.startsWith("/account") || usernameFromPath(pathname)) return "account";
   if (pathname.startsWith("/admin")) return "admin";
   return "feed";
 }
@@ -39,6 +47,11 @@ function pathFromSection(section: Section) {
 function getCurrentSection() {
   if (typeof window === "undefined") return "feed" as Section;
   return sectionFromPath(window.location.pathname);
+}
+
+function getCurrentProfileUsername() {
+  if (typeof window === "undefined") return "";
+  return usernameFromPath(window.location.pathname);
 }
 
 function AuthGate({ onLogin }: { onLogin: () => void }) {
@@ -65,6 +78,7 @@ function AuthGate({ onLogin }: { onLogin: () => void }) {
 
 export function AppShell() {
   const [section, setSection] = useState<Section>(getCurrentSection);
+  const [profileUsername, setProfileUsername] = useState(getCurrentProfileUsername);
   const [authOpen, setAuthOpen] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [notificationsMounted, setNotificationsMounted] = useState(false);
@@ -73,9 +87,16 @@ export function AppShell() {
   const chatOpen = section === "chat";
 
   useEffect(() => {
-    const handlePopState = () => setSection(getCurrentSection());
-    window.addEventListener("popstate", handlePopState);
-    return () => window.removeEventListener("popstate", handlePopState);
+    const syncFromPath = () => {
+      setSection(getCurrentSection());
+      setProfileUsername(getCurrentProfileUsername());
+    };
+    window.addEventListener("popstate", syncFromPath);
+    window.addEventListener("tradeup:open-profile", syncFromPath);
+    return () => {
+      window.removeEventListener("popstate", syncFromPath);
+      window.removeEventListener("tradeup:open-profile", syncFromPath);
+    };
   }, []);
 
   useEffect(() => {
@@ -128,20 +149,28 @@ export function AppShell() {
 
   const changeSection = (nextSection: Section) => {
     if (nextSection === "admin" && !isAdmin) return;
-    if (nextSection === section) return;
+    if (nextSection === section && nextSection !== "account") return;
 
+    setProfileUsername("");
     setSection(nextSection);
     window.history.pushState(null, "", pathFromSection(nextSection));
+  };
+
+  const openProfile = (username: string) => {
+    const cleanUsername = username.replace(/^@/, "").toLowerCase();
+    setProfileUsername(cleanUsername);
+    setSection("account");
+    window.history.pushState(null, "", `/${cleanUsername}`);
   };
 
   const activeSection = useMemo(() => {
     if (section === "chat") return <ChatV4 onLogin={openLogin} onBack={() => changeSection("feed")} />;
     if (section === "journal") return <Journal onLogin={openLogin} />;
     if (section === "backtest") return <Backtest />;
-    if (section === "account") return <Account onLogin={openLogin} />;
+    if (section === "account") return <Account onLogin={openLogin} profileUsername={profileUsername || undefined} />;
     if (section === "admin" && isAdmin) return <AdminPanel onLogin={openLogin} />;
     return <FeedV3 onLogin={openLogin} />;
-  }, [section, isAdmin]);
+  }, [section, isAdmin, profileUsername]);
 
   if (!user) {
     return (
@@ -155,7 +184,7 @@ export function AppShell() {
   return (
     <>
       <div className={`mx-auto flex min-h-[100dvh] max-w-[1500px] gap-4 p-0 text-[#edf3ff] lg:p-4 ${chatOpen ? "xl:max-w-[1600px]" : ""}`}>
-        <Sidebar active={section} onChange={changeSection} onPost={() => changeSection("feed")} onLogin={openLogin} user={user} hideMobile={chatOpen} isAdmin={isAdmin} />
+        <Sidebar active={section} onChange={changeSection} onPost={() => changeSection("feed")} onLogin={openLogin} onOpenProfile={openProfile} user={user} hideMobile={chatOpen} isAdmin={isAdmin} />
         <main className={chatOpen ? "fixed inset-0 z-50 min-w-0 flex-1 overflow-hidden bg-[#101827] shadow-2xl shadow-slate-950/20 backdrop-blur-2xl lg:static lg:z-auto lg:min-h-[calc(100dvh-2rem)] lg:rounded-[28px] lg:border lg:border-white/9" : "min-h-[100dvh] min-w-0 flex-1 overflow-hidden bg-[#0d1627]/38 pb-20 shadow-2xl shadow-slate-950/20 backdrop-blur-2xl lg:min-h-[calc(100dvh-2rem)] lg:rounded-[28px] lg:border lg:border-white/9 lg:pb-0"}>
           {activeSection}
         </main>
