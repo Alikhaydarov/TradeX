@@ -1,11 +1,13 @@
-// components/VerifiedBadge.jsx
-export default function VerifiedBadge() {
+// src/components/verified-badge.tsx
+
+export function VerifiedBadge({ size = 16 }: { size?: number }) {
   return (
     <svg
-      width="16" height="16"
+      width={size}
+      height={size}
       viewBox="0 0 24 24"
       fill="none"
-      className="inline-block ml-1"
+      className="inline-block shrink-0"
       title="Tasdiqlangan hisob"
     >
       <circle cx="12" cy="12" r="12" fill="#1D9BF0" />
