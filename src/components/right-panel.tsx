@@ -1,5 +1,4 @@
 import { Activity, Clock3, Radio, Search, Sparkles } from "lucide-react";
-import { SocialActionsCard } from "./social-actions";
 
 const markets = [
   { coin: "BTC", price: "$104,250", change: "+2.8%", color: "bg-orange-400" },
@@ -10,8 +9,6 @@ const markets = [
 export function RightPanel() {
   return (
     <aside className="sticky top-4 hidden h-[calc(100vh-2rem)] w-[300px] shrink-0 space-y-3 overflow-y-auto xl:block">
-      <SocialActionsCard />
-
       <label className="flex h-12 items-center gap-3 rounded-2xl border border-white/9 bg-[#0b1220]/42 px-4 text-slate-500 backdrop-blur-2xl focus-within:border-blue-400/30">
         <Search size={17} />
         <input placeholder="Search workspace" className="w-full bg-transparent text-sm text-white outline-none" />
