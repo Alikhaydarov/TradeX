@@ -167,7 +167,7 @@ export function AppShell() {
     if (section === "chat") return <ChatV4 onLogin={openLogin} onBack={() => changeSection("feed")} />;
     if (section === "journal") return <Journal onLogin={openLogin} />;
     if (section === "backtest") return <Backtest />;
-    if (section === "account") return <Account onLogin={openLogin} profileUsername={profileUsername || undefined} />;
+    if (section === "account") return <Account onLogin={openLogin} />;
     if (section === "admin" && isAdmin) return <AdminPanel onLogin={openLogin} />;
     return <FeedV3 onLogin={openLogin} />;
   }, [section, isAdmin, profileUsername]);
