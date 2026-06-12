@@ -11,8 +11,11 @@ import {
   ShieldCheck,
   UserRound,
 } from "lucide-react";
+import { useEffect, useState } from "react";
+import { apiRequest } from "@/lib/api-client";
 import { SocialActions } from "./social-actions-v2";
 import { TraderAvatar } from "./trader-avatar";
+import { VerifiedBadge } from "./verified-badge";
 import type { Section } from "./types";
 
 const baseNav = [
@@ -53,10 +56,28 @@ export function Sidebar({
   hideMobile?: boolean;
   isAdmin?: boolean;
 }) {
+  const [isVerified, setIsVerified] = useState(false);
   const name = String(user?.user_metadata.full_name ?? user?.user_metadata.name ?? "Mehmon trader");
   const username = usernameFromUser(user);
   const handle = user ? `@${username}` : "Google bilan kirish";
   const avatar = typeof user?.user_metadata.avatar_url === "string" ? user.user_metadata.avatar_url : null;
+
+  useEffect(() => {
+    if (!user) return;
+
+    let active = true;
+    apiRequest<{ profile: { is_verified?: boolean | null } }>("/api/profile")
+      .then(({ profile }) => {
+        if (active) setIsVerified(Boolean(profile.is_verified));
+      })
+      .catch(() => {
+        if (active) setIsVerified(false);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [user]);
 
   const nav = isAdmin
     ? [...baseNav, { id: "admin" as const, label: "Admin", hint: "User galochkalari", icon: ShieldCheck }]
@@ -105,7 +126,7 @@ export function Sidebar({
         </nav>
 
         <button onClick={onPost} className="mt-5 flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-blue-500 to-violet-600 py-3 text-sm font-bold text-white shadow-lg shadow-blue-950/30 transition hover:brightness-110">
-          <Plus size={18} /> Yangi g'oya
+          <Plus size={18} /> Yangi g&apos;oya
         </button>
 
         <div className="mt-auto space-y-3">
@@ -122,7 +143,10 @@ export function Sidebar({
           <button onClick={openProfile} className="flex w-full items-center gap-3 rounded-2xl border border-white/8 bg-white/[.025] p-2 text-left hover:bg-white/[.04]">
             <TraderAvatar name={name} value={avatar} className="h-10 w-10 text-xs" />
             <span className="min-w-0 flex-1">
-              <strong className="block truncate text-xs">{name}</strong>
+              <span className="flex min-w-0 items-center gap-1">
+                <strong className="truncate text-xs">{name}</strong>
+                {user && isVerified ? <VerifiedBadge size={13} /> : null}
+              </span>
               <small className="block truncate text-[10px] text-slate-500">{handle}</small>
             </span>
             {!user ? <LogIn size={16} className="text-slate-500" /> : null}

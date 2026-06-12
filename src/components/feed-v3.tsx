@@ -1,6 +1,6 @@
 "use client";
 
-import { Bookmark, Eye, Heart, ImageIcon, MessageCircle, Send, ShieldCheck, Trash2, X } from "lucide-react";
+import { Bookmark, Eye, Heart, ImageIcon, MessageCircle, Repeat2, Send, Share2, Trash2, X } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { apiRequest } from "@/lib/api-client";
 import { Button } from "@/components/ui/button";
@@ -9,7 +9,8 @@ import { SkeletonBlock, XSpinner } from "./app-loader";
 import { SocialActions } from "./social-actions";
 import { useAuth } from "./auth-context";
 import { TraderAvatar } from "./trader-avatar";
-import type { Post } from "./types";
+import { VerifiedBadge } from "./verified-badge";
+import type { Post, PostReply } from "./types";
 
 interface PostRecord {
   id: string;
@@ -62,7 +63,7 @@ function formatCount(value: number) {
   return String(value);
 }
 
-function toPost(record: PostRecord, liked = false, bookmarked = false): Post {
+function toPost(record: PostRecord, liked = false, bookmarked = false, reposted = false): Post {
   const minutes = Math.max(0, Math.round((Date.now() - new Date(record.created_at).getTime()) / 60000));
   return {
     id: record.id,
@@ -83,8 +84,18 @@ function toPost(record: PostRecord, liked = false, bookmarked = false): Post {
     views: record.views_count ?? 0,
     liked,
     bookmarked,
+    reposted,
     isVerified: Boolean(record.author_is_verified),
   };
+}
+
+function replyTime(value: string) {
+  const minutes = Math.max(0, Math.round((Date.now() - new Date(value).getTime()) / 60000));
+  if (minutes < 1) return "hozir";
+  if (minutes < 60) return `${minutes}m`;
+  const hours = Math.round(minutes / 60);
+  if (hours < 24) return `${hours}h`;
+  return `${Math.round(hours / 24)}d`;
 }
 
 export function FeedV3({ onLogin }: { onLogin: () => void }) {
@@ -96,6 +107,11 @@ export function FeedV3({ onLogin }: { onLogin: () => void }) {
   const [saving, setSaving] = useState(false);
   const [uploadingImage, setUploadingImage] = useState(false);
   const [actingId, setActingId] = useState<string | null>(null);
+  const [openReplies, setOpenReplies] = useState<string | null>(null);
+  const [repliesByPost, setRepliesByPost] = useState<Record<string, PostReply[]>>({});
+  const [replyDrafts, setReplyDrafts] = useState<Record<string, string>>({});
+  const [loadingReplies, setLoadingReplies] = useState<string | null>(null);
+  const [savingReply, setSavingReply] = useState<string | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<Post | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -114,11 +130,12 @@ export function FeedV3({ onLogin }: { onLogin: () => void }) {
   const loadPosts = () => {
     setLoading(true);
     setError(null);
-    apiRequest<{ posts: PostRecord[]; likedPostIds: string[]; bookmarkedPostIds: string[] }>("/api/feed-posts")
+    apiRequest<{ posts: PostRecord[]; likedPostIds: string[]; bookmarkedPostIds: string[]; repostedPostIds: string[] }>("/api/feed-posts")
       .then((data) => {
         const liked = new Set(data.likedPostIds);
         const bookmarked = new Set(data.bookmarkedPostIds);
-        setPosts(data.posts.map((post) => toPost(post, liked.has(post.id), bookmarked.has(post.id))));
+        const reposted = new Set(data.repostedPostIds);
+        setPosts(data.posts.map((post) => toPost(post, liked.has(post.id), bookmarked.has(post.id), reposted.has(post.id))));
       })
       .catch((nextError: Error) => setError(nextError.message))
       .finally(() => setLoading(false));
@@ -262,6 +279,76 @@ export function FeedV3({ onLogin }: { onLogin: () => void }) {
     }
   };
 
+  const toggleRepost = async (post: Post) => {
+    if (!user) return onLogin();
+    try {
+      const state = await apiRequest<{ reposted: boolean; reposts: number }>(`/api/posts/${post.id}/repost`, { method: "POST" });
+      setPosts((current) => current.map((item) => item.id === post.id ? { ...item, ...state } : item));
+    } catch (nextError) {
+      setError(nextError instanceof Error ? nextError.message : "Repost saqlanmadi.");
+    }
+  };
+
+  const toggleReplies = async (post: Post) => {
+    if (openReplies === post.id) {
+      setOpenReplies(null);
+      return;
+    }
+
+    setOpenReplies(post.id);
+    if (repliesByPost[post.id]) return;
+
+    setLoadingReplies(post.id);
+    setError(null);
+    try {
+      const { replies } = await apiRequest<{ replies: PostReply[] }>(`/api/posts/${post.id}/replies`);
+      setRepliesByPost((current) => ({ ...current, [post.id]: replies }));
+    } catch (nextError) {
+      setError(nextError instanceof Error ? nextError.message : "Javoblar yuklanmadi.");
+    } finally {
+      setLoadingReplies(null);
+    }
+  };
+
+  const addReply = async (post: Post) => {
+    if (!user) return onLogin();
+    const content = replyDrafts[post.id]?.trim();
+    if (!content) return;
+
+    setSavingReply(post.id);
+    setError(null);
+    try {
+      const { reply } = await apiRequest<{ reply: PostReply }>(`/api/posts/${post.id}/replies`, {
+        method: "POST",
+        body: JSON.stringify({ content }),
+      });
+      setRepliesByPost((current) => ({
+        ...current,
+        [post.id]: [...(current[post.id] ?? []), reply],
+      }));
+      setReplyDrafts((current) => ({ ...current, [post.id]: "" }));
+      setPosts((current) => current.map((item) => item.id === post.id ? { ...item, replies: item.replies + 1 } : item));
+    } catch (nextError) {
+      setError(nextError instanceof Error ? nextError.message : "Javob yuborilmadi.");
+    } finally {
+      setSavingReply(null);
+    }
+  };
+
+  const sharePost = async (post: Post) => {
+    const url = `${window.location.origin}${window.location.pathname}#post-${post.id}`;
+    try {
+      if (navigator.share) {
+        await navigator.share({ title: `${post.name} - TradeUp`, text: post.text.slice(0, 120), url });
+      } else {
+        await navigator.clipboard.writeText(url);
+      }
+    } catch (nextError) {
+      if (nextError instanceof Error && nextError.name === "AbortError") return;
+      setError("Post havolasini ulashib bo'lmadi.");
+    }
+  };
+
   const openDeleteModal = (post: Post) => {
     if (!user) return onLogin();
     setDeleteTarget(post);
@@ -348,6 +435,7 @@ export function FeedV3({ onLogin }: { onLogin: () => void }) {
             {posts.map((post) => (
               <article
                 key={post.id}
+                id={`post-${post.id}`}
                 ref={(node) => observePost(node, post.id)}
                 className="border-b border-white/8 p-4 last:border-b-0 sm:p-5"
               >
@@ -358,7 +446,7 @@ export function FeedV3({ onLogin }: { onLogin: () => void }) {
                       <div className="min-w-0 flex-1">
                         <p className="flex items-center gap-1 truncate text-sm font-bold">
                           {post.name}
-                          {post.isVerified && <ShieldCheck size={13} className="shrink-0 text-cyan-400" />}
+                          {post.isVerified && <VerifiedBadge size={14} />}
                         </p>
                         <p className="truncate text-[11px] text-slate-500">{post.handle} · {post.time}</p>
                       </div>
@@ -386,18 +474,58 @@ export function FeedV3({ onLogin }: { onLogin: () => void }) {
                       </div>
                     ) : null}
 
-                    <div className="mt-4 flex items-center gap-4 text-slate-500">
-                      <span className="flex items-center gap-1.5 text-[11px]"><MessageCircle size={16} />{post.replies}</span>
+                    <div className="mt-4 flex items-center gap-3 text-slate-500 sm:gap-4">
+                      <button onClick={() => void toggleReplies(post)} className={`flex items-center gap-1.5 text-[11px] hover:text-cyan-200 ${openReplies === post.id ? "text-cyan-300" : ""}`} aria-label="Javoblar"><MessageCircle size={16} />{post.replies}</button>
+                      <button onClick={() => void toggleRepost(post)} className={`flex items-center gap-1.5 text-[11px] hover:text-emerald-200 ${post.reposted ? "text-emerald-300" : ""}`} aria-label="Repost"><Repeat2 size={16} />{post.reposts}</button>
                       <button onClick={() => void toggleLike(post)} className={`flex items-center gap-1.5 text-[11px] hover:text-white ${post.liked ? "text-rose-300" : ""}`}><Heart size={16} fill={post.liked ? "currentColor" : "none"} />{post.likes}</button>
-                      <span className="flex items-center gap-1.5 text-[11px]"><Eye size={16} />{formatCount(post.views)}</span>
+                      <span className="hidden items-center gap-1.5 text-[11px] sm:flex"><Eye size={16} />{formatCount(post.views)}</span>
+                      <button onClick={() => void sharePost(post)} className="grid h-8 w-8 place-items-center rounded-xl hover:bg-white/[.05] hover:text-white" aria-label="Ulashish"><Share2 size={16} /></button>
                       <button onClick={() => void toggleBookmark(post)} className={`ml-auto grid h-8 w-8 place-items-center rounded-xl hover:bg-white/[.05] ${post.bookmarked ? "text-cyan-300" : "hover:text-white"}`} aria-label="Saqlash"><Bookmark size={16} fill={post.bookmarked ? "currentColor" : "none"} /></button>
                     </div>
+
+                    {openReplies === post.id ? (
+                      <div className="mt-4 border-t border-white/8 pt-4">
+                        {loadingReplies === post.id ? (
+                          <div className="flex items-center gap-2 py-4 text-xs text-slate-500"><XSpinner size="sm" /> Javoblar yuklanmoqda</div>
+                        ) : (
+                          <div className="space-y-3">
+                            {(repliesByPost[post.id] ?? []).map((reply) => (
+                              <div key={reply.id} className="flex gap-2.5 rounded-2xl bg-white/[.025] p-3">
+                                <TraderAvatar name={reply.name} value={reply.avatar} className="h-8 w-8 shrink-0 text-[10px]" />
+                                <div className="min-w-0 flex-1">
+                                  <div className="flex items-center gap-1.5">
+                                    <strong className="truncate text-xs">{reply.name}</strong>
+                                    {reply.isVerified ? <VerifiedBadge size={13} /> : null}
+                                    <span className="text-[10px] text-slate-600">@{reply.username} · {replyTime(reply.createdAt)}</span>
+                                  </div>
+                                  <p className="mt-1 whitespace-pre-line text-sm leading-5 text-slate-300">{reply.content}</p>
+                                </div>
+                              </div>
+                            ))}
+                            {!repliesByPost[post.id]?.length ? <p className="py-2 text-xs text-slate-500">Hali javob yo&apos;q. Birinchi bo&apos;lib fikr bildiring.</p> : null}
+                          </div>
+                        )}
+
+                        <div className="mt-3 flex items-end gap-2 rounded-2xl border border-white/8 bg-black/10 p-2 focus-within:border-cyan-200/25">
+                          <Textarea
+                            value={replyDrafts[post.id] ?? ""}
+                            onChange={(event) => setReplyDrafts((current) => ({ ...current, [post.id]: event.target.value }))}
+                            maxLength={280}
+                            placeholder="Javob yozing..."
+                            className="min-h-10 flex-1 resize-none border-0 bg-transparent px-2 py-2 text-sm shadow-none focus-visible:ring-0"
+                          />
+                          <Button onClick={() => void addReply(post)} disabled={!replyDrafts[post.id]?.trim() || savingReply === post.id} size="icon-sm" className="h-9 w-9 shrink-0 rounded-xl bg-cyan-400 text-slate-950 hover:bg-cyan-300" aria-label="Javob yuborish">
+                            {savingReply === post.id ? <XSpinner size="sm" /> : <Send size={14} />}
+                          </Button>
+                        </div>
+                      </div>
+                    ) : null}
                   </div>
                 </div>
               </article>
             ))}
 
-            {!posts.length ? <div className="p-10 text-center text-sm text-slate-500">Hali post yo'q.</div> : null}
+            {!posts.length ? <div className="p-10 text-center text-sm text-slate-500">Hali post yo&apos;q.</div> : null}
           </div>
         )}
       </div>

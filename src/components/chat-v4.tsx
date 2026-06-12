@@ -23,6 +23,7 @@ import { Button } from "@/components/ui/button";
 import { XSpinner } from "./app-loader";
 import { useAuth } from "./auth-context";
 import { TraderAvatar } from "./trader-avatar";
+import { VerifiedBadge } from "./verified-badge";
 import type { ChatMember, Group, GroupMessage, UserOption } from "./types";
 
 interface MessageRecord {
@@ -36,6 +37,7 @@ interface MessageRecord {
   reply_to_name: string | null;
   reply_to_content: string | null;
   created_at: string;
+  sender_is_verified?: boolean;
 }
 
 type MessageStatus = "sending" | "sent" | "error";
@@ -53,6 +55,7 @@ function toMessage(record: MessageRecord): ChatUiMessage {
     name: record.sender_name,
     avatar: record.sender_avatar ?? record.sender_name[0] ?? "T",
     text: record.content,
+    isVerified: Boolean(record.sender_is_verified),
     createdAt: new Date(record.created_at).toLocaleTimeString("uz-UZ", {
       hour: "2-digit",
       minute: "2-digit",
@@ -68,10 +71,21 @@ function toMessage(record: MessageRecord): ChatUiMessage {
   };
 }
 
-function memberLine(members: ChatMember[] = []) {
-  if (!members.length) return "A'zolar hali yuklanmadi";
-  const names = members.slice(0, 3).map((member) => member.name).join(", ");
-  return members.length > 3 ? `${names} +${members.length - 3}` : names;
+function MemberLine({ members = [] }: { members?: ChatMember[] }) {
+  if (!members.length) return <>A&apos;zolar hali yuklanmadi</>;
+
+  return (
+    <>
+      {members.slice(0, 3).map((member, index) => (
+        <span key={member.id} className="inline-flex items-center gap-0.5">
+          {index > 0 ? <span>,&nbsp;</span> : null}
+          <span>{member.name}</span>
+          {member.isVerified ? <VerifiedBadge size={10} /> : null}
+        </span>
+      ))}
+      {members.length > 3 ? <span> +{members.length - 3}</span> : null}
+    </>
+  );
 }
 
 function tempId() {
@@ -388,7 +402,7 @@ export function ChatV4({ onLogin, onBack }: { onLogin: () => void; onBack: () =>
       <span className="min-w-0 flex-1">
         <span className="flex items-center gap-1.5">
           <strong className="block truncate text-xs">{option.name}</strong>
-          {option.isVerified && <ShieldCheck size={12} className="shrink-0 text-cyan-300" />}
+          {option.isVerified && <VerifiedBadge size={13} />}
         </span>
         <small className="block truncate text-[10px] text-slate-500">@{option.username}</small>
       </span>
@@ -486,7 +500,7 @@ export function ChatV4({ onLogin, onBack }: { onLogin: () => void; onBack: () =>
                   <button key={chat.id} onClick={() => setActiveChatId(chat.id)} className={`w-full rounded-[22px] border p-3 text-left transition ${selected ? "border-cyan-200/25 bg-white/[.075]" : "border-white/6 bg-black/8 hover:border-white/12 hover:bg-white/[.04]"}`}>
                     <div className="flex items-center gap-3">
                       <span className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-gradient-to-br from-cyan-400/18 to-violet-500/16 text-xs font-black text-cyan-100">{chat.avatar}</span>
-                      <span className="min-w-0 flex-1"><strong className="block truncate text-sm">{chat.name}</strong><small className="block truncate text-[10px] text-slate-500">{memberLine(chat.members)}</small></span>
+                      <span className="min-w-0 flex-1"><strong className="block truncate text-sm">{chat.name}</strong><small className="block truncate text-[10px] text-slate-500"><MemberLine members={chat.members} /></small></span>
                       <ShieldCheck size={16} className="text-emerald-300/70" />
                     </div>
                     <p className="mt-2 line-clamp-2 text-[10px] leading-4 text-slate-500">{chat.description}</p>
@@ -502,7 +516,7 @@ export function ChatV4({ onLogin, onBack }: { onLogin: () => void; onBack: () =>
                 <div className="flex shrink-0 items-center gap-2 border-b border-white/8 px-2.5 py-2.5 sm:px-4 sm:py-3">
                   <button onClick={() => setActiveChatId(null)} className="grid h-9 w-9 shrink-0 place-items-center rounded-2xl border border-white/10 bg-black/10 text-slate-300 md:hidden" aria-label="Chatlar ro'yxatiga qaytish"><ArrowLeft size={17} /></button>
                   <span className="grid h-9 w-9 shrink-0 place-items-center rounded-2xl bg-gradient-to-br from-cyan-400/20 to-violet-500/20 text-xs font-black text-cyan-100 sm:h-10 sm:w-10">{activeChat.avatar}</span>
-                  <div className="min-w-0"><h2 className="truncate text-sm font-bold sm:text-base">{activeChat.name}</h2><p className="truncate text-[10px] text-slate-500">{memberLine(activeChat.members)}</p></div>
+                  <div className="min-w-0"><h2 className="truncate text-sm font-bold sm:text-base">{activeChat.name}</h2><p className="truncate text-[10px] text-slate-500"><MemberLine members={activeChat.members} /></p></div>
                   <Button onClick={() => setAddMembersOpen((value) => !value)} size="sm" className="ml-auto h-9 shrink-0 rounded-2xl bg-white/[.06] px-2 text-[10px] font-bold text-cyan-100 hover:bg-white/[.1] sm:px-3"><UserPlus size={13} /> <span className="hidden sm:inline">A&apos;zo qo&apos;shish</span></Button>
                   <Button disabled={hidingChat} onClick={() => void hideActiveChat()} size="sm" className="h-9 shrink-0 rounded-2xl bg-rose-400/10 px-2 text-[10px] font-bold text-rose-200 hover:bg-rose-400/15 sm:px-3">{hidingChat ? <XSpinner size="sm" /> : <EyeOff size={13} />} <span className="hidden sm:inline">Yashirish</span></Button>
                 </div>
@@ -535,7 +549,10 @@ export function ChatV4({ onLogin, onBack }: { onLogin: () => void; onBack: () =>
                           <TraderAvatar name={message.name} value={message.avatar} className="h-8 w-8 shrink-0 rounded-2xl text-[10px] sm:h-9 sm:w-9" />
                           <div className={`${own ? "text-right" : ""} max-w-[86%] sm:max-w-[78%]`}>
                             <div className={`mb-1 flex items-center gap-2 ${own ? "justify-end" : ""}`}>
-                              <strong className="text-[10px]">{own ? "Siz" : message.name}</strong>
+                              <span className="inline-flex items-center gap-1">
+                                <strong className="text-[10px]">{own ? "Siz" : message.name}</strong>
+                                {message.isVerified ? <VerifiedBadge size={11} /> : null}
+                              </span>
                               <span className="text-[9px] text-slate-600">{message.createdAt}</span>
                               {!sendingMessage && <button onClick={() => setReplyingTo(message)} className="grid h-6 w-6 place-items-center rounded-lg text-slate-500 hover:bg-white/[.06] hover:text-cyan-200" aria-label="Reply"><Reply size={12} /></button>}
                               {own && !editing && !sendingMessage && !failedMessage && <button onClick={() => startEditMessage(message)} className="grid h-6 w-6 place-items-center rounded-lg text-slate-500 hover:bg-white/[.06] hover:text-cyan-200" aria-label="Xabarni tahrirlash"><Edit3 size={12} /></button>}

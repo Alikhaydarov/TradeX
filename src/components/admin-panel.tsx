@@ -6,6 +6,7 @@ import { apiRequest } from "@/lib/api-client";
 import { Button } from "@/components/ui/button";
 import { AppLoader } from "./app-loader";
 import { TraderAvatar } from "./trader-avatar";
+import { VerifiedBadge } from "./verified-badge";
 import type { AdminUser } from "./types";
 
 export function AdminPanel({ onLogin }: { onLogin: () => void }) {
@@ -113,7 +114,7 @@ export function AdminPanel({ onLogin }: { onLogin: () => void }) {
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2">
                       <strong className="truncate text-sm">{target.fullName}</strong>
-                      {target.isVerified && <ShieldCheck size={14} className="shrink-0 text-cyan-300" />}
+                      {target.isVerified && <VerifiedBadge size={14} />}
                       {target.isAdmin && <span className="rounded-full bg-violet-300/10 px-2 py-0.5 text-[9px] font-black text-violet-200">ADMIN</span>}
                     </div>
                     <p className="truncate text-[11px] text-slate-500">@{target.username}</p>

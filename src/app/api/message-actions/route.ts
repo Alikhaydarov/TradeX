@@ -13,6 +13,7 @@ interface MessageRecord {
   reply_to_name: string | null;
   reply_to_content: string | null;
   created_at: string;
+  sender_is_verified?: boolean;
 }
 
 export async function POST(request: Request) {
@@ -36,5 +37,18 @@ export async function POST(request: Request) {
     .single<MessageRecord>();
 
   if (error) return serverError(error.message);
-  return Response.json({ message: data });
+
+  const { data: profile, error: profileError } = await auth.supabase
+    .from("profiles")
+    .select("is_verified")
+    .eq("id", data.user_id)
+    .single<{ is_verified: boolean | null }>();
+
+  if (profileError) return serverError(profileError.message);
+  return Response.json({
+    message: {
+      ...data,
+      sender_is_verified: Boolean(profile.is_verified),
+    },
+  });
 }

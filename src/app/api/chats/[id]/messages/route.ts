@@ -13,6 +13,7 @@ interface MessageRecord {
   reply_to_name: string | null;
   reply_to_content: string | null;
   created_at: string;
+  sender_is_verified?: boolean;
 }
 
 interface ProfileRecord {
@@ -20,6 +21,28 @@ interface ProfileRecord {
   username: string;
   full_name: string;
   avatar_url: string | null;
+  is_verified: boolean | null;
+}
+
+async function hydrateVerification(
+  auth: NonNullable<Awaited<ReturnType<typeof authenticateRequest>>>,
+  messages: MessageRecord[],
+) {
+  const userIds = [...new Set(messages.map((message) => message.user_id).filter(Boolean))];
+  if (!userIds.length) return messages;
+
+  const { data, error } = await auth.supabase
+    .from("profiles")
+    .select("id, is_verified")
+    .in("id", userIds)
+    .returns<Array<{ id: string; is_verified: boolean | null }>>();
+
+  if (error) throw new Error(error.message);
+  const verification = new Map((data ?? []).map((profile) => [profile.id, Boolean(profile.is_verified)]));
+  return messages.map((message) => ({
+    ...message,
+    sender_is_verified: verification.get(message.user_id) ?? false,
+  }));
 }
 
 async function isMember(
@@ -58,7 +81,7 @@ export async function GET(
       .returns<MessageRecord[]>();
 
     if (error) return serverError(error.message);
-    return Response.json({ messages: data });
+    return Response.json({ messages: await hydrateVerification(auth, data ?? []) });
   } catch (error) {
     return serverError(error instanceof Error ? error.message : undefined);
   }
@@ -81,7 +104,7 @@ export async function POST(
 
     const { data: profile, error: profileError } = await auth.supabase
       .from("profiles")
-      .select("id, username, full_name, avatar_url")
+      .select("id, username, full_name, avatar_url, is_verified")
       .eq("id", auth.user.id)
       .single<ProfileRecord>();
 
@@ -123,7 +146,12 @@ export async function POST(
       .single<MessageRecord>();
 
     if (error) return serverError(error.message);
-    return Response.json({ message: data }, { status: 201 });
+    return Response.json({
+      message: {
+        ...data,
+        sender_is_verified: Boolean(profile.is_verified),
+      },
+    }, { status: 201 });
   } catch (error) {
     return serverError(error instanceof Error ? error.message : undefined);
   }

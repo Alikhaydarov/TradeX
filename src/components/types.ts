@@ -19,7 +19,20 @@ export interface Post {
   views: number;
   liked?: boolean;
   bookmarked?: boolean;
+  reposted?: boolean;
   isVerified?: boolean;
+}
+
+export interface PostReply {
+  id: string;
+  postId: string;
+  userId: string;
+  name: string;
+  username: string;
+  avatar: string | null;
+  isVerified?: boolean;
+  content: string;
+  createdAt: string;
 }
 
 export interface Group {

@@ -30,7 +30,7 @@ function mapReplies(replies: ReplyRecord[], authors: ReplyAuthor[]) {
       name: author?.full_name ?? "Trader",
       username: author?.username ?? "trader",
       avatar: author?.avatar_url ?? null,
-      verified: author?.is_verified ?? false,
+      isVerified: author?.is_verified ?? false,
       content: reply.content,
       createdAt: reply.created_at,
     };

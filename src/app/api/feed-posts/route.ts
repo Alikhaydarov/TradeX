@@ -58,17 +58,19 @@ export async function GET(request: Request) {
 
   const auth = await authenticateRequest(request);
   if (!auth) {
-    return Response.json({ posts: hydratedPosts, likedPostIds: [], bookmarkedPostIds: [] });
+    return Response.json({ posts: hydratedPosts, likedPostIds: [], bookmarkedPostIds: [], repostedPostIds: [] });
   }
 
-  const [likes, bookmarks] = await Promise.all([
+  const [likes, bookmarks, reposts] = await Promise.all([
     auth.supabase.from("post_likes").select("post_id").eq("user_id", auth.user.id),
     auth.supabase.from("post_bookmarks").select("post_id").eq("user_id", auth.user.id),
+    auth.supabase.from("post_reposts").select("post_id").eq("user_id", auth.user.id),
   ]);
 
   return Response.json({
     posts: hydratedPosts,
     likedPostIds: likes.data?.map((item) => item.post_id) ?? [],
     bookmarkedPostIds: bookmarks.data?.map((item) => item.post_id) ?? [],
+    repostedPostIds: reposts.data?.map((item) => item.post_id) ?? [],
   });
 }
