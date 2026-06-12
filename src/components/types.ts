@@ -113,6 +113,18 @@ export interface JournalEntry {
   pnl: number;
   date: string;
   note: string;
+  rawDate?: string;
+  accountName?: string;
+  marketType?: string;
+  setup?: string;
+  emotion?: string;
+  riskAmount?: number;
+  resultR?: number;
+  imageUrl?: string | null;
+  tags?: string[];
+  accountSize?: number;
+  profitTarget?: number;
+  maxDrawdown?: number;
 }
 
 export interface BacktestResult {
