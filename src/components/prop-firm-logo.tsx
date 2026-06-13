@@ -12,18 +12,33 @@ const firms: Record<string, { mark: string; label: string; style: string }> = {
   "alpha capital group": { mark: "AC", label: "Alpha Capital", style: "bg-[#2672ff] text-white" },
 };
 
-export function PropFirmLogo({ firm, compact = false }: { firm: string; compact?: boolean }) {
+type PropFirmLogoProps = {
+  firm: string;
+  compact?: boolean;
+  showLabel?: boolean;
+};
+
+export function PropFirmLogo({ firm, compact = false, showLabel = false }: PropFirmLogoProps) {
   const key = firm.trim().toLowerCase();
   const known = firms[key];
   const initials = firm.trim().split(/\s+/).map((part) => part[0]).join("").slice(0, 2).toUpperCase();
   const mark = known?.mark || initials;
   const label = known?.label || firm || "Independent";
+  const logo = (
+    <span
+      aria-label={`${label} logotipi`}
+      title={label}
+      className={`grid shrink-0 place-items-center rounded-xl font-black tracking-tight ${compact ? "size-9 text-[11px]" : "size-11 text-xs"} ${known?.style || "bg-muted text-foreground"}`}
+    >
+      {mark || <Building2 className="size-4" />}
+    </span>
+  );
+
+  if (!showLabel) return logo;
 
   return (
     <div className="flex min-w-0 items-center gap-2.5">
-      <span className={`grid shrink-0 place-items-center rounded-xl font-black tracking-tight ${compact ? "size-9 text-[11px]" : "size-11 text-xs"} ${known?.style || "bg-muted text-foreground"}`}>
-        {mark || <Building2 className="size-4" />}
-      </span>
+      {logo}
       <span className="min-w-0">
         <b className="block truncate text-sm">{label}</b>
         {!compact ? <small className="text-[10px] text-muted-foreground">Prop firm</small> : null}
