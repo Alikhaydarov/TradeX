@@ -1,12 +1,11 @@
 "use client";
 
-import { Camera, CheckCircle2, ImagePlus, LoaderCircle, Plus, Trash2, UploadCloud, X } from "lucide-react";
-import { useRef, useState, type ComponentProps, type DragEvent } from "react";
-import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
+import { Camera, ImagePlus, LoaderCircle, Plus, Trash2, UploadCloud, X } from "lucide-react";
+import { useRef, useState, type ChangeEvent, type DragEvent } from "react";
+import { Button } from "./ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog";
+import { Input } from "./ui/input";
+import { Textarea } from "./ui/textarea";
 import type { PropAccount } from "./types";
 
 interface TradeReviewModalProps {
@@ -17,15 +16,40 @@ interface TradeReviewModalProps {
   onSave: (form: FormData) => void | Promise<void>;
 }
 
-const SESSIONS = ["London", "New York", "Asian", "London/NY Overlap", "Pre-London", "Other"];
-const EMOTIONS = [
-  { v: "Confident", emoji: "😎" },
-  { v: "Neutral", emoji: "😐" },
-  { v: "Hesitant", emoji: "😰" },
-  { v: "FOMO", emoji: "😱" },
-  { v: "Revenge", emoji: "🔥" },
-];
-const SETUPS = ["BOS", "CHoCH", "Liquidity Sweep", "FVG", "OB", "Breakout", "Reversal", "Range", "Other"];
+const SESSIONS = ["London", "New York", "Asian", "London/NY Overlap", "Pre-London"];
+const RISK_PCT = ["0.25%", "0.5%", "1.0%", "2.0%", "4.0%"];
+const SETUPS = ["BOS", "CHoCH", "Liquidity Sweep", "FVG", "OB", "Breakout", "Reversal", "Range"];
+const MISTAKES = ["Erta kirish", "Kechiktirilgan kirish", "SL qo'ymaslik", "Ortiqcha risk", "Plansiz trade", "Revenge trade", "FOMO", "Erta yopish"];
+
+// Faqat raqam, nuqta va minusga ruxsat — vergul (",") avtomatik nuqtaga aylanadi, locale muammosi yo'q
+function sanitizeDecimal(raw: string): string {
+  const cleaned = raw.replace(",", ".").replace(/[^0-9.-]/g, "");
+  const parts = cleaned.split(".");
+  return parts.length > 2 ? `${parts[0]}.${parts.slice(1).join("")}` : cleaned;
+}
+
+function NumberField({
+  label, name, defaultValue = "", placeholder, required,
+}: { label: string; name: string; defaultValue?: string; placeholder?: string; required?: boolean }) {
+  const [value, setValue] = useState(defaultValue);
+  const onChange = (e: ChangeEvent<HTMLInputElement>) => setValue(sanitizeDecimal(e.target.value));
+  return (
+    <div className="space-y-1.5">
+      <label className="text-[11px] font-semibold uppercase tracking-wider text-[#6b7a96]">{label}</label>
+      <Input
+        name={name}
+        type="text"
+        inputMode="decimal"
+        autoComplete="off"
+        value={value}
+        onChange={onChange}
+        placeholder={placeholder}
+        required={required}
+        className="border-[#1a2235] bg-[#0d1525] font-mono focus:border-blue-500/50"
+      />
+    </div>
+  );
+}
 
 export function TradeReviewModal({ open, saving, account, onOpenChange, onSave }: TradeReviewModalProps) {
   const inputRef = useRef<HTMLInputElement | null>(null);
@@ -34,12 +58,20 @@ export function TradeReviewModal({ open, saving, account, onOpenChange, onSave }
   const [uploadError, setUploadError] = useState("");
   const [followingPlan, setFollowingPlan] = useState(true);
   const [errorMade, setErrorMade] = useState(false);
+  const [mistakeType, setMistakeType] = useState("");
+  const [reviewCompleted, setReviewCompleted] = useState(false);
+  const [toBible, setToBible] = useState(false);
   const [session, setSession] = useState("London");
-  const [emotion, setEmotion] = useState("Neutral");
+  const [riskPct, setRiskPct] = useState("1.0%");
   const [setup, setSetup] = useState("");
 
-  const resetImage = () => { setImageUrl(""); setUploadError(""); if (inputRef.current) inputRef.current.value = ""; };
-  const close = (next: boolean) => { onOpenChange(next); if (!next) resetImage(); };
+  const resetForm = () => {
+    setImageUrl(""); setUploadError("");
+    if (inputRef.current) inputRef.current.value = "";
+    setFollowingPlan(true); setErrorMade(false); setMistakeType("");
+    setReviewCompleted(false); setToBible(false); setSession("London"); setRiskPct("1.0%"); setSetup("");
+  };
+  const close = (next: boolean) => { onOpenChange(next); if (!next) resetForm(); };
 
   const upload = async (file?: File) => {
     if (!file) return;
@@ -57,7 +89,7 @@ export function TradeReviewModal({ open, saving, account, onOpenChange, onSave }
   };
 
   const drop = (e: DragEvent<HTMLButtonElement>) => { e.preventDefault(); void upload(e.dataTransfer.files?.[0]); };
-  const submit = async (form: FormData) => { await onSave(form); resetImage(); };
+  const submit = async (form: FormData) => { await onSave(form); resetForm(); };
 
   return (
     <Dialog open={open} onOpenChange={close}>
@@ -81,26 +113,36 @@ export function TradeReviewModal({ open, saving, account, onOpenChange, onSave }
           <div className="flex-1 overflow-y-auto p-5 lg:p-6">
             {/* Symbol + Side + Date */}
             <div className="grid grid-cols-3 gap-3">
-              <FF label="Symbol" name="symbol" placeholder="XAUUSD" required />
               <div className="space-y-1.5">
-                <label className="text-[11px] font-semibold uppercase tracking-wider text-[#6b7a96]">Yo'nalish</label>
+                <label className="text-[11px] font-semibold uppercase tracking-wider text-[#6b7a96]">Pair / Symbol</label>
+                <Input name="symbol" placeholder="XAUUSD" required className="border-[#1a2235] bg-[#0d1525] focus:border-blue-500/50" />
+              </div>
+              <div className="space-y-1.5">
+                <label className="text-[11px] font-semibold uppercase tracking-wider text-[#6b7a96]">Yo&apos;nalish</label>
                 <div className="grid grid-cols-2 gap-1.5 rounded-xl border border-[#1a2235] bg-[#0d1525] p-1.5">
-                  {["Long", "Short"].map(s => (
-                    <label key={s} className="cursor-pointer">
-                      <input type="radio" name="side" value={s} defaultChecked={s === "Long"} className="sr-only peer" />
-                      <span className={`block rounded-lg py-1.5 text-center text-xs font-bold transition peer-checked:${s === "Long" ? "bg-emerald-500/20 text-emerald-300" : "bg-rose-500/20 text-rose-300"} text-[#6b7a96] hover:text-[#dde6f8]`}>
-                        {s === "Long" ? "▲ " : "▼ "}{s}
-                      </span>
-                    </label>
-                  ))}
+                  <label className="cursor-pointer">
+                    <input type="radio" name="side" value="Long" defaultChecked className="peer sr-only" />
+                    <span className="block rounded-lg py-1.5 text-center text-xs font-bold text-[#6b7a96] transition peer-checked:bg-emerald-500/20 peer-checked:text-emerald-300 hover:text-[#dde6f8]">
+                      ▲ Long
+                    </span>
+                  </label>
+                  <label className="cursor-pointer">
+                    <input type="radio" name="side" value="Short" className="peer sr-only" />
+                    <span className="block rounded-lg py-1.5 text-center text-xs font-bold text-[#6b7a96] transition peer-checked:bg-rose-500/20 peer-checked:text-rose-300 hover:text-[#dde6f8]">
+                      ▼ Short
+                    </span>
+                  </label>
                 </div>
               </div>
-              <FF label="Sana" name="tradedAt" type="date" defaultValue={new Date().toISOString().slice(0, 10)} required />
+              <div className="space-y-1.5">
+                <label className="text-[11px] font-semibold uppercase tracking-wider text-[#6b7a96]">Sana</label>
+                <Input name="tradedAt" type="date" defaultValue={new Date().toISOString().slice(0, 10)} required className="border-[#1a2235] bg-[#0d1525]" />
+              </div>
             </div>
 
             {/* Session */}
             <div className="mt-4 space-y-1.5">
-              <label className="text-[11px] font-semibold uppercase tracking-wider text-[#6b7a96]">Sessiya</label>
+              <label className="text-[11px] font-semibold uppercase tracking-wider text-[#6b7a96]">Session / Time</label>
               <div className="flex flex-wrap gap-1.5">
                 {SESSIONS.map(s => (
                   <button key={s} type="button" onClick={() => setSession(s)}
@@ -109,12 +151,12 @@ export function TradeReviewModal({ open, saving, account, onOpenChange, onSave }
                   </button>
                 ))}
               </div>
-              <input type="hidden" name="emotion" value={emotion} />
+              <input type="hidden" name="session" value={session} />
             </div>
 
-            {/* Setup */}
+            {/* Strategy / Setup */}
             <div className="mt-4 space-y-1.5">
-              <label className="text-[11px] font-semibold uppercase tracking-wider text-[#6b7a96]">Setup</label>
+              <label className="text-[11px] font-semibold uppercase tracking-wider text-[#6b7a96]">Strategy / Setup</label>
               <div className="flex flex-wrap gap-1.5">
                 {SETUPS.map(s => (
                   <button key={s} type="button" onClick={() => setSetup(setup === s ? "" : s)}
@@ -126,48 +168,60 @@ export function TradeReviewModal({ open, saving, account, onOpenChange, onSave }
               <input type="hidden" name="setup" value={setup} />
             </div>
 
-            {/* Prices */}
-            <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
-              <FF label="Entry narxi" name="entry" type="number" step="any" placeholder="0.00" required />
-              <FF label="Exit narxi" name="exit" type="number" step="any" placeholder="0.00" required />
-              <FF label="Lot / Miqdor" name="quantity" type="number" step="any" defaultValue="1" required />
-              <FF label="Risk miqdori $" name="riskAmount" type="number" step="any" defaultValue="100" required />
-            </div>
-            <div className="mt-3 grid grid-cols-2 gap-3">
-              <FF label="Komissiya $" name="fees" type="number" step="any" defaultValue="0" required />
-              <FF label="Tags" name="tags" placeholder="London, BOS, A+ setup" />
-            </div>
-
-            {/* Emotion */}
+            {/* Risk % + RR + Prices */}
             <div className="mt-4 space-y-1.5">
-              <label className="text-[11px] font-semibold uppercase tracking-wider text-[#6b7a96]">Emotsiya</label>
-              <div className="flex gap-2">
-                {EMOTIONS.map(e => (
-                  <button key={e.v} type="button" onClick={() => setEmotion(e.v)}
-                    title={e.v}
-                    className={`flex flex-1 flex-col items-center gap-1 rounded-xl border py-2.5 text-xl transition ${emotion === e.v ? "border-blue-500/40 bg-blue-500/10" : "border-[#1a2235] bg-[#0d1525] opacity-50 hover:opacity-80"}`}>
-                    <span>{e.emoji}</span>
-                    <span className="text-[9px] font-medium text-[#6b7a96]">{e.v}</span>
+              <label className="text-[11px] font-semibold uppercase tracking-wider text-[#6b7a96]">Risk %</label>
+              <div className="flex gap-1.5">
+                {RISK_PCT.map(r => (
+                  <button key={r} type="button" onClick={() => setRiskPct(r)}
+                    className={`flex-1 rounded-lg py-1.5 text-xs font-bold transition ${riskPct === r ? "bg-amber-500/20 text-amber-300 ring-1 ring-amber-500/30" : "bg-[#0d1525] text-[#6b7a96] hover:text-[#dde6f8]"}`}>
+                    {r}
                   </button>
                 ))}
               </div>
+              <input type="hidden" name="riskPercent" value={riskPct} />
             </div>
 
-            {/* Plan / Error checkboxes — Notion style */}
-            <div className="mt-4 grid grid-cols-2 gap-3">
-              <button type="button" onClick={() => setFollowingPlan(v => !v)}
-                className={`flex items-center gap-2.5 rounded-xl border px-4 py-3 text-sm font-medium transition ${followingPlan ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-300" : "border-[#1a2235] bg-[#0d1525] text-[#6b7a96]"}`}>
-                <CheckCircle2 size={16} className={followingPlan ? "text-emerald-400" : "text-[#1e2d45]"} />
-                Planga mos trade
-              </button>
-              <button type="button" onClick={() => setErrorMade(v => !v)}
-                className={`flex items-center gap-2.5 rounded-xl border px-4 py-3 text-sm font-medium transition ${errorMade ? "border-rose-500/30 bg-rose-500/10 text-rose-300" : "border-[#1a2235] bg-[#0d1525] text-[#6b7a96]"}`}>
-                <X size={16} className={errorMade ? "text-rose-400" : "text-[#1e2d45]"} />
-                Xato qilindi
-              </button>
+            <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-4">
+              <NumberField label="Entry narxi" name="entry" placeholder="0.00" required />
+              <NumberField label="Exit narxi" name="exit" placeholder="0.00" required />
+              <NumberField label="Lot / Miqdor" name="quantity" defaultValue="1" required />
+              <NumberField label="RR (Risk:Reward)" name="resultR" placeholder="2.5" required />
+            </div>
+            <div className="mt-3 grid grid-cols-3 gap-3">
+              <NumberField label="Risk miqdori $" name="riskAmount" defaultValue="100" required />
+              <NumberField label="Komissiya $" name="fees" defaultValue="0" required />
+              <div className="space-y-1.5">
+                <label className="text-[11px] font-semibold uppercase tracking-wider text-[#6b7a96]">Tags</label>
+                <Input name="tags" placeholder="A+ setup, news" className="border-[#1a2235] bg-[#0d1525] focus:border-blue-500/50" />
+              </div>
+            </div>
+
+            {/* Notion checklist block */}
+            <div className="mt-5 rounded-xl border border-[#1a2235] bg-[#0d1525]/60 p-4">
+              <p className="mb-3 text-[11px] font-semibold uppercase tracking-wider text-[#6b7a96]">Trade checklist</p>
+              <div className="space-y-2.5">
+                <CheckRow label="Following plan?" checked={followingPlan} onToggle={() => setFollowingPlan(v => !v)} tone="emerald" />
+                <CheckRow label="Error made?" checked={errorMade} onToggle={() => setErrorMade(v => !v)} tone="rose" />
+                {errorMade && (
+                  <div className="ml-7 flex flex-wrap gap-1.5 pt-1">
+                    {MISTAKES.map(m => (
+                      <button key={m} type="button" onClick={() => setMistakeType(mistakeType === m ? "" : m)}
+                        className={`rounded-lg px-2.5 py-1 text-[11px] font-medium transition ${mistakeType === m ? "bg-rose-500/20 text-rose-300 ring-1 ring-rose-500/30" : "bg-[#060b14] text-[#6b7a96] hover:text-[#dde6f8]"}`}>
+                        {m}
+                      </button>
+                    ))}
+                  </div>
+                )}
+                <CheckRow label="Review completed" checked={reviewCompleted} onToggle={() => setReviewCompleted(v => !v)} tone="blue" />
+                <CheckRow label="+ to Trading Bible?" checked={toBible} onToggle={() => setToBible(v => !v)} tone="violet" />
+              </div>
             </div>
             <input type="hidden" name="followingPlan" value={followingPlan ? "true" : "false"} />
             <input type="hidden" name="errorMade" value={errorMade ? "true" : "false"} />
+            <input type="hidden" name="mistakeType" value={mistakeType} />
+            <input type="hidden" name="reviewCompleted" value={reviewCompleted ? "true" : "false"} />
+            <input type="hidden" name="toTradingBible" value={toBible ? "true" : "false"} />
 
             {/* Note */}
             <div className="mt-4 space-y-1.5">
@@ -200,7 +254,7 @@ export function TradeReviewModal({ open, saving, account, onOpenChange, onSave }
               {imageUrl
                 ? <div className="relative flex w-full items-center justify-center p-3">
                     <img src={imageUrl} alt="chart" className="max-h-80 w-full rounded-xl object-contain" />
-                    <button type="button" onClick={resetImage}
+                    <button type="button" onClick={() => { setImageUrl(""); if (inputRef.current) inputRef.current.value = ""; }}
                       className="absolute right-3 top-3 grid size-7 place-items-center rounded-lg bg-rose-500/20 text-rose-300 hover:bg-rose-500/30">
                       <Trash2 size={14} />
                     </button>
@@ -245,11 +299,21 @@ export function TradeReviewModal({ open, saving, account, onOpenChange, onSave }
   );
 }
 
-function FF({ label, ...props }: { label: string } & ComponentProps<typeof Input>) {
+function CheckRow({
+  label, checked, onToggle, tone,
+}: { label: string; checked: boolean; onToggle: () => void; tone: "emerald" | "rose" | "blue" | "violet" }) {
+  const toneMap: Record<string, string> = {
+    emerald: "border-emerald-500/40 bg-emerald-500/15 text-emerald-400",
+    rose: "border-rose-500/40 bg-rose-500/15 text-rose-400",
+    blue: "border-blue-500/40 bg-blue-500/15 text-blue-400",
+    violet: "border-violet-500/40 bg-violet-500/15 text-violet-400",
+  };
   return (
-    <div className="space-y-1.5">
-      <label className="text-[11px] font-semibold uppercase tracking-wider text-[#6b7a96]">{label}</label>
-      <Input {...props} className="border-[#1a2235] bg-[#0d1525] focus:border-blue-500/50" />
-    </div>
+    <button type="button" onClick={onToggle} className="flex w-full items-center gap-3 text-left">
+      <span className={`grid size-5 shrink-0 place-items-center rounded-md border transition ${checked ? toneMap[tone] : "border-[#1e2d45] bg-transparent text-transparent"}`}>
+        {checked && "✓"}
+      </span>
+      <span className={`text-sm transition ${checked ? "text-[#dde6f8]" : "text-[#6b7a96]"}`}>{label}</span>
+    </button>
   );
 }

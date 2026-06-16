@@ -1,10 +1,10 @@
 "use client";
 import { Building2, ChevronDown, LoaderCircle, Plus, ShieldCheck, TrendingUp } from "lucide-react";
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Button } from "./ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog";
+import { Input } from "./ui/input";
+import { Label } from "./ui/label";
 
 const FIRMS = [
   { name: "FTMO", mark: "FT", color: "#e9ff2f", text: "#000" },
@@ -176,12 +176,13 @@ export function PropAccountDialog({
                   <label className="text-[10px] text-[#6b7a96]">{label}</label>
                   <Input
                     name={String(name)}
-                    type="number"
-                    min="0"
-                    step="any"
+                    type="text"
+                    inputMode="decimal"
+                    autoComplete="off"
                     defaultValue={String(def)}
+                    onChange={(e) => { e.target.value = e.target.value.replace(",", ".").replace(/[^0-9.]/g, ""); }}
                     required
-                    className="h-9 border-[#1a2235] bg-[#060b14] px-2 text-sm"
+                    className="h-9 border-[#1a2235] bg-[#060b14] px-2 font-mono text-sm"
                   />
                 </div>
               ))}

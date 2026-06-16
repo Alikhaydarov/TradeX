@@ -7,13 +7,11 @@ import {
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
-import { apiRequest } from "@/lib/api-client";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { Input } from "@/components/ui/input";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { apiRequest } from "../lib/api-client";
+import { Button } from "./ui/button";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "./ui/dropdown-menu";
+import { Input } from "./ui/input";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
 import { useAuth } from "./auth-context";
 import { PropAccountDialog } from "./prop-account-dialog";
 import { PropFirmLogo } from "./prop-firm-logo";
@@ -21,7 +19,7 @@ import { TradeReviewModal } from "./trade-review-modal";
 import type { JournalEntry, PropAccount } from "./types";
 
 type AccountRow = { id: string; name: string; firm: string; phase: string; market_type: string; account_size: string; initial_balance: string; profit_target: string; max_drawdown: string; daily_drawdown: string; start_date: string; status: PropAccount["status"] };
-type EntryRow = { id: string; prop_account_id?: string | null; symbol: string; side: "Long" | "Short"; entry_price: string; exit_price: string; quantity: string; fees: string; pnl: string; note: string; traded_at: string; account_name?: string; market_type?: string; setup?: string; emotion?: string; risk_amount?: string; result_r?: string; image_url?: string | null; tags?: string[] };
+type EntryRow = { id: string; prop_account_id?: string | null; symbol: string; side: "Long" | "Short"; entry_price: string; exit_price: string; quantity: string; fees: string; pnl: string; note: string; traded_at: string; account_name?: string; market_type?: string; setup?: string; emotion?: string; risk_amount?: string; result_r?: string; risk_percent?: string; session?: string; following_plan?: boolean; error_made?: boolean; mistake_type?: string; review_completed?: boolean; to_trading_bible?: boolean; image_url?: string | null; tags?: string[] };
 type Summary = { account: PropAccount; trades: number; pnl: number; winRate: number; target: number; dd: number };
 
 const cash = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 2 });
@@ -29,7 +27,7 @@ const WEEKDAYS_SHORT = ["Du", "Se", "Ch", "Pa", "Ju", "Sh", "Ya"];
 const WEEKDAYS_FULL = ["Dushanba", "Seshanba", "Chorshanba", "Payshanba", "Juma", "Shanba", "Yakshanba"];
 
 const accountFrom = (a: AccountRow): PropAccount => ({ id: a.id, name: a.name, firm: a.firm, phase: a.phase, marketType: a.market_type, accountSize: +a.account_size, initialBalance: +a.initial_balance, profitTarget: +a.profit_target, maxDrawdown: +a.max_drawdown, dailyDrawdown: +a.daily_drawdown, startDate: a.start_date, status: a.status });
-const entryFrom = (e: EntryRow): JournalEntry => ({ id: e.id, propAccountId: e.prop_account_id, symbol: e.symbol, side: e.side, entry: +e.entry_price, exit: +e.exit_price, quantity: +e.quantity, fees: +e.fees, pnl: +e.pnl, note: e.note, rawDate: e.traded_at, date: new Date(`${e.traded_at}T00:00:00`).toLocaleDateString("uz-UZ"), accountName: e.account_name, marketType: e.market_type, setup: e.setup || "", emotion: e.emotion || "Neutral", riskAmount: +(e.risk_amount || 0), resultR: +(e.result_r || 0), imageUrl: e.image_url, tags: e.tags || [] });
+const entryFrom = (e: EntryRow): JournalEntry => ({ id: e.id, propAccountId: e.prop_account_id, symbol: e.symbol, side: e.side, entry: +e.entry_price, exit: +e.exit_price, quantity: +e.quantity, fees: +e.fees, pnl: +e.pnl, note: e.note, rawDate: e.traded_at, date: new Date(`${e.traded_at}T00:00:00`).toLocaleDateString("uz-UZ"), accountName: e.account_name, marketType: e.market_type, setup: e.setup || "", emotion: e.emotion || "Neutral", riskAmount: +(e.risk_amount || 0), resultR: +(e.result_r || 0), riskPercent: e.risk_percent || "1.0%", session: e.session || "", followingPlan: e.following_plan ?? true, errorMade: e.error_made ?? false, mistakeType: e.mistake_type || "", reviewCompleted: e.review_completed ?? false, toTradingBible: e.to_trading_bible ?? false, imageUrl: e.image_url, tags: e.tags || [] });
 const monthId = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
 
 export function JournalV2({ onLogin }: { onLogin: () => void }) {
@@ -66,6 +64,8 @@ export function JournalV2({ onLogin }: { onLogin: () => void }) {
   const stats = useMemo(() => { const pnl = monthEntries.reduce((s, e) => s + e.pnl, 0), wins = monthEntries.filter(e => e.pnl > 0), losses = monthEntries.filter(e => e.pnl < 0), gw = wins.reduce((s, e) => s + e.pnl, 0), gl = Math.abs(losses.reduce((s, e) => s + e.pnl, 0)); return { pnl, wins: wins.length, losses: losses.length, rate: monthEntries.length ? Math.round(wins.length / monthEntries.length * 100) : 0, r: monthEntries.length ? monthEntries.reduce((s, e) => s + (e.resultR || 0), 0) / monthEntries.length : 0, pf: gl ? gw / gl : gw ? gw : 0 }; }, [monthEntries]);
   const equity = useMemo(() => { let v = account?.initialBalance || 0; return [...accountEntries].sort((a, b) => String(a.rawDate).localeCompare(String(b.rawDate))).map((e, i) => ({ trade: i + 1, equity: v += e.pnl })); }, [accountEntries, account]);
   const setups = useMemo(() => { const m = new Map<string, { pnl: number; trades: number; wins: number }>(); monthEntries.forEach(e => { const k = e.setup || "Uncategorized", v = m.get(k) || { pnl: 0, trades: 0, wins: 0 }; m.set(k, { pnl: v.pnl + e.pnl, trades: v.trades + 1, wins: v.wins + (e.pnl > 0 ? 1 : 0) }); }); return [...m].map(([name, v]) => ({ name, ...v, rate: Math.round(v.wins / v.trades * 100) })).sort((a, b) => b.pnl - a.pnl); }, [monthEntries]);
+  const mistakes = useMemo(() => { const m = new Map<string, { pnl: number; trades: number }>(); monthEntries.filter(e => e.errorMade && e.mistakeType).forEach(e => { const k = e.mistakeType as string, v = m.get(k) || { pnl: 0, trades: 0 }; m.set(k, { pnl: v.pnl + e.pnl, trades: v.trades + 1 }); }); return [...m].map(([name, v]) => ({ name, ...v })).sort((a, b) => a.pnl - b.pnl); }, [monthEntries]);
+  const planRate = useMemo(() => monthEntries.length ? Math.round(monthEntries.filter(e => e.followingPlan).length / monthEntries.length * 100) : 0, [monthEntries]);
   const calendar = useMemo(() => { const y = month.getFullYear(), m = month.getMonth(), offset = (new Date(y, m, 1).getDay() + 6) % 7, count = new Date(y, m + 1, 0).getDate(), cells = Math.ceil((offset + count) / 7) * 7; return Array.from({ length: cells }, (_, i) => { const day = i - offset + 1; if (day < 1 || day > count) return null; const key = `${monthId(month)}-${String(day).padStart(2, "0")}`, trades = accountEntries.filter(e => e.rawDate === key); return { day, trades, pnl: trades.reduce((s, e) => s + e.pnl, 0) }; }); }, [month, accountEntries]);
 
   async function addAccount(form: FormData) {
@@ -94,8 +94,31 @@ export function JournalV2({ onLogin }: { onLogin: () => void }) {
   async function addTrade(form: FormData) {
     if (!account) return;
     setSaving(true);
+    const num = (key: string) => parseFloat(String(form.get(key) || "0").replace(",", ".")) || 0;
     try {
-      const r = await apiRequest<{ entry: EntryRow }>("/api/journal", { method: "POST", body: JSON.stringify({ propAccountId: account.id, symbol: form.get("symbol"), side: form.get("side"), entry: +String(form.get("entry")), exit: +String(form.get("exit")), quantity: +String(form.get("quantity")), fees: +String(form.get("fees")), riskAmount: +String(form.get("riskAmount")), tradedAt: form.get("tradedAt"), setup: form.get("setup"), emotion: form.get("emotion"), tags: String(form.get("tags") || "").split(","), note: form.get("note"), imageUrl: form.get("imageUrl") }) });
+      const r = await apiRequest<{ entry: EntryRow }>("/api/journal", { method: "POST", body: JSON.stringify({
+        propAccountId: account.id,
+        symbol: form.get("symbol"),
+        side: form.get("side"),
+        entry: num("entry"),
+        exit: num("exit"),
+        quantity: num("quantity"),
+        fees: num("fees"),
+        riskAmount: num("riskAmount"),
+        resultR: num("resultR"),
+        riskPercent: form.get("riskPercent"),
+        session: form.get("session"),
+        tradedAt: form.get("tradedAt"),
+        setup: form.get("setup"),
+        followingPlan: form.get("followingPlan") === "true",
+        errorMade: form.get("errorMade") === "true",
+        mistakeType: form.get("mistakeType"),
+        reviewCompleted: form.get("reviewCompleted") === "true",
+        toTradingBible: form.get("toTradingBible") === "true",
+        tags: String(form.get("tags") || "").split(",").map(t => t.trim()).filter(Boolean),
+        note: form.get("note"),
+        imageUrl: form.get("imageUrl"),
+      }) });
       const next = entryFrom(r.entry);
       setEntries(v => [next, ...v]);
       setMonth(new Date(`${next.rawDate}T00:00:00`));
@@ -132,7 +155,7 @@ export function JournalV2({ onLogin }: { onLogin: () => void }) {
         </div>
       )}
       {account
-        ? <Workspace account={account} stats={stats} equity={equity} setups={setups} calendar={calendar} trades={shown} query={query} month={month} deleting={deleting === account.id} onQuery={setQuery} onBack={() => setAccountId(null)} onTrade={() => setTradeOpen(true)} onDelete={() => removeAccount(account)} onCsv={exportCsv} onPrev={() => shiftMonth(-1)} onNext={() => shiftMonth(1)} onToday={() => setMonth(new Date())} />
+        ? <Workspace account={account} stats={stats} equity={equity} setups={setups} mistakes={mistakes} planRate={planRate} monthCount={monthEntries.length} calendar={calendar} trades={shown} query={query} month={month} deleting={deleting === account.id} onQuery={setQuery} onBack={() => setAccountId(null)} onTrade={() => setTradeOpen(true)} onDelete={() => removeAccount(account)} onCsv={exportCsv} onPrev={() => shiftMonth(-1)} onNext={() => shiftMonth(1)} onToday={() => setMonth(new Date())} />
         : <Accounts summaries={summaries} deleting={deleting} onAdd={() => setAccountOpen(true)} onOpen={setAccountId} onDelete={removeAccount} />
       }
       <PropAccountDialog open={accountOpen} saving={saving} onOpenChange={setAccountOpen} onSave={addAccount} />
@@ -288,12 +311,13 @@ function AccountCard({ s, deleting, onOpen, onDelete }: { s: Summary; deleting: 
 function Workspace(p: {
   account: PropAccount; stats: { pnl: number; wins: number; losses: number; rate: number; r: number; pf: number };
   equity: Array<{ trade: number; equity: number }>; setups: Array<{ name: string; pnl: number; trades: number; wins: number; rate: number }>;
+  mistakes: Array<{ name: string; pnl: number; trades: number }>; planRate: number; monthCount: number;
   calendar: Array<{ day: number; trades: JournalEntry[]; pnl: number } | null>;
   trades: JournalEntry[]; query: string; month: Date; deleting: boolean;
   onQuery: (v: string) => void; onBack: () => void; onTrade: () => void; onDelete: () => void;
   onCsv: () => void; onPrev: () => void; onNext: () => void; onToday: () => void;
 }) {
-  const { account, stats, equity, setups, calendar, trades, month } = p;
+  const { account, stats, equity, setups, mistakes, planRate, monthCount, calendar, trades, month } = p;
 
   return (
     <div className="animate-page-in mx-auto max-w-[1700px]">
@@ -515,11 +539,20 @@ function Workspace(p: {
                           <span className={`rounded-md px-1.5 py-0.5 text-[10px] font-bold ${e.side === "Long" ? "bg-emerald-500/10 text-emerald-400" : "bg-rose-500/10 text-rose-400"}`}>
                             {e.side}
                           </span>
-                          {e.emotion && e.emotion !== "Neutral" && (
-                            <span className="rounded-md bg-[#1a2235] px-1.5 py-0.5 text-[10px] text-[#6b7a96]">{e.emotion}</span>
+                          {e.riskPercent && (
+                            <span className="rounded-md bg-amber-500/10 px-1.5 py-0.5 text-[10px] font-medium text-amber-400">{e.riskPercent}</span>
+                          )}
+                          {e.errorMade && (
+                            <span className="rounded-md bg-rose-500/10 px-1.5 py-0.5 text-[10px] font-medium text-rose-400" title={e.mistakeType}>⚠ Xato</span>
+                          )}
+                          {!e.followingPlan && !e.errorMade && (
+                            <span className="rounded-md bg-amber-500/10 px-1.5 py-0.5 text-[10px] font-medium text-amber-400">Off-plan</span>
+                          )}
+                          {e.reviewCompleted && (
+                            <span className="rounded-md bg-blue-500/10 px-1.5 py-0.5 text-[10px] font-medium text-blue-400">✓ Reviewed</span>
                           )}
                         </div>
-                        <p className="mt-0.5 truncate text-xs text-[#6b7a96]">{e.setup || "No setup"} · {e.date}</p>
+                        <p className="mt-0.5 truncate text-xs text-[#6b7a96]">{e.setup || "No setup"} · {e.session || ""} · {e.date}</p>
                         {e.tags && e.tags.length > 0 && (
                           <div className="mt-1 flex gap-1">
                             {e.tags.slice(0, 3).map(t => (
@@ -560,9 +593,43 @@ function Workspace(p: {
                 }
               </div>
             </div>
+
             <div className="rounded-2xl border border-[#1a2235] bg-[#0d1525]/80 p-5">
-              <h3 className="font-bold">Account details</h3>
+              <h3 className="font-bold">Discipline</h3>
+              <p className="text-xs text-[#6b7a96]">Notion: Following plan?</p>
+              <div className="mt-4">
+                <ProgressBar label={`${monthCount} trade ichidan`} value={planRate} color="bg-emerald-500" />
+              </div>
               <div className="mt-4 grid grid-cols-2 gap-2.5">
+                <MiniStat label="PLANGA MOS" value={`${planRate}%`} />
+                <MiniStat label="XATOLI TRADE" value={String(mistakes.reduce((s, m) => s + m.trades, 0))} />
+              </div>
+            </div>
+
+            <div className="rounded-2xl border border-[#1a2235] bg-[#0d1525]/80 p-5 xl:col-span-2">
+              <h3 className="font-bold">🚫 Outside of Plan</h3>
+              <p className="text-xs text-[#6b7a96]">Eng ko'p uchragan xatolar va ular keltirgan zarar</p>
+              <div className="mt-4 space-y-3">
+                {mistakes.length
+                  ? mistakes.map(m => (
+                      <div key={m.name} className="flex items-center justify-between rounded-xl bg-[#060b14]/60 px-4 py-2.5">
+                        <div>
+                          <p className="text-sm font-medium">{m.name}</p>
+                          <p className="text-[11px] text-[#6b7a96]">{m.trades} marta takrorlandi</p>
+                        </div>
+                        <b className={`font-mono font-bold ${m.pnl >= 0 ? "text-emerald-400" : "text-rose-400"}`}>
+                          {m.pnl >= 0 ? "+" : ""}{cash.format(m.pnl)}
+                        </b>
+                      </div>
+                    ))
+                  : <Empty text="Bu oyda xato qayd etilmagan. Ajoyib disciplina!" />
+                }
+              </div>
+            </div>
+
+            <div className="rounded-2xl border border-[#1a2235] bg-[#0d1525]/80 p-5 xl:col-span-2">
+              <h3 className="font-bold">Account details</h3>
+              <div className="mt-4 grid grid-cols-2 gap-2.5 sm:grid-cols-3">
                 {[
                   ["FIRM", account.firm || "Independent"],
                   ["PHASE", account.phase],
