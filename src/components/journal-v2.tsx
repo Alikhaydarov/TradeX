@@ -1,7 +1,7 @@
 "use client";
 
 import {
-  ArrowLeft, BarChart3, CalendarDays, CheckCircle2, ChevronLeft, ChevronRight,
+  ArrowLeft, BarChart3, CalendarDays, ChevronLeft, ChevronRight,
   Download, ImageIcon, LoaderCircle, MoreHorizontal, Plus, Search, ShieldCheck,
   Target, Trash2, TrendingDown, TrendingUp, WalletCards, X, Zap,
 } from "lucide-react";
@@ -62,7 +62,15 @@ export function JournalV2({ onLogin }: { onLogin: () => void }) {
   const shown = useMemo(() => { const q = query.trim().toLowerCase(); return q ? monthEntries.filter(e => `${e.symbol} ${e.setup} ${e.note} ${e.tags?.join(" ")}`.toLowerCase().includes(q)) : monthEntries; }, [monthEntries, query]);
   const summaries = useMemo<Summary[]>(() => accounts.map(account => { const t = entries.filter(e => e.propAccountId === account.id), p = t.reduce((s, e) => s + e.pnl, 0), w = t.filter(e => e.pnl > 0).length; return { account, trades: t.length, pnl: p, winRate: t.length ? Math.round(w / t.length * 100) : 0, target: account.profitTarget ? Math.min(100, Math.max(0, p / account.profitTarget * 100)) : 0, dd: account.maxDrawdown && p < 0 ? Math.min(100, Math.abs(p) / account.maxDrawdown * 100) : 0 }; }), [accounts, entries]);
   const stats = useMemo(() => { const pnl = monthEntries.reduce((s, e) => s + e.pnl, 0), wins = monthEntries.filter(e => e.pnl > 0), losses = monthEntries.filter(e => e.pnl < 0), gw = wins.reduce((s, e) => s + e.pnl, 0), gl = Math.abs(losses.reduce((s, e) => s + e.pnl, 0)); return { pnl, wins: wins.length, losses: losses.length, rate: monthEntries.length ? Math.round(wins.length / monthEntries.length * 100) : 0, r: monthEntries.length ? monthEntries.reduce((s, e) => s + (e.resultR || 0), 0) / monthEntries.length : 0, pf: gl ? gw / gl : gw ? gw : 0 }; }, [monthEntries]);
-  const equity = useMemo(() => { let v = account?.initialBalance || 0; return [...accountEntries].sort((a, b) => String(a.rawDate).localeCompare(String(b.rawDate))).map((e, i) => ({ trade: i + 1, equity: v += e.pnl })); }, [accountEntries, account]);
+  const equity = useMemo(() => {
+    const initialBalance = account?.initialBalance || 0;
+    return [...accountEntries]
+      .sort((a, b) => String(a.rawDate).localeCompare(String(b.rawDate)))
+      .reduce<Array<{ trade: number; equity: number }>>((points, entry, index) => {
+        const previousEquity = points[index - 1]?.equity ?? initialBalance;
+        return [...points, { trade: index + 1, equity: previousEquity + entry.pnl }];
+      }, []);
+  }, [accountEntries, account]);
   const setups = useMemo(() => { const m = new Map<string, { pnl: number; trades: number; wins: number }>(); monthEntries.forEach(e => { const k = e.setup || "Uncategorized", v = m.get(k) || { pnl: 0, trades: 0, wins: 0 }; m.set(k, { pnl: v.pnl + e.pnl, trades: v.trades + 1, wins: v.wins + (e.pnl > 0 ? 1 : 0) }); }); return [...m].map(([name, v]) => ({ name, ...v, rate: Math.round(v.wins / v.trades * 100) })).sort((a, b) => b.pnl - a.pnl); }, [monthEntries]);
   const mistakes = useMemo(() => { const m = new Map<string, { pnl: number; trades: number }>(); monthEntries.filter(e => e.errorMade && e.mistakeType).forEach(e => { const k = e.mistakeType as string, v = m.get(k) || { pnl: 0, trades: 0 }; m.set(k, { pnl: v.pnl + e.pnl, trades: v.trades + 1 }); }); return [...m].map(([name, v]) => ({ name, ...v })).sort((a, b) => a.pnl - b.pnl); }, [monthEntries]);
   const planRate = useMemo(() => monthEntries.length ? Math.round(monthEntries.filter(e => e.followingPlan).length / monthEntries.length * 100) : 0, [monthEntries]);
@@ -246,7 +254,7 @@ function AccountCard({ s, deleting, onOpen, onDelete }: { s: Summary; deleting: 
           <PropFirmLogo firm={s.account.firm} />
           <div className="min-w-0 flex-1">
             <p className="truncate font-bold">{s.account.name}</p>
-            <p className="text-xs text-[#6b7a96]">{s.account.phase} · {s.account.marketType}</p>
+            <p className="text-xs text-[#6b7a96]">{s.account.phase} / {s.account.marketType}</p>
           </div>
           <div className="flex shrink-0 items-center gap-1.5">
             <span className={`rounded-lg border px-2 py-0.5 text-[11px] font-semibold ${statusColor[s.account.status] || statusColor.Active}`}>
@@ -328,7 +336,7 @@ function Workspace(p: {
         <PropFirmLogo firm={account.firm} compact />
         <div className="min-w-0">
           <h1 className="truncate text-base font-black lg:text-lg">{account.name}</h1>
-          <p className="text-[11px] text-[#6b7a96]">{account.phase} · {cash.format(account.accountSize)}</p>
+          <p className="text-[11px] text-[#6b7a96]">{account.phase} / {cash.format(account.accountSize)}</p>
         </div>
         <span className={`ml-1 hidden rounded-lg border px-2 py-0.5 text-[11px] font-semibold md:block ${account.status === "Active" ? "border-emerald-400/20 bg-emerald-400/10 text-emerald-400" : "border-[#1a2235] text-[#6b7a96]"}`}>
           {account.status}
@@ -359,7 +367,7 @@ function Workspace(p: {
             Joriy oy
           </Button>
           <p className="ml-auto hidden text-xs text-[#6b7a96] sm:block">
-            {trades.length} trade · {stats.wins}W / {stats.losses}L
+            {trades.length} trade / {stats.wins}W / {stats.losses}L
           </p>
         </div>
 
@@ -394,7 +402,7 @@ function Workspace(p: {
           <TabsContent value="overview" className="grid gap-4 xl:grid-cols-[1.5fr_.5fr]">
             <div className="rounded-2xl border border-[#1a2235] bg-[#0d1525]/80 p-5">
               <h3 className="font-bold">Account equity</h3>
-              <p className="text-xs text-[#6b7a96]">Barcha trade bo'yicha cumulative balans</p>
+              <p className="text-xs text-[#6b7a96]">Barcha trade bo&apos;yicha cumulative balans</p>
               <div className="mt-4 h-72">
                 {equity.length
                   ? <ResponsiveContainer width="100%" height="100%">
@@ -474,7 +482,7 @@ function Workspace(p: {
                             </div>
                           </>
                         ) : (
-                          <p className="mt-8 text-center text-[10px] text-[#1e2d45]">—</p>
+                          <p className="mt-8 text-center text-[10px] text-[#1e2d45]">-</p>
                         )}
                       </div>
                     ) : (
@@ -542,16 +550,16 @@ function Workspace(p: {
                             <span className="rounded-md bg-amber-500/10 px-1.5 py-0.5 text-[10px] font-medium text-amber-400">{e.riskPercent}</span>
                           )}
                           {e.errorMade && (
-                            <span className="rounded-md bg-rose-500/10 px-1.5 py-0.5 text-[10px] font-medium text-rose-400" title={e.mistakeType}>⚠ Xato</span>
+                          <span className="rounded-md bg-rose-500/10 px-1.5 py-0.5 text-[10px] font-medium text-rose-400" title={e.mistakeType}>Xato</span>
                           )}
                           {!e.followingPlan && !e.errorMade && (
                             <span className="rounded-md bg-amber-500/10 px-1.5 py-0.5 text-[10px] font-medium text-amber-400">Off-plan</span>
                           )}
                           {e.reviewCompleted && (
-                            <span className="rounded-md bg-blue-500/10 px-1.5 py-0.5 text-[10px] font-medium text-blue-400">✓ Reviewed</span>
+                            <span className="rounded-md bg-blue-500/10 px-1.5 py-0.5 text-[10px] font-medium text-blue-400">Reviewed</span>
                           )}
                         </div>
-                        <p className="mt-0.5 truncate text-xs text-[#6b7a96]">{e.setup || "No setup"} · {e.session || ""} · {e.date}</p>
+                        <p className="mt-0.5 truncate text-xs text-[#6b7a96]">{e.setup || "No setup"} / {e.session || "No session"} / {e.date}</p>
                         {e.tags && e.tags.length > 0 && (
                           <div className="mt-1 flex gap-1">
                             {e.tags.slice(0, 3).map(t => (
@@ -582,7 +590,7 @@ function Workspace(p: {
                         <div className="flex text-sm">
                           <span className="text-[#dde6f8]">{s.name}</span>
                           <span className={`ml-auto font-mono font-bold ${s.pnl >= 0 ? "text-emerald-400" : "text-rose-400"}`}>
-                            {s.rate}% · {s.pnl >= 0 ? "+" : ""}{cash.format(s.pnl)}
+                            {s.rate}% / {s.pnl >= 0 ? "+" : ""}{cash.format(s.pnl)}
                           </span>
                         </div>
                         <ProgressBar label={`${s.trades} trades`} value={s.rate} color="bg-blue-500" />
@@ -606,8 +614,8 @@ function Workspace(p: {
             </div>
 
             <div className="rounded-2xl border border-[#1a2235] bg-[#0d1525]/80 p-5 xl:col-span-2">
-              <h3 className="font-bold">🚫 Outside of Plan</h3>
-              <p className="text-xs text-[#6b7a96]">Eng ko'p uchragan xatolar va ular keltirgan zarar</p>
+              <h3 className="font-bold">Outside of Plan</h3>
+              <p className="text-xs text-[#6b7a96]">Eng ko&apos;p uchragan xatolar va ular keltirgan zarar</p>
               <div className="mt-4 space-y-3">
                 {mistakes.length
                   ? mistakes.map(m => (

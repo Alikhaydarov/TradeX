@@ -1,6 +1,6 @@
 "use client";
 
-import { Database, ShieldCheck, X } from "lucide-react";
+import { X } from "lucide-react";
 import { useState } from "react";
 import { useAuth } from "./auth-context";
 
@@ -58,10 +58,6 @@ export function AuthModal({
           </div>
         )}
         {error && <p className="mt-3 text-sm text-rose-400">{error}</p>}
-        <div className="mt-6 grid grid-cols-2 gap-3 text-xs text-xmuted">
-          <div className="rounded-xl border border-xborder p-3"><ShieldCheck className="mb-2 text-emerald-400" size={18} />Xavfsiz OAuth</div>
-          <div className="rounded-xl border border-xborder p-3"><Database className="mb-2 text-xblue" size={18} />Node API orqali cloud</div>
-        </div>
         <p className="mt-5 text-center text-xs leading-5 text-xmuted">
           Davom etish orqali foydalanish shartlari va maxfiylik siyosatiga rozilik bildirasiz.
         </p>
