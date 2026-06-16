@@ -182,9 +182,8 @@ export function TradeReviewModal({ open, saving, account, onOpenChange, onSave }
               <input type="hidden" name="riskPercent" value={riskPct} />
             </div>
 
-            <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-4">
-              <NumberField label="Entry narxi" name="entry" placeholder="0.00" required />
-              <NumberField label="Exit narxi" name="exit" placeholder="0.00" required />
+            <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-3">
+              <NumberField label="Foyda / Ziyon $" name="pnl" placeholder="0.00" required />
               <NumberField label="Lot / Miqdor" name="quantity" defaultValue="1" required />
               <NumberField label="RR (Risk:Reward)" name="resultR" placeholder="2.5" required />
             </div>

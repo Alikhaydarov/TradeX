@@ -8,6 +8,7 @@ interface JournalPayload {
   side?: "Long" | "Short";
   entry?: number;
   exit?: number;
+  pnl?: number;
   quantity?: number;
   fees?: number;
   note?: string;
@@ -59,12 +60,27 @@ export async function POST(request: Request) {
 
   const symbol = body.symbol?.trim().toUpperCase();
   const side = body.side;
-  const entry = Number(body.entry);
-  const exit = Number(body.exit);
   const quantity = Number(body.quantity || 1);
   const fees = Number(body.fees || 0);
   const risk = Number(body.riskAmount || 0);
   const resultR = Number(body.resultR || 0);
+
+  let pnl = 0;
+  let entry = 0;
+  let exit = 0;
+
+  if (body.pnl !== undefined) {
+    pnl = Number(body.pnl);
+    const gross = pnl + fees;
+    const factor = gross / quantity;
+    entry = Math.max(100.0, Math.ceil(Math.abs(factor)) + 100.0);
+    exit = side === "Long" ? entry + factor : entry - factor;
+  } else {
+    entry = Number(body.entry);
+    exit = Number(body.exit);
+    const gross = side === "Long" ? (exit - entry) * quantity : (entry - exit) * quantity;
+    pnl = Number((gross - fees).toFixed(2));
+  }
 
   if (
     !symbol || !side ||
@@ -73,9 +89,6 @@ export async function POST(request: Request) {
   ) {
     return badRequest("Trade ma'lumotlarini tekshiring.");
   }
-
-  const gross = side === "Long" ? (exit - entry) * quantity : (entry - exit) * quantity;
-  const pnl = Number((gross - fees).toFixed(2));
 
   const { data, error } = await auth.supabase
     .from("journal_entries")
