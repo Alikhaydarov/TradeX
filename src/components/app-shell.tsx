@@ -78,13 +78,16 @@ export function AppShell() {
   const [authOpen, setAuthOpen] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [notificationsMounted, setNotificationsMounted] = useState(false);
+  const [visitedSections, setVisitedSections] = useState<Section[]>(() => [getCurrentSection()]);
   const { user } = useAuth();
   const openLogin = () => setAuthOpen(true);
   const chatOpen = section === "chat";
 
   useEffect(() => {
     const syncFromPath = () => {
-      setSection(getCurrentSection());
+      const nextSection = getCurrentSection();
+      setSection(nextSection);
+      setVisitedSections((current) => current.includes(nextSection) ? current : [...current, nextSection]);
       setProfileUsername(getCurrentProfileUsername());
     };
     window.addEventListener("popstate", syncFromPath);
@@ -148,6 +151,7 @@ export function AppShell() {
     if (nextSection === section && nextSection !== "account") return;
     setProfileUsername("");
     setSection(nextSection);
+    setVisitedSections((current) => current.includes(nextSection) ? current : [...current, nextSection]);
     window.history.pushState(null, "", pathFromSection(nextSection));
   };
 
@@ -155,15 +159,18 @@ export function AppShell() {
     const cleanUsername = username.replace(/^@/, "").toLowerCase();
     setProfileUsername(cleanUsername);
     setSection("account");
+    setVisitedSections((current) => current.includes("account") ? current : [...current, "account"]);
     window.history.pushState(null, "", `/${cleanUsername}`);
   };
 
-  let activeSection = <FeedV3 onLogin={openLogin} />;
-  if (section === "chat") activeSection = <ChatV4 onLogin={openLogin} onBack={() => changeSection("feed")} />;
-  else if (section === "journal") activeSection = <Journal onLogin={openLogin} />;
-  else if (section === "backtest") activeSection = <Backtest />;
-  else if (section === "account") activeSection = <Account onLogin={openLogin} profileUsername={profileUsername || undefined} />;
-  else if (section === "admin" && isAdmin) activeSection = <AdminPanel onLogin={openLogin} />;
+  const renderSection = (item: Section) => {
+    if (item === "chat") return <ChatV4 onLogin={openLogin} onBack={() => changeSection("feed")} />;
+    if (item === "journal") return <Journal onLogin={openLogin} />;
+    if (item === "backtest") return <Backtest />;
+    if (item === "account") return <Account onLogin={openLogin} profileUsername={profileUsername || undefined} />;
+    if (item === "admin" && isAdmin) return <AdminPanel onLogin={openLogin} />;
+    return <FeedV3 onLogin={openLogin} />;
+  };
 
   if (!user) {
     return (
@@ -176,10 +183,17 @@ export function AppShell() {
 
   return (
     <>
-      <div className={`mx-auto flex min-h-[100dvh] max-w-[1500px] gap-4 p-0 text-[#edf3ff] lg:p-4 ${chatOpen ? "xl:max-w-[1600px]" : ""}`}>
+      <div className={`mx-auto flex min-h-[100dvh] max-w-[1500px] gap-3 p-0 text-[#edf3ff] lg:p-3 ${chatOpen ? "xl:max-w-[1600px]" : ""}`}>
         <Sidebar active={section} onChange={changeSection} onPost={() => changeSection("feed")} onLogin={openLogin} onOpenProfile={openProfile} user={user} hideMobile={chatOpen} isAdmin={isAdmin} />
-        <main className={chatOpen ? "fixed inset-0 z-50 min-w-0 flex-1 overflow-hidden bg-[#070b12] shadow-2xl shadow-black/30 backdrop-blur-2xl lg:static lg:z-auto lg:min-h-[calc(100dvh-2rem)] lg:rounded-[28px] lg:border lg:border-white/8" : "min-h-[100dvh] min-w-0 flex-1 overflow-hidden bg-[#05080e]/78 pb-20 shadow-2xl shadow-black/30 backdrop-blur-2xl lg:min-h-[calc(100dvh-2rem)] lg:rounded-[28px] lg:border lg:border-white/8 lg:pb-0"}>
-          {activeSection}
+        <main className={chatOpen ? "fixed inset-0 z-50 min-w-0 flex-1 overflow-hidden bg-[#05080e] shadow-2xl shadow-black/35 lg:static lg:z-auto lg:min-h-[calc(100dvh-1.5rem)] lg:rounded-[22px] lg:border lg:border-white/8" : "min-h-[100dvh] min-w-0 flex-1 overflow-hidden bg-[#04070d]/92 pb-20 shadow-2xl shadow-black/25 lg:min-h-[calc(100dvh-1.5rem)] lg:rounded-[22px] lg:border lg:border-white/8 lg:pb-0"}>
+          {visitedSections.map((item) => {
+            if (item === "admin" && !isAdmin) return null;
+            return (
+              <div key={item} className={item === section ? "block min-h-full" : "hidden"}>
+                {renderSection(item)}
+              </div>
+            );
+          })}
         </main>
         {!chatOpen && <RightPanel />}
       </div>

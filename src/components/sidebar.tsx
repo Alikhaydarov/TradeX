@@ -19,11 +19,11 @@ import { VerifiedBadge } from "./verified-badge";
 import type { Section } from "./types";
 
 const baseNav = [
-  { id: "feed" as const, label: "Home", hint: "Community feed", icon: Home },
-  { id: "chat" as const, label: "Chat", hint: "Trader suhbatlari", icon: MessageCircle },
-  { id: "journal" as const, label: "Journal", hint: "Natijalar tarixi", icon: BookOpen },
-  { id: "backtest" as const, label: "Backtest", hint: "Strategiya sinovi", icon: BarChart3 },
-  { id: "account" as const, label: "Account", hint: "Profile va sozlama", icon: UserRound },
+  { id: "feed" as const, label: "Home", hint: "Market pulse", icon: Home },
+  { id: "chat" as const, label: "Chat", hint: "Trader rooms", icon: MessageCircle },
+  { id: "journal" as const, label: "Journal", hint: "Trade records", icon: BookOpen },
+  { id: "backtest" as const, label: "Backtest", hint: "Strategy lab", icon: BarChart3 },
+  { id: "account" as const, label: "Account", hint: "Profile settings", icon: UserRound },
 ];
 
 function usernameFromUser(user: User | null) {
@@ -80,7 +80,7 @@ export function Sidebar({
   }, [user]);
 
   const nav = isAdmin
-    ? [...baseNav, { id: "admin" as const, label: "Admin", hint: "User galochkalari", icon: ShieldCheck }]
+    ? [...baseNav, { id: "admin" as const, label: "Admin", hint: "User verification", icon: ShieldCheck }]
     : baseNav;
 
   const openProfile = () => {
@@ -91,7 +91,7 @@ export function Sidebar({
 
   return (
     <>
-      <aside className="sticky top-4 hidden h-[calc(100vh-2rem)] w-[238px] shrink-0 flex-col rounded-[28px] border border-white/9 bg-[#0b1220]/48 p-4 shadow-2xl shadow-slate-950/30 backdrop-blur-2xl lg:flex">
+      <aside className="sticky top-3 hidden h-[calc(100vh-1.5rem)] w-[232px] shrink-0 flex-col rounded-[22px] border border-white/8 bg-[#05080e]/92 p-3 shadow-2xl shadow-black/25 backdrop-blur-2xl lg:flex">
         <button onClick={() => onChange("feed")} className="flex items-center gap-3 rounded-2xl px-2 py-2 text-left" aria-label="TradeX bosh sahifa">
           <span className="grid h-11 w-11 place-items-center rounded-[15px] bg-gradient-to-br from-cyan-400 via-blue-500 to-violet-600 text-lg font-black shadow-lg shadow-blue-950/50">TX</span>
           <span>
@@ -109,11 +109,11 @@ export function Sidebar({
                 onClick={() => onChange(id)}
                 className={`group flex w-full items-center gap-3 rounded-2xl px-3 py-2.5 text-left transition ${
                   selected
-                    ? "bg-gradient-to-r from-blue-500/20 to-violet-500/10 text-white ring-1 ring-blue-400/20"
+                    ? "bg-white/[.07] text-white ring-1 ring-cyan-300/18"
                     : "text-slate-400 hover:bg-white/[.045] hover:text-slate-100"
                 }`}
               >
-                <span className={`grid h-9 w-9 place-items-center rounded-xl ${selected ? "bg-blue-400/15 text-cyan-300" : "bg-white/[.035]"}`}>
+                <span className={`grid h-9 w-9 place-items-center rounded-xl ${selected ? "bg-cyan-300/10 text-cyan-200" : "bg-white/[.025]"}`}>
                   <Icon size={18} strokeWidth={selected ? 2.5 : 2} />
                 </span>
                 <span className="min-w-0">
@@ -125,8 +125,8 @@ export function Sidebar({
           })}
         </nav>
 
-        <button onClick={onPost} className="mt-5 flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-blue-500 to-violet-600 py-3 text-sm font-bold text-white shadow-lg shadow-blue-950/30 transition hover:brightness-110">
-          <Plus size={18} /> Yangi g&apos;oya
+        <button onClick={onPost} className="mt-5 flex items-center justify-center gap-2 rounded-2xl bg-white py-3 text-sm font-black text-slate-950 shadow-lg shadow-black/20 transition hover:bg-slate-200">
+          <Plus size={18} /> New post
         </button>
 
         <div className="mt-auto space-y-3">
@@ -155,7 +155,7 @@ export function Sidebar({
       </aside>
 
       {!hideMobile && (
-        <nav className="fixed inset-x-3 bottom-3 z-50 flex h-16 items-center justify-around rounded-2xl border border-white/10 bg-[#0b1220]/62 px-2 shadow-2xl backdrop-blur-2xl lg:hidden">
+        <nav className="fixed inset-x-3 bottom-3 z-50 flex h-16 items-center justify-around rounded-2xl border border-white/10 bg-[#05080e]/88 px-2 shadow-2xl shadow-black/30 backdrop-blur-2xl lg:hidden">
           {nav.map(({ id, label, icon: Icon }) => (
             <button key={id} onClick={() => onChange(id)} className={`grid h-11 w-11 place-items-center rounded-xl ${active === id ? "bg-blue-500/20 text-cyan-300" : "text-slate-500"}`} aria-label={label}>
               <Icon size={21} strokeWidth={active === id ? 2.6 : 2} />
