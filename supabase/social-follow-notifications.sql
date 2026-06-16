@@ -1,4 +1,4 @@
--- TradeUp social system: follows + notifications
+-- TradeX social system: follows + notifications
 
 create table if not exists public.user_follows (
   follower_id uuid not null references public.profiles(id) on delete cascade,

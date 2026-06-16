@@ -10,9 +10,9 @@ const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
 const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "TradeUp",
-  description: "TradeUp: trading feed, private chats, journal and backtesting workspace.",
-  applicationName: "TradeUp",
+  title: "TradeX",
+  description: "TradeX: trading feed, private chats, journal and backtesting workspace.",
+  applicationName: "TradeX",
 };
 
 export default async function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {

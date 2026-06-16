@@ -335,7 +335,7 @@ export function Account({ onLogin, profileUsername }: { onLogin: () => void; pro
       <header className="sticky top-0 z-20 flex h-14 items-center gap-3 border-b border-white/8 bg-[#0c1424]/60 px-4 backdrop-blur-2xl">
         <div className="grid h-9 w-9 place-items-center rounded-2xl border border-cyan-200/10 bg-cyan-300/8 text-cyan-200"><UserRound size={17} /></div>
         <div className="min-w-0">
-          <h1 className="truncate text-lg font-black leading-5">TradeUp Profile</h1>
+          <h1 className="truncate text-lg font-black leading-5">TradeX Profile</h1>
           <p className="text-[11px] text-slate-500">{posts.length} posts</p>
         </div>
         {isOwnProfile ? (
@@ -376,7 +376,7 @@ export function Account({ onLogin, profileUsername }: { onLogin: () => void; pro
                 <div className="mt-4 space-y-2 text-sm text-slate-500">
                   {profile.location ? <p className="flex items-center gap-2"><MapPin size={16} /> {profile.location}</p> : null}
                   <p className="flex items-center gap-2"><TrendingUp size={16} /> {profile.tradingStyle}</p>
-                  <p className="flex items-center gap-2"><ShieldCheck size={16} /> TradeUp member</p>
+                  <p className="flex items-center gap-2"><ShieldCheck size={16} /> TradeX member</p>
                 </div>
               </div>
             </div>

@@ -19,7 +19,7 @@ interface TradeReviewModalProps {
 const SESSIONS = ["London", "New York", "Asian", "London/NY Overlap", "Pre-London"];
 const RISK_PCT = ["0.25%", "0.5%", "1.0%", "2.0%", "4.0%"];
 const SETUPS = ["BOS", "CHoCH", "Liquidity Sweep", "FVG", "OB", "Breakout", "Reversal", "Range"];
-const MISTAKES = ["Erta kirish", "Kechiktirilgan kirish", "SL qo'ymaslik", "Ortiqcha risk", "Plansiz trade", "Revenge trade", "FOMO", "Erta yopish"];
+const MISTAKES = ["Erta kirish", "Kechiktirilgan kirish", "SL qoymaslik", "Ortiqcha risk", "Plansiz trade", "Revenge trade", "FOMO", "Erta yopish"];
 
 function sanitizeDecimal(raw: string): string {
   const cleaned = raw.replace(",", ".").replace(/[^0-9.-]/g, "");
@@ -98,12 +98,12 @@ export function TradeReviewModal({ open, saving, account, onOpenChange, onSave }
 
   return (
     <Dialog open={open} onOpenChange={close}>
-      {/* showCloseButton=false — chunki o'zimiz header ichida X tugma qo'yamiz */}
+      {/* Custom close button lives in the modal header. */}
       <DialogContent
         showCloseButton={false}
         className="max-h-[95dvh] overflow-hidden border border-[#1a2235] bg-[#07090f] p-0 sm:max-w-5xl shadow-2xl shadow-black/60"
       >
-        {/* ── Header ── */}
+        {/* Header */}
         <div className="relative flex items-center gap-3 border-b border-[#141d2e] bg-gradient-to-r from-[#0a0f1e] to-[#070b18] px-5 py-4">
           {/* gradient accent line */}
           <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-blue-500/30 to-transparent" />
@@ -113,7 +113,7 @@ export function TradeReviewModal({ open, saving, account, onOpenChange, onSave }
           </div>
           <div className="flex-1 min-w-0">
             <h2 className="text-sm font-bold text-[#dde6f8] truncate">Yangi trade review</h2>
-            <p className="text-[11px] text-[#4a5f7a] truncate">{account?.name} · {account?.marketType}</p>
+            <p className="text-[11px] text-[#4a5f7a] truncate">{account?.name} / {account?.marketType}</p>
           </div>
           <button
             onClick={() => close(false)}
@@ -123,10 +123,10 @@ export function TradeReviewModal({ open, saving, account, onOpenChange, onSave }
           </button>
         </div>
 
-        {/* ── Body ── */}
+        {/* Body */}
         <form action={submit} className="flex max-h-[calc(95dvh-61px)] flex-col overflow-y-auto lg:flex-row lg:overflow-hidden">
 
-          {/* ── LEFT: Fields ── */}
+          {/* Left: fields */}
           <div className="flex-1 overflow-y-auto p-5 lg:p-6 space-y-5">
 
             {/* Symbol + Side + Date */}
@@ -146,13 +146,13 @@ export function TradeReviewModal({ open, saving, account, onOpenChange, onSave }
                   <label className="cursor-pointer">
                     <input type="radio" name="side" value="Long" defaultChecked className="peer sr-only" />
                     <span className="block rounded-lg py-1.5 text-center text-xs font-bold text-[#4a5f7a] transition peer-checked:bg-emerald-500/15 peer-checked:text-emerald-300 peer-checked:ring-1 peer-checked:ring-emerald-500/30 hover:text-[#dde6f8]">
-                      ▲ Long
+                      Long
                     </span>
                   </label>
                   <label className="cursor-pointer">
                     <input type="radio" name="side" value="Short" className="peer sr-only" />
                     <span className="block rounded-lg py-1.5 text-center text-xs font-bold text-[#4a5f7a] transition peer-checked:bg-rose-500/15 peer-checked:text-rose-300 peer-checked:ring-1 peer-checked:ring-rose-500/30 hover:text-[#dde6f8]">
-                      ▼ Short
+                      Short
                     </span>
                   </label>
                 </div>
@@ -281,12 +281,12 @@ export function TradeReviewModal({ open, saving, account, onOpenChange, onSave }
               <Textarea
                 name="note"
                 className="min-h-28 resize-y border-[#1a2235] bg-[#060b14] text-sm focus:border-blue-500/60 transition-all"
-                placeholder="Nima yaxshi bajarildi? Qayerda xato bo'ldi? Keyingi safar nimani o'zgartirasiz?"
+                placeholder="Pre-trade: sabab. Execution: kirish/chiqish. Review: xato va keyingi qoida."
               />
             </div>
           </div>
 
-          {/* ── RIGHT: Screenshot ── */}
+          {/* Right: screenshot */}
           <div className="flex flex-col border-t border-[#141d2e] bg-[#04060c] p-5 lg:w-[320px] lg:shrink-0 lg:border-l lg:border-t-0 lg:p-6">
             <div className="flex items-center gap-3 mb-4">
               <span className="grid size-9 place-items-center rounded-xl bg-blue-500/10 ring-1 ring-blue-500/20">
@@ -294,7 +294,7 @@ export function TradeReviewModal({ open, saving, account, onOpenChange, onSave }
               </span>
               <div>
                 <h3 className="text-sm font-semibold text-[#dde6f8]">Chart screenshot</h3>
-                <p className="text-[11px] text-[#4a5f7a]">JPG, PNG yoki WEBP · max 5MB</p>
+                <p className="text-[11px] text-[#4a5f7a]">JPG, PNG yoki WEBP / max 5MB</p>
               </div>
             </div>
 
@@ -368,7 +368,7 @@ function CheckRow({
       <span className={`grid size-5 shrink-0 place-items-center rounded-md border transition-all ${
         checked ? toneMap[tone] : "border-[#1e2d45] bg-transparent text-transparent group-hover:border-[#2a3f60]"
       }`}>
-        {checked && "✓"}
+        {checked && "OK"}
       </span>
       <span className={`text-sm transition ${checked ? "text-[#dde6f8]" : "text-[#4a5f7a] group-hover:text-[#8a9bc0]"}`}>
         {label}

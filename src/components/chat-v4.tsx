@@ -429,7 +429,7 @@ export function ChatV4({ onLogin, onBack }: { onLogin: () => void; onBack: () =>
           <ArrowLeft size={17} />
         </button>
         <div className="min-w-0">
-          <p className="text-[9px] font-bold uppercase tracking-[.2em] text-cyan-200/70">TradeUp private chat</p>
+          <p className="text-[9px] font-bold uppercase tracking-[.2em] text-cyan-200/70">TradeX private chat</p>
           <h1 className="truncate text-lg font-black tracking-tight sm:text-2xl">Trader suhbatlari</h1>
         </div>
         <Button onClick={() => setCreating(true)} className="ml-auto h-9 shrink-0 rounded-2xl bg-gradient-to-r from-cyan-500 to-blue-600 px-3 text-[11px] font-bold sm:px-4" size="sm">

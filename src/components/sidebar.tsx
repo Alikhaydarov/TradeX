@@ -19,11 +19,11 @@ import { VerifiedBadge } from "./verified-badge";
 import type { Section } from "./types";
 
 const baseNav = [
-  { id: "feed" as const, label: "Pulse", hint: "Community feed", icon: Home },
-  { id: "chat" as const, label: "Rooms", hint: "Trader suhbatlari", icon: MessageCircle },
+  { id: "feed" as const, label: "Home", hint: "Community feed", icon: Home },
+  { id: "chat" as const, label: "Chat", hint: "Trader suhbatlari", icon: MessageCircle },
   { id: "journal" as const, label: "Journal", hint: "Natijalar tarixi", icon: BookOpen },
-  { id: "backtest" as const, label: "Lab", hint: "Strategiya sinovi", icon: BarChart3 },
-  { id: "account" as const, label: "Profil", hint: "Account va sozlama", icon: UserRound },
+  { id: "backtest" as const, label: "Backtest", hint: "Strategiya sinovi", icon: BarChart3 },
+  { id: "account" as const, label: "Account", hint: "Profile va sozlama", icon: UserRound },
 ];
 
 function usernameFromUser(user: User | null) {
@@ -92,10 +92,10 @@ export function Sidebar({
   return (
     <>
       <aside className="sticky top-4 hidden h-[calc(100vh-2rem)] w-[238px] shrink-0 flex-col rounded-[28px] border border-white/9 bg-[#0b1220]/48 p-4 shadow-2xl shadow-slate-950/30 backdrop-blur-2xl lg:flex">
-        <button onClick={() => onChange("feed")} className="flex items-center gap-3 rounded-2xl px-2 py-2 text-left" aria-label="TradeUp bosh sahifa">
-          <span className="grid h-11 w-11 place-items-center rounded-[15px] bg-gradient-to-br from-cyan-400 via-blue-500 to-violet-600 text-lg font-black shadow-lg shadow-blue-950/50">TU</span>
+        <button onClick={() => onChange("feed")} className="flex items-center gap-3 rounded-2xl px-2 py-2 text-left" aria-label="TradeX bosh sahifa">
+          <span className="grid h-11 w-11 place-items-center rounded-[15px] bg-gradient-to-br from-cyan-400 via-blue-500 to-violet-600 text-lg font-black shadow-lg shadow-blue-950/50">TX</span>
           <span>
-            <strong className="block text-base tracking-tight">TradeUp</strong>
+            <strong className="block text-base tracking-tight">TradeX</strong>
             <small className="text-[11px] text-slate-500">Trader workspace</small>
           </span>
         </button>
@@ -134,7 +134,7 @@ export function Sidebar({
             <div className="flex items-center justify-between gap-3">
               <div className="min-w-0">
                 <p className="text-[10px] font-black uppercase tracking-[.2em] text-slate-500">Social</p>
-                <p className="mt-1 text-[10px] leading-4 text-slate-600">Search va notification</p>
+                <p className="mt-1 text-[10px] leading-4 text-slate-600">Notifications</p>
               </div>
               <SocialActions />
             </div>

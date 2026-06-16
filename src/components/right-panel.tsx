@@ -1,6 +1,6 @@
 "use client";
 
-import { Activity, CheckCircle2, Clock3, Radio, Search, ShieldAlert } from "lucide-react";
+import { Activity, CheckCircle2, Clock3, Radio, ShieldAlert } from "lucide-react";
 import { usePathname } from "next/navigation";
 
 const markets = [
@@ -15,10 +15,6 @@ export function RightPanel() {
 
   return (
     <aside className="sticky top-4 hidden h-[calc(100vh-2rem)] w-[300px] shrink-0 space-y-3 overflow-y-auto xl:block">
-      <label className="flex h-11 items-center gap-3 rounded-2xl border border-white/9 bg-[#0b1220]/70 px-4 text-slate-500 backdrop-blur-2xl focus-within:border-blue-400/30">
-        <Search size={17} />
-        <input placeholder="Search workspace" className="w-full bg-transparent text-sm text-white outline-none" />
-      </label>
       <section className="rounded-[22px] border border-white/9 bg-[#0b1220]/70 p-4 shadow-xl shadow-slate-950/20 backdrop-blur-2xl">
         <div className="flex items-center gap-2">
           <Activity className="text-cyan-300" size={18} />
