@@ -21,6 +21,18 @@ const RISK_PCT = ["0.25%", "0.5%", "1.0%", "2.0%", "4.0%"];
 const SETUPS = ["BOS", "CHoCH", "Liquidity Sweep", "FVG", "OB", "Breakout", "Reversal", "Range"];
 const MISTAKES = ["Erta kirish", "Kechiktirilgan kirish", "SL qoymaslik", "Ortiqcha risk", "Plansiz trade", "Revenge trade", "FOMO", "Erta yopish"];
 
+function storedOptions(key: string, fallback: string[]) {
+  if (typeof window === "undefined") return fallback;
+  try {
+    const parsed = JSON.parse(window.localStorage.getItem(key) || "[]") as unknown;
+    if (!Array.isArray(parsed)) return fallback;
+    const clean = parsed.map((item) => String(item).trim()).filter(Boolean);
+    return clean.length ? clean : fallback;
+  } catch {
+    return fallback;
+  }
+}
+
 function sanitizeDecimal(raw: string): string {
   const cleaned = raw.replace(",", ".").replace(/[^0-9.-]/g, "");
   const parts = cleaned.split(".");
@@ -56,6 +68,78 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
   );
 }
 
+function OptionStack({
+  options,
+  value,
+  onChange,
+  onAdd,
+  tone,
+  placeholder = "Add option",
+}: {
+  options: string[];
+  value: string;
+  onChange: (value: string) => void;
+  onAdd: (value: string) => void;
+  tone: "blue" | "violet" | "amber";
+  placeholder?: string;
+}) {
+  const [draft, setDraft] = useState("");
+  const toneClass = {
+    blue: "bg-blue-500/15 text-blue-300 ring-blue-500/30",
+    violet: "bg-violet-500/15 text-violet-300 ring-violet-500/30",
+    amber: "bg-amber-500/15 text-amber-300 ring-amber-500/30",
+  }[tone];
+
+  const add = () => {
+    const next = draft.trim();
+    if (!next) return;
+    onAdd(next);
+    onChange(next);
+    setDraft("");
+  };
+
+  return (
+    <div className="space-y-1.5">
+      {options.map((option) => {
+        const active = value === option;
+        return (
+          <button
+            key={option}
+            type="button"
+            onClick={() => onChange(active ? "" : option)}
+            className={`flex min-h-9 w-full items-center justify-between rounded-lg border px-3 py-2 text-left text-[12px] font-semibold transition ${
+              active
+                ? `border-transparent ${toneClass} ring-1`
+                : "border-[#141d2e] bg-[#0d1525] text-[#60708c] hover:border-[#22304a] hover:bg-[#111a2a] hover:text-[#dde6f8]"
+            }`}
+          >
+            <span className="truncate">{option}</span>
+            {active ? <span className="text-[10px] uppercase tracking-widest opacity-80">Selected</span> : null}
+          </button>
+        );
+      })}
+      <div className="flex min-h-9 items-center gap-2 rounded-lg border border-dashed border-[#1a2235] bg-[#060b14] px-2 py-1.5">
+        <Plus size={14} className="shrink-0 text-[#4a5f7a]" />
+        <input
+          value={draft}
+          onChange={(event) => setDraft(event.target.value)}
+          onKeyDown={(event) => {
+            if (event.key === "Enter") {
+              event.preventDefault();
+              add();
+            }
+          }}
+          placeholder={placeholder}
+          className="min-w-0 flex-1 bg-transparent text-[12px] text-[#dde6f8] outline-none placeholder:text-[#4a5f7a]"
+        />
+        <button type="button" onClick={add} className="rounded-md px-2 py-1 text-[11px] font-bold text-[#8a9bc0] hover:bg-white/[.05] hover:text-white">
+          Add
+        </button>
+      </div>
+    </div>
+  );
+}
+
 export function TradeReviewModal({ open, saving, account, onOpenChange, onSave }: TradeReviewModalProps) {
   const inputRef = useRef<HTMLInputElement | null>(null);
   const [imageUrl, setImageUrl] = useState("");
@@ -66,15 +150,27 @@ export function TradeReviewModal({ open, saving, account, onOpenChange, onSave }
   const [mistakeType, setMistakeType] = useState("");
   const [reviewCompleted, setReviewCompleted] = useState(false);
   const [toBible, setToBible] = useState(false);
-  const [session, setSession] = useState("London");
-  const [riskPct, setRiskPct] = useState("1.0%");
+  const [sessionOptions, setSessionOptions] = useState(() => storedOptions("tradex-journal-session-options", SESSIONS));
+  const [setupOptions, setSetupOptions] = useState(() => storedOptions("tradex-journal-setup-options", SETUPS));
+  const [riskOptions, setRiskOptions] = useState(() => storedOptions("tradex-journal-risk-options", RISK_PCT));
+  const [session, setSession] = useState("");
+  const [riskPct, setRiskPct] = useState("");
   const [setup, setSetup] = useState("");
+
+  const addOption = (key: string, setOptions: (options: string[]) => void, current: string[], value: string) => {
+    const nextValue = value.trim();
+    if (!nextValue) return;
+    const exists = current.some((item) => item.toLowerCase() === nextValue.toLowerCase());
+    const next = exists ? current : [...current, nextValue];
+    setOptions(next);
+    if (typeof window !== "undefined") window.localStorage.setItem(key, JSON.stringify(next));
+  };
 
   const resetForm = () => {
     setImageUrl(""); setUploadError("");
     if (inputRef.current) inputRef.current.value = "";
     setFollowingPlan(true); setErrorMade(false); setMistakeType("");
-    setReviewCompleted(false); setToBible(false); setSession("London"); setRiskPct("1.0%"); setSetup("");
+    setReviewCompleted(false); setToBible(false); setSession(""); setRiskPct(""); setSetup("");
   };
   const close = (next: boolean) => { onOpenChange(next); if (!next) resetForm(); };
 
@@ -172,54 +268,42 @@ export function TradeReviewModal({ open, saving, account, onOpenChange, onSave }
             {/* Session */}
             <div className="space-y-2">
               <SectionLabel>Session / Time</SectionLabel>
-              <div className="flex flex-wrap gap-1.5">
-                {SESSIONS.map(s => (
-                  <button key={s} type="button" onClick={() => setSession(s)}
-                    className={`rounded-lg px-3 py-1.5 text-[11px] font-semibold transition ${
-                      session === s
-                        ? "bg-blue-500/15 text-blue-300 ring-1 ring-blue-500/30"
-                        : "bg-[#0d1525] text-[#4a5f7a] hover:bg-[#142030] hover:text-[#dde6f8]"
-                    }`}>
-                    {s}
-                  </button>
-                ))}
-              </div>
+              <OptionStack
+                options={sessionOptions}
+                value={session}
+                onChange={setSession}
+                onAdd={(value) => addOption("tradex-journal-session-options", setSessionOptions, sessionOptions, value)}
+                tone="blue"
+                placeholder="Add session"
+              />
               <input type="hidden" name="session" value={session} />
             </div>
 
             {/* Strategy / Setup */}
             <div className="space-y-2">
               <SectionLabel>Strategy / Setup</SectionLabel>
-              <div className="flex flex-wrap gap-1.5">
-                {SETUPS.map(s => (
-                  <button key={s} type="button" onClick={() => setSetup(setup === s ? "" : s)}
-                    className={`rounded-lg px-3 py-1.5 text-[11px] font-semibold transition ${
-                      setup === s
-                        ? "bg-violet-500/15 text-violet-300 ring-1 ring-violet-500/30"
-                        : "bg-[#0d1525] text-[#4a5f7a] hover:bg-[#142030] hover:text-[#dde6f8]"
-                    }`}>
-                    {s}
-                  </button>
-                ))}
-              </div>
+              <OptionStack
+                options={setupOptions}
+                value={setup}
+                onChange={setSetup}
+                onAdd={(value) => addOption("tradex-journal-setup-options", setSetupOptions, setupOptions, value)}
+                tone="violet"
+                placeholder="Add setup"
+              />
               <input type="hidden" name="setup" value={setup} />
             </div>
 
             {/* Risk % */}
             <div className="space-y-2">
               <SectionLabel>Risk %</SectionLabel>
-              <div className="flex gap-1.5">
-                {RISK_PCT.map(r => (
-                  <button key={r} type="button" onClick={() => setRiskPct(r)}
-                    className={`flex-1 rounded-lg py-1.5 text-[11px] font-bold transition ${
-                      riskPct === r
-                        ? "bg-amber-500/15 text-amber-300 ring-1 ring-amber-500/30"
-                        : "bg-[#0d1525] text-[#4a5f7a] hover:text-[#dde6f8]"
-                    }`}>
-                    {r}
-                  </button>
-                ))}
-              </div>
+              <OptionStack
+                options={riskOptions}
+                value={riskPct}
+                onChange={setRiskPct}
+                onAdd={(value) => addOption("tradex-journal-risk-options", setRiskOptions, riskOptions, value)}
+                tone="amber"
+                placeholder="Add risk %"
+              />
               <input type="hidden" name="riskPercent" value={riskPct} />
             </div>
 
