@@ -90,40 +90,53 @@ export async function POST(request: Request) {
     return badRequest("Trade ma'lumotlarini tekshiring.");
   }
 
-  const { data, error } = await auth.supabase
+  const baseEntry = {
+    user_id: auth.user.id,
+    prop_account_id: account.id,
+    symbol,
+    side,
+    entry_price: entry,
+    exit_price: exit,
+    quantity,
+    fees,
+    pnl,
+    note: body.note?.trim().slice(0, 500) || "",
+    traded_at: body.tradedAt || new Date().toISOString().slice(0, 10),
+    account_name: account.name,
+    market_type: account.market_type,
+    setup: body.setup?.trim().slice(0, 80) || "",
+    risk_amount: risk,
+    result_r: resultR,
+    account_size: account.account_size,
+    profit_target: account.profit_target,
+    max_drawdown: account.max_drawdown,
+    image_url: body.imageUrl?.trim().slice(0, 1000) || null,
+    tags: (body.tags || []).map((t) => t.trim().slice(0, 24)).filter(Boolean).slice(0, 8),
+  };
+
+  const notionFields = {
+    risk_percent: body.riskPercent?.trim().slice(0, 10) ?? "",
+    session: body.session?.trim().slice(0, 40) || "",
+    following_plan: body.followingPlan ?? true,
+    error_made: body.errorMade ?? false,
+    mistake_type: body.mistakeType?.trim().slice(0, 60) || "",
+    review_completed: body.reviewCompleted ?? false,
+    to_trading_bible: body.toTradingBible ?? false,
+  };
+
+  const insertEntry = (entry: Record<string, unknown>) => auth.supabase
     .from("journal_entries")
-    .insert({
-      user_id: auth.user.id,
-      prop_account_id: account.id,
-      symbol,
-      side,
-      entry_price: entry,
-      exit_price: exit,
-      quantity,
-      fees,
-      pnl,
-      note: body.note?.trim().slice(0, 500) || "",
-      traded_at: body.tradedAt || new Date().toISOString().slice(0, 10),
-      account_name: account.name,
-      market_type: account.market_type,
-      setup: body.setup?.trim().slice(0, 80) || "",
-      risk_amount: risk,
-      result_r: resultR,
-      risk_percent: body.riskPercent?.trim().slice(0, 10) || "1.0%",
-      session: body.session?.trim().slice(0, 40) || "",
-      following_plan: body.followingPlan ?? true,
-      error_made: body.errorMade ?? false,
-      mistake_type: body.mistakeType?.trim().slice(0, 60) || "",
-      review_completed: body.reviewCompleted ?? false,
-      to_trading_bible: body.toTradingBible ?? false,
-      account_size: account.account_size,
-      profit_target: account.profit_target,
-      max_drawdown: account.max_drawdown,
-      image_url: body.imageUrl?.trim().slice(0, 1000) || null,
-      tags: (body.tags || []).map((t) => t.trim().slice(0, 24)).filter(Boolean).slice(0, 8),
-    })
+    .insert(entry)
     .select()
     .single();
+
+  let { data, error } = await insertEntry({ ...baseEntry, ...notionFields });
+
+  if (error && (error.code === "42703" || error.code === "PGRST204" || /column|schema cache/i.test(error.message))) {
+    const fallback = await insertEntry(baseEntry);
+    data = fallback.data;
+    error = fallback.error;
+  }
 
   if (error) return serverError(error.message);
   return Response.json({ entry: data }, { status: 201 });
