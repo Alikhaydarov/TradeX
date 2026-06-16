@@ -11,6 +11,7 @@ import { apiRequest } from "../lib/api-client";
 import { Button } from "./ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "./ui/dropdown-menu";
 import { Input } from "./ui/input";
+import { Textarea } from "./ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
 import { useAuth } from "./auth-context";
 import { PropAccountDialog } from "./prop-account-dialog";
@@ -21,6 +22,7 @@ import type { JournalEntry, PropAccount } from "./types";
 type AccountRow = { id: string; name: string; firm: string; phase: string; market_type: string; account_size: string; initial_balance: string; profit_target: string; max_drawdown: string; daily_drawdown: string; start_date: string; status: PropAccount["status"] };
 type EntryRow = { id: string; prop_account_id?: string | null; symbol: string; side: "Long" | "Short"; entry_price: string; exit_price: string; quantity: string; fees: string; pnl: string; note: string; traded_at: string; account_name?: string; market_type?: string; setup?: string; emotion?: string; risk_amount?: string; result_r?: string; risk_percent?: string; session?: string; following_plan?: boolean; error_made?: boolean; mistake_type?: string; review_completed?: boolean; to_trading_bible?: boolean; image_url?: string | null; tags?: string[] };
 type Summary = { account: PropAccount; trades: number; pnl: number; winRate: number; target: number; dd: number };
+type TradeRange = "daily" | "monthly" | "quarter" | "yearly" | "custom";
 
 const cash = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 2 });
 const WEEKDAYS_SHORT = ["Du", "Se", "Ch", "Pa", "Ju", "Sh", "Ya"];
@@ -43,6 +45,9 @@ export function JournalV2({ onLogin }: { onLogin: () => void }) {
   const [deleting, setDeleting] = useState<string | null>(null);
   const [query, setQuery] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [tradeRange, setTradeRange] = useState<TradeRange>("monthly");
+  const [customStart, setCustomStart] = useState(() => new Date().toISOString().slice(0, 10));
+  const [customEnd, setCustomEnd] = useState(() => new Date().toISOString().slice(0, 10));
 
   useEffect(() => {
     if (!user) return;
@@ -59,7 +64,29 @@ export function JournalV2({ onLogin }: { onLogin: () => void }) {
   const account = accounts.find(a => a.id === accountId) || null;
   const accountEntries = useMemo(() => entries.filter(e => e.propAccountId === accountId), [entries, accountId]);
   const monthEntries = useMemo(() => accountEntries.filter(e => e.rawDate?.startsWith(monthId(month))), [accountEntries, month]);
-  const shown = useMemo(() => { const q = query.trim().toLowerCase(); return q ? monthEntries.filter(e => `${e.symbol} ${e.setup} ${e.note} ${e.tags?.join(" ")}`.toLowerCase().includes(q)) : monthEntries; }, [monthEntries, query]);
+  const rangeEntries = useMemo(() => {
+    const y = month.getFullYear();
+    const m = month.getMonth();
+    if (tradeRange === "daily") {
+      const today = new Date().toISOString().slice(0, 10);
+      return accountEntries.filter(e => e.rawDate === today);
+    }
+    if (tradeRange === "monthly") return monthEntries;
+    if (tradeRange === "quarter") {
+      const start = new Date(y, m - 2, 1);
+      const end = new Date(y, m + 1, 0);
+      return accountEntries.filter(e => {
+        const d = new Date(`${e.rawDate}T00:00:00`);
+        return d >= start && d <= end;
+      });
+    }
+    if (tradeRange === "yearly") return accountEntries.filter(e => e.rawDate?.startsWith(String(y)));
+    return accountEntries.filter(e => {
+      const date = e.rawDate || "";
+      return date >= customStart && date <= customEnd;
+    });
+  }, [accountEntries, month, monthEntries, tradeRange, customStart, customEnd]);
+  const shown = useMemo(() => { const q = query.trim().toLowerCase(); return q ? rangeEntries.filter(e => `${e.symbol} ${e.setup} ${e.note} ${e.tags?.join(" ")}`.toLowerCase().includes(q)) : rangeEntries; }, [rangeEntries, query]);
   const summaries = useMemo<Summary[]>(() => accounts.map(account => { const t = entries.filter(e => e.propAccountId === account.id), p = t.reduce((s, e) => s + e.pnl, 0), w = t.filter(e => e.pnl > 0).length; return { account, trades: t.length, pnl: p, winRate: t.length ? Math.round(w / t.length * 100) : 0, target: account.profitTarget ? Math.min(100, Math.max(0, p / account.profitTarget * 100)) : 0, dd: account.maxDrawdown && p < 0 ? Math.min(100, Math.abs(p) / account.maxDrawdown * 100) : 0 }; }), [accounts, entries]);
   const stats = useMemo(() => { const pnl = monthEntries.reduce((s, e) => s + e.pnl, 0), wins = monthEntries.filter(e => e.pnl > 0), losses = monthEntries.filter(e => e.pnl < 0), gw = wins.reduce((s, e) => s + e.pnl, 0), gl = Math.abs(losses.reduce((s, e) => s + e.pnl, 0)); return { pnl, wins: wins.length, losses: losses.length, rate: monthEntries.length ? Math.round(wins.length / monthEntries.length * 100) : 0, r: monthEntries.length ? monthEntries.reduce((s, e) => s + (e.resultR || 0), 0) / monthEntries.length : 0, pf: gl ? gw / gl : gw ? gw : 0 }; }, [monthEntries]);
   const equity = useMemo(() => {
@@ -134,6 +161,32 @@ export function JournalV2({ onLogin }: { onLogin: () => void }) {
     finally { setSaving(false); }
   }
 
+  async function updateTrade(id: string, form: FormData) {
+    setSaving(true);
+    const num = (key: string) => parseFloat(String(form.get(key) || "0").replace(",", ".")) || 0;
+    try {
+      const response = await apiRequest<{ entry: EntryRow }>(`/api/journal/${id}`, { method: "PATCH", body: JSON.stringify({
+        symbol: form.get("symbol"),
+        side: form.get("side"),
+        pnl: num("pnl"),
+        quantity: num("quantity"),
+        fees: num("fees"),
+        riskAmount: num("riskAmount"),
+        resultR: num("resultR"),
+        riskPercent: form.get("riskPercent"),
+        session: form.get("session"),
+        tradedAt: form.get("tradedAt"),
+        setup: form.get("setup"),
+        tags: String(form.get("tags") || "").split(",").map(t => t.trim()).filter(Boolean),
+        note: form.get("note"),
+      }) });
+      const next = entryFrom(response.entry);
+      setEntries(current => current.map(entry => entry.id === id ? next : entry));
+      setMonth(new Date(`${next.rawDate}T00:00:00`));
+    } catch (e) { setError(e instanceof Error ? e.message : "Trade yangilanmadi"); }
+    finally { setSaving(false); }
+  }
+
   const shiftMonth = (n: number) => setMonth(d => new Date(d.getFullYear(), d.getMonth() + n, 1));
   const exportCsv = () => { const rows = [["Date", "Symbol", "Side", "PnL", "R", "Setup"], ...shown.map(e => [e.rawDate, e.symbol, e.side, e.pnl, e.resultR, e.setup])], a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([rows.map(r => r.map(v => `"${v || ""}"`).join(",")).join("\n")], { type: "text/csv" })); a.download = `${account?.name || "journal"}-${monthId(month)}.csv`; a.click(); URL.revokeObjectURL(a.href); };
 
@@ -162,7 +215,7 @@ export function JournalV2({ onLogin }: { onLogin: () => void }) {
         </div>
       )}
       {account
-        ? <Workspace account={account} stats={stats} equity={equity} setups={setups} mistakes={mistakes} planRate={planRate} monthCount={monthEntries.length} calendar={calendar} trades={shown} query={query} month={month} deleting={deleting === account.id} onQuery={setQuery} onBack={() => setAccountId(null)} onTrade={() => setTradeOpen(true)} onDelete={() => removeAccount(account)} onCsv={exportCsv} onPrev={() => shiftMonth(-1)} onNext={() => shiftMonth(1)} onToday={() => setMonth(new Date())} />
+        ? <Workspace account={account} stats={stats} equity={equity} setups={setups} mistakes={mistakes} planRate={planRate} monthCount={monthEntries.length} calendar={calendar} trades={shown} query={query} month={month} deleting={deleting === account.id} saving={saving} tradeRange={tradeRange} customStart={customStart} customEnd={customEnd} onRange={setTradeRange} onCustomStart={setCustomStart} onCustomEnd={setCustomEnd} onQuery={setQuery} onBack={() => setAccountId(null)} onTrade={() => setTradeOpen(true)} onDelete={() => removeAccount(account)} onCsv={exportCsv} onPrev={() => shiftMonth(-1)} onNext={() => shiftMonth(1)} onToday={() => setMonth(new Date())} onUpdateTrade={updateTrade} />
         : <Accounts summaries={summaries} deleting={deleting} onAdd={() => setAccountOpen(true)} onOpen={setAccountId} onDelete={removeAccount} />
       }
       <PropAccountDialog open={accountOpen} saving={saving} onOpenChange={setAccountOpen} onSave={addAccount} />
@@ -320,11 +373,14 @@ function Workspace(p: {
   equity: Array<{ trade: number; equity: number }>; setups: Array<{ name: string; pnl: number; trades: number; wins: number; rate: number }>;
   mistakes: Array<{ name: string; pnl: number; trades: number }>; planRate: number; monthCount: number;
   calendar: Array<{ day: number; trades: JournalEntry[]; pnl: number } | null>;
-  trades: JournalEntry[]; query: string; month: Date; deleting: boolean;
+  trades: JournalEntry[]; query: string; month: Date; deleting: boolean; saving: boolean; tradeRange: TradeRange; customStart: string; customEnd: string;
+  onRange: (value: TradeRange) => void; onCustomStart: (value: string) => void; onCustomEnd: (value: string) => void;
   onQuery: (v: string) => void; onBack: () => void; onTrade: () => void; onDelete: () => void;
   onCsv: () => void; onPrev: () => void; onNext: () => void; onToday: () => void;
+  onUpdateTrade: (id: string, form: FormData) => Promise<void>;
 }) {
   const { account, stats, equity, setups, mistakes, planRate, monthCount, calendar, trades, month } = p;
+  const [selectedTrade, setSelectedTrade] = useState<JournalEntry | null>(null);
 
   return (
     <div className="animate-page-in mx-auto max-w-[1700px]">
@@ -356,21 +412,6 @@ function Workspace(p: {
       </header>
 
       <div className="space-y-4 p-4 lg:p-6">
-        {/* Month nav */}
-        <div className="flex items-center gap-2 rounded-2xl border border-[#1a2235] bg-[#0d1525]/60 px-3 py-2.5 sm:gap-3">
-          <Button variant="ghost" size="icon-sm" onClick={p.onPrev}><ChevronLeft size={16} /></Button>
-          <strong className="min-w-40 text-center text-sm capitalize">
-            {month.toLocaleDateString("uz-UZ", { month: "long", year: "numeric" })}
-          </strong>
-          <Button variant="ghost" size="icon-sm" onClick={p.onNext}><ChevronRight size={16} /></Button>
-          <Button variant="outline" size="sm" onClick={p.onToday} className="border-[#1a2235] bg-transparent text-xs">
-            Joriy oy
-          </Button>
-          <p className="ml-auto hidden text-xs text-[#6b7a96] sm:block">
-            {trades.length} trade / {stats.wins}W / {stats.losses}L
-          </p>
-        </div>
-
         {/* Stats */}
         <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
           {[
@@ -440,9 +481,17 @@ function Workspace(p: {
           {/* Calendar */}
           <TabsContent value="calendar">
             <div className="rounded-2xl border border-[#1a2235] bg-[#0d1525]/80 overflow-hidden">
-              <div className="border-b border-[#1a2235] px-5 py-4">
-                <h3 className="font-bold capitalize">{month.toLocaleDateString("uz-UZ", { month: "long", year: "numeric" })} natijalari</h3>
-                <p className="text-xs text-[#6b7a96]">Har bir kunning P&L va trade soni</p>
+              <div className="flex flex-col gap-3 border-b border-[#1a2235] px-5 py-4 lg:flex-row lg:items-center">
+                <div>
+                  <h3 className="font-bold capitalize">{month.toLocaleDateString("uz-UZ", { month: "long", year: "numeric" })} natijalari</h3>
+                  <p className="text-xs text-[#6b7a96]">Har bir kunning P&L va trade soni</p>
+                </div>
+                <div className="flex items-center gap-2 rounded-xl border border-[#1a2235] bg-[#060b14] p-1 lg:ml-auto">
+                  <Button variant="ghost" size="icon-sm" onClick={p.onPrev}><ChevronLeft size={16} /></Button>
+                  <strong className="min-w-32 text-center text-sm capitalize">{month.toLocaleDateString("uz-UZ", { month: "short", year: "numeric" })}</strong>
+                  <Button variant="ghost" size="icon-sm" onClick={p.onNext}><ChevronRight size={16} /></Button>
+                  <Button variant="outline" size="sm" onClick={p.onToday} className="border-[#1a2235] bg-transparent text-xs">Joriy oy</Button>
+                </div>
               </div>
               {/* Desktop calendar */}
               <div className="hidden p-4 md:block">
@@ -523,7 +572,8 @@ function Workspace(p: {
           {/* Trades */}
           <TabsContent value="trades">
             <div className="rounded-2xl border border-[#1a2235] bg-[#0d1525]/80 overflow-hidden">
-              <div className="flex flex-col gap-3 border-b border-[#1a2235] px-5 py-4 sm:flex-row sm:items-center">
+              <div className="space-y-3 border-b border-[#1a2235] px-5 py-4">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
                 <div>
                   <h3 className="font-bold">Trade journal</h3>
                   <p className="text-xs text-[#6b7a96]">{trades.length} ta trade</p>
@@ -532,10 +582,33 @@ function Workspace(p: {
                   <Search className="absolute left-3 top-2.5 text-[#6b7a96]" size={15} />
                   <Input value={p.query} onChange={e => p.onQuery(e.target.value)} className="border-[#1a2235] bg-[#060b14] pl-9 text-sm" placeholder="Symbol yoki setup" />
                 </div>
+                </div>
+                <div className="flex flex-col gap-2 lg:flex-row lg:items-center">
+                  <div className="grid grid-cols-2 gap-1 rounded-xl border border-[#1a2235] bg-[#060b14] p-1 sm:flex">
+                    {[
+                      ["daily", "Daily"],
+                      ["monthly", "Monthly"],
+                      ["quarter", "3 months"],
+                      ["yearly", "Yearly"],
+                      ["custom", "Custom"],
+                    ].map(([value, label]) => (
+                      <button key={value} type="button" onClick={() => p.onRange(value as TradeRange)}
+                        className={`rounded-lg px-3 py-2 text-xs font-bold transition ${p.tradeRange === value ? "bg-blue-500/18 text-blue-200 ring-1 ring-blue-400/20" : "text-[#6b7a96] hover:bg-white/[.04] hover:text-[#dde6f8]"}`}>
+                        {label}
+                      </button>
+                    ))}
+                  </div>
+                  {p.tradeRange === "custom" ? (
+                    <div className="grid gap-2 sm:grid-cols-2 lg:ml-auto lg:w-[360px]">
+                      <Input type="date" value={p.customStart} onChange={event => p.onCustomStart(event.target.value)} className="border-[#1a2235] bg-[#060b14] text-sm" />
+                      <Input type="date" value={p.customEnd} onChange={event => p.onCustomEnd(event.target.value)} className="border-[#1a2235] bg-[#060b14] text-sm" />
+                    </div>
+                  ) : null}
+                </div>
               </div>
               {trades.length
                 ? trades.map(e => (
-                    <div key={e.id} className="flex items-center gap-3 border-t border-[#1a2235] px-5 py-3 transition hover:bg-[#172336]/40">
+                    <button key={e.id} type="button" onClick={() => setSelectedTrade(e)} className="flex w-full items-center gap-3 border-t border-[#1a2235] px-5 py-3 text-left transition hover:bg-[#172336]/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/40">
                       {e.imageUrl
                         ? <img src={e.imageUrl} alt={`${e.symbol} chart`} className="h-14 w-20 shrink-0 rounded-lg object-cover" />
                         : <span className="grid h-14 w-20 shrink-0 place-items-center rounded-lg bg-[#060b14]"><ImageIcon size={18} className="text-[#2a3f60]" /></span>
@@ -572,7 +645,7 @@ function Workspace(p: {
                         <b className={`font-mono font-black ${e.pnl >= 0 ? "text-emerald-400" : "text-rose-400"}`}>{e.pnl >= 0 ? "+" : ""}{cash.format(e.pnl)}</b>
                         <p className="text-xs text-[#6b7a96]">{(e.resultR || 0).toFixed(2)}R</p>
                       </div>
-                    </div>
+                    </button>
                   ))
                 : <Empty text="Bu oyda trade yo'q." />
               }
@@ -649,7 +722,64 @@ function Workspace(p: {
             </div>
           </TabsContent>
         </Tabs>
+        {selectedTrade ? (
+          <TradeEditor
+            trade={selectedTrade}
+            saving={p.saving}
+            onClose={() => setSelectedTrade(null)}
+            onSave={async (form) => {
+              await p.onUpdateTrade(selectedTrade.id, form);
+              setSelectedTrade(null);
+            }}
+          />
+        ) : null}
       </div>
+    </div>
+  );
+}
+
+function TradeEditor({ trade, saving, onClose, onSave }: { trade: JournalEntry; saving: boolean; onClose: () => void; onSave: (form: FormData) => Promise<void> }) {
+  return (
+    <div className="fixed inset-0 z-[9999] flex items-start justify-center overflow-y-auto bg-black/70 p-3 pt-[max(1rem,env(safe-area-inset-top))] backdrop-blur-md sm:items-center sm:p-4">
+      <div className="absolute inset-0" onClick={onClose} aria-hidden="true" />
+      <form action={onSave} className="relative z-10 w-full max-w-2xl overflow-hidden rounded-[28px] border border-[#1a2235] bg-[#070b12] text-white shadow-2xl shadow-black/80">
+        <header className="flex items-center gap-3 border-b border-[#1a2235] px-5 py-4">
+          <div className="min-w-0 flex-1">
+            <h3 className="truncate text-lg font-black">{trade.symbol} trade</h3>
+            <p className="text-xs text-[#6b7a96]">Trade detail va edit</p>
+          </div>
+          <button type="button" onClick={onClose} className="grid size-9 place-items-center rounded-xl text-[#6b7a96] hover:bg-white/[.05] hover:text-white" aria-label="Close">
+            <X size={17} />
+          </button>
+        </header>
+        <div className="max-h-[70dvh] space-y-4 overflow-y-auto p-5">
+          <div className="grid gap-3 sm:grid-cols-3">
+            <label className="text-xs text-[#6b7a96]">Symbol<Input name="symbol" defaultValue={trade.symbol} className="mt-1 border-[#1a2235] bg-[#060b14]" /></label>
+            <label className="text-xs text-[#6b7a96]">Side<select name="side" defaultValue={trade.side} className="mt-1 h-10 w-full rounded-lg border border-[#1a2235] bg-[#060b14] px-3 text-sm text-white"><option>Long</option><option>Short</option></select></label>
+            <label className="text-xs text-[#6b7a96]">Date<Input name="tradedAt" type="date" defaultValue={trade.rawDate} className="mt-1 border-[#1a2235] bg-[#060b14]" /></label>
+          </div>
+          <div className="grid gap-3 sm:grid-cols-3">
+            <label className="text-xs text-[#6b7a96]">PnL<Input name="pnl" inputMode="decimal" defaultValue={String(trade.pnl)} className="mt-1 border-[#1a2235] bg-[#060b14]" /></label>
+            <label className="text-xs text-[#6b7a96]">Quantity<Input name="quantity" inputMode="decimal" defaultValue={String(trade.quantity)} className="mt-1 border-[#1a2235] bg-[#060b14]" /></label>
+            <label className="text-xs text-[#6b7a96]">Fees<Input name="fees" inputMode="decimal" defaultValue={String(trade.fees)} className="mt-1 border-[#1a2235] bg-[#060b14]" /></label>
+          </div>
+          <div className="grid gap-3 sm:grid-cols-3">
+            <label className="text-xs text-[#6b7a96]">Risk $<Input name="riskAmount" inputMode="decimal" defaultValue={String(trade.riskAmount ?? 0)} className="mt-1 border-[#1a2235] bg-[#060b14]" /></label>
+            <label className="text-xs text-[#6b7a96]">RR<Input name="resultR" inputMode="decimal" defaultValue={String(trade.resultR ?? 0)} className="mt-1 border-[#1a2235] bg-[#060b14]" /></label>
+            <label className="text-xs text-[#6b7a96]">Risk %<Input name="riskPercent" defaultValue={trade.riskPercent ?? ""} className="mt-1 border-[#1a2235] bg-[#060b14]" /></label>
+          </div>
+          <div className="grid gap-3 sm:grid-cols-3">
+            <label className="text-xs text-[#6b7a96]">Setup<Input name="setup" defaultValue={trade.setup ?? ""} className="mt-1 border-[#1a2235] bg-[#060b14]" /></label>
+            <label className="text-xs text-[#6b7a96]">Session<Input name="session" defaultValue={trade.session ?? ""} className="mt-1 border-[#1a2235] bg-[#060b14]" /></label>
+            <label className="text-xs text-[#6b7a96]">Tags<Input name="tags" defaultValue={(trade.tags ?? []).join(", ")} className="mt-1 border-[#1a2235] bg-[#060b14]" /></label>
+          </div>
+          <label className="block text-xs text-[#6b7a96]">Review note<Textarea name="note" defaultValue={trade.note} className="mt-1 min-h-28 border-[#1a2235] bg-[#060b14]" /></label>
+        </div>
+        <footer className="flex gap-2 border-t border-[#1a2235] p-4">
+          <Button type="button" variant="outline" onClick={onClose} className="border-[#1a2235] bg-transparent">Cancel</Button>
+          <Button disabled={saving} className="ml-auto bg-blue-600 hover:bg-blue-500">{saving ? <LoaderCircle className="animate-spin" size={15} /> : null} Save changes</Button>
+        </footer>
+      </form>
     </div>
   );
 }
