@@ -93,7 +93,7 @@ export function TradeReviewModal({ open, saving, account, onOpenChange, onSave }
     } finally { setUploading(false); }
   };
 
-  const drop = (e: DragEvent<HTMLButtonElement>) => { e.preventDefault(); void upload(e.dataTransfer.files?.[0]); };
+  const drop = (e: DragEvent<HTMLDivElement>) => { e.preventDefault(); void upload(e.dataTransfer.files?.[0]); };
   const submit = async (form: FormData) => { await onSave(form); resetForm(); };
 
   return (
@@ -101,10 +101,10 @@ export function TradeReviewModal({ open, saving, account, onOpenChange, onSave }
       {/* Custom close button lives in the modal header. */}
       <DialogContent
         showCloseButton={false}
-        className="max-h-[95dvh] overflow-hidden border border-[#1a2235] bg-[#07090f] p-0 sm:max-w-5xl shadow-2xl shadow-black/60"
+        className="max-h-[95dvh] overflow-hidden border border-[#141824] bg-[#05070c] p-0 sm:max-w-3xl shadow-2xl shadow-black/70"
       >
         {/* Header */}
-        <div className="relative flex items-center gap-3 border-b border-[#141d2e] bg-gradient-to-r from-[#0a0f1e] to-[#070b18] px-5 py-4">
+        <div className="relative flex items-center gap-3 border-b border-[#111827] bg-[#070a12] px-5 py-4">
           {/* gradient accent line */}
           <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-blue-500/30 to-transparent" />
 
@@ -124,10 +124,10 @@ export function TradeReviewModal({ open, saving, account, onOpenChange, onSave }
         </div>
 
         {/* Body */}
-        <form action={submit} className="flex max-h-[calc(95dvh-61px)] flex-col overflow-y-auto lg:flex-row lg:overflow-hidden">
+        <form action={submit} className="flex max-h-[calc(95dvh-61px)] flex-col overflow-hidden">
 
           {/* Left: fields */}
-          <div className="flex-1 overflow-y-auto p-5 lg:p-6 space-y-5">
+          <div className="flex-1 space-y-5 overflow-y-auto p-4 pb-28 sm:p-6">
 
             {/* Symbol + Side + Date */}
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
@@ -284,65 +284,72 @@ export function TradeReviewModal({ open, saving, account, onOpenChange, onSave }
                 placeholder="Pre-trade: sabab. Execution: kirish/chiqish. Review: xato va keyingi qoida."
               />
             </div>
-          </div>
-
-          {/* Right: screenshot */}
-          <div className="flex flex-col border-t border-[#141d2e] bg-[#04060c] p-5 lg:w-[320px] lg:shrink-0 lg:border-l lg:border-t-0 lg:p-6">
-            <div className="flex items-center gap-3 mb-4">
-              <span className="grid size-9 place-items-center rounded-xl bg-blue-500/10 ring-1 ring-blue-500/20">
-                <Camera size={16} className="text-blue-400" />
-              </span>
-              <div>
-                <h3 className="text-sm font-semibold text-[#dde6f8]">Chart screenshot</h3>
-                <p className="text-[11px] text-[#4a5f7a]">JPG, PNG yoki WEBP / max 5MB</p>
-              </div>
-            </div>
 
             <input ref={inputRef} type="file" accept="image/jpeg,image/png,image/webp" className="hidden"
               onChange={(e) => void upload(e.target.files?.[0])} />
             <input type="hidden" name="imageUrl" value={imageUrl} />
 
-            <div className="flex flex-1 min-h-48 overflow-hidden rounded-2xl border border-dashed border-[#1a2235] bg-[#060b14]/50">
+            <div className="rounded-xl border border-[#141d2e] bg-[#060b14] p-3">
+              <div className="mb-3 flex items-center gap-3">
+                <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-blue-500/10 ring-1 ring-blue-500/20">
+                  <Camera size={16} className="text-blue-400" />
+                </span>
+                <div className="min-w-0 flex-1">
+                  <h3 className="truncate text-sm font-semibold text-[#dde6f8]">Chart screenshot</h3>
+                  <p className="truncate text-[11px] text-[#4a5f7a]">JPG, PNG yoki WEBP / max 5MB</p>
+                </div>
+                <button type="button" onClick={() => inputRef.current?.click()}
+                  className="shrink-0 rounded-lg border border-[#1a2235] bg-[#0b1220] px-3 py-2 text-xs font-semibold text-[#8a9bc0] transition hover:border-blue-500/40 hover:text-[#dde6f8]">
+                  {imageUrl ? "Almashtirish" : "Yuklash"}
+                </button>
+              </div>
+
+              <div onClick={() => !imageUrl && inputRef.current?.click()}
+                onDragOver={(e) => e.preventDefault()} onDrop={drop}
+                className="flex w-full items-center gap-3 overflow-hidden rounded-xl border border-dashed border-[#1a2235] bg-[#03050a] p-3 text-left transition hover:border-blue-500/35 hover:bg-[#080d17]">
               {imageUrl
-                ? <div className="relative flex w-full items-center justify-center p-3">
-                    <img src={imageUrl} alt="chart" className="max-h-72 w-full rounded-xl object-contain" />
+                ? <>
+                    <span className="relative grid h-16 w-20 shrink-0 place-items-center overflow-hidden rounded-lg border border-[#1a2235] bg-black">
+                      <img src={imageUrl} alt="chart" className="h-full w-full object-cover" />
+                    </span>
+                    <span className="min-w-0 flex-1">
+                      <span className="block truncate text-sm font-semibold text-[#dde6f8]">Screenshot ulandi</span>
+                      <span className="mt-0.5 block truncate text-[11px] text-[#4a5f7a]">Jurnalga attachment sifatida qo&apos;shiladi</span>
+                    </span>
                     <button type="button" onClick={() => { setImageUrl(""); if (inputRef.current) inputRef.current.value = ""; }}
-                      className="absolute right-3 top-3 grid size-7 place-items-center rounded-lg bg-rose-500/20 text-rose-300 hover:bg-rose-500/30 transition">
+                      className="grid size-9 shrink-0 place-items-center rounded-lg bg-rose-500/10 text-rose-300 transition hover:bg-rose-500/20">
                       <Trash2 size={13} />
                     </button>
-                  </div>
-                : <button type="button" onClick={() => inputRef.current?.click()}
-                    onDragOver={(e) => e.preventDefault()} onDrop={drop}
-                    className="flex w-full flex-col items-center justify-center gap-3 p-8 text-center transition hover:bg-[#172336]/30">
+                  </>
+                : <>
+                    <span className="grid size-12 shrink-0 place-items-center rounded-xl bg-[#0b1220] text-[#2a3f60]">
                     {uploading
-                      ? <LoaderCircle className="size-9 animate-spin text-blue-400" />
-                      : <UploadCloud className="size-9 text-[#2a3f60]" />
+                      ? <LoaderCircle className="size-5 animate-spin text-blue-400" />
+                      : <UploadCloud className="size-5" />
                     }
-                    <div>
-                      <p className="text-sm font-medium text-[#4a5f7a]">
+                    </span>
+                    <span className="min-w-0 flex-1">
+                      <span className="block text-sm font-semibold text-[#8a9bc0]">
                         {uploading ? "Yuklanmoqda..." : "Screenshot yuklang"}
-                      </p>
-                      <p className="mt-1 text-[11px] text-[#2a3f60]">yoki shu yerga tashlang</p>
-                    </div>
-                  </button>
+                      </span>
+                      <span className="mt-0.5 block text-[11px] text-[#4a5f7a]">bosib tanlang yoki shu yerga tashlang</span>
+                    </span>
+                    <ImagePlus size={16} className="shrink-0 text-[#4a5f7a]" />
+                  </>
               }
+              </div>
+              {uploadError && <p className="mt-2 text-xs text-rose-400">{uploadError}</p>}
             </div>
 
-            {uploadError && <p className="mt-2 text-xs text-rose-400">{uploadError}</p>}
-            {imageUrl && (
-              <button type="button" onClick={() => inputRef.current?.click()}
-                className="mt-3 flex items-center justify-center gap-2 rounded-xl border border-[#1a2235] bg-[#060b14] py-2 text-xs text-[#4a5f7a] transition hover:text-[#dde6f8]">
-                <ImagePlus size={13} /> Boshqa rasm
-              </button>
-            )}
-
-            <div className="mt-4 rounded-xl border border-[#1a2235] bg-[#060b14] p-3 text-[11px] leading-5 text-[#4a5f7a]">
+            <div className="rounded-xl border border-[#1a2235] bg-[#060b14] p-3 text-[11px] leading-5 text-[#4a5f7a]">
               <b className="text-[#8a9bc0]">Review tavsiyasi:</b> trade ochilish sababi, invalidation nuqtasi va chiqish qarorini yozing.
             </div>
+          </div>
 
+          <div className="sticky bottom-0 border-t border-[#141d2e] bg-[#05070c]/95 p-4 backdrop-blur-xl sm:px-6">
             <Button
               disabled={saving || uploading}
-              className="mt-4 h-11 w-full bg-gradient-to-r from-blue-600 to-blue-500 font-semibold shadow-lg shadow-blue-500/20 hover:from-blue-500 hover:to-blue-400 transition-all"
+              className="h-11 w-full bg-gradient-to-r from-blue-600 to-blue-500 font-semibold shadow-lg shadow-blue-500/20 transition-all hover:from-blue-500 hover:to-blue-400"
             >
               {saving ? <LoaderCircle className="animate-spin" /> : <Plus size={16} />}
               Trade jurnalga saqlash
