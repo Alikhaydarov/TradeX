@@ -85,9 +85,21 @@ function toProfile(data: ProfileRecord): Profile & { isFollowing?: boolean } {
   };
 }
 
+function formatAccountTime(createdAt: Date) {
+  const minutes = Math.max(0, Math.round((Date.now() - createdAt.getTime()) / 60000));
+  if (minutes < 1) return "now";
+  if (minutes < 60) return `${minutes}m`;
+  const hours = Math.round(minutes / 60);
+  if (hours < 24) return `${hours}h`;
+  const days = Math.round(hours / 24);
+  if (days < 7) return `${days}d`;
+  const weeks = Math.round(days / 7);
+  if (weeks < 4) return `${weeks}w`;
+  return createdAt.toLocaleDateString("en-US", { day: "numeric", month: "short" });
+}
+
 function toPost(record: PostRecord): Post {
   const createdAt = new Date(record.created_at);
-  const minutes = Math.max(0, Math.round((Date.now() - createdAt.getTime()) / 60000));
 
   return {
     id: record.id,
@@ -95,7 +107,7 @@ function toPost(record: PostRecord): Post {
     name: record.author_name,
     handle: record.author_handle.startsWith("@") ? record.author_handle : `@${record.author_handle}`,
     avatar: record.author_avatar || record.author_name.slice(0, 2).toUpperCase(),
-    time: minutes < 1 ? "now" : minutes < 60 ? `${minutes}m` : createdAt.toLocaleDateString("en-US", { day: "numeric", month: "short" }),
+    time: formatAccountTime(createdAt),
     text: record.content,
     imageUrl: record.image_url ?? null,
     symbol: record.symbol ?? undefined,

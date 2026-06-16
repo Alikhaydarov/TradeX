@@ -69,16 +69,27 @@ function formatCount(value: number) {
   return String(value);
 }
 
-function toPost(record: PostRecord, liked = false, bookmarked = false): Post {
-  const minutes = Math.max(0, Math.round((Date.now() - new Date(record.created_at).getTime()) / 60000));
+function formatFeedTime(value: string | Date | number) {
+  const date = typeof value === "string" || typeof value === "number" ? new Date(value) : value;
+  const minutes = Math.max(0, Math.round((Date.now() - date.getTime()) / 60000));
+  if (minutes < 1) return "hozir";
+  if (minutes < 60) return `${minutes}m`;
+  const hours = Math.round(minutes / 60);
+  if (hours < 24) return `${hours}h`;
+  const days = Math.round(hours / 24);
+  if (days < 7) return `${days}d`;
+  const weeks = Math.round(days / 7);
+  return `${weeks}w`;
+}
 
+function toPost(record: PostRecord, liked = false, bookmarked = false): Post {
   return {
     id: record.id,
     userId: record.user_id,
     name: record.author_name,
     handle: record.author_handle.startsWith("@") ? record.author_handle : `@${record.author_handle}`,
     avatar: record.author_avatar || record.author_name.slice(0, 2).toUpperCase(),
-    time: minutes < 1 ? "hozir" : `${minutes}m`,
+    time: formatFeedTime(record.created_at),
     text: record.content,
     symbol: record.symbol ?? undefined,
     side: record.side ?? undefined,
