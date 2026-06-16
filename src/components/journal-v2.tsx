@@ -27,6 +27,8 @@ type TradeRange = "daily" | "monthly" | "quarter" | "yearly" | "custom";
 const cash = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 2 });
 const WEEKDAYS_SHORT = ["Du", "Se", "Ch", "Pa", "Ju", "Sh", "Ya"];
 const WEEKDAYS_FULL = ["Dushanba", "Seshanba", "Chorshanba", "Payshanba", "Juma", "Shanba", "Yakshanba"];
+const WORKSPACE_TABS = [["overview", "Overview"], ["calendar", "Calendar"], ["trades", "Trades"], ["analytics", "Analytics"]] as const;
+type WorkspaceTab = typeof WORKSPACE_TABS[number][0];
 
 const accountFrom = (a: AccountRow): PropAccount => ({ id: a.id, name: a.name, firm: a.firm, phase: a.phase, marketType: a.market_type, accountSize: +a.account_size, initialBalance: +a.initial_balance, profitTarget: +a.profit_target, maxDrawdown: +a.max_drawdown, dailyDrawdown: +a.daily_drawdown, startDate: a.start_date, status: a.status });
 const entryFrom = (e: EntryRow): JournalEntry => ({ id: e.id, propAccountId: e.prop_account_id, symbol: e.symbol, side: e.side, entry: +e.entry_price, exit: +e.exit_price, quantity: +e.quantity, fees: +e.fees, pnl: +e.pnl, note: e.note, rawDate: e.traded_at, date: new Date(`${e.traded_at}T00:00:00`).toLocaleDateString("uz-UZ"), accountName: e.account_name, marketType: e.market_type, setup: e.setup || "", emotion: e.emotion || "Neutral", riskAmount: +(e.risk_amount || 0), resultR: +(e.result_r || 0), riskPercent: e.risk_percent || "1.0%", session: e.session || "", followingPlan: e.following_plan ?? true, errorMade: e.error_made ?? false, mistakeType: e.mistake_type || "", reviewCompleted: e.review_completed ?? false, toTradingBible: e.to_trading_bible ?? false, imageUrl: e.image_url, tags: e.tags || [] });
@@ -381,6 +383,7 @@ function Workspace(p: {
 }) {
   const { account, stats, equity, setups, mistakes, planRate, monthCount, calendar, trades, month } = p;
   const [selectedTrade, setSelectedTrade] = useState<JournalEntry | null>(null);
+  const [activeTab, setActiveTab] = useState<WorkspaceTab>("calendar");
 
   return (
     <div className="animate-page-in mx-auto max-w-[1700px]">
@@ -432,9 +435,15 @@ function Workspace(p: {
         </div>
 
         {/* Tabs */}
-        <Tabs defaultValue="calendar" className="gap-4">
-          <TabsList className="h-10 w-full justify-start overflow-x-auto rounded-xl border border-[#1a2235] bg-[#0d1525] p-1">
-            {[["overview", "Overview"], ["calendar", "Calendar"], ["trades", "Trades"], ["analytics", "Analytics"]].map(([v, l]) => (
+        <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as WorkspaceTab)} className="gap-4">
+          <label className="block md:hidden">
+            <span className="mb-1.5 block text-[10px] font-semibold uppercase tracking-widest text-[#6b7a96]">View</span>
+            <select value={activeTab} onChange={(event) => setActiveTab(event.target.value as WorkspaceTab)} className="h-11 w-full rounded-xl border border-[#1a2235] bg-[#0d1525] px-3 text-sm font-bold text-[#dde6f8] outline-none">
+              {WORKSPACE_TABS.map(([v, l]) => <option key={v} value={v}>{l}</option>)}
+            </select>
+          </label>
+          <TabsList className="hidden h-10 w-full justify-start overflow-x-auto rounded-xl border border-[#1a2235] bg-[#0d1525] p-1 md:inline-flex">
+            {WORKSPACE_TABS.map(([v, l]) => (
               <TabsTrigger key={v} value={v} className="rounded-lg px-5 text-sm data-[state=active]:bg-[#172336] data-[state=active]:text-[#dde6f8]">{l}</TabsTrigger>
             ))}
           </TabsList>

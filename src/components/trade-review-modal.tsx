@@ -24,10 +24,12 @@ const MISTAKES = ["Erta kirish", "Kechiktirilgan kirish", "SL qoymaslik", "Ortiq
 function storedOptions(key: string, fallback: string[]) {
   if (typeof window === "undefined") return fallback;
   try {
-    const parsed = JSON.parse(window.localStorage.getItem(key) || "[]") as unknown;
+    const saved = window.localStorage.getItem(key);
+    if (saved === null) return fallback;
+    const parsed = JSON.parse(saved) as unknown;
     if (!Array.isArray(parsed)) return fallback;
     const clean = parsed.map((item) => String(item).trim()).filter(Boolean);
-    return clean.length ? clean : fallback;
+    return clean;
   } catch {
     return fallback;
   }
@@ -73,6 +75,7 @@ function OptionStack({
   value,
   onChange,
   onAdd,
+  onRemove,
   tone,
   placeholder = "Add option",
 }: {
@@ -80,10 +83,12 @@ function OptionStack({
   value: string;
   onChange: (value: string) => void;
   onAdd: (value: string) => void;
+  onRemove: (value: string) => void;
   tone: "blue" | "violet" | "amber";
   placeholder?: string;
 }) {
   const [draft, setDraft] = useState("");
+  const [open, setOpen] = useState(false);
   const toneClass = {
     blue: "bg-blue-500/15 text-blue-300 ring-blue-500/30",
     violet: "bg-violet-500/15 text-violet-300 ring-violet-500/30",
@@ -96,29 +101,44 @@ function OptionStack({
     onAdd(next);
     onChange(next);
     setDraft("");
+    setOpen(false);
   };
 
   return (
     <div className="space-y-1.5">
-      {options.map((option) => {
+      <button type="button" onClick={() => setOpen((current) => !current)} className="flex h-10 w-full items-center justify-between rounded-lg border border-[#1a2235] bg-[#060b14] px-3 text-left text-[12px] font-semibold text-[#dde6f8]">
+        <span className={value ? "truncate" : "truncate text-[#4a5f7a]"}>{value || placeholder}</span>
+        <span className="text-[#4a5f7a]">{open ? "Close" : "Options"}</span>
+      </button>
+      {open ? options.map((option) => {
         const active = value === option;
         return (
-          <button
+          <div
             key={option}
-            type="button"
-            onClick={() => onChange(active ? "" : option)}
             className={`flex min-h-9 w-full items-center justify-between rounded-lg border px-3 py-2 text-left text-[12px] font-semibold transition ${
               active
                 ? `border-transparent ${toneClass} ring-1`
                 : "border-[#141d2e] bg-[#0d1525] text-[#60708c] hover:border-[#22304a] hover:bg-[#111a2a] hover:text-[#dde6f8]"
             }`}
           >
-            <span className="truncate">{option}</span>
-            {active ? <span className="text-[10px] uppercase tracking-widest opacity-80">Selected</span> : null}
-          </button>
+            <button type="button" onClick={() => onChange(active ? "" : option)} className="min-w-0 flex-1 truncate text-left">
+              {option}
+            </button>
+            <span className="ml-2 flex shrink-0 items-center gap-2">
+              {active ? <span className="hidden text-[10px] uppercase tracking-widest opacity-80 sm:inline">Selected</span> : null}
+              <button
+                type="button"
+                onClick={() => onRemove(option)}
+                className="grid size-6 place-items-center rounded-md text-[#4a5f7a] hover:bg-rose-500/10 hover:text-rose-300"
+                aria-label={`${option} optionni o'chirish`}
+              >
+                <X size={12} />
+              </button>
+            </span>
+          </div>
         );
-      })}
-      <div className="flex min-h-9 items-center gap-2 rounded-lg border border-dashed border-[#1a2235] bg-[#060b14] px-2 py-1.5">
+      }) : null}
+      {open ? <div className="flex min-h-9 items-center gap-2 rounded-lg border border-dashed border-[#1a2235] bg-[#060b14] px-2 py-1.5">
         <Plus size={14} className="shrink-0 text-[#4a5f7a]" />
         <input
           value={draft}
@@ -135,7 +155,7 @@ function OptionStack({
         <button type="button" onClick={add} className="rounded-md px-2 py-1 text-[11px] font-bold text-[#8a9bc0] hover:bg-white/[.05] hover:text-white">
           Add
         </button>
-      </div>
+      </div> : null}
     </div>
   );
 }
@@ -163,6 +183,13 @@ export function TradeReviewModal({ open, saving, account, onOpenChange, onSave }
     const exists = current.some((item) => item.toLowerCase() === nextValue.toLowerCase());
     const next = exists ? current : [...current, nextValue];
     setOptions(next);
+    if (typeof window !== "undefined") window.localStorage.setItem(key, JSON.stringify(next));
+  };
+
+  const removeOption = (key: string, setOptions: (options: string[]) => void, current: string[], value: string, selected: string, clear: () => void) => {
+    const next = current.filter((item) => item !== value);
+    setOptions(next);
+    if (selected === value) clear();
     if (typeof window !== "undefined") window.localStorage.setItem(key, JSON.stringify(next));
   };
 
@@ -273,6 +300,7 @@ export function TradeReviewModal({ open, saving, account, onOpenChange, onSave }
                 value={session}
                 onChange={setSession}
                 onAdd={(value) => addOption("tradex-journal-session-options", setSessionOptions, sessionOptions, value)}
+                onRemove={(value) => removeOption("tradex-journal-session-options", setSessionOptions, sessionOptions, value, session, () => setSession(""))}
                 tone="blue"
                 placeholder="Add session"
               />
@@ -287,6 +315,7 @@ export function TradeReviewModal({ open, saving, account, onOpenChange, onSave }
                 value={setup}
                 onChange={setSetup}
                 onAdd={(value) => addOption("tradex-journal-setup-options", setSetupOptions, setupOptions, value)}
+                onRemove={(value) => removeOption("tradex-journal-setup-options", setSetupOptions, setupOptions, value, setup, () => setSetup(""))}
                 tone="violet"
                 placeholder="Add setup"
               />
@@ -301,6 +330,7 @@ export function TradeReviewModal({ open, saving, account, onOpenChange, onSave }
                 value={riskPct}
                 onChange={setRiskPct}
                 onAdd={(value) => addOption("tradex-journal-risk-options", setRiskOptions, riskOptions, value)}
+                onRemove={(value) => removeOption("tradex-journal-risk-options", setRiskOptions, riskOptions, value, riskPct, () => setRiskPct(""))}
                 tone="amber"
                 placeholder="Add risk %"
               />
