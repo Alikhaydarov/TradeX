@@ -42,7 +42,6 @@ export function Sidebar({
   onChange,
   onPost,
   onLogin,
-  onOpenProfile,
   user,
   hideMobile = false,
   isAdmin = false,
@@ -51,7 +50,6 @@ export function Sidebar({
   onChange: (section: Section) => void;
   onPost: () => void;
   onLogin: () => void;
-  onOpenProfile?: (username: string) => void;
   user: User | null;
   hideMobile?: boolean;
   isAdmin?: boolean;
@@ -85,8 +83,7 @@ export function Sidebar({
 
   const openProfile = () => {
     if (!user) return onLogin();
-    if (onOpenProfile) onOpenProfile(username);
-    else onChange("account");
+    onChange("account");
   };
 
   return (

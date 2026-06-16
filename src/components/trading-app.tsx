@@ -85,11 +85,6 @@ function TradingAppShell() {
     router.push(pathFromSection(nextSection));
   };
 
-  const openProfile = (username: string) => {
-    const cleanUsername = username.replace(/^@/, "").toLowerCase();
-    router.push(`/${cleanUsername}`);
-  };
-
   const render = () => {
     if (section === "chat") return <ChatV4 onLogin={openLogin} onBack={() => changeSection("feed")} />;
     if (section === "journal") return <Journal onLogin={openLogin} />;
@@ -109,7 +104,6 @@ function TradingAppShell() {
           onChange={changeSection}
           onPost={() => changeSection("feed")}
           onLogin={openLogin}
-          onOpenProfile={openProfile}
           user={user}
           hideMobile={chatOpen}
           isAdmin={isAdmin}
