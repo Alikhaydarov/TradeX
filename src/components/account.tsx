@@ -21,7 +21,6 @@ import { useEffect, useRef, useState } from "react";
 import { apiRequest } from "@/lib/api-client";
 import { XSpinner } from "./app-loader";
 import { useAuth } from "./auth-context";
-import { SocialActionsCard } from "./social-actions";
 import { TraderAvatar } from "./trader-avatar";
 import { VerifiedBadge } from "./verified-badge";
 import type { Post, Profile } from "./types";
@@ -388,9 +387,9 @@ export function Account({ onLogin, profileUsername }: { onLogin: () => void; pro
   );
 
   return (
-    <div className="min-h-full bg-[radial-gradient(circle_at_top_left,rgba(14,165,233,.12),transparent_32%),linear-gradient(135deg,rgba(15,23,42,.35),rgba(2,6,23,.8))]">
-      <header className="sticky top-0 z-20 flex h-14 items-center gap-3 border-b border-white/8 bg-[#0c1424]/60 px-4 backdrop-blur-2xl">
-        <div className="grid h-9 w-9 place-items-center rounded-2xl border border-cyan-200/10 bg-cyan-300/8 text-cyan-200"><UserRound size={17} /></div>
+    <div className="min-h-full bg-[#01040a]">
+      <header className="sticky top-0 z-20 flex h-14 items-center gap-3 border-b border-white/8 bg-[#05080e]/86 px-4 backdrop-blur-2xl">
+        <div className="grid h-9 w-9 place-items-center rounded-full border border-cyan-200/10 bg-cyan-300/8 text-cyan-200"><UserRound size={17} /></div>
         <div className="min-w-0">
           <h1 className="truncate text-lg font-black leading-5">TradeX Profile</h1>
           <p className="text-[11px] text-slate-500">{posts.length} posts</p>
@@ -403,58 +402,53 @@ export function Account({ onLogin, profileUsername }: { onLogin: () => void; pro
       {loadingProfile ? <div className="fixed inset-x-0 top-14 z-30 grid place-items-center bg-[#0b1220]/65 py-3 backdrop-blur-xl"><div className="flex items-center gap-2 rounded-full border border-white/10 bg-black/35 px-4 py-2 text-xs font-bold text-slate-200"><XSpinner size="sm" /> Updating</div></div> : null}
       {error && <div className="mx-auto mt-3 max-w-5xl rounded-2xl border border-rose-300/15 bg-rose-400/10 px-4 py-3 text-sm text-rose-200">{error}</div>}
 
-      <div className="mx-auto grid max-w-6xl gap-4 px-3 py-4 sm:px-5 xl:grid-cols-[360px_1fr]">
-        <aside className="space-y-4">
-          <div className="hidden xl:block"><SocialActionsCard /></div>
-          <section className="overflow-hidden rounded-[34px] border border-white/10 bg-white/[.045] shadow-2xl shadow-slate-950/20 backdrop-blur-2xl">
-            <div className="h-32 bg-[radial-gradient(circle_at_20%_30%,rgba(34,211,238,.35),transparent_24%),radial-gradient(circle_at_85%_10%,rgba(139,92,246,.26),transparent_28%),linear-gradient(135deg,#0f172a,#111827_48%,#082f49)]" />
-            <div className="px-5 pb-5">
-              <div className="-mt-14 flex items-end justify-between gap-3">
-                <TraderAvatar name={profile.fullName} value={profile.avatarUrl} className="h-28 w-28 rounded-[30px] border-4 border-[#0b1220] bg-black text-3xl shadow-xl" />
-                {isOwnProfile ? (
-                  <button onClick={openEdit} className="mb-2 inline-flex items-center gap-2 rounded-full border border-cyan-200/20 bg-cyan-300/8 px-4 py-2 text-xs font-black text-cyan-100 hover:bg-cyan-300/12"><PenLine size={14} /> Edit profile</button>
-                ) : (
-                  <button onClick={() => void toggleFollow()} disabled={followLoading} className={`mb-2 inline-flex items-center gap-2 rounded-full px-4 py-2 text-xs font-black ${profile.isFollowing ? "border border-white/15 bg-white/[.04] text-white" : "bg-white text-slate-950"}`}>{followLoading ? <XSpinner size="sm" /> : profile.isFollowing ? <Check size={14} /> : <UserPlus size={14} />}{profile.isFollowing ? "Following" : "Follow"}</button>
-                )}
-              </div>
+      <div className="mx-auto max-w-3xl px-0 sm:px-5 sm:py-4">
+        <section className="overflow-hidden border-b border-white/10 bg-[#070b12] shadow-2xl shadow-black/25 sm:rounded-[28px] sm:border">
+          <div className="h-36 bg-[radial-gradient(circle_at_16%_25%,rgba(34,211,238,.24),transparent_22%),radial-gradient(circle_at_82%_8%,rgba(96,165,250,.18),transparent_26%),linear-gradient(135deg,#05080e,#0a1020_52%,#071520)] sm:h-44" />
+          <div className="px-4 pb-5 sm:px-6">
+            <div className="-mt-14 flex items-end justify-between gap-3 sm:-mt-16">
+              <TraderAvatar name={profile.fullName} value={profile.avatarUrl} className="h-28 w-28 rounded-full border-4 border-[#070b12] bg-black text-3xl shadow-xl sm:h-32 sm:w-32" />
+              {isOwnProfile ? (
+                <button onClick={openEdit} className="mb-2 inline-flex h-10 items-center gap-2 rounded-full border border-white/15 bg-white/[.035] px-4 text-sm font-black text-white transition hover:bg-white/[.075]"><PenLine size={15} /> Edit profile</button>
+              ) : (
+                <button onClick={() => void toggleFollow()} disabled={followLoading} className={`mb-2 inline-flex h-10 items-center gap-2 rounded-full px-5 text-sm font-black transition ${profile.isFollowing ? "border border-white/15 bg-white/[.04] text-white hover:bg-rose-400/10 hover:text-rose-200" : "bg-white text-slate-950 hover:bg-slate-200"}`}>{followLoading ? <XSpinner size="sm" /> : profile.isFollowing ? <Check size={15} /> : <UserPlus size={15} />}{profile.isFollowing ? "Following" : "Follow"}</button>
+              )}
+            </div>
 
-              <div className="mt-4">
-                <div className="flex min-w-0 items-center gap-2">
-                  <h2 className="truncate text-2xl font-black leading-7">{profile.fullName}</h2>
-                  {profile.isVerified ? <VerifiedBadge className="h-5 w-5" /> : null}
-                  {saved && <span className="rounded-full bg-emerald-400/10 px-2 py-1 text-[10px] font-bold text-emerald-300">Saved</span>}
-                </div>
-                <p className="text-sm text-slate-500">@{profile.username}</p>
-                {profile.bio ? <p className="mt-4 text-sm leading-6 text-slate-200">{profile.bio}</p> : null}
-                <div className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-slate-500">
-                  <button onClick={() => openConnections("followers")} className="rounded-lg text-left transition hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300/40">
-                    <b className="font-black text-white">{formatCount(profile.followersCount ?? 0)}</b> Followers
-                  </button>
-                  <button onClick={() => openConnections("following")} className="rounded-lg text-left transition hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300/40">
-                    <b className="font-black text-white">{formatCount(profile.followingCount ?? 0)}</b> Following
-                  </button>
-                </div>
-                <div className="mt-4 space-y-2 text-sm text-slate-500">
-                  {profile.location ? <p className="flex items-center gap-2"><MapPin size={16} /> {profile.location}</p> : null}
-                  <p className="flex items-center gap-2"><TrendingUp size={16} /> {profile.tradingStyle}</p>
-                  <p className="flex items-center gap-2"><ShieldCheck size={16} /> TradeX member</p>
-                </div>
+            <div className="mt-4">
+              <div className="flex min-w-0 items-center gap-2">
+                <h2 className="truncate text-2xl font-black leading-7 sm:text-3xl">{profile.fullName}</h2>
+                {profile.isVerified ? <VerifiedBadge className="h-5 w-5" /> : null}
+                {saved && <span className="rounded-full bg-emerald-400/10 px-2 py-1 text-[10px] font-bold text-emerald-300">Saved</span>}
+              </div>
+              <p className="text-sm text-slate-500">@{profile.username}</p>
+              {profile.bio ? <p className="mt-4 max-w-2xl whitespace-pre-line text-[15px] leading-6 text-slate-100">{profile.bio}</p> : null}
+              <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-slate-500">
+                {profile.location ? <p className="flex items-center gap-1.5"><MapPin size={16} /> {profile.location}</p> : null}
+                <p className="flex items-center gap-1.5"><TrendingUp size={16} /> {profile.tradingStyle}</p>
+                <p className="flex items-center gap-1.5"><ShieldCheck size={16} /> TradeX member</p>
+              </div>
+              <div className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-slate-500">
+                <button onClick={() => openConnections("followers")} className="rounded-lg text-left transition hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300/40">
+                  <b className="font-black text-white">{formatCount(profile.followersCount ?? 0)}</b> Followers
+                </button>
+                <button onClick={() => openConnections("following")} className="rounded-lg text-left transition hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300/40">
+                  <b className="font-black text-white">{formatCount(profile.followingCount ?? 0)}</b> Following
+                </button>
               </div>
             </div>
-          </section>
-        </aside>
+          </div>
+        </section>
 
-        <main className="min-w-0">
-          <section className="overflow-hidden rounded-[34px] border border-white/10 bg-white/[.035] shadow-2xl shadow-slate-950/20 backdrop-blur-2xl">
-            <div className="grid grid-cols-4 border-b border-white/8">
-              {tabs.map((tab) => {
-                const active = activeTab === tab.id;
-                return <button key={tab.id} onClick={() => setActiveTab(tab.id)} className={`relative px-2 py-4 text-xs font-black transition sm:text-sm ${active ? "text-white" : "text-slate-500 hover:bg-white/[.03] hover:text-slate-300"}`}>{tab.label}{active ? <span className="absolute inset-x-6 bottom-0 h-1 rounded-full bg-cyan-300" /> : null}</button>;
-              })}
-            </div>
-            {loadingProfile ? <div className="grid min-h-64 place-items-center text-slate-500"><XSpinner size="lg" /></div> : visiblePosts.length ? <div>{visiblePosts.map(renderPost)}</div> : <EmptyTab tab={activeTab} />}
-          </section>
-        </main>
+        <section className="border-b border-white/10 bg-[#070b12] sm:mt-3 sm:overflow-hidden sm:rounded-[28px] sm:border">
+          <div className="sticky top-14 z-10 grid grid-cols-4 border-b border-white/8 bg-[#070b12]/92 backdrop-blur-xl">
+            {tabs.map((tab) => {
+              const active = activeTab === tab.id;
+              return <button key={tab.id} onClick={() => setActiveTab(tab.id)} className={`relative px-2 py-4 text-xs font-black transition sm:text-sm ${active ? "text-white" : "text-slate-500 hover:bg-white/[.03] hover:text-slate-300"}`}>{tab.label}{active ? <span className="absolute inset-x-6 bottom-0 h-1 rounded-full bg-cyan-300" /> : null}</button>;
+            })}
+          </div>
+          {loadingProfile ? <div className="grid min-h-64 place-items-center text-slate-500"><XSpinner size="lg" /></div> : visiblePosts.length ? <div>{visiblePosts.map(renderPost)}</div> : <EmptyTab tab={activeTab} />}
+        </section>
       </div>
 
       {editOpen && draftProfile ? (
