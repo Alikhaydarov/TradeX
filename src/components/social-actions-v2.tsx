@@ -56,7 +56,10 @@ function openProfile(username: string) {
 function Modal({ title, subtitle, onClose, children }: { title: string; subtitle: string; onClose: () => void; children: ReactNode }) {
   const [mounted, setMounted] = useState(false);
 
-  useEffect(() => setMounted(true), []);
+  useEffect(() => {
+    const timer = window.setTimeout(() => setMounted(true), 0);
+    return () => window.clearTimeout(timer);
+  }, []);
 
   useEffect(() => {
     const body = document.body.style.overflow;
@@ -109,12 +112,16 @@ function SearchDialog({ onClose }: { onClose: () => void }) {
     let active = true;
 
     if (cleanQuery.length < 2) {
-      setUsers([]);
-      setSelected(null);
-      setLoading(false);
-      setError(null);
+      const timer = window.setTimeout(() => {
+        if (!active) return;
+        setUsers([]);
+        setSelected(null);
+        setLoading(false);
+        setError(null);
+      }, 0);
       return () => {
         active = false;
+        window.clearTimeout(timer);
       };
     }
 
@@ -171,9 +178,9 @@ function SearchDialog({ onClose }: { onClose: () => void }) {
       </div>
       <div className="grid max-h-[70dvh] min-h-[420px] overflow-hidden sm:grid-cols-[1fr_1.05fr]">
         <div className="overflow-y-auto border-white/8 sm:border-r">
-          {cleanQuery.length < 2 ? <div className="grid min-h-40 place-items-center px-6 text-center text-sm text-slate-500">Search yozing. Hozircha userlar ko'rsatilmaydi.</div> : null}
+          {cleanQuery.length < 2 ? <div className="grid min-h-40 place-items-center px-6 text-center text-sm text-slate-500">Search yozing. Hozircha userlar ko&apos;rsatilmaydi.</div> : null}
           {users.map((item) => (
-            <button key={item.id} onClick={() => goToProfile(item.username)} className={`flex w-full items-center gap-3 border-b border-white/6 px-4 py-3 text-left transition ${selected?.id === item.id ? "bg-cyan-300/8" : "hover:bg-white/[.035]"}`}>
+            <button key={item.id} onClick={() => setSelected(item)} className={`flex w-full items-center gap-3 border-b border-white/6 px-4 py-3 text-left transition ${selected?.id === item.id ? "bg-cyan-300/8" : "hover:bg-white/[.035]"}`}>
               <TraderAvatar name={item.fullName} value={item.avatarUrl} className="h-11 w-11 text-xs" />
               <span className="min-w-0 flex-1">
                 <span className="flex min-w-0 items-center gap-1.5"><span className="truncate text-sm font-black">{item.fullName}</span>{item.isVerified ? <VerifiedBadge /> : null}</span>
@@ -197,7 +204,12 @@ function SearchDialog({ onClose }: { onClose: () => void }) {
               </div>
               {selected.bio ? <p className="mt-4 text-sm leading-6 text-slate-300">{selected.bio}</p> : null}
               <div className="mt-4 grid grid-cols-2 gap-2"><div className="rounded-2xl bg-black/15 p-3"><p className="text-[10px] uppercase tracking-[.18em] text-slate-500">Followers</p><b className="mt-1 block text-xl">{compact(selected.followersCount)}</b></div><div className="rounded-2xl bg-black/15 p-3"><p className="text-[10px] uppercase tracking-[.18em] text-slate-500">Following</p><b className="mt-1 block text-xl">{compact(selected.followingCount)}</b></div></div>
-              <button onClick={() => void toggleFollow(selected)} disabled={actingId === selected.id} className={`mt-4 flex h-11 w-full items-center justify-center gap-2 rounded-2xl text-sm font-black transition ${selected.isFollowing ? "border border-white/12 bg-white/[.04] text-white hover:bg-rose-400/10 hover:text-rose-200" : "bg-white text-slate-950 hover:bg-slate-200"}`}>{actingId === selected.id ? <XSpinner size="sm" /> : selected.isFollowing ? <Check size={17} /> : <UserPlus size={17} />}{selected.isFollowing ? "Following" : "Follow"}</button>
+              <div className="mt-4 grid grid-cols-2 gap-2">
+                <button onClick={() => goToProfile(selected.username)} className="flex h-11 items-center justify-center rounded-2xl border border-white/12 bg-white/[.04] text-sm font-black text-white hover:bg-white/[.08]">
+                  View profile
+                </button>
+                <button onClick={() => void toggleFollow(selected)} disabled={actingId === selected.id} className={`flex h-11 items-center justify-center gap-2 rounded-2xl text-sm font-black transition ${selected.isFollowing ? "border border-white/12 bg-white/[.04] text-white hover:bg-rose-400/10 hover:text-rose-200" : "bg-white text-slate-950 hover:bg-slate-200"}`}>{actingId === selected.id ? <XSpinner size="sm" /> : selected.isFollowing ? <Check size={17} /> : <UserPlus size={17} />}{selected.isFollowing ? "Following" : "Follow"}</button>
+              </div>
             </div>
           ) : <div className="grid h-full place-items-center text-center text-sm text-slate-500">Search qilib user tanlang.</div>}
         </div>

@@ -40,6 +40,20 @@ interface ProfileRecord {
   is_verified?: boolean | null;
 }
 
+interface ConnectionUser {
+  id: string;
+  username: string;
+  fullName: string;
+  avatarUrl: string | null;
+  bio: string;
+  tradingStyle: string;
+  followersCount: number;
+  followingCount: number;
+  isFollowing: boolean;
+  isVerified?: boolean;
+  isSelf?: boolean;
+}
+
 interface PostRecord {
   id: string;
   user_id: string;
@@ -143,6 +157,12 @@ function EmptyTab({ tab }: { tab: ProfileTab }) {
   );
 }
 
+function openProfileRoute(username: string) {
+  const clean = username.replace(/^@/, "").toLowerCase();
+  window.history.pushState(null, "", `/${clean}`);
+  window.dispatchEvent(new Event("tradeup:open-profile"));
+}
+
 export function Account({ onLogin, profileUsername }: { onLogin: () => void; profileUsername?: string }) {
   const { user, configured, signOut } = useAuth();
   const [profile, setProfile] = useState<(Profile & { isFollowing?: boolean }) | null>(null);
@@ -154,18 +174,25 @@ export function Account({ onLogin, profileUsername }: { onLogin: () => void; pro
   const [saved, setSaved] = useState(false);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const [followLoading, setFollowLoading] = useState(false);
+  const [connectionsOpen, setConnectionsOpen] = useState<"followers" | "following" | null>(null);
+  const [connections, setConnections] = useState<ConnectionUser[]>([]);
+  const [connectionsLoading, setConnectionsLoading] = useState(false);
+  const [connectionsActingId, setConnectionsActingId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
     if (!user) {
-      setLoadingProfile(false);
-      return;
+      const timer = window.setTimeout(() => setLoadingProfile(false), 0);
+      return () => window.clearTimeout(timer);
     }
 
     let active = true;
-    setLoadingProfile(true);
-    setError(null);
+    const startTimer = window.setTimeout(() => {
+      if (!active) return;
+      setLoadingProfile(true);
+      setError(null);
+    }, 0);
 
     const load = profileUsername
       ? apiRequest<{ profile: ProfileRecord; posts: PostRecord[] }>(`/api/profile/${profileUsername}`)
@@ -194,6 +221,7 @@ export function Account({ onLogin, profileUsername }: { onLogin: () => void; pro
 
     return () => {
       active = false;
+      window.clearTimeout(startTimer);
     };
   }, [user, profileUsername]);
 
@@ -303,6 +331,35 @@ export function Account({ onLogin, profileUsername }: { onLogin: () => void; pro
     }
   };
 
+  const openConnections = (type: "followers" | "following") => {
+    setConnectionsOpen(type);
+    setConnections([]);
+    setConnectionsLoading(true);
+    setError(null);
+    apiRequest<{ users: ConnectionUser[] }>(`/api/social/connections?userId=${profile.id}&type=${type}`)
+      .then((response) => setConnections(response.users))
+      .catch((nextError) => setError(nextError instanceof Error ? nextError.message : "Connections failed."))
+      .finally(() => setConnectionsLoading(false));
+  };
+
+  const toggleConnectionFollow = async (target: ConnectionUser) => {
+    if (target.isSelf) return;
+    setConnectionsActingId(target.id);
+    setError(null);
+    try {
+      const response = await apiRequest<{ following: boolean; followersCount: number }>("/api/social/follow", {
+        method: "POST",
+        body: JSON.stringify({ targetUserId: target.id }),
+      });
+      setConnections((current) => current.map((item) => item.id === target.id ? { ...item, isFollowing: response.following, followersCount: response.followersCount } : item));
+      if (target.id === profile.id) setProfile({ ...profile, isFollowing: response.following, followersCount: response.followersCount });
+    } catch (nextError) {
+      setError(nextError instanceof Error ? nextError.message : "Follow failed.");
+    } finally {
+      setConnectionsActingId(null);
+    }
+  };
+
   const renderPost = (post: Post) => (
     <article key={post.id} className="border-b border-white/8 px-4 py-4 last:border-b-0 hover:bg-white/[.025] sm:px-5">
       <div className="flex gap-3">
@@ -370,8 +427,12 @@ export function Account({ onLogin, profileUsername }: { onLogin: () => void; pro
                 <p className="text-sm text-slate-500">@{profile.username}</p>
                 {profile.bio ? <p className="mt-4 text-sm leading-6 text-slate-200">{profile.bio}</p> : null}
                 <div className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-slate-500">
-                  <span><b className="font-black text-white">{formatCount(profile.followersCount ?? 0)}</b> Followers</span>
-                  <span><b className="font-black text-white">{formatCount(profile.followingCount ?? 0)}</b> Following</span>
+                  <button onClick={() => openConnections("followers")} className="rounded-lg text-left transition hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300/40">
+                    <b className="font-black text-white">{formatCount(profile.followersCount ?? 0)}</b> Followers
+                  </button>
+                  <button onClick={() => openConnections("following")} className="rounded-lg text-left transition hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300/40">
+                    <b className="font-black text-white">{formatCount(profile.followingCount ?? 0)}</b> Following
+                  </button>
                 </div>
                 <div className="mt-4 space-y-2 text-sm text-slate-500">
                   {profile.location ? <p className="flex items-center gap-2"><MapPin size={16} /> {profile.location}</p> : null}
@@ -426,6 +487,59 @@ export function Account({ onLogin, profileUsername }: { onLogin: () => void; pro
               <button onClick={() => void save()} className="mt-5 flex items-center gap-2 rounded-full bg-white px-5 py-2.5 text-sm font-black text-black hover:bg-slate-200">{saved ? <Check size={17} /> : null}{saved ? "Saved" : "Save changes"}</button>
             </div>
           </div>
+        </div>
+      ) : null}
+      {connectionsOpen ? (
+        <div className="fixed inset-0 z-[9999] flex items-start justify-center overflow-y-auto bg-black/70 p-3 pt-[max(1rem,env(safe-area-inset-top))] backdrop-blur-md sm:items-center sm:p-4">
+          <div className="absolute inset-0" onClick={() => setConnectionsOpen(null)} aria-hidden="true" />
+          <section className="relative z-10 w-full max-w-xl overflow-hidden rounded-[30px] border border-white/10 bg-[#07101d]/98 text-white shadow-2xl shadow-black/80">
+            <header className="flex items-center gap-3 border-b border-white/8 px-4 py-4">
+              <div className="min-w-0 flex-1">
+                <h2 className="text-xl font-black leading-6">{connectionsOpen === "followers" ? "Followers" : "Following"}</h2>
+                <p className="mt-1 truncate text-xs text-slate-500">@{profile.username}</p>
+              </div>
+              <button onClick={() => setConnectionsOpen(null)} className="grid h-10 w-10 place-items-center rounded-2xl bg-white/[.05] text-slate-400 hover:text-white" aria-label="Close">
+                <X size={18} />
+              </button>
+            </header>
+            <div className="max-h-[70dvh] overflow-y-auto p-2">
+              {connectionsLoading ? <div className="grid min-h-52 place-items-center"><XSpinner size="lg" /></div> : null}
+              {!connectionsLoading && !connections.length ? (
+                <div className="grid min-h-52 place-items-center px-6 text-center">
+                  <div>
+                    <UserRound className="mx-auto text-slate-600" size={34} />
+                    <h3 className="mt-3 text-lg font-black">No users yet</h3>
+                    <p className="mt-1 text-sm text-slate-500">List will appear here.</p>
+                  </div>
+                </div>
+              ) : null}
+              {connections.map((item) => (
+                <article key={item.id} className="flex gap-3 rounded-2xl border-b border-white/6 px-3 py-3 last:border-b-0 hover:bg-white/[.035]">
+                  <button onClick={() => { openProfileRoute(item.username); setConnectionsOpen(null); }}>
+                    <TraderAvatar name={item.fullName} value={item.avatarUrl} className="h-12 w-12 text-xs" />
+                  </button>
+                  <div className="min-w-0 flex-1">
+                    <button onClick={() => { openProfileRoute(item.username); setConnectionsOpen(null); }} className="flex min-w-0 items-center gap-1.5 text-left">
+                      <span className="truncate text-sm font-black">{item.fullName}</span>
+                      {item.isVerified ? <VerifiedBadge /> : null}
+                    </button>
+                    <p className="truncate text-xs text-slate-500">@{item.username}</p>
+                    {item.bio ? <p className="mt-1 line-clamp-2 text-xs leading-5 text-slate-400">{item.bio}</p> : null}
+                    <p className="mt-1 text-[11px] text-slate-600">{formatCount(item.followersCount)} followers</p>
+                  </div>
+                  {!item.isSelf ? (
+                    <button
+                      onClick={() => void toggleConnectionFollow(item)}
+                      disabled={connectionsActingId === item.id}
+                      className={`mt-1 h-9 shrink-0 rounded-full px-4 text-xs font-black transition ${item.isFollowing ? "border border-white/12 bg-white/[.04] text-white hover:bg-rose-400/10 hover:text-rose-200" : "bg-white text-slate-950 hover:bg-slate-200"}`}
+                    >
+                      {connectionsActingId === item.id ? "..." : item.isFollowing ? "Following" : "Follow"}
+                    </button>
+                  ) : null}
+                </article>
+              ))}
+            </div>
+          </section>
         </div>
       ) : null}
     </div>
