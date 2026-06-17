@@ -69,9 +69,9 @@ function Modal({ title, subtitle, onClose, children }: { title: string; subtitle
   if (!mounted || typeof document === "undefined") return null;
 
   return createPortal(
-    <div className="fixed inset-0 isolate z-[2147483647] flex h-[100dvh] w-screen items-start justify-center overflow-y-auto bg-black/75 p-3 pt-[max(1rem,env(safe-area-inset-top))] backdrop-blur-md sm:items-center sm:p-4">
+    <div className="fixed inset-0 isolate z-[2147483647] flex h-[100dvh] w-screen items-start justify-center overflow-y-auto bg-black/75 p-3 pt-[max(1rem,env(safe-area-inset-top))] backdrop-blur-md sm:p-4 sm:pt-[max(1rem,env(safe-area-inset-top))]">
       <div className="absolute inset-0" onClick={onClose} aria-hidden="true" />
-      <section className="relative z-10 flex max-h-[92dvh] w-full max-w-xl flex-col overflow-hidden rounded-[30px] border border-white/10 bg-[#07101d]/98 text-white shadow-2xl shadow-black/80">
+      <section className="relative z-10 flex h-[min(92dvh,760px)] w-full max-w-xl flex-col overflow-hidden rounded-[30px] border border-white/10 bg-[#07101d]/98 text-white shadow-2xl shadow-black/80">
         <header className="flex items-center gap-3 border-b border-white/8 px-4 py-4">
           <div className="min-w-0 flex-1">
             <h2 className="text-xl font-black leading-6">{title}</h2>
@@ -170,7 +170,7 @@ function SearchDialog({ onClose }: { onClose: () => void }) {
               }
             }}
             placeholder="Search"
-            className="min-w-0 flex-1 bg-transparent text-[16px] text-white outline-none placeholder:text-slate-500 sm:text-sm"
+            className="min-w-0 flex-1 bg-transparent text-[16px] text-white outline-none placeholder:text-slate-500"
           />
           {loading ? <XSpinner size="sm" /> : null}
           {query ? <button type="button" onClick={() => setQuery("")} className="grid size-7 place-items-center rounded-full bg-white/[.06] text-slate-400 hover:text-white" aria-label="Clear search"><X size={14} /></button> : null}
