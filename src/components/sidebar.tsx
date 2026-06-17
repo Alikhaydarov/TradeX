@@ -55,21 +55,26 @@ export function Sidebar({
   isAdmin?: boolean;
 }) {
   const [isVerified, setIsVerified] = useState(false);
+  const [profileUsername, setProfileUsername] = useState("");
   const name = String(user?.user_metadata.full_name ?? user?.user_metadata.name ?? "Mehmon trader");
   const username = usernameFromUser(user);
-  const handle = user ? `@${username}` : "Google bilan kirish";
+  const handle = user ? `@${profileUsername || username}` : "Google bilan kirish";
   const avatar = typeof user?.user_metadata.avatar_url === "string" ? user.user_metadata.avatar_url : null;
 
   useEffect(() => {
     if (!user) return;
 
     let active = true;
-    apiRequest<{ profile: { is_verified?: boolean | null } }>("/api/profile")
+    apiRequest<{ profile: { username?: string | null; is_verified?: boolean | null } }>("/api/profile")
       .then(({ profile }) => {
-        if (active) setIsVerified(Boolean(profile.is_verified));
+        if (!active) return;
+        setIsVerified(Boolean(profile.is_verified));
+        setProfileUsername(profile.username || "");
       })
       .catch(() => {
-        if (active) setIsVerified(false);
+        if (!active) return;
+        setIsVerified(false);
+        setProfileUsername("");
       });
 
     return () => {
