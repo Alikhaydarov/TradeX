@@ -1,5 +1,7 @@
 import { authenticateRequest, badRequest, serverError, unauthorized } from "@/lib/backend/auth";
 import { getSupabaseServerClient } from "@/lib/supabase/server";
+import { notifyUsers } from "@/lib/server/push";
+import { after } from "next/server";
 
 export const runtime = "nodejs";
 
@@ -144,5 +146,27 @@ export async function POST(request: Request) {
     .single();
 
   if (error) return serverError(error.message);
+
+  after(async () => {
+    try {
+      const { data: followers } = await auth.supabase
+        .from("user_follows")
+        .select("follower_id")
+        .eq("following_id", auth.user.id);
+
+      const followerIds = (followers ?? []).map((row) => row.follower_id as string);
+      if (!followerIds.length) return;
+
+      const preview = (content || "Yangi rasm qo'shdi").slice(0, 120);
+      await notifyUsers(followerIds, {
+        title: `${profile.full_name} yangi post joyladi`,
+        body: preview,
+        data: { type: "post", postId: data.id, username: profile.username },
+      });
+    } catch {
+      // Push delivery must never affect the post creation response.
+    }
+  });
+
   return Response.json({ post: data }, { status: 201 });
 }

@@ -9,7 +9,13 @@
 ```env
 SUPABASE_URL=https://YOUR_PROJECT.supabase.co
 SUPABASE_PUBLISHABLE_KEY=sb_publishable_YOUR_KEY
+SUPABASE_SERVICE_ROLE_KEY=sb_secret_YOUR_SERVICE_ROLE_KEY
 ```
+
+`SUPABASE_SERVICE_ROLE_KEY`ni Supabase Dashboard → Project Settings → API
+bo'limidan oling (bu maxfiy kalit, `.env.local`dan tashqariga hech qachon
+chiqmasligi kerak). Faqat mobil push notification'larni boshqa userlarga
+yuborish uchun serverda ishlatiladi (`src/lib/server/push.ts`).
 
 ## 2. Database
 
@@ -17,6 +23,9 @@ Supabase SQL Editor ichida migrationlarni tartib bilan ishga tushiring:
 
 1. `supabase/migrations/001_tradex.sql`
 2. `supabase/migrations/002_product_features.sql`
+3. ... qolgan migrationlar tartib raqami bo'yicha
+4. `supabase/migrations/009_push_notifications.sql` — mobil push notification
+   uchun `push_tokens` jadvali.
 
 Bu migrationlar profil, post, guruh chatlari, like/bookmark, trading jurnal,
 backtest natijalari va RLS xavfsizlik siyosatlarini yaratadi.

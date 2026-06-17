@@ -1,4 +1,6 @@
 import { authenticateRequest, badRequest, serverError, unauthorized } from "@/lib/backend/auth";
+import { notifyUsers } from "@/lib/server/push";
+import { after } from "next/server";
 
 export const runtime = "nodejs";
 
@@ -146,6 +148,28 @@ export async function POST(
       .single<MessageRecord>();
 
     if (error) return serverError(error.message);
+
+    after(async () => {
+      try {
+        const [{ data: members }, { data: group }] = await Promise.all([
+          auth.supabase.from("group_members").select("user_id").eq("group_id", id),
+          auth.supabase.from("groups").select("name").eq("id", id).maybeSingle<{ name: string }>(),
+        ]);
+
+        const recipientIds = (members ?? [])
+          .map((member) => member.user_id as string)
+          .filter((userId) => userId !== auth.user.id);
+
+        await notifyUsers(recipientIds, {
+          title: `${profile.full_name} · ${group?.name ?? "Chat"}`,
+          body: content.length > 120 ? `${content.slice(0, 119)}…` : content,
+          data: { type: "chat", chatId: id, messageId: data.id },
+        });
+      } catch {
+        // Push delivery must never affect the chat message response.
+      }
+    });
+
     return Response.json({
       message: {
         ...data,
