@@ -6,7 +6,7 @@ import { apiRequest } from "@/lib/api-client";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { SkeletonBlock, XSpinner } from "./app-loader";
-import { SocialActions } from "./social-actions";
+import { SocialActions } from "./social-actions-v2";
 import { useAuth } from "./auth-context";
 import { TraderAvatar } from "./trader-avatar";
 import { VerifiedBadge } from "./verified-badge";

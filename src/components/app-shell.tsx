@@ -1,6 +1,6 @@
 "use client";
 
-import { LockKeyhole } from "lucide-react";
+import { BarChart3, BookOpen, LockKeyhole, MessageCircle, ShieldCheck, TrendingUp } from "lucide-react";
 import dynamic from "next/dynamic";
 import { useEffect, useState } from "react";
 import { AuthModal } from "./auth-modal";
@@ -56,18 +56,62 @@ function getCurrentProfileUsername() {
 }
 
 function AuthGate({ onLogin }: { onLogin: () => void }) {
+  const modules = [
+    { label: "Feed", detail: "Trader postlari va signal muhokamalari", icon: TrendingUp },
+    { label: "Chat", detail: "Private trader suhbatlari", icon: MessageCircle },
+    { label: "Journal", detail: "Prop account va trade review", icon: BookOpen },
+    { label: "Backtest", detail: "Strategiya natijasini sinash", icon: BarChart3 },
+  ];
+
   return (
-    <main className="flex min-h-[100dvh] items-center justify-center overflow-x-hidden bg-[#03060e] px-4 py-[max(1rem,env(safe-area-inset-top))] pb-[max(1rem,env(safe-area-inset-bottom))] text-white sm:px-6">
-      <section className="w-full max-w-[460px] rounded-[28px] border border-white/10 bg-[#0b1220]/80 p-6 shadow-2xl shadow-slate-950/40 backdrop-blur-2xl sm:p-7">
-        <div className="grid size-16 place-items-center rounded-2xl border border-blue-400/20 bg-blue-500/10 text-xl font-black text-blue-100 shadow-xl shadow-blue-950/30">TX</div>
-        <p className="mt-6 text-[11px] font-black uppercase text-blue-300/80">Private trading workspace</p>
-        <h1 className="mt-2 text-4xl font-black leading-none tracking-tight">TradeX</h1>
-        <p className="mt-4 text-sm leading-6 text-slate-400">
-          Sign in to manage your feed, chats, prop accounts, journal and backtesting workspace.
-        </p>
-        <button onClick={onLogin} className="mt-7 flex h-12 w-full items-center justify-center gap-2 rounded-2xl bg-white px-4 text-sm font-black text-slate-950 transition hover:bg-slate-200 active:scale-[.99]">
-          <LockKeyhole size={17} /> Login / Register
-        </button>
+    <main className="grid min-h-[100dvh] place-items-center overflow-x-hidden bg-[#010206] px-4 py-[max(1rem,env(safe-area-inset-top))] pb-[max(1rem,env(safe-area-inset-bottom))] text-white sm:px-6">
+      <section className="grid w-full max-w-5xl overflow-hidden rounded-[30px] border border-white/10 bg-[#05080e]/92 shadow-2xl shadow-slate-950/45 backdrop-blur-2xl lg:grid-cols-[1.05fr_.95fr]">
+        <div className="p-6 sm:p-8 lg:p-10">
+          <div className="flex items-center gap-3">
+            <div className="grid size-14 place-items-center rounded-2xl border border-blue-400/20 bg-gradient-to-br from-cyan-400 via-blue-500 to-violet-600 text-lg font-black text-white shadow-xl shadow-blue-950/35">TX</div>
+            <div>
+              <p className="text-[10px] font-black uppercase tracking-[.22em] text-blue-300/80">Private workspace</p>
+              <h1 className="mt-1 text-3xl font-black leading-none tracking-tight sm:text-4xl">TradeX</h1>
+            </div>
+          </div>
+
+          <p className="mt-6 max-w-xl text-[15px] leading-7 text-slate-300">
+            Feed, private chat, journal va backtest bir joyda. Accountga kiring va trading workspace’ingizni davom ettiring.
+          </p>
+
+          <button onClick={onLogin} className="mt-7 flex h-12 w-full max-w-sm items-center justify-center gap-2 rounded-2xl bg-white px-4 text-sm font-black text-slate-950 transition hover:bg-slate-200 active:scale-[.99]">
+            <LockKeyhole size={17} /> Login / Register
+          </button>
+
+          <div className="mt-6 flex flex-wrap gap-2 text-[11px] font-bold text-slate-400">
+            <span className="rounded-full border border-emerald-300/15 bg-emerald-400/10 px-3 py-1.5 text-emerald-300">OAuth secure</span>
+            <span className="rounded-full border border-blue-300/15 bg-blue-400/10 px-3 py-1.5 text-blue-200">Cloud sync</span>
+            <span className="rounded-full border border-white/10 bg-white/[.04] px-3 py-1.5">Responsive app</span>
+          </div>
+        </div>
+
+        <div className="border-t border-white/8 bg-white/[.025] p-4 sm:p-6 lg:border-l lg:border-t-0">
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-1">
+            {modules.map(({ label, detail, icon: Icon }) => (
+              <div key={label} className="flex items-center gap-3 rounded-2xl border border-white/8 bg-black/15 p-3">
+                <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-cyan-300/10 text-cyan-200">
+                  <Icon size={17} />
+                </span>
+                <span className="min-w-0">
+                  <strong className="block text-sm">{label}</strong>
+                  <small className="block truncate text-xs text-slate-500">{detail}</small>
+                </span>
+              </div>
+            ))}
+          </div>
+          <div className="mt-4 rounded-2xl border border-amber-300/12 bg-amber-300/[.055] p-4">
+            <div className="flex items-center gap-2 text-amber-200">
+              <ShieldCheck size={17} />
+              <strong className="text-sm">Trading plan first</strong>
+            </div>
+            <p className="mt-2 text-xs leading-5 text-slate-400">Risk, setup va review yozuvlari bir flow ichida saqlanadi.</p>
+          </div>
+        </div>
       </section>
     </main>
   );
