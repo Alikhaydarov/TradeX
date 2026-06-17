@@ -214,12 +214,42 @@ function NotificationsDialog({ onClose, onRead }: { onClose: () => void; onRead:
   };
 
   return (
-    <Modal title="Notifications" subtitle="Follow alerts and account activity." onClose={onClose}>
-      <div className="max-h-[70dvh] overflow-y-auto p-3">
+    <Modal title="Notifications" subtitle="Recent account activity." onClose={onClose}>
+      <div className="max-h-[70dvh] min-h-[320px] overflow-y-auto">
         {loading ? <div className="grid min-h-52 place-items-center"><XSpinner size="lg" /></div> : null}
-        {error ? <p className="rounded-2xl border border-rose-300/15 bg-rose-400/10 px-3 py-2 text-xs text-rose-200">{error}</p> : null}
-        {!loading && !items.length ? <div className="grid min-h-52 place-items-center px-6 text-center"><div><Bell className="mx-auto text-slate-600" size={34} /><h3 className="mt-3 text-lg font-black">No notifications yet</h3><p className="mt-1 text-sm text-slate-500">New follows will appear here.</p></div></div> : null}
-        <div className="space-y-2">{items.map((item) => <article key={item.id} className={`flex gap-3 rounded-2xl border border-white/8 p-3 ${item.isRead ? "bg-white/[.025]" : "bg-cyan-300/8"}`}><button onClick={() => goActor(item.actor?.username)}><TraderAvatar name={item.actor?.fullName ?? "TradeX"} value={item.actor?.avatarUrl ?? null} className="h-11 w-11 text-xs" /></button><div className="min-w-0 flex-1"><button onClick={() => goActor(item.actor?.username)} className="flex items-center gap-1.5 text-left text-sm font-bold text-white">{item.message}{item.actor?.isVerified ? <VerifiedBadge /> : null}</button><p className="mt-1 text-xs text-slate-500">{ago(item.createdAt)}</p></div></article>)}</div>
+        {error ? <div className="p-4"><p className="rounded-2xl border border-rose-300/15 bg-rose-400/10 px-3 py-2 text-xs text-rose-200">{error}</p></div> : null}
+        {!loading && !items.length ? (
+          <div className="grid min-h-72 place-items-center px-6 text-center">
+            <div>
+              <span className="mx-auto grid size-14 place-items-center rounded-2xl border border-white/8 bg-white/[.035]">
+                <Bell className="text-slate-500" size={26} />
+              </span>
+              <h3 className="mt-4 text-lg font-black">No notifications yet</h3>
+              <p className="mt-1 max-w-xs text-sm leading-6 text-slate-500">Follows and account activity will show up here.</p>
+            </div>
+          </div>
+        ) : null}
+        {items.map((item) => (
+          <button
+            key={item.id}
+            type="button"
+            onClick={() => goActor(item.actor?.username)}
+            className={`flex w-full gap-3 border-b border-white/6 px-4 py-3.5 text-left transition hover:bg-white/[.04] active:bg-white/[.06] ${item.isRead ? "bg-transparent" : "bg-cyan-300/[.055]"}`}
+          >
+            <TraderAvatar name={item.actor?.fullName ?? "TradeX"} value={item.actor?.avatarUrl ?? null} className="h-12 w-12 shrink-0 text-xs" />
+            <span className="min-w-0 flex-1">
+              <span className="flex min-w-0 items-center gap-1.5">
+                <span className="truncate text-[15px] font-black text-white">{item.actor?.fullName ?? "TradeX"}</span>
+                {item.actor?.isVerified ? <VerifiedBadge /> : null}
+                {!item.isRead ? <span className="size-2 rounded-full bg-cyan-300" /> : null}
+              </span>
+              <span className="mt-0.5 block truncate text-xs text-slate-500">
+                {item.actor?.username ? `@${item.actor.username}` : "system"} - {ago(item.createdAt)}
+              </span>
+              <span className="mt-1 block line-clamp-2 text-sm leading-5 text-slate-300">{item.message}</span>
+            </span>
+          </button>
+        ))}
       </div>
     </Modal>
   );
