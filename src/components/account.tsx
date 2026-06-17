@@ -357,28 +357,28 @@ export function Account({ onLogin, profileUsername }: { onLogin: () => void; pro
   };
 
   const renderPost = (post: Post) => (
-    <article key={post.id} className="border-b border-white/8 bg-[#070b12] px-4 py-4 last:border-b-0 transition hover:bg-white/[.025] sm:px-6 sm:py-5">
-      <div className="grid grid-cols-[44px_minmax(0,1fr)] gap-3 sm:grid-cols-[52px_minmax(0,1fr)] sm:gap-4">
-        <TraderAvatar name={post.name} value={post.avatar} className="mt-0.5 h-11 w-11 shrink-0 rounded-full text-xs sm:h-12 sm:w-12" />
+    <article key={post.id} className="group border-b border-white/8 bg-[#070b12] px-4 py-4 last:border-b-0 transition hover:bg-white/[.025] sm:px-6 sm:py-5">
+      <div className="grid grid-cols-[40px_minmax(0,1fr)] gap-3 sm:grid-cols-[48px_minmax(0,1fr)] sm:gap-4">
+        <TraderAvatar name={post.name} value={post.avatar} className="mt-1 h-10 w-10 shrink-0 rounded-full text-xs ring-2 ring-white/5 transition group-hover:ring-cyan-300/20 sm:h-12 sm:w-12" />
         <div className="min-w-0">
-          <div className="flex min-w-0 flex-wrap items-center gap-x-1.5 gap-y-0.5 leading-5">
-            <p className="max-w-full truncate text-sm font-black text-white sm:text-[15px]">{post.name}</p>
+          <div className="flex min-w-0 flex-wrap items-center gap-x-1.5 gap-y-0.5 text-[13px] leading-5 sm:text-sm">
+            <p className="max-w-full truncate font-black text-white">{post.name}</p>
             {post.isVerified ? <VerifiedBadge /> : null}
             <p className="truncate text-xs text-slate-500">{post.handle}</p>
             <span className="text-xs text-slate-700">·</span>
             <p className="text-xs text-slate-500">{post.time}</p>
           </div>
-          {post.text ? <p className="mt-1.5 whitespace-pre-line break-words text-[15px] leading-6 text-slate-100 sm:text-base">{post.text}</p> : null}
+          {post.text ? <p className="mt-1.5 whitespace-pre-line break-words text-[15px] leading-6 text-slate-50">{post.text}</p> : null}
           {post.imageUrl ? (
-            <div className="mt-3 flex max-h-[520px] min-h-40 w-full items-center justify-center overflow-hidden rounded-[22px] border border-white/10 bg-black/25">
+            <div className="mt-3 flex max-h-[520px] min-h-40 w-full items-center justify-center overflow-hidden rounded-2xl border border-white/10 bg-black/25">
               <img src={post.imageUrl} alt="Post media" className="max-h-[520px] max-w-full object-contain object-center" loading="lazy" />
             </div>
           ) : null}
-          <div className="mt-4 grid max-w-md grid-cols-4 text-slate-500">
-            <span className="flex h-8 items-center gap-1.5 text-[12px] transition hover:text-cyan-200"><MessageCircle size={16} />{post.replies}</span>
-            <span className="flex h-8 items-center gap-1.5 text-[12px] transition hover:text-rose-200"><Heart size={16} />{post.likes}</span>
-            <span className="flex h-8 items-center gap-1.5 text-[12px] transition hover:text-slate-300"><Eye size={16} />{formatCount(post.views)}</span>
-            <span className="flex h-8 items-center gap-1.5 text-[12px] transition hover:text-blue-200"><Bookmark size={16} /></span>
+          <div className="mt-3 grid max-w-md grid-cols-4 text-slate-500">
+            <span className="flex h-8 items-center gap-1.5 rounded-full text-[12px] transition hover:text-cyan-200"><MessageCircle size={16} />{post.replies}</span>
+            <span className="flex h-8 items-center gap-1.5 rounded-full text-[12px] transition hover:text-rose-200"><Heart size={16} />{post.likes}</span>
+            <span className="flex h-8 items-center gap-1.5 rounded-full text-[12px] transition hover:text-slate-300"><Eye size={16} />{formatCount(post.views)}</span>
+            <span className="flex h-8 items-center gap-1.5 rounded-full text-[12px] transition hover:text-blue-200"><Bookmark size={16} /></span>
           </div>
         </div>
       </div>
@@ -445,7 +445,7 @@ export function Account({ onLogin, profileUsername }: { onLogin: () => void; pro
               return <button key={tab.id} onClick={() => setActiveTab(tab.id)} className={`relative px-2 py-4 text-xs font-black transition sm:text-sm ${active ? "text-white" : "text-slate-500 hover:bg-white/[.03] hover:text-slate-300"}`}>{tab.label}{active ? <span className="absolute inset-x-6 bottom-0 h-1 rounded-full bg-cyan-300" /> : null}</button>;
             })}
           </div>
-          {loadingProfile ? <div className="grid min-h-64 place-items-center text-slate-500"><XSpinner size="lg" /></div> : visiblePosts.length ? <div className="pt-0">{visiblePosts.map(renderPost)}</div> : <EmptyTab tab={activeTab} />}
+          {loadingProfile ? <div className="grid min-h-64 place-items-center text-slate-500"><XSpinner size="lg" /></div> : visiblePosts.length ? <div className="relative z-0 pt-3">{visiblePosts.map(renderPost)}</div> : <EmptyTab tab={activeTab} />}
         </section>
       </div>
 
