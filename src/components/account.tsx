@@ -360,26 +360,28 @@ export function Account({ onLogin, profileUsername }: { onLogin: () => void; pro
   };
 
   const renderPost = (post: Post) => (
-    <article key={post.id} className="border-b border-white/8 px-4 py-4 last:border-b-0 hover:bg-white/[.025] sm:px-5">
-      <div className="flex gap-3">
-        <TraderAvatar name={post.name} value={post.avatar} className="h-10 w-10 shrink-0 rounded-2xl text-xs" />
+    <article key={post.id} className="border-b border-white/8 px-4 py-4 last:border-b-0 transition hover:bg-white/[.025] sm:px-6 sm:py-5">
+      <div className="flex gap-3 sm:gap-4">
+        <TraderAvatar name={post.name} value={post.avatar} className="h-11 w-11 shrink-0 rounded-full text-xs sm:h-12 sm:w-12" />
         <div className="min-w-0 flex-1">
-          <div className="flex min-w-0 items-center gap-1.5">
-            <p className="truncate text-sm font-black text-white">{post.name}</p>
+          <div className="flex min-w-0 flex-wrap items-center gap-x-1.5 gap-y-0.5">
+            <p className="truncate text-sm font-black text-white sm:text-[15px]">{post.name}</p>
             {post.isVerified ? <VerifiedBadge /> : null}
+            <p className="truncate text-xs text-slate-500">{post.handle}</p>
+            <span className="text-xs text-slate-600">-</span>
+            <p className="text-xs text-slate-500">{post.time}</p>
           </div>
-          <p className="truncate text-xs text-slate-500">{post.handle} · {post.time}</p>
-          {post.text ? <p className="mt-2 whitespace-pre-line text-[15px] leading-6 text-slate-100">{post.text}</p> : null}
+          {post.text ? <p className="mt-2 whitespace-pre-line break-words text-[15px] leading-6 text-slate-100 sm:text-base">{post.text}</p> : null}
           {post.imageUrl ? (
             <div className="mt-3 flex max-h-[520px] min-h-40 w-full items-center justify-center overflow-hidden rounded-[24px] border border-white/10 bg-black/25">
               <img src={post.imageUrl} alt="Post media" className="max-h-[520px] max-w-full object-contain object-center" loading="lazy" />
             </div>
           ) : null}
-          <div className="mt-3 flex max-w-md items-center justify-between text-slate-500">
-            <span className="flex items-center gap-1.5 text-[12px]"><MessageCircle size={16} />{post.replies}</span>
-            <span className="flex items-center gap-1.5 text-[12px]"><Heart size={16} />{post.likes}</span>
-            <span className="flex items-center gap-1.5 text-[12px]"><Eye size={16} />{formatCount(post.views)}</span>
-            <span className="flex items-center gap-1.5 text-[12px]"><Bookmark size={16} /></span>
+          <div className="mt-4 grid max-w-lg grid-cols-4 text-slate-500">
+            <span className="flex items-center gap-1.5 text-[12px] transition hover:text-cyan-200"><MessageCircle size={16} />{post.replies}</span>
+            <span className="flex items-center gap-1.5 text-[12px] transition hover:text-rose-200"><Heart size={16} />{post.likes}</span>
+            <span className="flex items-center gap-1.5 text-[12px] transition hover:text-slate-300"><Eye size={16} />{formatCount(post.views)}</span>
+            <span className="flex items-center gap-1.5 text-[12px] transition hover:text-blue-200"><Bookmark size={16} /></span>
           </div>
         </div>
       </div>
@@ -447,7 +449,7 @@ export function Account({ onLogin, profileUsername }: { onLogin: () => void; pro
               return <button key={tab.id} onClick={() => setActiveTab(tab.id)} className={`relative px-2 py-4 text-xs font-black transition sm:text-sm ${active ? "text-white" : "text-slate-500 hover:bg-white/[.03] hover:text-slate-300"}`}>{tab.label}{active ? <span className="absolute inset-x-6 bottom-0 h-1 rounded-full bg-cyan-300" /> : null}</button>;
             })}
           </div>
-          {loadingProfile ? <div className="grid min-h-64 place-items-center text-slate-500"><XSpinner size="lg" /></div> : visiblePosts.length ? <div>{visiblePosts.map(renderPost)}</div> : <EmptyTab tab={activeTab} />}
+          {loadingProfile ? <div className="grid min-h-64 place-items-center text-slate-500"><XSpinner size="lg" /></div> : visiblePosts.length ? <div className="divide-y divide-white/[.02]">{visiblePosts.map(renderPost)}</div> : <EmptyTab tab={activeTab} />}
         </section>
       </div>
 

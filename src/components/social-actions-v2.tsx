@@ -1,6 +1,6 @@
 "use client";
 
-import { Bell, Check, Search, Users, X } from "lucide-react";
+import { Bell, Search, Users, X } from "lucide-react";
 import { useEffect, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { apiRequest } from "@/lib/api-client";
@@ -71,7 +71,7 @@ function Modal({ title, subtitle, onClose, children }: { title: string; subtitle
   return createPortal(
     <div className="fixed inset-0 isolate z-[2147483647] flex h-[100dvh] w-screen items-start justify-center overflow-y-auto bg-black/75 p-3 pt-[max(1rem,env(safe-area-inset-top))] backdrop-blur-md sm:items-center sm:p-4">
       <div className="absolute inset-0" onClick={onClose} aria-hidden="true" />
-      <section className="relative z-10 w-full max-w-lg overflow-hidden rounded-[30px] border border-white/10 bg-[#07101d]/98 text-white shadow-2xl shadow-black/80">
+      <section className="relative z-10 w-full max-w-xl overflow-hidden rounded-[30px] border border-white/10 bg-[#07101d]/98 text-white shadow-2xl shadow-black/80">
         <header className="flex items-center gap-3 border-b border-white/8 px-4 py-4">
           <div className="min-w-0 flex-1">
             <h2 className="text-xl font-black leading-6">{title}</h2>
@@ -144,28 +144,42 @@ function SearchDialog({ onClose }: { onClose: () => void }) {
   }, [cleanQuery]);
 
   return (
-    <Modal title="Search traders" subtitle="Type at least 2 letters, then tap a trader to open the profile." onClose={onClose}>
+    <Modal title="Search" subtitle="Find TradeX accounts by name or username." onClose={onClose}>
       <div className="border-b border-white/8 p-4">
         <div className="flex h-12 items-center gap-3 rounded-2xl border border-white/10 bg-white/[.04] px-4 focus-within:border-cyan-300/50">
           <Search size={18} className="text-cyan-200" />
-          <input autoFocus value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search by name or username" className="min-w-0 flex-1 bg-transparent text-sm text-white outline-none placeholder:text-slate-500" />
+          <input
+            autoFocus
+            value={query}
+            onChange={(event) => setQuery(event.target.value)}
+            onKeyDown={(event) => {
+              if (event.key === "Enter" && users[0]) {
+                event.preventDefault();
+                goToProfile(users[0].username);
+              }
+            }}
+            placeholder="Search"
+            className="min-w-0 flex-1 bg-transparent text-[16px] text-white outline-none placeholder:text-slate-500 sm:text-sm"
+          />
           {loading ? <XSpinner size="sm" /> : null}
+          {query ? <button type="button" onClick={() => setQuery("")} className="grid size-7 place-items-center rounded-full bg-white/[.06] text-slate-400 hover:text-white" aria-label="Clear search"><X size={14} /></button> : null}
         </div>
         {error ? <p className="mt-3 rounded-2xl border border-rose-300/15 bg-rose-400/10 px-3 py-2 text-xs text-rose-200">{error}</p> : null}
       </div>
       <div className="max-h-[70dvh] min-h-[360px] overflow-y-auto">
-          {cleanQuery.length < 2 ? <div className="grid min-h-40 place-items-center px-6 text-center text-sm text-slate-500">Search yozing. Hozircha userlar ko&apos;rsatilmaydi.</div> : null}
+          {cleanQuery.length < 2 ? <div className="grid min-h-56 place-items-center px-6 text-center text-sm text-slate-500">Kamida 2 ta harf yozing.</div> : null}
           {users.map((item) => (
-            <button key={item.id} onClick={() => goToProfile(item.username)} className="flex w-full items-center gap-3 border-b border-white/6 px-4 py-3 text-left transition hover:bg-white/[.035]">
-              <TraderAvatar name={item.fullName} value={item.avatarUrl} className="h-11 w-11 text-xs" />
+            <button key={item.id} onClick={() => goToProfile(item.username)} className="flex w-full items-center gap-3 border-b border-white/6 px-4 py-3.5 text-left transition hover:bg-white/[.045] active:bg-white/[.06]">
+              <TraderAvatar name={item.fullName} value={item.avatarUrl} className="h-12 w-12 text-xs" />
               <span className="min-w-0 flex-1">
-                <span className="flex min-w-0 items-center gap-1.5"><span className="truncate text-sm font-black">{item.fullName}</span>{item.isVerified ? <VerifiedBadge /> : null}</span>
+                <span className="flex min-w-0 items-center gap-1.5"><span className="truncate text-[15px] font-black">{item.fullName}</span>{item.isVerified ? <VerifiedBadge /> : null}</span>
                 <span className="block truncate text-xs text-slate-500">@{item.username}</span>
+                {item.bio ? <span className="mt-1 block truncate text-xs text-slate-400">{item.bio}</span> : <span className="mt-1 block truncate text-xs text-slate-600">{item.tradingStyle || "Trader"}</span>}
               </span>
-              {item.isFollowing ? <Check size={16} className="text-cyan-200" /> : null}
+              {item.isFollowing ? <span className="rounded-full border border-cyan-300/20 px-2 py-1 text-[10px] font-bold text-cyan-200">Following</span> : null}
             </button>
           ))}
-          {!loading && cleanQuery.length >= 2 && !users.length ? <div className="grid min-h-40 place-items-center px-6 text-center text-sm text-slate-500">No traders found.</div> : null}
+          {!loading && cleanQuery.length >= 2 && !users.length ? <div className="grid min-h-56 place-items-center px-6 text-center text-sm text-slate-500">User topilmadi.</div> : null}
       </div>
     </Modal>
   );
