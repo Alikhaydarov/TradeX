@@ -179,8 +179,11 @@ export function ChatV4({ onLogin, onBack }: { onLogin: () => void; onBack: () =>
     if (!user) return;
 
     let active = true;
-    setLoading(true);
-    setError(null);
+    const startTimer = window.setTimeout(() => {
+      if (!active) return;
+      setLoading(true);
+      setError(null);
+    }, 0);
 
     Promise.all([
       apiRequest<{ chats: Group[] }>("/api/chats"),
@@ -201,30 +204,37 @@ export function ChatV4({ onLogin, onBack }: { onLogin: () => void; onBack: () =>
 
     return () => {
       active = false;
+      window.clearTimeout(startTimer);
     };
   }, [user]);
 
   useEffect(() => {
-    setAddMembersOpen(false);
-    setAddMemberQuery("");
-    setSelectedAddUserIds([]);
-    setEditingMessageId(null);
-    setEditingText("");
-    setReplyingTo(null);
-    setMessages([]);
+    const timer = window.setTimeout(() => {
+      setAddMembersOpen(false);
+      setAddMemberQuery("");
+      setSelectedAddUserIds([]);
+      setEditingMessageId(null);
+      setEditingText("");
+      setReplyingTo(null);
+      setMessages([]);
+    }, 0);
+    return () => window.clearTimeout(timer);
   }, [activeChatId]);
 
   useEffect(() => {
     if (!activeChatId || !user) return;
 
     let active = true;
-    void loadMessages(activeChatId, false);
+    const loadTimer = window.setTimeout(() => {
+      if (active) void loadMessages(activeChatId, false);
+    }, 0);
     const timer = window.setInterval(() => {
       if (active) void loadMessages(activeChatId, true);
     }, 12000);
 
     return () => {
       active = false;
+      window.clearTimeout(loadTimer);
       window.clearInterval(timer);
     };
   }, [activeChatId, user, loadMessages]);
@@ -422,22 +432,90 @@ export function ChatV4({ onLogin, onBack }: { onLogin: () => void; onBack: () =>
     );
   };
 
+  const createPanel = (
+    <div className="flex h-full min-h-0 flex-col">
+      <div className="flex shrink-0 items-center gap-3 border-b border-white/8 px-4 py-4">
+        <span className="grid h-10 w-10 place-items-center rounded-2xl bg-cyan-300/10 text-cyan-200">
+          <UserPlus size={18} />
+        </span>
+        <div className="min-w-0 flex-1">
+          <h2 className="text-lg font-black">Yangi chat</h2>
+          <p className="mt-0.5 text-xs text-slate-500">Traderlarni tanlang, nomini yozish ixtiyoriy.</p>
+        </div>
+        <button onClick={resetCreateForm} className="grid h-9 w-9 place-items-center rounded-2xl bg-white/[.05] text-slate-400 hover:text-white" aria-label="Yopish">
+          <X size={16} />
+        </button>
+      </div>
+
+      <div className="min-h-0 flex-1 overflow-y-auto p-4">
+        <input
+          value={chatName}
+          onChange={(event) => setChatName(event.target.value)}
+          placeholder="Chat nomi"
+          className="h-12 w-full rounded-2xl border border-white/10 bg-white/[.045] px-4 text-[16px] text-white outline-none placeholder:text-slate-500 focus:border-cyan-200/35"
+        />
+        <label className="mt-3 flex h-12 items-center gap-3 rounded-2xl border border-white/10 bg-white/[.045] px-4 text-slate-500 focus-within:border-cyan-200/35">
+          <Search size={17} />
+          <input
+            value={query}
+            onChange={(event) => setQuery(event.target.value)}
+            placeholder="User qidirish"
+            className="min-w-0 flex-1 bg-transparent text-[16px] text-white outline-none placeholder:text-slate-500"
+          />
+        </label>
+
+        {selectedUserIds.length > 0 ? (
+          <div className="mt-3 flex flex-wrap gap-2">
+            {users.filter((option) => selectedUserIds.includes(option.id)).map((option) => (
+              <button key={option.id} type="button" onClick={() => toggleUser(option.id)} className="inline-flex h-8 items-center gap-2 rounded-full border border-cyan-200/20 bg-cyan-300/10 px-2.5 text-xs font-bold text-cyan-100">
+                {option.name}
+                <X size={12} />
+              </button>
+            ))}
+          </div>
+        ) : null}
+
+        <div className="mt-4 space-y-1.5">
+          {filteredUsers.map((option) => renderUserOption(option, selectedUserIds.includes(option.id), () => toggleUser(option.id)))}
+          {query.trim().length < 2 ? (
+            <div className="grid min-h-32 place-items-center rounded-2xl border border-dashed border-white/10 px-4 text-center text-sm leading-6 text-slate-500">Kamida 2 ta harf yozing.</div>
+          ) : !filteredUsers.length ? (
+            <div className="grid min-h-32 place-items-center rounded-2xl border border-dashed border-white/10 px-4 text-center text-sm leading-6 text-slate-500">Bunday user topilmadi.</div>
+          ) : null}
+        </div>
+      </div>
+
+      <div className="shrink-0 border-t border-white/8 p-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
+        <Button disabled={loading} onClick={() => void createChat()} className="h-12 w-full rounded-2xl bg-cyan-300 text-sm font-black text-slate-950 hover:bg-cyan-200">
+          {loading ? <XSpinner size="sm" /> : <Plus size={16} />} Chat yaratish
+        </Button>
+      </div>
+    </div>
+  );
+
   return (
-    <div className="flex h-[100dvh] min-h-0 flex-col overflow-hidden bg-[radial-gradient(circle_at_15%_15%,rgba(14,165,233,.14),transparent_30%),linear-gradient(135deg,#101827,#121527_45%,#171226)] lg:h-[calc(100vh-2rem)] lg:bg-transparent">
-      <header className="flex shrink-0 items-center gap-2 border-b border-white/8 bg-white/[.035] px-3 py-2.5 backdrop-blur-2xl sm:gap-3 sm:px-5 sm:py-3">
-        <button onClick={onBack} className="grid h-9 w-9 shrink-0 place-items-center rounded-2xl border border-white/10 bg-black/10 text-slate-200 hover:bg-white/[.06]" aria-label="Orqaga qaytish">
+    <div className="relative flex h-[100dvh] min-h-0 flex-col overflow-hidden bg-[#05080e] lg:h-[calc(100vh-2rem)] lg:bg-transparent">
+      <header className="flex shrink-0 items-center gap-2 border-b border-white/8 bg-[#07101a]/95 px-3 py-2.5 backdrop-blur-2xl sm:gap-3 sm:px-5 sm:py-3">
+        <button onClick={onBack} className="grid h-9 w-9 shrink-0 place-items-center rounded-full text-slate-200 hover:bg-white/[.06]" aria-label="Orqaga qaytish">
           <ArrowLeft size={17} />
         </button>
         <div className="min-w-0">
-          <p className="text-[9px] font-bold uppercase tracking-[.2em] text-cyan-200/70">TradeX private chat</p>
-          <h1 className="truncate text-lg font-black tracking-tight sm:text-2xl">Trader suhbatlari</h1>
+          <h1 className="truncate text-lg font-black tracking-tight sm:text-xl">Chat</h1>
+          <p className="truncate text-xs text-slate-500">Private trader suhbatlari</p>
         </div>
-        <Button onClick={() => setCreating(true)} className="ml-auto h-9 shrink-0 rounded-2xl bg-gradient-to-r from-cyan-500 to-blue-600 px-3 text-[11px] font-bold sm:px-4" size="sm">
-          <Plus size={14} /> <span className="hidden sm:inline">Chat yaratish</span>
+        <Button onClick={() => setCreating(true)} className="ml-auto h-9 shrink-0 rounded-full bg-white text-slate-950 px-3 text-[11px] font-black hover:bg-slate-200 sm:px-4" size="sm">
+          <Plus size={14} /> <span className="hidden sm:inline">Yangi chat</span>
         </Button>
       </header>
 
       {error && <div className="mx-3 mt-2 shrink-0 rounded-2xl border border-rose-300/15 bg-rose-400/10 px-4 py-2 text-xs text-rose-200 backdrop-blur-xl">{error}</div>}
+      {creating ? (
+        <div className="absolute inset-0 z-40 flex items-end justify-center bg-black/70 p-0 backdrop-blur-md sm:items-center sm:p-4">
+          <div className="h-[min(88dvh,680px)] w-full overflow-hidden rounded-t-[28px] border border-white/10 bg-[#07101d] text-white shadow-2xl shadow-black/80 sm:max-w-lg sm:rounded-[28px]">
+            {createPanel}
+          </div>
+        </div>
+      ) : null}
 
       {!user ? (
         <div className="grid flex-1 place-items-center p-4">
@@ -449,59 +527,29 @@ export function ChatV4({ onLogin, onBack }: { onLogin: () => void; onBack: () =>
           </div>
         </div>
       ) : (
-        <div className="grid min-h-0 flex-1 grid-cols-1 gap-2 p-2 sm:gap-3 sm:p-3 md:grid-cols-[330px_1fr]">
-          <aside className={`${activeChat ? "hidden md:flex" : "flex"} min-h-0 flex-col rounded-[24px] border border-white/10 bg-white/[.04] p-2 shadow-xl shadow-slate-950/10 backdrop-blur-2xl sm:rounded-[28px] sm:p-3`}>
+        <div className="grid min-h-0 flex-1 grid-cols-1 gap-0 p-0 md:grid-cols-[340px_1fr] md:gap-3 md:p-3">
+          <aside className={`${activeChat ? "hidden md:flex" : "flex"} min-h-0 flex-col border-white/10 bg-[#07101a] p-0 md:rounded-[22px] md:border md:bg-white/[.035]`}>
             <div className="flex shrink-0 items-center gap-2 px-2 py-2">
               <MessageSquareText size={16} className="text-cyan-200" />
               <strong className="text-sm">Mening chatlarim</strong>
               <span className="ml-auto rounded-full bg-white/[.06] px-2 py-0.5 text-[10px] text-slate-400">{chats.length}</span>
             </div>
 
-            {(creating || chats.length === 0) && (
-              <div className="mt-2 shrink-0 rounded-[22px] border border-cyan-200/12 bg-cyan-300/[.055] p-3">
-                <div className="flex items-center gap-2">
-                  <UserPlus size={15} className="text-cyan-200" />
-                  <strong className="text-xs">Yangi chat</strong>
-                  {chats.length > 0 && (
-                    <button onClick={resetCreateForm} className="ml-auto grid h-7 w-7 place-items-center rounded-xl text-slate-500 hover:bg-white/[.06]" aria-label="Yopish">
-                      <X size={15} />
-                    </button>
-                  )}
-                </div>
-                <input value={chatName} onChange={(event) => setChatName(event.target.value)} placeholder="Chat nomi" className="mt-3 h-10 w-full rounded-2xl border border-white/10 bg-black/15 px-3 text-xs text-white outline-none placeholder:text-slate-500 focus:border-cyan-200/25" />
-                <label className="mt-2 flex h-10 items-center gap-2 rounded-2xl border border-white/10 bg-black/15 px-3 text-slate-500">
-                  <Search size={14} />
-                  <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Foydalanuvchi izlash" className="min-w-0 flex-1 bg-transparent text-xs text-white outline-none placeholder:text-slate-500" />
-                </label>
-                <div className="mt-3 max-h-52 space-y-1 overflow-y-auto pr-1">
-                  {filteredUsers.map((option) => renderUserOption(option, selectedUserIds.includes(option.id), () => toggleUser(option.id)))}
-                  {query.trim().length < 2 ? (
-                    <div className="rounded-2xl border border-dashed border-white/10 p-3 text-center text-[11px] leading-5 text-slate-500">Foydalanuvchi qidirish uchun kamida 2 ta harf yozing.</div>
-                  ) : !filteredUsers.length ? (
-                    <div className="rounded-2xl border border-dashed border-white/10 p-3 text-center text-[11px] leading-5 text-slate-500">Bunday foydalanuvchi topilmadi.</div>
-                  ) : null}
-                </div>
-                <Button disabled={loading} onClick={() => void createChat()} className="mt-3 w-full rounded-2xl bg-gradient-to-r from-cyan-500 to-blue-600 text-xs font-bold">
-                  {loading ? <XSpinner size="sm" /> : <Plus size={14} />} Chat yaratish
-                </Button>
-              </div>
-            )}
-
-            <div className="mt-3 min-h-0 flex-1 space-y-2 overflow-y-auto pr-1">
+            <div className="min-h-0 flex-1 overflow-y-auto">
               {loading && !chats.length && <div className="grid h-32 place-items-center text-xs text-slate-500"><XSpinner />Chatlar yuklanmoqda</div>}
               {!loading && !chats.length && (
-                <div className="grid h-44 place-items-center rounded-[24px] border border-dashed border-white/10 p-5 text-center">
-                  <div><Users className="mx-auto text-slate-600" size={28} /><p className="mt-3 text-sm font-bold">Hali chat yo&apos;q</p><p className="mt-1 text-[11px] leading-5 text-slate-500">Ro&apos;yxatdan o&apos;tgan traderlarni tanlab birinchi chatni yarating.</p></div>
+                <div className="grid h-full min-h-80 place-items-center p-6 text-center">
+                  <div><Users className="mx-auto text-slate-600" size={30} /><p className="mt-3 text-sm font-bold">Hali chat yo&apos;q</p><p className="mt-1 text-xs leading-5 text-slate-500">Traderlarni tanlab birinchi private chatni yarating.</p><Button onClick={() => setCreating(true)} className="mt-4 rounded-full bg-white text-slate-950 hover:bg-slate-200"><Plus size={14} /> Yangi chat</Button></div>
                 </div>
               )}
               {chats.map((chat) => {
                 const selected = chat.id === activeChatId;
                 return (
-                  <button key={chat.id} onClick={() => setActiveChatId(chat.id)} className={`w-full rounded-[22px] border p-3 text-left transition ${selected ? "border-cyan-200/25 bg-white/[.075]" : "border-white/6 bg-black/8 hover:border-white/12 hover:bg-white/[.04]"}`}>
+                  <button key={chat.id} onClick={() => setActiveChatId(chat.id)} className={`w-full border-b border-white/7 px-3 py-3 text-left transition ${selected ? "bg-cyan-300/8" : "hover:bg-white/[.04]"}`}>
                     <div className="flex items-center gap-3">
                       <span className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-gradient-to-br from-cyan-400/18 to-violet-500/16 text-xs font-black text-cyan-100">{chat.avatar}</span>
                       <span className="min-w-0 flex-1"><strong className="block truncate text-sm">{chat.name}</strong><small className="block truncate text-[10px] text-slate-500"><MemberLine members={chat.members} /></small></span>
-                      <ShieldCheck size={16} className="text-emerald-300/70" />
+                      <ShieldCheck size={15} className="text-emerald-300/60" />
                     </div>
                     <p className="mt-2 line-clamp-2 text-[10px] leading-4 text-slate-500">{chat.description}</p>
                   </button>
@@ -510,7 +558,7 @@ export function ChatV4({ onLogin, onBack }: { onLogin: () => void; onBack: () =>
             </div>
           </aside>
 
-          <section className={`${activeChat ? "flex" : "hidden md:flex"} min-h-0 flex-col overflow-hidden rounded-[24px] border border-white/10 bg-white/[.035] shadow-xl shadow-slate-950/10 backdrop-blur-2xl sm:rounded-[28px]`}>
+          <section className={`${activeChat ? "flex" : "hidden md:flex"} min-h-0 flex-col overflow-hidden bg-[#07101a] md:rounded-[22px] md:border md:border-white/10 md:bg-white/[.035]`}>
             {activeChat ? (
               <>
                 <div className="flex shrink-0 items-center gap-2 border-b border-white/8 px-2.5 py-2.5 sm:px-4 sm:py-3">
