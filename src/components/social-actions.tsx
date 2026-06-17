@@ -1,6 +1,6 @@
 "use client";
 
-import { Bell, Check, Search, UserPlus, Users, X } from "lucide-react";
+import { Bell, Search, Users, X } from "lucide-react";
 import { useEffect, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { apiRequest } from "@/lib/api-client";
@@ -29,12 +29,6 @@ interface NotificationItem {
   actor: { id: string; username: string; fullName: string; avatarUrl: string | null; isVerified?: boolean } | null;
 }
 
-function compact(value: number) {
-  if (value >= 1000000) return `${(value / 1000000).toFixed(1)}M`;
-  if (value >= 1000) return `${(value / 1000).toFixed(value >= 10000 ? 0 : 1)}K`;
-  return String(value);
-}
-
 function ago(value: string) {
   const minutes = Math.max(0, Math.round((Date.now() - new Date(value).getTime()) / 60000));
   if (minutes < 1) return "now";
@@ -57,7 +51,8 @@ function Modal({ title, subtitle, onClose, children }: { title: string; subtitle
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    setMounted(true);
+    const timer = window.setTimeout(() => setMounted(true), 0);
+    return () => window.clearTimeout(timer);
   }, []);
 
   useEffect(() => {
@@ -74,9 +69,9 @@ function Modal({ title, subtitle, onClose, children }: { title: string; subtitle
   if (!mounted || typeof document === "undefined") return null;
 
   return createPortal(
-    <div className="fixed inset-0 isolate z-[2147483647] flex h-[100dvh] w-screen items-start justify-center overflow-y-auto bg-black/75 p-3 pt-[max(1rem,env(safe-area-inset-top))] backdrop-blur-md sm:items-center sm:p-4">
+    <div className="fixed inset-0 isolate z-[2147483647] flex h-[100dvh] w-screen items-start justify-center overflow-y-auto bg-black/75 p-3 pt-[max(1rem,env(safe-area-inset-top))] backdrop-blur-md sm:p-4 sm:pt-[max(1rem,env(safe-area-inset-top))]">
       <div className="absolute inset-0" onClick={onClose} aria-hidden="true" />
-      <section className="relative z-10 w-full max-w-lg overflow-hidden rounded-[30px] border border-white/10 bg-[#07101d]/98 text-white shadow-2xl shadow-black/80">
+      <section className="relative z-10 flex h-[min(92dvh,760px)] w-full max-w-xl flex-col overflow-hidden rounded-[30px] border border-white/10 bg-[#07101d]/98 text-white shadow-2xl shadow-black/80">
         <header className="flex items-center gap-3 border-b border-white/8 px-4 py-4">
           <div className="min-w-0 flex-1">
             <h2 className="text-xl font-black leading-6">{title}</h2>
@@ -94,21 +89,42 @@ function Modal({ title, subtitle, onClose, children }: { title: string; subtitle
 function SearchDialog({ onClose }: { onClose: () => void }) {
   const [query, setQuery] = useState("");
   const [users, setUsers] = useState<SearchUser[]>([]);
-  const [selected, setSelected] = useState<SearchUser | null>(null);
   const [loading, setLoading] = useState(false);
-  const [actingId, setActingId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const cleanQuery = query.trim();
+
+  const goToProfile = (username: string) => {
+    openProfile(username);
+    onClose();
+  };
 
   useEffect(() => {
     let active = true;
+    const resetTimer = window.setTimeout(() => {
+      if (!active) return;
+      setUsers([]);
+    }, 0);
+
+    if (cleanQuery.length < 2) {
+      const timer = window.setTimeout(() => {
+        if (!active) return;
+        setLoading(false);
+        setError(null);
+      }, 0);
+      return () => {
+        active = false;
+        window.clearTimeout(resetTimer);
+        window.clearTimeout(timer);
+      };
+    }
+
     const timer = window.setTimeout(() => {
       setLoading(true);
       setError(null);
-      apiRequest<{ users: SearchUser[] }>(`/api/social/search?q=${encodeURIComponent(query.trim())}`)
+      apiRequest<{ users: SearchUser[] }>(`/api/social/search?q=${encodeURIComponent(cleanQuery)}`)
         .then((data) => {
           if (!active) return;
           setUsers(data.users);
-          setSelected((current) => current ? data.users.find((item) => item.id === current.id) ?? current : data.users[0] ?? null);
         })
         .catch((err) => {
           if (active) setError(err instanceof Error ? err.message : "Search failed.");
@@ -120,69 +136,59 @@ function SearchDialog({ onClose }: { onClose: () => void }) {
 
     return () => {
       active = false;
+      window.clearTimeout(resetTimer);
       window.clearTimeout(timer);
     };
-  }, [query]);
-
-  const toggleFollow = async (target: SearchUser) => {
-    setActingId(target.id);
-    setError(null);
-    try {
-      const response = await apiRequest<{ following: boolean; followersCount: number }>("/api/social/follow", {
-        method: "POST",
-        body: JSON.stringify({ targetUserId: target.id }),
-      });
-      const apply = (item: SearchUser) => item.id === target.id ? { ...item, isFollowing: response.following, followersCount: response.followersCount } : item;
-      setUsers((current) => current.map(apply));
-      setSelected((current) => current ? apply(current) : current);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Follow failed.");
-    } finally {
-      setActingId(null);
-    }
-  };
+  }, [query, cleanQuery]);
 
   return (
-    <Modal title="Search traders" subtitle="Find accounts, preview profiles and follow traders." onClose={onClose}>
-      <div className="border-b border-white/8 p-4">
+    <Modal title="Search" subtitle="Find TradeX accounts by name or username." onClose={onClose}>
+      <form
+        className="border-b border-white/8 p-4"
+        onSubmit={(event) => {
+          event.preventDefault();
+          if (users[0]) goToProfile(users[0].username);
+        }}
+      >
         <div className="flex h-12 items-center gap-3 rounded-2xl border border-white/10 bg-white/[.04] px-4 focus-within:border-cyan-300/50">
           <Search size={18} className="text-cyan-200" />
-          <input autoFocus value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search by name or username" className="min-w-0 flex-1 bg-transparent text-sm text-white outline-none placeholder:text-slate-500" />
+          <input
+            autoFocus
+            type="search"
+            enterKeyHint="search"
+            autoCapitalize="none"
+            autoCorrect="off"
+            spellCheck={false}
+            value={query}
+            onChange={(event) => setQuery(event.target.value)}
+            onKeyDown={(event) => {
+              if (event.key === "Enter" && users[0]) {
+                event.preventDefault();
+                goToProfile(users[0].username);
+              }
+            }}
+            placeholder="Search"
+            className="min-w-0 flex-1 bg-transparent text-[16px] text-white outline-none placeholder:text-slate-500"
+          />
           {loading ? <XSpinner size="sm" /> : null}
+          {query ? <button type="button" onClick={() => setQuery("")} className="grid size-7 place-items-center rounded-full bg-white/[.06] text-slate-400 hover:text-white" aria-label="Clear search"><X size={14} /></button> : null}
         </div>
         {error ? <p className="mt-3 rounded-2xl border border-rose-300/15 bg-rose-400/10 px-3 py-2 text-xs text-rose-200">{error}</p> : null}
-      </div>
-      <div className="grid max-h-[70dvh] min-h-[420px] overflow-hidden sm:grid-cols-[1fr_1.05fr]">
-        <div className="overflow-y-auto border-white/8 sm:border-r">
-          {users.map((item) => (
-            <button key={item.id} onClick={() => setSelected(item)} className={`flex w-full items-center gap-3 border-b border-white/6 px-4 py-3 text-left transition ${selected?.id === item.id ? "bg-cyan-300/8" : "hover:bg-white/[.035]"}`}>
-              <TraderAvatar name={item.fullName} value={item.avatarUrl} className="h-11 w-11 text-xs" />
-              <span className="min-w-0 flex-1">
-                <span className="flex min-w-0 items-center gap-1.5"><span className="truncate text-sm font-black">{item.fullName}</span>{item.isVerified ? <VerifiedBadge /> : null}</span>
-                <span className="block truncate text-xs text-slate-500">@{item.username}</span>
-              </span>
-              {item.isFollowing ? <Check size={16} className="text-cyan-200" /> : null}
-            </button>
-          ))}
-          {!loading && !users.length ? <div className="grid min-h-40 place-items-center px-6 text-center text-sm text-slate-500">No traders found.</div> : null}
-        </div>
-        <div className="overflow-y-auto p-4">
-          {selected ? (
-            <div className="rounded-[28px] border border-white/10 bg-white/[.035] p-4">
-              <div className="flex items-start gap-3">
-                <button onClick={() => openProfile(selected.username)}><TraderAvatar name={selected.fullName} value={selected.avatarUrl} className="h-16 w-16 text-lg" /></button>
-                <div className="min-w-0 flex-1">
-                  <button onClick={() => openProfile(selected.username)} className="flex min-w-0 items-center gap-1.5 text-left"><h3 className="truncate text-lg font-black">{selected.fullName}</h3>{selected.isVerified ? <VerifiedBadge /> : null}</button>
-                  <p className="truncate text-xs text-slate-500">@{selected.username}</p>
-                  <p className="mt-2 inline-flex rounded-full bg-cyan-300/10 px-3 py-1 text-[10px] font-bold text-cyan-200">{selected.tradingStyle || "Trader"}</p>
-                </div>
-              </div>
-              {selected.bio ? <p className="mt-4 text-sm leading-6 text-slate-300">{selected.bio}</p> : null}
-              <div className="mt-4 grid grid-cols-2 gap-2"><div className="rounded-2xl bg-black/15 p-3"><p className="text-[10px] uppercase tracking-[.18em] text-slate-500">Followers</p><b className="mt-1 block text-xl">{compact(selected.followersCount)}</b></div><div className="rounded-2xl bg-black/15 p-3"><p className="text-[10px] uppercase tracking-[.18em] text-slate-500">Following</p><b className="mt-1 block text-xl">{compact(selected.followingCount)}</b></div></div>
-              <button onClick={() => void toggleFollow(selected)} disabled={actingId === selected.id} className={`mt-4 flex h-11 w-full items-center justify-center gap-2 rounded-2xl text-sm font-black transition ${selected.isFollowing ? "border border-white/12 bg-white/[.04] text-white hover:bg-rose-400/10 hover:text-rose-200" : "bg-white text-slate-950 hover:bg-slate-200"}`}>{actingId === selected.id ? <XSpinner size="sm" /> : selected.isFollowing ? <Check size={17} /> : <UserPlus size={17} />}{selected.isFollowing ? "Following" : "Follow"}</button>
-            </div>
-          ) : <div className="grid h-full place-items-center text-center text-sm text-slate-500">Select a trader to view profile.</div>}
-        </div>
+      </form>
+      <div className="min-h-[360px] flex-1 overflow-y-auto overscroll-contain">
+        {cleanQuery.length < 2 ? <div className="grid min-h-56 place-items-center px-6 text-center text-sm text-slate-500">Kamida 2 ta harf yozing.</div> : null}
+        {users.map((item) => (
+          <button key={item.id} type="button" onClick={() => goToProfile(item.username)} className="flex min-h-[76px] w-full touch-manipulation items-center gap-3 border-b border-white/6 px-4 py-3.5 text-left transition hover:bg-white/[.045] active:bg-white/[.06]">
+            <TraderAvatar name={item.fullName} value={item.avatarUrl} className="h-12 w-12 text-xs" />
+            <span className="min-w-0 flex-1">
+              <span className="flex min-w-0 items-center gap-1.5"><span className="truncate text-[15px] font-black">{item.fullName}</span>{item.isVerified ? <VerifiedBadge /> : null}</span>
+              <span className="block truncate text-xs text-slate-500">@{item.username}</span>
+              {item.bio ? <span className="mt-1 block truncate text-xs text-slate-400">{item.bio}</span> : <span className="mt-1 block truncate text-xs text-slate-600">{item.tradingStyle || "Trader"}</span>}
+            </span>
+            {item.isFollowing ? <span className="rounded-full border border-cyan-300/20 px-2 py-1 text-[10px] font-bold text-cyan-200">Following</span> : null}
+          </button>
+        ))}
+        {!loading && cleanQuery.length >= 2 && !users.length ? <div className="grid min-h-56 place-items-center px-6 text-center text-sm text-slate-500">User topilmadi.</div> : null}
       </div>
     </Modal>
   );
