@@ -94,8 +94,8 @@ function SearchDialog({ onClose }: { onClose: () => void }) {
   const cleanQuery = query.trim();
 
   const goToProfile = (username: string) => {
-    openProfile(username);
     onClose();
+    window.setTimeout(() => openProfile(username), 0);
   };
 
   useEffect(() => {

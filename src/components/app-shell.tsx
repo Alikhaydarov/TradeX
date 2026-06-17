@@ -4,6 +4,7 @@ import { LockKeyhole } from "lucide-react";
 import dynamic from "next/dynamic";
 import { useEffect, useState } from "react";
 import { AuthModal } from "./auth-modal";
+import { FullScreenLoader } from "./app-loader";
 import { NotificationListener } from "./notification-listener";
 import { RightPanel } from "./right-panel";
 import { Sidebar } from "./sidebar";
@@ -78,6 +79,7 @@ export function AppShell() {
   const [authOpen, setAuthOpen] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [notificationsMounted, setNotificationsMounted] = useState(false);
+  const [profileOpening, setProfileOpening] = useState(false);
   const [visitedSections, setVisitedSections] = useState<Section[]>(() => [getCurrentSection()]);
   const { user } = useAuth();
   const openLogin = () => setAuthOpen(true);
@@ -90,13 +92,28 @@ export function AppShell() {
       setVisitedSections((current) => current.includes(nextSection) ? current : [...current, nextSection]);
       setProfileUsername(getCurrentProfileUsername());
     };
+    const handleOpenProfile = () => {
+      setProfileOpening(true);
+      syncFromPath();
+    };
+    const handleProfileReady = () => {
+      window.setTimeout(() => setProfileOpening(false), 120);
+    };
     window.addEventListener("popstate", syncFromPath);
-    window.addEventListener("tradeup:open-profile", syncFromPath);
+    window.addEventListener("tradeup:open-profile", handleOpenProfile);
+    window.addEventListener("tradeup:profile-ready", handleProfileReady);
     return () => {
       window.removeEventListener("popstate", syncFromPath);
-      window.removeEventListener("tradeup:open-profile", syncFromPath);
+      window.removeEventListener("tradeup:open-profile", handleOpenProfile);
+      window.removeEventListener("tradeup:profile-ready", handleProfileReady);
     };
   }, []);
+
+  useEffect(() => {
+    if (!profileOpening) return;
+    const timer = window.setTimeout(() => setProfileOpening(false), 1800);
+    return () => window.clearTimeout(timer);
+  }, [profileOpening]);
 
   useEffect(() => {
     const preload = () => {
@@ -189,6 +206,7 @@ export function AppShell() {
         </main>
         {!chatOpen && <RightPanel />}
       </div>
+      {profileOpening ? <FullScreenLoader label="Opening profile" /> : null}
       {notificationsMounted && <NotificationListener />}
       <AuthModal open={authOpen} onClose={() => setAuthOpen(false)} />
     </>

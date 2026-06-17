@@ -41,3 +41,19 @@ export function AppLoader({ label = "Checking session" }: { label?: string }) {
     </div>
   );
 }
+
+export function FullScreenLoader({ label = "Opening" }: { label?: string }) {
+  return (
+    <div className="fixed inset-0 z-[2147483646] grid place-items-center bg-[#02050b]/92 px-6 text-center text-white backdrop-blur-xl">
+      <div className="relative">
+        <div className="absolute inset-0 rounded-full bg-cyan-300/20 blur-3xl" />
+        <div className="relative grid size-24 place-items-center rounded-[30px] border border-cyan-200/15 bg-[#07101d] shadow-2xl shadow-cyan-950/30">
+          <span className="absolute inset-3 rounded-[24px] border border-white/8" />
+          <XSpinner size="lg" />
+        </div>
+        <p className="mt-5 text-sm font-black text-slate-100">{label}</p>
+        <p className="mt-1 text-xs text-slate-500">TradeX profile ochilmoqda</p>
+      </div>
+    </div>
+  );
+}

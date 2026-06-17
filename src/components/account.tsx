@@ -19,7 +19,7 @@ import {
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { apiRequest } from "@/lib/api-client";
-import { XSpinner } from "./app-loader";
+import { FullScreenLoader, XSpinner } from "./app-loader";
 import { useAuth } from "./auth-context";
 import { TraderAvatar } from "./trader-avatar";
 import { VerifiedBadge } from "./verified-badge";
@@ -215,7 +215,9 @@ export function Account({ onLogin, profileUsername }: { onLogin: () => void; pro
         if (active) setError(nextError instanceof Error ? nextError.message : "Profile failed to load.");
       })
       .finally(() => {
-        if (active) setLoadingProfile(false);
+        if (!active) return;
+        setLoadingProfile(false);
+        window.dispatchEvent(new Event("tradeup:profile-ready"));
       });
 
     return () => {
@@ -245,14 +247,9 @@ export function Account({ onLogin, profileUsername }: { onLogin: () => void; pro
 
   if (loadingProfile && !profile) {
     return (
-      <>
-        <header className="sticky top-0 z-10 flex h-14 items-center border-b border-white/8 bg-[#0c1424]/50 px-4 backdrop-blur-2xl">
-          <h1 className="text-xl font-extrabold">Profile</h1>
-        </header>
-        <div className="grid min-h-[calc(100dvh-4rem)] place-items-center px-6 text-center">
-          <XSpinner size="lg" />
-        </div>
-      </>
+      <div className="min-h-[100dvh] bg-[#01040a]">
+        <FullScreenLoader label="Opening profile" />
+      </div>
     );
   }
 
@@ -401,7 +398,6 @@ export function Account({ onLogin, profileUsername }: { onLogin: () => void; pro
         ) : null}
       </header>
 
-      {loadingProfile ? <div className="fixed inset-x-0 top-14 z-30 grid place-items-center bg-[#0b1220]/65 py-3 backdrop-blur-xl"><div className="flex items-center gap-2 rounded-full border border-white/10 bg-black/35 px-4 py-2 text-xs font-bold text-slate-200"><XSpinner size="sm" /> Updating</div></div> : null}
       {error && <div className="mx-auto mt-3 max-w-5xl rounded-2xl border border-rose-300/15 bg-rose-400/10 px-4 py-3 text-sm text-rose-200">{error}</div>}
 
       <div className="mx-auto max-w-3xl px-0 sm:px-5 sm:py-4">
