@@ -15,6 +15,11 @@ interface JournalUpdatePayload {
   resultR?: number;
   riskPercent?: string;
   session?: string;
+  followingPlan?: boolean;
+  errorMade?: boolean;
+  mistakeType?: string;
+  reviewCompleted?: boolean;
+  toTradingBible?: boolean;
   tags?: string[];
 }
 
@@ -63,6 +68,11 @@ export async function PATCH(
   const notionUpdate = {
     risk_percent: body.riskPercent?.trim().slice(0, 10) ?? "",
     session: body.session?.trim().slice(0, 40) || "",
+    following_plan: body.followingPlan ?? true,
+    error_made: body.errorMade ?? false,
+    mistake_type: body.mistakeType?.trim().slice(0, 60) || "",
+    review_completed: body.reviewCompleted ?? false,
+    to_trading_bible: body.toTradingBible ?? false,
   };
 
   const updateEntry = (values: Record<string, unknown>) => auth.supabase
@@ -101,4 +111,3 @@ export async function DELETE(
   if (error) return serverError(error.message);
   return Response.json({ ok: true });
 }
-

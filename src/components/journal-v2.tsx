@@ -1,7 +1,7 @@
 "use client";
 
 import {
-  ArrowLeft, BarChart3, CalendarDays, ChevronLeft, ChevronRight,
+  ArrowLeft, BarChart3, BookOpen, CalendarDays, CheckCircle2, ChevronLeft, ChevronRight,
   Download, ImageIcon, LoaderCircle, MoreHorizontal, Plus, Search, ShieldCheck,
   Target, Trash2, TrendingDown, TrendingUp, WalletCards, X, Zap,
 } from "lucide-react";
@@ -27,12 +27,13 @@ type TradeRange = "daily" | "monthly" | "quarter" | "yearly" | "custom";
 const cash = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 2 });
 const WEEKDAYS_SHORT = ["Du", "Se", "Ch", "Pa", "Ju", "Sh", "Ya"];
 const WEEKDAYS_FULL = ["Dushanba", "Seshanba", "Chorshanba", "Payshanba", "Juma", "Shanba", "Yakshanba"];
-const WORKSPACE_TABS = [["overview", "Overview"], ["calendar", "Calendar"], ["trades", "Trades"], ["analytics", "Analytics"]] as const;
+const WORKSPACE_TABS = [["overview", "Overview"], ["calendar", "Calendar"], ["trades", "Trades"], ["bible", "Bible"], ["analytics", "Analytics"]] as const;
 type WorkspaceTab = typeof WORKSPACE_TABS[number][0];
 
 const accountFrom = (a: AccountRow): PropAccount => ({ id: a.id, name: a.name, firm: a.firm, phase: a.phase, marketType: a.market_type, accountSize: +a.account_size, initialBalance: +a.initial_balance, profitTarget: +a.profit_target, maxDrawdown: +a.max_drawdown, dailyDrawdown: +a.daily_drawdown, startDate: a.start_date, status: a.status });
 const entryFrom = (e: EntryRow): JournalEntry => ({ id: e.id, propAccountId: e.prop_account_id, symbol: e.symbol, side: e.side, entry: +e.entry_price, exit: +e.exit_price, quantity: +e.quantity, fees: +e.fees, pnl: +e.pnl, note: e.note, rawDate: e.traded_at, date: new Date(`${e.traded_at}T00:00:00`).toLocaleDateString("uz-UZ"), accountName: e.account_name, marketType: e.market_type, setup: e.setup || "", emotion: e.emotion || "Neutral", riskAmount: +(e.risk_amount || 0), resultR: +(e.result_r || 0), riskPercent: e.risk_percent || "1.0%", session: e.session || "", followingPlan: e.following_plan ?? true, errorMade: e.error_made ?? false, mistakeType: e.mistake_type || "", reviewCompleted: e.review_completed ?? false, toTradingBible: e.to_trading_bible ?? false, imageUrl: e.image_url, tags: e.tags || [] });
 const monthId = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+const reviewScore = (entry: JournalEntry) => [entry.note, entry.setup, entry.session, entry.imageUrl, entry.reviewCompleted, entry.toTradingBible].filter(Boolean).length;
 
 export function JournalV2({ onLogin }: { onLogin: () => void }) {
   const { user } = useAuth();
@@ -65,6 +66,7 @@ export function JournalV2({ onLogin }: { onLogin: () => void }) {
 
   const account = accounts.find(a => a.id === accountId) || null;
   const accountEntries = useMemo(() => entries.filter(e => e.propAccountId === accountId), [entries, accountId]);
+  const bibleEntries = useMemo(() => accountEntries.filter(e => e.toTradingBible).sort((a, b) => reviewScore(b) - reviewScore(a)), [accountEntries]);
   const monthEntries = useMemo(() => accountEntries.filter(e => e.rawDate?.startsWith(monthId(month))), [accountEntries, month]);
   const rangeEntries = useMemo(() => {
     const y = month.getFullYear();
@@ -145,13 +147,13 @@ export function JournalV2({ onLogin }: { onLogin: () => void }) {
         resultR: num("resultR"),
         riskPercent: form.get("riskPercent"),
         session: form.get("session"),
+        followingPlan: form.has("followingPlan"),
+        errorMade: form.has("errorMade"),
+        mistakeType: form.get("mistakeType"),
+        reviewCompleted: form.has("reviewCompleted"),
+        toTradingBible: form.has("toTradingBible"),
         tradedAt: form.get("tradedAt"),
         setup: form.get("setup"),
-        followingPlan: form.get("followingPlan") === "true",
-        errorMade: form.get("errorMade") === "true",
-        mistakeType: form.get("mistakeType"),
-        reviewCompleted: form.get("reviewCompleted") === "true",
-        toTradingBible: form.get("toTradingBible") === "true",
         tags: String(form.get("tags") || "").split(",").map(t => t.trim()).filter(Boolean),
         note: form.get("note"),
         imageUrl: form.get("imageUrl"),
@@ -218,7 +220,7 @@ export function JournalV2({ onLogin }: { onLogin: () => void }) {
         </div>
       )}
       {account
-        ? <Workspace account={account} stats={stats} equity={equity} setups={setups} mistakes={mistakes} planRate={planRate} monthCount={monthEntries.length} calendar={calendar} trades={shown} query={query} month={month} deleting={deleting === account.id} saving={saving} tradeRange={tradeRange} customStart={customStart} customEnd={customEnd} onRange={setTradeRange} onCustomStart={setCustomStart} onCustomEnd={setCustomEnd} onQuery={setQuery} onBack={() => setAccountId(null)} onTrade={() => setTradeOpen(true)} onDelete={() => removeAccount(account)} onCsv={exportCsv} onPrev={() => shiftMonth(-1)} onNext={() => shiftMonth(1)} onToday={() => setMonth(new Date())} onUpdateTrade={updateTrade} />
+        ? <Workspace account={account} stats={stats} equity={equity} setups={setups} mistakes={mistakes} planRate={planRate} monthCount={monthEntries.length} calendar={calendar} trades={shown} bibleTrades={bibleEntries} query={query} month={month} deleting={deleting === account.id} saving={saving} tradeRange={tradeRange} customStart={customStart} customEnd={customEnd} onRange={setTradeRange} onCustomStart={setCustomStart} onCustomEnd={setCustomEnd} onQuery={setQuery} onBack={() => setAccountId(null)} onTrade={() => setTradeOpen(true)} onDelete={() => removeAccount(account)} onCsv={exportCsv} onPrev={() => shiftMonth(-1)} onNext={() => shiftMonth(1)} onToday={() => setMonth(new Date())} onUpdateTrade={updateTrade} />
         : <Accounts summaries={summaries} deleting={deleting} onAdd={() => setAccountOpen(true)} onOpen={setAccountId} onDelete={removeAccount} />
       }
       <PropAccountDialog open={accountOpen} saving={saving} onOpenChange={setAccountOpen} onSave={addAccount} />
@@ -376,13 +378,13 @@ function Workspace(p: {
   equity: Array<{ trade: number; equity: number; label: string }>; setups: Array<{ name: string; pnl: number; trades: number; wins: number; rate: number }>;
   mistakes: Array<{ name: string; pnl: number; trades: number }>; planRate: number; monthCount: number;
   calendar: Array<{ day: number; trades: JournalEntry[]; pnl: number } | null>;
-  trades: JournalEntry[]; query: string; month: Date; deleting: boolean; saving: boolean; tradeRange: TradeRange; customStart: string; customEnd: string;
+  trades: JournalEntry[]; bibleTrades: JournalEntry[]; query: string; month: Date; deleting: boolean; saving: boolean; tradeRange: TradeRange; customStart: string; customEnd: string;
   onRange: (value: TradeRange) => void; onCustomStart: (value: string) => void; onCustomEnd: (value: string) => void;
   onQuery: (v: string) => void; onBack: () => void; onTrade: () => void; onDelete: () => void;
   onCsv: () => void; onPrev: () => void; onNext: () => void; onToday: () => void;
   onUpdateTrade: (id: string, form: FormData) => Promise<void>;
 }) {
-  const { account, stats, equity, setups, mistakes, planRate, monthCount, calendar, trades, month } = p;
+  const { account, stats, equity, setups, mistakes, planRate, monthCount, calendar, trades, bibleTrades, month } = p;
   const [selectedTrade, setSelectedTrade] = useState<JournalEntry | null>(null);
   const [activeTab, setActiveTab] = useState<WorkspaceTab>("overview");
   const currentPnl = (equity.at(-1)?.equity ?? account.initialBalance) - account.initialBalance;
@@ -677,6 +679,60 @@ function Workspace(p: {
             </div>
           </TabsContent>
 
+          {/* Trading Bible */}
+          <TabsContent value="bible">
+            <section className="overflow-hidden rounded-2xl border border-[#1a2235] bg-[#0d1525]/80">
+              <div className="flex flex-col gap-3 border-b border-[#1a2235] px-5 py-4 sm:flex-row sm:items-center">
+                <div>
+                  <h3 className="flex items-center gap-2 font-bold"><BookOpen size={17} className="text-violet-300" /> Trading Bible</h3>
+                  <p className="text-xs text-[#6b7a96]">Eng yaxshi setup va reviewlar playbook sifatida saqlanadi.</p>
+                </div>
+                <div className="grid grid-cols-2 gap-2 sm:ml-auto sm:flex">
+                  <MiniStat label="BIBLE TRADES" value={String(bibleTrades.length)} />
+                  <MiniStat label="REVIEWED" value={String(bibleTrades.filter(t => t.reviewCompleted).length)} />
+                </div>
+              </div>
+              {bibleTrades.length ? (
+                <div className="grid gap-3 p-3 lg:grid-cols-2">
+                  {bibleTrades.map((trade) => (
+                    <button key={trade.id} type="button" onClick={() => setSelectedTrade(trade)} className="group overflow-hidden rounded-2xl border border-[#1a2235] bg-[#060b14] text-left transition hover:border-violet-400/25 hover:bg-[#101827]">
+                      {trade.imageUrl ? (
+                        <div className="h-40 overflow-hidden border-b border-[#1a2235] bg-black">
+                          <img src={trade.imageUrl} alt={`${trade.symbol} bible chart`} className="h-full w-full object-cover transition group-hover:scale-[1.02]" />
+                        </div>
+                      ) : null}
+                      <div className="p-4">
+                        <div className="flex items-start gap-3">
+                          <span className={`rounded-xl px-2.5 py-1 text-[10px] font-black ${trade.side === "Long" ? "bg-emerald-500/10 text-emerald-300" : "bg-rose-500/10 text-rose-300"}`}>{trade.side}</span>
+                          <div className="min-w-0 flex-1">
+                            <h4 className="truncate text-base font-black text-white">{trade.symbol}</h4>
+                            <p className="mt-0.5 truncate text-xs text-[#6b7a96]">{trade.setup || "No setup"} / {trade.session || "No session"} / {trade.date}</p>
+                          </div>
+                          <span className="rounded-xl bg-violet-500/10 px-2.5 py-1 text-[10px] font-black text-violet-300">{reviewScore(trade)}/6</span>
+                        </div>
+                        <p className="mt-3 line-clamp-3 text-sm leading-6 text-[#c7d1e5]">{trade.note || "Review note yozilmagan."}</p>
+                        <div className="mt-3 flex flex-wrap gap-1.5">
+                          {trade.reviewCompleted ? <span className="inline-flex items-center gap-1 rounded-lg bg-blue-500/10 px-2 py-1 text-[10px] font-bold text-blue-300"><CheckCircle2 size={11} /> Reviewed</span> : null}
+                          {trade.followingPlan ? <span className="rounded-lg bg-emerald-500/10 px-2 py-1 text-[10px] font-bold text-emerald-300">Plan</span> : <span className="rounded-lg bg-amber-500/10 px-2 py-1 text-[10px] font-bold text-amber-300">Off-plan</span>}
+                          {trade.riskPercent ? <span className="rounded-lg bg-amber-500/10 px-2 py-1 text-[10px] font-bold text-amber-300">{trade.riskPercent}</span> : null}
+                          {(trade.tags ?? []).slice(0, 3).map(tag => <span key={tag} className="rounded-lg bg-white/[.045] px-2 py-1 text-[10px] text-[#8a9bc0]">{tag}</span>)}
+                        </div>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              ) : (
+                <div className="grid min-h-72 place-items-center px-6 text-center">
+                  <div>
+                    <BookOpen className="mx-auto text-[#2a3f60]" size={38} />
+                    <h3 className="mt-4 text-lg font-black">Trading Bible bo'sh</h3>
+                    <p className="mt-1 max-w-md text-sm leading-6 text-[#6b7a96]">Trade review ochib “+ to Trading Bible” ni belgilang. Eng yaxshi setup va saboqlar shu yerda playbook bo'lib yig'iladi.</p>
+                  </div>
+                </div>
+              )}
+            </section>
+          </TabsContent>
+
           {/* Analytics */}
           <TabsContent value="analytics" className="grid gap-4 xl:grid-cols-2">
             <div className="rounded-2xl border border-[#1a2235] bg-[#0d1525]/80 p-5">
@@ -797,6 +853,16 @@ function TradeEditor({ trade, saving, onClose, onSave }: { trade: JournalEntry; 
             <label className="text-xs text-[#6b7a96]">Setup<Input name="setup" defaultValue={trade.setup ?? ""} className="mt-1 border-[#1a2235] bg-[#060b14]" /></label>
             <label className="text-xs text-[#6b7a96]">Session<Input name="session" defaultValue={trade.session ?? ""} className="mt-1 border-[#1a2235] bg-[#060b14]" /></label>
             <label className="text-xs text-[#6b7a96]">Tags<Input name="tags" defaultValue={(trade.tags ?? []).join(", ")} className="mt-1 border-[#1a2235] bg-[#060b14]" /></label>
+          </div>
+          <div className="rounded-2xl border border-[#1a2235] bg-[#060b14] p-4">
+            <p className="mb-3 text-[10px] font-black uppercase tracking-[.16em] text-[#6b7a96]">Notion review checklist</p>
+            <div className="grid gap-2 sm:grid-cols-2">
+              <label className="flex items-center gap-2 text-sm text-[#dde6f8]"><input type="checkbox" name="followingPlan" value="true" defaultChecked={trade.followingPlan} className="size-4 accent-emerald-400" /> Following plan?</label>
+              <label className="flex items-center gap-2 text-sm text-[#dde6f8]"><input type="checkbox" name="reviewCompleted" value="true" defaultChecked={trade.reviewCompleted} className="size-4 accent-blue-400" /> Review completed</label>
+              <label className="flex items-center gap-2 text-sm text-[#dde6f8]"><input type="checkbox" name="errorMade" value="true" defaultChecked={trade.errorMade} className="size-4 accent-rose-400" /> Error made?</label>
+              <label className="flex items-center gap-2 text-sm text-[#dde6f8]"><input type="checkbox" name="toTradingBible" value="true" defaultChecked={trade.toTradingBible} className="size-4 accent-violet-400" /> Add to Trading Bible</label>
+            </div>
+            <label className="mt-3 block text-xs text-[#6b7a96]">Mistake type<Input name="mistakeType" defaultValue={trade.mistakeType ?? ""} className="mt-1 border-[#1a2235] bg-[#060b14]" /></label>
           </div>
           <label className="block text-xs text-[#6b7a96]">Review note<Textarea name="note" defaultValue={trade.note} className="mt-1 min-h-28 border-[#1a2235] bg-[#060b14]" /></label>
         </div>
