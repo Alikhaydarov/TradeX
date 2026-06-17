@@ -502,7 +502,7 @@ export function ChatV4({ onLogin, onBack }: { onLogin: () => void; onBack: () =>
         <div className="min-w-0">
           <h1 className="truncate text-lg font-black tracking-tight sm:text-xl">Chat</h1>
         </div>
-        <Button onClick={() => setCreating(true)} className="ml-auto h-9 shrink-0 rounded-full bg-white text-slate-950 px-3 text-[11px] font-black hover:bg-slate-200 sm:px-4" size="sm">
+        <Button onClick={() => setCreating(true)} className="ml-auto h-9 shrink-0 rounded-full bg-white text-slate-950 px-3 text-[11px] font-black hover:bg-slate-200 sm:px-4" size="sm" aria-label="Yangi chat yaratish">
           <Plus size={14} /> <span className="hidden sm:inline">Yangi chat</span>
         </Button>
       </header>

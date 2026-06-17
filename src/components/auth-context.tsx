@@ -53,12 +53,19 @@ export function AuthProvider({
   initialUser?: User | null;
   initialConfigured?: boolean;
 }) {
-  const [user, setUser] = useState<User | null>(() => initialUser ?? readCachedUser());
+  const [user, setUser] = useState<User | null>(initialUser);
   const [configured, setConfigured] = useState(initialConfigured);
   const [loading] = useState(false);
 
   useEffect(() => {
     let active = true;
+    let cacheTimer: number | null = null;
+    const cached = readCachedUser();
+    if (!initialUser && cached) {
+      cacheTimer = window.setTimeout(() => {
+        if (active) setUser(cached);
+      }, 0);
+    }
 
     apiRequest<{ user: User | null }>("/api/auth/me")
       .then((auth) => {
@@ -82,8 +89,9 @@ export function AuthProvider({
 
     return () => {
       active = false;
+      if (cacheTimer) window.clearTimeout(cacheTimer);
     };
-  }, []);
+  }, [initialUser]);
 
   const value = useMemo<AuthContextValue>(
     () => ({

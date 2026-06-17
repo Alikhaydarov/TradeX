@@ -512,7 +512,7 @@ function Workspace(p: {
                 <div className="grid grid-cols-7 content-start gap-1.5 [grid-auto-rows:130px]">
                   {calendar.map((c, i) =>
                     c ? (
-                      <div key={c.day}
+                      <div key={`${monthId(month)}-desktop-${i}`}
                         className={`h-full rounded-xl border p-2.5 transition ${c.trades.length ? c.pnl >= 0 ? "border-emerald-500/20 bg-emerald-500/5" : "border-rose-500/20 bg-rose-500/5" : "border-[#1a2235] bg-[#060b14]/40"}`}>
                         <div className="flex items-start justify-between">
                           <span className={`grid size-6 place-items-center rounded-md text-[11px] font-bold ${c.trades.length ? "bg-[#1a2235] text-[#dde6f8]" : "text-[#6b7a96]"}`}>{c.day}</span>
@@ -544,7 +544,7 @@ function Workspace(p: {
                         )}
                       </div>
                     ) : (
-                      <div key={i} className="h-full rounded-xl border border-transparent" />
+                      <div key={`${monthId(month)}-desktop-empty-${i}`} className="h-full rounded-xl border border-transparent" />
                     )
                   )}
                 </div>
@@ -560,7 +560,7 @@ function Workspace(p: {
                 <div className="grid grid-cols-7 gap-1">
                   {calendar.map((c, i) =>
                     c ? (
-                      <div key={c.day}
+                      <div key={`${monthId(month)}-mobile-${i}`}
                         className={`flex flex-col items-center rounded-lg p-1 py-1.5 ${c.trades.length ? c.pnl >= 0 ? "bg-emerald-500/10" : "bg-rose-500/10" : ""}`}>
                         <span className={`text-[11px] font-bold ${c.trades.length ? "text-[#dde6f8]" : "text-[#6b7a96]"}`}>{c.day}</span>
                         {c.trades.length > 0 && (
@@ -570,7 +570,7 @@ function Workspace(p: {
                         )}
                       </div>
                     ) : (
-                      <div key={i} />
+                      <div key={`${monthId(month)}-mobile-empty-${i}`} />
                     )
                   )}
                 </div>

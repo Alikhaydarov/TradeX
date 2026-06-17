@@ -63,6 +63,7 @@ export function NotificationListener() {
   const { user } = useAuth();
   const [permission, setPermission] = useState<NotificationPermission | "unsupported">("default");
   const [toast, setToast] = useState<ToastState | null>(null);
+  const [promptDismissed, setPromptDismissed] = useState(false);
   const seenMessageIds = useRef(new Set<string>());
   const initialized = useRef(false);
   const polling = useRef(false);
@@ -70,8 +71,12 @@ export function NotificationListener() {
 
   useEffect(() => {
     if (typeof window === "undefined") return;
-    setPermission("Notification" in window ? Notification.permission : "unsupported");
-    soundEnabled.current = localStorage.getItem("tradeup-notification-sound") === "on";
+    const timer = window.setTimeout(() => {
+      setPermission("Notification" in window ? Notification.permission : "unsupported");
+      soundEnabled.current = localStorage.getItem("tradeup-notification-sound") === "on";
+      setPromptDismissed(localStorage.getItem("tradeup-notification-prompt") === "dismissed");
+    }, 0);
+    return () => window.clearTimeout(timer);
   }, []);
 
   useEffect(() => {
@@ -168,19 +173,27 @@ export function NotificationListener() {
     }
   };
 
+  const dismissPrompt = () => {
+    setPromptDismissed(true);
+    localStorage.setItem("tradeup-notification-prompt", "dismissed");
+  };
+
   if (!user) return null;
 
   return (
     <>
-      {permission === "default" && (
-        <div className="fixed bottom-20 right-3 z-[70] max-w-[280px] rounded-2xl border border-cyan-200/15 bg-[#0b1220]/90 p-3 text-xs text-slate-200 shadow-2xl shadow-slate-950/40 backdrop-blur-2xl lg:bottom-5">
-          <div className="flex gap-2">
+      {permission === "default" && !promptDismissed && (
+        <div className="fixed bottom-5 right-3 z-30 hidden max-w-[280px] rounded-2xl border border-cyan-200/15 bg-[#0b1220]/90 p-3 text-xs text-slate-200 shadow-2xl shadow-slate-950/40 backdrop-blur-2xl sm:block">
+          <div className="flex gap-2 pr-7">
             <Bell size={16} className="mt-0.5 shrink-0 text-cyan-200" />
             <div>
               <p className="font-bold">Chat notification yoqilsinmi?</p>
               <p className="mt-1 leading-5 text-slate-400">Yangi xabar kelsa notification va ovoz chiqadi.</p>
             </div>
           </div>
+          <button onClick={dismissPrompt} className="absolute right-2 top-2 grid h-7 w-7 place-items-center rounded-xl text-slate-500 hover:bg-white/[.06] hover:text-white" aria-label="Notification promptni yopish">
+            <X size={14} />
+          </button>
           <Button onClick={() => void enableNotifications()} className="mt-3 h-9 w-full rounded-xl bg-cyan-300 text-xs font-bold text-slate-950 hover:bg-cyan-200">
             Yoqish
           </Button>
