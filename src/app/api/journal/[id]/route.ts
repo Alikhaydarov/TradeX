@@ -20,6 +20,7 @@ interface JournalUpdatePayload {
   mistakeType?: string;
   reviewCompleted?: boolean;
   toTradingBible?: boolean;
+  imageUrl?: string | null;
   tags?: string[];
 }
 
@@ -62,6 +63,7 @@ export async function PATCH(
     setup: body.setup?.trim().slice(0, 80) || "",
     risk_amount: risk,
     result_r: resultR,
+    image_url: body.imageUrl?.trim().slice(0, 1000) || null,
     tags: (body.tags || []).map((tag) => tag.trim().slice(0, 24)).filter(Boolean).slice(0, 8),
   };
 

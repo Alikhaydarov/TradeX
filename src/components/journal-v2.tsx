@@ -184,11 +184,22 @@ export function JournalV2({ onLogin }: { onLogin: () => void }) {
         setup: form.get("setup"),
         tags: String(form.get("tags") || "").split(",").map(t => t.trim()).filter(Boolean),
         note: form.get("note"),
+        imageUrl: form.get("imageUrl"),
       }) });
       const next = entryFrom(response.entry);
       setEntries(current => current.map(entry => entry.id === id ? next : entry));
       setMonth(new Date(`${next.rawDate}T00:00:00`));
     } catch (e) { setError(e instanceof Error ? e.message : "Trade yangilanmadi"); }
+    finally { setSaving(false); }
+  }
+
+  async function removeTrade(id: string) {
+    if (!window.confirm("Bu tradeni o'chirasizmi?")) return;
+    setSaving(true);
+    try {
+      await apiRequest(`/api/journal/${id}`, { method: "DELETE" });
+      setEntries(current => current.filter(entry => entry.id !== id));
+    } catch (e) { setError(e instanceof Error ? e.message : "Trade o'chirilmadi"); }
     finally { setSaving(false); }
   }
 
@@ -220,7 +231,7 @@ export function JournalV2({ onLogin }: { onLogin: () => void }) {
         </div>
       )}
       {account
-        ? <Workspace account={account} stats={stats} equity={equity} setups={setups} mistakes={mistakes} planRate={planRate} monthCount={monthEntries.length} calendar={calendar} trades={shown} bibleTrades={bibleEntries} query={query} month={month} deleting={deleting === account.id} saving={saving} tradeRange={tradeRange} customStart={customStart} customEnd={customEnd} onRange={setTradeRange} onCustomStart={setCustomStart} onCustomEnd={setCustomEnd} onQuery={setQuery} onBack={() => setAccountId(null)} onTrade={() => setTradeOpen(true)} onDelete={() => removeAccount(account)} onCsv={exportCsv} onPrev={() => shiftMonth(-1)} onNext={() => shiftMonth(1)} onToday={() => setMonth(new Date())} onUpdateTrade={updateTrade} />
+        ? <Workspace account={account} stats={stats} equity={equity} setups={setups} mistakes={mistakes} planRate={planRate} monthCount={monthEntries.length} calendar={calendar} trades={shown} bibleTrades={bibleEntries} query={query} month={month} deleting={deleting === account.id} saving={saving} tradeRange={tradeRange} customStart={customStart} customEnd={customEnd} onRange={setTradeRange} onCustomStart={setCustomStart} onCustomEnd={setCustomEnd} onQuery={setQuery} onBack={() => setAccountId(null)} onTrade={() => setTradeOpen(true)} onDelete={() => removeAccount(account)} onCsv={exportCsv} onPrev={() => shiftMonth(-1)} onNext={() => shiftMonth(1)} onToday={() => setMonth(new Date())} onUpdateTrade={updateTrade} onRemoveTrade={removeTrade} />
         : <Accounts summaries={summaries} deleting={deleting} onAdd={() => setAccountOpen(true)} onOpen={setAccountId} onDelete={removeAccount} />
       }
       <PropAccountDialog open={accountOpen} saving={saving} onOpenChange={setAccountOpen} onSave={addAccount} />
@@ -383,6 +394,7 @@ function Workspace(p: {
   onQuery: (v: string) => void; onBack: () => void; onTrade: () => void; onDelete: () => void;
   onCsv: () => void; onPrev: () => void; onNext: () => void; onToday: () => void;
   onUpdateTrade: (id: string, form: FormData) => Promise<void>;
+  onRemoveTrade: (id: string) => Promise<void>;
 }) {
   const { account, stats, equity, setups, mistakes, planRate, monthCount, calendar, trades, bibleTrades, month } = p;
   const [selectedTrade, setSelectedTrade] = useState<JournalEntry | null>(null);
@@ -812,6 +824,10 @@ function Workspace(p: {
               await p.onUpdateTrade(selectedTrade.id, form);
               setSelectedTrade(null);
             }}
+            onDelete={async () => {
+              await p.onRemoveTrade(selectedTrade.id);
+              setSelectedTrade(null);
+            }}
           />
         ) : null}
       </div>
@@ -819,7 +835,9 @@ function Workspace(p: {
   );
 }
 
-function TradeEditor({ trade, saving, onClose, onSave }: { trade: JournalEntry; saving: boolean; onClose: () => void; onSave: (form: FormData) => Promise<void> }) {
+function TradeEditor({ trade, saving, onClose, onSave, onDelete }: { trade: JournalEntry; saving: boolean; onClose: () => void; onSave: (form: FormData) => Promise<void>; onDelete: () => Promise<void> }) {
+  const [imageUrl, setImageUrl] = useState(trade.imageUrl || "");
+
   return (
     <div className="fixed inset-0 z-[9999] flex items-start justify-center overflow-y-auto bg-black/70 p-3 pt-[max(1rem,env(safe-area-inset-top))] backdrop-blur-md sm:items-center sm:p-4">
       <div className="absolute inset-0" onClick={onClose} aria-hidden="true" />
@@ -855,6 +873,32 @@ function TradeEditor({ trade, saving, onClose, onSave }: { trade: JournalEntry; 
             <label className="text-xs text-[#6b7a96]">Tags<Input name="tags" defaultValue={(trade.tags ?? []).join(", ")} className="mt-1 border-[#1a2235] bg-[#060b14]" /></label>
           </div>
           <div className="rounded-2xl border border-[#1a2235] bg-[#060b14] p-4">
+            <div className="mb-3 flex items-center justify-between gap-3">
+              <p className="text-[10px] font-black uppercase tracking-[.16em] text-[#6b7a96]">Chart screenshot</p>
+              {imageUrl ? (
+                <button type="button" onClick={() => setImageUrl("")} className="inline-flex items-center gap-1.5 rounded-lg border border-rose-400/20 bg-rose-400/10 px-2.5 py-1.5 text-xs font-bold text-rose-200 hover:bg-rose-400/15">
+                  <Trash2 size={13} /> Remove
+                </button>
+              ) : null}
+            </div>
+            {imageUrl ? (
+              <div className="overflow-hidden rounded-2xl border border-white/10 bg-black/25">
+                <img src={imageUrl} alt={`${trade.symbol} chart screenshot`} className="max-h-[420px] w-full object-contain" loading="lazy" />
+              </div>
+            ) : (
+              <div className="grid min-h-36 place-items-center rounded-2xl border border-dashed border-[#1a2235] text-center text-sm text-[#6b7a96]">
+                <div>
+                  <ImageIcon className="mx-auto mb-2" size={24} />
+                  Screenshot yo'q
+                </div>
+              </div>
+            )}
+            <label className="mt-3 block text-xs text-[#6b7a96]">
+              Image URL
+              <Input name="imageUrl" value={imageUrl} onChange={(event) => setImageUrl(event.target.value)} placeholder="https://..." className="mt-1 border-[#1a2235] bg-[#060b14]" />
+            </label>
+          </div>
+          <div className="rounded-2xl border border-[#1a2235] bg-[#060b14] p-4">
             <p className="mb-3 text-[10px] font-black uppercase tracking-[.16em] text-[#6b7a96]">Notion review checklist</p>
             <div className="grid gap-2 sm:grid-cols-2">
               <label className="flex items-center gap-2 text-sm text-[#dde6f8]"><input type="checkbox" name="followingPlan" value="true" defaultChecked={trade.followingPlan} className="size-4 accent-emerald-400" /> Following plan?</label>
@@ -868,6 +912,9 @@ function TradeEditor({ trade, saving, onClose, onSave }: { trade: JournalEntry; 
         </div>
         <footer className="flex gap-2 border-t border-[#1a2235] p-4">
           <Button type="button" variant="outline" onClick={onClose} className="border-[#1a2235] bg-transparent">Cancel</Button>
+          <Button type="button" disabled={saving} onClick={() => void onDelete()} className="border border-rose-400/25 bg-rose-500/10 text-rose-200 hover:bg-rose-500/15">
+            <Trash2 size={15} /> Delete
+          </Button>
           <Button disabled={saving} className="ml-auto bg-blue-600 hover:bg-blue-500">{saving ? <LoaderCircle className="animate-spin" size={15} /> : null} Save changes</Button>
         </footer>
       </form>
