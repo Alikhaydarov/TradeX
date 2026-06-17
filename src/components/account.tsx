@@ -357,7 +357,7 @@ export function Account({ onLogin, profileUsername }: { onLogin: () => void; pro
   };
 
   const renderPost = (post: Post) => (
-    <article key={post.id} className="group border-b border-white/8 bg-[#070b12] px-4 py-4 last:border-b-0 transition hover:bg-white/[.025] sm:px-6 sm:py-5">
+    <article key={post.id} className="group border-b border-white/8 bg-[#070b12] px-4 py-5 last:border-b-0 transition hover:bg-white/[.025] sm:px-6">
       <div className="grid grid-cols-[40px_minmax(0,1fr)] gap-3 sm:grid-cols-[48px_minmax(0,1fr)] sm:gap-4">
         <TraderAvatar name={post.name} value={post.avatar} className="mt-1 h-10 w-10 shrink-0 rounded-full text-xs ring-2 ring-white/5 transition group-hover:ring-cyan-300/20 sm:h-12 sm:w-12" />
         <div className="min-w-0">
@@ -439,13 +439,13 @@ export function Account({ onLogin, profileUsername }: { onLogin: () => void; pro
         </section>
 
         <section className="border-b border-white/10 bg-[#070b12] sm:mt-3 sm:overflow-hidden sm:rounded-[28px] sm:border">
-          <div className="sticky top-14 z-20 grid grid-cols-4 border-b border-white/8 bg-[#070b12]/95 backdrop-blur-xl">
+          <div className="relative z-10 grid grid-cols-4 border-b border-white/8 bg-[#070b12]/95 backdrop-blur-xl">
             {tabs.map((tab) => {
               const active = activeTab === tab.id;
               return <button key={tab.id} onClick={() => setActiveTab(tab.id)} className={`relative px-2 py-4 text-xs font-black transition sm:text-sm ${active ? "text-white" : "text-slate-500 hover:bg-white/[.03] hover:text-slate-300"}`}>{tab.label}{active ? <span className="absolute inset-x-6 bottom-0 h-1 rounded-full bg-cyan-300" /> : null}</button>;
             })}
           </div>
-          {loadingProfile ? <div className="grid min-h-64 place-items-center text-slate-500"><XSpinner size="lg" /></div> : visiblePosts.length ? <div className="relative z-0 pt-3">{visiblePosts.map(renderPost)}</div> : <EmptyTab tab={activeTab} />}
+          {loadingProfile ? <div className="grid min-h-64 place-items-center text-slate-500"><XSpinner size="lg" /></div> : visiblePosts.length ? <div className="relative z-0 pt-4">{visiblePosts.map(renderPost)}</div> : <EmptyTab tab={activeTab} />}
         </section>
       </div>
 
