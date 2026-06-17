@@ -103,7 +103,7 @@ export function JournalV2({ onLogin }: { onLogin: () => void }) {
   const setups = useMemo(() => { const m = new Map<string, { pnl: number; trades: number; wins: number }>(); monthEntries.forEach(e => { const k = e.setup || "Uncategorized", v = m.get(k) || { pnl: 0, trades: 0, wins: 0 }; m.set(k, { pnl: v.pnl + e.pnl, trades: v.trades + 1, wins: v.wins + (e.pnl > 0 ? 1 : 0) }); }); return [...m].map(([name, v]) => ({ name, ...v, rate: Math.round(v.wins / v.trades * 100) })).sort((a, b) => b.pnl - a.pnl); }, [monthEntries]);
   const mistakes = useMemo(() => { const m = new Map<string, { pnl: number; trades: number }>(); monthEntries.filter(e => e.errorMade && e.mistakeType).forEach(e => { const k = e.mistakeType as string, v = m.get(k) || { pnl: 0, trades: 0 }; m.set(k, { pnl: v.pnl + e.pnl, trades: v.trades + 1 }); }); return [...m].map(([name, v]) => ({ name, ...v })).sort((a, b) => a.pnl - b.pnl); }, [monthEntries]);
   const planRate = useMemo(() => monthEntries.length ? Math.round(monthEntries.filter(e => e.followingPlan).length / monthEntries.length * 100) : 0, [monthEntries]);
-  const calendar = useMemo(() => { const y = month.getFullYear(), m = month.getMonth(), offset = (new Date(y, m, 1).getDay() + 6) % 7, count = new Date(y, m + 1, 0).getDate(), cells = Math.ceil((offset + count) / 7) * 7; return Array.from({ length: cells }, (_, i) => { const day = i - offset + 1; if (day < 1 || day > count) return null; const key = `${monthId(month)}-${String(day).padStart(2, "0")}`, trades = accountEntries.filter(e => e.rawDate === key); return { day, trades, pnl: trades.reduce((s, e) => s + e.pnl, 0) }; }); }, [month, accountEntries]);
+  const calendar = useMemo(() => { const y = month.getFullYear(), m = month.getMonth(), offset = (new Date(y, m, 1).getDay() + 6) % 7, count = new Date(y, m + 1, 0).getDate(), cells = 42; return Array.from({ length: cells }, (_, i) => { const day = i - offset + 1; if (day < 1 || day > count) return null; const key = `${monthId(month)}-${String(day).padStart(2, "0")}`, trades = accountEntries.filter(e => e.rawDate === key); return { day, trades, pnl: trades.reduce((s, e) => s + e.pnl, 0) }; }); }, [month, accountEntries]);
 
   async function addAccount(form: FormData) {
     setSaving(true);
@@ -509,11 +509,11 @@ function Workspace(p: {
                     <div key={d} className="py-2 text-center text-[11px] font-semibold uppercase tracking-wider text-[#6b7a96]">{d}</div>
                   ))}
                 </div>
-                <div className="grid grid-cols-7 gap-1.5">
+                <div className="grid grid-cols-7 content-start gap-1.5 [grid-auto-rows:130px]">
                   {calendar.map((c, i) =>
                     c ? (
                       <div key={c.day}
-                        className={`min-h-[130px] rounded-xl border p-2.5 transition ${c.trades.length ? c.pnl >= 0 ? "border-emerald-500/20 bg-emerald-500/5" : "border-rose-500/20 bg-rose-500/5" : "border-[#1a2235] bg-[#060b14]/40"}`}>
+                        className={`h-full rounded-xl border p-2.5 transition ${c.trades.length ? c.pnl >= 0 ? "border-emerald-500/20 bg-emerald-500/5" : "border-rose-500/20 bg-rose-500/5" : "border-[#1a2235] bg-[#060b14]/40"}`}>
                         <div className="flex items-start justify-between">
                           <span className={`grid size-6 place-items-center rounded-md text-[11px] font-bold ${c.trades.length ? "bg-[#1a2235] text-[#dde6f8]" : "text-[#6b7a96]"}`}>{c.day}</span>
                           {c.trades.length > 0 && (
@@ -544,7 +544,7 @@ function Workspace(p: {
                         )}
                       </div>
                     ) : (
-                      <div key={i} className="min-h-[130px] rounded-xl border border-transparent" />
+                      <div key={i} className="h-full rounded-xl border border-transparent" />
                     )
                   )}
                 </div>
