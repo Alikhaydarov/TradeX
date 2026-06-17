@@ -44,15 +44,19 @@ export function AppLoader({ label = "Checking session" }: { label?: string }) {
 
 export function FullScreenLoader({ label = "Opening" }: { label?: string }) {
   return (
-    <div className="fixed inset-0 z-[2147483646] grid place-items-center bg-[#02050b]/94 px-6 text-center text-white backdrop-blur-xl">
-      <div className="relative">
-        <div className="absolute inset-0 rounded-full bg-cyan-300/20 blur-3xl" />
-        <div className="relative grid size-24 place-items-center rounded-[30px] border border-cyan-200/15 bg-[#07101d] shadow-2xl shadow-cyan-950/30">
-          <span className="absolute inset-3 rounded-[24px] border border-white/8" />
-          <XSpinner size="lg" />
+    <div className="fixed inset-0 z-[2147483646] grid place-items-center bg-[#020409]/96 px-6 text-center text-white backdrop-blur-md">
+      <div className="flex w-full max-w-[220px] flex-col items-center">
+        <div className="relative grid size-20 place-items-center">
+          <span className="absolute inset-0 rounded-full border border-white/8" />
+          <span className="absolute inset-0 animate-spin rounded-full border-2 border-transparent border-t-cyan-300 border-r-blue-500" />
+          <span className="grid size-14 place-items-center rounded-2xl border border-white/10 bg-white/[.045] text-sm font-black text-cyan-100 shadow-xl shadow-black/30">
+            TX
+          </span>
         </div>
         <p className="mt-5 text-sm font-black text-slate-100">{label}</p>
-        <p className="mt-1 text-xs text-slate-500">TradeX tayyorlanmoqda</p>
+        <div className="mt-4 h-1 w-full overflow-hidden rounded-full bg-white/[.06]">
+          <span className="block h-full w-1/2 animate-pulse rounded-full bg-cyan-300" />
+        </div>
       </div>
     </div>
   );
