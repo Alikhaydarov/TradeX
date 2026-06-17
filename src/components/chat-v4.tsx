@@ -13,8 +13,8 @@ import {
   Search,
   Send,
   ShieldCheck,
+  Sparkles,
   UserPlus,
-  Users,
   X,
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -501,7 +501,6 @@ export function ChatV4({ onLogin, onBack }: { onLogin: () => void; onBack: () =>
         </button>
         <div className="min-w-0">
           <h1 className="truncate text-lg font-black tracking-tight sm:text-xl">Chat</h1>
-          <p className="truncate text-xs text-slate-500">Private trader suhbatlari</p>
         </div>
         <Button onClick={() => setCreating(true)} className="ml-auto h-9 shrink-0 rounded-full bg-white text-slate-950 px-3 text-[11px] font-black hover:bg-slate-200 sm:px-4" size="sm">
           <Plus size={14} /> <span className="hidden sm:inline">Yangi chat</span>
@@ -529,7 +528,7 @@ export function ChatV4({ onLogin, onBack }: { onLogin: () => void; onBack: () =>
       ) : (
         <div className="grid min-h-0 flex-1 grid-cols-1 gap-0 p-0 md:grid-cols-[340px_1fr] md:gap-3 md:p-3">
           <aside className={`${activeChat ? "hidden md:flex" : "flex"} min-h-0 flex-col border-white/10 bg-[#07101a] p-0 md:rounded-[22px] md:border md:bg-white/[.035]`}>
-            <div className="flex shrink-0 items-center gap-2 px-2 py-2">
+            <div className="flex h-12 shrink-0 items-center gap-2 border-b border-white/7 px-3">
               <MessageSquareText size={16} className="text-cyan-200" />
               <strong className="text-sm">Mening chatlarim</strong>
               <span className="ml-auto rounded-full bg-white/[.06] px-2 py-0.5 text-[10px] text-slate-400">{chats.length}</span>
@@ -538,8 +537,11 @@ export function ChatV4({ onLogin, onBack }: { onLogin: () => void; onBack: () =>
             <div className="min-h-0 flex-1 overflow-y-auto">
               {loading && !chats.length && <div className="grid h-32 place-items-center text-xs text-slate-500"><XSpinner />Chatlar yuklanmoqda</div>}
               {!loading && !chats.length && (
-                <div className="grid h-full min-h-80 place-items-center p-6 text-center">
-                  <div><Users className="mx-auto text-slate-600" size={30} /><p className="mt-3 text-sm font-bold">Hali chat yo&apos;q</p><p className="mt-1 text-xs leading-5 text-slate-500">Traderlarni tanlab birinchi private chatni yarating.</p><Button onClick={() => setCreating(true)} className="mt-4 rounded-full bg-white text-slate-950 hover:bg-slate-200"><Plus size={14} /> Yangi chat</Button></div>
+                <div className="px-3 py-4">
+                  <div className="rounded-2xl border border-dashed border-white/10 bg-black/10 px-4 py-5 text-center">
+                    <p className="text-sm font-bold text-slate-300">Chatlar yo&apos;q</p>
+                    <p className="mt-1 text-xs leading-5 text-slate-500">Yangi suhbat ochish uchun yuqoridagi tugmadan foydalaning.</p>
+                  </div>
                 </div>
               )}
               {chats.map((chat) => {
@@ -635,7 +637,18 @@ export function ChatV4({ onLogin, onBack }: { onLogin: () => void; onBack: () =>
                 </div>
               </>
             ) : (
-              <div className="grid flex-1 place-items-center p-6 text-center"><div><MessageSquareText className="mx-auto text-slate-600" size={40} /><h2 className="mt-4 text-lg font-black">Chat tanlang yoki yangisini yarating</h2><p className="mt-2 max-w-sm text-sm leading-6 text-slate-500">Bu yerda faqat siz yaratgan yoki siz qo&apos;shilgan private chatlar ko&apos;rinadi.</p><Button onClick={() => setCreating(true)} className="mt-5 rounded-2xl bg-gradient-to-r from-cyan-500 to-blue-600"><Plus size={15} /> Chat yaratish</Button></div></div>
+              <div className="grid flex-1 place-items-center p-5 text-center">
+                <div className="w-full max-w-sm">
+                  <div className="mx-auto grid size-16 place-items-center rounded-3xl border border-cyan-200/15 bg-cyan-300/10 text-cyan-100">
+                    <Sparkles size={26} />
+                  </div>
+                  <h2 className="mt-5 text-2xl font-black tracking-tight">Yangi suhbat boshlang</h2>
+                  <p className="mt-2 text-sm leading-6 text-slate-500">Traderni toping va private chat oching. Keraksiz panel va sozlamalarsiz, faqat suhbat.</p>
+                  <Button onClick={() => setCreating(true)} className="mt-6 h-12 rounded-full bg-white px-7 text-sm font-black text-slate-950 hover:bg-slate-200">
+                    <Plus size={16} /> Yangi chat
+                  </Button>
+                </div>
+              </div>
             )}
           </section>
         </div>
