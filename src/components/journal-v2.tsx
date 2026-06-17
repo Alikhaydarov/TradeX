@@ -93,12 +93,13 @@ export function JournalV2({ onLogin }: { onLogin: () => void }) {
   const stats = useMemo(() => { const pnl = monthEntries.reduce((s, e) => s + e.pnl, 0), wins = monthEntries.filter(e => e.pnl > 0), losses = monthEntries.filter(e => e.pnl < 0), gw = wins.reduce((s, e) => s + e.pnl, 0), gl = Math.abs(losses.reduce((s, e) => s + e.pnl, 0)); return { pnl, wins: wins.length, losses: losses.length, rate: monthEntries.length ? Math.round(wins.length / monthEntries.length * 100) : 0, r: monthEntries.length ? monthEntries.reduce((s, e) => s + (e.resultR || 0), 0) / monthEntries.length : 0, pf: gl ? gw / gl : gw ? gw : 0 }; }, [monthEntries]);
   const equity = useMemo(() => {
     const initialBalance = account?.initialBalance || 0;
-    return [...accountEntries]
+    const trades = [...accountEntries]
       .sort((a, b) => String(a.rawDate).localeCompare(String(b.rawDate)))
-      .reduce<Array<{ trade: number; equity: number }>>((points, entry, index) => {
+      .reduce<Array<{ trade: number; equity: number; label: string }>>((points, entry, index) => {
         const previousEquity = points[index - 1]?.equity ?? initialBalance;
-        return [...points, { trade: index + 1, equity: previousEquity + entry.pnl }];
+        return [...points, { trade: index + 1, equity: previousEquity + entry.pnl, label: entry.rawDate || `Trade ${index + 1}` }];
       }, []);
+    return [{ trade: 0, equity: initialBalance, label: "Start" }, ...trades];
   }, [accountEntries, account]);
   const setups = useMemo(() => { const m = new Map<string, { pnl: number; trades: number; wins: number }>(); monthEntries.forEach(e => { const k = e.setup || "Uncategorized", v = m.get(k) || { pnl: 0, trades: 0, wins: 0 }; m.set(k, { pnl: v.pnl + e.pnl, trades: v.trades + 1, wins: v.wins + (e.pnl > 0 ? 1 : 0) }); }); return [...m].map(([name, v]) => ({ name, ...v, rate: Math.round(v.wins / v.trades * 100) })).sort((a, b) => b.pnl - a.pnl); }, [monthEntries]);
   const mistakes = useMemo(() => { const m = new Map<string, { pnl: number; trades: number }>(); monthEntries.filter(e => e.errorMade && e.mistakeType).forEach(e => { const k = e.mistakeType as string, v = m.get(k) || { pnl: 0, trades: 0 }; m.set(k, { pnl: v.pnl + e.pnl, trades: v.trades + 1 }); }); return [...m].map(([name, v]) => ({ name, ...v })).sort((a, b) => a.pnl - b.pnl); }, [monthEntries]);
@@ -372,7 +373,7 @@ function AccountCard({ s, deleting, onOpen, onDelete }: { s: Summary; deleting: 
 /* ─── Workspace ─── */
 function Workspace(p: {
   account: PropAccount; stats: { pnl: number; wins: number; losses: number; rate: number; r: number; pf: number };
-  equity: Array<{ trade: number; equity: number }>; setups: Array<{ name: string; pnl: number; trades: number; wins: number; rate: number }>;
+  equity: Array<{ trade: number; equity: number; label: string }>; setups: Array<{ name: string; pnl: number; trades: number; wins: number; rate: number }>;
   mistakes: Array<{ name: string; pnl: number; trades: number }>; planRate: number; monthCount: number;
   calendar: Array<{ day: number; trades: JournalEntry[]; pnl: number } | null>;
   trades: JournalEntry[]; query: string; month: Date; deleting: boolean; saving: boolean; tradeRange: TradeRange; customStart: string; customEnd: string;
@@ -383,7 +384,11 @@ function Workspace(p: {
 }) {
   const { account, stats, equity, setups, mistakes, planRate, monthCount, calendar, trades, month } = p;
   const [selectedTrade, setSelectedTrade] = useState<JournalEntry | null>(null);
-  const [activeTab, setActiveTab] = useState<WorkspaceTab>("calendar");
+  const [activeTab, setActiveTab] = useState<WorkspaceTab>("overview");
+  const currentPnl = (equity.at(-1)?.equity ?? account.initialBalance) - account.initialBalance;
+  const currentEquity = account.initialBalance + currentPnl;
+  const targetProgress = account.profitTarget ? Math.min(100, Math.max(0, currentPnl / account.profitTarget * 100)) : 0;
+  const drawdownUsed = account.maxDrawdown && currentPnl < 0 ? Math.min(100, Math.abs(currentPnl) / account.maxDrawdown * 100) : 0;
 
   return (
     <div className="animate-page-in mx-auto max-w-[1700px]">
@@ -449,41 +454,52 @@ function Workspace(p: {
           </TabsList>
 
           {/* Overview */}
-          <TabsContent value="overview" className="grid gap-4 xl:grid-cols-[1.5fr_.5fr]">
-            <div className="rounded-2xl border border-[#1a2235] bg-[#0d1525]/80 p-5">
-              <h3 className="font-bold">Account equity</h3>
-              <p className="text-xs text-[#6b7a96]">Barcha trade bo&apos;yicha cumulative balans</p>
-              <div className="mt-4 h-72">
-                {equity.length
+          <TabsContent value="overview" className="space-y-4">
+            <section className="overflow-hidden rounded-[26px] border border-[#20283a] bg-[linear-gradient(180deg,#212130,#171925_68%,#121722)] shadow-2xl shadow-black/25">
+              <div className="flex flex-col gap-4 border-b border-white/8 px-4 py-4 sm:px-5 lg:flex-row lg:items-start">
+                <div className="min-w-0">
+                  <h3 className="text-base font-black">Account Balance</h3>
+                  <p className="mt-1 text-xs text-[#8792aa]">{account.name} equity performance</p>
+                </div>
+                <div className="grid gap-3 sm:grid-cols-3 lg:ml-auto lg:min-w-[560px]">
+                  <BalanceMetric label="Current P&L" value={`${currentPnl >= 0 ? "+" : ""}${cash.format(currentPnl)}`} tone={currentPnl >= 0 ? "good" : "bad"} />
+                  <BalanceMetric label="Equity" value={cash.format(currentEquity)} />
+                  <BalanceMetric label="Closed Balance" value={cash.format(currentEquity)} />
+                </div>
+              </div>
+              <div className="h-[340px] px-2 pb-4 pt-3 sm:h-[390px] sm:px-4">
+                {equity.length > 1
                   ? <ResponsiveContainer width="100%" height="100%">
-                      <AreaChart data={equity}>
+                      <AreaChart data={equity} margin={{ left: 8, right: 14, top: 16, bottom: 4 }}>
                         <defs>
-                          <linearGradient id="eq" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="0%" stopColor="#3b82f6" stopOpacity={0.3} />
-                            <stop offset="100%" stopColor="#3b82f6" stopOpacity={0.02} />
+                          <linearGradient id="balanceFill" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="0%" stopColor="#d9f96d" stopOpacity={0.42} />
+                            <stop offset="42%" stopColor="#a9b2ff" stopOpacity={0.22} />
+                            <stop offset="100%" stopColor="#202331" stopOpacity={0.03} />
                           </linearGradient>
                         </defs>
-                        <CartesianGrid stroke="rgba(255,255,255,.04)" vertical={false} />
-                        <XAxis dataKey="trade" tick={{ fontSize: 11, fill: "#6b7a96" }} />
-                        <YAxis width={80} tick={{ fontSize: 11, fill: "#6b7a96" }} />
-                        <Tooltip formatter={v => cash.format(Number(v))} contentStyle={{ background: "#0a0f1a", border: "1px solid #1a2235", borderRadius: 12 }} />
-                        <Area dataKey="equity" stroke="#3b82f6" fill="url(#eq)" strokeWidth={2} />
+                        <CartesianGrid stroke="rgba(255,255,255,.07)" vertical={false} />
+                        <XAxis dataKey="trade" axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: "#707b91" }} />
+                        <YAxis width={72} axisLine={false} tickLine={false} tickFormatter={(value) => `$${Number(value / 1000).toFixed(1)}K`} tick={{ fontSize: 11, fill: "#707b91" }} domain={["dataMin - 100", "dataMax + 100"]} />
+                        <Tooltip formatter={v => cash.format(Number(v))} labelFormatter={(_, payload) => payload?.[0]?.payload?.label ?? "Balance"} contentStyle={{ background: "#11131d", border: "1px solid #2b3145", borderRadius: 16, color: "#e8edf8" }} />
+                        <Area type="monotone" dataKey="equity" stroke="#d9f96d" fill="url(#balanceFill)" strokeWidth={3} dot={false} activeDot={{ r: 5, fill: "#d9f96d", stroke: "#11131d", strokeWidth: 2 }} />
                       </AreaChart>
                     </ResponsiveContainer>
-                  : <Empty text="Equity curve uchun trade qo'shing." />
+                  : <Empty text="Balance chart uchun trade qo'shing." />
                 }
               </div>
-            </div>
-            <div className="rounded-2xl border border-[#1a2235] bg-[#0d1525]/80 p-5">
-              <h3 className="font-bold">Challenge limits</h3>
-              <div className="mt-4 space-y-5">
-                <ProgressBar label="Profit target" value={account.profitTarget ? Math.min(100, Math.max(0, stats.pnl / account.profitTarget * 100)) : 0} color="bg-emerald-500" />
-                <ProgressBar label="Max drawdown" value={account.maxDrawdown && stats.pnl < 0 ? Math.min(100, Math.abs(stats.pnl) / account.maxDrawdown * 100) : 0} color="bg-rose-500" />
+            </section>
+
+            <div className="grid gap-4 lg:grid-cols-[1fr_1fr_1fr]">
+              <div className="rounded-2xl border border-[#1a2235] bg-[#0d1525]/80 p-5">
+                <h3 className="font-bold">Challenge limits</h3>
+                <div className="mt-4 space-y-5">
+                  <ProgressBar label="Profit target" value={targetProgress} color="bg-[#d9f96d]" />
+                  <ProgressBar label="Max drawdown" value={drawdownUsed} color="bg-rose-500" />
+                </div>
               </div>
-              <div className="mt-4 grid grid-cols-2 gap-2">
-                <MiniStat label="DAILY LIMIT" value={cash.format(account.dailyDrawdown)} />
-                <MiniStat label="START BAL" value={cash.format(account.initialBalance)} />
-              </div>
+              <MiniStat label="DAILY LIMIT" value={cash.format(account.dailyDrawdown)} />
+              <MiniStat label="START BALANCE" value={cash.format(account.initialBalance)} />
             </div>
           </TabsContent>
 
@@ -803,6 +819,16 @@ function ProgressBar({ label, value, color }: { label: string; value: number; co
       <div className="h-1.5 overflow-hidden rounded-full bg-[#0f1b2d]">
         <div className={`h-full rounded-full transition-all ${color}`} style={{ width: `${Math.min(100, value)}%` }} />
       </div>
+    </div>
+  );
+}
+
+function BalanceMetric({ label, value, tone = "neutral" }: { label: string; value: string; tone?: "neutral" | "good" | "bad" }) {
+  const color = tone === "good" ? "text-[#d9f96d]" : tone === "bad" ? "text-rose-300" : "text-[#dfe5f2]";
+  return (
+    <div className="rounded-2xl border border-white/8 bg-black/10 px-4 py-3">
+      <p className="text-[10px] font-semibold uppercase tracking-wider text-[#848da3]">{label}</p>
+      <b className={`mt-1 block truncate font-mono text-xl font-black ${color}`}>{value}</b>
     </div>
   );
 }
