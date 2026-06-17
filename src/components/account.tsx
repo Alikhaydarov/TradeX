@@ -360,8 +360,8 @@ export function Account({ onLogin, profileUsername }: { onLogin: () => void; pro
   };
 
   const renderPost = (post: Post) => (
-    <article key={post.id} className="border-b border-white/8 px-4 py-4 last:border-b-0 transition hover:bg-white/[.025] sm:px-6 sm:py-5">
-      <div className="flex gap-3 sm:gap-4">
+    <article key={post.id} className="min-h-[118px] border-b border-white/8 px-4 py-5 last:border-b-0 transition hover:bg-white/[.025] sm:px-6 sm:py-6">
+      <div className="flex items-start gap-3 sm:gap-4">
         <TraderAvatar name={post.name} value={post.avatar} className="h-11 w-11 shrink-0 rounded-full text-xs sm:h-12 sm:w-12" />
         <div className="min-w-0 flex-1">
           <div className="flex min-w-0 flex-wrap items-center gap-x-1.5 gap-y-0.5">
@@ -449,7 +449,7 @@ export function Account({ onLogin, profileUsername }: { onLogin: () => void; pro
               return <button key={tab.id} onClick={() => setActiveTab(tab.id)} className={`relative px-2 py-4 text-xs font-black transition sm:text-sm ${active ? "text-white" : "text-slate-500 hover:bg-white/[.03] hover:text-slate-300"}`}>{tab.label}{active ? <span className="absolute inset-x-6 bottom-0 h-1 rounded-full bg-cyan-300" /> : null}</button>;
             })}
           </div>
-          {loadingProfile ? <div className="grid min-h-64 place-items-center text-slate-500"><XSpinner size="lg" /></div> : visiblePosts.length ? <div className="divide-y divide-white/[.02]">{visiblePosts.map(renderPost)}</div> : <EmptyTab tab={activeTab} />}
+          {loadingProfile ? <div className="grid min-h-64 place-items-center text-slate-500"><XSpinner size="lg" /></div> : visiblePosts.length ? <div className="pt-3 sm:pt-4">{visiblePosts.map(renderPost)}</div> : <EmptyTab tab={activeTab} />}
         </section>
       </div>
 

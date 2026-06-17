@@ -71,7 +71,7 @@ function Modal({ title, subtitle, onClose, children }: { title: string; subtitle
   return createPortal(
     <div className="fixed inset-0 isolate z-[2147483647] flex h-[100dvh] w-screen items-start justify-center overflow-y-auto bg-black/75 p-3 pt-[max(1rem,env(safe-area-inset-top))] backdrop-blur-md sm:items-center sm:p-4">
       <div className="absolute inset-0" onClick={onClose} aria-hidden="true" />
-      <section className="relative z-10 w-full max-w-xl overflow-hidden rounded-[30px] border border-white/10 bg-[#07101d]/98 text-white shadow-2xl shadow-black/80">
+      <section className="relative z-10 flex max-h-[92dvh] w-full max-w-xl flex-col overflow-hidden rounded-[30px] border border-white/10 bg-[#07101d]/98 text-white shadow-2xl shadow-black/80">
         <header className="flex items-center gap-3 border-b border-white/8 px-4 py-4">
           <div className="min-w-0 flex-1">
             <h2 className="text-xl font-black leading-6">{title}</h2>
@@ -145,11 +145,22 @@ function SearchDialog({ onClose }: { onClose: () => void }) {
 
   return (
     <Modal title="Search" subtitle="Find TradeX accounts by name or username." onClose={onClose}>
-      <div className="border-b border-white/8 p-4">
+      <form
+        className="border-b border-white/8 p-4"
+        onSubmit={(event) => {
+          event.preventDefault();
+          if (users[0]) goToProfile(users[0].username);
+        }}
+      >
         <div className="flex h-12 items-center gap-3 rounded-2xl border border-white/10 bg-white/[.04] px-4 focus-within:border-cyan-300/50">
           <Search size={18} className="text-cyan-200" />
           <input
             autoFocus
+            type="search"
+            enterKeyHint="search"
+            autoCapitalize="none"
+            autoCorrect="off"
+            spellCheck={false}
             value={query}
             onChange={(event) => setQuery(event.target.value)}
             onKeyDown={(event) => {
@@ -165,11 +176,11 @@ function SearchDialog({ onClose }: { onClose: () => void }) {
           {query ? <button type="button" onClick={() => setQuery("")} className="grid size-7 place-items-center rounded-full bg-white/[.06] text-slate-400 hover:text-white" aria-label="Clear search"><X size={14} /></button> : null}
         </div>
         {error ? <p className="mt-3 rounded-2xl border border-rose-300/15 bg-rose-400/10 px-3 py-2 text-xs text-rose-200">{error}</p> : null}
-      </div>
-      <div className="max-h-[70dvh] min-h-[360px] overflow-y-auto">
+      </form>
+      <div className="min-h-[360px] flex-1 overflow-y-auto overscroll-contain">
           {cleanQuery.length < 2 ? <div className="grid min-h-56 place-items-center px-6 text-center text-sm text-slate-500">Kamida 2 ta harf yozing.</div> : null}
           {users.map((item) => (
-            <button key={item.id} onClick={() => goToProfile(item.username)} className="flex w-full items-center gap-3 border-b border-white/6 px-4 py-3.5 text-left transition hover:bg-white/[.045] active:bg-white/[.06]">
+            <button key={item.id} type="button" onClick={() => goToProfile(item.username)} className="flex min-h-[76px] w-full touch-manipulation items-center gap-3 border-b border-white/6 px-4 py-3.5 text-left transition hover:bg-white/[.045] active:bg-white/[.06]">
               <TraderAvatar name={item.fullName} value={item.avatarUrl} className="h-12 w-12 text-xs" />
               <span className="min-w-0 flex-1">
                 <span className="flex min-w-0 items-center gap-1.5"><span className="truncate text-[15px] font-black">{item.fullName}</span>{item.isVerified ? <VerifiedBadge /> : null}</span>
