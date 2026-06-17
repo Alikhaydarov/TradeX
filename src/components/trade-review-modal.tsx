@@ -1,6 +1,6 @@
 "use client";
 
-import { Camera, ImagePlus, LoaderCircle, Plus, Trash2, UploadCloud, X } from "lucide-react";
+import { Camera, Check, ChevronDown, ImagePlus, LoaderCircle, Plus, Trash2, UploadCloud, X } from "lucide-react";
 import { useRef, useState, type ChangeEvent, type DragEvent } from "react";
 import { Button } from "./ui/button";
 import { Dialog, DialogContent } from "./ui/dialog";
@@ -104,58 +104,81 @@ function OptionStack({
     setOpen(false);
   };
 
+  const selectOption = (option: string) => {
+    onChange(option);
+    setOpen(false);
+  };
+
   return (
-    <div className="space-y-1.5">
-      <button type="button" onClick={() => setOpen((current) => !current)} className="flex h-10 w-full items-center justify-between rounded-lg border border-[#1a2235] bg-[#060b14] px-3 text-left text-[12px] font-semibold text-[#dde6f8]">
+    <div className="relative space-y-1.5">
+      <button
+        type="button"
+        onClick={() => setOpen((current) => !current)}
+        aria-expanded={open}
+        className={`flex h-10 w-full items-center justify-between gap-3 rounded-lg border px-3 text-left text-[12px] font-semibold transition ${
+          open
+            ? "border-blue-500/40 bg-[#08111f] ring-1 ring-blue-500/15"
+            : "border-[#1a2235] bg-[#060b14] hover:border-[#26344d]"
+        }`}
+      >
         <span className={value ? "truncate" : "truncate text-[#4a5f7a]"}>{value || placeholder}</span>
-        <span className="text-[#4a5f7a]">{open ? "Close" : "Options"}</span>
+        <ChevronDown size={15} className={`shrink-0 text-[#4a5f7a] transition-transform ${open ? "rotate-180" : ""}`} />
       </button>
-      {open ? options.map((option) => {
-        const active = value === option;
-        return (
-          <div
-            key={option}
-            className={`flex min-h-9 w-full items-center justify-between rounded-lg border px-3 py-2 text-left text-[12px] font-semibold transition ${
-              active
-                ? `border-transparent ${toneClass} ring-1`
-                : "border-[#141d2e] bg-[#0d1525] text-[#60708c] hover:border-[#22304a] hover:bg-[#111a2a] hover:text-[#dde6f8]"
-            }`}
-          >
-            <button type="button" onClick={() => onChange(active ? "" : option)} className="min-w-0 flex-1 truncate text-left">
-              {option}
-            </button>
-            <span className="ml-2 flex shrink-0 items-center gap-2">
-              {active ? <span className="hidden text-[10px] uppercase tracking-widest opacity-80 sm:inline">Selected</span> : null}
-              <button
-                type="button"
-                onClick={() => onRemove(option)}
-                className="grid size-6 place-items-center rounded-md text-[#4a5f7a] hover:bg-rose-500/10 hover:text-rose-300"
-                aria-label={`${option} optionni o'chirish`}
-              >
-                <X size={12} />
-              </button>
-            </span>
+      {open ? (
+        <div className="absolute left-0 right-0 top-[calc(100%+6px)] z-[80] overflow-hidden rounded-xl border border-[#1a2235] bg-[#070d18] shadow-2xl shadow-black/50">
+          <div className="max-h-56 overflow-y-auto p-1.5">
+            {options.length ? options.map((option) => {
+              const active = value === option;
+              return (
+                <div
+                  key={option}
+                  className={`group flex min-h-10 items-center gap-2 rounded-lg px-2.5 text-[12px] transition ${
+                    active
+                      ? `${toneClass} ring-1`
+                      : "text-[#8a9bc0] hover:bg-white/[.045] hover:text-[#dde6f8]"
+                  }`}
+                >
+                  <button type="button" onClick={() => selectOption(option)} className="flex min-w-0 flex-1 items-center gap-2 text-left">
+                    <Check size={13} className={active ? "shrink-0 opacity-100" : "shrink-0 opacity-0"} />
+                    <span className="truncate font-semibold">{option}</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      onRemove(option);
+                    }}
+                    className="grid size-7 shrink-0 place-items-center rounded-md text-[#4a5f7a] opacity-70 hover:bg-rose-500/10 hover:text-rose-300 sm:opacity-0 sm:group-hover:opacity-100"
+                    aria-label={`${option} optionni o'chirish`}
+                  >
+                    <X size={12} />
+                  </button>
+                </div>
+              );
+            }) : (
+              <div className="px-3 py-4 text-center text-xs text-[#6b7a96]">Option yo'q.</div>
+            )}
           </div>
-        );
-      }) : null}
-      {open ? <div className="flex min-h-9 items-center gap-2 rounded-lg border border-dashed border-[#1a2235] bg-[#060b14] px-2 py-1.5">
-        <Plus size={14} className="shrink-0 text-[#4a5f7a]" />
-        <input
-          value={draft}
-          onChange={(event) => setDraft(event.target.value)}
-          onKeyDown={(event) => {
-            if (event.key === "Enter") {
-              event.preventDefault();
-              add();
-            }
-          }}
-          placeholder={placeholder}
-          className="min-w-0 flex-1 bg-transparent text-[12px] text-[#dde6f8] outline-none placeholder:text-[#4a5f7a]"
-        />
-        <button type="button" onClick={add} className="rounded-md px-2 py-1 text-[11px] font-bold text-[#8a9bc0] hover:bg-white/[.05] hover:text-white">
-          Add
-        </button>
-      </div> : null}
+          <div className="flex min-h-10 items-center gap-2 border-t border-[#1a2235] bg-[#050a12] px-2 py-1.5">
+            <Plus size={14} className="shrink-0 text-[#4a5f7a]" />
+            <input
+              value={draft}
+              onChange={(event) => setDraft(event.target.value)}
+              onKeyDown={(event) => {
+                if (event.key === "Enter") {
+                  event.preventDefault();
+                  add();
+                }
+              }}
+              placeholder={placeholder}
+              className="min-w-0 flex-1 bg-transparent text-[12px] text-[#dde6f8] outline-none placeholder:text-[#4a5f7a]"
+            />
+            <button type="button" onClick={add} className="rounded-md px-2 py-1 text-[11px] font-bold text-[#8a9bc0] hover:bg-white/[.05] hover:text-white">
+              Add
+            </button>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }
