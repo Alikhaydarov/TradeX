@@ -97,7 +97,7 @@ export function AppShell() {
       syncFromPath();
     };
     const handleProfileReady = () => {
-      window.setTimeout(() => setProfileOpening(false), 120);
+      window.setTimeout(() => setProfileOpening(false), 40);
     };
     window.addEventListener("popstate", syncFromPath);
     window.addEventListener("tradeup:open-profile", handleOpenProfile);
@@ -111,7 +111,7 @@ export function AppShell() {
 
   useEffect(() => {
     if (!profileOpening) return;
-    const timer = window.setTimeout(() => setProfileOpening(false), 1800);
+    const timer = window.setTimeout(() => setProfileOpening(false), 900);
     return () => window.clearTimeout(timer);
   }, [profileOpening]);
 
@@ -206,7 +206,7 @@ export function AppShell() {
         </main>
         {!chatOpen && <RightPanel />}
       </div>
-      {profileOpening ? <FullScreenLoader label="Opening profile" /> : null}
+      {profileOpening ? <FullScreenLoader label="Opening" /> : null}
       {notificationsMounted && <NotificationListener />}
       <AuthModal open={authOpen} onClose={() => setAuthOpen(false)} />
     </>

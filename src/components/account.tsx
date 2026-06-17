@@ -248,7 +248,7 @@ export function Account({ onLogin, profileUsername }: { onLogin: () => void; pro
   if (loadingProfile && !profile) {
     return (
       <div className="min-h-[100dvh] bg-[#01040a]">
-        <FullScreenLoader label="Opening profile" />
+        <FullScreenLoader label="Opening" />
       </div>
     );
   }
