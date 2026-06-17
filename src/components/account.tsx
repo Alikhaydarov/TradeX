@@ -357,28 +357,28 @@ export function Account({ onLogin, profileUsername }: { onLogin: () => void; pro
   };
 
   const renderPost = (post: Post) => (
-    <article key={post.id} className="min-h-[118px] border-b border-white/8 px-4 py-5 last:border-b-0 transition hover:bg-white/[.025] sm:px-6 sm:py-6">
-      <div className="flex items-start gap-3 sm:gap-4">
-        <TraderAvatar name={post.name} value={post.avatar} className="h-11 w-11 shrink-0 rounded-full text-xs sm:h-12 sm:w-12" />
-        <div className="min-w-0 flex-1">
-          <div className="flex min-w-0 flex-wrap items-center gap-x-1.5 gap-y-0.5">
-            <p className="truncate text-sm font-black text-white sm:text-[15px]">{post.name}</p>
+    <article key={post.id} className="border-b border-white/8 bg-[#070b12] px-4 py-4 last:border-b-0 transition hover:bg-white/[.025] sm:px-6 sm:py-5">
+      <div className="grid grid-cols-[44px_minmax(0,1fr)] gap-3 sm:grid-cols-[52px_minmax(0,1fr)] sm:gap-4">
+        <TraderAvatar name={post.name} value={post.avatar} className="mt-0.5 h-11 w-11 shrink-0 rounded-full text-xs sm:h-12 sm:w-12" />
+        <div className="min-w-0">
+          <div className="flex min-w-0 flex-wrap items-center gap-x-1.5 gap-y-0.5 leading-5">
+            <p className="max-w-full truncate text-sm font-black text-white sm:text-[15px]">{post.name}</p>
             {post.isVerified ? <VerifiedBadge /> : null}
             <p className="truncate text-xs text-slate-500">{post.handle}</p>
-            <span className="text-xs text-slate-600">-</span>
+            <span className="text-xs text-slate-700">·</span>
             <p className="text-xs text-slate-500">{post.time}</p>
           </div>
-          {post.text ? <p className="mt-2 whitespace-pre-line break-words text-[15px] leading-6 text-slate-100 sm:text-base">{post.text}</p> : null}
+          {post.text ? <p className="mt-1.5 whitespace-pre-line break-words text-[15px] leading-6 text-slate-100 sm:text-base">{post.text}</p> : null}
           {post.imageUrl ? (
-            <div className="mt-3 flex max-h-[520px] min-h-40 w-full items-center justify-center overflow-hidden rounded-[24px] border border-white/10 bg-black/25">
+            <div className="mt-3 flex max-h-[520px] min-h-40 w-full items-center justify-center overflow-hidden rounded-[22px] border border-white/10 bg-black/25">
               <img src={post.imageUrl} alt="Post media" className="max-h-[520px] max-w-full object-contain object-center" loading="lazy" />
             </div>
           ) : null}
-          <div className="mt-4 grid max-w-lg grid-cols-4 text-slate-500">
-            <span className="flex items-center gap-1.5 text-[12px] transition hover:text-cyan-200"><MessageCircle size={16} />{post.replies}</span>
-            <span className="flex items-center gap-1.5 text-[12px] transition hover:text-rose-200"><Heart size={16} />{post.likes}</span>
-            <span className="flex items-center gap-1.5 text-[12px] transition hover:text-slate-300"><Eye size={16} />{formatCount(post.views)}</span>
-            <span className="flex items-center gap-1.5 text-[12px] transition hover:text-blue-200"><Bookmark size={16} /></span>
+          <div className="mt-4 grid max-w-md grid-cols-4 text-slate-500">
+            <span className="flex h-8 items-center gap-1.5 text-[12px] transition hover:text-cyan-200"><MessageCircle size={16} />{post.replies}</span>
+            <span className="flex h-8 items-center gap-1.5 text-[12px] transition hover:text-rose-200"><Heart size={16} />{post.likes}</span>
+            <span className="flex h-8 items-center gap-1.5 text-[12px] transition hover:text-slate-300"><Eye size={16} />{formatCount(post.views)}</span>
+            <span className="flex h-8 items-center gap-1.5 text-[12px] transition hover:text-blue-200"><Bookmark size={16} /></span>
           </div>
         </div>
       </div>
@@ -439,13 +439,13 @@ export function Account({ onLogin, profileUsername }: { onLogin: () => void; pro
         </section>
 
         <section className="border-b border-white/10 bg-[#070b12] sm:mt-3 sm:overflow-hidden sm:rounded-[28px] sm:border">
-          <div className="sticky top-14 z-10 grid grid-cols-4 border-b border-white/8 bg-[#070b12]/92 backdrop-blur-xl">
+          <div className="sticky top-14 z-20 grid grid-cols-4 border-b border-white/8 bg-[#070b12]/95 backdrop-blur-xl">
             {tabs.map((tab) => {
               const active = activeTab === tab.id;
               return <button key={tab.id} onClick={() => setActiveTab(tab.id)} className={`relative px-2 py-4 text-xs font-black transition sm:text-sm ${active ? "text-white" : "text-slate-500 hover:bg-white/[.03] hover:text-slate-300"}`}>{tab.label}{active ? <span className="absolute inset-x-6 bottom-0 h-1 rounded-full bg-cyan-300" /> : null}</button>;
             })}
           </div>
-          {loadingProfile ? <div className="grid min-h-64 place-items-center text-slate-500"><XSpinner size="lg" /></div> : visiblePosts.length ? <div className="pt-3 sm:pt-4">{visiblePosts.map(renderPost)}</div> : <EmptyTab tab={activeTab} />}
+          {loadingProfile ? <div className="grid min-h-64 place-items-center text-slate-500"><XSpinner size="lg" /></div> : visiblePosts.length ? <div className="pt-0">{visiblePosts.map(renderPost)}</div> : <EmptyTab tab={activeTab} />}
         </section>
       </div>
 

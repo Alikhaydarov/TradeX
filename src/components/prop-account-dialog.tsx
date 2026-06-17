@@ -1,5 +1,5 @@
 "use client";
-import { Building2, ChevronDown, LoaderCircle, Plus, ShieldCheck, TrendingUp } from "lucide-react";
+import { ChevronDown, LoaderCircle, Plus, ShieldCheck, TrendingUp } from "lucide-react";
 import { useState } from "react";
 import { Button } from "./ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog";
