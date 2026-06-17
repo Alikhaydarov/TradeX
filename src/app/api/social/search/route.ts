@@ -19,7 +19,13 @@ export async function GET(request: Request) {
 
   const { searchParams } = new URL(request.url);
   const query = searchParams.get("q")?.trim() ?? "";
-  const like = `%${query.replace(/[%_]/g, "").slice(0, 40)}%`;
+  const safeQuery = query.replace(/[%_]/g, "").slice(0, 40);
+
+  if (safeQuery.length < 2) {
+    return Response.json({ users: [] });
+  }
+
+  const like = `%${safeQuery}%`;
 
   const profilesQuery = auth.supabase
     .from("profiles")
@@ -27,9 +33,7 @@ export async function GET(request: Request) {
     .neq("id", auth.user.id)
     .limit(20);
 
-  const { data: profiles, error } = query
-    ? await profilesQuery.or(`username.ilike.${like},full_name.ilike.${like}`)
-    : await profilesQuery.order("created_at", { ascending: false });
+  const { data: profiles, error } = await profilesQuery.or(`username.ilike.${like},full_name.ilike.${like}`);
 
   if (error) return serverError(error.message);
 

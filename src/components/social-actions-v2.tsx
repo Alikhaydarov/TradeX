@@ -110,17 +110,21 @@ function SearchDialog({ onClose }: { onClose: () => void }) {
 
   useEffect(() => {
     let active = true;
+    const resetTimer = window.setTimeout(() => {
+      if (!active) return;
+      setUsers([]);
+      setSelected(null);
+    }, 0);
 
     if (cleanQuery.length < 2) {
       const timer = window.setTimeout(() => {
         if (!active) return;
-        setUsers([]);
-        setSelected(null);
         setLoading(false);
         setError(null);
       }, 0);
       return () => {
         active = false;
+        window.clearTimeout(resetTimer);
         window.clearTimeout(timer);
       };
     }
@@ -144,6 +148,7 @@ function SearchDialog({ onClose }: { onClose: () => void }) {
 
     return () => {
       active = false;
+      window.clearTimeout(resetTimer);
       window.clearTimeout(timer);
     };
   }, [cleanQuery]);
