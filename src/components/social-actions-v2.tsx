@@ -1,6 +1,6 @@
 "use client";
 
-import { Bell, Check, Search, UserPlus, Users, X } from "lucide-react";
+import { Bell, Check, Search, Users, X } from "lucide-react";
 import { useEffect, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { apiRequest } from "@/lib/api-client";
@@ -28,12 +28,6 @@ type NotificationItem = {
   createdAt: string;
   actor: { id: string; username: string; fullName: string; avatarUrl: string | null; isVerified?: boolean } | null;
 };
-
-function compact(value: number) {
-  if (value >= 1000000) return `${(value / 1000000).toFixed(1)}M`;
-  if (value >= 1000) return `${(value / 1000).toFixed(value >= 10000 ? 0 : 1)}K`;
-  return String(value);
-}
 
 function ago(value: string) {
   const minutes = Math.max(0, Math.round((Date.now() - new Date(value).getTime()) / 60000));
@@ -97,9 +91,7 @@ function Modal({ title, subtitle, onClose, children }: { title: string; subtitle
 function SearchDialog({ onClose }: { onClose: () => void }) {
   const [query, setQuery] = useState("");
   const [users, setUsers] = useState<SearchUser[]>([]);
-  const [selected, setSelected] = useState<SearchUser | null>(null);
   const [loading, setLoading] = useState(false);
-  const [actingId, setActingId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const cleanQuery = query.trim();
 
@@ -113,7 +105,6 @@ function SearchDialog({ onClose }: { onClose: () => void }) {
     const resetTimer = window.setTimeout(() => {
       if (!active) return;
       setUsers([]);
-      setSelected(null);
     }, 0);
 
     if (cleanQuery.length < 2) {
@@ -136,7 +127,6 @@ function SearchDialog({ onClose }: { onClose: () => void }) {
         .then((data) => {
           if (!active) return;
           setUsers(data.users);
-          setSelected((current) => current ? data.users.find((item) => item.id === current.id) ?? data.users[0] ?? null : data.users[0] ?? null);
         })
         .catch((err) => {
           if (active) setError(err instanceof Error ? err.message : "Search failed.");
@@ -153,26 +143,8 @@ function SearchDialog({ onClose }: { onClose: () => void }) {
     };
   }, [cleanQuery]);
 
-  const toggleFollow = async (target: SearchUser) => {
-    setActingId(target.id);
-    setError(null);
-    try {
-      const response = await apiRequest<{ following: boolean; followersCount: number }>("/api/social/follow", {
-        method: "POST",
-        body: JSON.stringify({ targetUserId: target.id }),
-      });
-      const apply = (item: SearchUser) => item.id === target.id ? { ...item, isFollowing: response.following, followersCount: response.followersCount } : item;
-      setUsers((current) => current.map(apply));
-      setSelected((current) => current ? apply(current) : current);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Follow failed.");
-    } finally {
-      setActingId(null);
-    }
-  };
-
   return (
-    <Modal title="Search traders" subtitle="Type at least 2 letters to find traders." onClose={onClose}>
+    <Modal title="Search traders" subtitle="Type at least 2 letters, then tap a trader to open the profile." onClose={onClose}>
       <div className="border-b border-white/8 p-4">
         <div className="flex h-12 items-center gap-3 rounded-2xl border border-white/10 bg-white/[.04] px-4 focus-within:border-cyan-300/50">
           <Search size={18} className="text-cyan-200" />
@@ -181,11 +153,10 @@ function SearchDialog({ onClose }: { onClose: () => void }) {
         </div>
         {error ? <p className="mt-3 rounded-2xl border border-rose-300/15 bg-rose-400/10 px-3 py-2 text-xs text-rose-200">{error}</p> : null}
       </div>
-      <div className="grid max-h-[70dvh] min-h-[420px] overflow-hidden sm:grid-cols-[1fr_1.05fr]">
-        <div className="overflow-y-auto border-white/8 sm:border-r">
+      <div className="max-h-[70dvh] min-h-[360px] overflow-y-auto">
           {cleanQuery.length < 2 ? <div className="grid min-h-40 place-items-center px-6 text-center text-sm text-slate-500">Search yozing. Hozircha userlar ko&apos;rsatilmaydi.</div> : null}
           {users.map((item) => (
-            <button key={item.id} onClick={() => setSelected(item)} className={`flex w-full items-center gap-3 border-b border-white/6 px-4 py-3 text-left transition ${selected?.id === item.id ? "bg-cyan-300/8" : "hover:bg-white/[.035]"}`}>
+            <button key={item.id} onClick={() => goToProfile(item.username)} className="flex w-full items-center gap-3 border-b border-white/6 px-4 py-3 text-left transition hover:bg-white/[.035]">
               <TraderAvatar name={item.fullName} value={item.avatarUrl} className="h-11 w-11 text-xs" />
               <span className="min-w-0 flex-1">
                 <span className="flex min-w-0 items-center gap-1.5"><span className="truncate text-sm font-black">{item.fullName}</span>{item.isVerified ? <VerifiedBadge /> : null}</span>
@@ -195,29 +166,6 @@ function SearchDialog({ onClose }: { onClose: () => void }) {
             </button>
           ))}
           {!loading && cleanQuery.length >= 2 && !users.length ? <div className="grid min-h-40 place-items-center px-6 text-center text-sm text-slate-500">No traders found.</div> : null}
-        </div>
-        <div className="overflow-y-auto p-4">
-          {selected ? (
-            <div className="rounded-[28px] border border-white/10 bg-white/[.035] p-4">
-              <div className="flex items-start gap-3">
-                <button onClick={() => goToProfile(selected.username)}><TraderAvatar name={selected.fullName} value={selected.avatarUrl} className="h-16 w-16 text-lg" /></button>
-                <div className="min-w-0 flex-1">
-                  <button onClick={() => goToProfile(selected.username)} className="flex min-w-0 items-center gap-1.5 text-left"><h3 className="truncate text-lg font-black">{selected.fullName}</h3>{selected.isVerified ? <VerifiedBadge /> : null}</button>
-                  <p className="truncate text-xs text-slate-500">@{selected.username}</p>
-                  <p className="mt-2 inline-flex rounded-full bg-cyan-300/10 px-3 py-1 text-[10px] font-bold text-cyan-200">{selected.tradingStyle || "Trader"}</p>
-                </div>
-              </div>
-              {selected.bio ? <p className="mt-4 text-sm leading-6 text-slate-300">{selected.bio}</p> : null}
-              <div className="mt-4 grid grid-cols-2 gap-2"><div className="rounded-2xl bg-black/15 p-3"><p className="text-[10px] uppercase tracking-[.18em] text-slate-500">Followers</p><b className="mt-1 block text-xl">{compact(selected.followersCount)}</b></div><div className="rounded-2xl bg-black/15 p-3"><p className="text-[10px] uppercase tracking-[.18em] text-slate-500">Following</p><b className="mt-1 block text-xl">{compact(selected.followingCount)}</b></div></div>
-              <div className="mt-4 grid grid-cols-2 gap-2">
-                <button onClick={() => goToProfile(selected.username)} className="flex h-11 items-center justify-center rounded-2xl border border-white/12 bg-white/[.04] text-sm font-black text-white hover:bg-white/[.08]">
-                  View profile
-                </button>
-                <button onClick={() => void toggleFollow(selected)} disabled={actingId === selected.id} className={`flex h-11 items-center justify-center gap-2 rounded-2xl text-sm font-black transition ${selected.isFollowing ? "border border-white/12 bg-white/[.04] text-white hover:bg-rose-400/10 hover:text-rose-200" : "bg-white text-slate-950 hover:bg-slate-200"}`}>{actingId === selected.id ? <XSpinner size="sm" /> : selected.isFollowing ? <Check size={17} /> : <UserPlus size={17} />}{selected.isFollowing ? "Following" : "Follow"}</button>
-              </div>
-            </div>
-          ) : <div className="grid h-full place-items-center text-center text-sm text-slate-500">Search qilib user tanlang.</div>}
-        </div>
       </div>
     </Modal>
   );
