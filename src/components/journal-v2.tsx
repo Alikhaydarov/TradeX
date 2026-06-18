@@ -837,9 +837,6 @@ function Workspace(p: {
 
 function TradeEditor({ trade, saving, onClose, onSave, onDelete }: { trade: JournalEntry; saving: boolean; onClose: () => void; onSave: (form: FormData) => Promise<void>; onDelete: () => Promise<void> }) {
   const [imageUrl, setImageUrl] = useState(trade.imageUrl || "");
-  const winning = trade.pnl >= 0;
-  const resultLabel = trade.pnl > 0 ? "WIN" : trade.pnl < 0 ? "LOSS" : "BE";
-  const dateLabel = new Date(`${trade.rawDate}T00:00:00`).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
 
   return (
     <div className="fixed inset-0 z-[9999] flex items-start justify-center overflow-y-auto bg-black/70 p-3 pt-[max(1rem,env(safe-area-inset-top))] backdrop-blur-md sm:items-center sm:p-4">
@@ -855,56 +852,7 @@ function TradeEditor({ trade, saving, onClose, onSave, onDelete }: { trade: Jour
           </button>
         </header>
         <div className="max-h-[76dvh] space-y-4 overflow-y-auto p-4 sm:p-5">
-          <section className="relative min-h-[360px] overflow-hidden rounded-[24px] border border-white/10 bg-[#03050c] sm:min-h-[390px]">
-            {imageUrl ? (
-              <img src={imageUrl} alt={`${trade.symbol} chart`} className="absolute inset-0 h-full w-full object-cover opacity-45" />
-            ) : (
-              <div className="absolute inset-y-0 right-0 flex w-[48%] items-end justify-around gap-2 px-5 pb-10 opacity-35">
-                {[42, 70, 52, 100, 76, 132, 104].map((height) => (
-                  <span key={height} className="relative w-3 rounded-sm bg-blue-400/35" style={{ height }}>
-                    <span className="absolute left-1/2 top-[-24px] h-[calc(100%+48px)] w-px -translate-x-1/2 bg-blue-300/35" />
-                  </span>
-                ))}
-              </div>
-            )}
-            <div className="absolute inset-0 bg-gradient-to-r from-[#03050c] via-[#03050c]/90 to-[#07142b]/35" />
-            <div className={`absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t ${winning ? "from-emerald-500/[.08]" : "from-rose-500/[.08]"} to-transparent`} />
-
-            <div className="relative z-10 flex min-h-[360px] max-w-xl flex-col p-5 sm:min-h-[390px] sm:p-8">
-              <div className="flex items-center justify-between gap-3">
-                <div>
-                  <p className="text-[11px] font-black uppercase tracking-[.24em] text-white/45">TradeX review</p>
-                  <p className="mt-4 text-sm text-[#76839e] sm:text-base">{dateLabel}</p>
-                </div>
-                <span className={`grid size-11 place-items-center rounded-2xl border ${winning ? "border-emerald-300/20 bg-emerald-400/10 text-emerald-300" : "border-rose-300/20 bg-rose-400/10 text-rose-300"}`}>
-                  {winning ? <TrendingUp size={21} /> : <TrendingDown size={21} />}
-                </span>
-              </div>
-
-              <h2 className="mt-6 text-4xl font-black tracking-tight sm:text-5xl">{trade.symbol}</h2>
-              <div className="mt-3 flex items-center gap-3 text-lg font-bold">
-                <span>{trade.side}</span>
-                <span className="h-6 w-px bg-white/20" />
-                <span className={winning ? "text-emerald-300" : "text-rose-300"}>{resultLabel}</span>
-              </div>
-
-              <div className="mt-5 flex flex-wrap items-end gap-x-5 gap-y-2">
-                <strong className={`font-mono text-5xl font-black tracking-tight sm:text-6xl ${winning ? "text-emerald-300" : "text-rose-300"}`}>
-                  {(trade.resultR ?? 0).toFixed(2)}R
-                </strong>
-                <span className={`pb-1 font-mono text-lg font-black ${winning ? "text-emerald-300/80" : "text-rose-300/80"}`}>
-                  {trade.pnl >= 0 ? "+" : ""}{cash.format(trade.pnl)}
-                </span>
-              </div>
-
-              <div className="mt-auto grid grid-cols-2 gap-x-6 gap-y-4 border-t border-white/10 pt-5 sm:grid-cols-4">
-                <TradeHeroMetric label="Entry price" value={String(trade.entry)} />
-                <TradeHeroMetric label="Exit price" value={String(trade.exit)} />
-                <TradeHeroMetric label="Lot size" value={String(trade.quantity)} />
-                <TradeHeroMetric label="Risk" value={trade.riskPercent || cash.format(trade.riskAmount || 0)} />
-              </div>
-            </div>
-          </section>
+          <TradeReviewImage trade={trade} chartUrl={imageUrl} />
 
           <div className="grid gap-3 sm:grid-cols-3">
             <label className="text-xs text-[#6b7a96]">Symbol<Input name="symbol" defaultValue={trade.symbol} className="mt-1 border-[#1a2235] bg-[#060b14]" /></label>
@@ -978,12 +926,168 @@ function TradeEditor({ trade, saving, onClose, onSave, onDelete }: { trade: Jour
   );
 }
 
-function TradeHeroMetric({ label, value }: { label: string; value: string }) {
+function TradeReviewImage({ trade, chartUrl }: { trade: JournalEntry; chartUrl: string }) {
+  const [generatedUrl, setGeneratedUrl] = useState("");
+
+  useEffect(() => {
+    let active = true;
+    const canvas = document.createElement("canvas");
+    canvas.width = 1080;
+    canvas.height = 1080;
+    const context = canvas.getContext("2d");
+    if (!context) return;
+
+    const winning = trade.pnl >= 0;
+    const accent = winning ? "#42d99b" : "#fb7185";
+    const date = new Date(`${trade.rawDate}T00:00:00`).toLocaleDateString("en-US", {
+      month: "long",
+      day: "numeric",
+      year: "numeric",
+    });
+
+    const render = (chart: HTMLImageElement | null) => {
+      const background = context.createLinearGradient(0, 0, 1080, 1080);
+      background.addColorStop(0, "#02030a");
+      background.addColorStop(0.55, "#060817");
+      background.addColorStop(1, "#07152c");
+      context.fillStyle = background;
+      context.fillRect(0, 0, 1080, 1080);
+
+      if (chart) {
+        const scale = Math.max(1080 / chart.width, 1080 / chart.height);
+        const width = chart.width * scale;
+        const height = chart.height * scale;
+        context.globalAlpha = 0.34;
+        context.drawImage(chart, (1080 - width) / 2, (1080 - height) / 2, width, height);
+        context.globalAlpha = 1;
+      } else {
+        const candleHeights = [105, 174, 130, 238, 182, 310, 244];
+        candleHeights.forEach((height, index) => {
+          const x = 710 + index * 45;
+          const y = 620 - height;
+          context.strokeStyle = "rgba(96,165,250,.25)";
+          context.lineWidth = 3;
+          context.beginPath();
+          context.moveTo(x + 12, y - 42);
+          context.lineTo(x + 12, y + height + 42);
+          context.stroke();
+          context.fillStyle = index % 3 === 0 ? "rgba(66,217,155,.28)" : "rgba(96,165,250,.28)";
+          context.fillRect(x, y, 24, height);
+        });
+      }
+
+      const shade = context.createLinearGradient(0, 0, 1080, 0);
+      shade.addColorStop(0, "rgba(2,3,10,.98)");
+      shade.addColorStop(0.58, "rgba(2,3,10,.88)");
+      shade.addColorStop(1, "rgba(2,3,10,.18)");
+      context.fillStyle = shade;
+      context.fillRect(0, 0, 1080, 1080);
+
+      context.fillStyle = "#ffffff";
+      context.font = "900 58px Arial, sans-serif";
+      context.fillText("TRADEX", 82, 125);
+      context.fillStyle = "#75819b";
+      context.font = "500 30px Arial, sans-serif";
+      context.fillText(date, 82, 245);
+
+      context.fillStyle = "#ffffff";
+      context.font = "900 72px Arial, sans-serif";
+      context.fillText(trade.symbol, 82, 355);
+      context.font = "700 38px Arial, sans-serif";
+      context.fillText(trade.side, 82, 440);
+      context.fillStyle = "rgba(255,255,255,.28)";
+      context.fillRect(225, 400, 3, 50);
+      context.fillStyle = accent;
+      context.fillText(trade.pnl > 0 ? "WIN" : trade.pnl < 0 ? "LOSS" : "BE", 260, 440);
+
+      context.font = "900 92px Arial, sans-serif";
+      context.fillText(`${(trade.resultR ?? 0).toFixed(2)}R`, 82, 565);
+      context.font = "800 32px Arial, sans-serif";
+      context.fillText(`${trade.pnl >= 0 ? "+" : ""}${cash.format(trade.pnl)}`, 86, 615);
+
+      context.fillStyle = "rgba(255,255,255,.13)";
+      context.fillRect(82, 665, 916, 2);
+
+      const drawMetric = (label: string, value: string, x: number, y: number) => {
+        context.fillStyle = "#6f7b94";
+        context.font = "600 27px Arial, sans-serif";
+        context.fillText(label, x, y);
+        context.fillStyle = "#ffffff";
+        context.font = "800 39px Arial, sans-serif";
+        context.fillText(value, x, y + 58);
+      };
+
+      drawMetric("Entry Price", String(trade.entry), 82, 750);
+      drawMetric("Exit Price", String(trade.exit), 570, 750);
+      drawMetric("Lot Size", String(trade.quantity), 82, 900);
+      drawMetric("Risk", trade.riskPercent || cash.format(trade.riskAmount || 0), 330, 900);
+      drawMetric("Setup", trade.setup || "Unspecified", 570, 900);
+
+      context.strokeStyle = accent;
+      context.lineWidth = 8;
+      context.lineCap = "round";
+      context.beginPath();
+      context.moveTo(690, 550);
+      context.bezierCurveTo(760, 500, 820, 430, 900, 330);
+      context.stroke();
+      context.fillStyle = accent;
+      context.beginPath();
+      context.moveTo(900, 330);
+      context.lineTo(846, 350);
+      context.lineTo(884, 392);
+      context.closePath();
+      context.fill();
+
+      try {
+        const url = canvas.toDataURL("image/png", 1);
+        if (active) setGeneratedUrl(url);
+      } catch {
+        if (chart) render(null);
+      }
+    };
+
+    if (chartUrl) {
+      const chart = new Image();
+      chart.crossOrigin = "anonymous";
+      chart.onload = () => render(chart);
+      chart.onerror = () => render(null);
+      chart.src = chartUrl;
+    } else {
+      render(null);
+    }
+
+    return () => {
+      active = false;
+    };
+  }, [chartUrl, trade]);
+
+  const download = () => {
+    if (!generatedUrl) return;
+    const link = document.createElement("a");
+    link.href = generatedUrl;
+    link.download = `${trade.symbol}-${trade.rawDate}-tradex.png`;
+    link.click();
+  };
+
   return (
-    <div className="min-w-0">
-      <p className="text-[10px] font-bold uppercase tracking-[.13em] text-white/35">{label}</p>
-      <p className="mt-1 truncate font-mono text-sm font-black text-white sm:text-base">{value}</p>
-    </div>
+    <section className="overflow-hidden rounded-[24px] border border-white/10 bg-[#03050c]">
+      <div className="flex items-center justify-between border-b border-white/8 px-4 py-3">
+        <div>
+          <p className="text-sm font-black text-white">Trade review image</p>
+          <p className="text-xs text-[#6b7a96]">1080 x 1080 PNG</p>
+        </div>
+        <Button type="button" disabled={!generatedUrl} onClick={download} variant="outline" className="border-white/10 bg-white/[.04]">
+          <Download size={15} /> PNG yuklash
+        </Button>
+      </div>
+      {generatedUrl ? (
+        <img src={generatedUrl} alt={`${trade.symbol} TradeX review image`} className="aspect-square w-full bg-black object-contain" />
+      ) : (
+        <div className="grid aspect-square w-full place-items-center text-[#6b7a96]">
+          <LoaderCircle className="animate-spin" size={24} />
+        </div>
+      )}
+    </section>
   );
 }
 
