@@ -33,6 +33,23 @@ export async function POST(
   const { error } = await mutation;
   if (error) return serverError(error.message);
 
+  if (!existing) {
+    const [{ data: post }, { data: actor }] = await Promise.all([
+      auth.supabase.from("posts").select("user_id, content").eq("id", postId).maybeSingle(),
+      auth.supabase.from("profiles").select("full_name, username").eq("id", auth.user.id).maybeSingle(),
+    ]);
+    if (post?.user_id && post.user_id !== auth.user.id) {
+      const actorName = actor?.full_name || actor?.username || "A trader";
+      await auth.supabase.from("notifications").insert({
+        user_id: post.user_id,
+        actor_id: auth.user.id,
+        type: "post_repost",
+        message: `${actorName} reposted your post.`,
+        is_read: false,
+      });
+    }
+  }
+
   const { count } = await auth.supabase
     .from("post_reposts")
     .select("*", { count: "exact", head: true })

@@ -1,6 +1,6 @@
 "use client";
 
-import { Bookmark, Eye, Heart, ImageIcon, MessageCircle, Repeat2, Send, Share2, Trash2, X } from "lucide-react";
+import { Bookmark, Check, Eye, Heart, ImageIcon, MessageCircle, Pencil, Repeat2, Send, Share2, Trash2, X } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { apiRequest } from "@/lib/api-client";
 import { Button } from "@/components/ui/button";
@@ -120,6 +120,8 @@ export function FeedV3({ onLogin }: { onLogin: () => void }) {
   const [loadingReplies, setLoadingReplies] = useState<string | null>(null);
   const [savingReply, setSavingReply] = useState<string | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<Post | null>(null);
+  const [editingPost, setEditingPost] = useState<Post | null>(null);
+  const [editingText, setEditingText] = useState("");
   const [isAdmin, setIsAdmin] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const viewed = useRef(new Set<string>());
@@ -282,21 +284,50 @@ export function FeedV3({ onLogin }: { onLogin: () => void }) {
 
   const toggleBookmark = async (post: Post) => {
     if (!user) return onLogin();
+    const bookmarked = !post.bookmarked;
+    setPosts((current) => current.map((item) => item.id === post.id ? { ...item, bookmarked } : item));
     try {
       const state = await apiRequest<{ bookmarked: boolean }>(`/api/posts/${post.id}/bookmark`, { method: "POST" });
       setPosts((current) => current.map((item) => item.id === post.id ? { ...item, bookmarked: state.bookmarked } : item));
     } catch (nextError) {
+      setPosts((current) => current.map((item) => item.id === post.id ? { ...item, bookmarked: post.bookmarked } : item));
       setError(nextError instanceof Error ? nextError.message : "Post saqlanmadi.");
     }
   };
 
   const toggleRepost = async (post: Post) => {
     if (!user) return onLogin();
+    const reposted = !post.reposted;
+    const reposts = Math.max(0, post.reposts + (reposted ? 1 : -1));
+    setPosts((current) => current.map((item) => item.id === post.id ? { ...item, reposted, reposts } : item));
     try {
       const state = await apiRequest<{ reposted: boolean; reposts: number }>(`/api/posts/${post.id}/repost`, { method: "POST" });
       setPosts((current) => current.map((item) => item.id === post.id ? { ...item, ...state } : item));
     } catch (nextError) {
+      setPosts((current) => current.map((item) => item.id === post.id ? { ...item, reposted: post.reposted, reposts: post.reposts } : item));
       setError(nextError instanceof Error ? nextError.message : "Repost saqlanmadi.");
+    }
+  };
+
+  const openEditPost = (post: Post) => {
+    setEditingPost(post);
+    setEditingText(post.text);
+  };
+
+  const savePostEdit = async () => {
+    if (!editingPost || !editingText.trim()) return;
+    const previous = editingPost.text;
+    const content = editingText.trim();
+    setActingId(editingPost.id);
+    setPosts((current) => current.map((item) => item.id === editingPost.id ? { ...item, text: content } : item));
+    try {
+      await apiRequest(`/api/posts/${editingPost.id}`, { method: "PATCH", body: JSON.stringify({ content }) });
+      setEditingPost(null);
+    } catch (nextError) {
+      setPosts((current) => current.map((item) => item.id === editingPost.id ? { ...item, text: previous } : item));
+      setError(nextError instanceof Error ? nextError.message : "Post update failed.");
+    } finally {
+      setActingId(null);
     }
   };
 
@@ -477,11 +508,12 @@ export function FeedV3({ onLogin }: { onLogin: () => void }) {
                         </p>
                         <p className="truncate text-[11px] text-slate-500">{post.handle} Â· {post.time}</p>
                       </div>
-                      {(post.userId === user?.id || isAdmin) ? (
-                        <button onClick={() => openDeleteModal(post)} disabled={actingId === post.id} className="grid h-8 w-8 place-items-center rounded-xl text-slate-500 hover:bg-rose-400/10 hover:text-rose-200" aria-label="Postni o'chirish">
+                      {(post.userId === user?.id || isAdmin) ? <div className="flex items-center">
+                        {post.userId === user?.id ? <button onClick={() => openEditPost(post)} className="grid h-8 w-8 place-items-center rounded-xl text-slate-500 hover:bg-white/[.06] hover:text-white" aria-label="Edit post"><Pencil size={15} /></button> : null}
+                        <button onClick={() => openDeleteModal(post)} disabled={actingId === post.id} className="grid h-8 w-8 place-items-center rounded-xl text-slate-500 hover:bg-rose-400/10 hover:text-rose-200" aria-label="Delete post">
                           {actingId === post.id ? <XSpinner size="sm" /> : <Trash2 size={16} />}
                         </button>
-                      ) : null}
+                      </div> : null}
                     </div>
 
                     {post.text ? <p className="mt-3 whitespace-pre-line text-[15px] leading-6 text-slate-100">{post.text}</p> : null}
@@ -580,6 +612,16 @@ export function FeedV3({ onLogin }: { onLogin: () => void }) {
             >
               Cancel
             </button>
+          </div>
+        </div>
+      ) : null}
+      {editingPost ? (
+        <div className="fixed inset-0 z-[99999] flex items-center justify-center bg-black/75 p-3 backdrop-blur-md">
+          <button className="absolute inset-0" onClick={() => setEditingPost(null)} aria-label="Close edit dialog" />
+          <div className="relative z-10 w-full max-w-lg rounded-2xl border border-white/10 bg-[#171717] p-4 shadow-2xl sm:p-5">
+            <div className="flex items-center gap-3"><h3 className="font-black">Edit post</h3><Button variant="ghost" size="icon-sm" className="ml-auto" onClick={() => setEditingPost(null)}><X size={16} /></Button></div>
+            <Textarea autoFocus value={editingText} onChange={(event) => setEditingText(event.target.value)} maxLength={280} className="mt-4 min-h-32" />
+            <div className="mt-3 flex items-center"><span className="text-xs text-slate-500">{editingText.length}/280</span><Button className="ml-auto" disabled={!editingText.trim() || actingId === editingPost.id} onClick={() => void savePostEdit()}>{actingId === editingPost.id ? <XSpinner size="sm" /> : <Check size={16} />}Save changes</Button></div>
           </div>
         </div>
       ) : null}
