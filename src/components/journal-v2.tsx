@@ -1,7 +1,7 @@
 ﻿"use client";
 
 import {
-  ArrowLeft, BarChart3, BookOpen, CalendarDays, CheckCircle2, ChevronLeft, ChevronRight,
+  ArrowLeft, BarChart3, BookOpen, CalendarDays, CheckCircle2, ChevronDown, ChevronLeft, ChevronRight,
   Download, ImageIcon, LoaderCircle, MoreHorizontal, Plus, Search, ShieldCheck,
   Target, Trash2, TrendingDown, TrendingUp, WalletCards, X, Zap,
 } from "lucide-react";
@@ -11,6 +11,7 @@ import { apiRequest } from "../lib/api-client";
 import { Button } from "./ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "./ui/dropdown-menu";
 import { Input } from "./ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
 import { Textarea } from "./ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
 import { useAuth } from "./auth-context";
@@ -460,12 +461,17 @@ function Workspace(p: {
 
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as WorkspaceTab)} className="gap-4">
-          <label className="block md:hidden">
+          <div className="block md:hidden">
             <span className="mb-1.5 block text-[10px] font-semibold uppercase tracking-widest text-[#8a8a8a]">View</span>
-            <select value={activeTab} onChange={(event) => setActiveTab(event.target.value as WorkspaceTab)} className="h-11 w-full rounded-xl border border-[#2a2a2a] bg-[#1b1b1b] px-3 text-sm font-bold text-[#f1f1f1] outline-none">
-              {WORKSPACE_TABS.map(([v, l]) => <option key={v} value={v}>{l}</option>)}
-            </select>
-          </label>
+            <Select value={activeTab} onValueChange={(value) => setActiveTab(value as WorkspaceTab)}>
+              <SelectTrigger className="w-full">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent position="popper" align="start">
+                {WORKSPACE_TABS.map(([v, l]) => <SelectItem key={v} value={v}>{l}</SelectItem>)}
+              </SelectContent>
+            </Select>
+          </div>
           <TabsList className="hidden h-10 w-full justify-start overflow-x-auto rounded-xl border border-[#2a2a2a] bg-[#1b1b1b] p-1 md:inline-flex">
             {WORKSPACE_TABS.map(([v, l]) => (
               <TabsTrigger key={v} value={v} className="rounded-lg px-5 text-sm data-[state=active]:bg-white/[.10] data-[state=active]:text-[#f1f1f1]">{l}</TabsTrigger>
@@ -474,7 +480,7 @@ function Workspace(p: {
 
           {/* Overview */}
           <TabsContent value="overview" className="space-y-4">
-            <section className="overflow-hidden rounded-[26px] border border-[#20283a] bg-[linear-gradient(180deg,#212130,#171925_68%,#121722)] shadow-2xl shadow-black/25">
+            <section className="overflow-hidden rounded-[26px] border border-[#2a2a2a] bg-[linear-gradient(180deg,#202020,#171717_68%,#121212)] shadow-2xl shadow-black/25">
               <div className="flex flex-col gap-4 border-b border-white/8 px-4 py-4 sm:px-5 lg:flex-row lg:items-start">
                 <div className="min-w-0">
                   <h3 className="text-base font-black">Account Balance</h3>
@@ -493,15 +499,15 @@ function Workspace(p: {
                         <defs>
                           <linearGradient id="balanceFill" x1="0" y1="0" x2="0" y2="1">
                             <stop offset="0%" stopColor="#d9f96d" stopOpacity={0.42} />
-                            <stop offset="42%" stopColor="#a9b2ff" stopOpacity={0.22} />
-                            <stop offset="100%" stopColor="#202331" stopOpacity={0.03} />
+                            <stop offset="42%" stopColor="#a1a1aa" stopOpacity={0.18} />
+                            <stop offset="100%" stopColor="#171717" stopOpacity={0.03} />
                           </linearGradient>
                         </defs>
                         <CartesianGrid stroke="rgba(255,255,255,.07)" vertical={false} />
                         <XAxis dataKey="trade" axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: "#707b91" }} />
                         <YAxis width={72} axisLine={false} tickLine={false} tickFormatter={(value) => `$${Number(value / 1000).toFixed(1)}K`} tick={{ fontSize: 11, fill: "#707b91" }} domain={["dataMin - 100", "dataMax + 100"]} />
-                        <Tooltip formatter={v => cash.format(Number(v))} labelFormatter={(_, payload) => payload?.[0]?.payload?.label ?? "Balance"} contentStyle={{ background: "#11131d", border: "1px solid #2b3145", borderRadius: 16, color: "#e8edf8" }} />
-                        <Area type="monotone" dataKey="equity" stroke="#d9f96d" fill="url(#balanceFill)" strokeWidth={3} dot={false} activeDot={{ r: 5, fill: "#d9f96d", stroke: "#11131d", strokeWidth: 2 }} />
+                        <Tooltip formatter={v => cash.format(Number(v))} labelFormatter={(_, payload) => payload?.[0]?.payload?.label ?? "Balance"} contentStyle={{ background: "#171717", border: "1px solid #333333", borderRadius: 12, color: "#f1f1f1" }} />
+                        <Area type="monotone" dataKey="equity" stroke="#d9f96d" fill="url(#balanceFill)" strokeWidth={3} dot={false} activeDot={{ r: 5, fill: "#d9f96d", stroke: "#171717", strokeWidth: 2 }} />
                       </AreaChart>
                     </ResponsiveContainer>
                   : <Empty text="Balance chart uchun trade qo'shing." />
@@ -627,27 +633,32 @@ function Workspace(p: {
                   <Input value={p.query} onChange={e => p.onQuery(e.target.value)} className="border-[#2a2a2a] bg-[#121212] pl-9 text-sm" placeholder="Symbol yoki setup" />
                 </div>
                 </div>
-                <div className="flex flex-col gap-2 lg:flex-row lg:items-center">
-                  <div className="grid grid-cols-2 gap-1 rounded-xl border border-[#2a2a2a] bg-[#121212] p-1 sm:flex">
-                    {[
-                      ["daily", "Daily"],
-                      ["monthly", "Monthly"],
-                      ["quarter", "3 months"],
-                      ["yearly", "Yearly"],
-                      ["custom", "Custom"],
-                    ].map(([value, label]) => (
-                      <button key={value} type="button" onClick={() => p.onRange(value as TradeRange)}
-                        className={`rounded-lg px-3 py-2 text-xs font-bold transition ${p.tradeRange === value ? "bg-white/[.10] text-zinc-200 ring-1 ring-white/15" : "text-[#8a8a8a] hover:bg-white/[.04] hover:text-[#f1f1f1]"}`}>
-                        {label}
-                      </button>
-                    ))}
+                <div className="flex flex-col gap-2 lg:flex-row lg:items-end">
+                  <div className="w-full sm:w-56">
+                    <span className="mb-1.5 block text-[10px] font-semibold uppercase tracking-widest text-[#8a8a8a]">Period</span>
+                    <Select value={p.tradeRange} onValueChange={(value) => p.onRange(value as TradeRange)}>
+                      <SelectTrigger className="w-full">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent position="popper" align="start">
+                        <SelectItem value="daily">Today</SelectItem>
+                        <SelectItem value="monthly">This month</SelectItem>
+                        <SelectItem value="quarter">Last 3 months</SelectItem>
+                        <SelectItem value="yearly">This year</SelectItem>
+                        <SelectItem value="custom">Custom range</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
                   {p.tradeRange === "custom" ? (
-                    <div className="grid gap-2 sm:grid-cols-2 lg:ml-auto lg:w-[360px]">
-                      <Input type="date" value={p.customStart} onChange={event => p.onCustomStart(event.target.value)} className="border-[#2a2a2a] bg-[#121212] text-sm" />
-                      <Input type="date" value={p.customEnd} onChange={event => p.onCustomEnd(event.target.value)} className="border-[#2a2a2a] bg-[#121212] text-sm" />
+                    <div className="grid gap-2 sm:grid-cols-2 lg:ml-auto lg:w-[420px]">
+                      <label className="text-[10px] font-semibold uppercase tracking-widest text-[#8a8a8a]">From<Input type="date" value={p.customStart} onChange={event => p.onCustomStart(event.target.value)} className="mt-1.5 text-sm" /></label>
+                      <label className="text-[10px] font-semibold uppercase tracking-widest text-[#8a8a8a]">To<Input type="date" value={p.customEnd} onChange={event => p.onCustomEnd(event.target.value)} className="mt-1.5 text-sm" /></label>
                     </div>
-                  ) : null}
+                  ) : (
+                    <p className="pb-3 text-xs text-[#8a8a8a] lg:ml-auto">
+                      {p.tradeRange === "daily" ? "Bugungi tradelar" : p.tradeRange === "monthly" ? "Joriy oy natijalari" : p.tradeRange === "quarter" ? "Oxirgi uch oy" : "Joriy yil"}
+                    </p>
+                  )}
                 </div>
               </div>
               {trades.length
@@ -857,11 +868,18 @@ function TradeEditor({ trade, saving, onClose, onSave, onDelete }: { trade: Jour
           </button>
         </header>
         <div className="max-h-[76dvh] space-y-4 overflow-y-auto p-4 sm:p-5">
-          <TradeReviewImage trade={trade} chartUrl={imageUrl} />
-
           <div className="grid gap-3 sm:grid-cols-3">
             <label className="text-xs text-[#8a8a8a]">Symbol<Input name="symbol" defaultValue={trade.symbol} className="mt-1 border-[#2a2a2a] bg-[#121212]" /></label>
-            <label className="text-xs text-[#8a8a8a]">Side<select name="side" defaultValue={trade.side} className="mt-1 h-10 w-full rounded-lg border border-[#2a2a2a] bg-[#121212] px-3 text-sm text-white"><option>Long</option><option>Short</option></select></label>
+            <label className="text-xs text-[#8a8a8a]">
+              Side
+              <Select name="side" defaultValue={trade.side}>
+                <SelectTrigger className="mt-1 w-full"><SelectValue /></SelectTrigger>
+                <SelectContent position="popper" align="start">
+                  <SelectItem value="Long">Long</SelectItem>
+                  <SelectItem value="Short">Short</SelectItem>
+                </SelectContent>
+              </Select>
+            </label>
             <label className="text-xs text-[#8a8a8a]">Date<Input name="tradedAt" type="date" defaultValue={trade.rawDate} className="mt-1 border-[#2a2a2a] bg-[#121212]" /></label>
           </div>
           <div className="grid gap-3 sm:grid-cols-3">
@@ -918,6 +936,17 @@ function TradeEditor({ trade, saving, onClose, onSave, onDelete }: { trade: Jour
             <label className="mt-3 block text-xs text-[#8a8a8a]">Mistake type<Input name="mistakeType" defaultValue={trade.mistakeType ?? ""} className="mt-1 border-[#2a2a2a] bg-[#121212]" /></label>
           </div>
           <label className="block text-xs text-[#8a8a8a]">Review note<Textarea name="note" defaultValue={trade.note} className="mt-1 min-h-28 border-[#2a2a2a] bg-[#121212]" /></label>
+          <details className="group overflow-hidden rounded-2xl border border-[#2a2a2a] bg-[#121212]">
+            <summary className="flex cursor-pointer list-none items-center gap-3 px-4 py-3.5 text-sm font-bold text-zinc-200 transition hover:bg-white/[.035]">
+              <ImageIcon size={17} className="text-zinc-500" />
+              Share image
+              <span className="ml-auto text-xs font-medium text-zinc-600 group-open:hidden">PNG yaratish</span>
+              <ChevronDown className="ml-auto hidden text-zinc-500 group-open:block" size={16} />
+            </summary>
+            <div className="border-t border-[#2a2a2a] p-3 sm:p-4">
+              <TradeReviewImage trade={trade} chartUrl={imageUrl} />
+            </div>
+          </details>
         </div>
         <footer className="flex gap-2 border-t border-[#2a2a2a] p-4">
           <Button type="button" variant="outline" onClick={onClose} className="border-[#2a2a2a] bg-transparent">Cancel</Button>
