@@ -5,7 +5,7 @@ import {
   Download, ImageIcon, LoaderCircle, MoreHorizontal, Plus, Search, ShieldCheck,
   Target, Trash2, TrendingDown, TrendingUp, WalletCards, X, Zap,
 } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { apiRequest } from "../lib/api-client";
 import {
@@ -219,10 +219,10 @@ export function JournalV2({ onLogin }: { onLogin: () => void }) {
     finally { setSaving(false); }
   }
 
-  async function reloadJournal() {
+  const reloadJournal = useCallback(async () => {
     const response = await apiRequest<{ entries: EntryRow[] }>("/api/journal");
     setEntries(response.entries.map(entryFrom));
-  }
+  }, []);
 
   const shiftMonth = (n: number) => setMonth(d => new Date(d.getFullYear(), d.getMonth() + n, 1));
   const exportCsv = () => { const rows = [["Date", "Symbol", "Side", "PnL", "R", "Setup"], ...shown.map(e => [e.rawDate, e.symbol, e.side, e.pnl, e.resultR, e.setup])], a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([rows.map(r => r.map(v => `"${v || ""}"`).join(",")).join("\n")], { type: "text/csv" })); a.download = `${account?.name || "journal"}-${monthId(month)}.csv`; a.click(); URL.revokeObjectURL(a.href); };
