@@ -268,10 +268,14 @@ export function FeedV3({ onLogin }: { onLogin: () => void }) {
 
   const toggleLike = async (post: Post) => {
     if (!user) return onLogin();
+    const optimisticLiked = !post.liked;
+    const optimisticLikes = Math.max(0, post.likes + (optimisticLiked ? 1 : -1));
+    setPosts((current) => current.map((item) => item.id === post.id ? { ...item, liked: optimisticLiked, likes: optimisticLikes } : item));
     try {
       const state = await apiRequest<{ liked: boolean; likes: number }>(`/api/posts/${post.id}/like`, { method: "POST" });
       setPosts((current) => current.map((item) => item.id === post.id ? { ...item, ...state } : item));
     } catch (nextError) {
+      setPosts((current) => current.map((item) => item.id === post.id ? { ...item, liked: post.liked, likes: post.likes } : item));
       setError(nextError instanceof Error ? nextError.message : "Like saqlanmadi.");
     }
   };
@@ -322,8 +326,23 @@ export function FeedV3({ onLogin }: { onLogin: () => void }) {
     const content = replyDrafts[post.id]?.trim();
     if (!content) return;
 
+    const optimisticReply: PostReply = {
+      id: `optimistic-${Date.now()}`,
+      postId: post.id,
+      userId: user.id,
+      name: String(user.user_metadata.full_name ?? user.user_metadata.name ?? "You"),
+      username: String(user.user_metadata.user_name ?? user.email?.split("@")[0] ?? "you"),
+      avatar: typeof user.user_metadata.avatar_url === "string" ? user.user_metadata.avatar_url : null,
+      isVerified: false,
+      content,
+      createdAt: new Date().toISOString(),
+    };
+
     setSavingReply(post.id);
     setError(null);
+    setReplyDrafts((current) => ({ ...current, [post.id]: "" }));
+    setRepliesByPost((current) => ({ ...current, [post.id]: [...(current[post.id] ?? []), optimisticReply] }));
+    setPosts((current) => current.map((item) => item.id === post.id ? { ...item, replies: item.replies + 1 } : item));
     try {
       const { reply } = await apiRequest<{ reply: PostReply }>(`/api/posts/${post.id}/replies`, {
         method: "POST",
@@ -331,11 +350,12 @@ export function FeedV3({ onLogin }: { onLogin: () => void }) {
       });
       setRepliesByPost((current) => ({
         ...current,
-        [post.id]: [...(current[post.id] ?? []), reply],
+        [post.id]: (current[post.id] ?? []).map((item) => item.id === optimisticReply.id ? reply : item),
       }));
-      setReplyDrafts((current) => ({ ...current, [post.id]: "" }));
-      setPosts((current) => current.map((item) => item.id === post.id ? { ...item, replies: item.replies + 1 } : item));
     } catch (nextError) {
+      setReplyDrafts((current) => ({ ...current, [post.id]: content }));
+      setRepliesByPost((current) => ({ ...current, [post.id]: (current[post.id] ?? []).filter((item) => item.id !== optimisticReply.id) }));
+      setPosts((current) => current.map((item) => item.id === post.id ? { ...item, replies: Math.max(0, item.replies - 1) } : item));
       setError(nextError instanceof Error ? nextError.message : "Javob yuborilmadi.");
     } finally {
       setSavingReply(null);

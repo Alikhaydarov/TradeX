@@ -101,5 +101,23 @@ export async function POST(
     .single<ReplyRecord>();
 
   if (error) return serverError(error.message);
+
+  const { data: post } = await auth.supabase
+    .from("posts")
+    .select("user_id, content")
+    .eq("id", postId)
+    .maybeSingle();
+
+  if (post?.user_id && post.user_id !== auth.user.id) {
+    const actorName = author.full_name || author.username || "A trader";
+    await auth.supabase.from("notifications").insert({
+      user_id: post.user_id,
+      actor_id: auth.user.id,
+      type: "post_reply",
+      message: `${actorName} replied to your post: ${content.slice(0, 100)}`,
+      is_read: false,
+    });
+  }
+
   return Response.json({ reply: mapReplies([reply], [author])[0] }, { status: 201 });
 }

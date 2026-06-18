@@ -1,4 +1,4 @@
--- TradeX social system: follows + notifications
+-- TradeWay social system: follows + post notifications
 
 create table if not exists public.user_follows (
   follower_id uuid not null references public.profiles(id) on delete cascade,
@@ -51,6 +51,7 @@ using (follower_id = auth.uid());
 -- notifications policies
 drop policy if exists "Users can view own notifications" on public.notifications;
 drop policy if exists "Users can create follow notifications" on public.notifications;
+drop policy if exists "Users can create social notifications" on public.notifications;
 drop policy if exists "Users can read own notifications" on public.notifications;
 
 create policy "Users can view own notifications"
@@ -59,7 +60,7 @@ for select
 to authenticated
 using (user_id = auth.uid());
 
-create policy "Users can create follow notifications"
+create policy "Users can create social notifications"
 on public.notifications
 for insert
 to authenticated

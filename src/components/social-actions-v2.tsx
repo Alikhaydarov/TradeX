@@ -280,9 +280,19 @@ export function SocialActions({ className = "" }: { className?: string }) {
   };
 
   useEffect(() => {
-    const timer = window.setTimeout(loadUnread, 600);
-    const interval = window.setInterval(loadUnread, 30000);
-    return () => { window.clearTimeout(timer); window.clearInterval(interval); };
+    const refresh = () => {
+      if (document.visibilityState === "visible") loadUnread();
+    };
+    const timer = window.setTimeout(loadUnread, 150);
+    const interval = window.setInterval(refresh, 5000);
+    window.addEventListener("focus", refresh);
+    document.addEventListener("visibilitychange", refresh);
+    return () => {
+      window.clearTimeout(timer);
+      window.clearInterval(interval);
+      window.removeEventListener("focus", refresh);
+      document.removeEventListener("visibilitychange", refresh);
+    };
   }, []);
 
   return (
