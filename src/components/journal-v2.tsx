@@ -492,9 +492,9 @@ function Workspace(p: {
               </SelectContent>
             </Select>
           </div>
-          <TabsList className="hidden h-10 w-full justify-start overflow-x-auto rounded-xl border border-[#2a2a2a] bg-[#1b1b1b] p-1 md:inline-flex">
+          <TabsList className="hidden h-14 w-full justify-start overflow-x-auto rounded-xl border border-[#2a2a2a] bg-[#1b1b1b] p-1.5 md:inline-flex">
             {WORKSPACE_TABS.map(([v, l]) => (
-              <TabsTrigger key={v} value={v} className="rounded-lg px-5 text-sm data-[state=active]:bg-white/[.10] data-[state=active]:text-[#f1f1f1]">{l}</TabsTrigger>
+              <TabsTrigger key={v} value={v} className="h-full min-w-32 flex-1 rounded-lg px-5 text-sm font-semibold data-[state=active]:bg-white/[.10] data-[state=active]:text-[#f1f1f1] data-[state=active]:shadow-sm">{l}</TabsTrigger>
             ))}
           </TabsList>
 
