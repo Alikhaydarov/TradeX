@@ -29,7 +29,7 @@ function profileFromAuth(auth: NonNullable<Awaited<ReturnType<typeof authenticat
       auth.user.user_metadata.full_name ??
       auth.user.user_metadata.name ??
       auth.user.email?.split("@")[0] ??
-      "TradeX Trader",
+      "TradeWay Trader",
     ),
     username: makeUsername(auth.user),
     avatar_url: typeof auth.user.user_metadata.avatar_url === "string" ? auth.user.user_metadata.avatar_url : null,

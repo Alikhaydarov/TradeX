@@ -144,7 +144,7 @@ function SearchDialog({ onClose }: { onClose: () => void }) {
   }, [cleanQuery]);
 
   return (
-    <Modal title="Search" subtitle="Find TradeX accounts by name or username." onClose={onClose}>
+    <Modal title="Search" subtitle="Find TradeWay accounts by name or username." onClose={onClose}>
       <form
         className="border-b border-white/8 p-4"
         onSubmit={(event) => {
@@ -247,10 +247,10 @@ function NotificationsDialog({ onClose, onRead }: { onClose: () => void; onRead:
             onClick={() => goActor(item.actor?.username)}
             className={`flex w-full gap-3 border-b border-white/6 px-4 py-3.5 text-left transition hover:bg-white/[.04] active:bg-white/[.06] ${item.isRead ? "bg-transparent" : "bg-cyan-300/[.055]"}`}
           >
-            <TraderAvatar name={item.actor?.fullName ?? "TradeX"} value={item.actor?.avatarUrl ?? null} className="h-12 w-12 shrink-0 text-xs" />
+            <TraderAvatar name={item.actor?.fullName ?? "TradeWay"} value={item.actor?.avatarUrl ?? null} className="h-12 w-12 shrink-0 text-xs" />
             <span className="min-w-0 flex-1">
               <span className="flex min-w-0 items-center gap-1.5">
-                <span className="truncate text-[15px] font-black text-white">{item.actor?.fullName ?? "TradeX"}</span>
+                <span className="truncate text-[15px] font-black text-white">{item.actor?.fullName ?? "TradeWay"}</span>
                 {item.actor?.isVerified ? <VerifiedBadge /> : null}
                 {!item.isRead ? <span className="size-2 rounded-full bg-cyan-300" /> : null}
               </span>

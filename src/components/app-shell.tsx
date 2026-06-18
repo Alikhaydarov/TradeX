@@ -63,10 +63,10 @@ function AuthGate({ onLogin }: { onLogin: () => void }) {
 
         <div className="flex items-start justify-between gap-4">
           <div className="flex items-center gap-3">
-            <div className="auth-logo-pulse grid size-12 place-items-center rounded-2xl border border-blue-300/20 bg-gradient-to-br from-cyan-400 via-blue-500 to-violet-600 text-base font-black text-white shadow-xl shadow-blue-950/35">TX</div>
+            <div className="auth-logo-pulse grid size-12 place-items-center rounded-2xl border border-blue-300/20 bg-gradient-to-br from-cyan-400 via-blue-500 to-violet-600 text-base font-black text-white shadow-xl shadow-blue-950/35">TW</div>
             <div>
               <p className="text-[10px] font-black uppercase tracking-[.24em] text-blue-300/80">Private workspace</p>
-              <h1 className="mt-1 text-3xl font-black leading-none tracking-tight">TradeX</h1>
+              <h1 className="mt-1 text-3xl font-black leading-none tracking-tight">TradeWay</h1>
             </div>
           </div>
           <span className="hidden h-9 items-center gap-1.5 rounded-full border border-emerald-300/15 bg-emerald-400/10 px-3 text-[11px] font-black text-emerald-300 sm:inline-flex">

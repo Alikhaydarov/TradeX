@@ -390,7 +390,7 @@ export function Account({ onLogin, profileUsername }: { onLogin: () => void; pro
       <header className="sticky top-0 z-20 flex h-14 items-center gap-3 border-b border-white/8 bg-[#05080e]/86 px-4 backdrop-blur-2xl">
         <div className="grid h-9 w-9 place-items-center rounded-full border border-cyan-200/10 bg-cyan-300/8 text-cyan-200"><UserRound size={17} /></div>
         <div className="min-w-0">
-          <h1 className="truncate text-lg font-black leading-5">TradeX Profile</h1>
+          <h1 className="truncate text-lg font-black leading-5">TradeWay Profile</h1>
           <p className="text-[11px] text-slate-500">{posts.length} posts</p>
         </div>
         {isOwnProfile ? (
@@ -424,7 +424,7 @@ export function Account({ onLogin, profileUsername }: { onLogin: () => void; pro
               <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-slate-500">
                 {profile.location ? <p className="flex items-center gap-1.5"><MapPin size={16} /> {profile.location}</p> : null}
                 <p className="flex items-center gap-1.5"><TrendingUp size={16} /> {profile.tradingStyle}</p>
-                <p className="flex items-center gap-1.5"><ShieldCheck size={16} /> TradeX member</p>
+                <p className="flex items-center gap-1.5"><ShieldCheck size={16} /> TradeWay member</p>
               </div>
               <div className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-slate-500">
                 <button onClick={() => openConnections("followers")} className="rounded-lg text-left transition hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300/40">

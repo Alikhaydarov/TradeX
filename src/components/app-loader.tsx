@@ -50,7 +50,7 @@ export function FullScreenLoader({ label = "Opening" }: { label?: string }) {
           <span className="absolute inset-0 rounded-full border border-white/8" />
           <span className="absolute inset-0 animate-spin rounded-full border-2 border-transparent border-t-cyan-300 border-r-blue-500" />
           <span className="grid size-11 place-items-center rounded-2xl border border-white/10 bg-white/[.045] text-xs font-black text-cyan-100 shadow-lg shadow-black/25 sm:size-14 sm:text-sm">
-            TX
+            TW
           </span>
         </div>
         <p className="mt-4 text-xs font-black text-slate-100 sm:mt-5 sm:text-sm">{label}</p>

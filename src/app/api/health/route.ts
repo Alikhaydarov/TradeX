@@ -8,7 +8,7 @@ export async function GET() {
   return Response.json({
     ok: configured,
     configured,
-    service: "tradex-api",
+    service: "tradeway-api",
     runtime: "nodejs",
     timestamp: new Date().toISOString(),
   }, { status: configured ? 200 : 503 });

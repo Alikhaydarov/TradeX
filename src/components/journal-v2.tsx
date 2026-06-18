@@ -985,7 +985,7 @@ function TradeReviewImage({ trade, chartUrl }: { trade: JournalEntry; chartUrl: 
 
       context.fillStyle = "#ffffff";
       context.font = "900 58px Arial, sans-serif";
-      context.fillText("TRADEX", 82, 125);
+      context.fillText("TRADEWAY", 82, 125);
       context.fillStyle = "#75819b";
       context.font = "500 30px Arial, sans-serif";
       context.fillText(date, 82, 245);
@@ -1065,7 +1065,7 @@ function TradeReviewImage({ trade, chartUrl }: { trade: JournalEntry; chartUrl: 
     if (!generatedUrl) return;
     const link = document.createElement("a");
     link.href = generatedUrl;
-    link.download = `${trade.symbol}-${trade.rawDate}-tradex.png`;
+    link.download = `${trade.symbol}-${trade.rawDate}-tradeway.png`;
     link.click();
   };
 
@@ -1081,7 +1081,7 @@ function TradeReviewImage({ trade, chartUrl }: { trade: JournalEntry; chartUrl: 
         </Button>
       </div>
       {generatedUrl ? (
-        <img src={generatedUrl} alt={`${trade.symbol} TradeX review image`} className="aspect-square w-full bg-black object-contain" />
+        <img src={generatedUrl} alt={`${trade.symbol} TradeWay review image`} className="aspect-square w-full bg-black object-contain" />
       ) : (
         <div className="grid aspect-square w-full place-items-center text-[#6b7a96]">
           <LoaderCircle className="animate-spin" size={24} />

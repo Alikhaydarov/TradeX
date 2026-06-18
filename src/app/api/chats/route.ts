@@ -31,7 +31,7 @@ function initials(value: string) {
     .join("")
     .slice(0, 2)
     .toUpperCase();
-  return letters || "TX";
+  return letters || "TW";
 }
 
 function mapChat(group: GroupRecord, members: MemberRecord[], profiles: ProfileRecord[]) {

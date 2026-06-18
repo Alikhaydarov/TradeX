@@ -346,7 +346,7 @@ export function FeedV3({ onLogin }: { onLogin: () => void }) {
     const url = `${window.location.origin}${window.location.pathname}#post-${post.id}`;
     try {
       if (navigator.share) {
-        await navigator.share({ title: `${post.name} - TradeX`, text: post.text.slice(0, 120), url });
+        await navigator.share({ title: `${post.name} - TradeWay`, text: post.text.slice(0, 120), url });
       } else {
         await navigator.clipboard.writeText(url);
       }
@@ -385,8 +385,8 @@ export function FeedV3({ onLogin }: { onLogin: () => void }) {
       <header className="sticky top-0 z-20 border-b border-white/8 bg-[#0b1424]/45 px-4 py-4 backdrop-blur-2xl sm:px-6">
         <div className="mx-auto flex max-w-3xl items-center gap-3">
           <div className="min-w-0 flex-1">
-            <p className="text-[10px] font-bold uppercase tracking-[.22em] text-cyan-300/70">TradeX workspace</p>
-            <h1 className="mt-1 text-2xl font-black tracking-tight">TradeX</h1>
+            <p className="text-[10px] font-bold uppercase tracking-[.22em] text-cyan-300/70">TradeWay workspace</p>
+            <h1 className="mt-1 text-2xl font-black tracking-tight">TradeWay</h1>
           </div>
           <SocialActions className="lg:hidden" />
         </div>

@@ -22,7 +22,7 @@ export function TraderAvatar({
   const imageUrl = value?.startsWith("http://") || value?.startsWith("https://")
     ? value
     : null;
-  const label = imageUrl ? initials(name) : value?.slice(0, 2) || initials(name) || "TX";
+  const label = imageUrl ? initials(name) : value?.slice(0, 2) || initials(name) || "TW";
 
   return (
     <span
