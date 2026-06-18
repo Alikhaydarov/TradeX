@@ -8,10 +8,19 @@ import {
 import { useEffect, useMemo, useState } from "react";
 import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { apiRequest } from "../lib/api-client";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader,
+  AlertDialogTitle, AlertDialogTrigger,
+} from "./ui/alert-dialog";
+import { Badge } from "./ui/badge";
 import { Button } from "./ui/button";
+import { Card, CardContent } from "./ui/card";
+import { Checkbox } from "./ui/checkbox";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "./ui/dropdown-menu";
 import { Input } from "./ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
+import { Separator } from "./ui/separator";
 import { Textarea } from "./ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
 import { useAuth } from "./auth-context";
@@ -200,7 +209,6 @@ export function JournalV2({ onLogin }: { onLogin: () => void }) {
   }
 
   async function removeTrade(id: string) {
-    if (!window.confirm("Bu tradeni o'chirasizmi?")) return;
     setSaving(true);
     try {
       await apiRequest(`/api/journal/${id}`, { method: "DELETE" });
@@ -449,13 +457,17 @@ function Workspace(p: {
             { title: "Profit factor", value: stats.pf.toFixed(2), icon: TrendingUp, color: "text-amber-400" },
             { title: "Wins / Losses", value: `${stats.wins} / ${stats.losses}`, icon: CalendarDays, color: "text-[#f1f1f1]" },
           ].map(s => (
-            <div key={s.title} className="flex items-center gap-3 rounded-2xl border border-[#2a2a2a] bg-[#1b1b1b]/80 px-4 py-3.5">
-              <s.icon size={18} className={s.color} />
-              <div>
+            <Card key={s.title} size="sm" className="gap-0 py-0">
+              <CardContent className="flex min-h-20 items-center gap-3 p-4">
+                <span className="grid size-10 shrink-0 place-items-center rounded-lg bg-muted">
+                  <s.icon size={18} className={s.color} />
+                </span>
+                <div className="min-w-0">
                 <p className="text-[10px] uppercase tracking-wider text-[#8a8a8a]">{s.title}</p>
-                <p className={`font-mono text-xl font-black ${s.color}`}>{s.value}</p>
-              </div>
-            </div>
+                  <p className={`truncate font-mono text-xl font-black ${s.color}`}>{s.value}</p>
+                </div>
+              </CardContent>
+            </Card>
           ))}
         </div>
 
@@ -671,9 +683,9 @@ function Workspace(p: {
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center gap-2">
                           <b className="font-bold">{e.symbol}</b>
-                          <span className={`rounded-md px-1.5 py-0.5 text-[10px] font-bold ${e.side === "Long" ? "bg-emerald-500/10 text-emerald-400" : "bg-rose-500/10 text-rose-400"}`}>
+                          <Badge variant="outline" className={e.side === "Long" ? "border-emerald-500/20 bg-emerald-500/10 text-emerald-400" : "border-rose-500/20 bg-rose-500/10 text-rose-400"}>
                             {e.side}
-                          </span>
+                          </Badge>
                           {e.riskPercent && (
                             <span className="rounded-md bg-amber-500/10 px-1.5 py-0.5 text-[10px] font-medium text-amber-400">{e.riskPercent}</span>
                           )}
@@ -897,6 +909,7 @@ function TradeEditor({ trade, saving, onClose, onSave, onDelete }: { trade: Jour
             <label className="text-xs text-[#8a8a8a]">Session<Input name="session" defaultValue={trade.session ?? ""} className="mt-1 border-[#2a2a2a] bg-[#121212]" /></label>
             <label className="text-xs text-[#8a8a8a]">Tags<Input name="tags" defaultValue={(trade.tags ?? []).join(", ")} className="mt-1 border-[#2a2a2a] bg-[#121212]" /></label>
           </div>
+          <Separator />
           <div className="rounded-2xl border border-[#2a2a2a] bg-[#121212] p-4">
             <div className="mb-3 flex items-center justify-between gap-3">
               <p className="text-[10px] font-black uppercase tracking-[.16em] text-[#8a8a8a]">Chart screenshot</p>
@@ -928,10 +941,10 @@ function TradeEditor({ trade, saving, onClose, onSave, onDelete }: { trade: Jour
           <div className="rounded-2xl border border-[#2a2a2a] bg-[#121212] p-4">
             <p className="mb-3 text-[10px] font-black uppercase tracking-[.16em] text-[#8a8a8a]">Notion review checklist</p>
             <div className="grid gap-2 sm:grid-cols-2">
-              <label className="flex items-center gap-2 text-sm text-[#f1f1f1]"><input type="checkbox" name="followingPlan" value="true" defaultChecked={trade.followingPlan} className="size-4 accent-emerald-400" /> Following plan?</label>
-              <label className="flex items-center gap-2 text-sm text-[#f1f1f1]"><input type="checkbox" name="reviewCompleted" value="true" defaultChecked={trade.reviewCompleted} className="size-4 accent-blue-400" /> Review completed</label>
-              <label className="flex items-center gap-2 text-sm text-[#f1f1f1]"><input type="checkbox" name="errorMade" value="true" defaultChecked={trade.errorMade} className="size-4 accent-rose-400" /> Error made?</label>
-              <label className="flex items-center gap-2 text-sm text-[#f1f1f1]"><input type="checkbox" name="toTradingBible" value="true" defaultChecked={trade.toTradingBible} className="size-4 accent-violet-400" /> Add to Trading Bible</label>
+              <label className="flex min-h-10 items-center gap-3 rounded-lg border border-border bg-card px-3 text-sm text-foreground"><Checkbox name="followingPlan" value="true" defaultChecked={trade.followingPlan} /> Following plan?</label>
+              <label className="flex min-h-10 items-center gap-3 rounded-lg border border-border bg-card px-3 text-sm text-foreground"><Checkbox name="reviewCompleted" value="true" defaultChecked={trade.reviewCompleted} /> Review completed</label>
+              <label className="flex min-h-10 items-center gap-3 rounded-lg border border-border bg-card px-3 text-sm text-foreground"><Checkbox name="errorMade" value="true" defaultChecked={trade.errorMade} /> Error made?</label>
+              <label className="flex min-h-10 items-center gap-3 rounded-lg border border-border bg-card px-3 text-sm text-foreground"><Checkbox name="toTradingBible" value="true" defaultChecked={trade.toTradingBible} /> Add to Trading Bible</label>
             </div>
             <label className="mt-3 block text-xs text-[#8a8a8a]">Mistake type<Input name="mistakeType" defaultValue={trade.mistakeType ?? ""} className="mt-1 border-[#2a2a2a] bg-[#121212]" /></label>
           </div>
@@ -950,9 +963,27 @@ function TradeEditor({ trade, saving, onClose, onSave, onDelete }: { trade: Jour
         </div>
         <footer className="flex gap-2 border-t border-[#2a2a2a] p-4">
           <Button type="button" variant="outline" onClick={onClose} className="border-[#2a2a2a] bg-transparent">Cancel</Button>
-          <Button type="button" disabled={saving} onClick={() => void onDelete()} className="border border-rose-400/25 bg-rose-500/10 text-rose-200 hover:bg-rose-500/15">
-            <Trash2 size={15} /> Delete
-          </Button>
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button type="button" disabled={saving} variant="destructive">
+                <Trash2 size={15} /> Delete
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Tradeni o&apos;chirish</AlertDialogTitle>
+                <AlertDialogDescription>
+                  {trade.symbol} trade jurnal va analytics hisobidan butunlay o&apos;chadi. Bu amalni qaytarib bo&apos;lmaydi.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Bekor qilish</AlertDialogCancel>
+                <AlertDialogAction variant="destructive" onClick={() => void onDelete()}>
+                  O&apos;chirish
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
           <Button disabled={saving} className="ml-auto bg-white text-black hover:bg-zinc-200">{saving ? <LoaderCircle className="animate-spin" size={15} /> : null} Save changes</Button>
         </footer>
       </form>
