@@ -414,8 +414,8 @@ export function FeedV3({ onLogin }: { onLogin: () => void }) {
 
       {error ? <div className="mx-auto mt-4 max-w-3xl rounded-2xl border border-rose-300/15 bg-rose-400/10 px-4 py-3 text-sm text-rose-200 backdrop-blur-xl">{error}</div> : null}
 
-      <div className="mx-auto max-w-3xl px-3 py-4 sm:px-5">
-        <section className="rounded-[28px] border border-white/10 bg-white/[.045] p-4 shadow-2xl shadow-slate-950/20 backdrop-blur-2xl">
+      <div className="mx-auto max-w-3xl px-0 py-2 sm:px-5 sm:py-4">
+        <section className="border-y border-white/10 bg-white/[.045] p-3 shadow-2xl shadow-slate-950/20 backdrop-blur-2xl sm:rounded-[24px] sm:border sm:p-4">
           <div className="flex gap-3">
             <TraderAvatar name={userName} value={userAvatar} className="h-11 w-11 shrink-0 text-xs" />
             <div className="min-w-0 flex-1">
@@ -424,12 +424,12 @@ export function FeedV3({ onLogin }: { onLogin: () => void }) {
                 onChange={(event) => setText(event.target.value)}
                 maxLength={280}
                 placeholder="Nima bo'lyapti?"
-                className="min-h-24 resize-none border-0 bg-transparent px-0 text-base shadow-none placeholder:text-slate-500 focus-visible:ring-0"
+                className="min-h-16 resize-none border-0 bg-transparent px-0 text-base shadow-none placeholder:text-slate-500 focus-visible:ring-0 sm:min-h-24"
               />
 
               {imageUrl ? (
-                <div className="relative mt-3 flex max-h-[420px] min-h-40 w-full items-center justify-center overflow-hidden rounded-3xl border border-white/10 bg-black/25">
-                  <img src={imageUrl} alt="Post rasmi" className="max-h-[420px] max-w-full object-contain object-center" />
+                <div className="relative mt-3 flex max-h-[320px] min-h-32 w-full items-center justify-center overflow-hidden rounded-2xl border border-white/10 bg-black/25 sm:max-h-[420px] sm:min-h-40 sm:rounded-3xl">
+                  <img src={imageUrl} alt="Post rasmi" className="max-h-[320px] max-w-full object-contain object-center sm:max-h-[420px]" />
                   <button onClick={() => setImageUrl(null)} className="absolute right-3 top-3 grid h-9 w-9 place-items-center rounded-full bg-black/70 text-white backdrop-blur-xl" aria-label="Rasmni olib tashlash">
                     <X size={17} />
                   </button>
@@ -450,7 +450,7 @@ export function FeedV3({ onLogin }: { onLogin: () => void }) {
           </div>
         </section>
 
-        <div className="mt-5 flex items-center gap-2 px-1">
+        <div className="mt-4 flex items-center gap-2 px-3 sm:mt-5 sm:px-1">
           <h2 className="text-sm font-bold">Community oqimi</h2>
           <span className="text-[10px] text-slate-500">{stats.posts} post Â· {formatCount(stats.views)} views</span>
         </div>
@@ -458,13 +458,13 @@ export function FeedV3({ onLogin }: { onLogin: () => void }) {
         {loading ? (
           <FeedSkeleton />
         ) : (
-          <div className="mt-3 overflow-hidden rounded-[28px] border border-white/10 bg-white/[.025] backdrop-blur-2xl">
+          <div className="mt-3 overflow-hidden border-y border-white/10 bg-white/[.025] backdrop-blur-2xl sm:rounded-[24px] sm:border">
             {posts.map((post) => (
               <article
                 key={post.id}
                 id={`post-${post.id}`}
                 ref={(node) => observePost(node, post.id)}
-                className="border-b border-white/8 p-4 last:border-b-0 sm:p-5"
+                className="border-b border-white/8 p-3 last:border-b-0 sm:p-5"
               >
                 <div className="flex gap-3">
                   <TraderAvatar name={post.name} value={post.avatar} className="h-11 w-11 shrink-0 text-xs" />
@@ -487,8 +487,8 @@ export function FeedV3({ onLogin }: { onLogin: () => void }) {
                     {post.text ? <p className="mt-3 whitespace-pre-line text-[15px] leading-6 text-slate-100">{post.text}</p> : null}
 
                     {post.imageUrl ? (
-                      <div className="mt-3 flex max-h-[560px] min-h-40 w-full items-center justify-center overflow-hidden rounded-[28px] border border-white/10 bg-black/25">
-                        <img src={post.imageUrl} alt="Post rasmi" className="max-h-[560px] max-w-full object-contain object-center" loading="lazy" />
+                      <div className="mt-3 flex max-h-[420px] min-h-32 w-full items-center justify-center overflow-hidden rounded-2xl border border-white/10 bg-black/25 sm:max-h-[560px] sm:min-h-40 sm:rounded-[24px]">
+                        <img src={post.imageUrl} alt="Post rasmi" className="max-h-[420px] max-w-full object-contain object-center sm:max-h-[560px]" loading="lazy" />
                       </div>
                     ) : null}
 
@@ -501,7 +501,7 @@ export function FeedV3({ onLogin }: { onLogin: () => void }) {
                       </div>
                     ) : null}
 
-                    <div className="mt-4 flex items-center gap-3 text-slate-500 sm:gap-4">
+                    <div className="mt-4 grid grid-cols-5 items-center text-slate-500 sm:flex sm:gap-4">
                       <button onClick={() => void toggleReplies(post)} className={`flex items-center gap-1.5 text-[11px] hover:text-zinc-300 ${openReplies === post.id ? "text-zinc-300" : ""}`} aria-label="Javoblar"><MessageCircle size={16} />{post.replies}</button>
                       <button onClick={() => void toggleRepost(post)} className={`flex items-center gap-1.5 text-[11px] hover:text-emerald-200 ${post.reposted ? "text-emerald-300" : ""}`} aria-label="Repost"><Repeat2 size={16} />{post.reposts}</button>
                       <button onClick={() => void toggleLike(post)} className={`flex items-center gap-1.5 text-[11px] hover:text-white ${post.liked ? "text-rose-300" : ""}`}><Heart size={16} fill={post.liked ? "currentColor" : "none"} />{post.likes}</button>

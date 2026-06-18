@@ -448,9 +448,9 @@ function Workspace(p: {
         </div>
       </header>
 
-      <div className="space-y-4 p-4 lg:p-6">
+      <div className="space-y-3 p-3 sm:p-4 lg:space-y-4 lg:p-6">
         {/* Stats */}
-        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
+        <div className="grid grid-cols-2 gap-2 sm:gap-3 xl:grid-cols-5">
           {[
             { title: "Monthly P&L", value: `${stats.pnl >= 0 ? "+" : ""}${cash.format(stats.pnl)}`, icon: stats.pnl >= 0 ? TrendingUp : TrendingDown, color: stats.pnl >= 0 ? "text-emerald-400" : "text-rose-400" },
             { title: "Win rate", value: `${stats.rate}%`, icon: Target, color: "text-zinc-300" },
@@ -459,13 +459,13 @@ function Workspace(p: {
             { title: "Wins / Losses", value: `${stats.wins} / ${stats.losses}`, icon: CalendarDays, color: "text-[#f1f1f1]" },
           ].map(s => (
             <Card key={s.title} size="sm" className="gap-0 py-0">
-              <CardContent className="flex min-h-20 items-center gap-3 p-4">
-                <span className="grid size-10 shrink-0 place-items-center rounded-lg bg-muted">
+              <CardContent className="flex min-h-18 items-center gap-2 p-3 sm:min-h-20 sm:gap-3 sm:p-4">
+                <span className="grid size-9 shrink-0 place-items-center rounded-lg bg-muted sm:size-10">
                   <s.icon size={18} className={s.color} />
                 </span>
                 <div className="min-w-0">
                 <p className="text-[10px] uppercase tracking-wider text-[#8a8a8a]">{s.title}</p>
-                  <p className={`truncate font-mono text-xl font-black ${s.color}`}>{s.value}</p>
+                  <p className={`truncate font-mono text-base font-black sm:text-xl ${s.color}`}>{s.value}</p>
                 </div>
               </CardContent>
             </Card>
@@ -544,16 +544,16 @@ function Workspace(p: {
           {/* Calendar */}
           <TabsContent value="calendar">
             <div className="rounded-2xl border border-[#2a2a2a] bg-[#1b1b1b]/80 overflow-hidden">
-              <div className="flex flex-col gap-3 border-b border-[#2a2a2a] px-5 py-4 lg:flex-row lg:items-center">
+              <div className="flex flex-col gap-3 border-b border-[#2a2a2a] px-3 py-3 sm:px-5 sm:py-4 lg:flex-row lg:items-center">
                 <div>
                   <h3 className="font-bold capitalize">{month.toLocaleDateString("uz-UZ", { month: "long", year: "numeric" })} natijalari</h3>
                   <p className="text-xs text-[#8a8a8a]">Har bir kunning P&L va trade soni</p>
                 </div>
-                <div className="flex items-center gap-2 rounded-xl border border-[#2a2a2a] bg-[#121212] p-1 lg:ml-auto">
+                <div className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-1 rounded-xl border border-[#2a2a2a] bg-[#121212] p-1 sm:flex sm:gap-2 lg:ml-auto">
                   <Button variant="ghost" size="icon-sm" onClick={p.onPrev}><ChevronLeft size={16} /></Button>
-                  <strong className="min-w-32 text-center text-sm capitalize">{month.toLocaleDateString("uz-UZ", { month: "short", year: "numeric" })}</strong>
+                  <strong className="min-w-0 text-center text-xs capitalize sm:min-w-32 sm:text-sm">{month.toLocaleDateString("uz-UZ", { month: "short", year: "numeric" })}</strong>
                   <Button variant="ghost" size="icon-sm" onClick={p.onNext}><ChevronRight size={16} /></Button>
-                  <Button variant="outline" size="sm" onClick={p.onToday} className="border-[#2a2a2a] bg-transparent text-xs">Joriy oy</Button>
+                  <Button variant="outline" size="sm" onClick={p.onToday} className="col-span-3 w-full border-[#2a2a2a] bg-transparent text-xs sm:w-auto">Joriy oy</Button>
                 </div>
               </div>
               {/* Desktop calendar */}

@@ -415,12 +415,12 @@ export function Account({ onLogin, profileUsername }: { onLogin: () => void; pro
 
       <div className="mx-auto max-w-3xl px-0 sm:px-5 sm:py-4">
         <section className="overflow-hidden border-b border-white/10 bg-[#171717] shadow-2xl shadow-black/25 sm:rounded-[28px] sm:border">
-          <div className="h-36 bg-[radial-gradient(circle_at_16%_25%,rgba(34,211,238,.24),transparent_22%),radial-gradient(circle_at_82%_8%,rgba(96,165,250,.18),transparent_26%),linear-gradient(135deg,#111111,#1b1b1b_52%,#1b1b1b)] sm:h-44" />
+          <div className="h-28 bg-[radial-gradient(circle_at_16%_25%,rgba(34,211,238,.24),transparent_22%),radial-gradient(circle_at_82%_8%,rgba(96,165,250,.18),transparent_26%),linear-gradient(135deg,#111111,#1b1b1b_52%,#1b1b1b)] sm:h-44" />
           <div className="px-4 pb-5 sm:px-6">
-            <div className="-mt-14 flex items-end justify-between gap-3 sm:-mt-16">
-              <TraderAvatar name={profile.fullName} value={profile.avatarUrl} className="h-28 w-28 rounded-full border-4 border-[#171717] bg-black text-3xl shadow-xl sm:h-32 sm:w-32" />
+            <div className="-mt-12 flex items-end justify-between gap-3 sm:-mt-16">
+              <TraderAvatar name={profile.fullName} value={profile.avatarUrl} className="h-24 w-24 rounded-full border-4 border-[#171717] bg-black text-2xl shadow-xl sm:h-32 sm:w-32 sm:text-3xl" />
               {isOwnProfile ? (
-                <button onClick={openEdit} className="mb-2 inline-flex h-10 items-center gap-2 rounded-full border border-white/15 bg-white/[.035] px-4 text-sm font-black text-white transition hover:bg-white/[.075]"><PenLine size={15} /> Edit profile</button>
+                <button onClick={openEdit} className="mb-1 inline-flex h-9 items-center gap-2 rounded-full border border-white/15 bg-white/[.035] px-3 text-xs font-black text-white transition hover:bg-white/[.075] sm:mb-2 sm:h-10 sm:px-4 sm:text-sm"><PenLine size={15} /> Edit profile</button>
               ) : (
                 <button onClick={() => void toggleFollow()} disabled={followLoading} className={`mb-2 inline-flex h-10 items-center gap-2 rounded-full px-5 text-sm font-black transition ${profile.isFollowing ? "border border-white/15 bg-white/[.04] text-white hover:bg-rose-400/10 hover:text-rose-200" : "bg-white text-slate-950 hover:bg-slate-200"}`}>{followLoading ? <XSpinner size="sm" /> : profile.isFollowing ? <Check size={15} /> : <UserPlus size={15} />}{profile.isFollowing ? "Following" : "Follow"}</button>
               )}
@@ -428,7 +428,7 @@ export function Account({ onLogin, profileUsername }: { onLogin: () => void; pro
 
             <div className="mt-4">
               <div className="flex min-w-0 items-center gap-2">
-                <h2 className="truncate text-2xl font-black leading-7 sm:text-3xl">{profile.fullName}</h2>
+                <h2 className="truncate text-xl font-black leading-7 sm:text-3xl">{profile.fullName}</h2>
                 {profile.isVerified ? <VerifiedBadge className="h-5 w-5" /> : null}
                 {saved && <span className="rounded-full bg-emerald-400/10 px-2 py-1 text-[10px] font-bold text-emerald-300">Saved</span>}
               </div>
@@ -455,7 +455,7 @@ export function Account({ onLogin, profileUsername }: { onLogin: () => void; pro
           <div className="relative z-10 grid grid-cols-4 border-b border-white/8 bg-[#171717]/95 backdrop-blur-xl">
             {tabs.map((tab) => {
               const active = activeTab === tab.id;
-              return <button key={tab.id} onClick={() => setActiveTab(tab.id)} className={`relative px-2 py-4 text-xs font-black transition sm:text-sm ${active ? "text-white" : "text-slate-500 hover:bg-white/[.03] hover:text-slate-300"}`}>{tab.label}{active ? <span className="absolute inset-x-6 bottom-0 h-1 rounded-full bg-white" /> : null}</button>;
+              return <button key={tab.id} onClick={() => setActiveTab(tab.id)} className={`relative min-w-0 px-1 py-3 text-[11px] font-black transition sm:px-2 sm:py-4 sm:text-sm ${active ? "text-white" : "text-slate-500 hover:bg-white/[.03] hover:text-slate-300"}`}>{tab.label}{active ? <span className="absolute inset-x-4 bottom-0 h-0.5 rounded-full bg-white sm:inset-x-6 sm:h-1" /> : null}</button>;
             })}
           </div>
           {loadingProfile ? <div className="grid min-h-64 place-items-center text-slate-500"><XSpinner size="lg" /></div> : visiblePosts.length ? <div className="relative z-0 pt-4">{visiblePosts.map(renderPost)}</div> : <EmptyTab tab={activeTab} />}
