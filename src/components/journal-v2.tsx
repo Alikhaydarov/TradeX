@@ -837,21 +837,75 @@ function Workspace(p: {
 
 function TradeEditor({ trade, saving, onClose, onSave, onDelete }: { trade: JournalEntry; saving: boolean; onClose: () => void; onSave: (form: FormData) => Promise<void>; onDelete: () => Promise<void> }) {
   const [imageUrl, setImageUrl] = useState(trade.imageUrl || "");
+  const winning = trade.pnl >= 0;
+  const resultLabel = trade.pnl > 0 ? "WIN" : trade.pnl < 0 ? "LOSS" : "BE";
+  const dateLabel = new Date(`${trade.rawDate}T00:00:00`).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
 
   return (
     <div className="fixed inset-0 z-[9999] flex items-start justify-center overflow-y-auto bg-black/70 p-3 pt-[max(1rem,env(safe-area-inset-top))] backdrop-blur-md sm:items-center sm:p-4">
       <div className="absolute inset-0" onClick={onClose} aria-hidden="true" />
-      <form action={onSave} className="relative z-10 w-full max-w-2xl overflow-hidden rounded-[28px] border border-[#1a2235] bg-[#070b12] text-white shadow-2xl shadow-black/80">
+      <form action={onSave} className="relative z-10 w-full max-w-4xl overflow-hidden rounded-[28px] border border-[#1a2235] bg-[#070b12] text-white shadow-2xl shadow-black/80">
         <header className="flex items-center gap-3 border-b border-[#1a2235] px-5 py-4">
           <div className="min-w-0 flex-1">
             <h3 className="truncate text-lg font-black">{trade.symbol} trade</h3>
-            <p className="text-xs text-[#6b7a96]">Trade detail va edit</p>
+            <p className="text-xs text-[#6b7a96]">Trade review va edit</p>
           </div>
           <button type="button" onClick={onClose} className="grid size-9 place-items-center rounded-xl text-[#6b7a96] hover:bg-white/[.05] hover:text-white" aria-label="Close">
             <X size={17} />
           </button>
         </header>
-        <div className="max-h-[70dvh] space-y-4 overflow-y-auto p-5">
+        <div className="max-h-[76dvh] space-y-4 overflow-y-auto p-4 sm:p-5">
+          <section className="relative min-h-[360px] overflow-hidden rounded-[24px] border border-white/10 bg-[#03050c] sm:min-h-[390px]">
+            {imageUrl ? (
+              <img src={imageUrl} alt={`${trade.symbol} chart`} className="absolute inset-0 h-full w-full object-cover opacity-45" />
+            ) : (
+              <div className="absolute inset-y-0 right-0 flex w-[48%] items-end justify-around gap-2 px-5 pb-10 opacity-35">
+                {[42, 70, 52, 100, 76, 132, 104].map((height) => (
+                  <span key={height} className="relative w-3 rounded-sm bg-blue-400/35" style={{ height }}>
+                    <span className="absolute left-1/2 top-[-24px] h-[calc(100%+48px)] w-px -translate-x-1/2 bg-blue-300/35" />
+                  </span>
+                ))}
+              </div>
+            )}
+            <div className="absolute inset-0 bg-gradient-to-r from-[#03050c] via-[#03050c]/90 to-[#07142b]/35" />
+            <div className={`absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t ${winning ? "from-emerald-500/[.08]" : "from-rose-500/[.08]"} to-transparent`} />
+
+            <div className="relative z-10 flex min-h-[360px] max-w-xl flex-col p-5 sm:min-h-[390px] sm:p-8">
+              <div className="flex items-center justify-between gap-3">
+                <div>
+                  <p className="text-[11px] font-black uppercase tracking-[.24em] text-white/45">TradeX review</p>
+                  <p className="mt-4 text-sm text-[#76839e] sm:text-base">{dateLabel}</p>
+                </div>
+                <span className={`grid size-11 place-items-center rounded-2xl border ${winning ? "border-emerald-300/20 bg-emerald-400/10 text-emerald-300" : "border-rose-300/20 bg-rose-400/10 text-rose-300"}`}>
+                  {winning ? <TrendingUp size={21} /> : <TrendingDown size={21} />}
+                </span>
+              </div>
+
+              <h2 className="mt-6 text-4xl font-black tracking-tight sm:text-5xl">{trade.symbol}</h2>
+              <div className="mt-3 flex items-center gap-3 text-lg font-bold">
+                <span>{trade.side}</span>
+                <span className="h-6 w-px bg-white/20" />
+                <span className={winning ? "text-emerald-300" : "text-rose-300"}>{resultLabel}</span>
+              </div>
+
+              <div className="mt-5 flex flex-wrap items-end gap-x-5 gap-y-2">
+                <strong className={`font-mono text-5xl font-black tracking-tight sm:text-6xl ${winning ? "text-emerald-300" : "text-rose-300"}`}>
+                  {(trade.resultR ?? 0).toFixed(2)}R
+                </strong>
+                <span className={`pb-1 font-mono text-lg font-black ${winning ? "text-emerald-300/80" : "text-rose-300/80"}`}>
+                  {trade.pnl >= 0 ? "+" : ""}{cash.format(trade.pnl)}
+                </span>
+              </div>
+
+              <div className="mt-auto grid grid-cols-2 gap-x-6 gap-y-4 border-t border-white/10 pt-5 sm:grid-cols-4">
+                <TradeHeroMetric label="Entry price" value={String(trade.entry)} />
+                <TradeHeroMetric label="Exit price" value={String(trade.exit)} />
+                <TradeHeroMetric label="Lot size" value={String(trade.quantity)} />
+                <TradeHeroMetric label="Risk" value={trade.riskPercent || cash.format(trade.riskAmount || 0)} />
+              </div>
+            </div>
+          </section>
+
           <div className="grid gap-3 sm:grid-cols-3">
             <label className="text-xs text-[#6b7a96]">Symbol<Input name="symbol" defaultValue={trade.symbol} className="mt-1 border-[#1a2235] bg-[#060b14]" /></label>
             <label className="text-xs text-[#6b7a96]">Side<select name="side" defaultValue={trade.side} className="mt-1 h-10 w-full rounded-lg border border-[#1a2235] bg-[#060b14] px-3 text-sm text-white"><option>Long</option><option>Short</option></select></label>
@@ -882,15 +936,17 @@ function TradeEditor({ trade, saving, onClose, onSave, onDelete }: { trade: Jour
               ) : null}
             </div>
             {imageUrl ? (
-              <div className="overflow-hidden rounded-2xl border border-white/10 bg-black/25">
-                <img src={imageUrl} alt={`${trade.symbol} chart screenshot`} className="max-h-[420px] w-full object-contain" loading="lazy" />
+              <div className="flex items-center gap-3 overflow-hidden rounded-xl border border-white/10 bg-black/25 p-2">
+                <img src={imageUrl} alt={`${trade.symbol} chart screenshot`} className="h-16 w-24 shrink-0 rounded-lg object-cover" loading="lazy" />
+                <div className="min-w-0">
+                  <p className="text-sm font-bold text-[#dde6f8]">Screenshot ulangan</p>
+                  <p className="truncate text-xs text-[#6b7a96]">{imageUrl}</p>
+                </div>
               </div>
             ) : (
-              <div className="grid min-h-36 place-items-center rounded-2xl border border-dashed border-[#1a2235] text-center text-sm text-[#6b7a96]">
-                <div>
-                  <ImageIcon className="mx-auto mb-2" size={24} />
-                  Screenshot yo'q
-                </div>
+              <div className="flex min-h-20 items-center justify-center gap-2 rounded-xl border border-dashed border-[#1a2235] text-sm text-[#6b7a96]">
+                <ImageIcon size={20} />
+                Screenshot yo'q
               </div>
             )}
             <label className="mt-3 block text-xs text-[#6b7a96]">
@@ -918,6 +974,15 @@ function TradeEditor({ trade, saving, onClose, onSave, onDelete }: { trade: Jour
           <Button disabled={saving} className="ml-auto bg-blue-600 hover:bg-blue-500">{saving ? <LoaderCircle className="animate-spin" size={15} /> : null} Save changes</Button>
         </footer>
       </form>
+    </div>
+  );
+}
+
+function TradeHeroMetric({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="min-w-0">
+      <p className="text-[10px] font-bold uppercase tracking-[.13em] text-white/35">{label}</p>
+      <p className="mt-1 truncate font-mono text-sm font-black text-white sm:text-base">{value}</p>
     </div>
   );
 }
