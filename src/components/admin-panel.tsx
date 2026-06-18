@@ -74,12 +74,12 @@ export function AdminPanel({ onLogin }: { onLogin: () => void }) {
 
   return (
     <div className="min-h-full">
-      <header className="sticky top-0 z-20 flex items-center border-b border-white/8 bg-[#0b1424]/45 px-5 py-4 backdrop-blur-2xl">
+      <header className="sticky top-0 z-20 flex items-center border-b border-white/8 bg-[#171717]/45 px-5 py-4 backdrop-blur-2xl">
         <div>
-          <p className="text-[10px] font-bold uppercase tracking-[.22em] text-cyan-300/70">Admin panel</p>
+          <p className="text-[10px] font-bold uppercase tracking-[.22em] text-zinc-300/70">Admin panel</p>
           <h1 className="mt-1 text-2xl font-black tracking-tight">Userlarni boshqarish</h1>
         </div>
-        <span className="ml-auto flex items-center gap-1.5 rounded-full border border-cyan-300/15 bg-cyan-300/8 px-3 py-1.5 text-[10px] font-bold text-cyan-200">
+        <span className="ml-auto flex items-center gap-1.5 rounded-full border border-white/10 bg-white/[.05] px-3 py-1.5 text-[10px] font-bold text-zinc-300">
           <ShieldCheck size={12} /> ADMIN
         </span>
       </header>
@@ -115,14 +115,14 @@ export function AdminPanel({ onLogin }: { onLogin: () => void }) {
                     <div className="flex items-center gap-2">
                       <strong className="truncate text-sm">{target.fullName}</strong>
                       {target.isVerified && <VerifiedBadge size={14} />}
-                      {target.isAdmin && <span className="rounded-full bg-violet-300/10 px-2 py-0.5 text-[9px] font-black text-violet-200">ADMIN</span>}
+                      {target.isAdmin && <span className="rounded-full bg-white/[.06] px-2 py-0.5 text-[9px] font-black text-zinc-300">ADMIN</span>}
                     </div>
                     <p className="truncate text-[11px] text-slate-500">@{target.username}</p>
                   </div>
                   <Button
                     onClick={() => void toggleVerification(target)}
                     disabled={savingId === target.id}
-                    className={`rounded-2xl px-3 text-xs font-bold ${target.isVerified ? "bg-cyan-200 text-slate-950 hover:bg-cyan-100" : "bg-white/[.06] text-slate-200 hover:bg-white/[.1]"}`}
+                    className={`rounded-2xl px-3 text-xs font-bold ${target.isVerified ? "bg-white text-black hover:bg-zinc-200" : "bg-white/[.06] text-slate-200 hover:bg-white/[.1]"}`}
                   >
                     {savingId === target.id ? (
                       <LoaderCircle className="animate-spin" size={14} />

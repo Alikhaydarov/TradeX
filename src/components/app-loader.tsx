@@ -3,7 +3,7 @@ export function XSpinner({ size = "md" }: { size?: "sm" | "md" | "lg" }) {
 
   return (
     <span
-      className={`${sizeClass} inline-flex shrink-0 animate-spin rounded-full border-2 border-white/12 border-t-cyan-200 will-change-transform`}
+      className={`${sizeClass} inline-flex shrink-0 animate-spin rounded-full border-2 border-white/12 border-t-zinc-200 will-change-transform`}
       aria-label="Loading"
     />
   );
@@ -12,9 +12,9 @@ export function XSpinner({ size = "md" }: { size?: "sm" | "md" | "lg" }) {
 export function LoadingDots() {
   return (
     <span className="inline-flex items-center gap-1" aria-label="Loading">
-      <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-cyan-200 [animation-delay:-.24s]" />
-      <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-cyan-200 [animation-delay:-.12s]" />
-      <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-cyan-200" />
+      <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-zinc-200 [animation-delay:-.24s]" />
+      <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-zinc-200 [animation-delay:-.12s]" />
+      <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-zinc-200" />
     </span>
   );
 }
@@ -44,18 +44,18 @@ export function AppLoader({ label = "Checking session" }: { label?: string }) {
 
 export function FullScreenLoader({ label = "Opening" }: { label?: string }) {
   return (
-    <div className="fixed inset-0 z-[2147483646] grid place-items-center bg-[#020409]/92 px-5 text-center text-white backdrop-blur-sm">
+    <div className="fixed inset-0 z-[2147483646] grid place-items-center bg-[#0b0b0b]/92 px-5 text-center text-white backdrop-blur-sm">
       <div className="flex w-full max-w-[180px] flex-col items-center sm:max-w-[220px]">
         <div className="relative grid size-16 place-items-center sm:size-20">
           <span className="absolute inset-0 rounded-full border border-white/8" />
-          <span className="absolute inset-0 animate-spin rounded-full border-2 border-transparent border-t-cyan-300 border-r-blue-500" />
-          <span className="grid size-11 place-items-center rounded-2xl border border-white/10 bg-white/[.045] text-xs font-black text-cyan-100 shadow-lg shadow-black/25 sm:size-14 sm:text-sm">
+          <span className="absolute inset-0 animate-spin rounded-full border-2 border-transparent border-t-zinc-200 border-r-zinc-500" />
+          <span className="grid size-11 place-items-center rounded-2xl border border-white/10 bg-white/[.045] text-xs font-black text-zinc-100 shadow-lg shadow-black/25 sm:size-14 sm:text-sm">
             TW
           </span>
         </div>
         <p className="mt-4 text-xs font-black text-slate-100 sm:mt-5 sm:text-sm">{label}</p>
         <div className="mt-3 h-0.5 w-full overflow-hidden rounded-full bg-white/[.06] sm:mt-4 sm:h-1">
-          <span className="block h-full w-2/3 animate-pulse rounded-full bg-cyan-300" />
+          <span className="block h-full w-2/3 animate-pulse rounded-full bg-white" />
         </div>
       </div>
     </div>

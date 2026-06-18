@@ -71,7 +71,7 @@ function Modal({ title, subtitle, onClose, children }: { title: string; subtitle
   return createPortal(
     <div className="fixed inset-0 isolate z-[2147483647] flex h-[100dvh] w-screen items-start justify-center overflow-y-auto bg-black/75 p-3 pt-[max(1rem,env(safe-area-inset-top))] backdrop-blur-md sm:p-4 sm:pt-[max(1rem,env(safe-area-inset-top))]">
       <div className="absolute inset-0" onClick={onClose} aria-hidden="true" />
-      <section className="relative z-10 flex h-[min(92dvh,760px)] w-full max-w-xl flex-col overflow-hidden rounded-[30px] border border-white/10 bg-[#07101d]/98 text-white shadow-2xl shadow-black/80">
+      <section className="relative z-10 flex h-[min(92dvh,760px)] w-full max-w-xl flex-col overflow-hidden rounded-[30px] border border-white/10 bg-[#171717]/98 text-white shadow-2xl shadow-black/80">
         <header className="flex items-center gap-3 border-b border-white/8 px-4 py-4">
           <div className="min-w-0 flex-1">
             <h2 className="text-xl font-black leading-6">{title}</h2>
@@ -152,8 +152,8 @@ function SearchDialog({ onClose }: { onClose: () => void }) {
           if (users[0]) goToProfile(users[0].username);
         }}
       >
-        <div className="flex h-12 items-center gap-3 rounded-2xl border border-white/10 bg-white/[.04] px-4 focus-within:border-cyan-300/50">
-          <Search size={18} className="text-cyan-200" />
+        <div className="flex h-12 items-center gap-3 rounded-2xl border border-white/10 bg-white/[.04] px-4 focus-within:border-zinc-500">
+          <Search size={18} className="text-zinc-300" />
           <input
             autoFocus
             type="search"
@@ -187,7 +187,7 @@ function SearchDialog({ onClose }: { onClose: () => void }) {
                 <span className="block truncate text-xs text-slate-500">@{item.username}</span>
                 {item.bio ? <span className="mt-1 block truncate text-xs text-slate-400">{item.bio}</span> : <span className="mt-1 block truncate text-xs text-slate-600">{item.tradingStyle || "Trader"}</span>}
               </span>
-              {item.isFollowing ? <span className="rounded-full border border-cyan-300/20 px-2 py-1 text-[10px] font-bold text-cyan-200">Following</span> : null}
+              {item.isFollowing ? <span className="rounded-full border border-white/15 px-2 py-1 text-[10px] font-bold text-zinc-300">Following</span> : null}
             </button>
           ))}
           {!loading && cleanQuery.length >= 2 && !users.length ? <div className="grid min-h-56 place-items-center px-6 text-center text-sm text-slate-500">User topilmadi.</div> : null}
@@ -245,14 +245,14 @@ function NotificationsDialog({ onClose, onRead }: { onClose: () => void; onRead:
             key={item.id}
             type="button"
             onClick={() => goActor(item.actor?.username)}
-            className={`flex w-full gap-3 border-b border-white/6 px-4 py-3.5 text-left transition hover:bg-white/[.04] active:bg-white/[.06] ${item.isRead ? "bg-transparent" : "bg-cyan-300/[.055]"}`}
+            className={`flex w-full gap-3 border-b border-white/6 px-4 py-3.5 text-left transition hover:bg-white/[.04] active:bg-white/[.06] ${item.isRead ? "bg-transparent" : "bg-white/[.04]"}`}
           >
             <TraderAvatar name={item.actor?.fullName ?? "TradeWay"} value={item.actor?.avatarUrl ?? null} className="h-12 w-12 shrink-0 text-xs" />
             <span className="min-w-0 flex-1">
               <span className="flex min-w-0 items-center gap-1.5">
                 <span className="truncate text-[15px] font-black text-white">{item.actor?.fullName ?? "TradeWay"}</span>
                 {item.actor?.isVerified ? <VerifiedBadge /> : null}
-                {!item.isRead ? <span className="size-2 rounded-full bg-cyan-300" /> : null}
+                {!item.isRead ? <span className="size-2 rounded-full bg-white" /> : null}
               </span>
               <span className="mt-0.5 block truncate text-xs text-slate-500">
                 {item.actor?.username ? `@${item.actor.username}` : "system"} - {ago(item.createdAt)}
@@ -284,8 +284,8 @@ export function SocialActions({ className = "" }: { className?: string }) {
   return (
     <>
       <div className={`flex items-center gap-2 ${className}`}>
-        <button onClick={() => setSearchOpen(true)} className="grid h-10 w-10 place-items-center rounded-2xl border border-white/10 bg-white/[.045] text-cyan-100 shadow-lg shadow-slate-950/20 backdrop-blur-xl hover:bg-white/[.08]" aria-label="Search traders"><Search size={18} /></button>
-        <button onClick={() => setNotificationsOpen(true)} className="relative grid h-10 w-10 place-items-center rounded-2xl border border-white/10 bg-white/[.045] text-cyan-100 shadow-lg shadow-slate-950/20 backdrop-blur-xl hover:bg-white/[.08]" aria-label="Notifications"><Bell size={18} />{unread > 0 ? <span className="absolute -right-1 -top-1 grid min-h-5 min-w-5 place-items-center rounded-full bg-rose-500 px-1 text-[10px] font-black text-white ring-2 ring-[#0b1424]">{unread > 9 ? "9+" : unread}</span> : null}</button>
+        <button onClick={() => setSearchOpen(true)} className="grid h-10 w-10 place-items-center rounded-2xl border border-white/10 bg-white/[.045] text-zinc-100 shadow-lg shadow-slate-950/20 backdrop-blur-xl hover:bg-white/[.08]" aria-label="Search traders"><Search size={18} /></button>
+        <button onClick={() => setNotificationsOpen(true)} className="relative grid h-10 w-10 place-items-center rounded-2xl border border-white/10 bg-white/[.045] text-zinc-100 shadow-lg shadow-slate-950/20 backdrop-blur-xl hover:bg-white/[.08]" aria-label="Notifications"><Bell size={18} />{unread > 0 ? <span className="absolute -right-1 -top-1 grid min-h-5 min-w-5 place-items-center rounded-full bg-rose-500 px-1 text-[10px] font-black text-white ring-2 ring-[#171717]">{unread > 9 ? "9+" : unread}</span> : null}</button>
       </div>
       {searchOpen ? <SearchDialog onClose={() => setSearchOpen(false)} /> : null}
       {notificationsOpen ? <NotificationsDialog onClose={() => setNotificationsOpen(false)} onRead={() => setUnread(0)} /> : null}
@@ -294,5 +294,5 @@ export function SocialActions({ className = "" }: { className?: string }) {
 }
 
 export function SocialActionsCard() {
-  return <section className="rounded-[24px] border border-white/9 bg-[#0b1220]/42 p-4 shadow-xl shadow-slate-950/20 backdrop-blur-2xl"><div className="flex items-center gap-3"><div className="grid h-10 w-10 place-items-center rounded-2xl bg-cyan-300/10 text-cyan-200"><Users size={18} /></div><div className="min-w-0 flex-1"><h2 className="text-sm font-black">People</h2><p className="text-[10px] text-slate-500">Search and notifications</p></div><SocialActions /></div></section>;
+  return <section className="rounded-[24px] border border-white/9 bg-[#171717]/42 p-4 shadow-xl shadow-slate-950/20 backdrop-blur-2xl"><div className="flex items-center gap-3"><div className="grid h-10 w-10 place-items-center rounded-2xl bg-white/[.06] text-zinc-300"><Users size={18} /></div><div className="min-w-0 flex-1"><h2 className="text-sm font-black">People</h2><p className="text-[10px] text-slate-500">Search and notifications</p></div><SocialActions /></div></section>;
 }

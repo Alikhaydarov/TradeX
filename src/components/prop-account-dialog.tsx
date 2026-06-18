@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 import { ChevronDown, LoaderCircle, Plus, ShieldCheck, TrendingUp } from "lucide-react";
 import { useState } from "react";
 import { Button } from "./ui/button";
@@ -38,10 +38,10 @@ export function PropAccountDialog({
       <DialogContent className="max-h-[92dvh] overflow-y-auto border-[#2a2a2a] bg-[#121212] p-0 sm:max-w-xl">
         {/* Header */}
         <div className="relative overflow-hidden border-b border-[#2a2a2a] px-6 py-5">
-          <div className="absolute inset-0 bg-gradient-to-r from-blue-500/5 via-transparent to-violet-500/5" />
+          <div className="absolute inset-0 bg-gradient-to-r from-white/[.03] via-transparent to-white/[.02]" />
           <DialogHeader className="relative">
             <div className="flex items-center gap-3">
-              <span className="grid size-10 place-items-center rounded-xl bg-blue-500/10 text-blue-400">
+              <span className="grid size-10 place-items-center rounded-xl bg-white/[.06] text-zinc-300">
                 <ShieldCheck size={20} />
               </span>
               <div>
@@ -60,7 +60,7 @@ export function PropAccountDialog({
               <button
                 type="button"
                 onClick={() => setFirmOpen(v => !v)}
-                className="flex w-full items-center gap-3 rounded-xl border border-[#2a2a2a] bg-[#1b1b1b] px-4 py-3 text-left transition hover:border-blue-500/30"
+                className="flex w-full items-center gap-3 rounded-xl border border-[#2a2a2a] bg-[#1b1b1b] px-4 py-3 text-left transition hover:border-white/20"
               >
                 <span
                   className="grid size-9 shrink-0 place-items-center rounded-lg text-xs font-black"
@@ -86,7 +86,7 @@ export function PropAccountDialog({
                       >
                         {f.mark}
                       </span>
-                      <span className={firm === f.name ? "font-bold text-blue-400" : ""}>{f.name}</span>
+                      <span className={firm === f.name ? "font-bold text-zinc-300" : ""}>{f.name}</span>
                     </button>
                   ))}
                 </div>
@@ -102,7 +102,7 @@ export function PropAccountDialog({
               name="name"
               placeholder="FTMO 100K #1"
               required
-              className="border-[#2a2a2a] bg-[#1b1b1b] focus:border-blue-500/50"
+              className="border-[#2a2a2a] bg-[#1b1b1b] focus:border-white/25"
             />
           </div>
 
@@ -116,7 +116,7 @@ export function PropAccountDialog({
                     key={p}
                     type="button"
                     onClick={() => setPhase(p)}
-                    className={`rounded-lg py-1.5 text-xs font-medium transition ${phase === p ? "bg-blue-500/20 text-blue-300" : "text-[#8a8a8a] hover:text-[#f1f1f1]"}`}
+                    className={`rounded-lg py-1.5 text-xs font-medium transition ${phase === p ? "bg-white/[.10] text-zinc-300" : "text-[#8a8a8a] hover:text-[#f1f1f1]"}`}
                   >
                     {p}
                   </button>
@@ -132,7 +132,7 @@ export function PropAccountDialog({
                     key={m}
                     type="button"
                     onClick={() => setMarket(m)}
-                    className={`rounded-lg py-1.5 text-xs font-medium transition ${market === m ? "bg-blue-500/20 text-blue-300" : "text-[#8a8a8a] hover:text-[#f1f1f1]"}`}
+                    className={`rounded-lg py-1.5 text-xs font-medium transition ${market === m ? "bg-white/[.10] text-zinc-300" : "text-[#8a8a8a] hover:text-[#f1f1f1]"}`}
                   >
                     {m}
                   </button>
@@ -151,7 +151,7 @@ export function PropAccountDialog({
                   key={s}
                   type="button"
                   onClick={() => setSize(s)}
-                  className={`rounded-xl border py-2.5 text-sm font-bold transition ${size === s ? "border-blue-500/50 bg-blue-500/10 text-blue-300" : "border-[#2a2a2a] bg-[#1b1b1b] text-[#8a8a8a] hover:border-[#263553] hover:text-[#f1f1f1]"}`}
+                  className={`rounded-xl border py-2.5 text-sm font-bold transition ${size === s ? "border-white/25 bg-white/[.06] text-zinc-300" : "border-[#2a2a2a] bg-[#1b1b1b] text-[#8a8a8a] hover:border-[#263553] hover:text-[#f1f1f1]"}`}
                 >
                   ${(s / 1000).toFixed(0)}K
                 </button>
@@ -203,7 +203,7 @@ export function PropAccountDialog({
 
           <Button
             disabled={saving}
-            className="h-11 w-full bg-blue-600 font-semibold hover:bg-blue-500"
+            className="h-11 w-full bg-white text-black font-semibold hover:bg-zinc-200"
           >
             {saving ? <LoaderCircle className="animate-spin" /> : <Plus size={18} />}
             Account yaratish

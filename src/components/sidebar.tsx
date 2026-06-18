@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import type { User } from "@supabase/supabase-js";
 import {
@@ -111,11 +111,11 @@ export function Sidebar({
                 onClick={() => onChange(id)}
                 className={`group flex w-full items-center gap-3 rounded-2xl px-3 py-2.5 text-left transition ${
                   selected
-                    ? "bg-cyan-400/12 text-white ring-1 ring-cyan-300/25"
+                    ? "bg-white/[.08] text-white ring-1 ring-white/15"
                     : "text-slate-500 hover:bg-white/[.025] hover:text-slate-300"
                 }`}
               >
-                <span className={`grid h-9 w-9 place-items-center rounded-xl transition-colors duration-100 ${selected ? "bg-cyan-300/14 text-cyan-200" : "bg-white/[.025] text-slate-500 group-hover:bg-white/[.04] group-hover:text-slate-300"}`}>
+                <span className={`grid h-9 w-9 place-items-center rounded-xl transition-colors duration-100 ${selected ? "bg-white/14 text-zinc-300" : "bg-white/[.025] text-slate-500 group-hover:bg-white/[.04] group-hover:text-slate-300"}`}>
                   <Icon size={18} strokeWidth={selected ? 2.5 : 2} />
                 </span>
                 <span className="min-w-0">
@@ -159,7 +159,7 @@ export function Sidebar({
       {!hideMobile && (
         <nav className="fixed inset-x-3 bottom-3 z-50 flex h-16 items-center justify-around rounded-2xl border border-white/10 bg-[#111111]/88 px-2 shadow-2xl shadow-black/30 backdrop-blur-2xl lg:hidden">
           {nav.map(({ id, label, icon: Icon }) => (
-            <button key={id} onClick={() => onChange(id)} className={`grid h-11 w-11 place-items-center rounded-xl transition-colors duration-100 ${active === id ? "bg-cyan-400/12 text-cyan-200 ring-1 ring-cyan-300/20" : "text-slate-600"}`} aria-label={label}>
+            <button key={id} onClick={() => onChange(id)} className={`grid h-11 w-11 place-items-center rounded-xl transition-colors duration-100 ${active === id ? "bg-white/[.08] text-zinc-300 ring-1 ring-white/15" : "text-slate-600"}`} aria-label={label}>
               <Icon size={21} strokeWidth={active === id ? 2.6 : 2} />
             </button>
           ))}

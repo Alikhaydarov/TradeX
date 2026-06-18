@@ -28,7 +28,7 @@ export function TraderAvatar({
     <span
       aria-label={`${name} avatari`}
       className={cn(
-        "relative inline-flex shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-gradient-to-br from-cyan-400 via-blue-500 to-violet-600 font-black text-white shadow-inner shadow-white/10",
+        "relative inline-flex shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-gradient-to-br from-zinc-100 via-zinc-500 to-zinc-900 font-black text-white shadow-inner shadow-white/10",
         className,
       )}
       style={imageUrl ? {

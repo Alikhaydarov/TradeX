@@ -382,10 +382,10 @@ export function FeedV3({ onLogin }: { onLogin: () => void }) {
 
   return (
     <div className="min-h-full">
-      <header className="sticky top-0 z-20 border-b border-white/8 bg-[#0b1424]/45 px-4 py-4 backdrop-blur-2xl sm:px-6">
+      <header className="sticky top-0 z-20 border-b border-white/8 bg-[#171717]/45 px-4 py-4 backdrop-blur-2xl sm:px-6">
         <div className="mx-auto flex max-w-3xl items-center gap-3">
           <div className="min-w-0 flex-1">
-            <p className="text-[10px] font-bold uppercase tracking-[.22em] text-cyan-300/70">TradeWay workspace</p>
+            <p className="text-[10px] font-bold uppercase tracking-[.22em] text-zinc-300/70">TradeWay workspace</p>
             <h1 className="mt-1 text-2xl font-black tracking-tight">TradeWay</h1>
           </div>
           <SocialActions className="lg:hidden" />
@@ -418,11 +418,11 @@ export function FeedV3({ onLogin }: { onLogin: () => void }) {
 
               <div className="mt-3 flex flex-wrap items-center gap-2 border-t border-white/8 pt-3">
                 <input ref={fileInputRef} type="file" accept="image/png,image/jpeg,image/webp,image/gif" className="hidden" onChange={(event) => void uploadImage(event.target.files?.[0])} />
-                <button onClick={() => fileInputRef.current?.click()} disabled={uploadingImage} className="flex h-9 items-center gap-2 rounded-xl px-3 text-xs font-bold text-cyan-200 hover:bg-white/[.06] disabled:opacity-60">
+                <button onClick={() => fileInputRef.current?.click()} disabled={uploadingImage} className="flex h-9 items-center gap-2 rounded-xl px-3 text-xs font-bold text-zinc-300 hover:bg-white/[.06] disabled:opacity-60">
                   {uploadingImage ? <XSpinner size="sm" /> : <ImageIcon size={16} />} Rasm
                 </button>
                 <span className="ml-auto text-[10px] text-slate-500">{text.length}/280</span>
-                <Button onClick={() => void addPost()} disabled={(!text.trim() && !imageUrl) || saving} className="rounded-xl bg-gradient-to-r from-blue-500 to-violet-600 px-4 text-white">
+                <Button onClick={() => void addPost()} disabled={(!text.trim() && !imageUrl) || saving} className="rounded-xl bg-white text-black px-4 text-white">
                   {saving ? <XSpinner size="sm" /> : <Send size={15} />} Ulashish
                 </Button>
               </div>
@@ -432,7 +432,7 @@ export function FeedV3({ onLogin }: { onLogin: () => void }) {
 
         <div className="mt-5 flex items-center gap-2 px-1">
           <h2 className="text-sm font-bold">Community oqimi</h2>
-          <span className="text-[10px] text-slate-500">{stats.posts} post · {formatCount(stats.views)} views</span>
+          <span className="text-[10px] text-slate-500">{stats.posts} post Â· {formatCount(stats.views)} views</span>
         </div>
 
         {loading ? (
@@ -455,7 +455,7 @@ export function FeedV3({ onLogin }: { onLogin: () => void }) {
                           {post.name}
                           {post.isVerified && <VerifiedBadge size={14} />}
                         </p>
-                        <p className="truncate text-[11px] text-slate-500">{post.handle} · {post.time}</p>
+                        <p className="truncate text-[11px] text-slate-500">{post.handle} Â· {post.time}</p>
                       </div>
                       {(post.userId === user?.id || isAdmin) ? (
                         <button onClick={() => openDeleteModal(post)} disabled={actingId === post.id} className="grid h-8 w-8 place-items-center rounded-xl text-slate-500 hover:bg-rose-400/10 hover:text-rose-200" aria-label="Postni o'chirish">
@@ -482,12 +482,12 @@ export function FeedV3({ onLogin }: { onLogin: () => void }) {
                     ) : null}
 
                     <div className="mt-4 flex items-center gap-3 text-slate-500 sm:gap-4">
-                      <button onClick={() => void toggleReplies(post)} className={`flex items-center gap-1.5 text-[11px] hover:text-cyan-200 ${openReplies === post.id ? "text-cyan-300" : ""}`} aria-label="Javoblar"><MessageCircle size={16} />{post.replies}</button>
+                      <button onClick={() => void toggleReplies(post)} className={`flex items-center gap-1.5 text-[11px] hover:text-zinc-300 ${openReplies === post.id ? "text-zinc-300" : ""}`} aria-label="Javoblar"><MessageCircle size={16} />{post.replies}</button>
                       <button onClick={() => void toggleRepost(post)} className={`flex items-center gap-1.5 text-[11px] hover:text-emerald-200 ${post.reposted ? "text-emerald-300" : ""}`} aria-label="Repost"><Repeat2 size={16} />{post.reposts}</button>
                       <button onClick={() => void toggleLike(post)} className={`flex items-center gap-1.5 text-[11px] hover:text-white ${post.liked ? "text-rose-300" : ""}`}><Heart size={16} fill={post.liked ? "currentColor" : "none"} />{post.likes}</button>
                       <span className="hidden items-center gap-1.5 text-[11px] sm:flex"><Eye size={16} />{formatCount(post.views)}</span>
                       <button onClick={() => void sharePost(post)} className="grid h-8 w-8 place-items-center rounded-xl hover:bg-white/[.05] hover:text-white" aria-label="Ulashish"><Share2 size={16} /></button>
-                      <button onClick={() => void toggleBookmark(post)} className={`ml-auto grid h-8 w-8 place-items-center rounded-xl hover:bg-white/[.05] ${post.bookmarked ? "text-cyan-300" : "hover:text-white"}`} aria-label="Saqlash"><Bookmark size={16} fill={post.bookmarked ? "currentColor" : "none"} /></button>
+                      <button onClick={() => void toggleBookmark(post)} className={`ml-auto grid h-8 w-8 place-items-center rounded-xl hover:bg-white/[.05] ${post.bookmarked ? "text-zinc-300" : "hover:text-white"}`} aria-label="Saqlash"><Bookmark size={16} fill={post.bookmarked ? "currentColor" : "none"} /></button>
                     </div>
 
                     {openReplies === post.id ? (
@@ -503,7 +503,7 @@ export function FeedV3({ onLogin }: { onLogin: () => void }) {
                                   <div className="flex items-center gap-1.5">
                                     <strong className="truncate text-xs">{reply.name}</strong>
                                     {reply.isVerified ? <VerifiedBadge size={13} /> : null}
-                                    <span className="text-[10px] text-slate-600">@{reply.username} · {replyTime(reply.createdAt)}</span>
+                                    <span className="text-[10px] text-slate-600">@{reply.username} Â· {replyTime(reply.createdAt)}</span>
                                   </div>
                                   <p className="mt-1 whitespace-pre-line text-sm leading-5 text-slate-300">{reply.content}</p>
                                 </div>
@@ -513,7 +513,7 @@ export function FeedV3({ onLogin }: { onLogin: () => void }) {
                           </div>
                         )}
 
-                        <div className="mt-3 flex items-end gap-2 rounded-2xl border border-white/8 bg-black/10 p-2 focus-within:border-cyan-200/25">
+                        <div className="mt-3 flex items-end gap-2 rounded-2xl border border-white/8 bg-black/10 p-2 focus-within:border-white/20">
                           <Textarea
                             value={replyDrafts[post.id] ?? ""}
                             onChange={(event) => setReplyDrafts((current) => ({ ...current, [post.id]: event.target.value }))}
@@ -521,7 +521,7 @@ export function FeedV3({ onLogin }: { onLogin: () => void }) {
                             placeholder="Javob yozing..."
                             className="min-h-10 flex-1 resize-none border-0 bg-transparent px-2 py-2 text-sm shadow-none focus-visible:ring-0"
                           />
-                          <Button onClick={() => void addReply(post)} disabled={!replyDrafts[post.id]?.trim() || savingReply === post.id} size="icon-sm" className="h-9 w-9 shrink-0 rounded-xl bg-cyan-400 text-slate-950 hover:bg-cyan-300" aria-label="Javob yuborish">
+                          <Button onClick={() => void addReply(post)} disabled={!replyDrafts[post.id]?.trim() || savingReply === post.id} size="icon-sm" className="h-9 w-9 shrink-0 rounded-xl bg-white text-slate-950 hover:bg-white" aria-label="Javob yuborish">
                             {savingReply === post.id ? <XSpinner size="sm" /> : <Send size={14} />}
                           </Button>
                         </div>
@@ -540,7 +540,7 @@ export function FeedV3({ onLogin }: { onLogin: () => void }) {
       {deleteTarget ? (
         <div className="fixed inset-0 z-[99999] flex h-[100dvh] w-screen items-center justify-center overflow-hidden bg-black/75 p-4 backdrop-blur-md">
           <div className="absolute inset-0" aria-hidden="true" onClick={() => actingId ? undefined : setDeleteTarget(null)} />
-          <div role="dialog" aria-modal="true" aria-labelledby="delete-post-title" className="relative z-10 w-full max-w-[340px] rounded-[30px] border border-white/10 bg-[#05070d]/95 p-7 text-white shadow-2xl shadow-black/70">
+          <div role="dialog" aria-modal="true" aria-labelledby="delete-post-title" className="relative z-10 w-full max-w-[340px] rounded-[30px] border border-white/10 bg-[#171717]/95 p-7 text-white shadow-2xl shadow-black/70">
             <h3 id="delete-post-title" className="text-xl font-black leading-6 tracking-tight">Delete post?</h3>
             <p className="mt-2 text-[14px] leading-5 text-slate-400">
               This can&apos;t be undone. This post will be removed from the timeline and your profile.

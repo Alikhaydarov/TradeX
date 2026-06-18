@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import {
   Bookmark,
@@ -229,7 +229,7 @@ export function Account({ onLogin, profileUsername }: { onLogin: () => void; pro
   if (!user) {
     return (
       <>
-        <header className="sticky top-0 z-10 flex h-14 items-center border-b border-white/8 bg-[#0c1424]/50 px-4 backdrop-blur-2xl">
+        <header className="sticky top-0 z-10 flex h-14 items-center border-b border-white/8 bg-[#171717]/50 px-4 backdrop-blur-2xl">
           <h1 className="text-xl font-extrabold">Profile</h1>
         </header>
         <div className="flex min-h-[70vh] flex-col items-center justify-center px-8 text-center">
@@ -247,7 +247,7 @@ export function Account({ onLogin, profileUsername }: { onLogin: () => void; pro
 
   if (loadingProfile && !profile) {
     return (
-      <div className="min-h-[100dvh] bg-[#01040a]">
+      <div className="min-h-[100dvh] bg-[#0b0b0b]">
         <FullScreenLoader label="Opening" />
       </div>
     );
@@ -359,7 +359,7 @@ export function Account({ onLogin, profileUsername }: { onLogin: () => void; pro
   const renderPost = (post: Post) => (
     <article key={post.id} className="group border-b border-white/8 bg-[#171717] px-4 py-5 last:border-b-0 transition hover:bg-white/[.025] sm:px-6">
       <div className="grid grid-cols-[40px_minmax(0,1fr)] gap-3 sm:grid-cols-[48px_minmax(0,1fr)] sm:gap-4">
-        <TraderAvatar name={post.name} value={post.avatar} className="mt-1 h-10 w-10 shrink-0 rounded-full text-xs ring-2 ring-white/5 transition group-hover:ring-cyan-300/20 sm:h-12 sm:w-12" />
+        <TraderAvatar name={post.name} value={post.avatar} className="mt-1 h-10 w-10 shrink-0 rounded-full text-xs ring-2 ring-white/5 transition group-hover:ring-white/15 sm:h-12 sm:w-12" />
         <div className="min-w-0">
           <div className="flex min-w-0 flex-wrap items-center gap-x-1.5 gap-y-0.5 text-[13px] leading-5 sm:text-sm">
             <p className="max-w-full truncate font-black text-white">{post.name}</p>
@@ -375,10 +375,10 @@ export function Account({ onLogin, profileUsername }: { onLogin: () => void; pro
             </div>
           ) : null}
           <div className="mt-3 grid max-w-md grid-cols-4 text-slate-500">
-            <span className="flex h-8 items-center gap-1.5 rounded-full text-[12px] transition hover:text-cyan-200"><MessageCircle size={16} />{post.replies}</span>
+            <span className="flex h-8 items-center gap-1.5 rounded-full text-[12px] transition hover:text-zinc-300"><MessageCircle size={16} />{post.replies}</span>
             <span className="flex h-8 items-center gap-1.5 rounded-full text-[12px] transition hover:text-rose-200"><Heart size={16} />{post.likes}</span>
             <span className="flex h-8 items-center gap-1.5 rounded-full text-[12px] transition hover:text-slate-300"><Eye size={16} />{formatCount(post.views)}</span>
-            <span className="flex h-8 items-center gap-1.5 rounded-full text-[12px] transition hover:text-blue-200"><Bookmark size={16} /></span>
+            <span className="flex h-8 items-center gap-1.5 rounded-full text-[12px] transition hover:text-zinc-300"><Bookmark size={16} /></span>
           </div>
         </div>
       </div>
@@ -386,9 +386,9 @@ export function Account({ onLogin, profileUsername }: { onLogin: () => void; pro
   );
 
   return (
-    <div className="min-h-full bg-[#01040a]">
+    <div className="min-h-full bg-[#0b0b0b]">
       <header className="sticky top-0 z-20 flex h-14 items-center gap-3 border-b border-white/8 bg-[#111111]/86 px-4 backdrop-blur-2xl">
-        <div className="grid h-9 w-9 place-items-center rounded-full border border-cyan-200/10 bg-cyan-300/8 text-cyan-200"><UserRound size={17} /></div>
+        <div className="grid h-9 w-9 place-items-center rounded-full border border-white/10 bg-white/[.05] text-zinc-300"><UserRound size={17} /></div>
         <div className="min-w-0">
           <h1 className="truncate text-lg font-black leading-5">TradeWay Profile</h1>
           <p className="text-[11px] text-slate-500">{posts.length} posts</p>
@@ -402,7 +402,7 @@ export function Account({ onLogin, profileUsername }: { onLogin: () => void; pro
 
       <div className="mx-auto max-w-3xl px-0 sm:px-5 sm:py-4">
         <section className="overflow-hidden border-b border-white/10 bg-[#171717] shadow-2xl shadow-black/25 sm:rounded-[28px] sm:border">
-          <div className="h-36 bg-[radial-gradient(circle_at_16%_25%,rgba(34,211,238,.24),transparent_22%),radial-gradient(circle_at_82%_8%,rgba(96,165,250,.18),transparent_26%),linear-gradient(135deg,#111111,#0a1020_52%,#071520)] sm:h-44" />
+          <div className="h-36 bg-[radial-gradient(circle_at_16%_25%,rgba(34,211,238,.24),transparent_22%),radial-gradient(circle_at_82%_8%,rgba(96,165,250,.18),transparent_26%),linear-gradient(135deg,#111111,#1b1b1b_52%,#1b1b1b)] sm:h-44" />
           <div className="px-4 pb-5 sm:px-6">
             <div className="-mt-14 flex items-end justify-between gap-3 sm:-mt-16">
               <TraderAvatar name={profile.fullName} value={profile.avatarUrl} className="h-28 w-28 rounded-full border-4 border-[#171717] bg-black text-3xl shadow-xl sm:h-32 sm:w-32" />
@@ -427,10 +427,10 @@ export function Account({ onLogin, profileUsername }: { onLogin: () => void; pro
                 <p className="flex items-center gap-1.5"><ShieldCheck size={16} /> TradeWay member</p>
               </div>
               <div className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-slate-500">
-                <button onClick={() => openConnections("followers")} className="rounded-lg text-left transition hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300/40">
+                <button onClick={() => openConnections("followers")} className="rounded-lg text-left transition hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/20">
                   <b className="font-black text-white">{formatCount(profile.followersCount ?? 0)}</b> Followers
                 </button>
-                <button onClick={() => openConnections("following")} className="rounded-lg text-left transition hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300/40">
+                <button onClick={() => openConnections("following")} className="rounded-lg text-left transition hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/20">
                   <b className="font-black text-white">{formatCount(profile.followingCount ?? 0)}</b> Following
                 </button>
               </div>
@@ -442,7 +442,7 @@ export function Account({ onLogin, profileUsername }: { onLogin: () => void; pro
           <div className="relative z-10 grid grid-cols-4 border-b border-white/8 bg-[#171717]/95 backdrop-blur-xl">
             {tabs.map((tab) => {
               const active = activeTab === tab.id;
-              return <button key={tab.id} onClick={() => setActiveTab(tab.id)} className={`relative px-2 py-4 text-xs font-black transition sm:text-sm ${active ? "text-white" : "text-slate-500 hover:bg-white/[.03] hover:text-slate-300"}`}>{tab.label}{active ? <span className="absolute inset-x-6 bottom-0 h-1 rounded-full bg-cyan-300" /> : null}</button>;
+              return <button key={tab.id} onClick={() => setActiveTab(tab.id)} className={`relative px-2 py-4 text-xs font-black transition sm:text-sm ${active ? "text-white" : "text-slate-500 hover:bg-white/[.03] hover:text-slate-300"}`}>{tab.label}{active ? <span className="absolute inset-x-6 bottom-0 h-1 rounded-full bg-white" /> : null}</button>;
             })}
           </div>
           {loadingProfile ? <div className="grid min-h-64 place-items-center text-slate-500"><XSpinner size="lg" /></div> : visiblePosts.length ? <div className="relative z-0 pt-4">{visiblePosts.map(renderPost)}</div> : <EmptyTab tab={activeTab} />}
@@ -451,17 +451,17 @@ export function Account({ onLogin, profileUsername }: { onLogin: () => void; pro
 
       {editOpen && draftProfile ? (
         <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/65 p-4 backdrop-blur-sm">
-          <div className="max-h-[calc(100dvh-2rem)] w-full max-w-xl overflow-y-auto rounded-[30px] border border-white/10 bg-[#0b1220] text-white shadow-2xl shadow-black/60">
-            <div className="sticky top-0 z-10 flex h-14 items-center gap-3 border-b border-white/8 bg-[#0b1220]/90 px-4 backdrop-blur-xl">
+          <div className="max-h-[calc(100dvh-2rem)] w-full max-w-xl overflow-y-auto rounded-[30px] border border-white/10 bg-[#171717] text-white shadow-2xl shadow-black/60">
+            <div className="sticky top-0 z-10 flex h-14 items-center gap-3 border-b border-white/8 bg-[#171717]/90 px-4 backdrop-blur-xl">
               <button onClick={() => setEditOpen(false)} className="grid h-9 w-9 place-items-center rounded-full hover:bg-white/[.08]" aria-label="Close"><X size={18} /></button>
               <h3 className="text-lg font-black">Edit profile</h3>
               <button onClick={() => void save()} className="ml-auto rounded-full bg-white px-5 py-2 text-sm font-black text-black hover:bg-slate-200">{saved ? "Saved" : "Save"}</button>
             </div>
-            <div className="h-36 bg-gradient-to-br from-cyan-950 via-slate-900 to-violet-950" />
+            <div className="h-36 bg-gradient-to-br from-zinc-800 via-zinc-900 to-black" />
             <div className="px-5 pb-6">
               <div className="-mt-14 flex items-end">
                 <div className="relative">
-                  <TraderAvatar name={draftProfile.fullName} value={draftProfile.avatarUrl} className="h-28 w-28 rounded-[28px] border-4 border-[#0b1220] text-2xl" />
+                  <TraderAvatar name={draftProfile.fullName} value={draftProfile.avatarUrl} className="h-28 w-28 rounded-[28px] border-4 border-[#171717] text-2xl" />
                   <input ref={fileInputRef} type="file" accept="image/png,image/jpeg,image/webp,image/gif" className="hidden" onChange={(event) => void uploadAvatar(event.target.files?.[0])} />
                   <button onClick={() => fileInputRef.current?.click()} disabled={uploadingAvatar} className="absolute inset-0 grid place-items-center rounded-[28px] bg-black/45 text-white">{uploadingAvatar ? <XSpinner size="sm" /> : <Camera size={24} />}</button>
                 </div>
@@ -469,12 +469,12 @@ export function Account({ onLogin, profileUsername }: { onLogin: () => void; pro
               </div>
               {error && <div className="mt-4 rounded-2xl border border-rose-300/15 bg-rose-400/10 px-4 py-3 text-sm text-rose-200">{error}</div>}
               <div className="mt-5 grid gap-4">
-                <label className="text-xs text-slate-500">Name<input value={draftProfile.fullName} onChange={(event) => setDraftProfile({ ...draftProfile, fullName: event.target.value })} className="mt-1 block w-full rounded-2xl border border-white/15 bg-transparent px-4 py-3 text-sm text-white outline-none focus:border-cyan-400" /></label>
-                <label className="text-xs text-slate-500">Username<div className="mt-1 flex rounded-2xl border border-white/15 px-4 focus-within:border-cyan-400"><span className="py-3 text-slate-500">@</span><input value={draftProfile.username} onChange={(event) => setDraftProfile({ ...draftProfile, username: event.target.value.replace(/\s/g, "") })} className="min-w-0 flex-1 bg-transparent py-3 text-sm outline-none" /></div></label>
-                <label className="text-xs text-slate-500">Avatar URL<input value={draftProfile.avatarUrl ?? ""} onChange={(event) => setDraftProfile({ ...draftProfile, avatarUrl: event.target.value })} placeholder="https://..." className="mt-1 block w-full rounded-2xl border border-white/15 bg-transparent px-4 py-3 text-sm text-white outline-none focus:border-cyan-400" /></label>
-                <label className="text-xs text-slate-500">Trading style<select value={draftProfile.tradingStyle} onChange={(event) => setDraftProfile({ ...draftProfile, tradingStyle: event.target.value })} className="mt-1 block w-full rounded-2xl border border-white/15 bg-[#050b16] px-4 py-3 text-sm text-white outline-none focus:border-cyan-400"><option>Price Action</option><option>Scalping</option><option>Swing Trading</option><option>Algorithmic</option></select></label>
-                <label className="text-xs text-slate-500">Location<div className="mt-1 flex rounded-2xl border border-white/15 px-4 focus-within:border-cyan-400"><MapPin className="mt-3 text-slate-500" size={16} /><input value={draftProfile.location} onChange={(event) => setDraftProfile({ ...draftProfile, location: event.target.value })} placeholder="Korea" className="min-w-0 flex-1 bg-transparent px-2 py-3 text-sm outline-none" /></div></label>
-                <label className="text-xs text-slate-500">Bio<textarea value={draftProfile.bio} onChange={(event) => setDraftProfile({ ...draftProfile, bio: event.target.value })} maxLength={160} className="mt-1 min-h-24 w-full resize-none rounded-2xl border border-white/15 bg-transparent px-4 py-3 text-sm text-white outline-none focus:border-cyan-400" placeholder="Write something about your trading journey..." /></label>
+                <label className="text-xs text-slate-500">Name<input value={draftProfile.fullName} onChange={(event) => setDraftProfile({ ...draftProfile, fullName: event.target.value })} className="mt-1 block w-full rounded-2xl border border-white/15 bg-transparent px-4 py-3 text-sm text-white outline-none focus:border-zinc-500" /></label>
+                <label className="text-xs text-slate-500">Username<div className="mt-1 flex rounded-2xl border border-white/15 px-4 focus-within:border-zinc-500"><span className="py-3 text-slate-500">@</span><input value={draftProfile.username} onChange={(event) => setDraftProfile({ ...draftProfile, username: event.target.value.replace(/\s/g, "") })} className="min-w-0 flex-1 bg-transparent py-3 text-sm outline-none" /></div></label>
+                <label className="text-xs text-slate-500">Avatar URL<input value={draftProfile.avatarUrl ?? ""} onChange={(event) => setDraftProfile({ ...draftProfile, avatarUrl: event.target.value })} placeholder="https://..." className="mt-1 block w-full rounded-2xl border border-white/15 bg-transparent px-4 py-3 text-sm text-white outline-none focus:border-zinc-500" /></label>
+                <label className="text-xs text-slate-500">Trading style<select value={draftProfile.tradingStyle} onChange={(event) => setDraftProfile({ ...draftProfile, tradingStyle: event.target.value })} className="mt-1 block w-full rounded-2xl border border-white/15 bg-[#121212] px-4 py-3 text-sm text-white outline-none focus:border-zinc-500"><option>Price Action</option><option>Scalping</option><option>Swing Trading</option><option>Algorithmic</option></select></label>
+                <label className="text-xs text-slate-500">Location<div className="mt-1 flex rounded-2xl border border-white/15 px-4 focus-within:border-zinc-500"><MapPin className="mt-3 text-slate-500" size={16} /><input value={draftProfile.location} onChange={(event) => setDraftProfile({ ...draftProfile, location: event.target.value })} placeholder="Korea" className="min-w-0 flex-1 bg-transparent px-2 py-3 text-sm outline-none" /></div></label>
+                <label className="text-xs text-slate-500">Bio<textarea value={draftProfile.bio} onChange={(event) => setDraftProfile({ ...draftProfile, bio: event.target.value })} maxLength={160} className="mt-1 min-h-24 w-full resize-none rounded-2xl border border-white/15 bg-transparent px-4 py-3 text-sm text-white outline-none focus:border-zinc-500" placeholder="Write something about your trading journey..." /></label>
               </div>
               <button onClick={() => void save()} className="mt-5 flex items-center gap-2 rounded-full bg-white px-5 py-2.5 text-sm font-black text-black hover:bg-slate-200">{saved ? <Check size={17} /> : null}{saved ? "Saved" : "Save changes"}</button>
             </div>
@@ -484,7 +484,7 @@ export function Account({ onLogin, profileUsername }: { onLogin: () => void; pro
       {connectionsOpen ? (
         <div className="fixed inset-0 z-[9999] flex items-start justify-center overflow-y-auto bg-black/70 p-3 pt-[max(1rem,env(safe-area-inset-top))] backdrop-blur-md sm:items-center sm:p-4">
           <div className="absolute inset-0" onClick={() => setConnectionsOpen(null)} aria-hidden="true" />
-          <section className="relative z-10 w-full max-w-xl overflow-hidden rounded-[30px] border border-white/10 bg-[#07101d]/98 text-white shadow-2xl shadow-black/80">
+          <section className="relative z-10 w-full max-w-xl overflow-hidden rounded-[30px] border border-white/10 bg-[#171717]/98 text-white shadow-2xl shadow-black/80">
             <header className="flex items-center gap-3 border-b border-white/8 px-4 py-4">
               <div className="min-w-0 flex-1">
                 <h2 className="text-xl font-black leading-6">{connectionsOpen === "followers" ? "Followers" : "Following"}</h2>

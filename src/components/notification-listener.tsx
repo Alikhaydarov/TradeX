@@ -27,7 +27,7 @@ type AudioWindow = Window & typeof globalThis & {
 };
 
 function shortText(value: string, max = 90) {
-  return value.length > max ? `${value.slice(0, max - 1)}…` : value;
+  return value.length > max ? `${value.slice(0, max - 1)}â€¦` : value;
 }
 
 function playNotificationSound() {
@@ -90,7 +90,7 @@ export function NotificationListener() {
 
     const notify = (chat: Group, message: MessageRecord) => {
       const body = shortText(message.content);
-      setToast({ title: `${message.sender_name} · ${chat.name}`, body });
+      setToast({ title: `${message.sender_name} Â· ${chat.name}`, body });
       window.setTimeout(() => setToast(null), 4500);
 
       if (soundEnabled.current) playNotificationSound();
@@ -100,7 +100,7 @@ export function NotificationListener() {
         Notification.permission === "granted" &&
         (document.hidden || !document.hasFocus())
       ) {
-        const notification = new Notification(`${message.sender_name} · ${chat.name}`, {
+        const notification = new Notification(`${message.sender_name} Â· ${chat.name}`, {
           body,
           tag: `tradeup-chat-${chat.id}`,
         });
@@ -183,9 +183,9 @@ export function NotificationListener() {
   return (
     <>
       {permission === "default" && !promptDismissed && (
-        <div className="fixed bottom-5 right-3 z-30 hidden max-w-[280px] rounded-2xl border border-cyan-200/15 bg-[#0b1220]/90 p-3 text-xs text-slate-200 shadow-2xl shadow-slate-950/40 backdrop-blur-2xl sm:block">
+        <div className="fixed bottom-5 right-3 z-30 hidden max-w-[280px] rounded-2xl border border-white/10 bg-[#171717]/90 p-3 text-xs text-slate-200 shadow-2xl shadow-slate-950/40 backdrop-blur-2xl sm:block">
           <div className="flex gap-2 pr-7">
-            <Bell size={16} className="mt-0.5 shrink-0 text-cyan-200" />
+            <Bell size={16} className="mt-0.5 shrink-0 text-zinc-300" />
             <div>
               <p className="font-bold">Chat notification yoqilsinmi?</p>
               <p className="mt-1 leading-5 text-slate-400">Yangi xabar kelsa notification va ovoz chiqadi.</p>
@@ -194,16 +194,16 @@ export function NotificationListener() {
           <button onClick={dismissPrompt} className="absolute right-2 top-2 grid h-7 w-7 place-items-center rounded-xl text-slate-500 hover:bg-white/[.06] hover:text-white" aria-label="Notification promptni yopish">
             <X size={14} />
           </button>
-          <Button onClick={() => void enableNotifications()} className="mt-3 h-9 w-full rounded-xl bg-cyan-300 text-xs font-bold text-slate-950 hover:bg-cyan-200">
+          <Button onClick={() => void enableNotifications()} className="mt-3 h-9 w-full rounded-xl bg-white text-xs font-bold text-slate-950 hover:bg-zinc-200">
             Yoqish
           </Button>
         </div>
       )}
 
       {toast && (
-        <div className="fixed right-3 top-3 z-[80] w-[min(360px,calc(100vw-24px))] rounded-2xl border border-white/10 bg-[#0b1220]/95 p-3 text-sm text-white shadow-2xl shadow-slate-950/50 backdrop-blur-2xl">
+        <div className="fixed right-3 top-3 z-[80] w-[min(360px,calc(100vw-24px))] rounded-2xl border border-white/10 bg-[#171717]/95 p-3 text-sm text-white shadow-2xl shadow-slate-950/50 backdrop-blur-2xl">
           <div className="flex items-start gap-3">
-            <span className="grid h-9 w-9 shrink-0 place-items-center rounded-2xl bg-cyan-300/10 text-cyan-200">
+            <span className="grid h-9 w-9 shrink-0 place-items-center rounded-2xl bg-white/[.06] text-zinc-300">
               <BellRing size={17} />
             </span>
             <div className="min-w-0 flex-1">

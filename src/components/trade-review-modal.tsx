@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { Camera, Check, ChevronDown, ImagePlus, LoaderCircle, Plus, Trash2, UploadCloud, X } from "lucide-react";
 import { useRef, useState, type ChangeEvent, type DragEvent } from "react";
@@ -48,7 +48,7 @@ function NumberField({
   const onChange = (e: ChangeEvent<HTMLInputElement>) => setValue(sanitizeDecimal(e.target.value));
   return (
     <div className="space-y-1.5">
-      <label className="text-[10px] font-semibold uppercase tracking-widest text-[#4a5f7a]">{label}</label>
+      <label className="text-[10px] font-semibold uppercase tracking-widest text-[#8a8a8a]">{label}</label>
       <Input
         name={name}
         type="text"
@@ -58,7 +58,7 @@ function NumberField({
         onChange={onChange}
         placeholder={placeholder}
         required={required}
-        className="border-[#2a2a2a] bg-[#121212] font-mono text-sm focus:border-blue-500/60 focus:ring-1 focus:ring-blue-500/20 transition-all"
+        className="border-[#2a2a2a] bg-[#121212] font-mono text-sm focus:border-zinc-500 focus:ring-1 focus:ring-white/10 transition-all"
       />
     </div>
   );
@@ -66,7 +66,7 @@ function NumberField({
 
 function SectionLabel({ children }: { children: React.ReactNode }) {
   return (
-    <p className="text-[10px] font-semibold uppercase tracking-widest text-[#4a5f7a]">{children}</p>
+    <p className="text-[10px] font-semibold uppercase tracking-widest text-[#8a8a8a]">{children}</p>
   );
 }
 
@@ -90,8 +90,8 @@ function OptionStack({
   const [draft, setDraft] = useState("");
   const [open, setOpen] = useState(false);
   const toneClass = {
-    blue: "bg-blue-500/15 text-blue-300 ring-blue-500/30",
-    violet: "bg-violet-500/15 text-violet-300 ring-violet-500/30",
+    blue: "bg-white/[.08] text-zinc-300 ring-white/15",
+    violet: "bg-white/[.08] text-zinc-300 ring-white/15",
     amber: "bg-amber-500/15 text-amber-300 ring-amber-500/30",
   }[tone];
 
@@ -117,15 +117,15 @@ function OptionStack({
         aria-expanded={open}
         className={`flex h-10 w-full items-center justify-between gap-3 rounded-lg border px-3 text-left text-[12px] font-semibold transition ${
           open
-            ? "border-blue-500/40 bg-[#08111f] ring-1 ring-blue-500/15"
-            : "border-[#2a2a2a] bg-[#121212] hover:border-[#26344d]"
+            ? "border-white/20 bg-[#171717] ring-1 ring-white/10"
+            : "border-[#2a2a2a] bg-[#121212] hover:border-[#3a3a3a]"
         }`}
       >
-        <span className={value ? "truncate" : "truncate text-[#4a5f7a]"}>{value || placeholder}</span>
-        <ChevronDown size={15} className={`shrink-0 text-[#4a5f7a] transition-transform ${open ? "rotate-180" : ""}`} />
+        <span className={value ? "truncate" : "truncate text-[#8a8a8a]"}>{value || placeholder}</span>
+        <ChevronDown size={15} className={`shrink-0 text-[#8a8a8a] transition-transform ${open ? "rotate-180" : ""}`} />
       </button>
       {open ? (
-        <div className="absolute left-0 right-0 top-[calc(100%+6px)] z-[80] overflow-hidden rounded-xl border border-[#2a2a2a] bg-[#070d18] shadow-2xl shadow-black/50">
+        <div className="absolute left-0 right-0 top-[calc(100%+6px)] z-[80] overflow-hidden rounded-xl border border-[#2a2a2a] bg-[#121212] shadow-2xl shadow-black/50">
           <div className="max-h-56 overflow-y-auto p-1.5">
             {options.length ? options.map((option) => {
               const active = value === option;
@@ -148,7 +148,7 @@ function OptionStack({
                       event.stopPropagation();
                       onRemove(option);
                     }}
-                    className="grid size-7 shrink-0 place-items-center rounded-md text-[#4a5f7a] opacity-70 hover:bg-rose-500/10 hover:text-rose-300 sm:opacity-0 sm:group-hover:opacity-100"
+                    className="grid size-7 shrink-0 place-items-center rounded-md text-[#8a8a8a] opacity-70 hover:bg-rose-500/10 hover:text-rose-300 sm:opacity-0 sm:group-hover:opacity-100"
                     aria-label={`${option} optionni o'chirish`}
                   >
                     <X size={12} />
@@ -159,8 +159,8 @@ function OptionStack({
               <div className="px-3 py-4 text-center text-xs text-[#8a8a8a]">Option yo'q.</div>
             )}
           </div>
-          <div className="flex min-h-10 items-center gap-2 border-t border-[#2a2a2a] bg-[#050a12] px-2 py-1.5">
-            <Plus size={14} className="shrink-0 text-[#4a5f7a]" />
+          <div className="flex min-h-10 items-center gap-2 border-t border-[#2a2a2a] bg-[#121212] px-2 py-1.5">
+            <Plus size={14} className="shrink-0 text-[#8a8a8a]" />
             <input
               value={draft}
               onChange={(event) => setDraft(event.target.value)}
@@ -171,7 +171,7 @@ function OptionStack({
                 }
               }}
               placeholder={placeholder}
-              className="min-w-0 flex-1 bg-transparent text-[12px] text-[#f1f1f1] outline-none placeholder:text-[#4a5f7a]"
+              className="min-w-0 flex-1 bg-transparent text-[12px] text-[#f1f1f1] outline-none placeholder:text-[#8a8a8a]"
             />
             <button type="button" onClick={add} className="rounded-md px-2 py-1 text-[11px] font-bold text-[#a1a1aa] hover:bg-white/[.05] hover:text-white">
               Add
@@ -247,23 +247,23 @@ export function TradeReviewModal({ open, saving, account, onOpenChange, onSave }
       {/* Custom close button lives in the modal header. */}
       <DialogContent
         showCloseButton={false}
-        className="max-h-[95dvh] overflow-hidden border border-[#141824] bg-[#05070c] p-0 sm:max-w-3xl shadow-2xl shadow-black/70"
+        className="max-h-[95dvh] overflow-hidden border border-[#2a2a2a] bg-[#0b0b0b] p-0 sm:max-w-3xl shadow-2xl shadow-black/70"
       >
         {/* Header */}
-        <div className="relative flex items-center gap-3 border-b border-[#111827] bg-[#070a12] px-5 py-4">
+        <div className="relative flex items-center gap-3 border-b border-[#2a2a2a] bg-[#171717] px-5 py-4">
           {/* gradient accent line */}
-          <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-blue-500/30 to-transparent" />
+          <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent" />
 
-          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-500/10 ring-1 ring-blue-500/20">
-            <Plus size={16} className="text-blue-400" />
+          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-white/[.06] ring-1 ring-white/10">
+            <Plus size={16} className="text-zinc-300" />
           </div>
           <div className="flex-1 min-w-0">
             <h2 className="text-sm font-bold text-[#f1f1f1] truncate">Yangi trade review</h2>
-            <p className="text-[11px] text-[#4a5f7a] truncate">{account?.name} / {account?.marketType}</p>
+            <p className="text-[11px] text-[#8a8a8a] truncate">{account?.name} / {account?.marketType}</p>
           </div>
           <button
             onClick={() => close(false)}
-            className="ml-auto flex h-8 w-8 items-center justify-center rounded-lg text-[#4a5f7a] transition hover:bg-[#2a2a2a] hover:text-[#f1f1f1]"
+            className="ml-auto flex h-8 w-8 items-center justify-center rounded-lg text-[#8a8a8a] transition hover:bg-[#2a2a2a] hover:text-[#f1f1f1]"
           >
             <X size={15} />
           </button>
@@ -283,7 +283,7 @@ export function TradeReviewModal({ open, saving, account, onOpenChange, onSave }
                   name="symbol"
                   placeholder="XAUUSD"
                   required
-                  className="border-[#2a2a2a] bg-[#121212] focus:border-blue-500/60 focus:ring-1 focus:ring-blue-500/20 transition-all"
+                  className="border-[#2a2a2a] bg-[#121212] focus:border-zinc-500 focus:ring-1 focus:ring-white/10 transition-all"
                 />
               </div>
               <div className="space-y-1.5">
@@ -291,13 +291,13 @@ export function TradeReviewModal({ open, saving, account, onOpenChange, onSave }
                 <div className="grid grid-cols-2 gap-1.5 rounded-xl border border-[#2a2a2a] bg-[#121212] p-1.5">
                   <label className="cursor-pointer">
                     <input type="radio" name="side" value="Long" defaultChecked className="peer sr-only" />
-                    <span className="block rounded-lg py-1.5 text-center text-xs font-bold text-[#4a5f7a] transition peer-checked:bg-emerald-500/15 peer-checked:text-emerald-300 peer-checked:ring-1 peer-checked:ring-emerald-500/30 hover:text-[#f1f1f1]">
+                    <span className="block rounded-lg py-1.5 text-center text-xs font-bold text-[#8a8a8a] transition peer-checked:bg-emerald-500/15 peer-checked:text-emerald-300 peer-checked:ring-1 peer-checked:ring-emerald-500/30 hover:text-[#f1f1f1]">
                       Long
                     </span>
                   </label>
                   <label className="cursor-pointer">
                     <input type="radio" name="side" value="Short" className="peer sr-only" />
-                    <span className="block rounded-lg py-1.5 text-center text-xs font-bold text-[#4a5f7a] transition peer-checked:bg-rose-500/15 peer-checked:text-rose-300 peer-checked:ring-1 peer-checked:ring-rose-500/30 hover:text-[#f1f1f1]">
+                    <span className="block rounded-lg py-1.5 text-center text-xs font-bold text-[#8a8a8a] transition peer-checked:bg-rose-500/15 peer-checked:text-rose-300 peer-checked:ring-1 peer-checked:ring-rose-500/30 hover:text-[#f1f1f1]">
                       Short
                     </span>
                   </label>
@@ -376,14 +376,14 @@ export function TradeReviewModal({ open, saving, account, onOpenChange, onSave }
                 <Input
                   name="tags"
                   placeholder="A+ setup, news"
-                  className="border-[#2a2a2a] bg-[#121212] focus:border-blue-500/60 transition-all"
+                  className="border-[#2a2a2a] bg-[#121212] focus:border-zinc-500 transition-all"
                 />
               </div>
             </div>
 
             {/* Trade Checklist */}
-            <div className="rounded-xl border border-[#141d2e] bg-[#121212] p-4">
-              <p className="mb-3 text-[10px] font-semibold uppercase tracking-widest text-[#4a5f7a]">Trade checklist</p>
+            <div className="rounded-xl border border-[#2a2a2a] bg-[#121212] p-4">
+              <p className="mb-3 text-[10px] font-semibold uppercase tracking-widest text-[#8a8a8a]">Trade checklist</p>
               <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
                 <CheckRow label="Following plan?" checked={followingPlan} onToggle={() => setFollowingPlan(v => !v)} tone="emerald" />
                 <CheckRow label="Review completed" checked={reviewCompleted} onToggle={() => setReviewCompleted(v => !v)} tone="blue" />
@@ -397,7 +397,7 @@ export function TradeReviewModal({ open, saving, account, onOpenChange, onSave }
                       className={`rounded-lg px-2.5 py-1 text-[11px] font-medium transition ${
                         mistakeType === m
                           ? "bg-rose-500/15 text-rose-300 ring-1 ring-rose-500/30"
-                          : "bg-[#1b1b1b] text-[#4a5f7a] hover:text-[#f1f1f1]"
+                          : "bg-[#1b1b1b] text-[#8a8a8a] hover:text-[#f1f1f1]"
                       }`}>
                       {m}
                     </button>
@@ -417,7 +417,7 @@ export function TradeReviewModal({ open, saving, account, onOpenChange, onSave }
               <SectionLabel>Trade review / Xulosa</SectionLabel>
               <Textarea
                 name="note"
-                className="min-h-28 resize-y border-[#2a2a2a] bg-[#121212] text-sm focus:border-blue-500/60 transition-all"
+                className="min-h-28 resize-y border-[#2a2a2a] bg-[#121212] text-sm focus:border-zinc-500 transition-all"
                 placeholder="Pre-trade: sabab. Execution: kirish/chiqish. Review: xato va keyingi qoida."
               />
             </div>
@@ -426,24 +426,24 @@ export function TradeReviewModal({ open, saving, account, onOpenChange, onSave }
               onChange={(e) => void upload(e.target.files?.[0])} />
             <input type="hidden" name="imageUrl" value={imageUrl} />
 
-            <div className="rounded-xl border border-[#141d2e] bg-[#121212] p-3">
+            <div className="rounded-xl border border-[#2a2a2a] bg-[#121212] p-3">
               <div className="mb-3 flex items-center gap-3">
-                <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-blue-500/10 ring-1 ring-blue-500/20">
-                  <Camera size={16} className="text-blue-400" />
+                <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-white/[.06] ring-1 ring-white/10">
+                  <Camera size={16} className="text-zinc-300" />
                 </span>
                 <div className="min-w-0 flex-1">
                   <h3 className="truncate text-sm font-semibold text-[#f1f1f1]">Chart screenshot</h3>
-                  <p className="truncate text-[11px] text-[#4a5f7a]">JPG, PNG yoki WEBP / max 5MB</p>
+                  <p className="truncate text-[11px] text-[#8a8a8a]">JPG, PNG yoki WEBP / max 5MB</p>
                 </div>
                 <button type="button" onClick={() => inputRef.current?.click()}
-                  className="shrink-0 rounded-lg border border-[#2a2a2a] bg-[#0b1220] px-3 py-2 text-xs font-semibold text-[#a1a1aa] transition hover:border-blue-500/40 hover:text-[#f1f1f1]">
+                  className="shrink-0 rounded-lg border border-[#2a2a2a] bg-[#171717] px-3 py-2 text-xs font-semibold text-[#a1a1aa] transition hover:border-white/20 hover:text-[#f1f1f1]">
                   {imageUrl ? "Almashtirish" : "Yuklash"}
                 </button>
               </div>
 
               <div onClick={() => !imageUrl && inputRef.current?.click()}
                 onDragOver={(e) => e.preventDefault()} onDrop={drop}
-                className="flex w-full items-center gap-3 overflow-hidden rounded-xl border border-dashed border-[#2a2a2a] bg-[#03050a] p-3 text-left transition hover:border-blue-500/35 hover:bg-[#080d17]">
+                className="flex w-full items-center gap-3 overflow-hidden rounded-xl border border-dashed border-[#2a2a2a] bg-[#0b0b0b] p-3 text-left transition hover:border-white/20 hover:bg-[#171717]">
               {imageUrl
                 ? <>
                     <span className="relative grid h-16 w-20 shrink-0 place-items-center overflow-hidden rounded-lg border border-[#2a2a2a] bg-black">
@@ -451,7 +451,7 @@ export function TradeReviewModal({ open, saving, account, onOpenChange, onSave }
                     </span>
                     <span className="min-w-0 flex-1">
                       <span className="block truncate text-sm font-semibold text-[#f1f1f1]">Screenshot ulandi</span>
-                      <span className="mt-0.5 block truncate text-[11px] text-[#4a5f7a]">Jurnalga attachment sifatida qo&apos;shiladi</span>
+                      <span className="mt-0.5 block truncate text-[11px] text-[#8a8a8a]">Jurnalga attachment sifatida qo&apos;shiladi</span>
                     </span>
                     <button type="button" onClick={() => { setImageUrl(""); if (inputRef.current) inputRef.current.value = ""; }}
                       className="grid size-9 shrink-0 place-items-center rounded-lg bg-rose-500/10 text-rose-300 transition hover:bg-rose-500/20">
@@ -459,9 +459,9 @@ export function TradeReviewModal({ open, saving, account, onOpenChange, onSave }
                     </button>
                   </>
                 : <>
-                    <span className="grid size-12 shrink-0 place-items-center rounded-xl bg-[#0b1220] text-[#454545]">
+                    <span className="grid size-12 shrink-0 place-items-center rounded-xl bg-[#171717] text-[#454545]">
                     {uploading
-                      ? <LoaderCircle className="size-5 animate-spin text-blue-400" />
+                      ? <LoaderCircle className="size-5 animate-spin text-zinc-300" />
                       : <UploadCloud className="size-5" />
                     }
                     </span>
@@ -469,24 +469,24 @@ export function TradeReviewModal({ open, saving, account, onOpenChange, onSave }
                       <span className="block text-sm font-semibold text-[#a1a1aa]">
                         {uploading ? "Yuklanmoqda..." : "Screenshot yuklang"}
                       </span>
-                      <span className="mt-0.5 block text-[11px] text-[#4a5f7a]">bosib tanlang yoki shu yerga tashlang</span>
+                      <span className="mt-0.5 block text-[11px] text-[#8a8a8a]">bosib tanlang yoki shu yerga tashlang</span>
                     </span>
-                    <ImagePlus size={16} className="shrink-0 text-[#4a5f7a]" />
+                    <ImagePlus size={16} className="shrink-0 text-[#8a8a8a]" />
                   </>
               }
               </div>
               {uploadError && <p className="mt-2 text-xs text-rose-400">{uploadError}</p>}
             </div>
 
-            <div className="rounded-xl border border-[#2a2a2a] bg-[#121212] p-3 text-[11px] leading-5 text-[#4a5f7a]">
+            <div className="rounded-xl border border-[#2a2a2a] bg-[#121212] p-3 text-[11px] leading-5 text-[#8a8a8a]">
               <b className="text-[#a1a1aa]">Review tavsiyasi:</b> trade ochilish sababi, invalidation nuqtasi va chiqish qarorini yozing.
             </div>
           </div>
 
-          <div className="sticky bottom-0 border-t border-[#141d2e] bg-[#05070c]/95 p-4 backdrop-blur-xl sm:px-6">
+          <div className="sticky bottom-0 border-t border-[#2a2a2a] bg-[#0b0b0b]/95 p-4 backdrop-blur-xl sm:px-6">
             <Button
               disabled={saving || uploading}
-              className="h-11 w-full bg-gradient-to-r from-blue-600 to-blue-500 font-semibold shadow-lg shadow-blue-500/20 transition-all hover:from-blue-500 hover:to-blue-400"
+              className="h-11 w-full bg-gradient-to-r from-zinc-100 to-zinc-300 text-black font-semibold shadow-lg shadow-black/30 transition-all hover:from-white hover:to-zinc-200"
             >
               {saving ? <LoaderCircle className="animate-spin" /> : <Plus size={16} />}
               Trade jurnalga saqlash
@@ -504,8 +504,8 @@ function CheckRow({
   const toneMap: Record<string, string> = {
     emerald: "border-emerald-500/50 bg-emerald-500/15 text-emerald-400",
     rose: "border-rose-500/50 bg-rose-500/15 text-rose-400",
-    blue: "border-blue-500/50 bg-blue-500/15 text-blue-400",
-    violet: "border-violet-500/50 bg-violet-500/15 text-violet-400",
+    blue: "border-white/25 bg-white/[.08] text-zinc-300",
+    violet: "border-white/25 bg-white/[.08] text-zinc-300",
   };
   return (
     <button type="button" onClick={onToggle} className="flex w-full items-center gap-3 text-left group">
@@ -514,7 +514,7 @@ function CheckRow({
       }`}>
         {checked && "OK"}
       </span>
-      <span className={`text-sm transition ${checked ? "text-[#f1f1f1]" : "text-[#4a5f7a] group-hover:text-[#a1a1aa]"}`}>
+      <span className={`text-sm transition ${checked ? "text-[#f1f1f1]" : "text-[#8a8a8a] group-hover:text-[#a1a1aa]"}`}>
         {label}
       </span>
     </button>

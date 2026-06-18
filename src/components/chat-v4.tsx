@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import {
   ArrowLeft,
@@ -405,7 +405,7 @@ export function ChatV4({ onLogin, onBack }: { onLogin: () => void; onBack: () =>
       key={option.id}
       onClick={onClick}
       className={`flex w-full items-center gap-2 rounded-2xl border p-2 text-left transition ${
-        selected ? "border-cyan-200/25 bg-cyan-300/10" : "border-transparent bg-white/[.025] hover:bg-white/[.05]"
+        selected ? "border-white/20 bg-white/[.06]" : "border-transparent bg-white/[.025] hover:bg-white/[.05]"
       }`}
     >
       <TraderAvatar name={option.name} value={option.avatar} className="h-9 w-9 rounded-xl text-[10px]" />
@@ -416,7 +416,7 @@ export function ChatV4({ onLogin, onBack }: { onLogin: () => void; onBack: () =>
         </span>
         <small className="block truncate text-[10px] text-slate-500">@{option.username}</small>
       </span>
-      <span className={`grid h-6 w-6 place-items-center rounded-full border ${selected ? "border-cyan-200 bg-cyan-200 text-slate-950" : "border-white/10 text-transparent"}`}>
+      <span className={`grid h-6 w-6 place-items-center rounded-full border ${selected ? "border-white bg-white text-black" : "border-white/10 text-transparent"}`}>
         <Check size={13} />
       </span>
     </button>
@@ -425,8 +425,8 @@ export function ChatV4({ onLogin, onBack }: { onLogin: () => void; onBack: () =>
   const renderReplyPreview = (reply: GroupMessage["replyTo"] | null | undefined) => {
     if (!reply) return null;
     return (
-      <div className="mb-2 rounded-2xl border-l-2 border-cyan-300/60 bg-black/18 px-3 py-2 text-left">
-        <p className="truncate text-[10px] font-bold text-cyan-200">{reply.name}</p>
+      <div className="mb-2 rounded-2xl border-l-2 border-white/40 bg-black/18 px-3 py-2 text-left">
+        <p className="truncate text-[10px] font-bold text-zinc-300">{reply.name}</p>
         <p className="line-clamp-2 text-[10px] leading-4 text-slate-400">{reply.text}</p>
       </div>
     );
@@ -435,7 +435,7 @@ export function ChatV4({ onLogin, onBack }: { onLogin: () => void; onBack: () =>
   const createPanel = (
     <div className="flex h-full min-h-0 flex-col">
       <div className="flex shrink-0 items-center gap-3 border-b border-white/8 px-4 py-4">
-        <span className="grid h-10 w-10 place-items-center rounded-2xl bg-cyan-300/10 text-cyan-200">
+        <span className="grid h-10 w-10 place-items-center rounded-2xl bg-white/[.06] text-zinc-300">
           <UserPlus size={18} />
         </span>
         <div className="min-w-0 flex-1">
@@ -452,9 +452,9 @@ export function ChatV4({ onLogin, onBack }: { onLogin: () => void; onBack: () =>
           value={chatName}
           onChange={(event) => setChatName(event.target.value)}
           placeholder="Chat nomi"
-          className="h-12 w-full rounded-2xl border border-white/10 bg-white/[.045] px-4 text-[16px] text-white outline-none placeholder:text-slate-500 focus:border-cyan-200/35"
+          className="h-12 w-full rounded-2xl border border-white/10 bg-white/[.045] px-4 text-[16px] text-white outline-none placeholder:text-slate-500 focus:border-zinc-500"
         />
-        <label className="mt-3 flex h-12 items-center gap-3 rounded-2xl border border-white/10 bg-white/[.045] px-4 text-slate-500 focus-within:border-cyan-200/35">
+        <label className="mt-3 flex h-12 items-center gap-3 rounded-2xl border border-white/10 bg-white/[.045] px-4 text-slate-500 focus-within:border-zinc-500">
           <Search size={17} />
           <input
             value={query}
@@ -467,7 +467,7 @@ export function ChatV4({ onLogin, onBack }: { onLogin: () => void; onBack: () =>
         {selectedUserIds.length > 0 ? (
           <div className="mt-3 flex flex-wrap gap-2">
             {users.filter((option) => selectedUserIds.includes(option.id)).map((option) => (
-              <button key={option.id} type="button" onClick={() => toggleUser(option.id)} className="inline-flex h-8 items-center gap-2 rounded-full border border-cyan-200/20 bg-cyan-300/10 px-2.5 text-xs font-bold text-cyan-100">
+              <button key={option.id} type="button" onClick={() => toggleUser(option.id)} className="inline-flex h-8 items-center gap-2 rounded-full border border-white/15 bg-white/[.06] px-2.5 text-xs font-bold text-zinc-100">
                 {option.name}
                 <X size={12} />
               </button>
@@ -486,7 +486,7 @@ export function ChatV4({ onLogin, onBack }: { onLogin: () => void; onBack: () =>
       </div>
 
       <div className="shrink-0 border-t border-white/8 p-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
-        <Button disabled={loading} onClick={() => void createChat()} className="h-12 w-full rounded-2xl bg-cyan-300 text-sm font-black text-slate-950 hover:bg-cyan-200">
+        <Button disabled={loading} onClick={() => void createChat()} className="h-12 w-full rounded-2xl bg-white text-sm font-black text-slate-950 hover:bg-zinc-200">
           {loading ? <XSpinner size="sm" /> : <Plus size={16} />} Chat yaratish
         </Button>
       </div>
@@ -495,7 +495,7 @@ export function ChatV4({ onLogin, onBack }: { onLogin: () => void; onBack: () =>
 
   return (
     <div className="relative flex h-[100dvh] min-h-0 flex-col overflow-hidden bg-[#111111] lg:h-[calc(100vh-2rem)] lg:bg-transparent">
-      <header className="flex shrink-0 items-center gap-2 border-b border-white/8 bg-[#07101a]/95 px-3 py-2.5 backdrop-blur-2xl sm:gap-3 sm:px-5 sm:py-3">
+      <header className="flex shrink-0 items-center gap-2 border-b border-white/8 bg-[#171717]/95 px-3 py-2.5 backdrop-blur-2xl sm:gap-3 sm:px-5 sm:py-3">
         <button onClick={onBack} className="grid h-9 w-9 shrink-0 place-items-center rounded-full text-slate-200 hover:bg-white/[.06]" aria-label="Orqaga qaytish">
           <ArrowLeft size={17} />
         </button>
@@ -510,7 +510,7 @@ export function ChatV4({ onLogin, onBack }: { onLogin: () => void; onBack: () =>
       {error && <div className="mx-3 mt-2 shrink-0 rounded-2xl border border-rose-300/15 bg-rose-400/10 px-4 py-2 text-xs text-rose-200 backdrop-blur-xl">{error}</div>}
       {creating ? (
         <div className="absolute inset-0 z-40 flex items-end justify-center bg-black/70 p-0 backdrop-blur-md sm:items-center sm:p-4">
-          <div className="h-[min(88dvh,680px)] w-full overflow-hidden rounded-t-[28px] border border-white/10 bg-[#07101d] text-white shadow-2xl shadow-black/80 sm:max-w-lg sm:rounded-[28px]">
+          <div className="h-[min(88dvh,680px)] w-full overflow-hidden rounded-t-[28px] border border-white/10 bg-[#171717] text-white shadow-2xl shadow-black/80 sm:max-w-lg sm:rounded-[28px]">
             {createPanel}
           </div>
         </div>
@@ -519,7 +519,7 @@ export function ChatV4({ onLogin, onBack }: { onLogin: () => void; onBack: () =>
       {!user ? (
         <div className="grid flex-1 place-items-center p-4">
           <div className="w-full max-w-md rounded-[30px] border border-white/10 bg-white/[.045] p-6 text-center shadow-2xl shadow-slate-950/20 backdrop-blur-2xl">
-            <LockKeyhole className="mx-auto text-cyan-200" size={34} />
+            <LockKeyhole className="mx-auto text-zinc-300" size={34} />
             <h2 className="mt-4 text-xl font-black">Chatlar account bilan ishlaydi</h2>
             <p className="mt-2 text-sm leading-6 text-slate-400">Ro&apos;yxatdan o&apos;tgan traderlarni qo&apos;shish va xabarlarni saqlash uchun Google orqali kiring.</p>
             <Button onClick={onLogin} className="mt-5 w-full rounded-2xl bg-white text-slate-950 hover:bg-slate-100">Google orqali kirish</Button>
@@ -527,9 +527,9 @@ export function ChatV4({ onLogin, onBack }: { onLogin: () => void; onBack: () =>
         </div>
       ) : (
         <div className="grid min-h-0 flex-1 grid-cols-1 gap-0 p-0 md:grid-cols-[340px_1fr] md:gap-3 md:p-3">
-          <aside className={`${activeChat ? "hidden md:flex" : "flex"} min-h-0 flex-col border-white/10 bg-[#07101a] p-0 md:rounded-[22px] md:border md:bg-white/[.035]`}>
+          <aside className={`${activeChat ? "hidden md:flex" : "flex"} min-h-0 flex-col border-white/10 bg-[#171717] p-0 md:rounded-[22px] md:border md:bg-white/[.035]`}>
             <div className="flex h-12 shrink-0 items-center gap-2 border-b border-white/7 px-3">
-              <MessageSquareText size={16} className="text-cyan-200" />
+              <MessageSquareText size={16} className="text-zinc-300" />
               <strong className="text-sm">Mening chatlarim</strong>
               <span className="ml-auto rounded-full bg-white/[.06] px-2 py-0.5 text-[10px] text-slate-400">{chats.length}</span>
             </div>
@@ -547,9 +547,9 @@ export function ChatV4({ onLogin, onBack }: { onLogin: () => void; onBack: () =>
               {chats.map((chat) => {
                 const selected = chat.id === activeChatId;
                 return (
-                  <button key={chat.id} onClick={() => setActiveChatId(chat.id)} className={`w-full border-b border-white/7 px-3 py-3 text-left transition ${selected ? "bg-cyan-300/8" : "hover:bg-white/[.04]"}`}>
+                  <button key={chat.id} onClick={() => setActiveChatId(chat.id)} className={`w-full border-b border-white/7 px-3 py-3 text-left transition ${selected ? "bg-white/[.05]" : "hover:bg-white/[.04]"}`}>
                     <div className="flex items-center gap-3">
-                      <span className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-gradient-to-br from-cyan-400/18 to-violet-500/16 text-xs font-black text-cyan-100">{chat.avatar}</span>
+                      <span className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-white/[.07] text-xs font-black text-zinc-100">{chat.avatar}</span>
                       <span className="min-w-0 flex-1"><strong className="block truncate text-sm">{chat.name}</strong><small className="block truncate text-[10px] text-slate-500"><MemberLine members={chat.members} /></small></span>
                       <ShieldCheck size={15} className="text-emerald-300/60" />
                     </div>
@@ -560,27 +560,27 @@ export function ChatV4({ onLogin, onBack }: { onLogin: () => void; onBack: () =>
             </div>
           </aside>
 
-          <section className={`${activeChat ? "flex" : "hidden md:flex"} min-h-0 flex-col overflow-hidden bg-[#07101a] md:rounded-[22px] md:border md:border-white/10 md:bg-white/[.035]`}>
+          <section className={`${activeChat ? "flex" : "hidden md:flex"} min-h-0 flex-col overflow-hidden bg-[#171717] md:rounded-[22px] md:border md:border-white/10 md:bg-white/[.035]`}>
             {activeChat ? (
               <>
                 <div className="flex shrink-0 items-center gap-2 border-b border-white/8 px-2.5 py-2.5 sm:px-4 sm:py-3">
                   <button onClick={() => setActiveChatId(null)} className="grid h-9 w-9 shrink-0 place-items-center rounded-2xl border border-white/10 bg-black/10 text-slate-300 md:hidden" aria-label="Chatlar ro'yxatiga qaytish"><ArrowLeft size={17} /></button>
-                  <span className="grid h-9 w-9 shrink-0 place-items-center rounded-2xl bg-gradient-to-br from-cyan-400/20 to-violet-500/20 text-xs font-black text-cyan-100 sm:h-10 sm:w-10">{activeChat.avatar}</span>
+                  <span className="grid h-9 w-9 shrink-0 place-items-center rounded-2xl bg-white/[.08] text-xs font-black text-zinc-100 sm:h-10 sm:w-10">{activeChat.avatar}</span>
                   <div className="min-w-0"><h2 className="truncate text-sm font-bold sm:text-base">{activeChat.name}</h2><p className="truncate text-[10px] text-slate-500"><MemberLine members={activeChat.members} /></p></div>
-                  <Button onClick={() => setAddMembersOpen((value) => !value)} size="sm" className="ml-auto h-9 shrink-0 rounded-2xl bg-white/[.06] px-2 text-[10px] font-bold text-cyan-100 hover:bg-white/[.1] sm:px-3"><UserPlus size={13} /> <span className="hidden sm:inline">A&apos;zo qo&apos;shish</span></Button>
+                  <Button onClick={() => setAddMembersOpen((value) => !value)} size="sm" className="ml-auto h-9 shrink-0 rounded-2xl bg-white/[.06] px-2 text-[10px] font-bold text-zinc-100 hover:bg-white/[.1] sm:px-3"><UserPlus size={13} /> <span className="hidden sm:inline">A&apos;zo qo&apos;shish</span></Button>
                   <Button disabled={hidingChat} onClick={() => void hideActiveChat()} size="sm" className="h-9 shrink-0 rounded-2xl bg-rose-400/10 px-2 text-[10px] font-bold text-rose-200 hover:bg-rose-400/15 sm:px-3">{hidingChat ? <XSpinner size="sm" /> : <EyeOff size={13} />} <span className="hidden sm:inline">Yashirish</span></Button>
                 </div>
 
                 {addMembersOpen && (
                   <div className="shrink-0 border-b border-white/8 bg-black/10 p-2 sm:p-4">
-                    <div className="rounded-[22px] border border-cyan-200/12 bg-cyan-300/[.055] p-3">
-                      <div className="flex items-center gap-2"><UserPlus size={15} className="text-cyan-200" /><strong className="text-xs">Chatga odam qo&apos;shish</strong><button onClick={resetAddMembersForm} className="ml-auto grid h-7 w-7 place-items-center rounded-xl text-slate-500 hover:bg-white/[.06]" aria-label="Yopish"><X size={15} /></button></div>
+                    <div className="rounded-[22px] border border-white/10 bg-white/[.04] p-3">
+                      <div className="flex items-center gap-2"><UserPlus size={15} className="text-zinc-300" /><strong className="text-xs">Chatga odam qo&apos;shish</strong><button onClick={resetAddMembersForm} className="ml-auto grid h-7 w-7 place-items-center rounded-xl text-slate-500 hover:bg-white/[.06]" aria-label="Yopish"><X size={15} /></button></div>
                       <label className="mt-3 flex h-10 items-center gap-2 rounded-2xl border border-white/10 bg-black/15 px-3 text-slate-500"><Search size={14} /><input value={addMemberQuery} onChange={(event) => setAddMemberQuery(event.target.value)} placeholder="Qo&apos;shiladigan userni izlash" className="min-w-0 flex-1 bg-transparent text-xs text-white outline-none placeholder:text-slate-500" /></label>
                       <div className="mt-3 max-h-40 space-y-1 overflow-y-auto pr-1 sm:max-h-52">
                         {filteredAddUsers.map((option) => renderUserOption(option, selectedAddUserIds.includes(option.id), () => toggleAddUser(option.id)))}
                         {addMemberQuery.trim().length < 2 ? <div className="rounded-2xl border border-dashed border-white/10 p-3 text-center text-[11px] leading-5 text-slate-500">Qo&apos;shish uchun kamida 2 ta harf yozing.</div> : !filteredAddUsers.length ? <div className="rounded-2xl border border-dashed border-white/10 p-3 text-center text-[11px] leading-5 text-slate-500">Bunday user topilmadi yoki u allaqachon chatda bor.</div> : null}
                       </div>
-                      <Button disabled={addingMembers || !selectedAddUserIds.length} onClick={() => void addMembers()} className="mt-3 w-full rounded-2xl bg-gradient-to-r from-cyan-500 to-blue-600 text-xs font-bold">{addingMembers ? <XSpinner size="sm" /> : <UserPlus size={14} />} Tanlanganlarni qo&apos;shish</Button>
+                      <Button disabled={addingMembers || !selectedAddUserIds.length} onClick={() => void addMembers()} className="mt-3 w-full rounded-2xl bg-white text-black text-xs font-bold">{addingMembers ? <XSpinner size="sm" /> : <UserPlus size={14} />} Tanlanganlarni qo&apos;shish</Button>
                     </div>
                   </div>
                 )}
@@ -604,18 +604,18 @@ export function ChatV4({ onLogin, onBack }: { onLogin: () => void; onBack: () =>
                                 {message.isVerified ? <VerifiedBadge size={11} /> : null}
                               </span>
                               <span className="text-[9px] text-slate-600">{message.createdAt}</span>
-                              {!sendingMessage && <button onClick={() => setReplyingTo(message)} className="grid h-6 w-6 place-items-center rounded-lg text-slate-500 hover:bg-white/[.06] hover:text-cyan-200" aria-label="Reply"><Reply size={12} /></button>}
-                              {own && !editing && !sendingMessage && !failedMessage && <button onClick={() => startEditMessage(message)} className="grid h-6 w-6 place-items-center rounded-lg text-slate-500 hover:bg-white/[.06] hover:text-cyan-200" aria-label="Xabarni tahrirlash"><Edit3 size={12} /></button>}
+                              {!sendingMessage && <button onClick={() => setReplyingTo(message)} className="grid h-6 w-6 place-items-center rounded-lg text-slate-500 hover:bg-white/[.06] hover:text-zinc-300" aria-label="Reply"><Reply size={12} /></button>}
+                              {own && !editing && !sendingMessage && !failedMessage && <button onClick={() => startEditMessage(message)} className="grid h-6 w-6 place-items-center rounded-lg text-slate-500 hover:bg-white/[.06] hover:text-zinc-300" aria-label="Xabarni tahrirlash"><Edit3 size={12} /></button>}
                             </div>
                             {editing ? (
-                              <div className="rounded-[20px] border border-cyan-200/18 bg-cyan-400/10 p-2">
+                              <div className="rounded-[20px] border border-white/15 bg-white/[.06] p-2">
                                 <textarea value={editingText} onChange={(event) => setEditingText(event.target.value)} className="min-h-20 w-full resize-none bg-transparent p-2 text-left text-xs text-white outline-none" />
-                                <div className="mt-2 flex justify-end gap-2"><Button onClick={() => { setEditingMessageId(null); setEditingText(""); }} size="sm" className="rounded-xl bg-white/[.06] text-xs">Bekor</Button><Button disabled={savingEdit || !editingText.trim()} onClick={() => void saveMessageEdit()} size="sm" className="rounded-xl bg-cyan-300 text-xs text-slate-950">{savingEdit ? <XSpinner size="sm" /> : <Check size={13} />} Saqlash</Button></div>
+                                <div className="mt-2 flex justify-end gap-2"><Button onClick={() => { setEditingMessageId(null); setEditingText(""); }} size="sm" className="rounded-xl bg-white/[.06] text-xs">Bekor</Button><Button disabled={savingEdit || !editingText.trim()} onClick={() => void saveMessageEdit()} size="sm" className="rounded-xl bg-white text-xs text-slate-950">{savingEdit ? <XSpinner size="sm" /> : <Check size={13} />} Saqlash</Button></div>
                               </div>
                             ) : (
                               <div>
                                 {renderReplyPreview(message.replyTo)}
-                                <p className={`break-words rounded-[20px] px-3.5 py-2.5 text-left text-[13px] leading-5 shadow-lg shadow-slate-950/10 sm:text-xs ${own ? "rounded-tr-md border border-cyan-200/18 bg-cyan-400/15 text-cyan-50" : "rounded-tl-md border border-white/8 bg-white/[.055] text-slate-200"}`}>{message.text}</p>
+                                <p className={`break-words rounded-[20px] px-3.5 py-2.5 text-left text-[13px] leading-5 shadow-lg shadow-slate-950/10 sm:text-xs ${own ? "rounded-tr-md border border-white/15 bg-white/[.08] text-zinc-50" : "rounded-tl-md border border-white/8 bg-white/[.055] text-slate-200"}`}>{message.text}</p>
                                 {own && sendingMessage && <div className="mt-1 flex items-center justify-end gap-1 text-[9px] text-slate-500"><Clock3 size={11} className="animate-spin" /> Yuborilmoqda</div>}
                                 {own && failedMessage && <div className="mt-1 text-right text-[9px] text-rose-300">Yuborilmadi</div>}
                               </div>
@@ -628,18 +628,18 @@ export function ChatV4({ onLogin, onBack }: { onLogin: () => void; onBack: () =>
                   </div>
                 </div>
 
-                <div className="shrink-0 border-t border-white/8 bg-[#101827]/90 p-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] sm:p-4">
-                  {replyingTo && <div className="mb-2 flex items-start gap-2 rounded-2xl border border-cyan-200/12 bg-cyan-300/[.055] px-3 py-2"><Reply className="mt-0.5 shrink-0 text-cyan-200" size={14} /><div className="min-w-0 flex-1"><p className="truncate text-[10px] font-bold text-cyan-100">{replyingTo.name} ga reply</p><p className="truncate text-[11px] text-slate-400">{replyingTo.text}</p></div><button onClick={() => setReplyingTo(null)} className="grid h-6 w-6 place-items-center rounded-lg text-slate-400 hover:bg-white/[.06]" aria-label="Replyni bekor qilish"><X size={13} /></button></div>}
-                  <div className="flex items-end gap-2 rounded-[22px] border border-white/10 bg-black/18 p-1.5 backdrop-blur-xl focus-within:border-cyan-200/25 sm:p-2">
+                <div className="shrink-0 border-t border-white/8 bg-[#1b1b1b]/90 p-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] sm:p-4">
+                  {replyingTo && <div className="mb-2 flex items-start gap-2 rounded-2xl border border-white/10 bg-white/[.04] px-3 py-2"><Reply className="mt-0.5 shrink-0 text-zinc-300" size={14} /><div className="min-w-0 flex-1"><p className="truncate text-[10px] font-bold text-zinc-100">{replyingTo.name} ga reply</p><p className="truncate text-[11px] text-slate-400">{replyingTo.text}</p></div><button onClick={() => setReplyingTo(null)} className="grid h-6 w-6 place-items-center rounded-lg text-slate-400 hover:bg-white/[.06]" aria-label="Replyni bekor qilish"><X size={13} /></button></div>}
+                  <div className="flex items-end gap-2 rounded-[22px] border border-white/10 bg-black/18 p-1.5 backdrop-blur-xl focus-within:border-white/20 sm:p-2">
                     <textarea value={messageText} onChange={(event) => setMessageText(event.target.value)} onKeyDown={(event) => { if (event.key === "Enter" && !event.shiftKey) { event.preventDefault(); send(); } }} rows={1} placeholder={`${activeChat.name} uchun xabar...`} className="max-h-24 min-h-9 min-w-0 flex-1 resize-none bg-transparent px-2 py-2 text-[16px] leading-5 text-white outline-none placeholder:text-slate-600 sm:max-h-28 sm:min-h-10 sm:text-xs" />
-                    <Button disabled={!messageText.trim()} onClick={send} size="icon-sm" className="h-9 w-9 shrink-0 rounded-2xl bg-gradient-to-br from-cyan-500 to-blue-600 sm:h-10 sm:w-10" aria-label="Yuborish"><Send size={15} /></Button>
+                    <Button disabled={!messageText.trim()} onClick={send} size="icon-sm" className="h-9 w-9 shrink-0 rounded-2xl bg-white text-black sm:h-10 sm:w-10" aria-label="Yuborish"><Send size={15} /></Button>
                   </div>
                 </div>
               </>
             ) : (
               <div className="grid flex-1 place-items-center p-5 text-center">
                 <div className="w-full max-w-sm">
-                  <div className="mx-auto grid size-16 place-items-center rounded-3xl border border-cyan-200/15 bg-cyan-300/10 text-cyan-100">
+                  <div className="mx-auto grid size-16 place-items-center rounded-3xl border border-white/10 bg-white/[.06] text-zinc-100">
                     <Sparkles size={26} />
                   </div>
                   <h2 className="mt-5 text-2xl font-black tracking-tight">Yangi suhbat boshlang</h2>

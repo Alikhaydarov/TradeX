@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import {
   ArrowLeft, BarChart3, BookOpen, CalendarDays, CheckCircle2, ChevronDown, ChevronLeft, ChevronRight,
@@ -274,7 +274,7 @@ function Accounts({ summaries, deleting, onAdd, onOpen, onDelete }: { summaries:
           <h1 className="text-3xl font-black tracking-tight">Prop Accounts</h1>
           <p className="mt-1 text-sm text-[#8a8a8a]">Accountni bosib jurnalni oching</p>
         </div>
-        <Button onClick={onAdd} className="h-10 bg-blue-600 sm:ml-auto hover:bg-blue-500">
+        <Button onClick={onAdd} className="h-10 bg-white text-black sm:ml-auto hover:bg-zinc-200">
           <Plus size={16} /> Prop account qo&apos;shish
         </Button>
       </div>
@@ -319,7 +319,7 @@ function Accounts({ summaries, deleting, onAdd, onOpen, onDelete }: { summaries:
 }
 
 function AccountCard({ s, deleting, onOpen, onDelete }: { s: Summary; deleting: string | null; onOpen: (id: string) => void; onDelete: (a: PropAccount) => void }) {
-  const statusColor: Record<string, string> = { Active: "text-emerald-400 bg-emerald-400/10 border-emerald-400/20", Passed: "text-zinc-300 bg-blue-400/10 border-blue-400/20", Failed: "text-rose-400 bg-rose-400/10 border-rose-400/20", Paused: "text-amber-400 bg-amber-400/10 border-amber-400/20" };
+  const statusColor: Record<string, string> = { Active: "text-emerald-400 bg-emerald-400/10 border-emerald-400/20", Passed: "text-zinc-300 bg-white/[.06] border-white/15", Failed: "text-rose-400 bg-rose-400/10 border-rose-400/20", Paused: "text-amber-400 bg-amber-400/10 border-amber-400/20" };
 
   return (
     <div
@@ -784,7 +784,7 @@ function Workspace(p: {
                             {s.rate}% / {s.pnl >= 0 ? "+" : ""}{cash.format(s.pnl)}
                           </span>
                         </div>
-                        <ProgressBar label={`${s.trades} trades`} value={s.rate} color="bg-blue-500" />
+                        <ProgressBar label={`${s.trades} trades`} value={s.rate} color="bg-zinc-300" />
                       </div>
                     ))
                   : <Empty text="Setup statistikasi yo'q." />
@@ -1173,7 +1173,7 @@ function ProgressBar({ label, value, color }: { label: string; value: number; co
         <span className="text-[#8a8a8a]">{label}</span>
         <b className="ml-auto text-[#f1f1f1]">{value.toFixed(0)}%</b>
       </div>
-      <div className="h-1.5 overflow-hidden rounded-full bg-[#0f1b2d]">
+      <div className="h-1.5 overflow-hidden rounded-full bg-[#242424]">
         <div className={`h-full rounded-full transition-all ${color}`} style={{ width: `${Math.min(100, value)}%` }} />
       </div>
     </div>

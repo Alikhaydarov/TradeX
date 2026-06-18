@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { ArrowRight, LockKeyhole, ShieldCheck, Sparkles } from "lucide-react";
 import dynamic from "next/dynamic";
@@ -59,7 +59,7 @@ function AuthGate({ onLogin }: { onLogin: () => void }) {
   return (
     <main className="grid min-h-[100dvh] place-items-center overflow-hidden bg-[#0b0b0b] px-4 py-[max(1rem,env(safe-area-inset-top))] pb-[max(1rem,env(safe-area-inset-bottom))] text-white sm:px-6">
       <section className="auth-card-in auth-border-run relative w-full max-w-[520px] overflow-hidden rounded-[26px] border border-white/10 bg-[#111111]/94 p-5 shadow-2xl shadow-black/55 backdrop-blur-2xl sm:p-7">
-        <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-cyan-300/50 to-transparent" />
+        <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/30 to-transparent" />
 
         <div className="flex items-start justify-between gap-4">
           <div className="flex items-center gap-3">

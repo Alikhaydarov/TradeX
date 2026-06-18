@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { BarChart3, Clock3, LoaderCircle, Play, Server, TrendingDown, TrendingUp } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
@@ -30,14 +30,14 @@ const selectors = [
 
 function StatCard({ label, value, tone = "blue" }: { label: string; value: string; tone?: "blue" | "green" | "rose" | "violet" }) {
   const toneClass = {
-    blue: "text-blue-300 bg-blue-400/10",
+    blue: "text-zinc-300 bg-white/[.06]",
     green: "text-emerald-300 bg-emerald-400/10",
     rose: "text-rose-300 bg-rose-400/10",
-    violet: "text-violet-300 bg-violet-400/10",
+    violet: "text-zinc-300 bg-white/[.06]",
   }[tone];
 
   return (
-    <div className="rounded-[22px] border border-white/9 bg-[#0b1220]/70 p-4 shadow-xl shadow-slate-950/20 backdrop-blur-2xl">
+    <div className="rounded-[22px] border border-white/9 bg-[#171717]/70 p-4 shadow-xl shadow-slate-950/20 backdrop-blur-2xl">
       <p className="text-[10px] font-black uppercase tracking-[.18em] text-slate-500">{label}</p>
       <p className={`mt-3 inline-flex rounded-2xl px-3 py-2 font-mono text-2xl font-black ${toneClass}`}>{value}</p>
     </div>
@@ -147,14 +147,14 @@ export function Backtest() {
   };
 
   return (
-    <div className="min-h-full bg-[#01040a]">
+    <div className="min-h-full bg-[#0b0b0b]">
       <header className="sticky top-0 z-20 border-b border-white/8 bg-[#111111]/88 px-4 py-4 backdrop-blur-2xl sm:px-6">
         <div className="mx-auto flex max-w-6xl items-center gap-3">
-          <span className="grid size-10 shrink-0 place-items-center rounded-2xl border border-blue-300/12 bg-blue-400/10 text-blue-200">
+          <span className="grid size-10 shrink-0 place-items-center rounded-2xl border border-white/10 bg-white/[.06] text-zinc-300">
             <BarChart3 size={18} />
           </span>
           <div className="min-w-0">
-            <p className="text-[10px] font-black uppercase tracking-[.2em] text-blue-300/70">Strategy lab</p>
+            <p className="text-[10px] font-black uppercase tracking-[.2em] text-zinc-300/70">Strategy lab</p>
             <h1 className="truncate text-2xl font-black tracking-tight">Backtest</h1>
           </div>
           <span className="ml-auto hidden items-center gap-1 rounded-full border border-emerald-300/15 bg-emerald-400/10 px-3 py-1.5 text-xs font-bold text-emerald-300 sm:flex">
@@ -164,9 +164,9 @@ export function Backtest() {
       </header>
 
       <main className="mx-auto grid max-w-6xl gap-4 px-3 py-4 sm:px-5 lg:grid-cols-[360px_minmax(0,1fr)]">
-        <section className="rounded-[28px] border border-white/10 bg-[#0b1220]/70 p-4 shadow-2xl shadow-slate-950/25 backdrop-blur-2xl">
+        <section className="rounded-[28px] border border-white/10 bg-[#171717]/70 p-4 shadow-2xl shadow-slate-950/25 backdrop-blur-2xl">
           <div className="flex items-center gap-3">
-            <span className="grid size-11 place-items-center rounded-2xl bg-cyan-300/10 text-cyan-200">
+            <span className="grid size-11 place-items-center rounded-2xl bg-white/[.06] text-zinc-300">
               <Play size={18} />
             </span>
             <div>
@@ -184,7 +184,7 @@ export function Backtest() {
                 <select
                   value={String(form[item.key])}
                   onChange={(event) => setField(item.key, event.target.value)}
-                  className="mt-2 h-11 w-full rounded-2xl border border-white/10 bg-[#070d18] px-3 text-sm font-bold text-white outline-none transition focus:border-cyan-300/40"
+                  className="mt-2 h-11 w-full rounded-2xl border border-white/10 bg-[#121212] px-3 text-sm font-bold text-white outline-none transition focus:border-zinc-500"
                 >
                   {item.options.map((option) => <option key={option}>{option}</option>)}
                 </select>
@@ -198,7 +198,7 @@ export function Backtest() {
                   type="number"
                   value={form.initialBalance}
                   onChange={(event) => setField("initialBalance", Number(event.target.value))}
-                  className="mt-2 h-11 rounded-2xl border-white/10 bg-[#070d18] font-mono text-white"
+                  className="mt-2 h-11 rounded-2xl border-white/10 bg-[#121212] font-mono text-white"
                 />
               </label>
               <label className="text-[11px] font-black uppercase tracking-[.14em] text-slate-500">
@@ -209,7 +209,7 @@ export function Backtest() {
                   max="5"
                   value={form.riskPercent}
                   onChange={(event) => setField("riskPercent", Number(event.target.value))}
-                  className="mt-2 h-11 rounded-2xl border-white/10 bg-[#070d18] font-mono text-white"
+                  className="mt-2 h-11 rounded-2xl border-white/10 bg-[#121212] font-mono text-white"
                 />
               </label>
             </div>
@@ -229,7 +229,7 @@ export function Backtest() {
             <StatCard label="Profit factor" value={previewStats.profit} tone="violet" />
           </div>
 
-          <section className="overflow-hidden rounded-[28px] border border-white/10 bg-[#0b1220]/70 shadow-2xl shadow-slate-950/20 backdrop-blur-2xl">
+          <section className="overflow-hidden rounded-[28px] border border-white/10 bg-[#171717]/70 shadow-2xl shadow-slate-950/20 backdrop-blur-2xl">
             <div className="flex flex-wrap items-center gap-3 border-b border-white/8 px-4 py-4 sm:px-5">
               <div>
                 <h2 className="font-black">Equity curve</h2>
@@ -257,7 +257,7 @@ export function Backtest() {
                     <CartesianGrid stroke="#333333" vertical={false} />
                     <XAxis dataKey="step" stroke="#8a8a8a" tickLine={false} axisLine={false} />
                     <YAxis stroke="#8a8a8a" tickLine={false} axisLine={false} />
-                    <Tooltip contentStyle={{ background: "#07101dcc", border: "1px solid #263653", borderRadius: 16 }} />
+                    <Tooltip contentStyle={{ background: "#171717cc", border: "1px solid #333333", borderRadius: 16 }} />
                     <Area dataKey="equity" stroke="#67e8f9" strokeWidth={2.5} fill="url(#equityFill)" />
                   </AreaChart>
                 </ResponsiveContainer>
@@ -273,7 +273,7 @@ export function Backtest() {
             </div>
           </section>
 
-          <section className="overflow-hidden rounded-[28px] border border-white/10 bg-[#0b1220]/55 backdrop-blur-2xl">
+          <section className="overflow-hidden rounded-[28px] border border-white/10 bg-[#171717]/55 backdrop-blur-2xl">
             <div className="flex items-center border-b border-white/8 px-4 py-4 sm:px-5">
               <div>
                 <h2 className="font-black">Saved runs</h2>

@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 
 const markets = [
   { coin: "BTC", price: "$104,250", change: "+2.8%", color: "bg-orange-400" },
-  { coin: "ETH", price: "$3,864", change: "+1.4%", color: "bg-indigo-400" },
+  { coin: "ETH", price: "$3,864", change: "+1.4%", color: "bg-zinc-400" },
   { coin: "XAU", price: "$2,354", change: "-0.3%", color: "bg-amber-300" },
 ];
 
@@ -15,9 +15,9 @@ export function RightPanel() {
 
   return (
     <aside className="sticky top-4 hidden h-[calc(100vh-2rem)] w-[300px] shrink-0 space-y-3 overflow-y-auto xl:block">
-      <section className="rounded-[22px] border border-white/9 bg-[#0b1220]/70 p-4 shadow-xl shadow-slate-950/20 backdrop-blur-2xl">
+      <section className="rounded-[22px] border border-white/9 bg-[#171717]/70 p-4 shadow-xl shadow-slate-950/20 backdrop-blur-2xl">
         <div className="flex items-center gap-2">
-          <Activity className="text-cyan-300" size={18} />
+          <Activity className="text-zinc-300" size={18} />
           <div>
             <h2 className="text-sm font-bold">Market radar</h2>
             <p className="text-[10px] text-slate-500">Watchlist snapshot</p>
@@ -51,9 +51,9 @@ export function RightPanel() {
           ))}
         </div>
       </section>
-      <section className="rounded-[22px] border border-white/9 bg-[#0b1220]/70 p-4 backdrop-blur-2xl">
+      <section className="rounded-[22px] border border-white/9 bg-[#171717]/70 p-4 backdrop-blur-2xl">
         <div className="flex items-center gap-2">
-          <Clock3 size={17} className="text-blue-300" />
+          <Clock3 size={17} className="text-zinc-300" />
           <h2 className="text-sm font-bold">Sessions</h2>
         </div>
         <div className="mt-4 space-y-3 text-xs">
