@@ -865,10 +865,10 @@ function TradeEditor({ trade, saving, onClose, onSave, onDelete }: { trade: Jour
   const [screenshotOpen, setScreenshotOpen] = useState(false);
 
   return (
-    <div className="fixed inset-0 z-[9999] flex items-start justify-center overflow-y-auto bg-black/70 p-3 pt-[max(1rem,env(safe-area-inset-top))] backdrop-blur-md sm:items-center sm:p-4">
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center overflow-hidden bg-black/70 p-2 pt-[max(.5rem,env(safe-area-inset-top))] pb-[max(.5rem,env(safe-area-inset-bottom))] backdrop-blur-md sm:p-4">
       <div className="absolute inset-0" onClick={onClose} aria-hidden="true" />
-      <form action={onSave} className="relative z-10 w-full max-w-4xl overflow-hidden rounded-[28px] border border-[#2a2a2a] bg-[#171717] text-white shadow-2xl shadow-black/80">
-        <header className="flex items-center gap-3 border-b border-[#2a2a2a] px-5 py-4">
+      <form action={onSave} className="relative z-10 flex h-[calc(100dvh-1rem)] max-h-[920px] w-full max-w-4xl flex-col overflow-hidden rounded-[22px] border border-border bg-card text-foreground shadow-2xl shadow-black/80 sm:h-auto sm:max-h-[92dvh] sm:rounded-2xl">
+        <header className="flex shrink-0 items-center gap-3 border-b border-border px-4 py-3.5 sm:px-5 sm:py-4">
           <div className="min-w-0 flex-1">
             <h3 className="truncate text-lg font-black">{trade.symbol} trade</h3>
             <p className="text-xs text-[#8a8a8a]">Trade review va edit</p>
@@ -877,9 +877,9 @@ function TradeEditor({ trade, saving, onClose, onSave, onDelete }: { trade: Jour
             <X size={17} />
           </button>
         </header>
-        <div className="max-h-[76dvh] space-y-4 overflow-y-auto p-4 sm:p-5">
-          <div className="grid min-w-0 gap-3 sm:grid-cols-[repeat(3,minmax(0,1fr))]">
-            <label className="min-w-0 text-xs text-[#8a8a8a]">Symbol<Input name="symbol" defaultValue={trade.symbol} className="mt-1" /></label>
+        <div className="min-h-0 flex-1 space-y-4 overflow-y-auto overscroll-contain p-4 sm:p-5">
+          <div className="grid min-w-0 grid-cols-2 gap-3 sm:grid-cols-[repeat(3,minmax(0,1fr))]">
+            <label className="col-span-2 min-w-0 text-xs text-muted-foreground sm:col-span-1">Symbol<Input name="symbol" defaultValue={trade.symbol} className="mt-1" /></label>
             <label className="min-w-0 text-xs text-[#8a8a8a]">
               Side
               <Select name="side" defaultValue={trade.side}>
@@ -892,18 +892,18 @@ function TradeEditor({ trade, saving, onClose, onSave, onDelete }: { trade: Jour
             </label>
             <label className="min-w-0 text-xs text-[#8a8a8a]">Date<Input name="tradedAt" type="date" defaultValue={trade.rawDate} className="mt-1" /></label>
           </div>
-          <div className="grid min-w-0 gap-3 sm:grid-cols-[repeat(3,minmax(0,1fr))]">
+          <div className="grid min-w-0 grid-cols-2 gap-3 sm:grid-cols-[repeat(3,minmax(0,1fr))]">
             <label className="min-w-0 text-xs text-[#8a8a8a]">PnL<Input name="pnl" inputMode="decimal" defaultValue={String(trade.pnl)} className="mt-1" /></label>
             <label className="min-w-0 text-xs text-[#8a8a8a]">Quantity<Input name="quantity" inputMode="decimal" defaultValue={String(trade.quantity)} className="mt-1" /></label>
-            <label className="min-w-0 text-xs text-[#8a8a8a]">Fees<Input name="fees" inputMode="decimal" defaultValue={String(trade.fees)} className="mt-1" /></label>
+            <label className="col-span-2 min-w-0 text-xs text-[#8a8a8a] sm:col-span-1">Fees<Input name="fees" inputMode="decimal" defaultValue={String(trade.fees)} className="mt-1" /></label>
           </div>
-          <div className="grid min-w-0 gap-3 sm:grid-cols-[repeat(3,minmax(0,1fr))]">
+          <div className="grid min-w-0 grid-cols-2 gap-3 sm:grid-cols-[repeat(3,minmax(0,1fr))]">
             <label className="text-xs text-[#8a8a8a]">Risk $<Input name="riskAmount" inputMode="decimal" defaultValue={String(trade.riskAmount ?? 0)} className="mt-1 border-[#2a2a2a] bg-[#121212]" /></label>
             <label className="text-xs text-[#8a8a8a]">RR<Input name="resultR" inputMode="decimal" defaultValue={String(trade.resultR ?? 0)} className="mt-1 border-[#2a2a2a] bg-[#121212]" /></label>
-            <label className="text-xs text-[#8a8a8a]">Risk %<Input name="riskPercent" defaultValue={trade.riskPercent ?? ""} className="mt-1 border-[#2a2a2a] bg-[#121212]" /></label>
+            <label className="col-span-2 text-xs text-[#8a8a8a] sm:col-span-1">Risk %<Input name="riskPercent" defaultValue={trade.riskPercent ?? ""} className="mt-1 border-[#2a2a2a] bg-[#121212]" /></label>
           </div>
-          <div className="grid min-w-0 gap-3 sm:grid-cols-[repeat(3,minmax(0,1fr))]">
-            <label className="text-xs text-[#8a8a8a]">Setup<Input name="setup" defaultValue={trade.setup ?? ""} className="mt-1 border-[#2a2a2a] bg-[#121212]" /></label>
+          <div className="grid min-w-0 grid-cols-2 gap-3 sm:grid-cols-[repeat(3,minmax(0,1fr))]">
+            <label className="col-span-2 text-xs text-[#8a8a8a] sm:col-span-1">Setup<Input name="setup" defaultValue={trade.setup ?? ""} className="mt-1 border-[#2a2a2a] bg-[#121212]" /></label>
             <label className="text-xs text-[#8a8a8a]">Session<Input name="session" defaultValue={trade.session ?? ""} className="mt-1 border-[#2a2a2a] bg-[#121212]" /></label>
             <label className="text-xs text-[#8a8a8a]">Tags<Input name="tags" defaultValue={(trade.tags ?? []).join(", ")} className="mt-1 border-[#2a2a2a] bg-[#121212]" /></label>
           </div>
@@ -960,8 +960,8 @@ function TradeEditor({ trade, saving, onClose, onSave, onDelete }: { trade: Jour
             </div>
           </details>
         </div>
-        <footer className="flex gap-2 border-t border-[#2a2a2a] p-4">
-          <Button type="button" variant="outline" onClick={onClose} className="border-[#2a2a2a] bg-transparent">Cancel</Button>
+        <footer className="grid shrink-0 grid-cols-3 gap-2 border-t border-border bg-card p-3 sm:flex sm:p-4">
+          <Button type="button" variant="outline" onClick={onClose}>Cancel</Button>
           <AlertDialog>
             <AlertDialogTrigger asChild>
               <Button type="button" disabled={saving} variant="destructive">
@@ -983,7 +983,7 @@ function TradeEditor({ trade, saving, onClose, onSave, onDelete }: { trade: Jour
               </AlertDialogFooter>
             </AlertDialogContent>
           </AlertDialog>
-          <Button disabled={saving} className="ml-auto bg-white text-black hover:bg-zinc-200">{saving ? <LoaderCircle className="animate-spin" size={15} /> : null} Save changes</Button>
+          <Button disabled={saving} className="bg-white text-black hover:bg-zinc-200 sm:ml-auto">{saving ? <LoaderCircle className="animate-spin" size={15} /> : null}<span className="sm:hidden">Save</span><span className="hidden sm:inline">Save changes</span></Button>
         </footer>
       </form>
       <Dialog open={screenshotOpen} onOpenChange={setScreenshotOpen}>
