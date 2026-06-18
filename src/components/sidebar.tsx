@@ -22,7 +22,7 @@ const baseNav = [
   { id: "feed" as const, label: "Home", hint: "Market pulse", icon: Home },
   { id: "chat" as const, label: "Chat", hint: "Trader rooms", icon: MessageCircle },
   { id: "journal" as const, label: "Journal", hint: "Trade records", icon: BookOpen },
-  { id: "backtest" as const, label: "Backtest", hint: "Strategy lab", icon: BarChart3 },
+  { id: "backtest" as const, label: "Backtest", hint: "Hali ishlamaydi", icon: BarChart3, unavailable: true },
   { id: "account" as const, label: "Account", hint: "Profile settings", icon: UserRound },
 ];
 
@@ -103,7 +103,9 @@ export function Sidebar({
         </button>
 
         <nav className="mt-6 space-y-1.5">
-          {nav.map(({ id, label, hint, icon: Icon }) => {
+          {nav.map((item) => {
+            const { id, label, hint, icon: Icon } = item;
+            const unavailable = "unavailable" in item && item.unavailable;
             const selected = active === id;
             return (
               <button
@@ -119,7 +121,10 @@ export function Sidebar({
                   <Icon size={18} strokeWidth={selected ? 2.5 : 2} />
                 </span>
                 <span className="min-w-0">
-                  <strong className="block text-sm">{label}</strong>
+                  <span className="flex items-center gap-2">
+                    <strong className="block text-sm">{label}</strong>
+                    {unavailable ? <small className="rounded-md border border-amber-300/15 bg-amber-400/10 px-1.5 py-0.5 text-[8px] font-black uppercase text-amber-200">Soon</small> : null}
+                  </span>
                   <small className="block truncate text-[10px] text-slate-500">{hint}</small>
                 </span>
               </button>
@@ -158,11 +163,16 @@ export function Sidebar({
 
       {!hideMobile && (
         <nav className="fixed inset-x-3 bottom-3 z-50 flex h-16 items-center justify-around rounded-2xl border border-white/10 bg-[#111111]/88 px-2 shadow-2xl shadow-black/30 backdrop-blur-2xl lg:hidden">
-          {nav.map(({ id, label, icon: Icon }) => (
-            <button key={id} onClick={() => onChange(id)} className={`grid h-11 w-11 place-items-center rounded-xl transition-colors duration-100 ${active === id ? "bg-white/[.08] text-zinc-300 ring-1 ring-white/15" : "text-slate-600"}`} aria-label={label}>
-              <Icon size={21} strokeWidth={active === id ? 2.6 : 2} />
-            </button>
-          ))}
+          {nav.map((item) => {
+            const { id, label, icon: Icon } = item;
+            const unavailable = "unavailable" in item && item.unavailable;
+            return (
+              <button key={id} onClick={() => onChange(id)} className={`relative grid h-11 w-11 place-items-center rounded-xl transition-colors duration-100 ${active === id ? "bg-white/[.08] text-zinc-300 ring-1 ring-white/15" : "text-slate-600"}`} aria-label={unavailable ? `${label} hali ishlamaydi` : label}>
+                <Icon size={21} strokeWidth={active === id ? 2.6 : 2} />
+                {unavailable ? <span className="absolute right-1.5 top-1.5 size-1.5 rounded-full bg-amber-300" /> : null}
+              </button>
+            );
+          })}
         </nav>
       )}
     </>

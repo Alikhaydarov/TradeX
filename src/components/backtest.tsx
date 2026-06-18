@@ -1,6 +1,6 @@
 "use client";
 
-import { BarChart3, Clock3, LoaderCircle, Play, Server, TrendingDown, TrendingUp } from "lucide-react";
+import { BarChart3, Clock3, LoaderCircle, Play, TrendingDown, TrendingUp } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { apiRequest } from "@/lib/api-client";
@@ -74,11 +74,10 @@ function RunRow({ run }: { run: Run }) {
 
 export function Backtest() {
   const { user } = useAuth();
-  const [result, setResult] = useState<BacktestResult | null>(null);
+  const [result] = useState<BacktestResult | null>(null);
   const [runs, setRuns] = useState<Run[]>([]);
-  const [loading, setLoading] = useState(false);
   const [historyLoading, setHistoryLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [error] = useState<string | null>(null);
   const [form, setForm] = useState({
     asset: "BTC/USDT",
     strategy: "EMA Crossover",
@@ -128,26 +127,6 @@ export function Backtest() {
     setForm((current) => ({ ...current, [key]: value }));
   };
 
-  const run = async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const data = await apiRequest<{ result: BacktestResult }>("/api/backtests", {
-        method: "POST",
-        body: JSON.stringify(form),
-      });
-      setResult(data.result);
-      if (user) {
-        const history = await apiRequest<{ runs: Run[] }>("/api/backtests");
-        setRuns(history.runs);
-      }
-    } catch (nextError) {
-      setError(nextError instanceof Error ? nextError.message : "Backtest bajarilmadi");
-    } finally {
-      setLoading(false);
-    }
-  };
-
   return (
     <div className="min-h-full bg-[#0b0b0b]">
       <header className="sticky top-0 z-20 border-b border-white/8 bg-[#111111]/88 px-4 py-4 backdrop-blur-2xl sm:px-6">
@@ -159,13 +138,16 @@ export function Backtest() {
             <p className="text-[10px] font-black uppercase tracking-[.2em] text-zinc-300/70">Strategy lab</p>
             <h1 className="truncate text-2xl font-black tracking-tight">Backtest</h1>
           </div>
-          <span className="ml-auto hidden items-center gap-1 rounded-full border border-emerald-300/15 bg-emerald-400/10 px-3 py-1.5 text-xs font-bold text-emerald-300 sm:flex">
-            <Server size={14} /> Online
+          <span className="ml-auto flex items-center gap-1 rounded-full border border-amber-300/15 bg-amber-400/10 px-3 py-1.5 text-[10px] font-bold text-amber-200 sm:text-xs">
+            <Clock3 size={14} /> Ishlab chiqilmoqda
           </span>
         </div>
       </header>
 
       <main className="mx-auto grid max-w-6xl gap-4 px-3 py-4 sm:px-5 lg:grid-cols-[360px_minmax(0,1fr)]">
+        <div className="rounded-2xl border border-amber-300/15 bg-amber-400/[.07] px-4 py-3 text-sm text-amber-100 lg:col-span-2">
+          <strong>Backtest hali ishlamaydi.</strong> Bu bo&apos;lim ishlab chiqilmoqda va keyingi yangilanishda ishga tushadi.
+        </div>
         <section className="rounded-[28px] border border-white/10 bg-[#171717]/70 p-4 shadow-2xl shadow-slate-950/25 backdrop-blur-2xl">
           <div className="flex items-center gap-3">
             <span className="grid size-11 place-items-center rounded-2xl bg-white/[.06] text-zinc-300">
@@ -184,6 +166,7 @@ export function Backtest() {
               <div key={item.key} className="grid gap-2">
                 <Label className="text-[11px] font-black uppercase tracking-[.14em] text-slate-500">{item.label}</Label>
                 <Select
+                  disabled
                   value={String(form[item.key])}
                   onValueChange={(value) => setField(item.key, value)}
                 >
@@ -198,6 +181,7 @@ export function Backtest() {
                 Balance
                 <Input
                   type="number"
+                  disabled
                   value={form.initialBalance}
                   onChange={(event) => setField("initialBalance", Number(event.target.value))}
                   className="mt-2 h-11 rounded-2xl border-white/10 bg-[#121212] font-mono text-white"
@@ -207,6 +191,7 @@ export function Backtest() {
                 Risk %
                 <Input
                   type="number"
+                  disabled
                   step=".1"
                   max="5"
                   value={form.riskPercent}
@@ -217,9 +202,9 @@ export function Backtest() {
             </div>
           </div>
 
-          <Button onClick={() => void run()} disabled={loading} className="mt-5 h-12 w-full rounded-2xl bg-white text-sm font-black text-slate-950 hover:bg-slate-200">
-            {loading ? <LoaderCircle className="animate-spin" size={16} /> : <Play size={16} />}
-            Backtestni boshlash
+          <Button disabled className="mt-5 h-12 w-full rounded-2xl text-sm font-black">
+            <Clock3 size={16} />
+            Tez orada
           </Button>
         </section>
 
