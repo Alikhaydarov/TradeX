@@ -162,7 +162,7 @@ export function Sidebar({
       </aside>
 
       {!hideMobile && (
-        <nav className="fixed inset-x-3 bottom-3 z-50 flex h-16 items-center justify-around rounded-2xl border border-white/10 bg-[#111111]/88 px-2 shadow-2xl shadow-black/30 backdrop-blur-2xl lg:hidden">
+        <nav className="fixed inset-x-2 bottom-[max(.5rem,env(safe-area-inset-bottom))] z-50 flex h-16 items-center justify-around rounded-2xl border border-white/10 bg-[#111111]/94 px-1.5 shadow-2xl shadow-black/30 backdrop-blur-2xl sm:inset-x-3 sm:px-2 lg:hidden">
           {nav.map((item) => {
             const { id, label, icon: Icon } = item;
             const unavailable = "unavailable" in item && item.unavailable;

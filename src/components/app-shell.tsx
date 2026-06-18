@@ -57,8 +57,8 @@ function getCurrentProfileUsername() {
 
 function AuthGate({ onLogin }: { onLogin: () => void }) {
   return (
-    <main className="grid min-h-[100dvh] place-items-center overflow-hidden bg-[#0b0b0b] px-4 py-[max(1rem,env(safe-area-inset-top))] pb-[max(1rem,env(safe-area-inset-bottom))] text-white sm:px-6">
-      <section className="auth-card-in auth-border-run relative w-full max-w-[520px] overflow-hidden rounded-[26px] border border-white/10 bg-[#111111]/94 p-5 shadow-2xl shadow-black/55 backdrop-blur-2xl sm:p-7">
+    <main className="grid min-h-[100dvh] place-items-center overflow-hidden bg-[#0b0b0b] px-3 py-[max(.75rem,env(safe-area-inset-top))] pb-[max(.75rem,env(safe-area-inset-bottom))] text-white sm:px-6 sm:py-[max(1rem,env(safe-area-inset-top))]">
+      <section className="auth-card-in auth-border-run relative w-full max-w-[520px] overflow-hidden rounded-[22px] border border-white/10 bg-[#111111]/94 p-4 shadow-2xl shadow-black/55 backdrop-blur-2xl sm:rounded-[26px] sm:p-7">
         <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/30 to-transparent" />
 
         <div className="flex items-start justify-between gap-4">
@@ -226,7 +226,7 @@ export function AppShell() {
       <div className="mx-auto flex min-h-[100dvh] max-w-[1600px] gap-3 bg-background p-0 text-foreground lg:p-3">
         <Sidebar active={section} onChange={changeSection} onPost={() => changeSection("feed")} onLogin={openLogin} user={user} hideMobile={chatOpen} isAdmin={isAdmin} />
         <div className="hidden w-[232px] shrink-0 lg:block" aria-hidden="true" />
-        <main className={chatOpen ? "fixed inset-0 z-50 min-w-0 flex-1 overflow-hidden bg-background shadow-2xl shadow-black/35 lg:static lg:z-auto lg:min-h-[calc(100dvh-1.5rem)] lg:rounded-[22px] lg:border lg:border-border" : "min-h-[100dvh] min-w-0 flex-1 overflow-hidden bg-background pb-20 shadow-2xl shadow-black/25 lg:min-h-[calc(100dvh-1.5rem)] lg:rounded-[22px] lg:border lg:border-border lg:pb-0"}>
+        <main className={chatOpen ? "fixed inset-0 z-50 min-w-0 flex-1 overflow-hidden bg-background shadow-2xl shadow-black/35 lg:static lg:z-auto lg:min-h-[calc(100dvh-1.5rem)] lg:rounded-[22px] lg:border lg:border-border" : "min-h-[100dvh] min-w-0 flex-1 overflow-x-hidden bg-background pb-[calc(5.5rem+env(safe-area-inset-bottom))] shadow-2xl shadow-black/25 lg:min-h-[calc(100dvh-1.5rem)] lg:rounded-[22px] lg:border lg:border-border lg:pb-0"}>
           {visitedSections.map((item) => {
             if (item === "admin" && !isAdmin) return null;
             return (

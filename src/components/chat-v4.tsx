@@ -496,8 +496,8 @@ export function ChatV4({ onLogin, onBack }: { onLogin: () => void; onBack: () =>
   );
 
   return (
-    <div className="relative flex h-[100dvh] min-h-0 flex-col overflow-hidden bg-[#111111] lg:h-[calc(100vh-2rem)] lg:bg-transparent">
-      <header className="flex shrink-0 items-center gap-2 border-b border-white/8 bg-[#171717]/95 px-3 py-2.5 backdrop-blur-2xl sm:gap-3 sm:px-5 sm:py-3">
+    <div className="relative flex h-[100dvh] min-h-0 w-full flex-col overflow-hidden bg-[#111111] lg:h-[calc(100dvh-1.5rem)] lg:bg-transparent">
+      <header className="flex min-h-14 shrink-0 items-center gap-2 border-b border-white/8 bg-[#171717]/95 px-2.5 py-2 backdrop-blur-2xl sm:gap-3 sm:px-5 sm:py-3">
         <button onClick={onBack} className="grid h-9 w-9 shrink-0 place-items-center rounded-full text-slate-200 hover:bg-white/[.06]" aria-label="Orqaga qaytish">
           <ArrowLeft size={17} />
         </button>
@@ -512,7 +512,7 @@ export function ChatV4({ onLogin, onBack }: { onLogin: () => void; onBack: () =>
       {error && <div className="mx-3 mt-2 shrink-0 rounded-2xl border border-rose-300/15 bg-rose-400/10 px-4 py-2 text-xs text-rose-200 backdrop-blur-xl">{error}</div>}
       {creating ? (
         <div className="absolute inset-0 z-40 flex items-end justify-center bg-black/70 p-0 backdrop-blur-md sm:items-center sm:p-4">
-          <div className="h-[min(88dvh,680px)] w-full overflow-hidden rounded-t-[28px] border border-white/10 bg-[#171717] text-white shadow-2xl shadow-black/80 sm:max-w-lg sm:rounded-[28px]">
+          <div className="h-[min(92dvh,720px)] w-full overflow-hidden rounded-t-2xl border border-white/10 bg-[#171717] text-white shadow-2xl shadow-black/80 sm:max-w-lg sm:rounded-[28px]">
             {createPanel}
           </div>
         </div>

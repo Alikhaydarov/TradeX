@@ -433,7 +433,7 @@ export function FeedV3({ onLogin }: { onLogin: () => void }) {
 
   return (
     <div className="min-h-full">
-      <header className="sticky top-0 z-20 border-b border-white/8 bg-[#171717]/45 px-4 py-4 backdrop-blur-2xl sm:px-6">
+      <header className="sticky top-0 z-20 border-b border-white/8 bg-[#171717]/90 px-3 py-3 backdrop-blur-2xl sm:px-6 sm:py-4">
         <div className="mx-auto flex max-w-3xl items-center gap-3">
           <div className="min-w-0 flex-1">
             <p className="text-[10px] font-bold uppercase tracking-[.22em] text-zinc-300/70">TradeWay workspace</p>
@@ -533,7 +533,7 @@ export function FeedV3({ onLogin }: { onLogin: () => void }) {
                       </div>
                     ) : null}
 
-                    <div className="mt-4 grid grid-cols-5 items-center text-slate-500 sm:flex sm:gap-4">
+                    <div className="mt-4 grid grid-cols-5 items-center gap-1 text-slate-500 sm:flex sm:gap-4">
                       <button onClick={() => void toggleReplies(post)} className={`flex items-center gap-1.5 text-[11px] hover:text-zinc-300 ${openReplies === post.id ? "text-zinc-300" : ""}`} aria-label="Javoblar"><MessageCircle size={16} />{post.replies}</button>
                       <button onClick={() => void toggleRepost(post)} className={`flex items-center gap-1.5 text-[11px] hover:text-emerald-200 ${post.reposted ? "text-emerald-300" : ""}`} aria-label="Repost"><Repeat2 size={16} />{post.reposts}</button>
                       <button onClick={() => void toggleLike(post)} className={`flex items-center gap-1.5 text-[11px] hover:text-white ${post.liked ? "text-rose-300" : ""}`}><Heart size={16} fill={post.liked ? "currentColor" : "none"} />{post.likes}</button>

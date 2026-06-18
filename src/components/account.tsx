@@ -400,7 +400,7 @@ export function Account({ onLogin, profileUsername }: { onLogin: () => void; pro
 
   return (
     <div className="min-h-full bg-[#0b0b0b]">
-      <header className="sticky top-0 z-20 flex h-14 items-center gap-3 border-b border-white/8 bg-[#111111]/86 px-4 backdrop-blur-2xl">
+      <header className="sticky top-0 z-20 flex h-14 items-center gap-3 border-b border-white/8 bg-[#111111]/94 px-3 backdrop-blur-2xl sm:px-4">
         <div className="grid h-9 w-9 place-items-center rounded-full border border-white/10 bg-white/[.05] text-zinc-300"><UserRound size={17} /></div>
         <div className="min-w-0">
           <h1 className="truncate text-lg font-black leading-5">TradeWay Profile</h1>
@@ -464,7 +464,7 @@ export function Account({ onLogin, profileUsername }: { onLogin: () => void; pro
 
       <Dialog open={editOpen && Boolean(draftProfile)} onOpenChange={setEditOpen}>
         {draftProfile ? (
-          <DialogContent className="max-h-[calc(100dvh-1rem)] gap-0 overflow-y-auto p-0 sm:max-w-xl" showCloseButton>
+          <DialogContent className="max-h-[calc(100dvh-.5rem)] gap-0 overflow-y-auto p-0 sm:max-w-xl" showCloseButton>
             <DialogHeader className="sticky top-0 z-20 border-b border-white/8 bg-[#171717]/95 px-5 py-4 text-left backdrop-blur-xl">
               <DialogTitle>Edit profile</DialogTitle>
               <DialogDescription>Profil ma&apos;lumotlari va trading uslubingizni yangilang.</DialogDescription>

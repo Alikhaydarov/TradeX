@@ -61,6 +61,7 @@
 html {
   background: #0b0b0b;
   color-scheme: dark;
+  overflow-x: hidden;
 }
 
 body {
@@ -86,6 +87,9 @@ body {
   background-attachment: fixed;
   color: #f1f1f1;
   min-height: 100vh;
+  min-height: 100dvh;
+  overflow-x: hidden;
+  -webkit-text-size-adjust: 100%;
 }
 
 button,
@@ -93,6 +97,27 @@ input,
 textarea,
 select {
   font: inherit;
+}
+
+button,
+[role="button"] {
+  touch-action: manipulation;
+}
+
+img,
+video,
+canvas,
+svg {
+  max-width: 100%;
+}
+
+@media (max-width: 639px) {
+  input,
+  textarea,
+  select,
+  [data-slot="select-trigger"] {
+    font-size: 16px;
+  }
 }
 
 form label,

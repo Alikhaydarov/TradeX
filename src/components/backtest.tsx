@@ -176,7 +176,7 @@ export function Backtest() {
               </div>
             ))}
 
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 gap-3 min-[420px]:grid-cols-2">
               <label className="text-[11px] font-black uppercase tracking-[.14em] text-slate-500">
                 Balance
                 <Input
@@ -209,7 +209,7 @@ export function Backtest() {
         </section>
 
         <section className="min-w-0 space-y-4">
-          <div className="grid grid-cols-2 gap-3 xl:grid-cols-4">
+          <div className="grid grid-cols-1 gap-2 min-[420px]:grid-cols-2 sm:gap-3 xl:grid-cols-4">
             <StatCard label="Net return" value={previewStats.net} tone={previewStats.net.startsWith("-") ? "rose" : "green"} />
             <StatCard label="Win rate" value={previewStats.win} tone="blue" />
             <StatCard label="Max drawdown" value={previewStats.drawdown} tone="rose" />
@@ -231,7 +231,7 @@ export function Backtest() {
                 </span>
               ) : null}
             </div>
-            <div className="h-[300px] p-3 sm:h-[380px] sm:p-5">
+            <div className="h-[240px] p-2 min-[420px]:h-[300px] min-[420px]:p-3 sm:h-[380px] sm:p-5">
               {result ? (
                 <ResponsiveContainer>
                   <AreaChart data={result.equityCurve}>

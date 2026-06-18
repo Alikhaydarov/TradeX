@@ -429,7 +429,7 @@ function Workspace(p: {
   return (
     <div className="animate-page-in mx-auto max-w-[1700px]">
       {/* Sticky header */}
-      <header className="sticky top-0 z-20 flex items-center gap-2 border-b border-[#2a2a2a] bg-[#0e0e0e]/90 px-4 py-3 backdrop-blur-xl lg:gap-3 lg:px-6">
+      <header className="sticky top-0 z-20 flex min-w-0 items-center gap-2 border-b border-[#2a2a2a] bg-[#0e0e0e]/90 px-3 py-2.5 backdrop-blur-xl sm:px-4 sm:py-3 lg:gap-3 lg:px-6">
         <Button variant="ghost" size="icon" onClick={p.onBack} className="shrink-0">
           <ArrowLeft size={18} />
         </Button>
@@ -441,7 +441,7 @@ function Workspace(p: {
         <span className={`ml-1 hidden rounded-lg border px-2 py-0.5 text-[11px] font-semibold md:block ${account.status === "Active" ? "border-emerald-400/20 bg-emerald-400/10 text-emerald-400" : "border-[#2a2a2a] text-[#8a8a8a]"}`}>
           {account.status}
         </span>
-        <div className="ml-auto flex items-center gap-2">
+        <div className="ml-auto flex shrink-0 items-center gap-1.5 sm:gap-2">
           <Button variant="outline" className="hidden border-[#2a2a2a] bg-transparent sm:flex" onClick={p.onCsv}>
             <Download size={15} /> CSV
           </Button>
@@ -464,8 +464,8 @@ function Workspace(p: {
             { title: "Average R", value: `${stats.r.toFixed(2)}R`, icon: BarChart3, color: "text-zinc-300" },
             { title: "Profit factor", value: stats.pf.toFixed(2), icon: TrendingUp, color: "text-amber-400" },
             { title: "Wins / Losses", value: `${stats.wins} / ${stats.losses}`, icon: CalendarDays, color: "text-[#f1f1f1]" },
-          ].map(s => (
-            <Card key={s.title} size="sm" className="gap-0 py-0">
+          ].map((s, index) => (
+            <Card key={s.title} size="sm" className={`gap-0 py-0 ${index === 4 ? "col-span-2 sm:col-span-1" : ""}`}>
               <CardContent className="flex min-h-18 items-center gap-2 p-3 sm:min-h-20 sm:gap-3 sm:p-4">
                 <span className="grid size-9 shrink-0 place-items-center rounded-lg bg-muted sm:size-10">
                   <s.icon size={18} className={s.color} />
@@ -512,7 +512,7 @@ function Workspace(p: {
                   <BalanceMetric label="Closed Balance" value={cash.format(currentEquity)} />
                 </div>
               </div>
-              <div className="h-[340px] px-2 pb-4 pt-3 sm:h-[390px] sm:px-4">
+              <div className="h-[250px] px-1 pb-3 pt-2 sm:h-[390px] sm:px-4 sm:pb-4 sm:pt-3">
                 {equity.length > 1
                   ? <ResponsiveContainer width="100%" height="100%">
                       <AreaChart data={equity} margin={{ left: 8, right: 14, top: 16, bottom: 4 }}>

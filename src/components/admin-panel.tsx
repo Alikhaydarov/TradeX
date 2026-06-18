@@ -75,23 +75,23 @@ export function AdminPanel({ onLogin }: { onLogin: () => void }) {
 
   return (
     <div className="min-h-full">
-      <header className="sticky top-0 z-20 flex items-center border-b border-white/8 bg-[#171717]/45 px-5 py-4 backdrop-blur-2xl">
+      <header className="sticky top-0 z-20 flex items-center border-b border-white/8 bg-[#171717]/90 px-3 py-3 backdrop-blur-2xl sm:px-5 sm:py-4">
         <div>
           <p className="text-[10px] font-bold uppercase tracking-[.22em] text-zinc-300/70">Admin panel</p>
-          <h1 className="mt-1 text-2xl font-black tracking-tight">Userlarni boshqarish</h1>
+          <h1 className="mt-1 text-xl font-black tracking-tight sm:text-2xl">Userlarni boshqarish</h1>
         </div>
         <span className="ml-auto flex items-center gap-1.5 rounded-full border border-white/10 bg-white/[.05] px-3 py-1.5 text-[10px] font-bold text-zinc-300">
           <ShieldCheck size={12} /> ADMIN
         </span>
       </header>
 
-      <div className="p-4 md:p-5">
+      <div className="p-2.5 sm:p-4 md:p-5">
         {error && <div className="mb-4 rounded-2xl border border-rose-300/15 bg-rose-400/10 px-4 py-3 text-sm text-rose-200 backdrop-blur-xl">{error}</div>}
 
         {loading ? (
           <AppLoader label="Admin ma'lumotlari yuklanmoqda" />
         ) : (
-          <section className="rounded-[28px] border border-white/10 bg-white/[.04] p-4 shadow-2xl shadow-slate-950/20 backdrop-blur-2xl">
+          <section className="rounded-2xl border border-white/10 bg-white/[.04] p-3 shadow-2xl shadow-slate-950/20 backdrop-blur-2xl sm:rounded-[28px] sm:p-4">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
               <div>
                 <h2 className="text-base font-black">Ro&apos;yxatdan o&apos;tgan userlar</h2>
@@ -132,7 +132,7 @@ export function AdminPanel({ onLogin }: { onLogin: () => void }) {
                     ) : (
                       <X size={14} />
                     )}
-                    {target.isVerified ? "Verified" : "Galochka berish"}
+                    <span className="hidden sm:inline">{target.isVerified ? "Verified" : "Galochka berish"}</span>
                   </Button>
                 </div>
               ))}
