@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import {
   ArrowLeft, BarChart3, BookOpen, CalendarDays, CheckCircle2, ChevronLeft, ChevronRight,
@@ -180,6 +180,11 @@ export function JournalV2({ onLogin }: { onLogin: () => void }) {
         resultR: num("resultR"),
         riskPercent: form.get("riskPercent"),
         session: form.get("session"),
+        followingPlan: form.has("followingPlan"),
+        errorMade: form.has("errorMade"),
+        mistakeType: form.get("mistakeType"),
+        reviewCompleted: form.has("reviewCompleted"),
+        toTradingBible: form.has("toTradingBible"),
         tradedAt: form.get("tradedAt"),
         setup: form.get("setup"),
         tags: String(form.get("tags") || "").split(",").map(t => t.trim()).filter(Boolean),
@@ -209,17 +214,17 @@ export function JournalV2({ onLogin }: { onLogin: () => void }) {
   if (!user) return (
     <div className="grid min-h-[75dvh] place-items-center text-center">
       <div className="animate-page-in">
-        <div className="mx-auto grid size-16 place-items-center rounded-2xl bg-blue-500/10">
-          <ShieldCheck className="text-blue-400" size={32} />
+        <div className="mx-auto grid size-16 place-items-center rounded-2xl bg-white/[.06]">
+          <ShieldCheck className="text-zinc-300" size={32} />
         </div>
         <h2 className="mt-5 text-3xl font-black">Professional trading jurnal</h2>
-        <p className="mt-2 text-[#6b7a96]">Prop accountlaringizni kuzatib boring</p>
-        <Button className="mt-6 h-11 bg-blue-600 px-8 hover:bg-blue-500" onClick={onLogin}>Google orqali kirish</Button>
+        <p className="mt-2 text-[#8a8a8a]">Prop accountlaringizni kuzatib boring</p>
+        <Button className="mt-6 h-11 bg-white px-8 text-black hover:bg-zinc-200" onClick={onLogin}>Google orqali kirish</Button>
       </div>
     </div>
   );
 
-  if (loading) return <div className="grid min-h-[70dvh] place-items-center"><LoaderCircle className="animate-spin text-blue-400" size={28} /></div>;
+  if (loading) return <div className="grid min-h-[70dvh] place-items-center"><LoaderCircle className="animate-spin text-zinc-300" size={28} /></div>;
 
   return (
     <div className="min-h-full">
@@ -240,7 +245,7 @@ export function JournalV2({ onLogin }: { onLogin: () => void }) {
   );
 }
 
-/* ─── Accounts list ─── */
+/* â”€â”€â”€ Accounts list â”€â”€â”€ */
 function Accounts({ summaries, deleting, onAdd, onOpen, onDelete }: { summaries: Summary[]; deleting: string | null; onAdd: () => void; onOpen: (id: string) => void; onDelete: (a: PropAccount) => void }) {
   const total = summaries.reduce((s, a) => s + a.pnl, 0);
   const capital = summaries.reduce((s, a) => s + a.account.accountSize, 0);
@@ -251,13 +256,13 @@ function Accounts({ summaries, deleting, onAdd, onOpen, onDelete }: { summaries:
       <div className="flex flex-col gap-4 sm:flex-row sm:items-end">
         <div>
           <div className="mb-2 flex items-center gap-2">
-            <span className="grid size-7 place-items-center rounded-lg bg-blue-500/10">
-              <ShieldCheck size={14} className="text-blue-400" />
+            <span className="grid size-7 place-items-center rounded-lg bg-white/[.06]">
+              <ShieldCheck size={14} className="text-zinc-300" />
             </span>
-            <span className="text-xs font-semibold uppercase tracking-wider text-[#6b7a96]">Trading workspace</span>
+            <span className="text-xs font-semibold uppercase tracking-wider text-[#8a8a8a]">Trading workspace</span>
           </div>
           <h1 className="text-3xl font-black tracking-tight">Prop Accounts</h1>
-          <p className="mt-1 text-sm text-[#6b7a96]">Accountni bosib jurnalni oching</p>
+          <p className="mt-1 text-sm text-[#8a8a8a]">Accountni bosib jurnalni oching</p>
         </div>
         <Button onClick={onAdd} className="h-10 bg-blue-600 sm:ml-auto hover:bg-blue-500">
           <Plus size={16} /> Prop account qo&apos;shish
@@ -267,16 +272,16 @@ function Accounts({ summaries, deleting, onAdd, onOpen, onDelete }: { summaries:
       {/* Overview stats */}
       <div className="grid gap-3 sm:grid-cols-3">
         {[
-          { title: "Jami kapital", value: cash.format(capital), icon: WalletCards, color: "text-blue-400", bg: "bg-blue-500/8" },
+          { title: "Jami kapital", value: cash.format(capital), icon: WalletCards, color: "text-zinc-300", bg: "bg-white/[.05]" },
           { title: "Umumiy P&L", value: `${total >= 0 ? "+" : ""}${cash.format(total)}`, icon: total >= 0 ? TrendingUp : TrendingDown, color: total >= 0 ? "text-emerald-400" : "text-rose-400", bg: total >= 0 ? "bg-emerald-500/8" : "bg-rose-500/8" },
-          { title: "Faol accountlar", value: String(summaries.filter(s => s.account.status === "Active").length), icon: Zap, color: "text-violet-400", bg: "bg-violet-500/8" },
+          { title: "Faol accountlar", value: String(summaries.filter(s => s.account.status === "Active").length), icon: Zap, color: "text-zinc-300", bg: "bg-white/[.05]" },
         ].map(s => (
-          <div key={s.title} className="flex items-center gap-4 rounded-2xl border border-[#1a2235] bg-[#0d1525]/80 px-5 py-4">
+          <div key={s.title} className="flex items-center gap-4 rounded-2xl border border-[#2a2a2a] bg-[#1b1b1b]/80 px-5 py-4">
             <span className={`grid size-11 shrink-0 place-items-center rounded-xl ${s.bg}`}>
               <s.icon size={20} className={s.color} />
             </span>
             <div>
-              <p className="text-xs text-[#6b7a96]">{s.title}</p>
+              <p className="text-xs text-[#8a8a8a]">{s.title}</p>
               <p className={`font-mono text-xl font-black ${s.color}`}>{s.value}</p>
             </div>
           </div>
@@ -285,14 +290,14 @@ function Accounts({ summaries, deleting, onAdd, onOpen, onDelete }: { summaries:
 
       {/* Cards */}
       {!summaries.length
-        ? <div className="grid min-h-64 place-items-center rounded-2xl border border-dashed border-[#1a2235] text-center">
+        ? <div className="grid min-h-64 place-items-center rounded-2xl border border-dashed border-[#2a2a2a] text-center">
             <div>
-              <div className="mx-auto grid size-14 place-items-center rounded-2xl bg-blue-500/10">
-                <WalletCards size={24} className="text-blue-400" />
+              <div className="mx-auto grid size-14 place-items-center rounded-2xl bg-white/[.06]">
+                <WalletCards size={24} className="text-zinc-300" />
               </div>
               <h2 className="mt-4 text-xl font-bold">Prop account qo&apos;shing</h2>
-              <p className="mt-1 text-sm text-[#6b7a96]">Challenge yoki funded accountingizni kuzatib boring</p>
-              <Button onClick={onAdd} className="mt-5 bg-blue-600 hover:bg-blue-500"><Plus size={16} /> Account yaratish</Button>
+              <p className="mt-1 text-sm text-[#8a8a8a]">Challenge yoki funded accountingizni kuzatib boring</p>
+              <Button onClick={onAdd} className="mt-5 bg-white text-black hover:bg-zinc-200"><Plus size={16} /> Account yaratish</Button>
             </div>
           </div>
         : <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
@@ -304,7 +309,7 @@ function Accounts({ summaries, deleting, onAdd, onOpen, onDelete }: { summaries:
 }
 
 function AccountCard({ s, deleting, onOpen, onDelete }: { s: Summary; deleting: string | null; onOpen: (id: string) => void; onDelete: (a: PropAccount) => void }) {
-  const statusColor: Record<string, string> = { Active: "text-emerald-400 bg-emerald-400/10 border-emerald-400/20", Passed: "text-blue-400 bg-blue-400/10 border-blue-400/20", Failed: "text-rose-400 bg-rose-400/10 border-rose-400/20", Paused: "text-amber-400 bg-amber-400/10 border-amber-400/20" };
+  const statusColor: Record<string, string> = { Active: "text-emerald-400 bg-emerald-400/10 border-emerald-400/20", Passed: "text-zinc-300 bg-blue-400/10 border-blue-400/20", Failed: "text-rose-400 bg-rose-400/10 border-rose-400/20", Paused: "text-amber-400 bg-amber-400/10 border-amber-400/20" };
 
   return (
     <div
@@ -312,10 +317,10 @@ function AccountCard({ s, deleting, onOpen, onDelete }: { s: Summary; deleting: 
       tabIndex={0}
       onClick={() => onOpen(s.account.id)}
       onKeyDown={e => { if (e.key === "Enter" || e.key === " ") onOpen(s.account.id); }}
-      className="prop-card-glow group relative cursor-pointer overflow-hidden rounded-2xl border border-[#1a2235] bg-[#0d1525]/90 transition-all duration-200 hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/50"
+      className="prop-card-glow group relative cursor-pointer overflow-hidden rounded-2xl border border-[#2a2a2a] bg-[#1b1b1b]/90 transition-all duration-200 hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/30"
     >
       {/* Top bar accent */}
-      <div className="absolute inset-x-0 top-0 h-[1px] bg-gradient-to-r from-transparent via-blue-500/30 to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
+      <div className="absolute inset-x-0 top-0 h-[1px] bg-gradient-to-r from-transparent via-white/20 to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
 
       <div className="p-5">
         {/* Header row */}
@@ -323,7 +328,7 @@ function AccountCard({ s, deleting, onOpen, onDelete }: { s: Summary; deleting: 
           <PropFirmLogo firm={s.account.firm} />
           <div className="min-w-0 flex-1">
             <p className="truncate font-bold">{s.account.name}</p>
-            <p className="text-xs text-[#6b7a96]">{s.account.phase} / {s.account.marketType}</p>
+            <p className="text-xs text-[#8a8a8a]">{s.account.phase} / {s.account.marketType}</p>
           </div>
           <div className="flex shrink-0 items-center gap-1.5">
             <span className={`rounded-lg border px-2 py-0.5 text-[11px] font-semibold ${statusColor[s.account.status] || statusColor.Active}`}>
@@ -335,7 +340,7 @@ function AccountCard({ s, deleting, onOpen, onDelete }: { s: Summary; deleting: 
                   <MoreHorizontal size={15} />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="border-[#1a2235] bg-[#0a0f1a]" onClick={e => e.stopPropagation()}>
+              <DropdownMenuContent align="end" className="border-[#2a2a2a] bg-[#181818]" onClick={e => e.stopPropagation()}>
                 <DropdownMenuItem variant="destructive" disabled={deleting === s.account.id} onClick={() => onDelete(s.account)}>
                   <Trash2 size={14} /> Accountni o&apos;chirish
                 </DropdownMenuItem>
@@ -347,22 +352,22 @@ function AccountCard({ s, deleting, onOpen, onDelete }: { s: Summary; deleting: 
         {/* PnL */}
         <div className="mt-4 flex items-end justify-between">
           <div>
-            <p className="text-[10px] uppercase tracking-wider text-[#6b7a96]">Natija</p>
+            <p className="text-[10px] uppercase tracking-wider text-[#8a8a8a]">Natija</p>
             <p className={`font-mono text-2xl font-black ${s.pnl >= 0 ? "text-emerald-400" : "text-rose-400"}`}>
               {s.pnl >= 0 ? "+" : ""}{cash.format(s.pnl)}
             </p>
           </div>
           <div className="text-right">
             <p className="font-mono text-lg font-bold">{cash.format(s.account.accountSize)}</p>
-            <p className="text-[10px] text-[#6b7a96]">Account size</p>
+            <p className="text-[10px] text-[#8a8a8a]">Account size</p>
           </div>
         </div>
 
         {/* Stats row */}
-        <div className="mt-3 flex gap-4 rounded-xl bg-[#060b14]/60 px-4 py-2.5">
+        <div className="mt-3 flex gap-4 rounded-xl bg-[#121212]/60 px-4 py-2.5">
           {[["Trades", s.trades], ["Win rate", `${s.winRate}%`]].map(([l, v]) => (
             <div key={String(l)}>
-              <p className="text-[10px] text-[#6b7a96]">{l}</p>
+              <p className="text-[10px] text-[#8a8a8a]">{l}</p>
               <p className="font-mono text-sm font-bold">{v}</p>
             </div>
           ))}
@@ -375,15 +380,15 @@ function AccountCard({ s, deleting, onOpen, onDelete }: { s: Summary; deleting: 
         </div>
       </div>
 
-      <div className="flex items-center justify-between border-t border-[#1a2235] px-5 py-3">
-        <span className="text-xs text-[#6b7a96]">Jurnalni ochish</span>
-        <ChevronRight size={16} className="text-[#6b7a96] transition-transform group-hover:translate-x-0.5" />
+      <div className="flex items-center justify-between border-t border-[#2a2a2a] px-5 py-3">
+        <span className="text-xs text-[#8a8a8a]">Jurnalni ochish</span>
+        <ChevronRight size={16} className="text-[#8a8a8a] transition-transform group-hover:translate-x-0.5" />
       </div>
     </div>
   );
 }
 
-/* ─── Workspace ─── */
+/* â”€â”€â”€ Workspace â”€â”€â”€ */
 function Workspace(p: {
   account: PropAccount; stats: { pnl: number; wins: number; losses: number; rate: number; r: number; pf: number };
   equity: Array<{ trade: number; equity: number; label: string }>; setups: Array<{ name: string; pnl: number; trades: number; wins: number; rate: number }>;
@@ -407,26 +412,26 @@ function Workspace(p: {
   return (
     <div className="animate-page-in mx-auto max-w-[1700px]">
       {/* Sticky header */}
-      <header className="sticky top-0 z-20 flex items-center gap-2 border-b border-[#1a2235] bg-[#03060e]/90 px-4 py-3 backdrop-blur-xl lg:gap-3 lg:px-6">
+      <header className="sticky top-0 z-20 flex items-center gap-2 border-b border-[#2a2a2a] bg-[#0e0e0e]/90 px-4 py-3 backdrop-blur-xl lg:gap-3 lg:px-6">
         <Button variant="ghost" size="icon" onClick={p.onBack} className="shrink-0">
           <ArrowLeft size={18} />
         </Button>
         <PropFirmLogo firm={account.firm} compact />
         <div className="min-w-0">
           <h1 className="truncate text-base font-black lg:text-lg">{account.name}</h1>
-          <p className="text-[11px] text-[#6b7a96]">{account.phase} / {cash.format(account.accountSize)}</p>
+          <p className="text-[11px] text-[#8a8a8a]">{account.phase} / {cash.format(account.accountSize)}</p>
         </div>
-        <span className={`ml-1 hidden rounded-lg border px-2 py-0.5 text-[11px] font-semibold md:block ${account.status === "Active" ? "border-emerald-400/20 bg-emerald-400/10 text-emerald-400" : "border-[#1a2235] text-[#6b7a96]"}`}>
+        <span className={`ml-1 hidden rounded-lg border px-2 py-0.5 text-[11px] font-semibold md:block ${account.status === "Active" ? "border-emerald-400/20 bg-emerald-400/10 text-emerald-400" : "border-[#2a2a2a] text-[#8a8a8a]"}`}>
           {account.status}
         </span>
         <div className="ml-auto flex items-center gap-2">
-          <Button variant="outline" className="hidden border-[#1a2235] bg-transparent sm:flex" onClick={p.onCsv}>
+          <Button variant="outline" className="hidden border-[#2a2a2a] bg-transparent sm:flex" onClick={p.onCsv}>
             <Download size={15} /> CSV
           </Button>
-          <Button variant="outline" size="icon" className="border-[#1a2235] bg-transparent text-rose-400 hover:bg-rose-500/10" disabled={p.deleting} onClick={p.onDelete}>
+          <Button variant="outline" size="icon" className="border-[#2a2a2a] bg-transparent text-rose-400 hover:bg-rose-500/10" disabled={p.deleting} onClick={p.onDelete}>
             {p.deleting ? <LoaderCircle className="animate-spin" size={16} /> : <Trash2 size={16} />}
           </Button>
-          <Button onClick={p.onTrade} className="bg-blue-600 hover:bg-blue-500">
+          <Button onClick={p.onTrade} className="bg-white text-black hover:bg-zinc-200">
             <Plus size={16} />
             <span className="hidden sm:inline">Trade qo&apos;shish</span>
           </Button>
@@ -438,15 +443,15 @@ function Workspace(p: {
         <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
           {[
             { title: "Monthly P&L", value: `${stats.pnl >= 0 ? "+" : ""}${cash.format(stats.pnl)}`, icon: stats.pnl >= 0 ? TrendingUp : TrendingDown, color: stats.pnl >= 0 ? "text-emerald-400" : "text-rose-400" },
-            { title: "Win rate", value: `${stats.rate}%`, icon: Target, color: "text-blue-400" },
-            { title: "Average R", value: `${stats.r.toFixed(2)}R`, icon: BarChart3, color: "text-violet-400" },
+            { title: "Win rate", value: `${stats.rate}%`, icon: Target, color: "text-zinc-300" },
+            { title: "Average R", value: `${stats.r.toFixed(2)}R`, icon: BarChart3, color: "text-zinc-300" },
             { title: "Profit factor", value: stats.pf.toFixed(2), icon: TrendingUp, color: "text-amber-400" },
-            { title: "Wins / Losses", value: `${stats.wins} / ${stats.losses}`, icon: CalendarDays, color: "text-[#dde6f8]" },
+            { title: "Wins / Losses", value: `${stats.wins} / ${stats.losses}`, icon: CalendarDays, color: "text-[#f1f1f1]" },
           ].map(s => (
-            <div key={s.title} className="flex items-center gap-3 rounded-2xl border border-[#1a2235] bg-[#0d1525]/80 px-4 py-3.5">
+            <div key={s.title} className="flex items-center gap-3 rounded-2xl border border-[#2a2a2a] bg-[#1b1b1b]/80 px-4 py-3.5">
               <s.icon size={18} className={s.color} />
               <div>
-                <p className="text-[10px] uppercase tracking-wider text-[#6b7a96]">{s.title}</p>
+                <p className="text-[10px] uppercase tracking-wider text-[#8a8a8a]">{s.title}</p>
                 <p className={`font-mono text-xl font-black ${s.color}`}>{s.value}</p>
               </div>
             </div>
@@ -456,14 +461,14 @@ function Workspace(p: {
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as WorkspaceTab)} className="gap-4">
           <label className="block md:hidden">
-            <span className="mb-1.5 block text-[10px] font-semibold uppercase tracking-widest text-[#6b7a96]">View</span>
-            <select value={activeTab} onChange={(event) => setActiveTab(event.target.value as WorkspaceTab)} className="h-11 w-full rounded-xl border border-[#1a2235] bg-[#0d1525] px-3 text-sm font-bold text-[#dde6f8] outline-none">
+            <span className="mb-1.5 block text-[10px] font-semibold uppercase tracking-widest text-[#8a8a8a]">View</span>
+            <select value={activeTab} onChange={(event) => setActiveTab(event.target.value as WorkspaceTab)} className="h-11 w-full rounded-xl border border-[#2a2a2a] bg-[#1b1b1b] px-3 text-sm font-bold text-[#f1f1f1] outline-none">
               {WORKSPACE_TABS.map(([v, l]) => <option key={v} value={v}>{l}</option>)}
             </select>
           </label>
-          <TabsList className="hidden h-10 w-full justify-start overflow-x-auto rounded-xl border border-[#1a2235] bg-[#0d1525] p-1 md:inline-flex">
+          <TabsList className="hidden h-10 w-full justify-start overflow-x-auto rounded-xl border border-[#2a2a2a] bg-[#1b1b1b] p-1 md:inline-flex">
             {WORKSPACE_TABS.map(([v, l]) => (
-              <TabsTrigger key={v} value={v} className="rounded-lg px-5 text-sm data-[state=active]:bg-[#172336] data-[state=active]:text-[#dde6f8]">{l}</TabsTrigger>
+              <TabsTrigger key={v} value={v} className="rounded-lg px-5 text-sm data-[state=active]:bg-white/[.10] data-[state=active]:text-[#f1f1f1]">{l}</TabsTrigger>
             ))}
           </TabsList>
 
@@ -505,7 +510,7 @@ function Workspace(p: {
             </section>
 
             <div className="grid gap-4 lg:grid-cols-[1fr_1fr_1fr]">
-              <div className="rounded-2xl border border-[#1a2235] bg-[#0d1525]/80 p-5">
+              <div className="rounded-2xl border border-[#2a2a2a] bg-[#1b1b1b]/80 p-5">
                 <h3 className="font-bold">Challenge limits</h3>
                 <div className="mt-4 space-y-5">
                   <ProgressBar label="Profit target" value={targetProgress} color="bg-[#d9f96d]" />
@@ -519,35 +524,35 @@ function Workspace(p: {
 
           {/* Calendar */}
           <TabsContent value="calendar">
-            <div className="rounded-2xl border border-[#1a2235] bg-[#0d1525]/80 overflow-hidden">
-              <div className="flex flex-col gap-3 border-b border-[#1a2235] px-5 py-4 lg:flex-row lg:items-center">
+            <div className="rounded-2xl border border-[#2a2a2a] bg-[#1b1b1b]/80 overflow-hidden">
+              <div className="flex flex-col gap-3 border-b border-[#2a2a2a] px-5 py-4 lg:flex-row lg:items-center">
                 <div>
                   <h3 className="font-bold capitalize">{month.toLocaleDateString("uz-UZ", { month: "long", year: "numeric" })} natijalari</h3>
-                  <p className="text-xs text-[#6b7a96]">Har bir kunning P&L va trade soni</p>
+                  <p className="text-xs text-[#8a8a8a]">Har bir kunning P&L va trade soni</p>
                 </div>
-                <div className="flex items-center gap-2 rounded-xl border border-[#1a2235] bg-[#060b14] p-1 lg:ml-auto">
+                <div className="flex items-center gap-2 rounded-xl border border-[#2a2a2a] bg-[#121212] p-1 lg:ml-auto">
                   <Button variant="ghost" size="icon-sm" onClick={p.onPrev}><ChevronLeft size={16} /></Button>
                   <strong className="min-w-32 text-center text-sm capitalize">{month.toLocaleDateString("uz-UZ", { month: "short", year: "numeric" })}</strong>
                   <Button variant="ghost" size="icon-sm" onClick={p.onNext}><ChevronRight size={16} /></Button>
-                  <Button variant="outline" size="sm" onClick={p.onToday} className="border-[#1a2235] bg-transparent text-xs">Joriy oy</Button>
+                  <Button variant="outline" size="sm" onClick={p.onToday} className="border-[#2a2a2a] bg-transparent text-xs">Joriy oy</Button>
                 </div>
               </div>
               {/* Desktop calendar */}
               <div className="hidden p-4 md:block">
                 <div className="grid grid-cols-7 gap-1.5 mb-1.5">
                   {WEEKDAYS_FULL.map(d => (
-                    <div key={d} className="py-2 text-center text-[11px] font-semibold uppercase tracking-wider text-[#6b7a96]">{d}</div>
+                    <div key={d} className="py-2 text-center text-[11px] font-semibold uppercase tracking-wider text-[#8a8a8a]">{d}</div>
                   ))}
                 </div>
                 <div className="grid grid-cols-7 content-start gap-1.5 [grid-auto-rows:130px]">
                   {calendar.map((c, i) =>
                     c ? (
                       <div key={`${monthId(month)}-desktop-${i}`}
-                        className={`h-full rounded-xl border p-2.5 transition ${c.trades.length ? c.pnl >= 0 ? "border-emerald-500/20 bg-emerald-500/5" : "border-rose-500/20 bg-rose-500/5" : "border-[#1a2235] bg-[#060b14]/40"}`}>
+                        className={`h-full rounded-xl border p-2.5 transition ${c.trades.length ? c.pnl >= 0 ? "border-emerald-500/20 bg-emerald-500/5" : "border-rose-500/20 bg-rose-500/5" : "border-[#2a2a2a] bg-[#121212]/40"}`}>
                         <div className="flex items-start justify-between">
-                          <span className={`grid size-6 place-items-center rounded-md text-[11px] font-bold ${c.trades.length ? "bg-[#1a2235] text-[#dde6f8]" : "text-[#6b7a96]"}`}>{c.day}</span>
+                          <span className={`grid size-6 place-items-center rounded-md text-[11px] font-bold ${c.trades.length ? "bg-[#2a2a2a] text-[#f1f1f1]" : "text-[#8a8a8a]"}`}>{c.day}</span>
                           {c.trades.length > 0 && (
-                            <span className="rounded-md bg-[#1a2235] px-1.5 py-0.5 text-[10px] font-medium text-[#6b7a96]">
+                            <span className="rounded-md bg-[#2a2a2a] px-1.5 py-0.5 text-[10px] font-medium text-[#8a8a8a]">
                               {c.trades.length}t
                             </span>
                           )}
@@ -557,7 +562,7 @@ function Workspace(p: {
                             <p className={`mt-3 font-mono text-sm font-black ${c.pnl >= 0 ? "text-emerald-400" : "text-rose-400"}`}>
                               {c.pnl >= 0 ? "+" : ""}{cash.format(c.pnl)}
                             </p>
-                            <p className="mt-1 truncate text-[10px] text-[#6b7a96]">
+                            <p className="mt-1 truncate text-[10px] text-[#8a8a8a]">
                               {c.trades.map(t => t.symbol).join(", ")}
                             </p>
                             <div className="mt-1.5 flex gap-1">
@@ -570,7 +575,7 @@ function Workspace(p: {
                             </div>
                           </>
                         ) : (
-                          <p className="mt-8 text-center text-[10px] text-[#1e2d45]">-</p>
+                          <p className="mt-8 text-center text-[10px] text-[#333333]">-</p>
                         )}
                       </div>
                     ) : (
@@ -584,7 +589,7 @@ function Workspace(p: {
               <div className="p-3 md:hidden">
                 <div className="grid grid-cols-7 gap-1 mb-1">
                   {WEEKDAYS_SHORT.map(d => (
-                    <div key={d} className="py-1 text-center text-[10px] font-semibold text-[#6b7a96]">{d}</div>
+                    <div key={d} className="py-1 text-center text-[10px] font-semibold text-[#8a8a8a]">{d}</div>
                   ))}
                 </div>
                 <div className="grid grid-cols-7 gap-1">
@@ -592,7 +597,7 @@ function Workspace(p: {
                     c ? (
                       <div key={`${monthId(month)}-mobile-${i}`}
                         className={`flex flex-col items-center rounded-lg p-1 py-1.5 ${c.trades.length ? c.pnl >= 0 ? "bg-emerald-500/10" : "bg-rose-500/10" : ""}`}>
-                        <span className={`text-[11px] font-bold ${c.trades.length ? "text-[#dde6f8]" : "text-[#6b7a96]"}`}>{c.day}</span>
+                        <span className={`text-[11px] font-bold ${c.trades.length ? "text-[#f1f1f1]" : "text-[#8a8a8a]"}`}>{c.day}</span>
                         {c.trades.length > 0 && (
                           <span className={`mt-0.5 text-[9px] font-black ${c.pnl >= 0 ? "text-emerald-400" : "text-rose-400"}`}>
                             {c.pnl >= 0 ? "+" : ""}{Math.abs(c.pnl) >= 1000 ? `${(c.pnl / 1000).toFixed(1)}k` : c.pnl.toFixed(0)}
@@ -610,20 +615,20 @@ function Workspace(p: {
 
           {/* Trades */}
           <TabsContent value="trades">
-            <div className="rounded-2xl border border-[#1a2235] bg-[#0d1525]/80 overflow-hidden">
-              <div className="space-y-3 border-b border-[#1a2235] px-5 py-4">
+            <div className="rounded-2xl border border-[#2a2a2a] bg-[#1b1b1b]/80 overflow-hidden">
+              <div className="space-y-3 border-b border-[#2a2a2a] px-5 py-4">
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
                 <div>
                   <h3 className="font-bold">Trade journal</h3>
-                  <p className="text-xs text-[#6b7a96]">{trades.length} ta trade</p>
+                  <p className="text-xs text-[#8a8a8a]">{trades.length} ta trade</p>
                 </div>
                 <div className="relative sm:ml-auto sm:w-72">
-                  <Search className="absolute left-3 top-2.5 text-[#6b7a96]" size={15} />
-                  <Input value={p.query} onChange={e => p.onQuery(e.target.value)} className="border-[#1a2235] bg-[#060b14] pl-9 text-sm" placeholder="Symbol yoki setup" />
+                  <Search className="absolute left-3 top-2.5 text-[#8a8a8a]" size={15} />
+                  <Input value={p.query} onChange={e => p.onQuery(e.target.value)} className="border-[#2a2a2a] bg-[#121212] pl-9 text-sm" placeholder="Symbol yoki setup" />
                 </div>
                 </div>
                 <div className="flex flex-col gap-2 lg:flex-row lg:items-center">
-                  <div className="grid grid-cols-2 gap-1 rounded-xl border border-[#1a2235] bg-[#060b14] p-1 sm:flex">
+                  <div className="grid grid-cols-2 gap-1 rounded-xl border border-[#2a2a2a] bg-[#121212] p-1 sm:flex">
                     {[
                       ["daily", "Daily"],
                       ["monthly", "Monthly"],
@@ -632,25 +637,25 @@ function Workspace(p: {
                       ["custom", "Custom"],
                     ].map(([value, label]) => (
                       <button key={value} type="button" onClick={() => p.onRange(value as TradeRange)}
-                        className={`rounded-lg px-3 py-2 text-xs font-bold transition ${p.tradeRange === value ? "bg-blue-500/18 text-blue-200 ring-1 ring-blue-400/20" : "text-[#6b7a96] hover:bg-white/[.04] hover:text-[#dde6f8]"}`}>
+                        className={`rounded-lg px-3 py-2 text-xs font-bold transition ${p.tradeRange === value ? "bg-white/[.10] text-zinc-200 ring-1 ring-white/15" : "text-[#8a8a8a] hover:bg-white/[.04] hover:text-[#f1f1f1]"}`}>
                         {label}
                       </button>
                     ))}
                   </div>
                   {p.tradeRange === "custom" ? (
                     <div className="grid gap-2 sm:grid-cols-2 lg:ml-auto lg:w-[360px]">
-                      <Input type="date" value={p.customStart} onChange={event => p.onCustomStart(event.target.value)} className="border-[#1a2235] bg-[#060b14] text-sm" />
-                      <Input type="date" value={p.customEnd} onChange={event => p.onCustomEnd(event.target.value)} className="border-[#1a2235] bg-[#060b14] text-sm" />
+                      <Input type="date" value={p.customStart} onChange={event => p.onCustomStart(event.target.value)} className="border-[#2a2a2a] bg-[#121212] text-sm" />
+                      <Input type="date" value={p.customEnd} onChange={event => p.onCustomEnd(event.target.value)} className="border-[#2a2a2a] bg-[#121212] text-sm" />
                     </div>
                   ) : null}
                 </div>
               </div>
               {trades.length
                 ? trades.map(e => (
-                    <button key={e.id} type="button" onClick={() => setSelectedTrade(e)} className="flex w-full items-center gap-3 border-t border-[#1a2235] px-5 py-3 text-left transition hover:bg-[#172336]/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/40">
+                    <button key={e.id} type="button" onClick={() => setSelectedTrade(e)} className="flex w-full items-center gap-3 border-t border-[#2a2a2a] px-5 py-3 text-left transition hover:bg-[#242424]/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/25">
                       {e.imageUrl
                         ? <img src={e.imageUrl} alt={`${e.symbol} chart`} className="h-14 w-20 shrink-0 rounded-lg object-cover" />
-                        : <span className="grid h-14 w-20 shrink-0 place-items-center rounded-lg bg-[#060b14]"><ImageIcon size={18} className="text-[#2a3f60]" /></span>
+                        : <span className="grid h-14 w-20 shrink-0 place-items-center rounded-lg bg-[#121212]"><ImageIcon size={18} className="text-[#454545]" /></span>
                       }
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center gap-2">
@@ -668,21 +673,21 @@ function Workspace(p: {
                             <span className="rounded-md bg-amber-500/10 px-1.5 py-0.5 text-[10px] font-medium text-amber-400">Off-plan</span>
                           )}
                           {e.reviewCompleted && (
-                            <span className="rounded-md bg-blue-500/10 px-1.5 py-0.5 text-[10px] font-medium text-blue-400">Reviewed</span>
+                            <span className="rounded-md bg-white/[.06] px-1.5 py-0.5 text-[10px] font-medium text-zinc-300">Reviewed</span>
                           )}
                         </div>
-                        <p className="mt-0.5 truncate text-xs text-[#6b7a96]">{e.setup || "No setup"} / {e.session || "No session"} / {e.date}</p>
+                        <p className="mt-0.5 truncate text-xs text-[#8a8a8a]">{e.setup || "No setup"} / {e.session || "No session"} / {e.date}</p>
                         {e.tags && e.tags.length > 0 && (
                           <div className="mt-1 flex gap-1">
                             {e.tags.slice(0, 3).map(t => (
-                              <span key={t} className="rounded-md bg-blue-500/10 px-1.5 py-0.5 text-[9px] text-blue-400">{t}</span>
+                              <span key={t} className="rounded-md bg-white/[.06] px-1.5 py-0.5 text-[9px] text-zinc-300">{t}</span>
                             ))}
                           </div>
                         )}
                       </div>
                       <div className="text-right">
                         <b className={`font-mono font-black ${e.pnl >= 0 ? "text-emerald-400" : "text-rose-400"}`}>{e.pnl >= 0 ? "+" : ""}{cash.format(e.pnl)}</b>
-                        <p className="text-xs text-[#6b7a96]">{(e.resultR || 0).toFixed(2)}R</p>
+                        <p className="text-xs text-[#8a8a8a]">{(e.resultR || 0).toFixed(2)}R</p>
                       </div>
                     </button>
                   ))
@@ -693,11 +698,11 @@ function Workspace(p: {
 
           {/* Trading Bible */}
           <TabsContent value="bible">
-            <section className="overflow-hidden rounded-2xl border border-[#1a2235] bg-[#0d1525]/80">
-              <div className="flex flex-col gap-3 border-b border-[#1a2235] px-5 py-4 sm:flex-row sm:items-center">
+            <section className="overflow-hidden rounded-2xl border border-[#2a2a2a] bg-[#1b1b1b]/80">
+              <div className="flex flex-col gap-3 border-b border-[#2a2a2a] px-5 py-4 sm:flex-row sm:items-center">
                 <div>
-                  <h3 className="flex items-center gap-2 font-bold"><BookOpen size={17} className="text-violet-300" /> Trading Bible</h3>
-                  <p className="text-xs text-[#6b7a96]">Eng yaxshi setup va reviewlar playbook sifatida saqlanadi.</p>
+                  <h3 className="flex items-center gap-2 font-bold"><BookOpen size={17} className="text-zinc-300" /> Trading Bible</h3>
+                  <p className="text-xs text-[#8a8a8a]">Eng yaxshi setup va reviewlar playbook sifatida saqlanadi.</p>
                 </div>
                 <div className="grid grid-cols-2 gap-2 sm:ml-auto sm:flex">
                   <MiniStat label="BIBLE TRADES" value={String(bibleTrades.length)} />
@@ -707,9 +712,9 @@ function Workspace(p: {
               {bibleTrades.length ? (
                 <div className="grid gap-3 p-3 lg:grid-cols-2">
                   {bibleTrades.map((trade) => (
-                    <button key={trade.id} type="button" onClick={() => setSelectedTrade(trade)} className="group overflow-hidden rounded-2xl border border-[#1a2235] bg-[#060b14] text-left transition hover:border-violet-400/25 hover:bg-[#101827]">
+                    <button key={trade.id} type="button" onClick={() => setSelectedTrade(trade)} className="group overflow-hidden rounded-2xl border border-[#2a2a2a] bg-[#121212] text-left transition hover:border-white/20 hover:bg-[#101827]">
                       {trade.imageUrl ? (
-                        <div className="h-40 overflow-hidden border-b border-[#1a2235] bg-black">
+                        <div className="h-40 overflow-hidden border-b border-[#2a2a2a] bg-black">
                           <img src={trade.imageUrl} alt={`${trade.symbol} bible chart`} className="h-full w-full object-cover transition group-hover:scale-[1.02]" />
                         </div>
                       ) : null}
@@ -718,16 +723,16 @@ function Workspace(p: {
                           <span className={`rounded-xl px-2.5 py-1 text-[10px] font-black ${trade.side === "Long" ? "bg-emerald-500/10 text-emerald-300" : "bg-rose-500/10 text-rose-300"}`}>{trade.side}</span>
                           <div className="min-w-0 flex-1">
                             <h4 className="truncate text-base font-black text-white">{trade.symbol}</h4>
-                            <p className="mt-0.5 truncate text-xs text-[#6b7a96]">{trade.setup || "No setup"} / {trade.session || "No session"} / {trade.date}</p>
+                            <p className="mt-0.5 truncate text-xs text-[#8a8a8a]">{trade.setup || "No setup"} / {trade.session || "No session"} / {trade.date}</p>
                           </div>
-                          <span className="rounded-xl bg-violet-500/10 px-2.5 py-1 text-[10px] font-black text-violet-300">{reviewScore(trade)}/6</span>
+                          <span className="rounded-xl bg-white/[.06] px-2.5 py-1 text-[10px] font-black text-zinc-300">{reviewScore(trade)}/6</span>
                         </div>
-                        <p className="mt-3 line-clamp-3 text-sm leading-6 text-[#c7d1e5]">{trade.note || "Review note yozilmagan."}</p>
+                        <p className="mt-3 line-clamp-3 text-sm leading-6 text-[#d4d4d8]">{trade.note || "Review note yozilmagan."}</p>
                         <div className="mt-3 flex flex-wrap gap-1.5">
-                          {trade.reviewCompleted ? <span className="inline-flex items-center gap-1 rounded-lg bg-blue-500/10 px-2 py-1 text-[10px] font-bold text-blue-300"><CheckCircle2 size={11} /> Reviewed</span> : null}
+                          {trade.reviewCompleted ? <span className="inline-flex items-center gap-1 rounded-lg bg-white/[.06] px-2 py-1 text-[10px] font-bold text-zinc-300"><CheckCircle2 size={11} /> Reviewed</span> : null}
                           {trade.followingPlan ? <span className="rounded-lg bg-emerald-500/10 px-2 py-1 text-[10px] font-bold text-emerald-300">Plan</span> : <span className="rounded-lg bg-amber-500/10 px-2 py-1 text-[10px] font-bold text-amber-300">Off-plan</span>}
                           {trade.riskPercent ? <span className="rounded-lg bg-amber-500/10 px-2 py-1 text-[10px] font-bold text-amber-300">{trade.riskPercent}</span> : null}
-                          {(trade.tags ?? []).slice(0, 3).map(tag => <span key={tag} className="rounded-lg bg-white/[.045] px-2 py-1 text-[10px] text-[#8a9bc0]">{tag}</span>)}
+                          {(trade.tags ?? []).slice(0, 3).map(tag => <span key={tag} className="rounded-lg bg-white/[.045] px-2 py-1 text-[10px] text-[#a1a1aa]">{tag}</span>)}
                         </div>
                       </div>
                     </button>
@@ -736,9 +741,9 @@ function Workspace(p: {
               ) : (
                 <div className="grid min-h-72 place-items-center px-6 text-center">
                   <div>
-                    <BookOpen className="mx-auto text-[#2a3f60]" size={38} />
+                    <BookOpen className="mx-auto text-[#454545]" size={38} />
                     <h3 className="mt-4 text-lg font-black">Trading Bible bo'sh</h3>
-                    <p className="mt-1 max-w-md text-sm leading-6 text-[#6b7a96]">Trade review ochib “+ to Trading Bible” ni belgilang. Eng yaxshi setup va saboqlar shu yerda playbook bo'lib yig'iladi.</p>
+                    <p className="mt-1 max-w-md text-sm leading-6 text-[#8a8a8a]">Trade review ochib â€œ+ to Trading Bibleâ€ ni belgilang. Eng yaxshi setup va saboqlar shu yerda playbook bo'lib yig'iladi.</p>
                   </div>
                 </div>
               )}
@@ -747,14 +752,14 @@ function Workspace(p: {
 
           {/* Analytics */}
           <TabsContent value="analytics" className="grid gap-4 xl:grid-cols-2">
-            <div className="rounded-2xl border border-[#1a2235] bg-[#0d1525]/80 p-5">
+            <div className="rounded-2xl border border-[#2a2a2a] bg-[#1b1b1b]/80 p-5">
               <h3 className="font-bold">Setup performance</h3>
               <div className="mt-4 space-y-4">
                 {setups.length
                   ? setups.map(s => (
                       <div key={s.name}>
                         <div className="flex text-sm">
-                          <span className="text-[#dde6f8]">{s.name}</span>
+                          <span className="text-[#f1f1f1]">{s.name}</span>
                           <span className={`ml-auto font-mono font-bold ${s.pnl >= 0 ? "text-emerald-400" : "text-rose-400"}`}>
                             {s.rate}% / {s.pnl >= 0 ? "+" : ""}{cash.format(s.pnl)}
                           </span>
@@ -767,9 +772,9 @@ function Workspace(p: {
               </div>
             </div>
 
-            <div className="rounded-2xl border border-[#1a2235] bg-[#0d1525]/80 p-5">
+            <div className="rounded-2xl border border-[#2a2a2a] bg-[#1b1b1b]/80 p-5">
               <h3 className="font-bold">Discipline</h3>
-              <p className="text-xs text-[#6b7a96]">Notion: Following plan?</p>
+              <p className="text-xs text-[#8a8a8a]">Notion: Following plan?</p>
               <div className="mt-4">
                 <ProgressBar label={`${monthCount} trade ichidan`} value={planRate} color="bg-emerald-500" />
               </div>
@@ -779,16 +784,16 @@ function Workspace(p: {
               </div>
             </div>
 
-            <div className="rounded-2xl border border-[#1a2235] bg-[#0d1525]/80 p-5 xl:col-span-2">
+            <div className="rounded-2xl border border-[#2a2a2a] bg-[#1b1b1b]/80 p-5 xl:col-span-2">
               <h3 className="font-bold">Outside of Plan</h3>
-              <p className="text-xs text-[#6b7a96]">Eng ko&apos;p uchragan xatolar va ular keltirgan zarar</p>
+              <p className="text-xs text-[#8a8a8a]">Eng ko&apos;p uchragan xatolar va ular keltirgan zarar</p>
               <div className="mt-4 space-y-3">
                 {mistakes.length
                   ? mistakes.map(m => (
-                      <div key={m.name} className="flex items-center justify-between rounded-xl bg-[#060b14]/60 px-4 py-2.5">
+                      <div key={m.name} className="flex items-center justify-between rounded-xl bg-[#121212]/60 px-4 py-2.5">
                         <div>
                           <p className="text-sm font-medium">{m.name}</p>
-                          <p className="text-[11px] text-[#6b7a96]">{m.trades} marta takrorlandi</p>
+                          <p className="text-[11px] text-[#8a8a8a]">{m.trades} marta takrorlandi</p>
                         </div>
                         <b className={`font-mono font-bold ${m.pnl >= 0 ? "text-emerald-400" : "text-rose-400"}`}>
                           {m.pnl >= 0 ? "+" : ""}{cash.format(m.pnl)}
@@ -800,7 +805,7 @@ function Workspace(p: {
               </div>
             </div>
 
-            <div className="rounded-2xl border border-[#1a2235] bg-[#0d1525]/80 p-5 xl:col-span-2">
+            <div className="rounded-2xl border border-[#2a2a2a] bg-[#1b1b1b]/80 p-5 xl:col-span-2">
               <h3 className="font-bold">Account details</h3>
               <div className="mt-4 grid grid-cols-2 gap-2.5 sm:grid-cols-3">
                 {[
@@ -841,13 +846,13 @@ function TradeEditor({ trade, saving, onClose, onSave, onDelete }: { trade: Jour
   return (
     <div className="fixed inset-0 z-[9999] flex items-start justify-center overflow-y-auto bg-black/70 p-3 pt-[max(1rem,env(safe-area-inset-top))] backdrop-blur-md sm:items-center sm:p-4">
       <div className="absolute inset-0" onClick={onClose} aria-hidden="true" />
-      <form action={onSave} className="relative z-10 w-full max-w-4xl overflow-hidden rounded-[28px] border border-[#1a2235] bg-[#070b12] text-white shadow-2xl shadow-black/80">
-        <header className="flex items-center gap-3 border-b border-[#1a2235] px-5 py-4">
+      <form action={onSave} className="relative z-10 w-full max-w-4xl overflow-hidden rounded-[28px] border border-[#2a2a2a] bg-[#171717] text-white shadow-2xl shadow-black/80">
+        <header className="flex items-center gap-3 border-b border-[#2a2a2a] px-5 py-4">
           <div className="min-w-0 flex-1">
             <h3 className="truncate text-lg font-black">{trade.symbol} trade</h3>
-            <p className="text-xs text-[#6b7a96]">Trade review va edit</p>
+            <p className="text-xs text-[#8a8a8a]">Trade review va edit</p>
           </div>
-          <button type="button" onClick={onClose} className="grid size-9 place-items-center rounded-xl text-[#6b7a96] hover:bg-white/[.05] hover:text-white" aria-label="Close">
+          <button type="button" onClick={onClose} className="grid size-9 place-items-center rounded-xl text-[#8a8a8a] hover:bg-white/[.05] hover:text-white" aria-label="Close">
             <X size={17} />
           </button>
         </header>
@@ -855,28 +860,28 @@ function TradeEditor({ trade, saving, onClose, onSave, onDelete }: { trade: Jour
           <TradeReviewImage trade={trade} chartUrl={imageUrl} />
 
           <div className="grid gap-3 sm:grid-cols-3">
-            <label className="text-xs text-[#6b7a96]">Symbol<Input name="symbol" defaultValue={trade.symbol} className="mt-1 border-[#1a2235] bg-[#060b14]" /></label>
-            <label className="text-xs text-[#6b7a96]">Side<select name="side" defaultValue={trade.side} className="mt-1 h-10 w-full rounded-lg border border-[#1a2235] bg-[#060b14] px-3 text-sm text-white"><option>Long</option><option>Short</option></select></label>
-            <label className="text-xs text-[#6b7a96]">Date<Input name="tradedAt" type="date" defaultValue={trade.rawDate} className="mt-1 border-[#1a2235] bg-[#060b14]" /></label>
+            <label className="text-xs text-[#8a8a8a]">Symbol<Input name="symbol" defaultValue={trade.symbol} className="mt-1 border-[#2a2a2a] bg-[#121212]" /></label>
+            <label className="text-xs text-[#8a8a8a]">Side<select name="side" defaultValue={trade.side} className="mt-1 h-10 w-full rounded-lg border border-[#2a2a2a] bg-[#121212] px-3 text-sm text-white"><option>Long</option><option>Short</option></select></label>
+            <label className="text-xs text-[#8a8a8a]">Date<Input name="tradedAt" type="date" defaultValue={trade.rawDate} className="mt-1 border-[#2a2a2a] bg-[#121212]" /></label>
           </div>
           <div className="grid gap-3 sm:grid-cols-3">
-            <label className="text-xs text-[#6b7a96]">PnL<Input name="pnl" inputMode="decimal" defaultValue={String(trade.pnl)} className="mt-1 border-[#1a2235] bg-[#060b14]" /></label>
-            <label className="text-xs text-[#6b7a96]">Quantity<Input name="quantity" inputMode="decimal" defaultValue={String(trade.quantity)} className="mt-1 border-[#1a2235] bg-[#060b14]" /></label>
-            <label className="text-xs text-[#6b7a96]">Fees<Input name="fees" inputMode="decimal" defaultValue={String(trade.fees)} className="mt-1 border-[#1a2235] bg-[#060b14]" /></label>
+            <label className="text-xs text-[#8a8a8a]">PnL<Input name="pnl" inputMode="decimal" defaultValue={String(trade.pnl)} className="mt-1 border-[#2a2a2a] bg-[#121212]" /></label>
+            <label className="text-xs text-[#8a8a8a]">Quantity<Input name="quantity" inputMode="decimal" defaultValue={String(trade.quantity)} className="mt-1 border-[#2a2a2a] bg-[#121212]" /></label>
+            <label className="text-xs text-[#8a8a8a]">Fees<Input name="fees" inputMode="decimal" defaultValue={String(trade.fees)} className="mt-1 border-[#2a2a2a] bg-[#121212]" /></label>
           </div>
           <div className="grid gap-3 sm:grid-cols-3">
-            <label className="text-xs text-[#6b7a96]">Risk $<Input name="riskAmount" inputMode="decimal" defaultValue={String(trade.riskAmount ?? 0)} className="mt-1 border-[#1a2235] bg-[#060b14]" /></label>
-            <label className="text-xs text-[#6b7a96]">RR<Input name="resultR" inputMode="decimal" defaultValue={String(trade.resultR ?? 0)} className="mt-1 border-[#1a2235] bg-[#060b14]" /></label>
-            <label className="text-xs text-[#6b7a96]">Risk %<Input name="riskPercent" defaultValue={trade.riskPercent ?? ""} className="mt-1 border-[#1a2235] bg-[#060b14]" /></label>
+            <label className="text-xs text-[#8a8a8a]">Risk $<Input name="riskAmount" inputMode="decimal" defaultValue={String(trade.riskAmount ?? 0)} className="mt-1 border-[#2a2a2a] bg-[#121212]" /></label>
+            <label className="text-xs text-[#8a8a8a]">RR<Input name="resultR" inputMode="decimal" defaultValue={String(trade.resultR ?? 0)} className="mt-1 border-[#2a2a2a] bg-[#121212]" /></label>
+            <label className="text-xs text-[#8a8a8a]">Risk %<Input name="riskPercent" defaultValue={trade.riskPercent ?? ""} className="mt-1 border-[#2a2a2a] bg-[#121212]" /></label>
           </div>
           <div className="grid gap-3 sm:grid-cols-3">
-            <label className="text-xs text-[#6b7a96]">Setup<Input name="setup" defaultValue={trade.setup ?? ""} className="mt-1 border-[#1a2235] bg-[#060b14]" /></label>
-            <label className="text-xs text-[#6b7a96]">Session<Input name="session" defaultValue={trade.session ?? ""} className="mt-1 border-[#1a2235] bg-[#060b14]" /></label>
-            <label className="text-xs text-[#6b7a96]">Tags<Input name="tags" defaultValue={(trade.tags ?? []).join(", ")} className="mt-1 border-[#1a2235] bg-[#060b14]" /></label>
+            <label className="text-xs text-[#8a8a8a]">Setup<Input name="setup" defaultValue={trade.setup ?? ""} className="mt-1 border-[#2a2a2a] bg-[#121212]" /></label>
+            <label className="text-xs text-[#8a8a8a]">Session<Input name="session" defaultValue={trade.session ?? ""} className="mt-1 border-[#2a2a2a] bg-[#121212]" /></label>
+            <label className="text-xs text-[#8a8a8a]">Tags<Input name="tags" defaultValue={(trade.tags ?? []).join(", ")} className="mt-1 border-[#2a2a2a] bg-[#121212]" /></label>
           </div>
-          <div className="rounded-2xl border border-[#1a2235] bg-[#060b14] p-4">
+          <div className="rounded-2xl border border-[#2a2a2a] bg-[#121212] p-4">
             <div className="mb-3 flex items-center justify-between gap-3">
-              <p className="text-[10px] font-black uppercase tracking-[.16em] text-[#6b7a96]">Chart screenshot</p>
+              <p className="text-[10px] font-black uppercase tracking-[.16em] text-[#8a8a8a]">Chart screenshot</p>
               {imageUrl ? (
                 <button type="button" onClick={() => setImageUrl("")} className="inline-flex items-center gap-1.5 rounded-lg border border-rose-400/20 bg-rose-400/10 px-2.5 py-1.5 text-xs font-bold text-rose-200 hover:bg-rose-400/15">
                   <Trash2 size={13} /> Remove
@@ -887,39 +892,39 @@ function TradeEditor({ trade, saving, onClose, onSave, onDelete }: { trade: Jour
               <div className="flex items-center gap-3 overflow-hidden rounded-xl border border-white/10 bg-black/25 p-2">
                 <img src={imageUrl} alt={`${trade.symbol} chart screenshot`} className="h-16 w-24 shrink-0 rounded-lg object-cover" loading="lazy" />
                 <div className="min-w-0">
-                  <p className="text-sm font-bold text-[#dde6f8]">Screenshot ulangan</p>
-                  <p className="truncate text-xs text-[#6b7a96]">{imageUrl}</p>
+                  <p className="text-sm font-bold text-[#f1f1f1]">Screenshot ulangan</p>
+                  <p className="truncate text-xs text-[#8a8a8a]">{imageUrl}</p>
                 </div>
               </div>
             ) : (
-              <div className="flex min-h-20 items-center justify-center gap-2 rounded-xl border border-dashed border-[#1a2235] text-sm text-[#6b7a96]">
+              <div className="flex min-h-20 items-center justify-center gap-2 rounded-xl border border-dashed border-[#2a2a2a] text-sm text-[#8a8a8a]">
                 <ImageIcon size={20} />
                 Screenshot yo'q
               </div>
             )}
-            <label className="mt-3 block text-xs text-[#6b7a96]">
+            <label className="mt-3 block text-xs text-[#8a8a8a]">
               Image URL
-              <Input name="imageUrl" value={imageUrl} onChange={(event) => setImageUrl(event.target.value)} placeholder="https://..." className="mt-1 border-[#1a2235] bg-[#060b14]" />
+              <Input name="imageUrl" value={imageUrl} onChange={(event) => setImageUrl(event.target.value)} placeholder="https://..." className="mt-1 border-[#2a2a2a] bg-[#121212]" />
             </label>
           </div>
-          <div className="rounded-2xl border border-[#1a2235] bg-[#060b14] p-4">
-            <p className="mb-3 text-[10px] font-black uppercase tracking-[.16em] text-[#6b7a96]">Notion review checklist</p>
+          <div className="rounded-2xl border border-[#2a2a2a] bg-[#121212] p-4">
+            <p className="mb-3 text-[10px] font-black uppercase tracking-[.16em] text-[#8a8a8a]">Notion review checklist</p>
             <div className="grid gap-2 sm:grid-cols-2">
-              <label className="flex items-center gap-2 text-sm text-[#dde6f8]"><input type="checkbox" name="followingPlan" value="true" defaultChecked={trade.followingPlan} className="size-4 accent-emerald-400" /> Following plan?</label>
-              <label className="flex items-center gap-2 text-sm text-[#dde6f8]"><input type="checkbox" name="reviewCompleted" value="true" defaultChecked={trade.reviewCompleted} className="size-4 accent-blue-400" /> Review completed</label>
-              <label className="flex items-center gap-2 text-sm text-[#dde6f8]"><input type="checkbox" name="errorMade" value="true" defaultChecked={trade.errorMade} className="size-4 accent-rose-400" /> Error made?</label>
-              <label className="flex items-center gap-2 text-sm text-[#dde6f8]"><input type="checkbox" name="toTradingBible" value="true" defaultChecked={trade.toTradingBible} className="size-4 accent-violet-400" /> Add to Trading Bible</label>
+              <label className="flex items-center gap-2 text-sm text-[#f1f1f1]"><input type="checkbox" name="followingPlan" value="true" defaultChecked={trade.followingPlan} className="size-4 accent-emerald-400" /> Following plan?</label>
+              <label className="flex items-center gap-2 text-sm text-[#f1f1f1]"><input type="checkbox" name="reviewCompleted" value="true" defaultChecked={trade.reviewCompleted} className="size-4 accent-blue-400" /> Review completed</label>
+              <label className="flex items-center gap-2 text-sm text-[#f1f1f1]"><input type="checkbox" name="errorMade" value="true" defaultChecked={trade.errorMade} className="size-4 accent-rose-400" /> Error made?</label>
+              <label className="flex items-center gap-2 text-sm text-[#f1f1f1]"><input type="checkbox" name="toTradingBible" value="true" defaultChecked={trade.toTradingBible} className="size-4 accent-violet-400" /> Add to Trading Bible</label>
             </div>
-            <label className="mt-3 block text-xs text-[#6b7a96]">Mistake type<Input name="mistakeType" defaultValue={trade.mistakeType ?? ""} className="mt-1 border-[#1a2235] bg-[#060b14]" /></label>
+            <label className="mt-3 block text-xs text-[#8a8a8a]">Mistake type<Input name="mistakeType" defaultValue={trade.mistakeType ?? ""} className="mt-1 border-[#2a2a2a] bg-[#121212]" /></label>
           </div>
-          <label className="block text-xs text-[#6b7a96]">Review note<Textarea name="note" defaultValue={trade.note} className="mt-1 min-h-28 border-[#1a2235] bg-[#060b14]" /></label>
+          <label className="block text-xs text-[#8a8a8a]">Review note<Textarea name="note" defaultValue={trade.note} className="mt-1 min-h-28 border-[#2a2a2a] bg-[#121212]" /></label>
         </div>
-        <footer className="flex gap-2 border-t border-[#1a2235] p-4">
-          <Button type="button" variant="outline" onClick={onClose} className="border-[#1a2235] bg-transparent">Cancel</Button>
+        <footer className="flex gap-2 border-t border-[#2a2a2a] p-4">
+          <Button type="button" variant="outline" onClick={onClose} className="border-[#2a2a2a] bg-transparent">Cancel</Button>
           <Button type="button" disabled={saving} onClick={() => void onDelete()} className="border border-rose-400/25 bg-rose-500/10 text-rose-200 hover:bg-rose-500/15">
             <Trash2 size={15} /> Delete
           </Button>
-          <Button disabled={saving} className="ml-auto bg-blue-600 hover:bg-blue-500">{saving ? <LoaderCircle className="animate-spin" size={15} /> : null} Save changes</Button>
+          <Button disabled={saving} className="ml-auto bg-white text-black hover:bg-zinc-200">{saving ? <LoaderCircle className="animate-spin" size={15} /> : null} Save changes</Button>
         </footer>
       </form>
     </div>
@@ -947,9 +952,9 @@ function TradeReviewImage({ trade, chartUrl }: { trade: JournalEntry; chartUrl: 
 
     const render = (chart: HTMLImageElement | null) => {
       const background = context.createLinearGradient(0, 0, 1080, 1080);
-      background.addColorStop(0, "#02030a");
-      background.addColorStop(0.55, "#060817");
-      background.addColorStop(1, "#07152c");
+      background.addColorStop(0, "#0b0b0b");
+      background.addColorStop(0.55, "#171717");
+      background.addColorStop(1, "#232323");
       context.fillStyle = background;
       context.fillRect(0, 0, 1080, 1080);
 
@@ -965,21 +970,21 @@ function TradeReviewImage({ trade, chartUrl }: { trade: JournalEntry; chartUrl: 
         candleHeights.forEach((height, index) => {
           const x = 710 + index * 45;
           const y = 620 - height;
-          context.strokeStyle = "rgba(96,165,250,.25)";
+          context.strokeStyle = "rgba(212,212,216,.22)";
           context.lineWidth = 3;
           context.beginPath();
           context.moveTo(x + 12, y - 42);
           context.lineTo(x + 12, y + height + 42);
           context.stroke();
-          context.fillStyle = index % 3 === 0 ? "rgba(66,217,155,.28)" : "rgba(96,165,250,.28)";
+          context.fillStyle = index % 3 === 0 ? "rgba(66,217,155,.28)" : "rgba(212,212,216,.24)";
           context.fillRect(x, y, 24, height);
         });
       }
 
       const shade = context.createLinearGradient(0, 0, 1080, 0);
-      shade.addColorStop(0, "rgba(2,3,10,.98)");
-      shade.addColorStop(0.58, "rgba(2,3,10,.88)");
-      shade.addColorStop(1, "rgba(2,3,10,.18)");
+      shade.addColorStop(0, "rgba(11,11,11,.98)");
+      shade.addColorStop(0.58, "rgba(11,11,11,.9)");
+      shade.addColorStop(1, "rgba(11,11,11,.2)");
       context.fillStyle = shade;
       context.fillRect(0, 0, 1080, 1080);
 
@@ -1070,20 +1075,20 @@ function TradeReviewImage({ trade, chartUrl }: { trade: JournalEntry; chartUrl: 
   };
 
   return (
-    <section className="overflow-hidden rounded-[24px] border border-white/10 bg-[#03050c]">
+    <section className="mx-auto w-full max-w-[380px] overflow-hidden rounded-2xl border border-white/10 bg-[#171717] shadow-xl shadow-black/25">
       <div className="flex items-center justify-between border-b border-white/8 px-4 py-3">
         <div>
           <p className="text-sm font-black text-white">Trade review image</p>
-          <p className="text-xs text-[#6b7a96]">1080 x 1080 PNG</p>
+          <p className="text-xs text-[#8a8a8a]">1080 x 1080 PNG</p>
         </div>
         <Button type="button" disabled={!generatedUrl} onClick={download} variant="outline" className="border-white/10 bg-white/[.04]">
           <Download size={15} /> PNG yuklash
         </Button>
       </div>
       {generatedUrl ? (
-        <img src={generatedUrl} alt={`${trade.symbol} TradeWay review image`} className="aspect-square w-full bg-black object-contain" />
+        <img src={generatedUrl} alt={`${trade.symbol} TradeWay review image`} className="aspect-square w-full bg-[#0b0b0b] object-contain" />
       ) : (
-        <div className="grid aspect-square w-full place-items-center text-[#6b7a96]">
+        <div className="grid aspect-square w-full place-items-center text-[#8a8a8a]">
           <LoaderCircle className="animate-spin" size={24} />
         </div>
       )}
@@ -1095,8 +1100,8 @@ function ProgressBar({ label, value, color }: { label: string; value: number; co
   return (
     <div>
       <div className="mb-1.5 flex text-xs">
-        <span className="text-[#6b7a96]">{label}</span>
-        <b className="ml-auto text-[#dde6f8]">{value.toFixed(0)}%</b>
+        <span className="text-[#8a8a8a]">{label}</span>
+        <b className="ml-auto text-[#f1f1f1]">{value.toFixed(0)}%</b>
       </div>
       <div className="h-1.5 overflow-hidden rounded-full bg-[#0f1b2d]">
         <div className={`h-full rounded-full transition-all ${color}`} style={{ width: `${Math.min(100, value)}%` }} />
@@ -1117,13 +1122,13 @@ function BalanceMetric({ label, value, tone = "neutral" }: { label: string; valu
 
 function MiniStat({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-xl bg-[#060b14]/60 p-3 text-center">
+    <div className="rounded-xl bg-[#121212]/60 p-3 text-center">
       <b className="block truncate font-mono text-sm">{value}</b>
-      <small className="text-[9px] font-semibold uppercase tracking-wider text-[#6b7a96]">{label}</small>
+      <small className="text-[9px] font-semibold uppercase tracking-wider text-[#8a8a8a]">{label}</small>
     </div>
   );
 }
 
 function Empty({ text }: { text: string }) {
-  return <div className="grid min-h-40 place-items-center p-6 text-center text-sm text-[#6b7a96]">{text}</div>;
+  return <div className="grid min-h-40 place-items-center p-6 text-center text-sm text-[#8a8a8a]">{text}</div>;
 }

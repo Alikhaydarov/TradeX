@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import type { User } from "@supabase/supabase-js";
 import {
@@ -93,9 +93,9 @@ export function Sidebar({
 
   return (
     <>
-      <aside className="sticky top-3 hidden h-[calc(100vh-1.5rem)] w-[232px] shrink-0 flex-col rounded-[22px] border border-white/8 bg-[#05080e]/92 p-3 shadow-2xl shadow-black/25 backdrop-blur-2xl lg:flex">
+      <aside className="sticky top-3 hidden h-[calc(100vh-1.5rem)] w-[232px] shrink-0 flex-col rounded-[22px] border border-white/8 bg-[#111111]/92 p-3 shadow-2xl shadow-black/25 backdrop-blur-2xl lg:flex">
         <button onClick={() => onChange("feed")} className="flex items-center gap-3 rounded-2xl px-2 py-2 text-left" aria-label="TradeWay bosh sahifa">
-          <span className="grid h-11 w-11 place-items-center rounded-[15px] bg-gradient-to-br from-cyan-400 via-blue-500 to-violet-600 text-lg font-black shadow-lg shadow-blue-950/50">TW</span>
+          <span className="grid h-11 w-11 place-items-center rounded-[15px] bg-gradient-to-br from-zinc-100 via-zinc-400 to-zinc-800 text-lg font-black text-black shadow-lg shadow-black/40">TW</span>
           <span>
             <strong className="block text-base tracking-tight">TradeWay</strong>
             <small className="text-[11px] text-slate-500">Trader workspace</small>
@@ -157,7 +157,7 @@ export function Sidebar({
       </aside>
 
       {!hideMobile && (
-        <nav className="fixed inset-x-3 bottom-3 z-50 flex h-16 items-center justify-around rounded-2xl border border-white/10 bg-[#05080e]/88 px-2 shadow-2xl shadow-black/30 backdrop-blur-2xl lg:hidden">
+        <nav className="fixed inset-x-3 bottom-3 z-50 flex h-16 items-center justify-around rounded-2xl border border-white/10 bg-[#111111]/88 px-2 shadow-2xl shadow-black/30 backdrop-blur-2xl lg:hidden">
           {nav.map(({ id, label, icon: Icon }) => (
             <button key={id} onClick={() => onChange(id)} className={`grid h-11 w-11 place-items-center rounded-xl transition-colors duration-100 ${active === id ? "bg-cyan-400/12 text-cyan-200 ring-1 ring-cyan-300/20" : "text-slate-600"}`} aria-label={label}>
               <Icon size={21} strokeWidth={active === id ? 2.6 : 2} />

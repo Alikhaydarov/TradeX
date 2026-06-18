@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { BarChart3, Clock3, LoaderCircle, Play, Server, TrendingDown, TrendingUp } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
@@ -56,7 +56,7 @@ function RunRow({ run }: { run: Run }) {
           <span className="rounded-full bg-white/[.055] px-2 py-1 text-[10px] font-bold text-slate-400">{run.timeframe}</span>
         </div>
         <p className="mt-1 truncate text-xs text-slate-500">
-          {run.strategy} · {run.period} · {new Date(run.created_at).toLocaleDateString("uz-UZ")}
+          {run.strategy} Â· {run.period} Â· {new Date(run.created_at).toLocaleDateString("uz-UZ")}
         </p>
       </div>
       <div className="flex items-center gap-3 sm:justify-end">
@@ -148,7 +148,7 @@ export function Backtest() {
 
   return (
     <div className="min-h-full bg-[#01040a]">
-      <header className="sticky top-0 z-20 border-b border-white/8 bg-[#05080e]/88 px-4 py-4 backdrop-blur-2xl sm:px-6">
+      <header className="sticky top-0 z-20 border-b border-white/8 bg-[#111111]/88 px-4 py-4 backdrop-blur-2xl sm:px-6">
         <div className="mx-auto flex max-w-6xl items-center gap-3">
           <span className="grid size-10 shrink-0 place-items-center rounded-2xl border border-blue-300/12 bg-blue-400/10 text-blue-200">
             <BarChart3 size={18} />
@@ -234,7 +234,7 @@ export function Backtest() {
               <div>
                 <h2 className="font-black">Equity curve</h2>
                 <p className="mt-1 text-xs text-slate-500">
-                  {result ? `${result.tradesCount} trade · ${form.asset} · ${form.strategy}` : "Run a backtest to generate a curve."}
+                  {result ? `${result.tradesCount} trade Â· ${form.asset} Â· ${form.strategy}` : "Run a backtest to generate a curve."}
                 </p>
               </div>
               {result?.netReturn ? (
@@ -254,9 +254,9 @@ export function Backtest() {
                         <stop offset="95%" stopColor="#2563eb" stopOpacity={0.02} />
                       </linearGradient>
                     </defs>
-                    <CartesianGrid stroke="#1e2d45" vertical={false} />
-                    <XAxis dataKey="step" stroke="#6b7a96" tickLine={false} axisLine={false} />
-                    <YAxis stroke="#6b7a96" tickLine={false} axisLine={false} />
+                    <CartesianGrid stroke="#333333" vertical={false} />
+                    <XAxis dataKey="step" stroke="#8a8a8a" tickLine={false} axisLine={false} />
+                    <YAxis stroke="#8a8a8a" tickLine={false} axisLine={false} />
                     <Tooltip contentStyle={{ background: "#07101dcc", border: "1px solid #263653", borderRadius: 16 }} />
                     <Area dataKey="equity" stroke="#67e8f9" strokeWidth={2.5} fill="url(#equityFill)" />
                   </AreaChart>

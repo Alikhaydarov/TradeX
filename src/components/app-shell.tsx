@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { ArrowRight, LockKeyhole, ShieldCheck, Sparkles } from "lucide-react";
 import dynamic from "next/dynamic";
@@ -57,15 +57,15 @@ function getCurrentProfileUsername() {
 
 function AuthGate({ onLogin }: { onLogin: () => void }) {
   return (
-    <main className="grid min-h-[100dvh] place-items-center overflow-hidden bg-[#010206] px-4 py-[max(1rem,env(safe-area-inset-top))] pb-[max(1rem,env(safe-area-inset-bottom))] text-white sm:px-6">
-      <section className="auth-card-in auth-border-run relative w-full max-w-[520px] overflow-hidden rounded-[26px] border border-white/10 bg-[#05080e]/94 p-5 shadow-2xl shadow-black/55 backdrop-blur-2xl sm:p-7">
+    <main className="grid min-h-[100dvh] place-items-center overflow-hidden bg-[#0b0b0b] px-4 py-[max(1rem,env(safe-area-inset-top))] pb-[max(1rem,env(safe-area-inset-bottom))] text-white sm:px-6">
+      <section className="auth-card-in auth-border-run relative w-full max-w-[520px] overflow-hidden rounded-[26px] border border-white/10 bg-[#111111]/94 p-5 shadow-2xl shadow-black/55 backdrop-blur-2xl sm:p-7">
         <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-cyan-300/50 to-transparent" />
 
         <div className="flex items-start justify-between gap-4">
           <div className="flex items-center gap-3">
-            <div className="auth-logo-pulse grid size-12 place-items-center rounded-2xl border border-blue-300/20 bg-gradient-to-br from-cyan-400 via-blue-500 to-violet-600 text-base font-black text-white shadow-xl shadow-blue-950/35">TW</div>
+            <div className="auth-logo-pulse grid size-12 place-items-center rounded-2xl border border-white/15 bg-gradient-to-br from-zinc-200 via-zinc-500 to-zinc-900 text-base font-black text-black shadow-xl shadow-black/35">TW</div>
             <div>
-              <p className="text-[10px] font-black uppercase tracking-[.24em] text-blue-300/80">Private workspace</p>
+              <p className="text-[10px] font-black uppercase tracking-[.24em] text-zinc-400">Private workspace</p>
               <h1 className="mt-1 text-3xl font-black leading-none tracking-tight">TradeWay</h1>
             </div>
           </div>
@@ -225,7 +225,7 @@ export function AppShell() {
     <>
       <div className={`mx-auto flex min-h-[100dvh] max-w-[1500px] gap-3 p-0 text-[#edf3ff] lg:p-3 ${chatOpen ? "xl:max-w-[1600px]" : ""}`}>
         <Sidebar active={section} onChange={changeSection} onPost={() => changeSection("feed")} onLogin={openLogin} user={user} hideMobile={chatOpen} isAdmin={isAdmin} />
-        <main className={chatOpen ? "fixed inset-0 z-50 min-w-0 flex-1 overflow-hidden bg-[#05080e] shadow-2xl shadow-black/35 lg:static lg:z-auto lg:min-h-[calc(100dvh-1.5rem)] lg:rounded-[22px] lg:border lg:border-white/8" : "min-h-[100dvh] min-w-0 flex-1 overflow-hidden bg-[#04070d]/92 pb-20 shadow-2xl shadow-black/25 lg:min-h-[calc(100dvh-1.5rem)] lg:rounded-[22px] lg:border lg:border-white/8 lg:pb-0"}>
+        <main className={chatOpen ? "fixed inset-0 z-50 min-w-0 flex-1 overflow-hidden bg-[#111111] shadow-2xl shadow-black/35 lg:static lg:z-auto lg:min-h-[calc(100dvh-1.5rem)] lg:rounded-[22px] lg:border lg:border-white/8" : "min-h-[100dvh] min-w-0 flex-1 overflow-hidden bg-[#101010]/92 pb-20 shadow-2xl shadow-black/25 lg:min-h-[calc(100dvh-1.5rem)] lg:rounded-[22px] lg:border lg:border-white/8 lg:pb-0"}>
           {visitedSections.map((item) => {
             if (item === "admin" && !isAdmin) return null;
             return (

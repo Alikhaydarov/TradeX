@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import {
   ArrowLeft,
@@ -494,7 +494,7 @@ export function ChatV4({ onLogin, onBack }: { onLogin: () => void; onBack: () =>
   );
 
   return (
-    <div className="relative flex h-[100dvh] min-h-0 flex-col overflow-hidden bg-[#05080e] lg:h-[calc(100vh-2rem)] lg:bg-transparent">
+    <div className="relative flex h-[100dvh] min-h-0 flex-col overflow-hidden bg-[#111111] lg:h-[calc(100vh-2rem)] lg:bg-transparent">
       <header className="flex shrink-0 items-center gap-2 border-b border-white/8 bg-[#07101a]/95 px-3 py-2.5 backdrop-blur-2xl sm:gap-3 sm:px-5 sm:py-3">
         <button onClick={onBack} className="grid h-9 w-9 shrink-0 place-items-center rounded-full text-slate-200 hover:bg-white/[.06]" aria-label="Orqaga qaytish">
           <ArrowLeft size={17} />

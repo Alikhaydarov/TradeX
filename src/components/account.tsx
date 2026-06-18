@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import {
   Bookmark,
@@ -357,7 +357,7 @@ export function Account({ onLogin, profileUsername }: { onLogin: () => void; pro
   };
 
   const renderPost = (post: Post) => (
-    <article key={post.id} className="group border-b border-white/8 bg-[#070b12] px-4 py-5 last:border-b-0 transition hover:bg-white/[.025] sm:px-6">
+    <article key={post.id} className="group border-b border-white/8 bg-[#171717] px-4 py-5 last:border-b-0 transition hover:bg-white/[.025] sm:px-6">
       <div className="grid grid-cols-[40px_minmax(0,1fr)] gap-3 sm:grid-cols-[48px_minmax(0,1fr)] sm:gap-4">
         <TraderAvatar name={post.name} value={post.avatar} className="mt-1 h-10 w-10 shrink-0 rounded-full text-xs ring-2 ring-white/5 transition group-hover:ring-cyan-300/20 sm:h-12 sm:w-12" />
         <div className="min-w-0">
@@ -365,7 +365,7 @@ export function Account({ onLogin, profileUsername }: { onLogin: () => void; pro
             <p className="max-w-full truncate font-black text-white">{post.name}</p>
             {post.isVerified ? <VerifiedBadge /> : null}
             <p className="truncate text-xs text-slate-500">{post.handle}</p>
-            <span className="text-xs text-slate-700">·</span>
+            <span className="text-xs text-slate-700">Â·</span>
             <p className="text-xs text-slate-500">{post.time}</p>
           </div>
           {post.text ? <p className="mt-1.5 whitespace-pre-line break-words text-[15px] leading-6 text-slate-50">{post.text}</p> : null}
@@ -387,7 +387,7 @@ export function Account({ onLogin, profileUsername }: { onLogin: () => void; pro
 
   return (
     <div className="min-h-full bg-[#01040a]">
-      <header className="sticky top-0 z-20 flex h-14 items-center gap-3 border-b border-white/8 bg-[#05080e]/86 px-4 backdrop-blur-2xl">
+      <header className="sticky top-0 z-20 flex h-14 items-center gap-3 border-b border-white/8 bg-[#111111]/86 px-4 backdrop-blur-2xl">
         <div className="grid h-9 w-9 place-items-center rounded-full border border-cyan-200/10 bg-cyan-300/8 text-cyan-200"><UserRound size={17} /></div>
         <div className="min-w-0">
           <h1 className="truncate text-lg font-black leading-5">TradeWay Profile</h1>
@@ -401,11 +401,11 @@ export function Account({ onLogin, profileUsername }: { onLogin: () => void; pro
       {error && <div className="mx-auto mt-3 max-w-5xl rounded-2xl border border-rose-300/15 bg-rose-400/10 px-4 py-3 text-sm text-rose-200">{error}</div>}
 
       <div className="mx-auto max-w-3xl px-0 sm:px-5 sm:py-4">
-        <section className="overflow-hidden border-b border-white/10 bg-[#070b12] shadow-2xl shadow-black/25 sm:rounded-[28px] sm:border">
-          <div className="h-36 bg-[radial-gradient(circle_at_16%_25%,rgba(34,211,238,.24),transparent_22%),radial-gradient(circle_at_82%_8%,rgba(96,165,250,.18),transparent_26%),linear-gradient(135deg,#05080e,#0a1020_52%,#071520)] sm:h-44" />
+        <section className="overflow-hidden border-b border-white/10 bg-[#171717] shadow-2xl shadow-black/25 sm:rounded-[28px] sm:border">
+          <div className="h-36 bg-[radial-gradient(circle_at_16%_25%,rgba(34,211,238,.24),transparent_22%),radial-gradient(circle_at_82%_8%,rgba(96,165,250,.18),transparent_26%),linear-gradient(135deg,#111111,#0a1020_52%,#071520)] sm:h-44" />
           <div className="px-4 pb-5 sm:px-6">
             <div className="-mt-14 flex items-end justify-between gap-3 sm:-mt-16">
-              <TraderAvatar name={profile.fullName} value={profile.avatarUrl} className="h-28 w-28 rounded-full border-4 border-[#070b12] bg-black text-3xl shadow-xl sm:h-32 sm:w-32" />
+              <TraderAvatar name={profile.fullName} value={profile.avatarUrl} className="h-28 w-28 rounded-full border-4 border-[#171717] bg-black text-3xl shadow-xl sm:h-32 sm:w-32" />
               {isOwnProfile ? (
                 <button onClick={openEdit} className="mb-2 inline-flex h-10 items-center gap-2 rounded-full border border-white/15 bg-white/[.035] px-4 text-sm font-black text-white transition hover:bg-white/[.075]"><PenLine size={15} /> Edit profile</button>
               ) : (
@@ -438,8 +438,8 @@ export function Account({ onLogin, profileUsername }: { onLogin: () => void; pro
           </div>
         </section>
 
-        <section className="border-b border-white/10 bg-[#070b12] sm:mt-3 sm:overflow-hidden sm:rounded-[28px] sm:border">
-          <div className="relative z-10 grid grid-cols-4 border-b border-white/8 bg-[#070b12]/95 backdrop-blur-xl">
+        <section className="border-b border-white/10 bg-[#171717] sm:mt-3 sm:overflow-hidden sm:rounded-[28px] sm:border">
+          <div className="relative z-10 grid grid-cols-4 border-b border-white/8 bg-[#171717]/95 backdrop-blur-xl">
             {tabs.map((tab) => {
               const active = activeTab === tab.id;
               return <button key={tab.id} onClick={() => setActiveTab(tab.id)} className={`relative px-2 py-4 text-xs font-black transition sm:text-sm ${active ? "text-white" : "text-slate-500 hover:bg-white/[.03] hover:text-slate-300"}`}>{tab.label}{active ? <span className="absolute inset-x-6 bottom-0 h-1 rounded-full bg-cyan-300" /> : null}</button>;
