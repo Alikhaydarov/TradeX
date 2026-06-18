@@ -18,6 +18,7 @@ import { Button } from "./ui/button";
 import { Card, CardContent } from "./ui/card";
 import { Checkbox } from "./ui/checkbox";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "./ui/dropdown-menu";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "./ui/dialog";
 import { Input } from "./ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
 import { Separator } from "./ui/separator";
@@ -675,11 +676,7 @@ function Workspace(p: {
               </div>
               {trades.length
                 ? trades.map(e => (
-                    <button key={e.id} type="button" onClick={() => setSelectedTrade(e)} className="flex w-full items-center gap-3 border-t border-[#2a2a2a] px-5 py-3 text-left transition hover:bg-[#242424]/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/25">
-                      {e.imageUrl
-                        ? <img src={e.imageUrl} alt={`${e.symbol} chart`} className="h-14 w-20 shrink-0 rounded-lg object-cover" />
-                        : <span className="grid h-14 w-20 shrink-0 place-items-center rounded-lg bg-[#121212]"><ImageIcon size={18} className="text-[#454545]" /></span>
-                      }
+                    <button key={e.id} type="button" onClick={() => setSelectedTrade(e)} className="flex w-full items-center gap-3 border-t border-[#2a2a2a] px-4 py-3.5 text-left transition hover:bg-[#242424]/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/25 sm:px-5">
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center gap-2">
                           <b className="font-bold">{e.symbol}</b>
@@ -865,6 +862,7 @@ function Workspace(p: {
 
 function TradeEditor({ trade, saving, onClose, onSave, onDelete }: { trade: JournalEntry; saving: boolean; onClose: () => void; onSave: (form: FormData) => Promise<void>; onDelete: () => Promise<void> }) {
   const [imageUrl, setImageUrl] = useState(trade.imageUrl || "");
+  const [screenshotOpen, setScreenshotOpen] = useState(false);
 
   return (
     <div className="fixed inset-0 z-[9999] flex items-start justify-center overflow-y-auto bg-black/70 p-3 pt-[max(1rem,env(safe-area-inset-top))] backdrop-blur-md sm:items-center sm:p-4">
@@ -880,9 +878,9 @@ function TradeEditor({ trade, saving, onClose, onSave, onDelete }: { trade: Jour
           </button>
         </header>
         <div className="max-h-[76dvh] space-y-4 overflow-y-auto p-4 sm:p-5">
-          <div className="grid gap-3 sm:grid-cols-3">
-            <label className="text-xs text-[#8a8a8a]">Symbol<Input name="symbol" defaultValue={trade.symbol} className="mt-1 border-[#2a2a2a] bg-[#121212]" /></label>
-            <label className="text-xs text-[#8a8a8a]">
+          <div className="grid min-w-0 gap-3 sm:grid-cols-[repeat(3,minmax(0,1fr))]">
+            <label className="min-w-0 text-xs text-[#8a8a8a]">Symbol<Input name="symbol" defaultValue={trade.symbol} className="mt-1" /></label>
+            <label className="min-w-0 text-xs text-[#8a8a8a]">
               Side
               <Select name="side" defaultValue={trade.side}>
                 <SelectTrigger className="mt-1 w-full"><SelectValue /></SelectTrigger>
@@ -892,19 +890,19 @@ function TradeEditor({ trade, saving, onClose, onSave, onDelete }: { trade: Jour
                 </SelectContent>
               </Select>
             </label>
-            <label className="text-xs text-[#8a8a8a]">Date<Input name="tradedAt" type="date" defaultValue={trade.rawDate} className="mt-1 border-[#2a2a2a] bg-[#121212]" /></label>
+            <label className="min-w-0 text-xs text-[#8a8a8a]">Date<Input name="tradedAt" type="date" defaultValue={trade.rawDate} className="mt-1" /></label>
           </div>
-          <div className="grid gap-3 sm:grid-cols-3">
-            <label className="text-xs text-[#8a8a8a]">PnL<Input name="pnl" inputMode="decimal" defaultValue={String(trade.pnl)} className="mt-1 border-[#2a2a2a] bg-[#121212]" /></label>
-            <label className="text-xs text-[#8a8a8a]">Quantity<Input name="quantity" inputMode="decimal" defaultValue={String(trade.quantity)} className="mt-1 border-[#2a2a2a] bg-[#121212]" /></label>
-            <label className="text-xs text-[#8a8a8a]">Fees<Input name="fees" inputMode="decimal" defaultValue={String(trade.fees)} className="mt-1 border-[#2a2a2a] bg-[#121212]" /></label>
+          <div className="grid min-w-0 gap-3 sm:grid-cols-[repeat(3,minmax(0,1fr))]">
+            <label className="min-w-0 text-xs text-[#8a8a8a]">PnL<Input name="pnl" inputMode="decimal" defaultValue={String(trade.pnl)} className="mt-1" /></label>
+            <label className="min-w-0 text-xs text-[#8a8a8a]">Quantity<Input name="quantity" inputMode="decimal" defaultValue={String(trade.quantity)} className="mt-1" /></label>
+            <label className="min-w-0 text-xs text-[#8a8a8a]">Fees<Input name="fees" inputMode="decimal" defaultValue={String(trade.fees)} className="mt-1" /></label>
           </div>
-          <div className="grid gap-3 sm:grid-cols-3">
+          <div className="grid min-w-0 gap-3 sm:grid-cols-[repeat(3,minmax(0,1fr))]">
             <label className="text-xs text-[#8a8a8a]">Risk $<Input name="riskAmount" inputMode="decimal" defaultValue={String(trade.riskAmount ?? 0)} className="mt-1 border-[#2a2a2a] bg-[#121212]" /></label>
             <label className="text-xs text-[#8a8a8a]">RR<Input name="resultR" inputMode="decimal" defaultValue={String(trade.resultR ?? 0)} className="mt-1 border-[#2a2a2a] bg-[#121212]" /></label>
             <label className="text-xs text-[#8a8a8a]">Risk %<Input name="riskPercent" defaultValue={trade.riskPercent ?? ""} className="mt-1 border-[#2a2a2a] bg-[#121212]" /></label>
           </div>
-          <div className="grid gap-3 sm:grid-cols-3">
+          <div className="grid min-w-0 gap-3 sm:grid-cols-[repeat(3,minmax(0,1fr))]">
             <label className="text-xs text-[#8a8a8a]">Setup<Input name="setup" defaultValue={trade.setup ?? ""} className="mt-1 border-[#2a2a2a] bg-[#121212]" /></label>
             <label className="text-xs text-[#8a8a8a]">Session<Input name="session" defaultValue={trade.session ?? ""} className="mt-1 border-[#2a2a2a] bg-[#121212]" /></label>
             <label className="text-xs text-[#8a8a8a]">Tags<Input name="tags" defaultValue={(trade.tags ?? []).join(", ")} className="mt-1 border-[#2a2a2a] bg-[#121212]" /></label>
@@ -920,13 +918,14 @@ function TradeEditor({ trade, saving, onClose, onSave, onDelete }: { trade: Jour
               ) : null}
             </div>
             {imageUrl ? (
-              <div className="flex items-center gap-3 overflow-hidden rounded-xl border border-white/10 bg-black/25 p-2">
+              <button type="button" onClick={() => setScreenshotOpen(true)} className="flex w-full items-center gap-3 overflow-hidden rounded-xl border border-white/10 bg-black/25 p-2 text-left transition hover:border-white/20 hover:bg-white/[.035]">
                 <img src={imageUrl} alt={`${trade.symbol} chart screenshot`} className="h-16 w-24 shrink-0 rounded-lg object-cover" loading="lazy" />
                 <div className="min-w-0">
                   <p className="text-sm font-bold text-[#f1f1f1]">Screenshot ulangan</p>
-                  <p className="truncate text-xs text-[#8a8a8a]">{imageUrl}</p>
+                  <p className="truncate text-xs text-[#8a8a8a]">To&apos;liq ko&apos;rish uchun bosing</p>
                 </div>
-              </div>
+                <ImageIcon className="ml-auto mr-2 shrink-0 text-zinc-600" size={18} />
+              </button>
             ) : (
               <div className="flex min-h-20 items-center justify-center gap-2 rounded-xl border border-dashed border-[#2a2a2a] text-sm text-[#8a8a8a]">
                 <ImageIcon size={20} />
@@ -987,6 +986,17 @@ function TradeEditor({ trade, saving, onClose, onSave, onDelete }: { trade: Jour
           <Button disabled={saving} className="ml-auto bg-white text-black hover:bg-zinc-200">{saving ? <LoaderCircle className="animate-spin" size={15} /> : null} Save changes</Button>
         </footer>
       </form>
+      <Dialog open={screenshotOpen} onOpenChange={setScreenshotOpen}>
+        <DialogContent className="max-h-[92dvh] max-w-[min(1100px,calc(100vw-1rem))] overflow-hidden border-border bg-background p-0 sm:max-w-[min(1100px,calc(100vw-2rem))]">
+          <DialogHeader className="border-b border-border px-4 py-3 pr-14">
+            <DialogTitle>{trade.symbol} screenshot</DialogTitle>
+            <DialogDescription>Chart screenshotni to&apos;liq o&apos;lchamda ko&apos;rish</DialogDescription>
+          </DialogHeader>
+          <div className="grid max-h-[calc(92dvh-72px)] place-items-center overflow-auto bg-black p-2 sm:p-4">
+            {imageUrl ? <img src={imageUrl} alt={`${trade.symbol} full chart screenshot`} className="max-h-[calc(92dvh-104px)] max-w-full object-contain" /> : null}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

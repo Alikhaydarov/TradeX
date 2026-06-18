@@ -95,6 +95,18 @@ select {
   font: inherit;
 }
 
+form label,
+form input,
+form textarea,
+form [data-slot="select-trigger"] {
+  min-width: 0;
+  max-width: 100%;
+}
+
+input[type="date"] {
+  min-inline-size: 0;
+}
+
 ::-webkit-scrollbar {
   width: 6px;
 }
