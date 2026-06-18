@@ -223,8 +223,9 @@ export function AppShell() {
 
   return (
     <>
-      <div className={`mx-auto flex min-h-[100dvh] max-w-[1500px] gap-3 bg-background p-0 text-foreground lg:p-3 ${chatOpen ? "xl:max-w-[1600px]" : ""}`}>
+      <div className="mx-auto flex min-h-[100dvh] max-w-[1600px] gap-3 bg-background p-0 text-foreground lg:p-3">
         <Sidebar active={section} onChange={changeSection} onPost={() => changeSection("feed")} onLogin={openLogin} user={user} hideMobile={chatOpen} isAdmin={isAdmin} />
+        <div className="hidden w-[232px] shrink-0 lg:block" aria-hidden="true" />
         <main className={chatOpen ? "fixed inset-0 z-50 min-w-0 flex-1 overflow-hidden bg-background shadow-2xl shadow-black/35 lg:static lg:z-auto lg:min-h-[calc(100dvh-1.5rem)] lg:rounded-[22px] lg:border lg:border-border" : "min-h-[100dvh] min-w-0 flex-1 overflow-hidden bg-background pb-20 shadow-2xl shadow-black/25 lg:min-h-[calc(100dvh-1.5rem)] lg:rounded-[22px] lg:border lg:border-border lg:pb-0"}>
           {visitedSections.map((item) => {
             if (item === "admin" && !isAdmin) return null;

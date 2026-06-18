@@ -93,7 +93,7 @@ export function Sidebar({
 
   return (
     <>
-      <aside className="sticky top-3 hidden h-[calc(100vh-1.5rem)] w-[232px] shrink-0 flex-col rounded-[22px] border border-white/8 bg-[#111111]/92 p-3 shadow-2xl shadow-black/25 backdrop-blur-2xl lg:flex">
+      <aside className="fixed left-[max(0.75rem,calc((100vw-1600px)/2+0.75rem))] top-3 z-40 hidden h-[calc(100vh-1.5rem)] w-[232px] shrink-0 flex-col rounded-[22px] border border-white/8 bg-[#111111]/92 p-3 shadow-2xl shadow-black/25 backdrop-blur-2xl lg:flex">
         <button onClick={() => onChange("feed")} className="flex items-center gap-3 rounded-2xl px-2 py-2 text-left" aria-label="TradeWay bosh sahifa">
           <span className="grid h-11 w-11 place-items-center rounded-[15px] bg-gradient-to-br from-zinc-100 via-zinc-400 to-zinc-800 text-lg font-black text-black shadow-lg shadow-black/40">TW</span>
           <span>
