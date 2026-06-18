@@ -4,6 +4,8 @@ import { Bell, Search, Users, X } from "lucide-react";
 import { useEffect, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { apiRequest } from "@/lib/api-client";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { XSpinner } from "./app-loader";
 import { TraderAvatar } from "./trader-avatar";
 import { VerifiedBadge } from "./verified-badge";
@@ -152,9 +154,9 @@ function SearchDialog({ onClose }: { onClose: () => void }) {
           if (users[0]) goToProfile(users[0].username);
         }}
       >
-        <div className="flex h-12 items-center gap-3 rounded-2xl border border-white/10 bg-white/[.04] px-4 focus-within:border-zinc-500">
-          <Search size={18} className="text-zinc-300" />
-          <input
+        <div className="relative">
+          <Search size={18} className="pointer-events-none absolute left-4 top-1/2 z-10 -translate-y-1/2 text-zinc-300" />
+          <Input
             autoFocus
             type="search"
             enterKeyHint="search"
@@ -170,10 +172,12 @@ function SearchDialog({ onClose }: { onClose: () => void }) {
               }
             }}
             placeholder="Search"
-            className="min-w-0 flex-1 bg-transparent text-[16px] text-white outline-none placeholder:text-slate-500"
+            className="h-12 pl-11 pr-20 text-[16px]"
           />
-          {loading ? <XSpinner size="sm" /> : null}
-          {query ? <button type="button" onClick={() => setQuery("")} className="grid size-7 place-items-center rounded-full bg-white/[.06] text-slate-400 hover:text-white" aria-label="Clear search"><X size={14} /></button> : null}
+          <div className="absolute right-2 top-1/2 flex -translate-y-1/2 items-center gap-1">
+            {loading ? <XSpinner size="sm" /> : null}
+            {query ? <Button type="button" variant="ghost" size="icon-sm" onClick={() => setQuery("")} aria-label="Clear search"><X size={14} /></Button> : null}
+          </div>
         </div>
         {error ? <p className="mt-3 rounded-2xl border border-rose-300/15 bg-rose-400/10 px-3 py-2 text-xs text-rose-200">{error}</p> : null}
       </form>

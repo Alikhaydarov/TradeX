@@ -19,6 +19,19 @@ import {
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { apiRequest } from "@/lib/api-client";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
 import { FullScreenLoader, XSpinner } from "./app-loader";
 import { useAuth } from "./auth-context";
 import { TraderAvatar } from "./trader-avatar";
@@ -449,38 +462,40 @@ export function Account({ onLogin, profileUsername }: { onLogin: () => void; pro
         </section>
       </div>
 
-      {editOpen && draftProfile ? (
-        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/65 p-4 backdrop-blur-sm">
-          <div className="max-h-[calc(100dvh-2rem)] w-full max-w-xl overflow-y-auto rounded-[30px] border border-white/10 bg-[#171717] text-white shadow-2xl shadow-black/60">
-            <div className="sticky top-0 z-10 flex h-14 items-center gap-3 border-b border-white/8 bg-[#171717]/90 px-4 backdrop-blur-xl">
-              <button onClick={() => setEditOpen(false)} className="grid h-9 w-9 place-items-center rounded-full hover:bg-white/[.08]" aria-label="Close"><X size={18} /></button>
-              <h3 className="text-lg font-black">Edit profile</h3>
-              <button onClick={() => void save()} className="ml-auto rounded-full bg-white px-5 py-2 text-sm font-black text-black hover:bg-slate-200">{saved ? "Saved" : "Save"}</button>
-            </div>
+      <Dialog open={editOpen && Boolean(draftProfile)} onOpenChange={setEditOpen}>
+        {draftProfile ? (
+          <DialogContent className="max-h-[calc(100dvh-1rem)] gap-0 overflow-y-auto p-0 sm:max-w-xl" showCloseButton>
+            <DialogHeader className="sticky top-0 z-20 border-b border-white/8 bg-[#171717]/95 px-5 py-4 text-left backdrop-blur-xl">
+              <DialogTitle>Edit profile</DialogTitle>
+              <DialogDescription>Profil ma&apos;lumotlari va trading uslubingizni yangilang.</DialogDescription>
+            </DialogHeader>
             <div className="h-36 bg-gradient-to-br from-zinc-800 via-zinc-900 to-black" />
             <div className="px-5 pb-6">
               <div className="-mt-14 flex items-end">
                 <div className="relative">
                   <TraderAvatar name={draftProfile.fullName} value={draftProfile.avatarUrl} className="h-28 w-28 rounded-[28px] border-4 border-[#171717] text-2xl" />
                   <input ref={fileInputRef} type="file" accept="image/png,image/jpeg,image/webp,image/gif" className="hidden" onChange={(event) => void uploadAvatar(event.target.files?.[0])} />
-                  <button onClick={() => fileInputRef.current?.click()} disabled={uploadingAvatar} className="absolute inset-0 grid place-items-center rounded-[28px] bg-black/45 text-white">{uploadingAvatar ? <XSpinner size="sm" /> : <Camera size={24} />}</button>
+                  <Button type="button" variant="ghost" onClick={() => fileInputRef.current?.click()} disabled={uploadingAvatar} className="absolute inset-0 h-full w-full rounded-[28px] bg-black/45 text-white hover:bg-black/55">{uploadingAvatar ? <XSpinner size="sm" /> : <Camera size={24} />}</Button>
                 </div>
-                <button onClick={() => void signOut()} className="ml-auto mb-3 flex items-center gap-2 rounded-full border border-white/15 px-4 py-2 text-xs font-bold hover:bg-white/[.06]"><LogOut size={15} /> Sign out</button>
+                <Button type="button" variant="outline" size="sm" onClick={() => void signOut()} className="ml-auto mb-3 rounded-full"><LogOut size={15} /> Sign out</Button>
               </div>
               {error && <div className="mt-4 rounded-2xl border border-rose-300/15 bg-rose-400/10 px-4 py-3 text-sm text-rose-200">{error}</div>}
               <div className="mt-5 grid gap-4">
-                <label className="text-xs text-slate-500">Name<input value={draftProfile.fullName} onChange={(event) => setDraftProfile({ ...draftProfile, fullName: event.target.value })} className="mt-1 block w-full rounded-2xl border border-white/15 bg-transparent px-4 py-3 text-sm text-white outline-none focus:border-zinc-500" /></label>
-                <label className="text-xs text-slate-500">Username<div className="mt-1 flex rounded-2xl border border-white/15 px-4 focus-within:border-zinc-500"><span className="py-3 text-slate-500">@</span><input value={draftProfile.username} onChange={(event) => setDraftProfile({ ...draftProfile, username: event.target.value.replace(/\s/g, "") })} className="min-w-0 flex-1 bg-transparent py-3 text-sm outline-none" /></div></label>
-                <label className="text-xs text-slate-500">Avatar URL<input value={draftProfile.avatarUrl ?? ""} onChange={(event) => setDraftProfile({ ...draftProfile, avatarUrl: event.target.value })} placeholder="https://..." className="mt-1 block w-full rounded-2xl border border-white/15 bg-transparent px-4 py-3 text-sm text-white outline-none focus:border-zinc-500" /></label>
-                <label className="text-xs text-slate-500">Trading style<select value={draftProfile.tradingStyle} onChange={(event) => setDraftProfile({ ...draftProfile, tradingStyle: event.target.value })} className="mt-1 block w-full rounded-2xl border border-white/15 bg-[#121212] px-4 py-3 text-sm text-white outline-none focus:border-zinc-500"><option>Price Action</option><option>Scalping</option><option>Swing Trading</option><option>Algorithmic</option></select></label>
-                <label className="text-xs text-slate-500">Location<div className="mt-1 flex rounded-2xl border border-white/15 px-4 focus-within:border-zinc-500"><MapPin className="mt-3 text-slate-500" size={16} /><input value={draftProfile.location} onChange={(event) => setDraftProfile({ ...draftProfile, location: event.target.value })} placeholder="Korea" className="min-w-0 flex-1 bg-transparent px-2 py-3 text-sm outline-none" /></div></label>
-                <label className="text-xs text-slate-500">Bio<textarea value={draftProfile.bio} onChange={(event) => setDraftProfile({ ...draftProfile, bio: event.target.value })} maxLength={160} className="mt-1 min-h-24 w-full resize-none rounded-2xl border border-white/15 bg-transparent px-4 py-3 text-sm text-white outline-none focus:border-zinc-500" placeholder="Write something about your trading journey..." /></label>
+                <div className="grid gap-2"><Label htmlFor="profile-name">Name</Label><Input id="profile-name" value={draftProfile.fullName} onChange={(event) => setDraftProfile({ ...draftProfile, fullName: event.target.value })} /></div>
+                <div className="grid gap-2"><Label htmlFor="profile-username">Username</Label><div className="relative"><span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-sm text-slate-500">@</span><Input id="profile-username" value={draftProfile.username} onChange={(event) => setDraftProfile({ ...draftProfile, username: event.target.value.replace(/\s/g, "") })} className="pl-8" /></div></div>
+                <div className="grid gap-2"><Label htmlFor="profile-avatar">Avatar URL</Label><Input id="profile-avatar" value={draftProfile.avatarUrl ?? ""} onChange={(event) => setDraftProfile({ ...draftProfile, avatarUrl: event.target.value })} placeholder="https://..." /></div>
+                <div className="grid gap-2"><Label>Trading style</Label><Select value={draftProfile.tradingStyle} onValueChange={(value) => setDraftProfile({ ...draftProfile, tradingStyle: value })}><SelectTrigger className="w-full"><SelectValue placeholder="Trading style tanlang" /></SelectTrigger><SelectContent><SelectItem value="Price Action">Price Action</SelectItem><SelectItem value="Scalping">Scalping</SelectItem><SelectItem value="Swing Trading">Swing Trading</SelectItem><SelectItem value="Algorithmic">Algorithmic</SelectItem></SelectContent></Select></div>
+                <div className="grid gap-2"><Label htmlFor="profile-location">Location</Label><div className="relative"><MapPin className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" size={16} /><Input id="profile-location" value={draftProfile.location} onChange={(event) => setDraftProfile({ ...draftProfile, location: event.target.value })} placeholder="Korea" className="pl-10" /></div></div>
+                <div className="grid gap-2"><Label htmlFor="profile-bio">Bio</Label><Textarea id="profile-bio" value={draftProfile.bio} onChange={(event) => setDraftProfile({ ...draftProfile, bio: event.target.value })} maxLength={160} className="min-h-28" placeholder="Write something about your trading journey..." /><span className="text-right text-[11px] text-slate-600">{draftProfile.bio.length}/160</span></div>
               </div>
-              <button onClick={() => void save()} className="mt-5 flex items-center gap-2 rounded-full bg-white px-5 py-2.5 text-sm font-black text-black hover:bg-slate-200">{saved ? <Check size={17} /> : null}{saved ? "Saved" : "Save changes"}</button>
             </div>
-          </div>
-        </div>
-      ) : null}
+            <DialogFooter className="sticky bottom-0 border-t border-white/8 bg-[#171717]/95 px-5 py-4 backdrop-blur-xl">
+              <Button type="button" variant="outline" onClick={() => setEditOpen(false)}>Cancel</Button>
+              <Button type="button" onClick={() => void save()}>{saved ? <Check size={17} /> : null}{saved ? "Saved" : "Save changes"}</Button>
+            </DialogFooter>
+          </DialogContent>
+        ) : null}
+      </Dialog>
       {connectionsOpen ? (
         <div className="fixed inset-0 z-[9999] flex items-start justify-center overflow-y-auto bg-black/70 p-3 pt-[max(1rem,env(safe-area-inset-top))] backdrop-blur-md sm:items-center sm:p-4">
           <div className="absolute inset-0" onClick={() => setConnectionsOpen(null)} aria-hidden="true" />

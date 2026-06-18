@@ -6,6 +6,8 @@ import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YA
 import { apiRequest } from "@/lib/api-client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useAuth } from "./auth-context";
 import type { BacktestResult } from "./types";
 
@@ -179,16 +181,16 @@ export function Backtest() {
 
           <div className="mt-5 grid gap-3">
             {selectors.map((item) => (
-              <label key={item.key} className="text-[11px] font-black uppercase tracking-[.14em] text-slate-500">
-                {item.label}
-                <select
+              <div key={item.key} className="grid gap-2">
+                <Label className="text-[11px] font-black uppercase tracking-[.14em] text-slate-500">{item.label}</Label>
+                <Select
                   value={String(form[item.key])}
-                  onChange={(event) => setField(item.key, event.target.value)}
-                  className="mt-2 h-11 w-full rounded-2xl border border-white/10 bg-[#121212] px-3 text-sm font-bold text-white outline-none transition focus:border-zinc-500"
+                  onValueChange={(value) => setField(item.key, value)}
                 >
-                  {item.options.map((option) => <option key={option}>{option}</option>)}
-                </select>
-              </label>
+                  <SelectTrigger className="w-full"><SelectValue /></SelectTrigger>
+                  <SelectContent>{item.options.map((option) => <SelectItem key={option} value={option}>{option}</SelectItem>)}</SelectContent>
+                </Select>
+              </div>
             ))}
 
             <div className="grid grid-cols-2 gap-3">

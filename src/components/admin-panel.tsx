@@ -4,6 +4,7 @@ import { Check, LoaderCircle, Search, ShieldCheck, X } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { apiRequest } from "@/lib/api-client";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { AppLoader } from "./app-loader";
 import { TraderAvatar } from "./trader-avatar";
 import { VerifiedBadge } from "./verified-badge";
@@ -96,15 +97,15 @@ export function AdminPanel({ onLogin }: { onLogin: () => void }) {
                 <h2 className="text-base font-black">Ro&apos;yxatdan o&apos;tgan userlar</h2>
                 <p className="mt-1 text-xs text-slate-500">Galochka berilgan userlar verified bo&apos;lib ko&apos;rinadi.</p>
               </div>
-              <label className="sm:ml-auto flex h-11 min-w-0 items-center gap-2 rounded-2xl border border-white/10 bg-black/15 px-3 text-slate-500 sm:w-80">
-                <Search size={15} />
-                <input
+              <div className="relative sm:ml-auto sm:w-80">
+                <Search size={15} className="pointer-events-none absolute left-3.5 top-1/2 z-10 -translate-y-1/2 text-slate-500" />
+                <Input
                   value={query}
                   onChange={(event) => setQuery(event.target.value)}
                   placeholder="User izlash"
-                  className="min-w-0 flex-1 bg-transparent text-sm text-white outline-none placeholder:text-slate-500"
+                  className="h-11 pl-9"
                 />
-              </label>
+              </div>
             </div>
 
             <div className="mt-4 space-y-2">

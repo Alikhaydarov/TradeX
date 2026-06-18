@@ -20,6 +20,8 @@ import {
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { apiRequest } from "@/lib/api-client";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { XSpinner } from "./app-loader";
 import { useAuth } from "./auth-context";
 import { TraderAvatar } from "./trader-avatar";
@@ -442,27 +444,27 @@ export function ChatV4({ onLogin, onBack }: { onLogin: () => void; onBack: () =>
           <h2 className="text-lg font-black">Yangi chat</h2>
           <p className="mt-0.5 text-xs text-slate-500">Traderlarni tanlang, nomini yozish ixtiyoriy.</p>
         </div>
-        <button onClick={resetCreateForm} className="grid h-9 w-9 place-items-center rounded-2xl bg-white/[.05] text-slate-400 hover:text-white" aria-label="Yopish">
+        <Button type="button" variant="ghost" size="icon-sm" onClick={resetCreateForm} aria-label="Yopish">
           <X size={16} />
-        </button>
+        </Button>
       </div>
 
       <div className="min-h-0 flex-1 overflow-y-auto p-4">
-        <input
+        <Input
           value={chatName}
           onChange={(event) => setChatName(event.target.value)}
           placeholder="Chat nomi"
-          className="h-12 w-full rounded-2xl border border-white/10 bg-white/[.045] px-4 text-[16px] text-white outline-none placeholder:text-slate-500 focus:border-zinc-500"
+          className="h-12 text-[16px]"
         />
-        <label className="mt-3 flex h-12 items-center gap-3 rounded-2xl border border-white/10 bg-white/[.045] px-4 text-slate-500 focus-within:border-zinc-500">
-          <Search size={17} />
-          <input
+        <div className="relative mt-3">
+          <Search size={17} className="pointer-events-none absolute left-4 top-1/2 z-10 -translate-y-1/2 text-slate-500" />
+          <Input
             value={query}
             onChange={(event) => setQuery(event.target.value)}
             placeholder="User qidirish"
-            className="min-w-0 flex-1 bg-transparent text-[16px] text-white outline-none placeholder:text-slate-500"
+            className="h-12 pl-11 text-[16px]"
           />
-        </label>
+        </div>
 
         {selectedUserIds.length > 0 ? (
           <div className="mt-3 flex flex-wrap gap-2">
@@ -575,7 +577,7 @@ export function ChatV4({ onLogin, onBack }: { onLogin: () => void; onBack: () =>
                   <div className="shrink-0 border-b border-white/8 bg-black/10 p-2 sm:p-4">
                     <div className="rounded-[22px] border border-white/10 bg-white/[.04] p-3">
                       <div className="flex items-center gap-2"><UserPlus size={15} className="text-zinc-300" /><strong className="text-xs">Chatga odam qo&apos;shish</strong><button onClick={resetAddMembersForm} className="ml-auto grid h-7 w-7 place-items-center rounded-xl text-slate-500 hover:bg-white/[.06]" aria-label="Yopish"><X size={15} /></button></div>
-                      <label className="mt-3 flex h-10 items-center gap-2 rounded-2xl border border-white/10 bg-black/15 px-3 text-slate-500"><Search size={14} /><input value={addMemberQuery} onChange={(event) => setAddMemberQuery(event.target.value)} placeholder="Qo&apos;shiladigan userni izlash" className="min-w-0 flex-1 bg-transparent text-xs text-white outline-none placeholder:text-slate-500" /></label>
+                      <div className="relative mt-3"><Search size={14} className="pointer-events-none absolute left-3.5 top-1/2 z-10 -translate-y-1/2 text-slate-500" /><Input value={addMemberQuery} onChange={(event) => setAddMemberQuery(event.target.value)} placeholder="Qo&apos;shiladigan userni izlash" className="h-10 pl-9 text-xs" /></div>
                       <div className="mt-3 max-h-40 space-y-1 overflow-y-auto pr-1 sm:max-h-52">
                         {filteredAddUsers.map((option) => renderUserOption(option, selectedAddUserIds.includes(option.id), () => toggleAddUser(option.id)))}
                         {addMemberQuery.trim().length < 2 ? <div className="rounded-2xl border border-dashed border-white/10 p-3 text-center text-[11px] leading-5 text-slate-500">Qo&apos;shish uchun kamida 2 ta harf yozing.</div> : !filteredAddUsers.length ? <div className="rounded-2xl border border-dashed border-white/10 p-3 text-center text-[11px] leading-5 text-slate-500">Bunday user topilmadi yoki u allaqachon chatda bor.</div> : null}
@@ -609,7 +611,7 @@ export function ChatV4({ onLogin, onBack }: { onLogin: () => void; onBack: () =>
                             </div>
                             {editing ? (
                               <div className="rounded-[20px] border border-white/15 bg-white/[.06] p-2">
-                                <textarea value={editingText} onChange={(event) => setEditingText(event.target.value)} className="min-h-20 w-full resize-none bg-transparent p-2 text-left text-xs text-white outline-none" />
+                                <Textarea value={editingText} onChange={(event) => setEditingText(event.target.value)} className="min-h-20 border-0 bg-transparent p-2 text-left text-xs shadow-none focus-visible:ring-0" />
                                 <div className="mt-2 flex justify-end gap-2"><Button onClick={() => { setEditingMessageId(null); setEditingText(""); }} size="sm" className="rounded-xl bg-white/[.06] text-xs">Bekor</Button><Button disabled={savingEdit || !editingText.trim()} onClick={() => void saveMessageEdit()} size="sm" className="rounded-xl bg-white text-xs text-slate-950">{savingEdit ? <XSpinner size="sm" /> : <Check size={13} />} Saqlash</Button></div>
                               </div>
                             ) : (
@@ -631,7 +633,7 @@ export function ChatV4({ onLogin, onBack }: { onLogin: () => void; onBack: () =>
                 <div className="shrink-0 border-t border-white/8 bg-[#1b1b1b]/90 p-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] sm:p-4">
                   {replyingTo && <div className="mb-2 flex items-start gap-2 rounded-2xl border border-white/10 bg-white/[.04] px-3 py-2"><Reply className="mt-0.5 shrink-0 text-zinc-300" size={14} /><div className="min-w-0 flex-1"><p className="truncate text-[10px] font-bold text-zinc-100">{replyingTo.name} ga reply</p><p className="truncate text-[11px] text-slate-400">{replyingTo.text}</p></div><button onClick={() => setReplyingTo(null)} className="grid h-6 w-6 place-items-center rounded-lg text-slate-400 hover:bg-white/[.06]" aria-label="Replyni bekor qilish"><X size={13} /></button></div>}
                   <div className="flex items-end gap-2 rounded-[22px] border border-white/10 bg-black/18 p-1.5 backdrop-blur-xl focus-within:border-white/20 sm:p-2">
-                    <textarea value={messageText} onChange={(event) => setMessageText(event.target.value)} onKeyDown={(event) => { if (event.key === "Enter" && !event.shiftKey) { event.preventDefault(); send(); } }} rows={1} placeholder={`${activeChat.name} uchun xabar...`} className="max-h-24 min-h-9 min-w-0 flex-1 resize-none bg-transparent px-2 py-2 text-[16px] leading-5 text-white outline-none placeholder:text-slate-600 sm:max-h-28 sm:min-h-10 sm:text-xs" />
+                    <Textarea value={messageText} onChange={(event) => setMessageText(event.target.value)} onKeyDown={(event) => { if (event.key === "Enter" && !event.shiftKey) { event.preventDefault(); send(); } }} rows={1} placeholder={`${activeChat.name} uchun xabar...`} className="max-h-24 min-h-9 min-w-0 flex-1 resize-none border-0 bg-transparent px-2 py-2 text-[16px] leading-5 shadow-none focus-visible:ring-0 sm:max-h-28 sm:min-h-10 sm:text-xs" />
                     <Button disabled={!messageText.trim()} onClick={send} size="icon-sm" className="h-9 w-9 shrink-0 rounded-2xl bg-white text-black sm:h-10 sm:w-10" aria-label="Yuborish"><Send size={15} /></Button>
                   </div>
                 </div>
