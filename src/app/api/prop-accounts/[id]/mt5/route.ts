@@ -1,6 +1,6 @@
 import { authenticateRequest, badRequest, serverError, unauthorized } from "@/lib/backend/auth";
 import { encryptCredential } from "@/lib/server/credential-vault";
-import { createMetaApiAccount, deployMetaApiAccount, removeMetaApiAccount, waitMetaApiConnected } from "@/lib/server/metaapi";
+import { createMetaApiAccount, deployMetaApiAccount, removeMetaApiAccount } from "@/lib/server/metaapi";
 
 export const runtime = "nodejs";
 export const maxDuration = 300;
@@ -26,11 +26,11 @@ export async function PUT(request: Request, context: { params: Promise<{ id: str
   const server = String(body.server || "").trim();
   if (!/^\d+$/.test(login) || !password || !server) return badRequest("Enter a valid MT5 login, password and broker server.");
 
+  let metaApiAccountId: string | null = null;
   try {
     const { data: propAccount } = await auth.supabase.from("prop_accounts").select("name").eq("id", id).eq("user_id", auth.user.id).maybeSingle();
     if (!propAccount) return badRequest("Prop account not found.");
     const { data: current } = await auth.supabase.from("mt5_connections").select("login, metaapi_account_id").eq("user_id", auth.user.id).eq("prop_account_id", id).maybeSingle();
-    let metaApiAccountId: string;
     if (current?.metaapi_account_id) {
       try { await removeMetaApiAccount(current.metaapi_account_id); } catch {
         // A missing previous remote account does not block reconnecting.
@@ -41,12 +41,11 @@ export async function PUT(request: Request, context: { params: Promise<{ id: str
     });
     metaApiAccountId = created.id;
     await deployMetaApiAccount(metaApiAccountId);
-    await waitMetaApiConnected(metaApiAccountId);
 
     const { data, error } = await auth.supabase.from("mt5_connections").upsert({
       user_id: auth.user.id, prop_account_id: id, login, server, platform: "mt5",
       password_encrypted: encryptCredential(password), metaapi_account_id: metaApiAccountId,
-      status: "connected", last_error: null, updated_at: new Date().toISOString(),
+      status: "pending", last_error: null, updated_at: new Date().toISOString(),
     }, { onConflict: "user_id,prop_account_id" })
       .select("login, server, platform, metaapi_account_id, status, last_error, last_synced_at, updated_at").single();
     if (error) return serverError(error.message);
@@ -57,7 +56,8 @@ export async function PUT(request: Request, context: { params: Promise<{ id: str
     try {
       await auth.supabase.from("mt5_connections").upsert({
         user_id: auth.user.id, prop_account_id: id, login, server, platform: "mt5",
-        password_encrypted: encryptCredential(password), status: "error", last_error: message, updated_at: new Date().toISOString(),
+        password_encrypted: encryptCredential(password), metaapi_account_id: metaApiAccountId,
+        status: "error", last_error: message, updated_at: new Date().toISOString(),
       }, { onConflict: "user_id,prop_account_id" });
     } catch {
       // Preserve the original MetaApi error when status persistence also fails.
