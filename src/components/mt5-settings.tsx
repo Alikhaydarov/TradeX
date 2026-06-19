@@ -1,6 +1,6 @@
 "use client";
 
-import { KeyRound, LoaderCircle, RefreshCw, Server, Settings, Unplug, UserRound } from "lucide-react";
+import { LoaderCircle, RefreshCw, Server, Settings, Unplug, UserRound } from "lucide-react";
 import { useEffect, useState } from "react";
 import { apiRequest } from "@/lib/api-client";
 import { Button } from "./ui/button";
@@ -21,16 +21,18 @@ type Connection = {
 
 export function Mt5Settings({ account, onSynced }: { account: PropAccount; onSynced: () => Promise<void> }) {
   const [connection, setConnection] = useState<Connection | null>(null);
+  const [isVerified, setIsVerified] = useState(false);
   const [login, setLogin] = useState("");
-  const [password, setPassword] = useState("");
   const [server, setServer] = useState("");
   const [busy, setBusy] = useState<"connect" | "sync" | "disconnect" | null>(null);
   const [message, setMessage] = useState("");
 
   useEffect(() => {
     let active = true;
-    apiRequest<{ connection: Connection | null }>(`/api/prop-accounts/${account.id}/mt5`).then(({ connection: value }) => {
-      if (!active || !value) return;
+    apiRequest<{ connection: Connection | null; isVerified: boolean }>(`/api/prop-accounts/${account.id}/mt5`).then(({ connection: value, isVerified: verified }) => {
+      if (!active) return;
+      setIsVerified(Boolean(verified));
+      if (!value) return;
       setConnection(value);
       setLogin(value.login || "");
       setServer(value.server || "");
@@ -42,11 +44,10 @@ export function Mt5Settings({ account, onSynced }: { account: PropAccount; onSyn
     setBusy("connect"); setMessage("");
     try {
       const response = await apiRequest<{ connection: Connection }>(`/api/prop-accounts/${account.id}/mt5`, {
-        method: "PUT", body: JSON.stringify({ login, password, server }),
+        method: "PUT", body: JSON.stringify({ login, server }),
       });
       setConnection(response.connection);
-      setPassword("");
-      setMessage("MT5 account saved. MetaApi may need a minute to finish connecting before sync.");
+      setMessage("MT5 Python bridge request saved. Bridge server setup is required before live sync.");
     } catch (error) { setMessage(error instanceof Error ? error.message : "Connection failed."); }
     finally { setBusy(null); }
   };
@@ -66,7 +67,7 @@ export function Mt5Settings({ account, onSynced }: { account: PropAccount; onSyn
     setBusy("disconnect"); setMessage("");
     try {
       await apiRequest(`/api/prop-accounts/${account.id}/mt5`, { method: "DELETE" });
-      setConnection(null); setLogin(""); setPassword(""); setServer(""); setMessage("MT5 account disconnected.");
+      setConnection(null); setLogin(""); setServer(""); setMessage("MT5 account disconnected.");
     } catch (error) { setMessage(error instanceof Error ? error.message : "Disconnect failed."); }
     finally { setBusy(null); }
   };
@@ -76,17 +77,17 @@ export function Mt5Settings({ account, onSynced }: { account: PropAccount; onSyn
       <Card><CardContent className="p-4 sm:p-6">
         <div className="flex items-start gap-3">
           <span className="grid size-11 shrink-0 place-items-center rounded-xl bg-muted"><Settings size={19} /></span>
-          <div><h3 className="font-black">Connect MetaTrader 5</h3><p className="mt-1 text-xs leading-5 text-muted-foreground">Enter your MT5 credentials once. TradeWay connects through MetaApi and imports closed trade history.</p></div>
+          <div><h3 className="font-black">Premium MT5 Auto Sync</h3><p className="mt-1 text-xs leading-5 text-muted-foreground">Verified users can request MT5 auto-sync through a private Python bridge. Credentials are not saved in the browser UI.</p></div>
         </div>
-        <div className="mt-6 grid gap-4">
-          <label className="grid gap-2 text-xs text-muted-foreground">MT5 login<div className="relative"><UserRound className="absolute left-3.5 top-1/2 -translate-y-1/2" size={15} /><Input value={login} onChange={event => setLogin(event.target.value.replace(/\D/g, ""))} inputMode="numeric" placeholder="12345678" className="pl-10" /></div></label>
-          <label className="grid gap-2 text-xs text-muted-foreground">Password<div className="relative"><KeyRound className="absolute left-3.5 top-1/2 -translate-y-1/2" size={15} /><Input value={password} onChange={event => setPassword(event.target.value)} type="password" placeholder={connection ? "Enter password to reconnect" : "MT5 investor or trading password"} className="pl-10" /></div></label>
-          <label className="grid gap-2 text-xs text-muted-foreground">Broker server<div className="relative"><Server className="absolute left-3.5 top-1/2 -translate-y-1/2" size={15} /><Input value={server} onChange={event => setServer(event.target.value)} placeholder="Exness-MT5Real..." className="pl-10" /></div></label>
+        {!isVerified ? <p className="mt-5 rounded-xl border border-amber-300/20 bg-amber-400/[.07] px-3 py-2 text-xs text-amber-100">This premium setting is only visible for verified users.</p> : null}
+        <div className="mt-6 grid gap-4 opacity-100">
+          <label className="grid gap-2 text-xs text-muted-foreground">MT5 login<div className="relative"><UserRound className="absolute left-3.5 top-1/2 -translate-y-1/2" size={15} /><Input disabled={!isVerified} value={login} onChange={event => setLogin(event.target.value.replace(/\D/g, ""))} inputMode="numeric" placeholder="12345678" className="pl-10" /></div></label>
+          <label className="grid gap-2 text-xs text-muted-foreground">Broker server<div className="relative"><Server className="absolute left-3.5 top-1/2 -translate-y-1/2" size={15} /><Input disabled={!isVerified} value={server} onChange={event => setServer(event.target.value)} placeholder="Exness-MT5Real..." className="pl-10" /></div></label>
         </div>
         {message ? <p className={`mt-4 rounded-xl border px-3 py-2 text-xs ${connection?.status === "connected" ? "border-emerald-300/15 bg-emerald-400/[.06] text-emerald-100" : "border-border bg-muted/40"}`}>{message}</p> : null}
         <div className="mt-5 flex flex-wrap gap-2">
-          <Button disabled={Boolean(busy) || !login || !password || !server} onClick={() => void connect()}>{busy === "connect" ? <LoaderCircle className="animate-spin" size={16} /> : <KeyRound size={16} />}{connection ? "Reconnect" : "Connect MT5"}</Button>
-          {connection?.metaapi_account_id ? <Button variant="outline" disabled={Boolean(busy)} onClick={() => void sync()}>{busy === "sync" ? <LoaderCircle className="animate-spin" size={16} /> : <RefreshCw size={16} />}Sync history</Button> : null}
+          <Button disabled={Boolean(busy) || !isVerified || !login || !server} onClick={() => void connect()}>{busy === "connect" ? <LoaderCircle className="animate-spin" size={16} /> : <Settings size={16} />}{connection ? "Update MT5" : "Enable MT5"}</Button>
+          {connection?.metaapi_account_id ? <Button variant="outline" disabled={Boolean(busy) || !isVerified} onClick={() => void sync()}>{busy === "sync" ? <LoaderCircle className="animate-spin" size={16} /> : <RefreshCw size={16} />}Sync history</Button> : null}
           {connection ? <Button variant="destructive" disabled={Boolean(busy)} onClick={() => void disconnect()}>{busy === "disconnect" ? <LoaderCircle className="animate-spin" size={16} /> : <Unplug size={16} />}Disconnect</Button> : null}
         </div>
       </CardContent></Card>
