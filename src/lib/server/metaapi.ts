@@ -22,7 +22,12 @@ async function request<T>(url: string, init: RequestInit = {}) {
     signal: AbortSignal.timeout(30000),
   });
   const payload = await response.json().catch(() => null);
-  if (!response.ok) throw new Error(payload?.message || payload?.error || `MetaApi request failed (${response.status}).`);
+  if (!response.ok) {
+    const details = Array.isArray(payload?.details)
+      ? payload.details.map((item: { message?: string }) => item.message).filter(Boolean).join(" ")
+      : "";
+    throw new Error(details || payload?.message || payload?.error || `MetaApi request failed (${response.status}).`);
+  }
   return payload as T;
 }
 
@@ -49,7 +54,7 @@ export type MetaApiDeal = {
 };
 
 export async function createMetaApiAccount(input: { name: string; login: string; password: string; server: string; propAccountId: string }) {
-  return request<{ id: string; state: string }>(`${provisioningUrl}/users/current/accounts`, {
+  const account = await request<{ id?: string; _id?: string; state?: string }>(`${provisioningUrl}/users/current/accounts`, {
     method: "POST",
     headers: { "transaction-id": randomBytes(16).toString("hex") },
     body: JSON.stringify({
@@ -57,6 +62,9 @@ export async function createMetaApiAccount(input: { name: string; login: string;
       platform: "mt5", magic: 0, region: "london", reliability: "regular", tags: ["tradeway", `prop:${input.propAccountId}`],
     }),
   });
+  const id = account.id || account._id;
+  if (!id) throw new Error("MetaApi created the account but did not return an account ID.");
+  return { id, state: account.state };
 }
 
 export function updateMetaApiAccount(id: string, input: { name: string; password: string; server: string }) {

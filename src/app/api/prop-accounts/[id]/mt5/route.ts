@@ -59,10 +59,15 @@ export async function PUT(request: Request, context: { params: Promise<{ id: str
     return Response.json({ connection: data });
   } catch (error) {
     const message = error instanceof Error ? error.message : "MT5 connection failed.";
-    await auth.supabase.from("mt5_connections").upsert({
-      user_id: auth.user.id, prop_account_id: id, login, server, platform: "mt5",
-      password_encrypted: encryptCredential(password), status: "error", last_error: message, updated_at: new Date().toISOString(),
-    }, { onConflict: "user_id,prop_account_id" });
+    console.error("MT5 connection failed", { userId: auth.user.id, propAccountId: id, login, server, message });
+    try {
+      await auth.supabase.from("mt5_connections").upsert({
+        user_id: auth.user.id, prop_account_id: id, login, server, platform: "mt5",
+        password_encrypted: encryptCredential(password), status: "error", last_error: message, updated_at: new Date().toISOString(),
+      }, { onConflict: "user_id,prop_account_id" });
+    } catch {
+      // Preserve the original MetaApi error when status persistence also fails.
+    }
     return badRequest(message);
   }
 }
