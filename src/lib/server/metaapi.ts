@@ -34,9 +34,20 @@ async function request<T>(url: string, init: RequestInit = {}) {
     const details = Array.isArray(payload?.details)
       ? payload.details.map((item: { message?: string }) => item.message).filter(Boolean).join(" ")
       : "";
-    throw new Error(details || payload?.message || payload?.error || `MetaApi request failed (${response.status}).`);
+    const message = details || payload?.message || payload?.error || `MetaApi request failed (${response.status}).`;
+    throw new Error(formatMetaApiError(String(message), response.status));
   }
   return payload as T;
+}
+
+function formatMetaApiError(message: string, status?: number) {
+  if (/top up your account/i.test(message) || /account deployment/i.test(message)) {
+    return "MetaApi account balance is too low to deploy this MT5 connection. Please top up your MetaApi account, then try Connect MT5 again.";
+  }
+  if (status === 404 && /trading account with id .* not found/i.test(message)) {
+    return "MetaApi created the MT5 account but it is not ready for deployment yet. Please wait about 30 seconds, then press Connect MT5 again.";
+  }
+  return message;
 }
 
 export type MetaApiAccount = {
@@ -81,8 +92,19 @@ export function updateMetaApiAccount(id: string, input: { name: string; password
   });
 }
 
-export function deployMetaApiAccount(id: string, redeploy = false) {
-  return request(`${provisioningUrl}/users/current/accounts/${encodeURIComponent(id)}/${redeploy ? "redeploy" : "deploy"}`, { method: "POST" });
+export async function deployMetaApiAccount(id: string, redeploy = false) {
+  let lastError: unknown;
+  for (let attempt = 0; attempt < 4; attempt += 1) {
+    try {
+      return await request(`${provisioningUrl}/users/current/accounts/${encodeURIComponent(id)}/${redeploy ? "redeploy" : "deploy"}`, { method: "POST" });
+    } catch (error) {
+      lastError = error;
+      const message = error instanceof Error ? error.message : String(error);
+      if (!/not ready for deployment yet/i.test(message) || attempt === 3) throw error;
+      await new Promise((resolve) => setTimeout(resolve, 2500 * (attempt + 1)));
+    }
+  }
+  throw lastError;
 }
 
 export function removeMetaApiAccount(id: string) {
