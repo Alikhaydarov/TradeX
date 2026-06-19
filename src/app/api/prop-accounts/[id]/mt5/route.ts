@@ -1,6 +1,6 @@
 import { authenticateRequest, badRequest, serverError, unauthorized } from "@/lib/backend/auth";
 import { encryptCredential } from "@/lib/server/credential-vault";
-import { createMetaApiAccount, deployMetaApiAccount, removeMetaApiAccount, updateMetaApiAccount, waitMetaApiConnected } from "@/lib/server/metaapi";
+import { createMetaApiAccount, deployMetaApiAccount, removeMetaApiAccount, waitMetaApiConnected } from "@/lib/server/metaapi";
 
 export const runtime = "nodejs";
 export const maxDuration = 300;
@@ -31,22 +31,16 @@ export async function PUT(request: Request, context: { params: Promise<{ id: str
     if (!propAccount) return badRequest("Prop account not found.");
     const { data: current } = await auth.supabase.from("mt5_connections").select("login, metaapi_account_id").eq("user_id", auth.user.id).eq("prop_account_id", id).maybeSingle();
     let metaApiAccountId: string;
-    if (current?.metaapi_account_id && current.login === login) {
-      metaApiAccountId = current.metaapi_account_id;
-      await updateMetaApiAccount(metaApiAccountId, { password, server, name: `TradeWay - ${propAccount.name}` });
-      await deployMetaApiAccount(metaApiAccountId, true);
-    } else {
-      if (current?.metaapi_account_id) {
-        try { await removeMetaApiAccount(current.metaapi_account_id); } catch {
-          // A missing previous remote account does not block reconnecting.
-        }
+    if (current?.metaapi_account_id) {
+      try { await removeMetaApiAccount(current.metaapi_account_id); } catch {
+        // A missing previous remote account does not block reconnecting.
       }
-      const created = await createMetaApiAccount({
-        name: `TradeWay - ${propAccount.name}`, login, password, server, propAccountId: id,
-      });
-      metaApiAccountId = created.id;
-      await deployMetaApiAccount(metaApiAccountId);
     }
+    const created = await createMetaApiAccount({
+      name: `TradeWay - ${propAccount.name}`, login, password, server, propAccountId: id,
+    });
+    metaApiAccountId = created.id;
+    await deployMetaApiAccount(metaApiAccountId);
     await waitMetaApiConnected(metaApiAccountId);
 
     const { data, error } = await auth.supabase.from("mt5_connections").upsert({

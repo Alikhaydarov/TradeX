@@ -58,7 +58,7 @@ export async function createMetaApiAccount(input: { name: string; login: string;
     method: "POST",
     headers: { "transaction-id": randomBytes(16).toString("hex") },
     body: JSON.stringify({
-      name: input.name, type: "cloud-g2", login: input.login, password: input.password, server: input.server,
+      name: input.name, type: "cloud-g1", login: input.login, password: input.password, server: input.server,
       platform: "mt5", magic: 0, region: "london", reliability: "regular", tags: ["tradeway", `prop:${input.propAccountId}`],
     }),
   });
