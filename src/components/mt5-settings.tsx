@@ -46,7 +46,7 @@ export function Mt5Settings({ account, onSynced }: { account: PropAccount; onSyn
       });
       setConnection(response.connection);
       setPassword("");
-      setMessage("MT5 account connected successfully.");
+      setMessage("MT5 account saved. MetaApi may need a minute to finish connecting before sync.");
     } catch (error) { setMessage(error instanceof Error ? error.message : "Connection failed."); }
     finally { setBusy(null); }
   };
@@ -86,7 +86,7 @@ export function Mt5Settings({ account, onSynced }: { account: PropAccount; onSyn
         {message ? <p className={`mt-4 rounded-xl border px-3 py-2 text-xs ${connection?.status === "connected" ? "border-emerald-300/15 bg-emerald-400/[.06] text-emerald-100" : "border-border bg-muted/40"}`}>{message}</p> : null}
         <div className="mt-5 flex flex-wrap gap-2">
           <Button disabled={Boolean(busy) || !login || !password || !server} onClick={() => void connect()}>{busy === "connect" ? <LoaderCircle className="animate-spin" size={16} /> : <KeyRound size={16} />}{connection ? "Reconnect" : "Connect MT5"}</Button>
-          {connection?.status === "connected" ? <Button variant="outline" disabled={Boolean(busy)} onClick={() => void sync()}>{busy === "sync" ? <LoaderCircle className="animate-spin" size={16} /> : <RefreshCw size={16} />}Sync history</Button> : null}
+          {connection?.metaapi_account_id ? <Button variant="outline" disabled={Boolean(busy)} onClick={() => void sync()}>{busy === "sync" ? <LoaderCircle className="animate-spin" size={16} /> : <RefreshCw size={16} />}Sync history</Button> : null}
           {connection ? <Button variant="destructive" disabled={Boolean(busy)} onClick={() => void disconnect()}>{busy === "disconnect" ? <LoaderCircle className="animate-spin" size={16} /> : <Unplug size={16} />}Disconnect</Button> : null}
         </div>
       </CardContent></Card>
