@@ -1,44 +1,85 @@
-import { authenticateRequest, serverError, unauthorized } from "@/lib/backend/auth";
-import { createMt5Token, hashMt5Token } from "@/lib/server/mt5-token";
+import { authenticateRequest, badRequest, serverError, unauthorized } from "@/lib/backend/auth";
+import { encryptCredential } from "@/lib/server/credential-vault";
+import { createMetaApiAccount, deployMetaApiAccount, removeMetaApiAccount, updateMetaApiAccount, waitMetaApiConnected } from "@/lib/server/metaapi";
 
 export const runtime = "nodejs";
+export const maxDuration = 300;
 
 export async function GET(request: Request, context: { params: Promise<{ id: string }> }) {
   const auth = await authenticateRequest(request);
   if (!auth) return unauthorized();
   const { id } = await context.params;
   const { data, error } = await auth.supabase.from("mt5_connections")
-    .select("status, token_prefix, last_seen_at, last_synced_at, last_error, updated_at")
+    .select("login, server, platform, metaapi_account_id, status, last_error, last_synced_at, updated_at")
     .eq("user_id", auth.user.id).eq("prop_account_id", id).maybeSingle();
   if (error) return serverError(error.message);
   return Response.json({ connection: data });
 }
 
-export async function POST(request: Request, context: { params: Promise<{ id: string }> }) {
+export async function PUT(request: Request, context: { params: Promise<{ id: string }> }) {
   const auth = await authenticateRequest(request);
   if (!auth) return unauthorized();
   const { id } = await context.params;
-  const token = createMt5Token();
-  const { data, error } = await auth.supabase.from("mt5_connections").upsert({
-    user_id: auth.user.id,
-    prop_account_id: id,
-    token_hash: hashMt5Token(token),
-    token_prefix: token.slice(0, 16),
-    status: "waiting",
-    last_error: null,
-    updated_at: new Date().toISOString(),
-  }, { onConflict: "user_id,prop_account_id" })
-    .select("status, token_prefix, last_seen_at, last_synced_at, last_error, updated_at").single();
-  if (error) return serverError(error.message);
-  return Response.json({ connection: data, token });
+  const body = await request.json() as { login?: string; password?: string; server?: string };
+  const login = String(body.login || "").trim();
+  const password = String(body.password || "");
+  const server = String(body.server || "").trim();
+  if (!/^\d+$/.test(login) || !password || !server) return badRequest("Enter a valid MT5 login, password and broker server.");
+
+  try {
+    const { data: propAccount } = await auth.supabase.from("prop_accounts").select("name").eq("id", id).eq("user_id", auth.user.id).maybeSingle();
+    if (!propAccount) return badRequest("Prop account not found.");
+    const { data: current } = await auth.supabase.from("mt5_connections").select("login, metaapi_account_id").eq("user_id", auth.user.id).eq("prop_account_id", id).maybeSingle();
+    let metaApiAccountId: string;
+    if (current?.metaapi_account_id && current.login === login) {
+      metaApiAccountId = current.metaapi_account_id;
+      await updateMetaApiAccount(metaApiAccountId, { password, server, name: `TradeWay - ${propAccount.name}` });
+      await deployMetaApiAccount(metaApiAccountId, true);
+    } else {
+      if (current?.metaapi_account_id) {
+        try { await removeMetaApiAccount(current.metaapi_account_id); } catch {
+          // A missing previous remote account does not block reconnecting.
+        }
+      }
+      const created = await createMetaApiAccount({
+        name: `TradeWay - ${propAccount.name}`, login, password, server, propAccountId: id,
+      });
+      metaApiAccountId = created.id;
+      await deployMetaApiAccount(metaApiAccountId);
+    }
+    await waitMetaApiConnected(metaApiAccountId);
+
+    const { data, error } = await auth.supabase.from("mt5_connections").upsert({
+      user_id: auth.user.id, prop_account_id: id, login, server, platform: "mt5",
+      password_encrypted: encryptCredential(password), metaapi_account_id: metaApiAccountId,
+      status: "connected", last_error: null, updated_at: new Date().toISOString(),
+    }, { onConflict: "user_id,prop_account_id" })
+      .select("login, server, platform, metaapi_account_id, status, last_error, last_synced_at, updated_at").single();
+    if (error) return serverError(error.message);
+    return Response.json({ connection: data });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "MT5 connection failed.";
+    await auth.supabase.from("mt5_connections").upsert({
+      user_id: auth.user.id, prop_account_id: id, login, server, platform: "mt5",
+      password_encrypted: encryptCredential(password), status: "error", last_error: message, updated_at: new Date().toISOString(),
+    }, { onConflict: "user_id,prop_account_id" });
+    return badRequest(message);
+  }
 }
 
 export async function DELETE(request: Request, context: { params: Promise<{ id: string }> }) {
   const auth = await authenticateRequest(request);
   if (!auth) return unauthorized();
   const { id } = await context.params;
+  const { data: connection } = await auth.supabase.from("mt5_connections").select("metaapi_account_id").eq("user_id", auth.user.id).eq("prop_account_id", id).maybeSingle();
+  try {
+    if (connection?.metaapi_account_id) {
+      await removeMetaApiAccount(connection.metaapi_account_id);
+    }
+  } catch {
+    // Local connection is still removed when the remote account no longer exists.
+  }
   const { error } = await auth.supabase.from("mt5_connections").delete().eq("user_id", auth.user.id).eq("prop_account_id", id);
   if (error) return serverError(error.message);
   return Response.json({ success: true });
 }
-
