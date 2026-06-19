@@ -6,7 +6,7 @@
 
 @theme inline {
   --font-sans: "Geist", "Geist Fallback", ui-sans-serif, system-ui, sans-serif;
-  --font-mono: "Geist Mono", "Geist Mono Fallback", ui-monospace, monospace;
+  --font-mono: "Geist Mono", "Geist Fallback", ui-monospace, monospace;
   --color-xblue: #f4f4f5;
   --color-xborder: #2a2a2a;
   --color-xmuted: #8a8a8a;
@@ -62,6 +62,7 @@ html {
   background: #0b0b0b;
   color-scheme: dark;
   overflow-x: hidden;
+  width: 100%;
 }
 
 body {
@@ -90,6 +91,7 @@ body {
   min-height: 100dvh;
   overflow-x: hidden;
   -webkit-text-size-adjust: 100%;
+  width: 100%;
 }
 
 button,
@@ -111,12 +113,52 @@ svg {
   max-width: 100%;
 }
 
+main,
+section,
+article,
+aside,
+header,
+footer,
+nav,
+div {
+  min-width: 0;
+}
+
+p,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+span,
+strong,
+small,
+button,
+a {
+  overflow-wrap: anywhere;
+}
+
+.recharts-responsive-container,
+.recharts-wrapper,
+.recharts-surface {
+  max-width: 100%;
+}
+
 @media (max-width: 639px) {
+  body {
+    background-attachment: scroll;
+  }
+
   input,
   textarea,
   select,
   [data-slot="select-trigger"] {
     font-size: 16px;
+  }
+
+  [role="dialog"] {
+    max-width: calc(100vw - 1rem);
   }
 }
 
