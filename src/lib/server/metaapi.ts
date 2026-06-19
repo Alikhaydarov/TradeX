@@ -10,17 +10,25 @@ function token() {
 }
 
 async function request<T>(url: string, init: RequestInit = {}) {
-  const response = await fetch(url, {
-    ...init,
-    headers: {
-      Accept: "application/json",
-      "Content-Type": "application/json",
-      "auth-token": token(),
-      ...init.headers,
-    },
-    cache: "no-store",
-    signal: AbortSignal.timeout(30000),
-  });
+  let response: Response;
+  try {
+    response = await fetch(url, {
+      ...init,
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+        "auth-token": token(),
+        ...init.headers,
+      },
+      cache: "no-store",
+      signal: AbortSignal.timeout(120000),
+    });
+  } catch (error) {
+    if (error instanceof Error && (error.name === "TimeoutError" || error.name === "AbortError")) {
+      throw new Error("MetaApi is taking longer than expected. Please try Connect MT5 again in a minute.");
+    }
+    throw error;
+  }
   const payload = await response.json().catch(() => null);
   if (!response.ok) {
     const details = Array.isArray(payload?.details)
