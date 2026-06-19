@@ -22,10 +22,26 @@ export async function apiRequest<T = unknown>(
   });
 
   if (!res.ok) {
-    const text = await res.text().catch(() => res.statusText);
-    throw new Error(`${res.status} ${res.statusText}: ${text}`);
+    const text = await res.text().catch(() => "");
+    const message = extractErrorMessage(text);
+    throw new Error(message || res.statusText || `Request failed (${res.status}).`);
   }
 
   const text = await res.text();
   return (text ? JSON.parse(text) : undefined) as T;
+}
+
+function extractErrorMessage(text: string) {
+  if (!text) return "";
+  try {
+    const payload = JSON.parse(text) as { error?: unknown; message?: unknown };
+    const message = typeof payload.error === "string"
+      ? payload.error
+      : typeof payload.message === "string"
+        ? payload.message
+        : "";
+    return message || text;
+  } catch {
+    return text;
+  }
 }
