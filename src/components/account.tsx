@@ -81,6 +81,9 @@ interface PostRecord {
   side: "LONG" | "SHORT" | null;
   entry_price: string | null;
   target_price: string | null;
+  trade_result?: "WIN" | "LOSS" | "BE" | null;
+  pnl?: number | null;
+  result_r?: number | null;
   likes_count: number;
   replies_count: number;
   reposts_count: number;
@@ -152,10 +155,16 @@ function toPost(record: PostRecord): Post {
     time: formatAccountTime(createdAt),
     text: record.content,
     imageUrl: record.image_url ?? null,
+    chartImageUrl: record.entry_price?.startsWith("journal:") ? record.target_price : null,
+    shareImageUrl: record.entry_price?.startsWith("journal:") ? record.image_url : null,
+    journalEntryId: record.entry_price?.startsWith("journal:") ? record.entry_price.slice(8) : null,
     symbol: record.symbol ?? undefined,
     side: record.side ?? undefined,
-    price: record.entry_price ?? undefined,
-    target: record.target_price ?? undefined,
+    result: record.trade_result ?? undefined,
+    pnl: record.pnl ?? undefined,
+    resultR: record.result_r ?? undefined,
+    price: record.entry_price?.startsWith("journal:") ? undefined : record.entry_price ?? undefined,
+    target: record.entry_price?.startsWith("journal:") ? undefined : record.target_price ?? undefined,
     likes: record.likes_count,
     replies: record.replies_count,
     reposts: record.reposts_count,
@@ -310,7 +319,7 @@ export function Account({ onLogin, profileUsername }: { onLogin: () => void; pro
   }
 
   const isOwnProfile = profile.id === user.id;
-  const mediaPosts = posts.filter((post) => post.imageUrl);
+  const mediaPosts = posts.filter((post) => post.imageUrl || post.chartImageUrl || post.shareImageUrl);
   const visiblePosts = activeTab === "posts" ? posts : activeTab === "media" ? mediaPosts : [];
 
   const openEdit = () => {
@@ -464,12 +473,9 @@ export function Account({ onLogin, profileUsername }: { onLogin: () => void; pro
             <span className="text-xs text-slate-700">·</span>
             <p className="text-xs text-slate-500">{post.time}</p>
           </div>
-          {post.text ? <p className="mt-1.5 whitespace-pre-line break-words text-[15px] leading-6 text-slate-50">{post.text}</p> : null}
-          {post.imageUrl ? (
-            <div className="mt-3 flex max-h-[520px] min-h-40 w-full items-center justify-center overflow-hidden rounded-2xl border border-white/10 bg-black/25">
-              <img src={post.imageUrl} alt="Post media" className="max-h-[520px] max-w-full object-contain object-center" loading="lazy" />
-            </div>
-          ) : null}
+          {post.symbol ? <div className="mt-3 flex flex-wrap items-center gap-2 rounded-lg border border-white/8 bg-black/15 px-3 py-2.5"><strong className="mr-auto text-sm">{post.symbol}</strong><span className="text-[10px] font-black text-zinc-300">{post.side}</span><span className={post.result === "WIN" ? "text-[10px] font-black text-emerald-300" : post.result === "LOSS" ? "text-[10px] font-black text-rose-300" : "text-[10px] font-black text-zinc-300"}>{post.result}</span>{typeof post.pnl === "number" ? <strong className={post.pnl >= 0 ? "text-sm text-emerald-300" : "text-sm text-rose-300"}>{post.pnl >= 0 ? "+" : ""}${post.pnl.toFixed(2)}</strong> : null}</div> : null}
+          {post.text ? <p className="mt-2 whitespace-pre-line break-words text-[15px] leading-6 text-slate-50">{post.text}</p> : null}
+          {(post.chartImageUrl || post.shareImageUrl || post.imageUrl) ? <div className={`mt-3 grid overflow-hidden rounded-xl border border-white/10 bg-black/25 ${post.chartImageUrl && post.shareImageUrl ? "grid-cols-1 sm:grid-cols-2" : "grid-cols-1"}`}>{post.chartImageUrl ? <img src={post.chartImageUrl} alt="Trade chart" className="h-full max-h-[480px] w-full object-cover" loading="lazy" /> : null}{post.shareImageUrl ? <img src={post.shareImageUrl} alt="TradeWay share card" className="h-full max-h-[480px] w-full object-cover" loading="lazy" /> : null}{!post.chartImageUrl && !post.shareImageUrl && post.imageUrl ? <img src={post.imageUrl} alt="Post media" className="max-h-[520px] max-w-full object-contain" loading="lazy" /> : null}</div> : null}
           <div className="mt-3 grid max-w-md grid-cols-4 text-slate-500">
             <span className="flex h-8 items-center gap-1.5 rounded-full text-[12px] transition hover:text-zinc-300"><MessageCircle size={16} />{post.replies}</span>
             <span className="flex h-8 items-center gap-1.5 rounded-full text-[12px] transition hover:text-rose-200"><Heart size={16} />{post.likes}</span>

@@ -109,6 +109,9 @@ export async function POST(request: Request) {
     result?: "WIN" | "LOSS" | "BE";
     pnl?: number;
     resultR?: number;
+    journalEntryId?: string;
+    chartImageUrl?: string | null;
+    shareImageUrl?: string | null;
     entryPrice?: string;
     targetPrice?: string;
   };
@@ -117,9 +120,10 @@ export async function POST(request: Request) {
   const symbol = body.symbol?.trim().toUpperCase().replace(/[^A-Z0-9._/-]/g, "").slice(0, 20);
   const validSide = body.side === "LONG" || body.side === "SHORT";
   const validResult = body.result === "WIN" || body.result === "LOSS" || body.result === "BE";
+  const journalEntryId = body.journalEntryId?.trim();
 
-  if (!symbol || !validSide || !validResult) {
-    return badRequest("Trade ulashish uchun symbol, side va result tanlang.");
+  if (!journalEntryId || !symbol || !validSide || !validResult) {
+    return badRequest("Trades can only be shared from the trading journal.");
   }
   if (content && content.length > 280) {
     return badRequest("Trade review 280 belgidan oshmasin.");
@@ -138,12 +142,33 @@ export async function POST(request: Request) {
     .join("")
     .slice(0, 2) || "TU";
 
+  const { data: journalEntry, error: journalError } = await auth.supabase
+    .from("journal_entries")
+    .select("id")
+    .eq("id", journalEntryId)
+    .eq("user_id", auth.user.id)
+    .maybeSingle<{ id: string }>();
+
+  if (journalError) return serverError(journalError.message);
+  if (!journalEntry) return badRequest("Journal trade not found.");
+
+  const { data: existingPost, error: existingError } = await auth.supabase
+    .from("posts")
+    .select("id")
+    .eq("user_id", auth.user.id)
+    .eq("entry_price", `journal:${journalEntryId}`)
+    .eq("is_archived", false)
+    .maybeSingle<{ id: string }>();
+
+  if (existingError) return serverError(existingError.message);
+  if (existingPost) return badRequest("This trade is already posted.");
+
   const { data, error } = await auth.supabase
     .from("posts")
     .insert({
       user_id: auth.user.id,
       content: content || `${symbol} trade`,
-      image_url: imageUrl || null,
+      image_url: body.shareImageUrl?.trim().slice(0, 1000) || imageUrl || null,
       author_name: profile.full_name,
       author_handle: profile.username,
       author_avatar: profile.avatar_url || initials,
@@ -152,8 +177,8 @@ export async function POST(request: Request) {
       trade_result: body.result,
       pnl: Number.isFinite(body.pnl) ? body.pnl : null,
       result_r: Number.isFinite(body.resultR) ? body.resultR : null,
-      entry_price: body.entryPrice?.trim() || null,
-      target_price: body.targetPrice?.trim() || null,
+      entry_price: `journal:${journalEntryId}`,
+      target_price: body.chartImageUrl?.trim().slice(0, 1000) || null,
       views_count: 0,
       is_archived: false,
     })

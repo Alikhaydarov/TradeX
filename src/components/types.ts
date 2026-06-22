@@ -16,6 +16,9 @@ export interface Post {
   price?: string;
   target?: string;
   imageUrl?: string | null;
+  chartImageUrl?: string | null;
+  shareImageUrl?: string | null;
+  journalEntryId?: string | null;
   likes: number;
   replies: number;
   reposts: number;

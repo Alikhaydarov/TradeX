@@ -1,10 +1,9 @@
 "use client";
 
-import { Bookmark, Check, Eye, Heart, ImageIcon, Link2, MessageCircle, MoreHorizontal, Pencil, Repeat2, Send, Share2, Trash2, X } from "lucide-react";
+import { Bookmark, Check, Eye, Heart, Link2, MessageCircle, MoreHorizontal, Pencil, Repeat2, Send, Share2, Trash2, X } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { apiRequest } from "@/lib/api-client";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { SkeletonBlock, XSpinner } from "./app-loader";
@@ -91,13 +90,16 @@ function toPost(record: PostRecord, liked = false, bookmarked = false, reposted 
     time: formatFeedTime(record.created_at),
     text: record.content,
     imageUrl: record.image_url ?? null,
+    chartImageUrl: record.entry_price?.startsWith("journal:") ? record.target_price : null,
+    shareImageUrl: record.entry_price?.startsWith("journal:") ? record.image_url : null,
+    journalEntryId: record.entry_price?.startsWith("journal:") ? record.entry_price.slice(8) : null,
     symbol: record.symbol ?? undefined,
     side: record.side ?? undefined,
     result: record.trade_result ?? undefined,
     pnl: record.pnl ?? undefined,
     resultR: record.result_r ?? undefined,
-    price: record.entry_price ?? undefined,
-    target: record.target_price ?? undefined,
+    price: record.entry_price?.startsWith("journal:") ? undefined : record.entry_price ?? undefined,
+    target: record.entry_price?.startsWith("journal:") ? undefined : record.target_price ?? undefined,
     likes: record.likes_count,
     replies: record.replies_count,
     reposts: record.reposts_count,
@@ -116,16 +118,7 @@ function replyTime(value: string) {
 export function FeedV3({ onLogin }: { onLogin: () => void }) {
   const { user } = useAuth();
   const [posts, setPosts] = useState<Post[]>([]);
-  const [text, setText] = useState("");
-  const [symbol, setSymbol] = useState("");
-  const [side, setSide] = useState<"LONG" | "SHORT">("LONG");
-  const [result, setResult] = useState<"WIN" | "LOSS" | "BE">("WIN");
-  const [pnl, setPnl] = useState("");
-  const [resultR, setResultR] = useState("");
-  const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
-  const [uploadingImage, setUploadingImage] = useState(false);
   const [actingId, setActingId] = useState<string | null>(null);
   const [openReplies, setOpenReplies] = useState<string | null>(null);
   const [repliesByPost, setRepliesByPost] = useState<Record<string, PostReply[]>>({});
@@ -139,10 +132,6 @@ export function FeedV3({ onLogin }: { onLogin: () => void }) {
   const [error, setError] = useState<string | null>(null);
   const viewed = useRef(new Set<string>());
   const observer = useRef<IntersectionObserver | null>(null);
-  const fileInputRef = useRef<HTMLInputElement | null>(null);
-
-  const userName = String(user?.user_metadata.full_name ?? user?.user_metadata.name ?? "Trader");
-  const userAvatar = typeof user?.user_metadata.avatar_url === "string" ? user.user_metadata.avatar_url : null;
 
   const stats = useMemo(() => ({
     posts: posts.length,
@@ -234,63 +223,6 @@ export function FeedV3({ onLogin }: { onLogin: () => void }) {
   useEffect(() => {
     return () => observer.current?.disconnect();
   }, []);
-
-  const uploadImage = async (file: File | undefined) => {
-    if (!user) return onLogin();
-    if (!file) return;
-
-    setUploadingImage(true);
-    setError(null);
-    try {
-      const formData = new FormData();
-      formData.append("image", file);
-      const response = await fetch("/api/posts/image", {
-        method: "POST",
-        credentials: "same-origin",
-        body: formData,
-      });
-      const payload = (await response.json()) as { imageUrl?: string; error?: string };
-      if (!response.ok || !payload.imageUrl) throw new Error(payload.error || "Rasm yuklanmadi.");
-      setImageUrl(payload.imageUrl);
-    } catch (nextError) {
-      setError(nextError instanceof Error ? nextError.message : "Rasm yuklanmadi.");
-    } finally {
-      setUploadingImage(false);
-      if (fileInputRef.current) fileInputRef.current.value = "";
-    }
-  };
-
-  const addPost = async () => {
-    if (!user) return onLogin();
-    if (!symbol.trim()) return;
-
-    setSaving(true);
-    setError(null);
-    try {
-      const { post } = await apiRequest<{ post: PostRecord }>("/api/posts", {
-        method: "POST",
-        body: JSON.stringify({
-          content: text.trim(),
-          imageUrl,
-          symbol: symbol.trim(),
-          side,
-          result,
-          pnl: pnl === "" ? undefined : Number(pnl),
-          resultR: resultR === "" ? undefined : Number(resultR),
-        }),
-      });
-      setPosts((current) => [toPost(post), ...current]);
-      setText("");
-      setSymbol("");
-      setPnl("");
-      setResultR("");
-      setImageUrl(null);
-    } catch (nextError) {
-      setError(nextError instanceof Error ? nextError.message : "Post saqlanmadi.");
-    } finally {
-      setSaving(false);
-    }
-  };
 
   const toggleLike = async (post: Post) => {
     if (!user) return onLogin();
@@ -470,65 +402,7 @@ export function FeedV3({ onLogin }: { onLogin: () => void }) {
       {error ? <div className="mx-auto mt-4 max-w-3xl rounded-2xl border border-rose-300/15 bg-rose-400/10 px-4 py-3 text-sm text-rose-200 backdrop-blur-xl">{error}</div> : null}
 
       <div className="mx-auto max-w-3xl px-3 py-3 sm:px-5 sm:py-4">
-        <section className="rounded-lg border border-border bg-card p-3 shadow-xl shadow-black/20 sm:p-4">
-          <div className="flex gap-3">
-            <TraderAvatar name={userName} value={userAvatar} className="h-11 w-11 shrink-0 text-xs" />
-            <div className="min-w-0 flex-1">
-              <div className="grid gap-2 sm:grid-cols-[1fr_auto_auto]">
-                <Input
-                  value={symbol}
-                  onChange={(event) => setSymbol(event.target.value.toUpperCase())}
-                  maxLength={20}
-                  placeholder="Symbol, e.g. EURUSD"
-                  className="h-10 bg-black/15 font-bold uppercase"
-                />
-                <div className="grid grid-cols-2 rounded-lg border border-border bg-black/15 p-1">
-                  {(["LONG", "SHORT"] as const).map((value) => (
-                    <button key={value} type="button" onClick={() => setSide(value)} className={`h-8 min-w-20 rounded-md px-3 text-[11px] font-black transition-colors ${side === value ? value === "LONG" ? "bg-emerald-400/15 text-emerald-300" : "bg-rose-400/15 text-rose-300" : "text-zinc-500 hover:text-zinc-200"}`}>{value}</button>
-                  ))}
-                </div>
-                <div className="grid grid-cols-3 rounded-lg border border-border bg-black/15 p-1">
-                  {(["WIN", "LOSS", "BE"] as const).map((value) => (
-                    <button key={value} type="button" onClick={() => setResult(value)} className={`h-8 min-w-14 rounded-md px-2 text-[11px] font-black transition-colors ${result === value ? value === "WIN" ? "bg-emerald-400/15 text-emerald-300" : value === "LOSS" ? "bg-rose-400/15 text-rose-300" : "bg-white/10 text-white" : "text-zinc-500 hover:text-zinc-200"}`}>{value}</button>
-                  ))}
-                </div>
-              </div>
-              <div className="mt-2 grid grid-cols-2 gap-2">
-                <Input type="number" inputMode="decimal" value={pnl} onChange={(event) => setPnl(event.target.value)} placeholder="P&L ($)" className="h-10 bg-black/15" />
-                <Input type="number" inputMode="decimal" step="0.01" value={resultR} onChange={(event) => setResultR(event.target.value)} placeholder="Result (R)" className="h-10 bg-black/15" />
-              </div>
-              <Textarea
-                value={text}
-                onChange={(event) => setText(event.target.value)}
-                maxLength={280}
-                placeholder="What happened in this trade? (optional)"
-                className="mt-2 min-h-16 resize-none border-0 bg-transparent px-0 text-sm shadow-none placeholder:text-slate-500 focus-visible:ring-0 sm:min-h-20"
-              />
-
-              {imageUrl ? (
-                <div className="relative mt-3 flex max-h-[320px] min-h-32 w-full items-center justify-center overflow-hidden rounded-2xl border border-white/10 bg-black/25 sm:max-h-[420px] sm:min-h-40 sm:rounded-3xl">
-                  <img src={imageUrl} alt="Post rasmi" className="max-h-[320px] max-w-full object-contain object-center sm:max-h-[420px]" />
-                  <button onClick={() => setImageUrl(null)} className="absolute right-3 top-3 grid h-9 w-9 place-items-center rounded-full bg-black/70 text-white backdrop-blur-xl" aria-label="Rasmni olib tashlash">
-                    <X size={17} />
-                  </button>
-                </div>
-              ) : null}
-
-              <div className="mt-3 flex flex-wrap items-center gap-2 border-t border-white/8 pt-3">
-                <input ref={fileInputRef} type="file" accept="image/png,image/jpeg,image/webp,image/gif" className="hidden" onChange={(event) => void uploadImage(event.target.files?.[0])} />
-                <button onClick={() => fileInputRef.current?.click()} disabled={uploadingImage} className="flex h-9 items-center gap-2 rounded-xl px-3 text-xs font-bold text-zinc-300 hover:bg-white/[.06] disabled:opacity-60">
-                  {uploadingImage ? <XSpinner size="sm" /> : <ImageIcon size={16} />} Screenshot
-                </button>
-                <span className="ml-auto text-[10px] text-slate-500">{text.length}/280</span>
-                <Button onClick={() => void addPost()} disabled={!symbol.trim() || saving} className="rounded-lg bg-white px-4 text-black hover:bg-zinc-200">
-                  {saving ? <XSpinner size="sm" /> : <Send size={15} />} Share trade
-                </Button>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <div className="mt-4 flex items-center px-1 sm:mt-5">
+        <div className="flex items-center px-1">
           <h2 className="text-sm font-bold">Trade feed</h2>
           <span className="ml-auto text-[10px] text-zinc-600">{stats.posts} trades</span>
         </div>
@@ -581,9 +455,11 @@ export function FeedV3({ onLogin }: { onLogin: () => void }) {
 
                     {post.text && post.text !== `${post.symbol} trade` ? <p className="mt-3 whitespace-pre-line text-[15px] leading-6 text-slate-100">{post.text}</p> : null}
 
-                    {post.imageUrl ? (
-                      <div className="mt-3 flex max-h-[420px] min-h-32 w-full items-center justify-center overflow-hidden rounded-2xl border border-white/10 bg-black/25 sm:max-h-[560px] sm:min-h-40 sm:rounded-[24px]">
-                        <img src={post.imageUrl} alt="Post rasmi" className="max-h-[420px] max-w-full object-contain object-center sm:max-h-[560px]" loading="lazy" />
+                    {(post.chartImageUrl || post.shareImageUrl || post.imageUrl) ? (
+                      <div className={`mt-3 grid overflow-hidden rounded-xl border border-white/10 bg-black/25 ${post.chartImageUrl && post.shareImageUrl ? "grid-cols-1 sm:grid-cols-2" : "grid-cols-1"}`}>
+                        {post.chartImageUrl ? <a href={post.chartImageUrl} target="_blank" rel="noreferrer" className="grid min-h-40 place-items-center overflow-hidden border-r border-white/8"><img src={post.chartImageUrl} alt={`${post.symbol} chart`} className="h-full max-h-[460px] w-full object-cover" loading="lazy" /></a> : null}
+                        {post.shareImageUrl ? <a href={post.shareImageUrl} target="_blank" rel="noreferrer" className="grid min-h-40 place-items-center overflow-hidden"><img src={post.shareImageUrl} alt={`${post.symbol} TradeWay share card`} className="h-full max-h-[460px] w-full object-cover" loading="lazy" /></a> : null}
+                        {!post.chartImageUrl && !post.shareImageUrl && post.imageUrl ? <a href={post.imageUrl} target="_blank" rel="noreferrer" className="grid min-h-40 place-items-center"><img src={post.imageUrl} alt="Trade media" className="max-h-[560px] max-w-full object-contain" loading="lazy" /></a> : null}
                       </div>
                     ) : null}
 

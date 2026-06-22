@@ -108,7 +108,7 @@ async function loadChats(auth: NonNullable<Awaited<ReturnType<typeof authenticat
 
 async function ensureCommunity(auth: NonNullable<Awaited<ReturnType<typeof authenticateRequest>>>) {
   const communityName = "TradeWay Community";
-  let { data: community, error: communityError } = await auth.supabase
+  const { data: existingCommunity, error: communityError } = await auth.supabase
     .from("groups")
     .select("id")
     .eq("name", communityName)
@@ -116,6 +116,7 @@ async function ensureCommunity(auth: NonNullable<Awaited<ReturnType<typeof authe
 
   if (communityError) throw new Error(communityError.message);
 
+  let community = existingCommunity;
   if (!community) {
     const created = await auth.supabase
       .from("groups")

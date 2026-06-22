@@ -2,7 +2,7 @@
 
 import {
   ArrowLeft, BarChart3, BookOpen, CalendarDays, CheckCircle2, ChevronDown, ChevronLeft, ChevronRight,
-  Download, ImageIcon, LoaderCircle, MoreHorizontal, Plus, Search, ShieldCheck,
+  Check, Download, ImageIcon, LoaderCircle, MoreHorizontal, Plus, Search, Share2, ShieldCheck,
   Target, Trash2, TrendingDown, TrendingUp, WalletCards, X, Zap,
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -1018,6 +1018,9 @@ function TradeEditor({ trade, saving, onClose, onSave, onDelete }: { trade: Jour
 
 function TradeReviewImage({ trade, chartUrl }: { trade: JournalEntry; chartUrl: string }) {
   const [generatedUrl, setGeneratedUrl] = useState("");
+  const [posting, setPosting] = useState(false);
+  const [posted, setPosted] = useState(false);
+  const [postError, setPostError] = useState("");
 
   useEffect(() => {
     let active = true;
@@ -1159,6 +1162,44 @@ function TradeReviewImage({ trade, chartUrl }: { trade: JournalEntry; chartUrl: 
     link.click();
   };
 
+  const uploadGeneratedImage = async () => {
+    const blob = await fetch(generatedUrl).then((response) => response.blob());
+    const form = new FormData();
+    form.append("image", new File([blob], `${trade.symbol}-${trade.rawDate}-tradeway.png`, { type: "image/png" }));
+    const response = await fetch("/api/posts/image", { method: "POST", credentials: "same-origin", body: form });
+    const payload = (await response.json()) as { imageUrl?: string; error?: string };
+    if (!response.ok || !payload.imageUrl) throw new Error(payload.error || "Share image upload failed.");
+    return payload.imageUrl;
+  };
+
+  const postTrade = async () => {
+    if (!generatedUrl || posting || posted) return;
+    setPosting(true);
+    setPostError("");
+    try {
+      const shareImageUrl = await uploadGeneratedImage();
+      await apiRequest("/api/posts", {
+        method: "POST",
+        body: JSON.stringify({
+          journalEntryId: trade.id,
+          content: (trade.note || `${trade.setup || "Journal"} trade`).slice(0, 280),
+          symbol: trade.symbol,
+          side: trade.side.toUpperCase(),
+          result: trade.pnl > 0 ? "WIN" : trade.pnl < 0 ? "LOSS" : "BE",
+          pnl: trade.pnl,
+          resultR: trade.resultR ?? 0,
+          chartImageUrl: chartUrl || null,
+          shareImageUrl,
+        }),
+      });
+      setPosted(true);
+    } catch (error) {
+      setPostError(error instanceof Error ? error.message : "Trade could not be posted.");
+    } finally {
+      setPosting(false);
+    }
+  };
+
   return (
     <section className="mx-auto w-full max-w-[380px] overflow-hidden rounded-2xl border border-white/10 bg-[#171717] shadow-xl shadow-black/25">
       <div className="flex items-center justify-between border-b border-white/8 px-4 py-3">
@@ -1166,9 +1207,15 @@ function TradeReviewImage({ trade, chartUrl }: { trade: JournalEntry; chartUrl: 
           <p className="text-sm font-black text-white">Trade review image</p>
           <p className="text-xs text-[#8a8a8a]">1080 x 1080 PNG</p>
         </div>
-        <Button type="button" disabled={!generatedUrl} onClick={download} variant="outline" className="border-white/10 bg-white/[.04]">
-          <Download size={15} /> PNG yuklash
-        </Button>
+        <div className="flex gap-2">
+          <Button type="button" disabled={!generatedUrl} onClick={download} size="sm" variant="outline" className="border-white/10 bg-white/[.04]">
+            <Download size={15} /> PNG
+          </Button>
+          <Button type="button" disabled={!generatedUrl || posting || posted} onClick={() => void postTrade()} size="sm" className="bg-white text-black hover:bg-zinc-200">
+            {posting ? <LoaderCircle className="animate-spin" size={15} /> : posted ? <Check size={15} /> : <Share2 size={15} />}
+            {posted ? "Posted" : "Post trade"}
+          </Button>
+        </div>
       </div>
       {generatedUrl ? (
         <img src={generatedUrl} alt={`${trade.symbol} TradeWay review image`} className="aspect-square w-full bg-[#0b0b0b] object-contain" />
@@ -1177,6 +1224,7 @@ function TradeReviewImage({ trade, chartUrl }: { trade: JournalEntry; chartUrl: 
           <LoaderCircle className="animate-spin" size={24} />
         </div>
       )}
+      {postError ? <p className="border-t border-rose-400/15 bg-rose-400/10 px-4 py-2 text-xs text-rose-200">{postError}</p> : null}
     </section>
   );
 }
