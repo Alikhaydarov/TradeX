@@ -67,25 +67,7 @@ html {
 
 body {
   margin: 0;
-  background:
-    radial-gradient(ellipse at 12% 0%, rgb(255 255 255 / 2.5%), transparent 42%),
-    radial-gradient(ellipse at 88% 4%, rgb(255 255 255 / 1.5%), transparent 38%),
-    repeating-linear-gradient(
-      0deg,
-      transparent,
-      transparent 80px,
-      rgb(255 255 255 / 0.008) 80px,
-      rgb(255 255 255 / 0.008) 81px
-    ),
-    repeating-linear-gradient(
-      90deg,
-      transparent,
-      transparent 80px,
-      rgb(255 255 255 / 0.008) 80px,
-      rgb(255 255 255 / 0.008) 81px
-    ),
-    #0b0b0b;
-  background-attachment: fixed;
+  background: #0b0b0b;
   color: #f1f1f1;
   min-height: 100vh;
   min-height: 100dvh;
@@ -238,13 +220,13 @@ input[type="date"] {
   --secondary: #1b1b1b;
   --secondary-foreground: oklch(0.985 0 0);
   --muted: #1b1b1b;
-  --muted-foreground: #8a8a8a;
+  --muted-foreground: #a1a1aa;
   --accent: #242424;
   --accent-foreground: oklch(0.985 0 0);
   --destructive: oklch(0.704 0.191 22.216);
   --border: #2a2a2a;
-  --input: #333333;
-  --ring: #a1a1aa;
+  --input: #303030;
+  --ring: #d4d4d8;
   --chart-1: oklch(0.87 0 0);
   --chart-2: oklch(0.556 0 0);
   --chart-3: oklch(0.439 0 0);
@@ -258,6 +240,22 @@ input[type="date"] {
   --sidebar-accent-foreground: oklch(0.985 0 0);
   --sidebar-border: rgb(255 255 255 / 6%);
   --sidebar-ring: oklch(0.556 0 0);
+}
+
+::selection {
+  background: rgb(255 255 255 / 18%);
+  color: #fff;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }
 
 @layer base {

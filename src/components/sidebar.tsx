@@ -93,9 +93,9 @@ export function Sidebar({
 
   return (
     <>
-      <aside className="fixed left-[max(0.75rem,calc((100vw-1600px)/2+0.75rem))] top-3 z-40 hidden h-[calc(100vh-1.5rem)] w-[232px] shrink-0 flex-col rounded-[22px] border border-white/8 bg-[#111111]/92 p-3 shadow-2xl shadow-black/25 backdrop-blur-2xl lg:flex">
-        <button onClick={() => onChange("feed")} className="flex items-center gap-3 rounded-2xl px-2 py-2 text-left" aria-label="TradeWay bosh sahifa">
-          <span className="grid h-11 w-11 place-items-center rounded-[15px] bg-gradient-to-br from-zinc-100 via-zinc-400 to-zinc-800 text-lg font-black text-black shadow-lg shadow-black/40">TW</span>
+      <aside className="fixed left-[max(0.75rem,calc((100vw-1560px)/2+0.75rem))] top-3 z-40 hidden h-[calc(100dvh-1.5rem)] w-[232px] shrink-0 flex-col rounded-xl border border-border bg-[#111111] p-3 shadow-2xl shadow-black/25 lg:flex">
+        <button onClick={() => onChange("feed")} className="flex items-center gap-3 rounded-lg px-2 py-2 text-left transition-colors hover:bg-white/[.035]" aria-label="TradeWay bosh sahifa">
+          <span className="grid h-11 w-11 place-items-center rounded-lg bg-gradient-to-br from-zinc-100 via-zinc-400 to-zinc-800 text-lg font-black text-black shadow-lg shadow-black/40">TW</span>
           <span>
             <strong className="block text-base tracking-tight">TradeWay</strong>
             <small className="text-[11px] text-slate-500">Trader workspace</small>
@@ -111,13 +111,13 @@ export function Sidebar({
               <button
                 key={id}
                 onClick={() => onChange(id)}
-                className={`group flex w-full items-center gap-3 rounded-2xl px-3 py-2.5 text-left transition ${
+                className={`group flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left transition-colors ${
                   selected
                     ? "bg-white/[.08] text-white ring-1 ring-white/15"
                     : "text-slate-500 hover:bg-white/[.025] hover:text-slate-300"
                 }`}
               >
-                <span className={`grid h-9 w-9 place-items-center rounded-xl transition-colors duration-100 ${selected ? "bg-white/14 text-zinc-300" : "bg-white/[.025] text-slate-500 group-hover:bg-white/[.04] group-hover:text-slate-300"}`}>
+                <span className={`grid h-9 w-9 place-items-center rounded-lg transition-colors duration-100 ${selected ? "bg-white/14 text-zinc-200" : "bg-white/[.025] text-zinc-500 group-hover:bg-white/[.04] group-hover:text-zinc-300"}`}>
                   <Icon size={18} strokeWidth={selected ? 2.5 : 2} />
                 </span>
                 <span className="min-w-0">
@@ -132,12 +132,12 @@ export function Sidebar({
           })}
         </nav>
 
-        <button onClick={onPost} className="mt-5 flex items-center justify-center gap-2 rounded-2xl bg-white py-3 text-sm font-black text-slate-950 shadow-lg shadow-black/20 transition hover:bg-slate-200">
+        <button onClick={onPost} className="mt-5 flex items-center justify-center gap-2 rounded-lg bg-white py-3 text-sm font-black text-zinc-950 shadow-lg shadow-black/20 transition-colors hover:bg-zinc-200">
           <Plus size={18} /> New post
         </button>
 
         <div className="mt-auto space-y-3">
-          <div className="rounded-2xl border border-white/8 bg-white/[.025] p-3">
+          <div className="rounded-lg border border-border bg-white/[.025] p-3">
             <div className="flex items-center justify-between gap-3">
               <div className="min-w-0">
                 <p className="text-[10px] font-black uppercase tracking-[.2em] text-slate-500">Social</p>
@@ -147,7 +147,7 @@ export function Sidebar({
             </div>
           </div>
 
-          <button onClick={openProfile} className="flex w-full items-center gap-3 rounded-2xl border border-white/8 bg-white/[.025] p-2 text-left hover:bg-white/[.04]">
+          <button onClick={openProfile} className="flex w-full items-center gap-3 rounded-lg border border-border bg-white/[.025] p-2 text-left transition-colors hover:bg-white/[.05]">
             <TraderAvatar name={name} value={avatar} className="h-10 w-10 text-xs" />
             <span className="min-w-0 flex-1">
               <span className="flex min-w-0 items-center gap-1">
@@ -162,12 +162,12 @@ export function Sidebar({
       </aside>
 
       {!hideMobile && (
-        <nav className="fixed inset-x-2 bottom-[max(.5rem,env(safe-area-inset-bottom))] z-50 flex h-16 items-center justify-around rounded-2xl border border-white/10 bg-[#111111]/94 px-1.5 shadow-2xl shadow-black/30 backdrop-blur-2xl sm:inset-x-3 sm:px-2 lg:hidden">
+        <nav className="fixed inset-x-2 bottom-[max(.5rem,env(safe-area-inset-bottom))] z-50 flex h-16 items-center justify-around rounded-xl border border-border bg-[#111111]/96 px-1.5 shadow-2xl shadow-black/40 backdrop-blur-xl sm:inset-x-3 sm:px-2 lg:hidden">
           {nav.map((item) => {
             const { id, label, icon: Icon } = item;
             const unavailable = "unavailable" in item && item.unavailable;
             return (
-              <button key={id} onClick={() => onChange(id)} className={`relative grid h-11 w-11 place-items-center rounded-xl transition-colors duration-100 ${active === id ? "bg-white/[.08] text-zinc-300 ring-1 ring-white/15" : "text-slate-600"}`} aria-label={unavailable ? `${label} hali ishlamaydi` : label}>
+              <button key={id} onClick={() => onChange(id)} className={`relative grid h-11 w-11 place-items-center rounded-lg transition-colors duration-100 ${active === id ? "bg-white/[.09] text-zinc-100 ring-1 ring-white/15" : "text-zinc-500"}`} aria-label={unavailable ? `${label} hali ishlamaydi` : label}>
                 <Icon size={21} strokeWidth={active === id ? 2.6 : 2} />
                 {unavailable ? <span className="absolute right-1.5 top-1.5 size-1.5 rounded-full bg-amber-300" /> : null}
               </button>

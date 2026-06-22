@@ -14,8 +14,8 @@ export function RightPanel() {
   if (pathname?.startsWith("/journal")) return null;
 
   return (
-    <aside className="sticky top-4 hidden h-[calc(100vh-2rem)] w-[300px] shrink-0 space-y-3 overflow-y-auto xl:block">
-      <section className="rounded-[22px] border border-white/9 bg-[#171717]/70 p-4 shadow-xl shadow-slate-950/20 backdrop-blur-2xl">
+    <aside className="sticky top-3 hidden h-[calc(100dvh-1.5rem)] w-[280px] shrink-0 space-y-3 overflow-y-auto xl:block">
+      <section className="rounded-xl border border-border bg-card p-4 shadow-xl shadow-black/20">
         <div className="flex items-center gap-2">
           <Activity className="text-zinc-300" size={18} />
           <div>
@@ -28,7 +28,7 @@ export function RightPanel() {
         </div>
         <div className="mt-4 space-y-2">
           {markets.map((market) => (
-            <div key={market.coin} className="flex items-center rounded-2xl border border-white/[.04] bg-white/[.025] p-3">
+            <div key={market.coin} className="flex items-center rounded-lg border border-border bg-[#111111] p-3">
               <span className={`h-2.5 w-2.5 rounded-full ${market.color}`} />
               <strong className="ml-3 text-sm">{market.coin}</strong>
               <span className="ml-auto font-mono text-xs">{market.price}</span>
@@ -37,7 +37,7 @@ export function RightPanel() {
           ))}
         </div>
       </section>
-      <section className="rounded-[22px] border border-amber-400/15 bg-amber-400/[.045] p-4 backdrop-blur-2xl">
+      <section className="rounded-xl border border-amber-400/15 bg-amber-400/[.045] p-4">
         <div className="flex items-center gap-2 text-amber-200">
           <ShieldAlert size={17} />
           <h2 className="text-sm font-bold">Pre-trade checklist</h2>
@@ -51,7 +51,7 @@ export function RightPanel() {
           ))}
         </div>
       </section>
-      <section className="rounded-[22px] border border-white/9 bg-[#171717]/70 p-4 backdrop-blur-2xl">
+      <section className="rounded-xl border border-border bg-card p-4">
         <div className="flex items-center gap-2">
           <Clock3 size={17} className="text-zinc-300" />
           <h2 className="text-sm font-bold">Sessions</h2>
