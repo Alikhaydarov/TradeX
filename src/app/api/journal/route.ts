@@ -24,6 +24,7 @@ interface JournalPayload {
   reviewCompleted?: boolean;
   toTradingBible?: boolean;
   imageUrl?: string | null;
+  imageUrls?: string[];
   tags?: string[];
 }
 
@@ -110,7 +111,9 @@ export async function POST(request: Request) {
     account_size: account.account_size,
     profit_target: account.profit_target,
     max_drawdown: account.max_drawdown,
-    image_url: body.imageUrl?.trim().slice(0, 1000) || null,
+    image_url: Array.isArray(body.imageUrls) && body.imageUrls.length
+      ? JSON.stringify(body.imageUrls.map((url) => url.trim().slice(0, 1000)).filter(Boolean).slice(0, 3))
+      : body.imageUrl?.trim().slice(0, 1000) || null,
     tags: (body.tags || []).map((t) => t.trim().slice(0, 24)).filter(Boolean).slice(0, 8),
   };
 

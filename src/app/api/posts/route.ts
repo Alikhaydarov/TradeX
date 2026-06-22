@@ -111,6 +111,7 @@ export async function POST(request: Request) {
     resultR?: number;
     journalEntryId?: string;
     chartImageUrl?: string | null;
+    chartImageUrls?: string[];
     shareImageUrl?: string | null;
     entryPrice?: string;
     targetPrice?: string;
@@ -178,7 +179,9 @@ export async function POST(request: Request) {
       pnl: Number.isFinite(body.pnl) ? body.pnl : null,
       result_r: Number.isFinite(body.resultR) ? body.resultR : null,
       entry_price: `journal:${journalEntryId}`,
-      target_price: body.chartImageUrl?.trim().slice(0, 1000) || null,
+      target_price: Array.isArray(body.chartImageUrls) && body.chartImageUrls.length
+        ? JSON.stringify(body.chartImageUrls.map((url) => url.trim().slice(0, 1000)).filter(Boolean).slice(0, 3))
+        : body.chartImageUrl?.trim().slice(0, 1000) || null,
       views_count: 0,
       is_archived: false,
     })

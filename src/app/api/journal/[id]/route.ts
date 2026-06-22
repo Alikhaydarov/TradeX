@@ -21,6 +21,7 @@ interface JournalUpdatePayload {
   reviewCompleted?: boolean;
   toTradingBible?: boolean;
   imageUrl?: string | null;
+  imageUrls?: string[];
   tags?: string[];
 }
 
@@ -63,7 +64,9 @@ export async function PATCH(
     setup: body.setup?.trim().slice(0, 80) || "",
     risk_amount: risk,
     result_r: resultR,
-    image_url: body.imageUrl?.trim().slice(0, 1000) || null,
+    image_url: Array.isArray(body.imageUrls) && body.imageUrls.length
+      ? JSON.stringify(body.imageUrls.map((url) => url.trim().slice(0, 1000)).filter(Boolean).slice(0, 3))
+      : body.imageUrl?.trim().slice(0, 1000) || null,
     tags: (body.tags || []).map((tag) => tag.trim().slice(0, 24)).filter(Boolean).slice(0, 8),
   };
 

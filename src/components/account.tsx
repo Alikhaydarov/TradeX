@@ -145,6 +145,10 @@ function formatAccountTime(createdAt: Date) {
 
 function toPost(record: PostRecord): Post {
   const createdAt = new Date(record.created_at);
+  const chartImages = record.entry_price?.startsWith("journal:")
+    ? (() => { try { const parsed = JSON.parse(record.target_price || "[]"); return Array.isArray(parsed) ? parsed.filter((item): item is string => typeof item === "string") : record.target_price ? [record.target_price] : []; } catch { return record.target_price ? [record.target_price] : []; } })()
+    : [];
+  const shareImage = record.entry_price?.startsWith("journal:") ? record.image_url : null;
 
   return {
     id: record.id,
@@ -155,8 +159,9 @@ function toPost(record: PostRecord): Post {
     time: formatAccountTime(createdAt),
     text: record.content,
     imageUrl: record.image_url ?? null,
-    chartImageUrl: record.entry_price?.startsWith("journal:") ? record.target_price : null,
-    shareImageUrl: record.entry_price?.startsWith("journal:") ? record.image_url : null,
+    chartImageUrl: chartImages[0] ?? null,
+    shareImageUrl: shareImage,
+    imageUrls: [...chartImages, ...(shareImage ? [shareImage] : [])],
     journalEntryId: record.entry_price?.startsWith("journal:") ? record.entry_price.slice(8) : null,
     symbol: record.symbol ?? undefined,
     side: record.side ?? undefined,
@@ -215,6 +220,7 @@ export function Account({ onLogin, profileUsername }: { onLogin: () => void; pro
   const [draftProfile, setDraftProfile] = useState<Profile | null>(null);
   const [posts, setPosts] = useState<Post[]>([]);
   const [achievements, setAchievements] = useState<Achievement[]>([]);
+  const [viewingAchievement, setViewingAchievement] = useState<Achievement | null>(null);
   const [stats, setStats] = useState<TradingStats>({ trades: 0, winRate: 0, netPnl: 0, averageR: 0 });
   const [activeTab, setActiveTab] = useState<ProfileTab>("posts");
   const [loadingProfile, setLoadingProfile] = useState(true);
@@ -475,7 +481,7 @@ export function Account({ onLogin, profileUsername }: { onLogin: () => void; pro
           </div>
           {post.symbol ? <div className="mt-3 flex flex-wrap items-center gap-2 rounded-lg border border-white/8 bg-black/15 px-3 py-2.5"><strong className="mr-auto text-sm">{post.symbol}</strong><span className="text-[10px] font-black text-zinc-300">{post.side}</span><span className={post.result === "WIN" ? "text-[10px] font-black text-emerald-300" : post.result === "LOSS" ? "text-[10px] font-black text-rose-300" : "text-[10px] font-black text-zinc-300"}>{post.result}</span>{typeof post.pnl === "number" ? <strong className={post.pnl >= 0 ? "text-sm text-emerald-300" : "text-sm text-rose-300"}>{post.pnl >= 0 ? "+" : ""}${post.pnl.toFixed(2)}</strong> : null}</div> : null}
           {post.text ? <p className="mt-2 whitespace-pre-line break-words text-[15px] leading-6 text-slate-50">{post.text}</p> : null}
-          {(post.chartImageUrl || post.shareImageUrl || post.imageUrl) ? <div className={`mt-3 grid overflow-hidden rounded-xl border border-white/10 bg-black/25 ${post.chartImageUrl && post.shareImageUrl ? "grid-cols-1 sm:grid-cols-2" : "grid-cols-1"}`}>{post.chartImageUrl ? <img src={post.chartImageUrl} alt="Trade chart" className="h-full max-h-[480px] w-full object-cover" loading="lazy" /> : null}{post.shareImageUrl ? <img src={post.shareImageUrl} alt="TradeWay share card" className="h-full max-h-[480px] w-full object-cover" loading="lazy" /> : null}{!post.chartImageUrl && !post.shareImageUrl && post.imageUrl ? <img src={post.imageUrl} alt="Post media" className="max-h-[520px] max-w-full object-contain" loading="lazy" /> : null}</div> : null}
+          {post.imageUrls?.length ? <div className={`mt-3 grid gap-px overflow-hidden rounded-xl border border-white/10 bg-white/10 ${post.imageUrls.length === 1 ? "grid-cols-1" : "grid-cols-2"}`}>{post.imageUrls.map((url, index) => <a key={url} href={url} target="_blank" rel="noreferrer" className={`grid min-h-40 place-items-center overflow-hidden bg-black/90 ${post.imageUrls!.length === 3 && index === 0 ? "row-span-2" : ""}`}><img src={url} alt={`Trade media ${index + 1}`} className="h-full max-h-[520px] w-full object-cover" loading="lazy" /></a>)}</div> : post.imageUrl ? <a href={post.imageUrl} target="_blank" rel="noreferrer" className="mt-3 grid min-h-40 place-items-center overflow-hidden rounded-xl border border-white/10 bg-black/90"><img src={post.imageUrl} alt="Post media" className="max-h-[520px] max-w-full object-contain" loading="lazy" /></a> : null}
           <div className="mt-3 grid max-w-md grid-cols-4 text-slate-500">
             <span className="flex h-8 items-center gap-1.5 rounded-full text-[12px] transition hover:text-zinc-300"><MessageCircle size={16} />{post.replies}</span>
             <span className="flex h-8 items-center gap-1.5 rounded-full text-[12px] transition hover:text-rose-200"><Heart size={16} />{post.likes}</span>
@@ -559,11 +565,13 @@ export function Account({ onLogin, profileUsername }: { onLogin: () => void; pro
             <div className="mt-3 flex gap-2 overflow-x-auto pb-1">
               {achievements.map((item) => (
                 <article key={item.id} className="group relative w-36 shrink-0 overflow-hidden rounded-lg border border-border bg-[#111111] sm:w-40">
+                  <button type="button" onClick={() => setViewingAchievement(item)} className="block w-full text-left">
                   <img src={item.image_url} alt={item.title} className="aspect-[16/10] w-full object-cover" loading="lazy" />
                   <div className="p-2.5">
                     <span className={`text-[9px] font-black uppercase ${item.achievement_type === "payout" ? "text-emerald-300" : "text-amber-200"}`}>{item.achievement_type}</span>
                     <h4 className="mt-1 truncate text-xs font-bold">{item.title}</h4>
                   </div>
+                  </button>
                   {isOwnProfile ? <button onClick={() => void removeAchievement(item.id)} className="absolute right-2 top-2 grid size-8 place-items-center rounded-lg bg-black/70 text-zinc-300 opacity-100 backdrop-blur sm:opacity-0 sm:group-hover:opacity-100" aria-label="Remove achievement"><Trash2 size={14} /></button> : null}
                 </article>
               ))}
@@ -599,6 +607,18 @@ export function Account({ onLogin, profileUsername }: { onLogin: () => void; pro
             <Button variant="outline" onClick={() => setAchievementOpen(false)}>Cancel</Button>
             <Button disabled={achievementBusy || !achievementTitle.trim() || !achievementImage} onClick={() => void addAchievement()}>{achievementBusy ? <XSpinner size="sm" /> : <Award size={15} />} Save</Button>
           </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={Boolean(viewingAchievement)} onOpenChange={(open) => { if (!open) setViewingAchievement(null); }}>
+        <DialogContent className="max-h-[96dvh] max-w-[min(1100px,calc(100vw-1rem))] overflow-hidden bg-black p-0 sm:max-w-[min(1100px,calc(100vw-2rem))]">
+          <DialogHeader className="border-b border-white/10 bg-[#171717] px-4 py-3 pr-14 text-left">
+            <DialogTitle>{viewingAchievement?.title}</DialogTitle>
+            <DialogDescription>{viewingAchievement?.issuer || viewingAchievement?.achievement_type}</DialogDescription>
+          </DialogHeader>
+          <div className="grid max-h-[calc(96dvh-72px)] place-items-center overflow-auto p-2 sm:p-4">
+            {viewingAchievement ? <img src={viewingAchievement.image_url} alt={viewingAchievement.title} className="max-h-[calc(96dvh-104px)] max-w-full object-contain" /> : null}
+          </div>
         </DialogContent>
       </Dialog>
 

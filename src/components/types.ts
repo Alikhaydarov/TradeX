@@ -16,6 +16,7 @@ export interface Post {
   price?: string;
   target?: string;
   imageUrl?: string | null;
+  imageUrls?: string[];
   chartImageUrl?: string | null;
   shareImageUrl?: string | null;
   journalEntryId?: string | null;
@@ -136,6 +137,7 @@ export interface JournalEntry {
   reviewCompleted?: boolean;
   toTradingBible?: boolean;
   imageUrl?: string | null;
+  imageUrls?: string[];
   tags?: string[];
   accountSize?: number;
   profitTarget?: number;

@@ -1,6 +1,6 @@
 "use client";
 
-import { Camera, Check, ChevronDown, ImagePlus, LoaderCircle, Plus, Trash2, UploadCloud, X } from "lucide-react";
+import { Camera, Check, ChevronDown, ImagePlus, LoaderCircle, Plus, Trash2, X } from "lucide-react";
 import { useRef, useState, type ChangeEvent, type DragEvent } from "react";
 import { Button } from "./ui/button";
 import { Dialog, DialogContent } from "./ui/dialog";
@@ -185,7 +185,8 @@ function OptionStack({
 
 export function TradeReviewModal({ open, saving, account, onOpenChange, onSave }: TradeReviewModalProps) {
   const inputRef = useRef<HTMLInputElement | null>(null);
-  const [imageUrl, setImageUrl] = useState("");
+  const [imageUrls, setImageUrls] = useState<string[]>([]);
+  const [previewUrl, setPreviewUrl] = useState("");
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState("");
   const [followingPlan, setFollowingPlan] = useState(true);
@@ -218,29 +219,34 @@ export function TradeReviewModal({ open, saving, account, onOpenChange, onSave }
   };
 
   const resetForm = () => {
-    setImageUrl(""); setUploadError("");
+    setImageUrls([]); setPreviewUrl(""); setUploadError("");
     if (inputRef.current) inputRef.current.value = "";
     setFollowingPlan(true); setErrorMade(false); setMistakeType("");
     setReviewCompleted(false); setToBible(false); setSession(""); setRiskPct(""); setSetup(""); setOutcome("win");
   };
   const close = (next: boolean) => { onOpenChange(next); if (!next) resetForm(); };
 
-  const upload = async (file?: File) => {
-    if (!file) return;
+  const upload = async (files?: FileList | File[]) => {
+    const selected = Array.from(files ?? []).slice(0, 3 - imageUrls.length);
+    if (!selected.length) return;
     setUploading(true); setUploadError("");
     try {
-      const form = new FormData();
-      form.append("image", file);
-      const r = await fetch("/api/journal/image", { method: "POST", body: form, credentials: "same-origin" });
-      const p = (await r.json()) as { imageUrl?: string; error?: string };
-      if (!r.ok || !p.imageUrl) throw new Error(p.error || "Rasm yuklanmadi.");
-      setImageUrl(p.imageUrl);
+      const uploaded: string[] = [];
+      for (const file of selected) {
+        const form = new FormData();
+        form.append("image", file);
+        const r = await fetch("/api/journal/image", { method: "POST", body: form, credentials: "same-origin" });
+        const p = (await r.json()) as { imageUrl?: string; error?: string };
+        if (!r.ok || !p.imageUrl) throw new Error(p.error || "Rasm yuklanmadi.");
+        uploaded.push(p.imageUrl);
+      }
+      setImageUrls((current) => [...current, ...uploaded].slice(0, 3));
     } catch (e) {
       setUploadError(e instanceof Error ? e.message : "Rasm yuklanmadi.");
     } finally { setUploading(false); }
   };
 
-  const drop = (e: DragEvent<HTMLDivElement>) => { e.preventDefault(); void upload(e.dataTransfer.files?.[0]); };
+  const drop = (e: DragEvent<HTMLDivElement>) => { e.preventDefault(); void upload(e.dataTransfer.files); };
   const submit = async (form: FormData) => {
     const amount = Math.abs(Number(String(form.get("pnl") || "0").replace(",", ".")) || 0);
     form.set("pnl", String(outcome === "loss" ? -amount : amount));
@@ -441,9 +447,9 @@ export function TradeReviewModal({ open, saving, account, onOpenChange, onSave }
               />
             </div>
 
-            <input ref={inputRef} type="file" accept="image/jpeg,image/png,image/webp" className="hidden"
-              onChange={(e) => void upload(e.target.files?.[0])} />
-            <input type="hidden" name="imageUrl" value={imageUrl} />
+            <input ref={inputRef} type="file" multiple accept="image/jpeg,image/png,image/webp" className="hidden"
+              onChange={(e) => void upload(e.target.files ?? undefined)} />
+            <input type="hidden" name="imageUrls" value={JSON.stringify(imageUrls)} />
 
             <div className="rounded-xl border border-[#2a2a2a] bg-[#121212] p-3">
               <div className="mb-3 flex items-center gap-3">
@@ -456,43 +462,15 @@ export function TradeReviewModal({ open, saving, account, onOpenChange, onSave }
                 </div>
                 <button type="button" onClick={() => inputRef.current?.click()}
                   className="shrink-0 rounded-lg border border-[#2a2a2a] bg-[#171717] px-3 py-2 text-xs font-semibold text-[#a1a1aa] transition hover:border-white/20 hover:text-[#f1f1f1]">
-                  {imageUrl ? "Almashtirish" : "Yuklash"}
+                  + Add image
                 </button>
               </div>
 
-              <div onClick={() => !imageUrl && inputRef.current?.click()}
+              <div
                 onDragOver={(e) => e.preventDefault()} onDrop={drop}
-                className="flex w-full items-center gap-3 overflow-hidden rounded-xl border border-dashed border-[#2a2a2a] bg-[#0b0b0b] p-3 text-left transition hover:border-white/20 hover:bg-[#171717]">
-              {imageUrl
-                ? <>
-                    <span className="relative grid h-16 w-20 shrink-0 place-items-center overflow-hidden rounded-lg border border-[#2a2a2a] bg-black">
-                      <img src={imageUrl} alt="chart" className="h-full w-full object-cover" />
-                    </span>
-                    <span className="min-w-0 flex-1">
-                      <span className="block truncate text-sm font-semibold text-[#f1f1f1]">Screenshot ulandi</span>
-                      <span className="mt-0.5 block truncate text-[11px] text-[#8a8a8a]">Jurnalga attachment sifatida qo&apos;shiladi</span>
-                    </span>
-                    <button type="button" onClick={() => { setImageUrl(""); if (inputRef.current) inputRef.current.value = ""; }}
-                      className="grid size-9 shrink-0 place-items-center rounded-lg bg-rose-500/10 text-rose-300 transition hover:bg-rose-500/20">
-                      <Trash2 size={13} />
-                    </button>
-                  </>
-                : <>
-                    <span className="grid size-12 shrink-0 place-items-center rounded-xl bg-[#171717] text-[#454545]">
-                    {uploading
-                      ? <LoaderCircle className="size-5 animate-spin text-zinc-300" />
-                      : <UploadCloud className="size-5" />
-                    }
-                    </span>
-                    <span className="min-w-0 flex-1">
-                      <span className="block text-sm font-semibold text-[#a1a1aa]">
-                        {uploading ? "Yuklanmoqda..." : "Screenshot yuklang"}
-                      </span>
-                      <span className="mt-0.5 block text-[11px] text-[#8a8a8a]">bosib tanlang yoki shu yerga tashlang</span>
-                    </span>
-                    <ImagePlus size={16} className="shrink-0 text-[#8a8a8a]" />
-                  </>
-              }
+                className="grid grid-cols-3 gap-2 rounded-xl border border-dashed border-[#2a2a2a] bg-[#0b0b0b] p-2">
+                {imageUrls.map((url, index) => <div key={url} className="group relative aspect-square overflow-hidden rounded-lg border border-[#2a2a2a] bg-black"><button type="button" onClick={() => setPreviewUrl(url)} className="h-full w-full"><img src={url} alt={`Trade screenshot ${index + 1}`} className="h-full w-full object-cover" /></button><button type="button" onClick={() => setImageUrls((current) => current.filter((item) => item !== url))} className="absolute right-1.5 top-1.5 grid size-7 place-items-center rounded-md bg-black/75 text-rose-200"><Trash2 size={12} /></button></div>)}
+                {imageUrls.length < 3 ? <button type="button" onClick={() => inputRef.current?.click()} className="grid aspect-square place-items-center rounded-lg border border-dashed border-white/10 text-zinc-500 hover:bg-white/[.04] hover:text-white">{uploading ? <LoaderCircle className="animate-spin" size={20} /> : <ImagePlus size={22} />}</button> : null}
               </div>
               {uploadError && <p className="mt-2 text-xs text-rose-400">{uploadError}</p>}
             </div>
@@ -512,6 +490,7 @@ export function TradeReviewModal({ open, saving, account, onOpenChange, onSave }
             </Button>
           </div>
         </form>
+        {previewUrl ? <div className="fixed inset-0 z-[10001] grid place-items-center bg-black/90 p-3" onClick={() => setPreviewUrl("")}><button type="button" className="absolute right-4 top-4 grid size-10 place-items-center rounded-full bg-white/10 text-white"><X size={18} /></button><img src={previewUrl} alt="Trade screenshot preview" className="max-h-[92dvh] max-w-full object-contain" /></div> : null}
       </DialogContent>
     </Dialog>
   );

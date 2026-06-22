@@ -81,6 +81,10 @@ function formatFeedTime(value: string | Date | number) {
 }
 
 function toPost(record: PostRecord, liked = false, bookmarked = false, reposted = false): Post {
+  const chartImages = record.entry_price?.startsWith("journal:")
+    ? (() => { try { const parsed = JSON.parse(record.target_price || "[]"); return Array.isArray(parsed) ? parsed.filter((item): item is string => typeof item === "string") : record.target_price ? [record.target_price] : []; } catch { return record.target_price ? [record.target_price] : []; } })()
+    : [];
+  const shareImage = record.entry_price?.startsWith("journal:") ? record.image_url : null;
   return {
     id: record.id,
     userId: record.user_id,
@@ -90,8 +94,9 @@ function toPost(record: PostRecord, liked = false, bookmarked = false, reposted 
     time: formatFeedTime(record.created_at),
     text: record.content,
     imageUrl: record.image_url ?? null,
-    chartImageUrl: record.entry_price?.startsWith("journal:") ? record.target_price : null,
-    shareImageUrl: record.entry_price?.startsWith("journal:") ? record.image_url : null,
+    chartImageUrl: chartImages[0] ?? null,
+    shareImageUrl: shareImage,
+    imageUrls: [...chartImages, ...(shareImage ? [shareImage] : [])],
     journalEntryId: record.entry_price?.startsWith("journal:") ? record.entry_price.slice(8) : null,
     symbol: record.symbol ?? undefined,
     side: record.side ?? undefined,
@@ -113,6 +118,12 @@ function toPost(record: PostRecord, liked = false, bookmarked = false, reposted 
 
 function replyTime(value: string) {
   return formatFeedTime(value);
+}
+
+function openProfile(username: string) {
+  const clean = username.replace(/^@/, "").toLowerCase();
+  window.history.pushState(null, "", `/${encodeURIComponent(clean)}`);
+  window.dispatchEvent(new Event("tradeup:open-profile"));
 }
 
 export function FeedV3({ onLogin }: { onLogin: () => void }) {
@@ -419,14 +430,14 @@ export function FeedV3({ onLogin }: { onLogin: () => void }) {
                 className="border-b border-border px-3 py-4 transition-colors last:border-b-0 hover:bg-white/[.018] sm:px-5"
               >
                 <div className="flex gap-3">
-                  <TraderAvatar name={post.name} value={post.avatar} className="h-11 w-11 shrink-0 text-xs" />
+                  <button type="button" onClick={() => openProfile(post.handle)} className="h-11 w-11 shrink-0 rounded-full"><TraderAvatar name={post.name} value={post.avatar} className="h-11 w-11 text-xs" /></button>
                   <div className="min-w-0 flex-1">
                     <div className="flex items-start gap-3">
                       <div className="min-w-0 flex-1">
-                        <p className="flex items-center gap-1 truncate text-sm font-bold">
+                        <button type="button" onClick={() => openProfile(post.handle)} className="flex max-w-full items-center gap-1 truncate text-left text-sm font-bold hover:underline">
                           {post.name}
                           {post.isVerified && <VerifiedBadge size={14} />}
-                        </p>
+                        </button>
                         <p className="truncate text-[11px] text-slate-500">{post.handle} <span className="px-1 text-zinc-700">·</span> {post.time}</p>
                       </div>
                       <DropdownMenu>
@@ -455,13 +466,7 @@ export function FeedV3({ onLogin }: { onLogin: () => void }) {
 
                     {post.text && post.text !== `${post.symbol} trade` ? <p className="mt-3 whitespace-pre-line text-[15px] leading-6 text-slate-100">{post.text}</p> : null}
 
-                    {(post.chartImageUrl || post.shareImageUrl || post.imageUrl) ? (
-                      <div className={`mt-3 grid overflow-hidden rounded-xl border border-white/10 bg-black/25 ${post.chartImageUrl && post.shareImageUrl ? "grid-cols-1 sm:grid-cols-2" : "grid-cols-1"}`}>
-                        {post.chartImageUrl ? <a href={post.chartImageUrl} target="_blank" rel="noreferrer" className="grid min-h-40 place-items-center overflow-hidden border-r border-white/8"><img src={post.chartImageUrl} alt={`${post.symbol} chart`} className="h-full max-h-[460px] w-full object-cover" loading="lazy" /></a> : null}
-                        {post.shareImageUrl ? <a href={post.shareImageUrl} target="_blank" rel="noreferrer" className="grid min-h-40 place-items-center overflow-hidden"><img src={post.shareImageUrl} alt={`${post.symbol} TradeWay share card`} className="h-full max-h-[460px] w-full object-cover" loading="lazy" /></a> : null}
-                        {!post.chartImageUrl && !post.shareImageUrl && post.imageUrl ? <a href={post.imageUrl} target="_blank" rel="noreferrer" className="grid min-h-40 place-items-center"><img src={post.imageUrl} alt="Trade media" className="max-h-[560px] max-w-full object-contain" loading="lazy" /></a> : null}
-                      </div>
-                    ) : null}
+                    {post.imageUrls?.length ? <div className={`mt-3 grid gap-px overflow-hidden rounded-xl border border-white/10 bg-white/10 ${post.imageUrls.length === 1 ? "grid-cols-1" : "grid-cols-2"}`}>{post.imageUrls.map((url, index) => <a key={url} href={url} target="_blank" rel="noreferrer" className={`grid min-h-40 place-items-center overflow-hidden bg-black/90 ${post.imageUrls!.length === 3 && index === 0 ? "row-span-2" : ""}`}><img src={url} alt={index === post.imageUrls!.length - 1 ? `${post.symbol} TradeWay share card` : `${post.symbol} trade screenshot ${index + 1}`} className="h-full max-h-[520px] w-full object-cover" loading="lazy" /></a>)}</div> : post.imageUrl ? <a href={post.imageUrl} target="_blank" rel="noreferrer" className="mt-3 grid min-h-40 place-items-center overflow-hidden rounded-xl border border-white/10 bg-black/90"><img src={post.imageUrl} alt="Trade media" className="max-h-[560px] max-w-full object-contain" loading="lazy" /></a> : null}
 
                     <div className="mt-3 grid grid-cols-5 items-center text-zinc-500">
                       <button onClick={() => void toggleReplies(post)} className={`flex h-11 items-center justify-center gap-1.5 rounded-lg text-[11px] transition-colors hover:bg-white/[.04] hover:text-zinc-200 ${openReplies === post.id ? "text-zinc-100" : ""}`} aria-label="Replies"><MessageCircle size={17} />{post.replies}</button>
