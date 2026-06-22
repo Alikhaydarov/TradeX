@@ -133,7 +133,7 @@ export function Sidebar({
         </nav>
 
         <button onClick={onPost} className="mt-5 flex items-center justify-center gap-2 rounded-lg bg-white py-3 text-sm font-black text-zinc-950 shadow-lg shadow-black/20 transition-colors hover:bg-zinc-200">
-          <Plus size={18} /> New post
+          <Plus size={18} /> Share a trade
         </button>
 
         <div className="mt-auto space-y-3">
