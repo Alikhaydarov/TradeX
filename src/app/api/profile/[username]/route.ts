@@ -1,5 +1,6 @@
 import { authenticateRequest, serverError } from "@/lib/backend/auth";
 import { getSupabaseServerClient } from "@/lib/supabase/server";
+import { getProfileInsights } from "@/lib/server/profile-insights";
 
 export const runtime = "nodejs";
 
@@ -35,15 +36,12 @@ export async function GET(request: Request, context: Params) {
   if (error) return serverError(error.message);
   if (!profile) return Response.json({ error: "Profile topilmadi." }, { status: 404 });
 
-  const counts = await followCounts(supabase, profile.id);
-
-  const { data: posts, error: postsError } = await supabase
-    .from("posts")
-    .select("*")
-    .eq("user_id", profile.id)
-    .eq("is_archived", false)
-    .order("created_at", { ascending: false })
-    .limit(50);
+  const [counts, postsResult, insights] = await Promise.all([
+    followCounts(supabase, profile.id),
+    supabase.from("posts").select("*").eq("user_id", profile.id).eq("is_archived", false).order("created_at", { ascending: false }).limit(50),
+    getProfileInsights(supabase, profile.id),
+  ]);
+  const { data: posts, error: postsError } = postsResult;
 
   if (postsError) return serverError(postsError.message);
 
@@ -74,5 +72,6 @@ export async function GET(request: Request, context: Params) {
       isFollowing,
     },
     posts: hydratedPosts,
+    ...insights,
   });
 }

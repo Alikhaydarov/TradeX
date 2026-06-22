@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  Award,
   Bookmark,
   Camera,
   Check,
@@ -11,7 +12,9 @@ import {
   MapPin,
   MessageCircle,
   PenLine,
+  Plus,
   ShieldCheck,
+  Trash2,
   TrendingUp,
   UserRound,
   UserPlus,
@@ -32,7 +35,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { FullScreenLoader, XSpinner } from "./app-loader";
+import { XSpinner } from "./app-loader";
 import { useAuth } from "./auth-context";
 import { TraderAvatar } from "./trader-avatar";
 import { VerifiedBadge } from "./verified-badge";
@@ -84,6 +87,22 @@ interface PostRecord {
   reposts_count: number;
   views_count?: number | null;
   created_at: string;
+}
+
+interface Achievement {
+  id: string;
+  title: string;
+  issuer: string;
+  achievement_type: "funded" | "payout";
+  image_url: string;
+  issued_at: string | null;
+}
+
+interface TradingStats {
+  trades: number;
+  winRate: number;
+  netPnl: number;
+  averageR: number;
 }
 
 type ProfileTab = "posts" | "replies" | "media" | "saved";
@@ -180,6 +199,8 @@ export function Account({ onLogin, profileUsername }: { onLogin: () => void; pro
   const [profile, setProfile] = useState<(Profile & { isFollowing?: boolean }) | null>(null);
   const [draftProfile, setDraftProfile] = useState<Profile | null>(null);
   const [posts, setPosts] = useState<Post[]>([]);
+  const [achievements, setAchievements] = useState<Achievement[]>([]);
+  const [stats, setStats] = useState<TradingStats>({ trades: 0, winRate: 0, netPnl: 0, averageR: 0 });
   const [activeTab, setActiveTab] = useState<ProfileTab>("posts");
   const [loadingProfile, setLoadingProfile] = useState(true);
   const [editOpen, setEditOpen] = useState(false);
@@ -191,6 +212,12 @@ export function Account({ onLogin, profileUsername }: { onLogin: () => void; pro
   const [connectionsLoading, setConnectionsLoading] = useState(false);
   const [connectionsActingId, setConnectionsActingId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [achievementOpen, setAchievementOpen] = useState(false);
+  const [achievementTitle, setAchievementTitle] = useState("");
+  const [achievementIssuer, setAchievementIssuer] = useState("");
+  const [achievementType, setAchievementType] = useState<"funded" | "payout">("funded");
+  const [achievementImage, setAchievementImage] = useState("");
+  const [achievementBusy, setAchievementBusy] = useState(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
@@ -207,22 +234,16 @@ export function Account({ onLogin, profileUsername }: { onLogin: () => void; pro
     }, 0);
 
     const load = profileUsername
-      ? apiRequest<{ profile: ProfileRecord; posts: PostRecord[] }>(`/api/profile/${profileUsername}`)
-      : Promise.allSettled([
-        apiRequest<{ profile: ProfileRecord }>("/api/profile"),
-        apiRequest<{ posts: PostRecord[] }>("/api/feed-posts"),
-      ]).then(([profileResult, postsResult]) => {
-        if (profileResult.status !== "fulfilled") throw profileResult.reason;
-        const myProfile = profileResult.value.profile;
-        const myPosts = postsResult.status === "fulfilled" ? postsResult.value.posts.filter((post) => post.user_id === user.id) : [];
-        return { profile: myProfile, posts: myPosts };
-      });
+      ? apiRequest<{ profile: ProfileRecord; posts: PostRecord[]; achievements?: Achievement[]; stats?: TradingStats }>(`/api/profile/${profileUsername}`)
+      : apiRequest<{ profile: ProfileRecord; posts: PostRecord[]; achievements?: Achievement[]; stats?: TradingStats }>("/api/profile");
 
     load
       .then((data) => {
         if (!active) return;
         setProfile(toProfile(data.profile));
         setPosts(data.posts.map(toPost));
+        setAchievements(data.achievements ?? []);
+        setStats(data.stats ?? { trades: 0, winRate: 0, netPnl: 0, averageR: 0 });
       })
       .catch((nextError) => {
         if (active) setError(nextError instanceof Error ? nextError.message : "Profile failed to load.");
@@ -260,8 +281,20 @@ export function Account({ onLogin, profileUsername }: { onLogin: () => void; pro
 
   if (loadingProfile && !profile) {
     return (
-      <div className="min-h-[100dvh] bg-[#0b0b0b]">
-        <FullScreenLoader label="Opening" />
+      <div className="min-h-[100dvh] bg-background">
+        <header className="h-14 border-b border-border bg-card" />
+        <div className="mx-auto max-w-3xl animate-pulse px-3 py-4 sm:px-5">
+          <div className="overflow-hidden rounded-lg border border-border bg-card">
+            <div className="h-32 bg-white/[.035] sm:h-44" />
+            <div className="px-5 pb-6">
+              <div className="-mt-10 size-24 rounded-full border-4 border-card bg-zinc-800 sm:-mt-14 sm:size-28" />
+              <div className="mt-4 h-6 w-44 rounded bg-zinc-800" />
+              <div className="mt-3 h-4 w-28 rounded bg-zinc-900" />
+              <div className="mt-6 h-4 w-72 max-w-full rounded bg-zinc-900" />
+            </div>
+          </div>
+          <div className="mt-3 h-48 rounded-lg border border-border bg-card" />
+        </div>
       </div>
     );
   }
@@ -278,6 +311,50 @@ export function Account({ onLogin, profileUsername }: { onLogin: () => void; pro
     if (!isOwnProfile) return;
     setDraftProfile(profile);
     setEditOpen(true);
+  };
+
+  const uploadAchievementImage = async (file?: File) => {
+    if (!file) return;
+    setAchievementBusy(true);
+    try {
+      const form = new FormData();
+      form.append("image", file);
+      const response = await fetch("/api/journal/image", { method: "POST", body: form });
+      const payload = await response.json() as { imageUrl?: string; error?: string };
+      if (!response.ok || !payload.imageUrl) throw new Error(payload.error || "Certificate upload failed.");
+      setAchievementImage(payload.imageUrl);
+    } catch (nextError) {
+      setError(nextError instanceof Error ? nextError.message : "Certificate upload failed.");
+    } finally {
+      setAchievementBusy(false);
+    }
+  };
+
+  const addAchievement = async () => {
+    if (!achievementTitle.trim() || !achievementImage) return;
+    setAchievementBusy(true);
+    try {
+      const { achievement } = await apiRequest<{ achievement: Achievement }>("/api/profile/achievements", {
+        method: "POST",
+        body: JSON.stringify({ title: achievementTitle, issuer: achievementIssuer, type: achievementType, imageUrl: achievementImage }),
+      });
+      setAchievements((current) => [achievement, ...current]);
+      setAchievementOpen(false);
+      setAchievementTitle(""); setAchievementIssuer(""); setAchievementImage(""); setAchievementType("funded");
+    } catch (nextError) {
+      setError(nextError instanceof Error ? nextError.message : "Achievement save failed.");
+    } finally {
+      setAchievementBusy(false);
+    }
+  };
+
+  const removeAchievement = async (id: string) => {
+    try {
+      await apiRequest(`/api/profile/achievements?id=${encodeURIComponent(id)}`, { method: "DELETE" });
+      setAchievements((current) => current.filter((item) => item.id !== id));
+    } catch (nextError) {
+      setError(nextError instanceof Error ? nextError.message : "Achievement remove failed.");
+    }
   };
 
   const save = async () => {
@@ -451,6 +528,50 @@ export function Account({ onLogin, profileUsername }: { onLogin: () => void; pro
           </div>
         </section>
 
+        <section className="mt-3 border-y border-border bg-card px-4 py-4 sm:rounded-lg sm:border sm:px-5">
+          <h3 className="font-black">Trading performance</h3>
+          <p className="text-xs text-muted-foreground">Verified from TradeWay journal entries</p>
+          <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-4">
+            {[
+              ["Trades", String(stats.trades)],
+              ["Win rate", `${stats.winRate}%`],
+              ["Net P&L", `${stats.netPnl >= 0 ? "+" : ""}$${stats.netPnl.toLocaleString("en-US")}`],
+              ["Average R", `${stats.averageR.toFixed(2)}R`],
+            ].map(([label, value]) => (
+              <div key={label} className="rounded-lg border border-border bg-[#111111] p-3">
+                <p className="text-[10px] font-bold uppercase text-zinc-500">{label}</p>
+                <strong className="mt-1 block font-mono text-sm text-zinc-100">{value}</strong>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        <section className="mt-3 border-y border-border bg-card px-4 py-4 sm:rounded-lg sm:border sm:px-5">
+          <div className="flex items-center gap-3">
+            <span className="grid size-9 place-items-center rounded-lg border border-amber-300/15 bg-amber-300/[.06] text-amber-200"><Award size={17} /></span>
+            <div className="min-w-0">
+              <h3 className="font-black">Achievements</h3>
+              <p className="truncate text-xs text-muted-foreground">Funded accounts and payout certificates</p>
+            </div>
+            {isOwnProfile ? <Button onClick={() => setAchievementOpen(true)} variant="outline" size="sm" className="ml-auto"><Plus size={14} /> Add</Button> : null}
+          </div>
+          {achievements.length ? (
+            <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-3">
+              {achievements.map((item) => (
+                <article key={item.id} className="group relative overflow-hidden rounded-lg border border-border bg-[#111111]">
+                  <img src={item.image_url} alt={item.title} className="aspect-[4/3] w-full object-cover" loading="lazy" />
+                  <div className="p-3">
+                    <span className={`text-[9px] font-black uppercase ${item.achievement_type === "payout" ? "text-emerald-300" : "text-amber-200"}`}>{item.achievement_type}</span>
+                    <h4 className="mt-1 truncate text-xs font-bold">{item.title}</h4>
+                    {item.issuer ? <p className="truncate text-[10px] text-zinc-500">{item.issuer}</p> : null}
+                  </div>
+                  {isOwnProfile ? <button onClick={() => void removeAchievement(item.id)} className="absolute right-2 top-2 grid size-8 place-items-center rounded-lg bg-black/70 text-zinc-300 opacity-100 backdrop-blur sm:opacity-0 sm:group-hover:opacity-100" aria-label="Remove achievement"><Trash2 size={14} /></button> : null}
+                </article>
+              ))}
+            </div>
+          ) : <p className="mt-4 rounded-lg border border-dashed border-border p-5 text-center text-xs text-zinc-500">No certificates added yet.</p>}
+        </section>
+
         <section className="border-b border-white/10 bg-[#171717] sm:mt-3 sm:overflow-hidden sm:rounded-[28px] sm:border">
           <div className="relative z-10 grid grid-cols-4 border-b border-white/8 bg-[#171717]/95 backdrop-blur-xl">
             {tabs.map((tab) => {
@@ -461,6 +582,26 @@ export function Account({ onLogin, profileUsername }: { onLogin: () => void; pro
           {loadingProfile ? <div className="grid min-h-64 place-items-center text-slate-500"><XSpinner size="lg" /></div> : visiblePosts.length ? <div className="relative z-0 pt-4">{visiblePosts.map(renderPost)}</div> : <EmptyTab tab={activeTab} />}
         </section>
       </div>
+
+      <Dialog open={achievementOpen} onOpenChange={setAchievementOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Add achievement</DialogTitle>
+            <DialogDescription>Upload a funded or payout certificate.</DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4">
+            <label className="grid gap-2 text-xs text-muted-foreground">Type<Select value={achievementType} onValueChange={(value) => setAchievementType(value as "funded" | "payout")}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="funded">Funded</SelectItem><SelectItem value="payout">Payout</SelectItem></SelectContent></Select></label>
+            <label className="grid gap-2 text-xs text-muted-foreground">Title<Input value={achievementTitle} onChange={(event) => setAchievementTitle(event.target.value)} placeholder="100K Funded Account" /></label>
+            <label className="grid gap-2 text-xs text-muted-foreground">Issuer<Input value={achievementIssuer} onChange={(event) => setAchievementIssuer(event.target.value)} placeholder="FTMO" /></label>
+            <label className="grid gap-2 text-xs text-muted-foreground">Certificate image<Input type="file" accept="image/jpeg,image/png,image/webp" onChange={(event) => void uploadAchievementImage(event.target.files?.[0])} /></label>
+            {achievementImage ? <img src={achievementImage} alt="Certificate preview" className="max-h-48 w-full rounded-lg border border-border object-contain" /> : null}
+          </div>
+          <DialogFooter className="mt-2">
+            <Button variant="outline" onClick={() => setAchievementOpen(false)}>Cancel</Button>
+            <Button disabled={achievementBusy || !achievementTitle.trim() || !achievementImage} onClick={() => void addAchievement()}>{achievementBusy ? <XSpinner size="sm" /> : <Award size={15} />} Save</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       <Dialog open={editOpen && Boolean(draftProfile)} onOpenChange={setEditOpen}>
         {draftProfile ? (

@@ -314,6 +314,11 @@ input[type="date"] {
   }
 }
 
+@keyframes profileProgress {
+  from { transform: translateX(-120%); }
+  to { transform: translateX(420%); }
+}
+
 .auth-card-in {
   animation: authCardIn 0.34s cubic-bezier(0.22, 1, 0.36, 1);
 }

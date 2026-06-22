@@ -1,4 +1,5 @@
 import { authenticateRequest, badRequest, serverError, unauthorized } from "@/lib/backend/auth";
+import { getProfileInsights } from "@/lib/server/profile-insights";
 
 export const runtime = "nodejs";
 
@@ -90,7 +91,7 @@ export async function GET(request: Request) {
   if (error) return serverError(error.message);
 
   try {
-    const [counts, postsResult, bookmarkedPosts] = await Promise.all([
+    const [counts, postsResult, bookmarkedPosts, insights] = await Promise.all([
       getFollowCounts(auth, auth.user.id),
       auth.supabase
         .from("posts")
@@ -100,6 +101,7 @@ export async function GET(request: Request) {
         .order("created_at", { ascending: false })
         .limit(50),
       getBookmarkedPosts(auth),
+      getProfileInsights(auth.supabase, auth.user.id),
     ]);
 
     if (postsResult.error) return serverError(postsResult.error.message);
@@ -112,6 +114,7 @@ export async function GET(request: Request) {
       profile: { ...data, ...counts },
       posts: hydratedPosts,
       bookmarkedPosts,
+      ...insights,
     });
   } catch (caughtError) {
     return serverError(caughtError instanceof Error ? caughtError.message : undefined);

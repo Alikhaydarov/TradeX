@@ -199,6 +199,7 @@ export function TradeReviewModal({ open, saving, account, onOpenChange, onSave }
   const [session, setSession] = useState("");
   const [riskPct, setRiskPct] = useState("");
   const [setup, setSetup] = useState("");
+  const [outcome, setOutcome] = useState<"win" | "loss">("win");
 
   const addOption = (key: string, setOptions: (options: string[]) => void, current: string[], value: string) => {
     const nextValue = value.trim();
@@ -220,7 +221,7 @@ export function TradeReviewModal({ open, saving, account, onOpenChange, onSave }
     setImageUrl(""); setUploadError("");
     if (inputRef.current) inputRef.current.value = "";
     setFollowingPlan(true); setErrorMade(false); setMistakeType("");
-    setReviewCompleted(false); setToBible(false); setSession(""); setRiskPct(""); setSetup("");
+    setReviewCompleted(false); setToBible(false); setSession(""); setRiskPct(""); setSetup(""); setOutcome("win");
   };
   const close = (next: boolean) => { onOpenChange(next); if (!next) resetForm(); };
 
@@ -240,7 +241,12 @@ export function TradeReviewModal({ open, saving, account, onOpenChange, onSave }
   };
 
   const drop = (e: DragEvent<HTMLDivElement>) => { e.preventDefault(); void upload(e.dataTransfer.files?.[0]); };
-  const submit = async (form: FormData) => { await onSave(form); resetForm(); };
+  const submit = async (form: FormData) => {
+    const amount = Math.abs(Number(String(form.get("pnl") || "0").replace(",", ".")) || 0);
+    form.set("pnl", String(outcome === "loss" ? -amount : amount));
+    await onSave(form);
+    resetForm();
+  };
 
   return (
     <Dialog open={open} onOpenChange={close}>
@@ -360,9 +366,22 @@ export function TradeReviewModal({ open, saving, account, onOpenChange, onSave }
               <input type="hidden" name="riskPercent" value={riskPct} />
             </div>
 
+            <div className="space-y-2">
+              <SectionLabel>Trade result</SectionLabel>
+              <div className="grid grid-cols-2 gap-1 rounded-lg border border-border bg-[#101010] p-1">
+                <button type="button" onClick={() => setOutcome("win")} className={`h-10 rounded-md text-xs font-black transition-colors ${outcome === "win" ? "bg-emerald-400/15 text-emerald-300 ring-1 ring-emerald-400/25" : "text-zinc-500 hover:text-zinc-200"}`}>
+                  Win
+                </button>
+                <button type="button" onClick={() => setOutcome("loss")} className={`h-10 rounded-md text-xs font-black transition-colors ${outcome === "loss" ? "bg-rose-400/15 text-rose-300 ring-1 ring-rose-400/25" : "text-zinc-500 hover:text-zinc-200"}`}>
+                  Loss
+                </button>
+              </div>
+              <p className="text-[11px] text-zinc-500">P&L summani musbat kiriting. Win yoki Loss ishorani avtomatik belgilaydi.</p>
+            </div>
+
             {/* Numbers row 1: PnL + Lot + RR */}
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-              <NumberField label="Foyda / Ziyon $" name="pnl" placeholder="0.00" required />
+              <NumberField label={outcome === "win" ? "Profit $" : "Loss $"} name="pnl" placeholder="0.00" required />
               <NumberField label="Lot / Miqdor" name="quantity" defaultValue="1" required />
               <NumberField label="RR (Risk:Reward)" name="resultR" placeholder="2.5" required />
             </div>

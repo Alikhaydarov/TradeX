@@ -1,6 +1,6 @@
 "use client";
 
-import { Bookmark, Check, Eye, Heart, ImageIcon, MessageCircle, Pencil, Repeat2, Send, Share2, Trash2, X } from "lucide-react";
+import { Bookmark, Check, Heart, ImageIcon, MessageCircle, Pencil, Repeat2, Send, Share2, Trash2, X } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { apiRequest } from "@/lib/api-client";
 import { Button } from "@/components/ui/button";
@@ -445,8 +445,8 @@ export function FeedV3({ onLogin }: { onLogin: () => void }) {
 
       {error ? <div className="mx-auto mt-4 max-w-3xl rounded-2xl border border-rose-300/15 bg-rose-400/10 px-4 py-3 text-sm text-rose-200 backdrop-blur-xl">{error}</div> : null}
 
-      <div className="mx-auto max-w-3xl px-0 py-2 sm:px-5 sm:py-4">
-        <section className="border-y border-white/10 bg-white/[.045] p-3 shadow-2xl shadow-slate-950/20 backdrop-blur-2xl sm:rounded-[24px] sm:border sm:p-4">
+      <div className="mx-auto max-w-3xl px-3 py-3 sm:px-5 sm:py-4">
+        <section className="rounded-lg border border-border bg-card p-3 shadow-xl shadow-black/20 sm:p-4">
           <div className="flex gap-3">
             <TraderAvatar name={userName} value={userAvatar} className="h-11 w-11 shrink-0 text-xs" />
             <div className="min-w-0 flex-1">
@@ -481,7 +481,7 @@ export function FeedV3({ onLogin }: { onLogin: () => void }) {
           </div>
         </section>
 
-        <div className="mt-4 flex items-center gap-2 px-3 sm:mt-5 sm:px-1">
+        <div className="mt-4 flex items-center gap-2 px-1 sm:mt-5">
           <h2 className="text-sm font-bold">Community oqimi</h2>
           <span className="text-[10px] text-slate-500">{stats.posts} post Â· {formatCount(stats.views)} views</span>
         </div>
@@ -489,13 +489,13 @@ export function FeedV3({ onLogin }: { onLogin: () => void }) {
         {loading ? (
           <FeedSkeleton />
         ) : (
-          <div className="mt-3 overflow-hidden border-y border-white/10 bg-white/[.025] backdrop-blur-2xl sm:rounded-[24px] sm:border">
+          <div className="mt-3 overflow-hidden rounded-lg border border-border bg-card">
             {posts.map((post) => (
               <article
                 key={post.id}
                 id={`post-${post.id}`}
                 ref={(node) => observePost(node, post.id)}
-                className="border-b border-white/8 p-3 last:border-b-0 sm:p-5"
+                className="border-b border-border px-3 py-4 transition-colors last:border-b-0 hover:bg-white/[.018] sm:px-5"
               >
                 <div className="flex gap-3">
                   <TraderAvatar name={post.name} value={post.avatar} className="h-11 w-11 shrink-0 text-xs" />
@@ -533,13 +533,12 @@ export function FeedV3({ onLogin }: { onLogin: () => void }) {
                       </div>
                     ) : null}
 
-                    <div className="mt-4 grid grid-cols-5 items-center gap-1 text-slate-500 sm:flex sm:gap-4">
-                      <button onClick={() => void toggleReplies(post)} className={`flex items-center gap-1.5 text-[11px] hover:text-zinc-300 ${openReplies === post.id ? "text-zinc-300" : ""}`} aria-label="Javoblar"><MessageCircle size={16} />{post.replies}</button>
-                      <button onClick={() => void toggleRepost(post)} className={`flex items-center gap-1.5 text-[11px] hover:text-emerald-200 ${post.reposted ? "text-emerald-300" : ""}`} aria-label="Repost"><Repeat2 size={16} />{post.reposts}</button>
-                      <button onClick={() => void toggleLike(post)} className={`flex items-center gap-1.5 text-[11px] hover:text-white ${post.liked ? "text-rose-300" : ""}`}><Heart size={16} fill={post.liked ? "currentColor" : "none"} />{post.likes}</button>
-                      <span className="hidden items-center gap-1.5 text-[11px] sm:flex"><Eye size={16} />{formatCount(post.views)}</span>
-                      <button onClick={() => void sharePost(post)} className="grid h-8 w-8 place-items-center rounded-xl hover:bg-white/[.05] hover:text-white" aria-label="Ulashish"><Share2 size={16} /></button>
-                      <button onClick={() => void toggleBookmark(post)} className={`ml-auto grid h-8 w-8 place-items-center rounded-xl hover:bg-white/[.05] ${post.bookmarked ? "text-zinc-300" : "hover:text-white"}`} aria-label="Saqlash"><Bookmark size={16} fill={post.bookmarked ? "currentColor" : "none"} /></button>
+                    <div className="mt-3 grid grid-cols-5 items-center text-zinc-500">
+                      <button onClick={() => void toggleReplies(post)} className={`flex h-11 items-center justify-center gap-1.5 rounded-lg text-[11px] transition-colors hover:bg-white/[.04] hover:text-zinc-200 ${openReplies === post.id ? "text-zinc-100" : ""}`} aria-label="Replies"><MessageCircle size={17} />{post.replies}</button>
+                      <button onClick={() => void toggleRepost(post)} className={`flex h-11 items-center justify-center gap-1.5 rounded-lg text-[11px] transition-colors hover:bg-emerald-400/[.06] hover:text-emerald-300 ${post.reposted ? "text-emerald-300" : ""}`} aria-label="Repost"><Repeat2 size={17} />{post.reposts}</button>
+                      <button onClick={() => void toggleLike(post)} className={`flex h-11 items-center justify-center gap-1.5 rounded-lg text-[11px] transition-colors hover:bg-rose-400/[.06] hover:text-rose-300 ${post.liked ? "text-rose-300" : ""}`} aria-label="Like"><Heart size={17} fill={post.liked ? "currentColor" : "none"} />{post.likes}</button>
+                      <button onClick={() => void sharePost(post)} className="flex h-11 items-center justify-center gap-1.5 rounded-lg text-[11px] transition-colors hover:bg-white/[.04] hover:text-zinc-200" aria-label="Share"><Share2 size={17} /><span className="hidden sm:inline">{formatCount(post.views)}</span></button>
+                      <button onClick={() => void toggleBookmark(post)} className={`grid h-11 place-items-center rounded-lg transition-colors hover:bg-white/[.04] ${post.bookmarked ? "text-zinc-100" : "hover:text-zinc-200"}`} aria-label="Bookmark"><Bookmark size={17} fill={post.bookmarked ? "currentColor" : "none"} /></button>
                     </div>
 
                     {openReplies === post.id ? (

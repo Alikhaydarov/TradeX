@@ -4,7 +4,6 @@ import { ArrowRight, LockKeyhole, ShieldCheck, Sparkles } from "lucide-react";
 import dynamic from "next/dynamic";
 import { useEffect, useState } from "react";
 import { AuthModal } from "./auth-modal";
-import { FullScreenLoader } from "./app-loader";
 import { NotificationListener } from "./notification-listener";
 import { RightPanel } from "./right-panel";
 import { Sidebar } from "./sidebar";
@@ -238,7 +237,7 @@ export function AppShell() {
         </main>
         {!chatOpen && <RightPanel />}
       </div>
-      {profileOpening ? <FullScreenLoader label="Opening" /> : null}
+      {profileOpening ? <div className="pointer-events-none fixed left-0 right-0 top-0 z-[2147483646] h-0.5 overflow-hidden bg-white/5"><div className="h-full w-1/3 animate-[profileProgress_.8s_ease-in-out_infinite] bg-white" /></div> : null}
       {notificationsMounted && <NotificationListener />}
       <AuthModal open={authOpen} onClose={() => setAuthOpen(false)} />
     </>
