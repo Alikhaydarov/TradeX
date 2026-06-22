@@ -10,6 +10,9 @@ export interface Post {
   text: string;
   symbol?: string;
   side?: "LONG" | "SHORT";
+  result?: "WIN" | "LOSS" | "BE";
+  pnl?: number;
+  resultR?: number;
   price?: string;
   target?: string;
   imageUrl?: string | null;

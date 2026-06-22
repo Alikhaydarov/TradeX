@@ -25,6 +25,9 @@ export async function GET(request: Request) {
     .from("posts")
     .select("*")
     .eq("is_archived", false)
+    .not("symbol", "is", null)
+    .not("side", "is", null)
+    .not("trade_result", "is", null)
     .order("created_at", { ascending: false })
     .limit(50);
 

@@ -61,7 +61,10 @@ async function getBookmarkedPosts(auth: AuthClient) {
     .from("posts")
     .select("*")
     .in("id", postIds)
-    .eq("is_archived", false);
+    .eq("is_archived", false)
+    .not("symbol", "is", null)
+    .not("side", "is", null)
+    .not("trade_result", "is", null);
 
   if (postsError) throw new Error(postsError.message);
 
@@ -98,6 +101,9 @@ export async function GET(request: Request) {
         .select("*")
         .eq("user_id", auth.user.id)
         .eq("is_archived", false)
+        .not("symbol", "is", null)
+        .not("side", "is", null)
+        .not("trade_result", "is", null)
         .order("created_at", { ascending: false })
         .limit(50),
       getBookmarkedPosts(auth),

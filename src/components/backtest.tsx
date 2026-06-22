@@ -58,7 +58,7 @@ function RunRow({ run }: { run: Run }) {
           <span className="rounded-full bg-white/[.055] px-2 py-1 text-[10px] font-bold text-slate-400">{run.timeframe}</span>
         </div>
         <p className="mt-1 truncate text-xs text-slate-500">
-          {run.strategy} Â· {run.period} Â· {new Date(run.created_at).toLocaleDateString("uz-UZ")}
+          {run.strategy} · {run.period} · {new Date(run.created_at).toLocaleDateString("uz-UZ")}
         </p>
       </div>
       <div className="flex items-center gap-3 sm:justify-end">
@@ -221,7 +221,7 @@ export function Backtest() {
               <div>
                 <h2 className="font-black">Equity curve</h2>
                 <p className="mt-1 text-xs text-slate-500">
-                  {result ? `${result.tradesCount} trade Â· ${form.asset} Â· ${form.strategy}` : "Run a backtest to generate a curve."}
+                  {result ? `${result.tradesCount} trade · ${form.asset} · ${form.strategy}` : "Run a backtest to generate a curve."}
                 </p>
               </div>
               {result?.netReturn ? (

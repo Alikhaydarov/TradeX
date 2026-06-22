@@ -90,7 +90,7 @@ export function NotificationListener() {
 
     const notify = (chat: Group, message: MessageRecord) => {
       const body = shortText(message.content);
-      setToast({ title: `${message.sender_name} Â· ${chat.name}`, body });
+      setToast({ title: `${message.sender_name} · ${chat.name}`, body });
       window.setTimeout(() => setToast(null), 4500);
 
       if (soundEnabled.current) playNotificationSound();
@@ -100,7 +100,7 @@ export function NotificationListener() {
         Notification.permission === "granted" &&
         (document.hidden || !document.hasFocus())
       ) {
-        const notification = new Notification(`${message.sender_name} Â· ${chat.name}`, {
+        const notification = new Notification(`${message.sender_name} · ${chat.name}`, {
           body,
           tag: `tradeup-chat-${chat.id}`,
         });

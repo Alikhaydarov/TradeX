@@ -72,6 +72,9 @@ export async function GET(request: Request) {
     .from("posts")
     .select("*")
     .eq("is_archived", false)
+    .not("symbol", "is", null)
+    .not("side", "is", null)
+    .not("trade_result", "is", null)
     .order("created_at", { ascending: false })
     .limit(50);
 
@@ -103,14 +106,23 @@ export async function POST(request: Request) {
     imageUrl?: string | null;
     symbol?: string;
     side?: "LONG" | "SHORT";
+    result?: "WIN" | "LOSS" | "BE";
+    pnl?: number;
+    resultR?: number;
     entryPrice?: string;
     targetPrice?: string;
   };
   const content = body.content?.trim();
   const imageUrl = typeof body.imageUrl === "string" ? body.imageUrl.trim().slice(0, 1000) : null;
+  const symbol = body.symbol?.trim().toUpperCase().replace(/[^A-Z0-9._/-]/g, "").slice(0, 20);
+  const validSide = body.side === "LONG" || body.side === "SHORT";
+  const validResult = body.result === "WIN" || body.result === "LOSS" || body.result === "BE";
 
-  if ((!content && !imageUrl) || (content && content.length > 280)) {
-    return badRequest("Post matni 280 belgidan oshmasin yoki rasm yuklang.");
+  if (!symbol || !validSide || !validResult) {
+    return badRequest("Trade ulashish uchun symbol, side va result tanlang.");
+  }
+  if (content && content.length > 280) {
+    return badRequest("Trade review 280 belgidan oshmasin.");
   }
 
   let profile: ProfileRecord;
@@ -130,13 +142,16 @@ export async function POST(request: Request) {
     .from("posts")
     .insert({
       user_id: auth.user.id,
-      content: content || "",
+      content: content || `${symbol} trade`,
       image_url: imageUrl || null,
       author_name: profile.full_name,
       author_handle: profile.username,
       author_avatar: profile.avatar_url || initials,
-      symbol: body.symbol?.trim().toUpperCase() || null,
+      symbol,
       side: body.side || null,
+      trade_result: body.result,
+      pnl: Number.isFinite(body.pnl) ? body.pnl : null,
+      result_r: Number.isFinite(body.resultR) ? body.resultR : null,
       entry_price: body.entryPrice?.trim() || null,
       target_price: body.targetPrice?.trim() || null,
       views_count: 0,
@@ -157,9 +172,9 @@ export async function POST(request: Request) {
       const followerIds = (followers ?? []).map((row) => row.follower_id as string);
       if (!followerIds.length) return;
 
-      const preview = (content || "Yangi rasm qo'shdi").slice(0, 120);
+      const preview = `${symbol} ${body.side} · ${body.result}${content ? ` · ${content}` : ""}`.slice(0, 120);
       await notifyUsers(followerIds, {
-        title: `${profile.full_name} yangi post joyladi`,
+        title: `${profile.full_name} trade ulashdi`,
         body: preview,
         data: { type: "post", postId: data.id, username: profile.username },
       });

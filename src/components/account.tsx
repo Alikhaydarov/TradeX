@@ -461,7 +461,7 @@ export function Account({ onLogin, profileUsername }: { onLogin: () => void; pro
             <p className="max-w-full truncate font-black text-white">{post.name}</p>
             {post.isVerified ? <VerifiedBadge /> : null}
             <p className="truncate text-xs text-slate-500">{post.handle}</p>
-            <span className="text-xs text-slate-700">Â·</span>
+            <span className="text-xs text-slate-700">·</span>
             <p className="text-xs text-slate-500">{post.time}</p>
           </div>
           {post.text ? <p className="mt-1.5 whitespace-pre-line break-words text-[15px] leading-6 text-slate-50">{post.text}</p> : null}

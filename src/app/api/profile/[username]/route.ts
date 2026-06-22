@@ -38,7 +38,16 @@ export async function GET(request: Request, context: Params) {
 
   const [counts, postsResult, insights] = await Promise.all([
     followCounts(supabase, profile.id),
-    supabase.from("posts").select("*").eq("user_id", profile.id).eq("is_archived", false).order("created_at", { ascending: false }).limit(50),
+    supabase
+      .from("posts")
+      .select("*")
+      .eq("user_id", profile.id)
+      .eq("is_archived", false)
+      .not("symbol", "is", null)
+      .not("side", "is", null)
+      .not("trade_result", "is", null)
+      .order("created_at", { ascending: false })
+      .limit(50),
     getProfileInsights(supabase, profile.id),
   ]);
   const { data: posts, error: postsError } = postsResult;

@@ -1,10 +1,12 @@
 "use client";
 
-import { Bookmark, Check, Heart, ImageIcon, MessageCircle, Pencil, Repeat2, Send, Share2, Trash2, X } from "lucide-react";
+import { Bookmark, Check, Eye, Heart, ImageIcon, Link2, MessageCircle, MoreHorizontal, Pencil, Repeat2, Send, Share2, Trash2, X } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { apiRequest } from "@/lib/api-client";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { SkeletonBlock, XSpinner } from "./app-loader";
 import { SocialActions } from "./social-actions-v2";
 import { useAuth } from "./auth-context";
@@ -23,6 +25,9 @@ interface PostRecord {
   image_url?: string | null;
   symbol: string | null;
   side: "LONG" | "SHORT" | null;
+  trade_result: "WIN" | "LOSS" | "BE" | null;
+  pnl: number | null;
+  result_r: number | null;
   entry_price: string | null;
   target_price: string | null;
   likes_count: number;
@@ -88,6 +93,9 @@ function toPost(record: PostRecord, liked = false, bookmarked = false, reposted 
     imageUrl: record.image_url ?? null,
     symbol: record.symbol ?? undefined,
     side: record.side ?? undefined,
+    result: record.trade_result ?? undefined,
+    pnl: record.pnl ?? undefined,
+    resultR: record.result_r ?? undefined,
     price: record.entry_price ?? undefined,
     target: record.target_price ?? undefined,
     likes: record.likes_count,
@@ -109,6 +117,11 @@ export function FeedV3({ onLogin }: { onLogin: () => void }) {
   const { user } = useAuth();
   const [posts, setPosts] = useState<Post[]>([]);
   const [text, setText] = useState("");
+  const [symbol, setSymbol] = useState("");
+  const [side, setSide] = useState<"LONG" | "SHORT">("LONG");
+  const [result, setResult] = useState<"WIN" | "LOSS" | "BE">("WIN");
+  const [pnl, setPnl] = useState("");
+  const [resultR, setResultR] = useState("");
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -249,17 +262,28 @@ export function FeedV3({ onLogin }: { onLogin: () => void }) {
 
   const addPost = async () => {
     if (!user) return onLogin();
-    if (!text.trim() && !imageUrl) return;
+    if (!symbol.trim()) return;
 
     setSaving(true);
     setError(null);
     try {
       const { post } = await apiRequest<{ post: PostRecord }>("/api/posts", {
         method: "POST",
-        body: JSON.stringify({ content: text.trim(), imageUrl }),
+        body: JSON.stringify({
+          content: text.trim(),
+          imageUrl,
+          symbol: symbol.trim(),
+          side,
+          result,
+          pnl: pnl === "" ? undefined : Number(pnl),
+          resultR: resultR === "" ? undefined : Number(resultR),
+        }),
       });
       setPosts((current) => [toPost(post), ...current]);
       setText("");
+      setSymbol("");
+      setPnl("");
+      setResultR("");
       setImageUrl(null);
     } catch (nextError) {
       setError(nextError instanceof Error ? nextError.message : "Post saqlanmadi.");
@@ -450,12 +474,35 @@ export function FeedV3({ onLogin }: { onLogin: () => void }) {
           <div className="flex gap-3">
             <TraderAvatar name={userName} value={userAvatar} className="h-11 w-11 shrink-0 text-xs" />
             <div className="min-w-0 flex-1">
+              <div className="grid gap-2 sm:grid-cols-[1fr_auto_auto]">
+                <Input
+                  value={symbol}
+                  onChange={(event) => setSymbol(event.target.value.toUpperCase())}
+                  maxLength={20}
+                  placeholder="Symbol, e.g. EURUSD"
+                  className="h-10 bg-black/15 font-bold uppercase"
+                />
+                <div className="grid grid-cols-2 rounded-lg border border-border bg-black/15 p-1">
+                  {(["LONG", "SHORT"] as const).map((value) => (
+                    <button key={value} type="button" onClick={() => setSide(value)} className={`h-8 min-w-20 rounded-md px-3 text-[11px] font-black transition-colors ${side === value ? value === "LONG" ? "bg-emerald-400/15 text-emerald-300" : "bg-rose-400/15 text-rose-300" : "text-zinc-500 hover:text-zinc-200"}`}>{value}</button>
+                  ))}
+                </div>
+                <div className="grid grid-cols-3 rounded-lg border border-border bg-black/15 p-1">
+                  {(["WIN", "LOSS", "BE"] as const).map((value) => (
+                    <button key={value} type="button" onClick={() => setResult(value)} className={`h-8 min-w-14 rounded-md px-2 text-[11px] font-black transition-colors ${result === value ? value === "WIN" ? "bg-emerald-400/15 text-emerald-300" : value === "LOSS" ? "bg-rose-400/15 text-rose-300" : "bg-white/10 text-white" : "text-zinc-500 hover:text-zinc-200"}`}>{value}</button>
+                  ))}
+                </div>
+              </div>
+              <div className="mt-2 grid grid-cols-2 gap-2">
+                <Input type="number" inputMode="decimal" value={pnl} onChange={(event) => setPnl(event.target.value)} placeholder="P&L ($)" className="h-10 bg-black/15" />
+                <Input type="number" inputMode="decimal" step="0.01" value={resultR} onChange={(event) => setResultR(event.target.value)} placeholder="Result (R)" className="h-10 bg-black/15" />
+              </div>
               <Textarea
                 value={text}
                 onChange={(event) => setText(event.target.value)}
                 maxLength={280}
-                placeholder="Nima bo'lyapti?"
-                className="min-h-16 resize-none border-0 bg-transparent px-0 text-base shadow-none placeholder:text-slate-500 focus-visible:ring-0 sm:min-h-24"
+                placeholder="What happened in this trade? (optional)"
+                className="mt-2 min-h-16 resize-none border-0 bg-transparent px-0 text-sm shadow-none placeholder:text-slate-500 focus-visible:ring-0 sm:min-h-20"
               />
 
               {imageUrl ? (
@@ -470,20 +517,20 @@ export function FeedV3({ onLogin }: { onLogin: () => void }) {
               <div className="mt-3 flex flex-wrap items-center gap-2 border-t border-white/8 pt-3">
                 <input ref={fileInputRef} type="file" accept="image/png,image/jpeg,image/webp,image/gif" className="hidden" onChange={(event) => void uploadImage(event.target.files?.[0])} />
                 <button onClick={() => fileInputRef.current?.click()} disabled={uploadingImage} className="flex h-9 items-center gap-2 rounded-xl px-3 text-xs font-bold text-zinc-300 hover:bg-white/[.06] disabled:opacity-60">
-                  {uploadingImage ? <XSpinner size="sm" /> : <ImageIcon size={16} />} Rasm
+                  {uploadingImage ? <XSpinner size="sm" /> : <ImageIcon size={16} />} Screenshot
                 </button>
                 <span className="ml-auto text-[10px] text-slate-500">{text.length}/280</span>
-                <Button onClick={() => void addPost()} disabled={(!text.trim() && !imageUrl) || saving} className="rounded-xl bg-white text-black px-4 text-white">
-                  {saving ? <XSpinner size="sm" /> : <Send size={15} />} Ulashish
+                <Button onClick={() => void addPost()} disabled={!symbol.trim() || saving} className="rounded-lg bg-white px-4 text-black hover:bg-zinc-200">
+                  {saving ? <XSpinner size="sm" /> : <Send size={15} />} Share trade
                 </Button>
               </div>
             </div>
           </div>
         </section>
 
-        <div className="mt-4 flex items-center gap-2 px-1 sm:mt-5">
-          <h2 className="text-sm font-bold">Community oqimi</h2>
-          <span className="text-[10px] text-slate-500">{stats.posts} post Â· {formatCount(stats.views)} views</span>
+        <div className="mt-4 flex items-center px-1 sm:mt-5">
+          <h2 className="text-sm font-bold">Trade feed</h2>
+          <span className="ml-auto text-[10px] text-zinc-600">{stats.posts} trades</span>
         </div>
 
         {loading ? (
@@ -506,17 +553,33 @@ export function FeedV3({ onLogin }: { onLogin: () => void }) {
                           {post.name}
                           {post.isVerified && <VerifiedBadge size={14} />}
                         </p>
-                        <p className="truncate text-[11px] text-slate-500">{post.handle} Â· {post.time}</p>
+                        <p className="truncate text-[11px] text-slate-500">{post.handle} <span className="px-1 text-zinc-700">·</span> {post.time}</p>
                       </div>
-                      {(post.userId === user?.id || isAdmin) ? <div className="flex items-center">
-                        {post.userId === user?.id ? <button onClick={() => openEditPost(post)} className="grid h-8 w-8 place-items-center rounded-xl text-slate-500 hover:bg-white/[.06] hover:text-white" aria-label="Edit post"><Pencil size={15} /></button> : null}
-                        <button onClick={() => openDeleteModal(post)} disabled={actingId === post.id} className="grid h-8 w-8 place-items-center rounded-xl text-slate-500 hover:bg-rose-400/10 hover:text-rose-200" aria-label="Delete post">
-                          {actingId === post.id ? <XSpinner size="sm" /> : <Trash2 size={16} />}
-                        </button>
-                      </div> : null}
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <button className="grid size-9 shrink-0 place-items-center rounded-lg text-zinc-600 transition-colors hover:bg-white/[.04] hover:text-zinc-200" aria-label="Post options"><MoreHorizontal size={18} /></button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="w-44">
+                          <DropdownMenuItem onClick={() => void sharePost(post)} className="min-h-9 px-2.5"><Link2 /> Copy link</DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => void toggleBookmark(post)} className="min-h-9 px-2.5"><Bookmark /> {post.bookmarked ? "Remove bookmark" : "Bookmark"}</DropdownMenuItem>
+                          {(post.userId === user?.id || isAdmin) ? <DropdownMenuSeparator /> : null}
+                          {post.userId === user?.id ? <DropdownMenuItem onClick={() => openEditPost(post)} className="min-h-9 px-2.5"><Pencil /> Edit post</DropdownMenuItem> : null}
+                          {(post.userId === user?.id || isAdmin) ? <DropdownMenuItem variant="destructive" onClick={() => openDeleteModal(post)} disabled={actingId === post.id} className="min-h-9 px-2.5">{actingId === post.id ? <XSpinner size="sm" /> : <Trash2 />} Delete post</DropdownMenuItem> : null}
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                     </div>
 
-                    {post.text ? <p className="mt-3 whitespace-pre-line text-[15px] leading-6 text-slate-100">{post.text}</p> : null}
+                    {post.symbol ? (
+                      <div className="mt-3 flex flex-wrap items-center gap-2 rounded-lg border border-white/8 bg-black/15 px-3 py-2.5">
+                        <strong className="mr-auto text-sm tracking-wide">{post.symbol}</strong>
+                        <span className={`rounded-md px-2 py-1 text-[9px] font-black ${post.side === "LONG" ? "bg-emerald-300/10 text-emerald-300" : "bg-rose-300/10 text-rose-300"}`}>{post.side}</span>
+                        <span className={`rounded-md px-2 py-1 text-[9px] font-black ${post.result === "WIN" ? "bg-emerald-300/10 text-emerald-300" : post.result === "LOSS" ? "bg-rose-300/10 text-rose-300" : "bg-white/8 text-zinc-300"}`}>{post.result}</span>
+                        {typeof post.pnl === "number" ? <strong className={post.pnl >= 0 ? "text-sm text-emerald-300" : "text-sm text-rose-300"}>{post.pnl >= 0 ? "+" : ""}${post.pnl.toFixed(2)}</strong> : null}
+                        {typeof post.resultR === "number" ? <span className="text-xs font-bold text-zinc-300">{post.resultR >= 0 ? "+" : ""}{post.resultR.toFixed(2)}R</span> : null}
+                      </div>
+                    ) : null}
+
+                    {post.text && post.text !== `${post.symbol} trade` ? <p className="mt-3 whitespace-pre-line text-[15px] leading-6 text-slate-100">{post.text}</p> : null}
 
                     {post.imageUrl ? (
                       <div className="mt-3 flex max-h-[420px] min-h-32 w-full items-center justify-center overflow-hidden rounded-2xl border border-white/10 bg-black/25 sm:max-h-[560px] sm:min-h-40 sm:rounded-[24px]">
@@ -524,21 +587,12 @@ export function FeedV3({ onLogin }: { onLogin: () => void }) {
                       </div>
                     ) : null}
 
-                    {post.symbol ? (
-                      <div className="mt-3 rounded-2xl border border-white/8 bg-white/[.025] p-3">
-                        <div className="flex items-center gap-2">
-                          <strong className="text-sm">{post.symbol}</strong>
-                          <span className={`rounded-full px-2.5 py-1 text-[9px] font-black ${post.side === "LONG" ? "bg-emerald-300/10 text-emerald-300" : "bg-rose-300/10 text-rose-300"}`}>{post.side}</span>
-                        </div>
-                      </div>
-                    ) : null}
-
                     <div className="mt-3 grid grid-cols-5 items-center text-zinc-500">
                       <button onClick={() => void toggleReplies(post)} className={`flex h-11 items-center justify-center gap-1.5 rounded-lg text-[11px] transition-colors hover:bg-white/[.04] hover:text-zinc-200 ${openReplies === post.id ? "text-zinc-100" : ""}`} aria-label="Replies"><MessageCircle size={17} />{post.replies}</button>
                       <button onClick={() => void toggleRepost(post)} className={`flex h-11 items-center justify-center gap-1.5 rounded-lg text-[11px] transition-colors hover:bg-emerald-400/[.06] hover:text-emerald-300 ${post.reposted ? "text-emerald-300" : ""}`} aria-label="Repost"><Repeat2 size={17} />{post.reposts}</button>
                       <button onClick={() => void toggleLike(post)} className={`flex h-11 items-center justify-center gap-1.5 rounded-lg text-[11px] transition-colors hover:bg-rose-400/[.06] hover:text-rose-300 ${post.liked ? "text-rose-300" : ""}`} aria-label="Like"><Heart size={17} fill={post.liked ? "currentColor" : "none"} />{post.likes}</button>
-                      <button onClick={() => void sharePost(post)} className="flex h-11 items-center justify-center gap-1.5 rounded-lg text-[11px] transition-colors hover:bg-white/[.04] hover:text-zinc-200" aria-label="Share"><Share2 size={17} /><span className="hidden sm:inline">{formatCount(post.views)}</span></button>
-                      <button onClick={() => void toggleBookmark(post)} className={`grid h-11 place-items-center rounded-lg transition-colors hover:bg-white/[.04] ${post.bookmarked ? "text-zinc-100" : "hover:text-zinc-200"}`} aria-label="Bookmark"><Bookmark size={17} fill={post.bookmarked ? "currentColor" : "none"} /></button>
+                      <span className="flex h-11 items-center justify-center gap-1.5 text-[11px]" aria-label={`${post.views} views`}><Eye size={17} />{formatCount(post.views)}</span>
+                      <button onClick={() => void sharePost(post)} className="grid h-11 place-items-center rounded-lg transition-colors hover:bg-white/[.04] hover:text-zinc-200" aria-label="Share"><Share2 size={17} /></button>
                     </div>
 
                     {openReplies === post.id ? (
@@ -554,7 +608,7 @@ export function FeedV3({ onLogin }: { onLogin: () => void }) {
                                   <div className="flex items-center gap-1.5">
                                     <strong className="truncate text-xs">{reply.name}</strong>
                                     {reply.isVerified ? <VerifiedBadge size={13} /> : null}
-                                    <span className="text-[10px] text-slate-600">@{reply.username} Â· {replyTime(reply.createdAt)}</span>
+                                    <span className="text-[10px] text-slate-600">@{reply.username} <span className="px-1 text-zinc-700">·</span> {replyTime(reply.createdAt)}</span>
                                   </div>
                                   <p className="mt-1 whitespace-pre-line text-sm leading-5 text-slate-300">{reply.content}</p>
                                 </div>
