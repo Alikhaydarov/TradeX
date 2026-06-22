@@ -173,6 +173,15 @@ function formatCount(value: number) {
   return String(value);
 }
 
+function formatMoneyCompact(value: number) {
+  const sign = value >= 0 ? "+" : "-";
+  const amount = Math.abs(value);
+  return `${sign}$${new Intl.NumberFormat("en-US", {
+    notation: amount >= 100_000 ? "compact" : "standard",
+    maximumFractionDigits: 2,
+  }).format(amount)}`;
+}
+
 function EmptyTab({ tab }: { tab: ProfileTab }) {
   const title = tab === "posts" ? "No posts yet" : tab === "replies" ? "No replies yet" : tab === "media" ? "No media yet" : "No saved posts yet";
   const description = tab === "posts" ? "Posts will appear here." : tab === "media" ? "Image posts will appear here." : "This section will be ready soon.";
@@ -535,7 +544,7 @@ export function Account({ onLogin, profileUsername }: { onLogin: () => void; pro
             {[
               ["Trades", String(stats.trades)],
               ["Win rate", `${stats.winRate}%`],
-              ["Net P&L", `${stats.netPnl >= 0 ? "+" : ""}$${stats.netPnl.toLocaleString("en-US")}`],
+              ["Net P&L", formatMoneyCompact(stats.netPnl)],
               ["Average R", `${stats.averageR.toFixed(2)}R`],
             ].map(([label, value]) => (
               <div key={label} className="rounded-lg border border-border bg-[#111111] p-3">
