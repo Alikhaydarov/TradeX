@@ -44,6 +44,7 @@ export interface Group {
   description: string;
   avatar: string;
   isPrivate?: boolean;
+  isCommunity?: boolean;
   members?: ChatMember[];
 }
 

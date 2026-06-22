@@ -42,6 +42,7 @@ function mapChat(group: GroupRecord, members: MemberRecord[], profiles: ProfileR
     description: group.description,
     avatar: group.avatar,
     isPrivate: Boolean(group.is_private),
+    isCommunity: group.name === "TradeWay Community",
     createdAt: group.created_at,
     members: members.map((member) => {
       const profile = profilesById.get(member.user_id);
@@ -56,6 +57,8 @@ function mapChat(group: GroupRecord, members: MemberRecord[], profiles: ProfileR
 }
 
 async function loadChats(auth: NonNullable<Awaited<ReturnType<typeof authenticateRequest>>>) {
+  await ensureCommunity(auth);
+
   const { data: ownMemberships, error: membershipsError } = await auth.supabase
     .from("group_members")
     .select("group_id, user_id, created_at")
@@ -100,7 +103,73 @@ async function loadChats(auth: NonNullable<Awaited<ReturnType<typeof authenticat
       members.filter((member) => member.group_id === group.id),
       profiles,
     ),
-  );
+  ).sort((a, b) => Number(Boolean(b.isCommunity)) - Number(Boolean(a.isCommunity)));
+}
+
+async function ensureCommunity(auth: NonNullable<Awaited<ReturnType<typeof authenticateRequest>>>) {
+  const communityName = "TradeWay Community";
+  let { data: community, error: communityError } = await auth.supabase
+    .from("groups")
+    .select("id")
+    .eq("name", communityName)
+    .maybeSingle<{ id: string }>();
+
+  if (communityError) throw new Error(communityError.message);
+
+  if (!community) {
+    const created = await auth.supabase
+      .from("groups")
+      .insert({
+        name: communityName,
+        description: "Official announcements, platform updates and conversations for every TradeWay trader.",
+        avatar: "TW",
+        owner_id: auth.user.id,
+        is_private: false,
+      })
+      .select("id")
+      .single<{ id: string }>();
+
+    if (created.error) {
+      const existing = await auth.supabase
+        .from("groups")
+        .select("id")
+        .eq("name", communityName)
+        .single<{ id: string }>();
+      if (existing.error) throw new Error(created.error.message);
+      community = existing.data;
+    } else {
+      community = created.data;
+    }
+  }
+
+  const { data: profiles, error: profilesError } = await auth.supabase
+    .from("profiles")
+    .select("id")
+    .returns<Array<{ id: string }>>();
+  if (profilesError) throw new Error(profilesError.message);
+
+  const { data: members, error: membersError } = await auth.supabase
+    .from("group_members")
+    .select("user_id")
+    .eq("group_id", community.id)
+    .returns<Array<{ user_id: string }>>();
+  if (membersError) throw new Error(membersError.message);
+
+  const memberIds = new Set((members ?? []).map((member) => member.user_id));
+  const missing = (profiles ?? []).filter((profile) => !memberIds.has(profile.id));
+  if (!missing.length) return;
+
+  const { error: insertError } = await auth.supabase
+    .from("group_members")
+    .upsert(
+      missing.map((profile) => ({
+        group_id: community.id,
+        user_id: profile.id,
+        added_by: auth.user.id,
+      })),
+      { onConflict: "group_id,user_id", ignoreDuplicates: true },
+    );
+  if (insertError) throw new Error(insertError.message);
 }
 
 export async function GET(request: Request) {

@@ -13,7 +13,7 @@ import {
   Search,
   Send,
   ShieldCheck,
-  Sparkles,
+  UsersRound,
   UserPlus,
   X,
 } from "lucide-react";
@@ -74,7 +74,7 @@ function toMessage(record: MessageRecord): ChatUiMessage {
 }
 
 function MemberLine({ members = [] }: { members?: ChatMember[] }) {
-  if (!members.length) return <>A&apos;zolar hali yuklanmadi</>;
+  if (!members.length) return <>Members are loading</>;
 
   return (
     <>
@@ -132,6 +132,7 @@ export function ChatV4({ onLogin, onBack }: { onLogin: () => void; onBack: () =>
     () => chats.find((chat) => chat.id === activeChatId) ?? null,
     [activeChatId, chats],
   );
+  const privateChats = useMemo(() => chats.filter((chat) => !chat.isCommunity), [chats]);
 
   const existingMemberIds = useMemo(
     () => new Set(activeChat?.members?.map((member) => member.id) ?? []),
@@ -193,7 +194,7 @@ export function ChatV4({ onLogin, onBack }: { onLogin: () => void; onBack: () =>
     ])
       .then(([chatsResponse, usersResponse]) => {
         if (!active) return;
-        setChats(chatsResponse.chats);
+        setChats([...chatsResponse.chats].sort((a, b) => Number(Boolean(b.isCommunity)) - Number(Boolean(a.isCommunity))));
         setUsers(usersResponse.users);
         setActiveChatId((current) => current ?? chatsResponse.chats[0]?.id ?? null);
       })
@@ -288,7 +289,8 @@ export function ChatV4({ onLogin, onBack }: { onLogin: () => void; onBack: () =>
 
   const hideActiveChat = async () => {
     if (!activeChatId) return;
-    if (!window.confirm("Bu chat ro'yxatdan yashirilsinmi?")) return;
+    if (activeChat?.isCommunity) return;
+    if (!window.confirm("Hide this conversation?")) return;
 
     setHidingChat(true);
     setError(null);
@@ -441,8 +443,8 @@ export function ChatV4({ onLogin, onBack }: { onLogin: () => void; onBack: () =>
           <UserPlus size={18} />
         </span>
         <div className="min-w-0 flex-1">
-          <h2 className="text-lg font-black">Yangi chat</h2>
-          <p className="mt-0.5 text-xs text-slate-500">Traderlarni tanlang, nomini yozish ixtiyoriy.</p>
+          <h2 className="text-lg font-black">New conversation</h2>
+          <p className="mt-0.5 text-xs text-slate-500">Choose traders. A group name is optional.</p>
         </div>
         <Button type="button" variant="ghost" size="icon-sm" onClick={resetCreateForm} aria-label="Yopish">
           <X size={16} />
@@ -453,7 +455,7 @@ export function ChatV4({ onLogin, onBack }: { onLogin: () => void; onBack: () =>
         <Input
           value={chatName}
           onChange={(event) => setChatName(event.target.value)}
-          placeholder="Chat nomi"
+          placeholder="Conversation name"
           className="h-12 text-[16px]"
         />
         <div className="relative mt-3">
@@ -461,7 +463,7 @@ export function ChatV4({ onLogin, onBack }: { onLogin: () => void; onBack: () =>
           <Input
             value={query}
             onChange={(event) => setQuery(event.target.value)}
-            placeholder="User qidirish"
+            placeholder="Search traders"
             className="h-12 pl-11 text-[16px]"
           />
         </div>
@@ -480,16 +482,16 @@ export function ChatV4({ onLogin, onBack }: { onLogin: () => void; onBack: () =>
         <div className="mt-4 space-y-1.5">
           {filteredUsers.map((option) => renderUserOption(option, selectedUserIds.includes(option.id), () => toggleUser(option.id)))}
           {query.trim().length < 2 ? (
-            <div className="grid min-h-32 place-items-center rounded-2xl border border-dashed border-white/10 px-4 text-center text-sm leading-6 text-slate-500">Kamida 2 ta harf yozing.</div>
+            <div className="grid min-h-32 place-items-center rounded-2xl border border-dashed border-white/10 px-4 text-center text-sm leading-6 text-slate-500">Type at least 2 characters.</div>
           ) : !filteredUsers.length ? (
-            <div className="grid min-h-32 place-items-center rounded-2xl border border-dashed border-white/10 px-4 text-center text-sm leading-6 text-slate-500">Bunday user topilmadi.</div>
+            <div className="grid min-h-32 place-items-center rounded-2xl border border-dashed border-white/10 px-4 text-center text-sm leading-6 text-slate-500">No traders found.</div>
           ) : null}
         </div>
       </div>
 
       <div className="shrink-0 border-t border-white/8 p-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
         <Button disabled={loading} onClick={() => void createChat()} className="h-12 w-full rounded-2xl bg-white text-sm font-black text-slate-950 hover:bg-zinc-200">
-          {loading ? <XSpinner size="sm" /> : <Plus size={16} />} Chat yaratish
+          {loading ? <XSpinner size="sm" /> : <Plus size={16} />} Create conversation
         </Button>
       </div>
     </div>
@@ -505,7 +507,7 @@ export function ChatV4({ onLogin, onBack }: { onLogin: () => void; onBack: () =>
           <h1 className="truncate text-lg font-black tracking-tight sm:text-xl">Chat</h1>
         </div>
         <Button onClick={() => setCreating(true)} className="ml-auto h-9 shrink-0 rounded-full bg-white text-slate-950 px-3 text-[11px] font-black hover:bg-slate-200 sm:px-4" size="sm" aria-label="Yangi chat yaratish">
-          <Plus size={14} /> <span className="hidden sm:inline">Yangi chat</span>
+          <Plus size={14} /> <span className="hidden sm:inline">New chat</span>
         </Button>
       </header>
 
@@ -528,32 +530,32 @@ export function ChatV4({ onLogin, onBack }: { onLogin: () => void; onBack: () =>
           </div>
         </div>
       ) : (
-        <div className="grid min-h-0 flex-1 grid-cols-1 gap-0 p-0 md:grid-cols-[340px_1fr] md:gap-3 md:p-3">
+        <div className="grid min-h-0 flex-1 grid-cols-1 gap-0 p-0 md:grid-cols-[320px_minmax(0,1fr)] md:border-t md:border-white/8">
           <aside className={`${activeChat ? "hidden md:flex" : "flex"} min-h-0 flex-col border-white/10 bg-[#171717] p-0 md:rounded-[22px] md:border md:bg-white/[.035]`}>
-            <div className="flex h-12 shrink-0 items-center gap-2 border-b border-white/7 px-3">
+            <div className="flex h-14 shrink-0 items-center gap-2 border-b border-white/7 px-4">
               <MessageSquareText size={16} className="text-zinc-300" />
-              <strong className="text-sm">Mening chatlarim</strong>
-              <span className="ml-auto rounded-full bg-white/[.06] px-2 py-0.5 text-[10px] text-slate-400">{chats.length}</span>
+              <strong className="text-sm">Messages</strong>
+              <span className="ml-auto text-[10px] text-slate-500">{privateChats.length} private</span>
             </div>
 
             <div className="min-h-0 flex-1 overflow-y-auto">
-              {loading && !chats.length && <div className="grid h-32 place-items-center text-xs text-slate-500"><XSpinner />Chatlar yuklanmoqda</div>}
+              {loading && !chats.length && <div className="grid h-32 place-items-center text-xs text-slate-500"><XSpinner />Loading conversations</div>}
               {!loading && !chats.length && (
                 <div className="px-3 py-4">
                   <div className="rounded-2xl border border-dashed border-white/10 bg-black/10 px-4 py-5 text-center">
-                    <p className="text-sm font-bold text-slate-300">Chatlar yo&apos;q</p>
-                    <p className="mt-1 text-xs leading-5 text-slate-500">Yangi suhbat ochish uchun yuqoridagi tugmadan foydalaning.</p>
+                    <p className="text-sm font-bold text-slate-300">No conversations</p>
+                    <p className="mt-1 text-xs leading-5 text-slate-500">Start a private conversation with another trader.</p>
                   </div>
                 </div>
               )}
               {chats.map((chat) => {
                 const selected = chat.id === activeChatId;
                 return (
-                  <button key={chat.id} onClick={() => setActiveChatId(chat.id)} className={`w-full border-b border-white/7 px-3 py-3 text-left transition ${selected ? "bg-white/[.05]" : "hover:bg-white/[.04]"}`}>
+                  <button key={chat.id} onClick={() => setActiveChatId(chat.id)} className={`w-full border-b border-white/7 px-3 py-3 text-left transition ${selected ? "bg-white/[.07]" : "hover:bg-white/[.035]"}`}>
                     <div className="flex items-center gap-3">
-                      <span className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-white/[.07] text-xs font-black text-zinc-100">{chat.avatar}</span>
-                      <span className="min-w-0 flex-1"><strong className="block truncate text-sm">{chat.name}</strong><small className="block truncate text-[10px] text-slate-500"><MemberLine members={chat.members} /></small></span>
-                      <ShieldCheck size={15} className="text-emerald-300/60" />
+                      <span className={`grid h-11 w-11 shrink-0 place-items-center rounded-xl text-xs font-black ${chat.isCommunity ? "bg-cyan-300/10 text-cyan-200" : "bg-white/[.07] text-zinc-100"}`}>{chat.isCommunity ? <UsersRound size={19} /> : chat.avatar}</span>
+                      <span className="min-w-0 flex-1"><span className="flex items-center gap-1.5"><strong className="block truncate text-sm">{chat.name}</strong>{chat.isCommunity ? <span className="rounded bg-cyan-300/10 px-1.5 py-0.5 text-[8px] font-black uppercase text-cyan-200">Official</span> : null}</span><small className="block truncate text-[10px] text-slate-500">{chat.isCommunity ? `${chat.members?.length ?? 0} members` : <MemberLine members={chat.members} />}</small></span>
+                      {chat.isCommunity ? <ShieldCheck size={15} className="text-cyan-300/70" /> : null}
                     </div>
                     <p className="mt-2 line-clamp-2 text-[10px] leading-4 text-slate-500">{chat.description}</p>
                   </button>
@@ -562,15 +564,15 @@ export function ChatV4({ onLogin, onBack }: { onLogin: () => void; onBack: () =>
             </div>
           </aside>
 
-          <section className={`${activeChat ? "flex" : "hidden md:flex"} min-h-0 flex-col overflow-hidden bg-[#171717] md:rounded-[22px] md:border md:border-white/10 md:bg-white/[.035]`}>
+          <section className={`${activeChat ? "flex" : "hidden md:flex"} min-h-0 flex-col overflow-hidden bg-[#171717] md:border-l md:border-white/8`}>
             {activeChat ? (
               <>
                 <div className="flex shrink-0 items-center gap-2 border-b border-white/8 px-2.5 py-2.5 sm:px-4 sm:py-3">
                   <button onClick={() => setActiveChatId(null)} className="grid h-9 w-9 shrink-0 place-items-center rounded-2xl border border-white/10 bg-black/10 text-slate-300 md:hidden" aria-label="Chatlar ro'yxatiga qaytish"><ArrowLeft size={17} /></button>
                   <span className="grid h-9 w-9 shrink-0 place-items-center rounded-2xl bg-white/[.08] text-xs font-black text-zinc-100 sm:h-10 sm:w-10">{activeChat.avatar}</span>
                   <div className="min-w-0"><h2 className="truncate text-sm font-bold sm:text-base">{activeChat.name}</h2><p className="truncate text-[10px] text-slate-500"><MemberLine members={activeChat.members} /></p></div>
-                  <Button onClick={() => setAddMembersOpen((value) => !value)} size="sm" className="ml-auto h-9 shrink-0 rounded-2xl bg-white/[.06] px-2 text-[10px] font-bold text-zinc-100 hover:bg-white/[.1] sm:px-3"><UserPlus size={13} /> <span className="hidden sm:inline">A&apos;zo qo&apos;shish</span></Button>
-                  <Button disabled={hidingChat} onClick={() => void hideActiveChat()} size="sm" className="h-9 shrink-0 rounded-2xl bg-rose-400/10 px-2 text-[10px] font-bold text-rose-200 hover:bg-rose-400/15 sm:px-3">{hidingChat ? <XSpinner size="sm" /> : <EyeOff size={13} />} <span className="hidden sm:inline">Yashirish</span></Button>
+                  {!activeChat.isCommunity ? <Button onClick={() => setAddMembersOpen((value) => !value)} size="sm" className="ml-auto h-9 shrink-0 rounded-lg bg-white/[.06] px-2 text-[10px] font-bold text-zinc-100 hover:bg-white/[.1] sm:px-3"><UserPlus size={13} /> <span className="hidden sm:inline">Add member</span></Button> : <span className="ml-auto inline-flex items-center gap-1.5 text-[10px] font-bold text-cyan-200"><ShieldCheck size={14} /> Official community</span>}
+                  {!activeChat.isCommunity ? <Button disabled={hidingChat} onClick={() => void hideActiveChat()} size="sm" className="h-9 shrink-0 rounded-lg bg-rose-400/10 px-2 text-[10px] font-bold text-rose-200 hover:bg-rose-400/15 sm:px-3">{hidingChat ? <XSpinner size="sm" /> : <EyeOff size={13} />} <span className="hidden sm:inline">Hide</span></Button> : null}
                 </div>
 
                 {addMembersOpen && (
@@ -589,7 +591,7 @@ export function ChatV4({ onLogin, onBack }: { onLogin: () => void; onBack: () =>
 
                 <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-2.5 py-3 sm:px-5 sm:py-4">
                   {loadingMessages && !messages.length && <div className="grid h-full place-items-center text-xs text-slate-500"><XSpinner />Xabarlar yuklanmoqda</div>}
-                  {!loadingMessages && !messages.length && <div className="grid h-full min-h-64 place-items-center text-center"><div><MessageSquareText className="mx-auto text-slate-600" size={34} /><p className="mt-3 text-sm font-bold">Suhbat endi boshlandi</p><p className="mt-1 text-[11px] leading-5 text-slate-500">Birinchi xabarni yuboring.</p></div></div>}
+                  {!loadingMessages && !messages.length && <div className="grid h-full min-h-64 place-items-center text-center"><div><MessageSquareText className="mx-auto text-slate-600" size={34} /><p className="mt-3 text-sm font-bold">{activeChat.isCommunity ? "Welcome to TradeWay Community" : "Start the conversation"}</p><p className="mt-1 text-[11px] leading-5 text-slate-500">{activeChat.isCommunity ? "Share platform feedback, market context and updates with the community." : "Send the first message."}</p></div></div>}
                   <div className="space-y-3 pb-1">
                     {messages.map((message) => {
                       const own = message.userId === user.id;
@@ -602,7 +604,7 @@ export function ChatV4({ onLogin, onBack }: { onLogin: () => void; onBack: () =>
                           <div className={`${own ? "text-right" : ""} max-w-[86%] sm:max-w-[78%]`}>
                             <div className={`mb-1 flex items-center gap-2 ${own ? "justify-end" : ""}`}>
                               <span className="inline-flex items-center gap-1">
-                                <strong className="text-[10px]">{own ? "Siz" : message.name}</strong>
+                                <strong className="text-[10px]">{own ? "You" : message.name}</strong>
                                 {message.isVerified ? <VerifiedBadge size={11} /> : null}
                               </span>
                               <span className="text-[9px] text-slate-600">{message.createdAt}</span>
@@ -632,22 +634,22 @@ export function ChatV4({ onLogin, onBack }: { onLogin: () => void; onBack: () =>
 
                 <div className="shrink-0 border-t border-white/8 bg-[#1b1b1b]/90 p-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] sm:p-4">
                   {replyingTo && <div className="mb-2 flex items-start gap-2 rounded-2xl border border-white/10 bg-white/[.04] px-3 py-2"><Reply className="mt-0.5 shrink-0 text-zinc-300" size={14} /><div className="min-w-0 flex-1"><p className="truncate text-[10px] font-bold text-zinc-100">{replyingTo.name} ga reply</p><p className="truncate text-[11px] text-slate-400">{replyingTo.text}</p></div><button onClick={() => setReplyingTo(null)} className="grid h-6 w-6 place-items-center rounded-lg text-slate-400 hover:bg-white/[.06]" aria-label="Replyni bekor qilish"><X size={13} /></button></div>}
-                  <div className="flex items-end gap-2 rounded-[22px] border border-white/10 bg-black/18 p-1.5 backdrop-blur-xl focus-within:border-white/20 sm:p-2">
-                    <Textarea value={messageText} onChange={(event) => setMessageText(event.target.value)} onKeyDown={(event) => { if (event.key === "Enter" && !event.shiftKey) { event.preventDefault(); send(); } }} rows={1} placeholder={`${activeChat.name} uchun xabar...`} className="max-h-24 min-h-9 min-w-0 flex-1 resize-none border-0 bg-transparent px-2 py-2 text-[16px] leading-5 shadow-none focus-visible:ring-0 sm:max-h-28 sm:min-h-10 sm:text-xs" />
-                    <Button disabled={!messageText.trim()} onClick={send} size="icon-sm" className="h-9 w-9 shrink-0 rounded-2xl bg-white text-black sm:h-10 sm:w-10" aria-label="Yuborish"><Send size={15} /></Button>
+                  <div className="flex items-end gap-2 rounded-xl border border-white/10 bg-black/18 p-1.5 backdrop-blur-xl focus-within:border-white/20 sm:p-2">
+                    <Textarea value={messageText} onChange={(event) => setMessageText(event.target.value)} onKeyDown={(event) => { if (event.key === "Enter" && !event.shiftKey) { event.preventDefault(); send(); } }} rows={1} placeholder={`Message ${activeChat.name}`} className="max-h-24 min-h-9 min-w-0 flex-1 resize-none border-0 bg-transparent px-2 py-2 text-[16px] leading-5 shadow-none focus-visible:ring-0 sm:max-h-28 sm:min-h-10 sm:text-sm" />
+                    <Button disabled={!messageText.trim()} onClick={send} size="icon-sm" className="h-9 w-9 shrink-0 rounded-lg bg-white text-black sm:h-10 sm:w-10" aria-label="Send"><Send size={15} /></Button>
                   </div>
                 </div>
               </>
             ) : (
               <div className="grid flex-1 place-items-center p-5 text-center">
                 <div className="w-full max-w-sm">
-                  <div className="mx-auto grid size-16 place-items-center rounded-3xl border border-white/10 bg-white/[.06] text-zinc-100">
-                    <Sparkles size={26} />
+                  <div className="mx-auto grid size-16 place-items-center rounded-2xl border border-white/10 bg-white/[.06] text-zinc-100">
+                    <MessageSquareText size={26} />
                   </div>
-                  <h2 className="mt-5 text-2xl font-black tracking-tight">Yangi suhbat boshlang</h2>
-                  <p className="mt-2 text-sm leading-6 text-slate-500">Traderni toping va private chat oching. Keraksiz panel va sozlamalarsiz, faqat suhbat.</p>
+                  <h2 className="mt-5 text-2xl font-black tracking-tight">Select a conversation</h2>
+                  <p className="mt-2 text-sm leading-6 text-slate-500">Open the community or continue a private conversation.</p>
                   <Button onClick={() => setCreating(true)} className="mt-6 h-12 rounded-full bg-white px-7 text-sm font-black text-slate-950 hover:bg-slate-200">
-                    <Plus size={16} /> Yangi chat
+                    <Plus size={16} /> New chat
                   </Button>
                 </div>
               </div>
