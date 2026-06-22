@@ -13,7 +13,6 @@ import {
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader,
   AlertDialogTitle, AlertDialogTrigger,
 } from "./ui/alert-dialog";
-import { Badge } from "./ui/badge";
 import { Button } from "./ui/button";
 import { Card, CardContent } from "./ui/card";
 import { Checkbox } from "./ui/checkbox";
@@ -550,7 +549,7 @@ function Workspace(p: {
 
           {/* Calendar */}
           <TabsContent value="calendar">
-            <div className="rounded-2xl border border-[#2a2a2a] bg-[#1b1b1b]/80 overflow-hidden">
+            <div className="overflow-hidden rounded-lg border border-border bg-card">
               <div className="flex flex-col gap-3 border-b border-[#2a2a2a] px-3 py-3 sm:px-5 sm:py-4 lg:flex-row lg:items-center">
                 <div>
                   <h3 className="font-bold capitalize">{month.toLocaleDateString("uz-UZ", { month: "long", year: "numeric" })} natijalari</h3>
@@ -682,42 +681,48 @@ function Workspace(p: {
                 </div>
               </div>
               {trades.length
-                ? trades.map(e => (
-                    <button key={e.id} type="button" onClick={() => setSelectedTrade(e)} className="flex w-full items-center gap-3 border-t border-[#2a2a2a] px-4 py-3.5 text-left transition hover:bg-[#242424]/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/25 sm:px-5">
-                      <div className="min-w-0 flex-1">
-                        <div className="flex items-center gap-2">
-                          <b className="font-bold">{e.symbol}</b>
-                          <Badge variant="outline" className={e.side === "Long" ? "border-emerald-500/20 bg-emerald-500/10 text-emerald-400" : "border-rose-500/20 bg-rose-500/10 text-rose-400"}>
-                            {e.side}
-                          </Badge>
-                          {e.riskPercent && (
-                            <span className="rounded-md bg-amber-500/10 px-1.5 py-0.5 text-[10px] font-medium text-amber-400">{e.riskPercent}</span>
-                          )}
-                          {e.errorMade && (
-                          <span className="rounded-md bg-rose-500/10 px-1.5 py-0.5 text-[10px] font-medium text-rose-400" title={e.mistakeType}>Xato</span>
-                          )}
-                          {!e.followingPlan && !e.errorMade && (
-                            <span className="rounded-md bg-amber-500/10 px-1.5 py-0.5 text-[10px] font-medium text-amber-400">Off-plan</span>
-                          )}
-                          {e.reviewCompleted && (
-                            <span className="rounded-md bg-white/[.06] px-1.5 py-0.5 text-[10px] font-medium text-zinc-300">Reviewed</span>
-                          )}
-                        </div>
-                        <p className="mt-0.5 truncate text-xs text-[#8a8a8a]">{e.setup || "No setup"} / {e.session || "No session"} / {e.date}</p>
-                        {e.tags && e.tags.length > 0 && (
-                          <div className="mt-1 flex gap-1">
-                            {e.tags.slice(0, 3).map(t => (
-                              <span key={t} className="rounded-md bg-white/[.06] px-1.5 py-0.5 text-[9px] text-zinc-300">{t}</span>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                      <div className="text-right">
-                        <b className={`font-mono font-black ${e.pnl >= 0 ? "text-emerald-400" : "text-rose-400"}`}>{e.pnl >= 0 ? "+" : ""}{cash.format(e.pnl)}</b>
-                        <p className="text-xs text-[#8a8a8a]">{(e.resultR || 0).toFixed(2)}R</p>
-                      </div>
-                    </button>
-                  ))
+                ? <div className="divide-y divide-border bg-[#0f0f0f] p-2 sm:p-3">
+                    {trades.map(e => {
+                      const winning = e.pnl >= 0;
+                      return (
+                        <button
+                          key={e.id}
+                          type="button"
+                          onClick={() => setSelectedTrade(e)}
+                          className="group flex min-h-[68px] w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left transition-colors hover:bg-white/[.045] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/20 sm:px-4"
+                        >
+                          <span className="grid size-8 shrink-0 place-items-center rounded-md border border-white/8 bg-[#1b1b1b] text-[9px] font-black text-zinc-300">
+                            {e.symbol.slice(0, 2)}
+                          </span>
+                          <span className="min-w-0 flex-1">
+                            <span className="flex min-w-0 items-center gap-1.5">
+                              <strong className="truncate text-[13px] font-bold text-zinc-100 sm:text-sm">{e.symbol}</strong>
+                              <span className="size-1 rounded-full bg-zinc-600" />
+                              <span className="truncate text-[10px] text-zinc-500">{e.setup || e.session || e.date}</span>
+                            </span>
+                            <span className="mt-1 flex items-center gap-1.5">
+                              <span className={`rounded px-1.5 py-0.5 text-[9px] font-black uppercase ${e.side === "Long" ? "bg-emerald-400/15 text-emerald-300" : "bg-rose-400/15 text-rose-300"}`}>
+                                {e.side === "Long" ? "Buy" : "Sell"}
+                              </span>
+                              <span className="font-mono text-[10px] text-zinc-400">{e.quantity.toFixed(2)} Lots</span>
+                              {e.riskPercent ? <span className="hidden text-[10px] text-zinc-600 sm:inline">Risk {e.riskPercent}</span> : null}
+                            </span>
+                          </span>
+                          <span className="shrink-0 text-right">
+                            <strong className={`block rounded-md px-2 py-0.5 font-mono text-[11px] font-black sm:text-xs ${winning ? "bg-emerald-400/10 text-emerald-300" : "bg-rose-400/10 text-rose-300"}`}>
+                              {e.pnl >= 0 ? "+" : ""}{cash.format(e.pnl)}
+                            </strong>
+                            <span className="mt-1 flex items-center justify-end gap-1">
+                              <span className={`rounded px-1 py-0.5 text-[8px] font-black ${!winning ? "bg-rose-400/20 text-rose-300" : "bg-white/[.04] text-zinc-600"}`}>SL</span>
+                              <span className={`rounded px-1 py-0.5 text-[8px] font-black ${winning ? "bg-emerald-400/20 text-emerald-300" : "bg-white/[.04] text-zinc-600"}`}>TP</span>
+                              <span className="font-mono text-[9px] text-zinc-500">{(e.resultR || 0).toFixed(2)}R</span>
+                            </span>
+                          </span>
+                          <ChevronDown className="-rotate-90 text-zinc-600 transition-transform group-hover:translate-x-0.5 group-hover:text-zinc-300" size={16} />
+                        </button>
+                      );
+                    })}
+                  </div>
                 : <Empty text="Bu oyda trade yo'q." />
               }
             </div>
