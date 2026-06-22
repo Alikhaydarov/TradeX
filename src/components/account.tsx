@@ -13,7 +13,6 @@ import {
   MessageCircle,
   PenLine,
   Plus,
-  ShieldCheck,
   Trash2,
   TrendingUp,
   UserRound,
@@ -105,13 +104,11 @@ interface TradingStats {
   averageR: number;
 }
 
-type ProfileTab = "posts" | "replies" | "media" | "saved";
+type ProfileTab = "posts" | "media";
 
 const tabs: Array<{ id: ProfileTab; label: string }> = [
   { id: "posts", label: "Posts" },
-  { id: "replies", label: "Replies" },
   { id: "media", label: "Media" },
-  { id: "saved", label: "Saved" },
 ];
 
 function toProfile(data: ProfileRecord): Profile & { isFollowing?: boolean } {
@@ -183,8 +180,8 @@ function formatMoneyCompact(value: number) {
 }
 
 function EmptyTab({ tab }: { tab: ProfileTab }) {
-  const title = tab === "posts" ? "No posts yet" : tab === "replies" ? "No replies yet" : tab === "media" ? "No media yet" : "No saved posts yet";
-  const description = tab === "posts" ? "Posts will appear here." : tab === "media" ? "Image posts will appear here." : "This section will be ready soon.";
+  const title = tab === "posts" ? "No posts yet" : "No media yet";
+  const description = tab === "posts" ? "Posts will appear here." : "Image posts will appear here.";
 
   return (
     <div className="grid min-h-64 place-items-center px-8 text-center">
@@ -486,109 +483,96 @@ export function Account({ onLogin, profileUsername }: { onLogin: () => void; pro
 
   return (
     <div className="min-h-full bg-[#0b0b0b]">
-      <header className="sticky top-0 z-20 flex h-14 items-center gap-3 border-b border-white/8 bg-[#111111]/94 px-3 backdrop-blur-2xl sm:px-4">
-        <div className="grid h-9 w-9 place-items-center rounded-full border border-white/10 bg-white/[.05] text-zinc-300"><UserRound size={17} /></div>
-        <div className="min-w-0">
-          <h1 className="truncate text-lg font-black leading-5">TradeWay Profile</h1>
-          <p className="text-[11px] text-slate-500">{posts.length} posts</p>
-        </div>
-        {isOwnProfile ? (
-          <button onClick={() => void signOut()} className="ml-auto hidden items-center gap-2 rounded-full border border-white/15 px-4 py-2 text-xs font-bold text-slate-200 hover:bg-white/[.06] sm:flex"><LogOut size={15} /> Sign out</button>
-        ) : null}
-      </header>
-
       {error && <div className="mx-auto mt-3 max-w-5xl rounded-2xl border border-rose-300/15 bg-rose-400/10 px-4 py-3 text-sm text-rose-200">{error}</div>}
 
-      <div className="mx-auto max-w-3xl px-0 sm:px-5 sm:py-4">
-        <section className="overflow-hidden border-b border-white/10 bg-[#171717] shadow-2xl shadow-black/25 sm:rounded-[28px] sm:border">
-          <div className="h-28 bg-[radial-gradient(circle_at_16%_25%,rgba(34,211,238,.24),transparent_22%),radial-gradient(circle_at_82%_8%,rgba(96,165,250,.18),transparent_26%),linear-gradient(135deg,#111111,#1b1b1b_52%,#1b1b1b)] sm:h-44" />
-          <div className="px-4 pb-5 sm:px-6">
-            <div className="-mt-12 flex items-end justify-between gap-3 sm:-mt-16">
-              <TraderAvatar name={profile.fullName} value={profile.avatarUrl} className="h-24 w-24 rounded-full border-4 border-[#171717] bg-black text-2xl shadow-xl sm:h-32 sm:w-32 sm:text-3xl" />
+      <div className="mx-auto max-w-3xl px-0 sm:px-4 sm:py-3">
+        <section className="overflow-hidden border-b border-border bg-card sm:rounded-lg sm:border">
+          <div className="h-20 bg-[linear-gradient(135deg,#111111,#202020)] sm:h-28" />
+          <div className="px-4 pb-4 sm:px-5">
+            <div className="-mt-9 flex items-end justify-between gap-3 sm:-mt-11">
+              <TraderAvatar name={profile.fullName} value={profile.avatarUrl} className="h-20 w-20 rounded-full border-4 border-card bg-black text-xl shadow-xl sm:h-24 sm:w-24 sm:text-2xl" />
               {isOwnProfile ? (
-                <button onClick={openEdit} className="mb-1 inline-flex h-9 items-center gap-2 rounded-full border border-white/15 bg-white/[.035] px-3 text-xs font-black text-white transition hover:bg-white/[.075] sm:mb-2 sm:h-10 sm:px-4 sm:text-sm"><PenLine size={15} /> Edit profile</button>
+                <div className="flex items-center gap-2">
+                  <button onClick={() => void signOut()} className="grid size-9 place-items-center rounded-lg border border-border text-zinc-500 hover:bg-white/[.04] hover:text-zinc-200" aria-label="Sign out"><LogOut size={15} /></button>
+                  <button onClick={openEdit} className="inline-flex h-9 items-center gap-2 rounded-lg border border-border bg-white/[.025] px-3 text-xs font-bold text-white transition-colors hover:bg-white/[.06]"><PenLine size={14} /> Edit</button>
+                </div>
               ) : (
-                <button onClick={() => void toggleFollow()} disabled={followLoading} className={`mb-2 inline-flex h-10 items-center gap-2 rounded-full px-5 text-sm font-black transition ${profile.isFollowing ? "border border-white/15 bg-white/[.04] text-white hover:bg-rose-400/10 hover:text-rose-200" : "bg-white text-slate-950 hover:bg-slate-200"}`}>{followLoading ? <XSpinner size="sm" /> : profile.isFollowing ? <Check size={15} /> : <UserPlus size={15} />}{profile.isFollowing ? "Following" : "Follow"}</button>
+                <button onClick={() => void toggleFollow()} disabled={followLoading} className={`inline-flex h-9 items-center gap-2 rounded-lg px-4 text-xs font-black transition-colors ${profile.isFollowing ? "border border-border bg-white/[.04] text-white hover:bg-rose-400/10 hover:text-rose-200" : "bg-white text-zinc-950 hover:bg-zinc-200"}`}>{followLoading ? <XSpinner size="sm" /> : profile.isFollowing ? <Check size={14} /> : <UserPlus size={14} />}{profile.isFollowing ? "Following" : "Follow"}</button>
               )}
             </div>
 
-            <div className="mt-4">
+            <div className="mt-3">
               <div className="flex min-w-0 items-center gap-2">
-                <h2 className="truncate text-xl font-black leading-7 sm:text-3xl">{profile.fullName}</h2>
-                {profile.isVerified ? <VerifiedBadge className="h-5 w-5" /> : null}
+                <h2 className="truncate text-xl font-black leading-7 sm:text-2xl">{profile.fullName}</h2>
+                {profile.isVerified ? <VerifiedBadge className="h-4 w-4" /> : null}
                 {saved && <span className="rounded-full bg-emerald-400/10 px-2 py-1 text-[10px] font-bold text-emerald-300">Saved</span>}
               </div>
-              <p className="text-sm text-slate-500">@{profile.username}</p>
-              {profile.bio ? <p className="mt-4 max-w-2xl whitespace-pre-line text-[15px] leading-6 text-slate-100">{profile.bio}</p> : null}
-              <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-slate-500">
-                {profile.location ? <p className="flex items-center gap-1.5"><MapPin size={16} /> {profile.location}</p> : null}
-                <p className="flex items-center gap-1.5"><TrendingUp size={16} /> {profile.tradingStyle}</p>
-                <p className="flex items-center gap-1.5"><ShieldCheck size={16} /> TradeWay member</p>
+              <p className="text-xs text-zinc-500">@{profile.username}</p>
+              {profile.bio ? <p className="mt-3 max-w-2xl whitespace-pre-line text-sm leading-5 text-zinc-200">{profile.bio}</p> : null}
+              <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1.5 text-xs text-zinc-500">
+                {profile.location ? <p className="flex items-center gap-1"><MapPin size={13} /> {profile.location}</p> : null}
+                <p className="flex items-center gap-1"><TrendingUp size={13} /> {profile.tradingStyle}</p>
               </div>
-              <div className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-slate-500">
+              <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-zinc-500">
                 <button onClick={() => openConnections("followers")} className="rounded-lg text-left transition hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/20">
                   <b className="font-black text-white">{formatCount(profile.followersCount ?? 0)}</b> Followers
                 </button>
                 <button onClick={() => openConnections("following")} className="rounded-lg text-left transition hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/20">
                   <b className="font-black text-white">{formatCount(profile.followingCount ?? 0)}</b> Following
                 </button>
+                <span><b className="font-black text-white">{posts.length}</b> Posts</span>
               </div>
+            </div>
+
+            <div className="mt-4 grid grid-cols-4 divide-x divide-border overflow-hidden rounded-lg border border-border bg-[#111111]">
+              {[
+                ["Trades", String(stats.trades)],
+                ["Win", `${stats.winRate}%`],
+                ["P&L", formatMoneyCompact(stats.netPnl)],
+                ["Avg R", `${stats.averageR.toFixed(2)}R`],
+              ].map(([label, value]) => (
+                <div key={label} className="min-w-0 px-2 py-2.5 text-center">
+                  <strong className="block truncate font-mono text-xs text-zinc-100">{value}</strong>
+                  <span className="mt-0.5 block text-[8px] font-bold uppercase text-zinc-600">{label}</span>
+                </div>
+              ))}
             </div>
           </div>
         </section>
 
-        <section className="mt-3 border-y border-border bg-card px-4 py-4 sm:rounded-lg sm:border sm:px-5">
-          <h3 className="font-black">Trading performance</h3>
-          <p className="text-xs text-muted-foreground">Verified from TradeWay journal entries</p>
-          <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-4">
-            {[
-              ["Trades", String(stats.trades)],
-              ["Win rate", `${stats.winRate}%`],
-              ["Net P&L", formatMoneyCompact(stats.netPnl)],
-              ["Average R", `${stats.averageR.toFixed(2)}R`],
-            ].map(([label, value]) => (
-              <div key={label} className="rounded-lg border border-border bg-[#111111] p-3">
-                <p className="text-[10px] font-bold uppercase text-zinc-500">{label}</p>
-                <strong className="mt-1 block font-mono text-sm text-zinc-100">{value}</strong>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        <section className="mt-3 border-y border-border bg-card px-4 py-4 sm:rounded-lg sm:border sm:px-5">
-          <div className="flex items-center gap-3">
-            <span className="grid size-9 place-items-center rounded-lg border border-amber-300/15 bg-amber-300/[.06] text-amber-200"><Award size={17} /></span>
+        {(achievements.length > 0 || isOwnProfile) ? <section className="mt-2 border-y border-border bg-card px-4 py-3 sm:rounded-lg sm:border">
+          <div className="flex items-center gap-2">
+            <span className="grid size-8 place-items-center rounded-lg border border-amber-300/15 bg-amber-300/[.06] text-amber-200"><Award size={15} /></span>
             <div className="min-w-0">
-              <h3 className="font-black">Achievements</h3>
-              <p className="truncate text-xs text-muted-foreground">Funded accounts and payout certificates</p>
+              <h3 className="text-sm font-black">Achievements</h3>
+              <p className="truncate text-[10px] text-muted-foreground">{achievements.length} certificates</p>
             </div>
-            {isOwnProfile ? <Button onClick={() => setAchievementOpen(true)} variant="outline" size="sm" className="ml-auto"><Plus size={14} /> Add</Button> : null}
+            {isOwnProfile ? <Button onClick={() => setAchievementOpen(true)} variant="ghost" size="sm" className="ml-auto"><Plus size={14} /> Add</Button> : null}
           </div>
           {achievements.length ? (
-            <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-3">
+            <div className="mt-3 flex gap-2 overflow-x-auto pb-1">
               {achievements.map((item) => (
-                <article key={item.id} className="group relative overflow-hidden rounded-lg border border-border bg-[#111111]">
-                  <img src={item.image_url} alt={item.title} className="aspect-[4/3] w-full object-cover" loading="lazy" />
-                  <div className="p-3">
+                <article key={item.id} className="group relative w-36 shrink-0 overflow-hidden rounded-lg border border-border bg-[#111111] sm:w-40">
+                  <img src={item.image_url} alt={item.title} className="aspect-[16/10] w-full object-cover" loading="lazy" />
+                  <div className="p-2.5">
                     <span className={`text-[9px] font-black uppercase ${item.achievement_type === "payout" ? "text-emerald-300" : "text-amber-200"}`}>{item.achievement_type}</span>
                     <h4 className="mt-1 truncate text-xs font-bold">{item.title}</h4>
-                    {item.issuer ? <p className="truncate text-[10px] text-zinc-500">{item.issuer}</p> : null}
                   </div>
                   {isOwnProfile ? <button onClick={() => void removeAchievement(item.id)} className="absolute right-2 top-2 grid size-8 place-items-center rounded-lg bg-black/70 text-zinc-300 opacity-100 backdrop-blur sm:opacity-0 sm:group-hover:opacity-100" aria-label="Remove achievement"><Trash2 size={14} /></button> : null}
                 </article>
               ))}
             </div>
-          ) : <p className="mt-4 rounded-lg border border-dashed border-border p-5 text-center text-xs text-zinc-500">No certificates added yet.</p>}
-        </section>
+          ) : null}
+        </section> : null}
 
-        <section className="border-b border-white/10 bg-[#171717] sm:mt-3 sm:overflow-hidden sm:rounded-[28px] sm:border">
-          <div className="relative z-10 grid grid-cols-4 border-b border-white/8 bg-[#171717]/95 backdrop-blur-xl">
+        <section className="border-b border-border bg-card sm:mt-2 sm:overflow-hidden sm:rounded-lg sm:border">
+          <div className="relative z-10 grid grid-cols-2 border-b border-border bg-card">
             {tabs.map((tab) => {
               const active = activeTab === tab.id;
-              return <button key={tab.id} onClick={() => setActiveTab(tab.id)} className={`relative min-w-0 px-1 py-3 text-[11px] font-black transition sm:px-2 sm:py-4 sm:text-sm ${active ? "text-white" : "text-slate-500 hover:bg-white/[.03] hover:text-slate-300"}`}>{tab.label}{active ? <span className="absolute inset-x-4 bottom-0 h-0.5 rounded-full bg-white sm:inset-x-6 sm:h-1" /> : null}</button>;
+              return <button key={tab.id} onClick={() => setActiveTab(tab.id)} className={`relative min-w-0 px-2 py-3 text-xs font-black transition-colors ${active ? "text-white" : "text-zinc-500 hover:bg-white/[.03] hover:text-zinc-300"}`}>{tab.label}{active ? <span className="absolute inset-x-8 bottom-0 h-0.5 rounded-full bg-white" /> : null}</button>;
             })}
           </div>
-          {loadingProfile ? <div className="grid min-h-64 place-items-center text-slate-500"><XSpinner size="lg" /></div> : visiblePosts.length ? <div className="relative z-0 pt-4">{visiblePosts.map(renderPost)}</div> : <EmptyTab tab={activeTab} />}
+          {loadingProfile ? <div className="grid min-h-48 place-items-center text-slate-500"><XSpinner size="lg" /></div> : visiblePosts.length ? <div className="relative z-0">{visiblePosts.map(renderPost)}</div> : <EmptyTab tab={activeTab} />}
         </section>
       </div>
 
