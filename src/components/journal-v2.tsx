@@ -151,8 +151,8 @@ export function JournalV2({ onLogin }: { onLogin: () => void }) {
     finally { setDeleting(null); }
   }
 
-  async function addTrade(form: FormData) {
-    if (!account) return;
+  async function addTrade(form: FormData): Promise<{ id: string; symbol: string; side: string; pnl: number; resultR: number | null; note: string | null; setup: string | null } | null> {
+    if (!account) return null;
     setSaving(true);
     const num = (key: string) => parseFloat(String(form.get(key) || "0").replace(",", ".")) || 0;
     try {
@@ -181,8 +181,20 @@ export function JournalV2({ onLogin }: { onLogin: () => void }) {
       const next = entryFrom(r.entry);
       setEntries(v => [next, ...v]);
       setMonth(new Date(`${next.rawDate}T00:00:00`));
-      setTradeOpen(false);
-    } catch (e) { setError(e instanceof Error ? e.message : "Trade saqlanmadi"); }
+      // Modal handles its own close/share lifecycle now
+      return {
+        id: next.id,
+        symbol: next.symbol,
+        side: next.side,
+        pnl: next.pnl,
+        resultR: next.resultR ?? null,
+        note: next.note ?? null,
+        setup: next.setup ?? null,
+      };
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Trade saqlanmadi");
+      return null;
+    }
     finally { setSaving(false); }
   }
 

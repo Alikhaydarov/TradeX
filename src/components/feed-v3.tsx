@@ -141,6 +141,7 @@ export function FeedV3({ onLogin }: { onLogin: () => void }) {
   const [editingText, setEditingText] = useState("");
   const [isAdmin, setIsAdmin] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [lightboxUrl, setLightboxUrl] = useState<string | null>(null);
   const viewed = useRef(new Set<string>());
   const observer = useRef<IntersectionObserver | null>(null);
 
@@ -466,7 +467,19 @@ export function FeedV3({ onLogin }: { onLogin: () => void }) {
 
                     {post.text && post.text !== `${post.symbol} trade` ? <p className="mt-3 whitespace-pre-line text-[15px] leading-6 text-slate-100">{post.text}</p> : null}
 
-                    {post.imageUrls?.length ? <div className={`mt-3 grid gap-px overflow-hidden rounded-xl border border-white/10 bg-white/10 ${post.imageUrls.length === 1 ? "grid-cols-1" : "grid-cols-2"}`}>{post.imageUrls.map((url, index) => <a key={url} href={url} target="_blank" rel="noreferrer" className={`grid min-h-40 place-items-center overflow-hidden bg-black/90 ${post.imageUrls!.length === 3 && index === 0 ? "row-span-2" : ""}`}><img src={url} alt={index === post.imageUrls!.length - 1 ? `${post.symbol} TradeWay share card` : `${post.symbol} trade screenshot ${index + 1}`} className="h-full max-h-[520px] w-full object-cover" loading="lazy" /></a>)}</div> : post.imageUrl ? <a href={post.imageUrl} target="_blank" rel="noreferrer" className="mt-3 grid min-h-40 place-items-center overflow-hidden rounded-xl border border-white/10 bg-black/90"><img src={post.imageUrl} alt="Trade media" className="max-h-[560px] max-w-full object-contain" loading="lazy" /></a> : null}
+                    {post.imageUrls?.length ? (
+                      <div className={`mt-3 overflow-hidden rounded-xl border border-white/10 ${post.imageUrls.length === 1 ? "" : post.imageUrls.length === 2 ? "grid gap-px bg-white/10 grid-cols-2" : "grid gap-px bg-white/10 grid-cols-3"}`}>
+                        {post.imageUrls.map((url, index) => (
+                          <button key={url} type="button" onClick={() => setLightboxUrl(url)} className="group relative aspect-square w-full overflow-hidden bg-black/90">
+                            <img src={url} alt={index === post.imageUrls!.length - 1 ? `${post.symbol} TradeWay share card` : `${post.symbol} trade screenshot ${index + 1}`} className="h-full w-full object-cover transition-transform duration-200 group-hover:scale-[1.03]" loading="lazy" />
+                          </button>
+                        ))}
+                      </div>
+                    ) : post.imageUrl ? (
+                      <button type="button" onClick={() => setLightboxUrl(post.imageUrl!)} className="group relative mt-3 block w-full aspect-square overflow-hidden rounded-xl border border-white/10 bg-black/90">
+                        <img src={post.imageUrl} alt="Trade media" className="h-full w-full object-cover transition-transform duration-200 group-hover:scale-[1.03]" loading="lazy" />
+                      </button>
+                    ) : null}
 
                     <div className="mt-3 grid grid-cols-5 items-center text-zinc-500">
                       <button onClick={() => void toggleReplies(post)} className={`flex h-11 items-center justify-center gap-1.5 rounded-lg text-[11px] transition-colors hover:bg-white/[.04] hover:text-zinc-200 ${openReplies === post.id ? "text-zinc-100" : ""}`} aria-label="Replies"><MessageCircle size={17} />{post.replies}</button>
@@ -522,6 +535,28 @@ export function FeedV3({ onLogin }: { onLogin: () => void }) {
           </div>
         )}
       </div>
+
+      {lightboxUrl ? (
+        <div
+          className="fixed inset-0 z-[99998] flex items-center justify-center bg-black/92 p-4 backdrop-blur-sm"
+          onClick={() => setLightboxUrl(null)}
+        >
+          <button
+            type="button"
+            aria-label="Yopish"
+            className="absolute right-4 top-4 grid h-10 w-10 place-items-center rounded-full bg-white/10 text-white transition hover:bg-white/20"
+            onClick={() => setLightboxUrl(null)}
+          >
+            <X size={18} />
+          </button>
+          <img
+            src={lightboxUrl}
+            alt="Full size"
+            className="max-h-[92dvh] max-w-full rounded-xl object-contain shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          />
+        </div>
+      ) : null}
 
       {deleteTarget ? (
         <div className="fixed inset-0 z-[99999] flex h-[100dvh] w-screen items-center justify-center overflow-hidden bg-black/75 p-4 backdrop-blur-md">
