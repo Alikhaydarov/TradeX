@@ -1,7 +1,6 @@
 "use client";
 
-import { Camera, Check, CheckCircle2, ChevronDown, ImagePlus, LoaderCircle, Plus, Trash2, X } from "lucide-react";
-import { apiRequest } from "@/lib/api-client";
+import { Camera, Check, ChevronDown, ImagePlus, LoaderCircle, Plus, Trash2, X } from "lucide-react";
 import { useRef, useState, type ChangeEvent, type DragEvent } from "react";
 import { Button } from "./ui/button";
 import { Dialog, DialogContent } from "./ui/dialog";
@@ -202,13 +201,7 @@ export function TradeReviewModal({ open, saving, account, onOpenChange, onSave }
   const [riskPct, setRiskPct] = useState("");
   const [setup, setSetup] = useState("");
   const [outcome, setOutcome] = useState<"win" | "loss">("win");
-  const [shareData, setShareData] = useState<{
-    id: string; symbol: string; side: string; pnl: number;
-    resultR: number | null; note: string | null; setup: string | null; imageUrls: string[];
-  } | null>(null);
-  const [sharing, setSharing] = useState(false);
-  const [shared, setShared] = useState(false);
-  const [shareError, setShareError] = useState("");
+
 
   const addOption = (key: string, setOptions: (options: string[]) => void, current: string[], value: string) => {
     const nextValue = value.trim();
@@ -227,7 +220,6 @@ export function TradeReviewModal({ open, saving, account, onOpenChange, onSave }
   };
 
   const resetForm = () => {
-    setShareData(null); setSharing(false); setShared(false); setShareError("");
     setImageUrls([]); setPreviewUrl(""); setUploadError("");
     if (inputRef.current) inputRef.current.value = "";
     setFollowingPlan(true); setErrorMade(false); setMistakeType("");
@@ -261,37 +253,8 @@ export function TradeReviewModal({ open, saving, account, onOpenChange, onSave }
     form.set("pnl", String(outcome === "loss" ? -amount : amount));
     const entry = await onSave(form);
     if (entry) {
-      setShareData({ ...entry, imageUrls });
-    }
-  };
-
-  const postToFeed = async () => {
-    if (!shareData) return;
-    setSharing(true); setShareError("");
-    try {
-      const win = shareData.pnl >= 0;
-      const parts: string[] = [`${shareData.symbol} ${shareData.side.toUpperCase()}`];
-      parts.push(`${win ? "+" : ""}$${Math.abs(shareData.pnl).toFixed(2)}`);
-      if (shareData.resultR) parts.push(`${shareData.resultR.toFixed(1)}R`);
-      if (shareData.setup) parts.push(shareData.setup);
-      let content = parts.join(" · ");
-      if (shareData.note) content += `\n${shareData.note.slice(0, 280 - content.length - 1)}`;
-      content = content.slice(0, 280);
-      await apiRequest("/api/posts", { method: "POST", body: JSON.stringify({
-        content,
-        symbol: shareData.symbol,
-        side: shareData.side.toUpperCase(),
-        result: shareData.pnl >= 0 ? "WIN" : "LOSS",
-        pnl: shareData.pnl,
-        resultR: shareData.resultR ?? undefined,
-        journalEntryId: shareData.id,
-        chartImageUrls: shareData.imageUrls,
-      }) });
-      setShared(true);
-    } catch (e) {
-      setShareError(e instanceof Error ? e.message : "Post yuborilmadi.");
-    } finally {
-      setSharing(false);
+      resetForm();
+      close(false);
     }
   };
 
@@ -323,78 +286,6 @@ export function TradeReviewModal({ open, saving, account, onOpenChange, onSave }
         </div>
 
         {/* Body */}
-        {shareData ? (
-          <div className="flex max-h-[calc(95dvh-61px)] flex-col items-center justify-center gap-6 overflow-y-auto p-8 text-center">
-            {shared ? (
-              <>
-                <div className="grid h-16 w-16 place-items-center rounded-2xl bg-emerald-500/15 ring-1 ring-emerald-500/30">
-                  <CheckCircle2 size={30} className="text-emerald-400" />
-                </div>
-                <div>
-                  <h3 className="text-lg font-bold text-[#f1f1f1]">Feedga ulashildi! 🚀</h3>
-                  <p className="mt-1 text-sm text-[#8a8a8a]">Tradingiz TradeWay feedida chiqdi.</p>
-                </div>
-                <button onClick={() => { resetForm(); close(false); }}
-                  className="rounded-xl border border-[#2a2a2a] px-8 py-3 text-sm font-semibold text-[#a1a1aa] transition hover:border-[#3a3a3a] hover:text-[#f1f1f1]">
-                  Yopish
-                </button>
-              </>
-            ) : (
-              <>
-                <div className="grid h-16 w-16 place-items-center rounded-2xl bg-white/[.06] ring-1 ring-white/10">
-                  <Check size={28} className="text-zinc-300" />
-                </div>
-                <div>
-                  <h3 className="text-lg font-bold text-[#f1f1f1]">Trade saqlandi!</h3>
-                  <p className="mt-1 text-sm text-[#8a8a8a]">TradeWay feediga ulashmoqchimisiz?</p>
-                </div>
-
-                {/* Trade preview card */}
-                <div className={`w-full rounded-xl border p-4 text-left ${shareData.pnl >= 0 ? "border-emerald-500/20 bg-emerald-500/5" : "border-rose-500/20 bg-rose-500/5"}`}>
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm font-bold text-[#f1f1f1]">{shareData.symbol}</span>
-                      <span className={`rounded px-1.5 py-0.5 text-[10px] font-bold ${shareData.side === "Long" ? "bg-emerald-500/15 text-emerald-300" : "bg-rose-500/15 text-rose-300"}`}>
-                        {shareData.side.toUpperCase()}
-                      </span>
-                    </div>
-                    <span className={`text-lg font-black ${shareData.pnl >= 0 ? "text-emerald-400" : "text-rose-400"}`}>
-                      {shareData.pnl >= 0 ? "+" : ""}${Math.abs(shareData.pnl).toFixed(2)}
-                    </span>
-                  </div>
-                  {(shareData.setup ?? shareData.resultR) ? (
-                    <div className="mt-2 flex gap-3 text-xs text-[#8a8a8a]">
-                      {shareData.setup ? <span>{shareData.setup}</span> : null}
-                      {shareData.resultR ? <span className="font-mono">{shareData.resultR.toFixed(1)}R</span> : null}
-                    </div>
-                  ) : null}
-                  {shareData.imageUrls.length > 0 ? (
-                    <div className={`mt-3 grid gap-1 ${shareData.imageUrls.length === 1 ? "grid-cols-1" : "grid-cols-3"}`}>
-                      {shareData.imageUrls.slice(0, 3).map((url, i) => (
-                        <div key={i} className="aspect-square overflow-hidden rounded-lg bg-black">
-                          <img src={url} alt="" className="h-full w-full object-cover" />
-                        </div>
-                      ))}
-                    </div>
-                  ) : null}
-                </div>
-
-                {shareError ? <p className="text-xs text-rose-400">{shareError}</p> : null}
-
-                <div className="flex w-full gap-2">
-                  <button type="button" onClick={() => { resetForm(); close(false); }}
-                    className="flex-1 rounded-xl border border-[#2a2a2a] py-3 text-sm font-semibold text-[#8a8a8a] transition hover:border-[#3a3a3a] hover:text-[#f1f1f1]">
-                    O&apos;tkazib yuborish
-                  </button>
-                  <button type="button" disabled={sharing} onClick={() => void postToFeed()}
-                    className="flex-[2] rounded-xl bg-gradient-to-r from-zinc-100 to-zinc-300 py-3 text-sm font-bold text-black transition hover:from-white hover:to-zinc-200 disabled:opacity-50">
-                    {sharing ? "Yuklanmoqda..." : "🚀 Feedga ulashish"}
-                  </button>
-                </div>
-              </>
-            )}
-          </div>
-        ) : (
         <form action={submit} className="flex max-h-[calc(95dvh-61px)] flex-col overflow-hidden">
 
           {/* Left: fields */}
@@ -603,7 +494,6 @@ export function TradeReviewModal({ open, saving, account, onOpenChange, onSave }
             </Button>
           </div>
         </form>
-        )}
         {previewUrl ? <div className="fixed inset-0 z-[10001] grid place-items-center bg-black/90 p-3" onClick={() => setPreviewUrl("")}><button type="button" className="absolute right-4 top-4 grid size-10 place-items-center rounded-full bg-white/10 text-white"><X size={18} /></button><img src={previewUrl} alt="Trade screenshot preview" className="max-h-[92dvh] max-w-full object-contain" /></div> : null}
       </DialogContent>
     </Dialog>

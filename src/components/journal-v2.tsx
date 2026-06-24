@@ -28,6 +28,7 @@ import { PropAccountDialog } from "./prop-account-dialog";
 import { PropFirmLogo } from "./prop-firm-logo";
 import { Mt5Settings } from "./mt5-settings";
 import { TradeReviewModal } from "./trade-review-modal";
+import { TradeShareComposer } from "./trade-share-composer";
 import type { JournalEntry, PropAccount } from "./types";
 
 type AccountRow = { id: string; name: string; firm: string; phase: string; market_type: string; account_size: string; initial_balance: string; profit_target: string; max_drawdown: string; daily_drawdown: string; start_date: string; status: PropAccount["status"] };
@@ -440,6 +441,7 @@ function Workspace(p: {
 }) {
   const { account, stats, equity, setups, mistakes, planRate, monthCount, calendar, trades, bibleTrades, month } = p;
   const [selectedTrade, setSelectedTrade] = useState<JournalEntry | null>(null);
+  const [shareTarget, setShareTarget] = useState<JournalEntry | null>(null);
   const [activeTab, setActiveTab] = useState<WorkspaceTab>("overview");
   const currentPnl = (equity.at(-1)?.equity ?? account.initialBalance) - account.initialBalance;
   const currentEquity = account.initialBalance + currentPnl;
@@ -706,11 +708,13 @@ function Workspace(p: {
                     {trades.map(e => {
                       const winning = e.pnl >= 0;
                       return (
-                        <button
+                        <div
                           key={e.id}
-                          type="button"
+                          role="button"
+                          tabIndex={0}
                           onClick={() => setSelectedTrade(e)}
-                          className="group flex min-h-[68px] w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left transition-colors hover:bg-white/[.045] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/20 sm:px-4"
+                          onKeyDown={(ev) => { if (ev.key === "Enter" || ev.key === " ") setSelectedTrade(e); }}
+                          className="group flex min-h-[68px] w-full cursor-pointer items-center gap-3 rounded-lg px-3 py-2.5 text-left transition-colors hover:bg-white/[.045] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/20 sm:px-4"
                         >
                           <span className="grid size-8 shrink-0 place-items-center rounded-md border border-white/8 bg-[#1b1b1b] text-[9px] font-black text-zinc-300">
                             {e.symbol.slice(0, 2)}
@@ -739,8 +743,17 @@ function Workspace(p: {
                               <span className="font-mono text-[9px] text-zinc-500">{(e.resultR || 0).toFixed(2)}R</span>
                             </span>
                           </span>
+                          <button
+                            type="button"
+                            aria-label="Feedga ulashish"
+                            title="Feedga ulashish"
+                            onClick={(ev) => { ev.stopPropagation(); setShareTarget(e); }}
+                            className="grid h-8 w-8 shrink-0 place-items-center rounded-lg text-zinc-600 opacity-0 transition hover:bg-white/[.06] hover:text-zinc-300 group-hover:opacity-100"
+                          >
+                            <Share2 size={14} />
+                          </button>
                           <ChevronDown className="-rotate-90 text-zinc-600 transition-transform group-hover:translate-x-0.5 group-hover:text-zinc-300" size={16} />
-                        </button>
+                        </div>
                       );
                     })}
                   </div>
@@ -876,7 +889,12 @@ function Workspace(p: {
             <Mt5Settings account={account} onSynced={p.onMt5Synced} />
           </TabsContent>
         </Tabs>
-        {selectedTrade ? (
+        <TradeShareComposer
+        trade={shareTarget}
+        onClose={() => setShareTarget(null)}
+      />
+
+      {selectedTrade ? (
           <TradeEditor
             trade={selectedTrade}
             saving={p.saving}
