@@ -1,5 +1,5 @@
 "use client";
-import { ChevronDown, LoaderCircle, Plus, ShieldCheck, TrendingUp } from "lucide-react";
+import { ChevronDown, KeyRound, LoaderCircle, Plus, ShieldCheck, TrendingUp } from "lucide-react";
 import { useState } from "react";
 import { Button } from "./ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog";
@@ -31,6 +31,10 @@ export function PropAccountDialog({
   const [market, setMarket] = useState("CFD");
   const [size, setSize] = useState(100000);
   const [firmOpen, setFirmOpen] = useState(false);
+  const [mt5Open, setMt5Open] = useState(false);
+  const [mt5Login, setMt5Login] = useState("");
+  const [mt5Password, setMt5Password] = useState("");
+  const [mt5Server, setMt5Server] = useState("");
   const selectedFirm = FIRMS.find(f => f.name === firm) || FIRMS[FIRMS.length - 1];
 
   return (
@@ -200,6 +204,78 @@ export function PropAccountDialog({
             />
           </div>
           <input type="hidden" name="status" value="Active" />
+
+          {/* ── MT5 Auto-sync (optional) ── */}
+          <div className="rounded-xl border border-[#2a2a2a] bg-[#1b1b1b] overflow-hidden">
+            <button
+              type="button"
+              onClick={() => setMt5Open(v => !v)}
+              className="flex w-full items-center justify-between px-4 py-3 text-left"
+            >
+              <div className="flex items-center gap-2.5">
+                <span className="grid size-7 place-items-center rounded-lg bg-white/[.06] text-zinc-400">
+                  <KeyRound size={14} />
+                </span>
+                <div>
+                  <p className="text-sm font-semibold text-zinc-200">MT5 Auto-sync</p>
+                  <p className="text-[11px] text-[#8a8a8a]">Trade tarixini avtomatik import qilish</p>
+                </div>
+              </div>
+              <ChevronDown size={15} className={`text-[#8a8a8a] transition-transform ${mt5Open ? "rotate-180" : ""}`} />
+            </button>
+
+            {mt5Open && (
+              <div className="space-y-3 border-t border-[#2a2a2a] px-4 py-4">
+                <p className="text-[11px] text-[#8a8a8a]">
+                  MT5 login ma'lumotlarini kiriting. Tradelar avtomatik journal ga qo'shiladi.
+                </p>
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-semibold uppercase tracking-wider text-[#8a8a8a]">
+                      Login (Account ID)
+                    </label>
+                    <input
+                      name="mt5Login"
+                      value={mt5Login}
+                      onChange={e => setMt5Login(e.target.value.replace(/\D/g, ""))}
+                      placeholder="12345678"
+                      inputMode="numeric"
+                      className="w-full rounded-lg border border-[#2a2a2a] bg-[#111] px-3 py-2 font-mono text-sm text-zinc-200 placeholder:text-zinc-700 outline-none focus:border-white/25"
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-semibold uppercase tracking-wider text-[#8a8a8a]">
+                      Parol
+                    </label>
+                    <input
+                      name="mt5Password"
+                      type="password"
+                      value={mt5Password}
+                      onChange={e => setMt5Password(e.target.value)}
+                      placeholder="••••••••"
+                      autoComplete="new-password"
+                      className="w-full rounded-lg border border-[#2a2a2a] bg-[#111] px-3 py-2 text-sm text-zinc-200 placeholder:text-zinc-700 outline-none focus:border-white/25"
+                    />
+                  </div>
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-semibold uppercase tracking-wider text-[#8a8a8a]">
+                    Broker Server
+                  </label>
+                  <input
+                    name="mt5Server"
+                    value={mt5Server}
+                    onChange={e => setMt5Server(e.target.value)}
+                    placeholder="FTMODemo-Server, ICMarketsEU-Live04 ..."
+                    className="w-full rounded-lg border border-[#2a2a2a] bg-[#111] px-3 py-2 text-sm text-zinc-200 placeholder:text-zinc-700 outline-none focus:border-white/25"
+                  />
+                  <p className="text-[10px] text-[#6a6a6a]">
+                    MT5 terminalda: Tools → Options → Server — server nomini ko'chiring
+                  </p>
+                </div>
+              </div>
+            )}
+          </div>
 
           <Button
             disabled={saving}

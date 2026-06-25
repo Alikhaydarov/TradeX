@@ -132,11 +132,28 @@ export function JournalV2({ onLogin }: { onLogin: () => void }) {
   async function addAccount(form: FormData) {
     setSaving(true);
     try {
-      const r = await apiRequest<{ account: AccountRow }>("/api/prop-accounts", { method: "POST", body: JSON.stringify(Object.fromEntries(form)) });
+      const body: Record<string, string> = Object.fromEntries(
+        [...form.entries()].map(([k, v]) => [k, String(v)])
+      );
+      const mt5Login    = (body.mt5Login    ?? "").trim();
+      const mt5Password = (body.mt5Password ?? "").trim();
+      const mt5Server   = (body.mt5Server   ?? "").trim();
+      delete body.mt5Login; delete body.mt5Password; delete body.mt5Server;
+
+      const r = await apiRequest<{ account: AccountRow }>("/api/prop-accounts", {
+        method: "POST", body: JSON.stringify(body),
+      });
       const next = accountFrom(r.account);
       setAccounts(v => [next, ...v]);
-      setAccountOpen(false);
       setAccountId(next.id);
+      setAccountOpen(false);
+
+      if (mt5Login && mt5Password && mt5Server) {
+        apiRequest(`/api/prop-accounts/${next.id}/mt5`, {
+          method: "PUT",
+          body: JSON.stringify({ login: mt5Login, password: mt5Password, server: mt5Server }),
+        }).catch(() => { /* non-fatal */ });
+      }
     } catch (e) { setError(e instanceof Error ? e.message : "Account saqlanmadi"); }
     finally { setSaving(false); }
   }
