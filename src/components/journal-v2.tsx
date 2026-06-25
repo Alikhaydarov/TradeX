@@ -31,7 +31,7 @@ import { TradeReviewModal } from "./trade-review-modal";
 import { TradeShareComposer } from "./trade-share-composer";
 import type { JournalEntry, PropAccount } from "./types";
 
-type AccountRow = { id: string; name: string; firm: string; phase: string; market_type: string; account_size: string; initial_balance: string; profit_target: string; max_drawdown: string; daily_drawdown: string; start_date: string; status: PropAccount["status"] };
+type AccountRow = { id: string; name: string; account_type?: "prop" | "real" | null; firm: string; prop_site?: string | null; prop_login?: string | null; import_source?: "manual" | "metaapi" | "ctrader" | "official_api" | null; platform?: string | null; phase: string; market_type: string; account_size: string; initial_balance: string; profit_target: string; max_drawdown: string; daily_drawdown: string; start_date: string; status: PropAccount["status"] };
 type EntryRow = { id: string; prop_account_id?: string | null; symbol: string; side: "Long" | "Short"; entry_price: string; exit_price: string; quantity: string; fees: string; pnl: string; note: string; traded_at: string; account_name?: string; market_type?: string; setup?: string; emotion?: string; risk_amount?: string; result_r?: string; risk_percent?: string; session?: string; following_plan?: boolean; error_made?: boolean; mistake_type?: string; review_completed?: boolean; to_trading_bible?: boolean; image_url?: string | null; tags?: string[] };
 type Summary = { account: PropAccount; trades: number; pnl: number; winRate: number; target: number; dd: number };
 type TradeRange = "daily" | "monthly" | "quarter" | "yearly" | "custom";
@@ -42,7 +42,7 @@ const WEEKDAYS_FULL = ["Dushanba", "Seshanba", "Chorshanba", "Payshanba", "Juma"
 const WORKSPACE_TABS = [["overview", "Overview"], ["calendar", "Calendar"], ["trades", "Trades"], ["bible", "Bible"], ["analytics", "Analytics"], ["settings", "Settings"]] as const;
 type WorkspaceTab = typeof WORKSPACE_TABS[number][0];
 
-const accountFrom = (a: AccountRow): PropAccount => ({ id: a.id, name: a.name, firm: a.firm, phase: a.phase, marketType: a.market_type, accountSize: +a.account_size, initialBalance: +a.initial_balance, profitTarget: +a.profit_target, maxDrawdown: +a.max_drawdown, dailyDrawdown: +a.daily_drawdown, startDate: a.start_date, status: a.status });
+const accountFrom = (a: AccountRow): PropAccount => ({ id: a.id, name: a.name, accountType: a.account_type || "prop", firm: a.firm, propSite: a.prop_site || "", propLogin: a.prop_login || "", importSource: a.import_source || "manual", platform: a.platform || "mt5", phase: a.phase, marketType: a.market_type, accountSize: +a.account_size, initialBalance: +a.initial_balance, profitTarget: +a.profit_target, maxDrawdown: +a.max_drawdown, dailyDrawdown: +a.daily_drawdown, startDate: a.start_date, status: a.status });
 const parseTradeImages = (value?: string | null) => {
   if (!value) return [];
   try {
@@ -154,7 +154,7 @@ export function JournalV2({ onLogin }: { onLogin: () => void }) {
           body: JSON.stringify({ login: mt5Login, password: mt5Password, server: mt5Server }),
         }).catch(() => { /* non-fatal */ });
       }
-    } catch (e) { setError(e instanceof Error ? e.message : "Account saqlanmadi"); }
+    } catch (e) { setError(e instanceof Error ? e.message : "Account was not saved."); }
     finally { setSaving(false); }
   }
 
@@ -210,7 +210,7 @@ export function JournalV2({ onLogin }: { onLogin: () => void }) {
         setup: next.setup ?? null,
       };
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Trade saqlanmadi");
+      setError(e instanceof Error ? e.message : "Trade was not saved.");
       return null;
     }
     finally { setSaving(false); }
@@ -271,9 +271,9 @@ export function JournalV2({ onLogin }: { onLogin: () => void }) {
         <div className="mx-auto grid size-16 place-items-center rounded-2xl bg-white/[.06]">
           <ShieldCheck className="text-zinc-300" size={32} />
         </div>
-        <h2 className="mt-5 text-3xl font-black">Professional trading jurnal</h2>
-        <p className="mt-2 text-[#8a8a8a]">Prop accountlaringizni kuzatib boring</p>
-        <Button className="mt-6 h-11 bg-white px-8 text-black hover:bg-zinc-200" onClick={onLogin}>Google orqali kirish</Button>
+        <h2 className="mt-5 text-3xl font-black">Professional trading journal</h2>
+        <p className="mt-2 text-[#8a8a8a]">Track real and prop accounts in one focused workspace.</p>
+        <Button className="mt-6 h-11 bg-white px-8 text-black hover:bg-zinc-200" onClick={onLogin}>Sign in with Google</Button>
       </div>
     </div>
   );
@@ -315,20 +315,20 @@ function Accounts({ summaries, deleting, onAdd, onOpen, onDelete }: { summaries:
             </span>
             <span className="text-xs font-semibold uppercase tracking-wider text-[#8a8a8a]">Trading workspace</span>
           </div>
-          <h1 className="text-3xl font-black tracking-tight">Prop Accounts</h1>
-          <p className="mt-1 text-sm text-[#8a8a8a]">Accountni bosib jurnalni oching</p>
+          <h1 className="text-3xl font-black tracking-tight">Trading Accounts</h1>
+          <p className="mt-1 text-sm text-[#8a8a8a]">Open an account to review trades, progress and import settings.</p>
         </div>
         <Button onClick={onAdd} className="h-10 bg-white text-black sm:ml-auto hover:bg-zinc-200">
-          <Plus size={16} /> Prop account qo&apos;shish
+          <Plus size={16} /> Add account
         </Button>
       </div>
 
       {/* Overview stats */}
       <div className="grid gap-3 sm:grid-cols-3">
         {[
-          { title: "Jami kapital", value: cash.format(capital), icon: WalletCards, color: "text-zinc-300", bg: "bg-white/[.05]" },
-          { title: "Umumiy P&L", value: `${total >= 0 ? "+" : ""}${cash.format(total)}`, icon: total >= 0 ? TrendingUp : TrendingDown, color: total >= 0 ? "text-emerald-400" : "text-rose-400", bg: total >= 0 ? "bg-emerald-500/8" : "bg-rose-500/8" },
-          { title: "Faol accountlar", value: String(summaries.filter(s => s.account.status === "Active").length), icon: Zap, color: "text-zinc-300", bg: "bg-white/[.05]" },
+          { title: "Total capital", value: cash.format(capital), icon: WalletCards, color: "text-zinc-300", bg: "bg-white/[.05]" },
+          { title: "Total P&L", value: `${total >= 0 ? "+" : ""}${cash.format(total)}`, icon: total >= 0 ? TrendingUp : TrendingDown, color: total >= 0 ? "text-emerald-400" : "text-rose-400", bg: total >= 0 ? "bg-emerald-500/8" : "bg-rose-500/8" },
+          { title: "Active accounts", value: String(summaries.filter(s => s.account.status === "Active").length), icon: Zap, color: "text-zinc-300", bg: "bg-white/[.05]" },
         ].map(s => (
           <div key={s.title} className="flex items-center gap-4 rounded-2xl border border-[#2a2a2a] bg-[#1b1b1b]/80 px-5 py-4">
             <span className={`grid size-11 shrink-0 place-items-center rounded-xl ${s.bg}`}>
@@ -349,9 +349,9 @@ function Accounts({ summaries, deleting, onAdd, onOpen, onDelete }: { summaries:
               <div className="mx-auto grid size-14 place-items-center rounded-2xl bg-white/[.06]">
                 <WalletCards size={24} className="text-zinc-300" />
               </div>
-              <h2 className="mt-4 text-xl font-bold">Prop account qo&apos;shing</h2>
-              <p className="mt-1 text-sm text-[#8a8a8a]">Challenge yoki funded accountingizni kuzatib boring</p>
-              <Button onClick={onAdd} className="mt-5 bg-white text-black hover:bg-zinc-200"><Plus size={16} /> Account yaratish</Button>
+              <h2 className="mt-4 text-xl font-bold">Add your first trading account</h2>
+              <p className="mt-1 text-sm text-[#8a8a8a]">Track real accounts, prop challenges or funded accounts.</p>
+              <Button onClick={onAdd} className="mt-5 bg-white text-black hover:bg-zinc-200"><Plus size={16} /> Create account</Button>
             </div>
           </div>
         : <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
@@ -382,7 +382,7 @@ function AccountCard({ s, deleting, onOpen, onDelete }: { s: Summary; deleting: 
           <PropFirmLogo firm={s.account.firm} />
           <div className="min-w-0 flex-1">
             <p className="truncate font-bold">{s.account.name}</p>
-            <p className="text-xs text-[#8a8a8a]">{s.account.phase} / {s.account.marketType}</p>
+            <p className="text-xs text-[#8a8a8a]">{s.account.accountType === "real" ? "Real" : "Prop"} / {s.account.phase} / {s.account.marketType}</p>
           </div>
           <div className="flex shrink-0 items-center gap-1.5">
             <span className={`rounded-lg border px-2 py-0.5 text-[11px] font-semibold ${statusColor[s.account.status] || statusColor.Active}`}>
@@ -390,13 +390,13 @@ function AccountCard({ s, deleting, onOpen, onDelete }: { s: Summary; deleting: 
             </span>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon-sm" aria-label="Amallar" onClick={e => e.stopPropagation()}>
+                <Button variant="ghost" size="icon-sm" aria-label="Actions" onClick={e => e.stopPropagation()}>
                   <MoreHorizontal size={15} />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="border-[#2a2a2a] bg-[#181818]" onClick={e => e.stopPropagation()}>
                 <DropdownMenuItem variant="destructive" disabled={deleting === s.account.id} onClick={() => onDelete(s.account)}>
-                  <Trash2 size={14} /> Accountni o&apos;chirish
+                  <Trash2 size={14} /> Delete account
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -406,7 +406,7 @@ function AccountCard({ s, deleting, onOpen, onDelete }: { s: Summary; deleting: 
         {/* PnL */}
         <div className="mt-4 flex items-end justify-between">
           <div>
-            <p className="text-[10px] uppercase tracking-wider text-[#8a8a8a]">Natija</p>
+            <p className="text-[10px] uppercase tracking-wider text-[#8a8a8a]">Result</p>
             <p className={`font-mono text-2xl font-black ${s.pnl >= 0 ? "text-emerald-400" : "text-rose-400"}`}>
               {s.pnl >= 0 ? "+" : ""}{cash.format(s.pnl)}
             </p>
@@ -435,7 +435,7 @@ function AccountCard({ s, deleting, onOpen, onDelete }: { s: Summary; deleting: 
       </div>
 
       <div className="flex items-center justify-between border-t border-[#2a2a2a] px-5 py-3">
-        <span className="text-xs text-[#8a8a8a]">Jurnalni ochish</span>
+        <span className="text-xs text-[#8a8a8a]">Open journal</span>
         <ChevronRight size={16} className="text-[#8a8a8a] transition-transform group-hover:translate-x-0.5" />
       </div>
     </div>
@@ -569,7 +569,7 @@ function Workspace(p: {
                         <Area type="monotone" dataKey="equity" stroke="#d9f96d" fill="url(#balanceFill)" strokeWidth={3} dot={false} activeDot={{ r: 5, fill: "#d9f96d", stroke: "#171717", strokeWidth: 2 }} />
                       </AreaChart>
                     </ResponsiveContainer>
-                  : <Empty text="Balance chart uchun trade qo'shing." />
+                  : <Empty text="Add trades to build the balance chart." />
                 }
               </div>
             </section>

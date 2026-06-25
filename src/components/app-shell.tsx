@@ -12,9 +12,7 @@ import { apiRequest } from "@/lib/api-client";
 import type { Section } from "./types";
 
 const FeedV3 = dynamic(() => import("./feed-v3").then((mod) => mod.FeedV3), { ssr: false, loading: () => null });
-const ChatV4 = dynamic(() => import("./chat-v4").then((mod) => mod.ChatV4), { ssr: false, loading: () => null });
 const Journal = dynamic(() => import("./journal").then((mod) => mod.Journal), { ssr: false, loading: () => null });
-const Backtest = dynamic(() => import("./backtest").then((mod) => mod.Backtest), { ssr: false, loading: () => null });
 const Account = dynamic(() => import("./account").then((mod) => mod.Account), { ssr: false, loading: () => null });
 const AdminPanel = dynamic(() => import("./admin-panel").then((mod) => mod.AdminPanel), { ssr: false, loading: () => null });
 
@@ -27,18 +25,14 @@ function usernameFromPath(pathname: string) {
 }
 
 function sectionFromPath(pathname: string): Section {
-  if (pathname.startsWith("/chat")) return "chat";
   if (pathname.startsWith("/journal")) return "journal";
-  if (pathname.startsWith("/backtest")) return "backtest";
   if (pathname.startsWith("/profile") || pathname.startsWith("/account") || usernameFromPath(pathname)) return "account";
   if (pathname.startsWith("/admin")) return "admin";
   return "feed";
 }
 
 function pathFromSection(section: Section) {
-  if (section === "chat") return "/chat";
   if (section === "journal") return "/journal";
-  if (section === "backtest") return "/backtest";
   if (section === "account") return "/profile";
   if (section === "admin") return "/admin";
   return "/";
@@ -74,7 +68,7 @@ function AuthGate({ onLogin }: { onLogin: () => void }) {
         </div>
 
         <p className="mt-6 text-[15px] leading-7 text-zinc-300">
-          Trading workspace'ingizga kiring. Journal, chat, feed va backtest bir joyda, tez va toza flow bilan ishlaydi.
+          Sign in to your trading workspace. Journal, account progress, proof profile and trade sharing stay in one fast flow.
         </p>
 
         <button
@@ -88,14 +82,14 @@ function AuthGate({ onLogin }: { onLogin: () => void }) {
 
         <div className="mt-5 grid grid-cols-3 gap-2 text-center text-[11px] font-black text-slate-400">
           <span className="rounded-lg border border-white/8 bg-white/[.035] px-2 py-2">Journal</span>
-          <span className="rounded-lg border border-white/8 bg-white/[.035] px-2 py-2">Chat</span>
-          <span className="rounded-lg border border-white/8 bg-white/[.035] px-2 py-2">Backtest</span>
+          <span className="rounded-lg border border-white/8 bg-white/[.035] px-2 py-2">Accounts</span>
+          <span className="rounded-lg border border-white/8 bg-white/[.035] px-2 py-2">Proof</span>
         </div>
 
         <div className="mt-4 flex items-start gap-2 rounded-lg border border-amber-300/12 bg-amber-300/[.055] p-3 text-amber-100">
           <Sparkles size={16} className="mt-0.5 shrink-0 text-amber-200" />
           <p className="text-xs leading-5 text-zinc-300">
-            <strong className="text-amber-100">Trading plan first.</strong> Risk, setup va review yozuvlari bir flow ichida saqlanadi.
+            <strong className="text-amber-100">Trading plan first.</strong> Risk, setup and review notes stay attached to each trade.
           </p>
         </div>
       </section>
@@ -113,7 +107,7 @@ export function AppShell() {
   const [visitedSections, setVisitedSections] = useState<Section[]>(() => [getCurrentSection()]);
   const { user } = useAuth();
   const openLogin = () => setAuthOpen(true);
-  const chatOpen = section === "chat";
+  const chatOpen = false;
 
   useEffect(() => {
     const syncFromPath = () => {
@@ -148,9 +142,7 @@ export function AppShell() {
   useEffect(() => {
     const preload = () => {
       void import("./feed-v3");
-      void import("./chat-v4");
       void import("./journal");
-      void import("./backtest");
       void import("./account");
     };
     const timer = window.setTimeout(preload, 700);
@@ -203,9 +195,7 @@ export function AppShell() {
   };
 
   const renderSection = (item: Section) => {
-    if (item === "chat") return <ChatV4 onLogin={openLogin} onBack={() => changeSection("feed")} />;
     if (item === "journal") return <Journal onLogin={openLogin} />;
-    if (item === "backtest") return <Backtest />;
     if (item === "account") return <Account onLogin={openLogin} profileUsername={profileUsername || undefined} />;
     if (item === "admin" && isAdmin) return <AdminPanel onLogin={openLogin} />;
     return <FeedV3 onLogin={openLogin} />;

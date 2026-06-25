@@ -147,7 +147,12 @@ export interface JournalEntry {
 export interface PropAccount {
   id: string;
   name: string;
+  accountType?: "prop" | "real";
   firm: string;
+  propSite?: string;
+  propLogin?: string;
+  importSource?: "manual" | "metaapi" | "ctrader" | "official_api";
+  platform?: string;
   phase: string;
   marketType: string;
   accountSize: number;

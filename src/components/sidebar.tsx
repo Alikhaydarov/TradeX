@@ -2,11 +2,9 @@
 
 import type { User } from "@supabase/supabase-js";
 import {
-  BarChart3,
   BookOpen,
   Home,
   LogIn,
-  MessageCircle,
   Plus,
   ShieldCheck,
   UserRound,
@@ -20,10 +18,8 @@ import type { Section } from "./types";
 
 const baseNav = [
   { id: "feed" as const, label: "Home", hint: "Market pulse", icon: Home },
-  { id: "chat" as const, label: "Chat", hint: "Trader rooms", icon: MessageCircle },
-  { id: "journal" as const, label: "Journal", hint: "Trade records", icon: BookOpen },
-  { id: "backtest" as const, label: "Backtest", hint: "Hali ishlamaydi", icon: BarChart3, unavailable: true },
-  { id: "account" as const, label: "Account", hint: "Profile settings", icon: UserRound },
+  { id: "journal" as const, label: "Journal", hint: "Accounts and trade records", icon: BookOpen },
+  { id: "account" as const, label: "Profile", hint: "Proof and settings", icon: UserRound },
 ];
 
 function usernameFromUser(user: User | null) {
@@ -58,7 +54,7 @@ export function Sidebar({
   const [profileUsername, setProfileUsername] = useState("");
   const name = String(user?.user_metadata.full_name ?? user?.user_metadata.name ?? "Mehmon trader");
   const username = usernameFromUser(user);
-  const handle = user ? `@${profileUsername || username}` : "Google bilan kirish";
+  const handle = user ? `@${profileUsername || username}` : "Sign in with Google";
   const avatar = typeof user?.user_metadata.avatar_url === "string" ? user.user_metadata.avatar_url : null;
 
   useEffect(() => {
@@ -94,7 +90,7 @@ export function Sidebar({
   return (
     <>
       <aside className="fixed left-[max(0.75rem,calc((100vw-1560px)/2+0.75rem))] top-3 z-40 hidden h-[calc(100dvh-1.5rem)] w-[232px] shrink-0 flex-col rounded-xl border border-border bg-[#111111] p-3 shadow-2xl shadow-black/25 lg:flex">
-        <button onClick={() => onChange("feed")} className="flex items-center gap-3 rounded-lg px-2 py-2 text-left transition-colors hover:bg-white/[.035]" aria-label="TradeWay bosh sahifa">
+        <button onClick={() => onChange("feed")} className="flex items-center gap-3 rounded-lg px-2 py-2 text-left transition-colors hover:bg-white/[.035]" aria-label="TradeWay home">
           <span className="grid h-11 w-11 place-items-center rounded-lg bg-gradient-to-br from-zinc-100 via-zinc-400 to-zinc-800 text-lg font-black text-black shadow-lg shadow-black/40">TW</span>
           <span>
             <strong className="block text-base tracking-tight">TradeWay</strong>
@@ -167,7 +163,7 @@ export function Sidebar({
             const { id, label, icon: Icon } = item;
             const unavailable = "unavailable" in item && item.unavailable;
             return (
-              <button key={id} onClick={() => onChange(id)} className={`relative grid h-11 w-11 place-items-center rounded-lg transition-colors duration-100 ${active === id ? "bg-white/[.09] text-zinc-100 ring-1 ring-white/15" : "text-zinc-500"}`} aria-label={unavailable ? `${label} hali ishlamaydi` : label}>
+              <button key={id} onClick={() => onChange(id)} className={`relative grid h-11 w-11 place-items-center rounded-lg transition-colors duration-100 ${active === id ? "bg-white/[.09] text-zinc-100 ring-1 ring-white/15" : "text-zinc-500"}`} aria-label={unavailable ? `${label} is not available yet` : label}>
                 <Icon size={21} strokeWidth={active === id ? 2.6 : 2} />
                 {unavailable ? <span className="absolute right-1.5 top-1.5 size-1.5 rounded-full bg-amber-300" /> : null}
               </button>

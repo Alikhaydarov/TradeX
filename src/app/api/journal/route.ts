@@ -49,7 +49,7 @@ export async function POST(request: Request) {
   if (!auth) return unauthorized();
 
   const body = (await request.json()) as JournalPayload;
-  if (!body.propAccountId) return badRequest("Prop accountni tanlang.");
+  if (!body.propAccountId) return badRequest("Select a trading account.");
 
   const { data: account, error: accountError } = await auth.supabase
     .from("prop_accounts")
@@ -57,7 +57,7 @@ export async function POST(request: Request) {
     .eq("id", body.propAccountId)
     .eq("user_id", auth.user.id)
     .single();
-  if (accountError || !account) return badRequest("Prop account topilmadi.");
+  if (accountError || !account) return badRequest("Trading account not found.");
 
   const symbol = body.symbol?.trim().toUpperCase();
   const side = body.side;
