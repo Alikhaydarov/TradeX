@@ -14,7 +14,7 @@ interface TradeShareComposerProps {
 
 const cash = new Intl.NumberFormat("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
-/* ─── Canvas helpers ─────────────────────────────────────────────────────────── */
+/* ─── Canvas helpers ──────────────────────────────────────────────────────── */
 
 function loadImg(src: string): Promise<HTMLImageElement | null> {
   return new Promise((resolve) => {
@@ -26,62 +26,145 @@ function loadImg(src: string): Promise<HTMLImageElement | null> {
   });
 }
 
+/** Round-rect polyfill for older browsers */
+function rRect(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, r: number) {
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.lineTo(x + w - r, y); ctx.arcTo(x + w, y, x + w, y + r, r);
+  ctx.lineTo(x + w, y + h - r); ctx.arcTo(x + w, y + h, x + w - r, y + h, r);
+  ctx.lineTo(x + r, y + h); ctx.arcTo(x, y + h, x, y + h - r, r);
+  ctx.lineTo(x, y + r); ctx.arcTo(x, y, x + r, y, r);
+  ctx.closePath();
+}
+
+/* ── FEED CARD  1080 × 1080 ────────────────────────────────────────────────── */
 async function makeFeedCard(trade: JournalEntry): Promise<string> {
+  const S = 1080;
   const canvas = document.createElement("canvas");
-  canvas.width = 1080; canvas.height = 1080;
+  canvas.width = S; canvas.height = S;
   const ctx = canvas.getContext("2d");
   if (!ctx) return "";
-  const win = trade.pnl >= 0;
-  const accent = win ? "#42d99b" : "#fb7185";
-  const date = new Date(`${trade.rawDate}T00:00:00`).toLocaleDateString("en-US", {
-    month: "long", day: "numeric", year: "numeric",
-  });
+
+  const win     = trade.pnl >= 0;
+  const accent  = win ? "#34d399" : "#f87171";
+  const dateStr = new Date(`${trade.rawDate}T00:00:00`).toLocaleDateString("en-US",
+    { month: "short", day: "numeric", year: "numeric" });
 
   const draw = (chart: HTMLImageElement | null) => {
-    const bg = ctx.createLinearGradient(0, 0, 1080, 1080);
-    bg.addColorStop(0, "#0b0b0b"); bg.addColorStop(0.55, "#171717"); bg.addColorStop(1, "#232323");
-    ctx.fillStyle = bg; ctx.fillRect(0, 0, 1080, 1080);
+    /* 1 — dark background */
+    const bg = ctx.createLinearGradient(0, 0, S, S);
+    bg.addColorStop(0, "#0a0a0a"); bg.addColorStop(1, "#1c1c1c");
+    ctx.fillStyle = bg; ctx.fillRect(0, 0, S, S);
 
+    /* 2 — blurred chart ghost (right side) */
     if (chart) {
-      const s = Math.max(1080 / chart.width, 1080 / chart.height);
-      ctx.globalAlpha = 0.34;
-      ctx.drawImage(chart, (1080 - chart.width * s) / 2, (1080 - chart.height * s) / 2, chart.width * s, chart.height * s);
+      ctx.save();
+      const scale = Math.max(S / chart.width, S / chart.height);
+      const cw = chart.width * scale, ch = chart.height * scale;
+      ctx.globalAlpha = 0.22;
+      ctx.drawImage(chart, (S - cw) / 2, (S - ch) / 2, cw, ch);
       ctx.globalAlpha = 1;
-    } else {
-      [105, 174, 130, 238, 182, 310, 244].forEach((h, i) => {
-        const x = 710 + i * 45, y = 620 - h;
-        ctx.strokeStyle = "rgba(212,212,216,.22)"; ctx.lineWidth = 3;
-        ctx.beginPath(); ctx.moveTo(x + 12, y - 42); ctx.lineTo(x + 12, y + h + 42); ctx.stroke();
-        ctx.fillStyle = i % 3 === 0 ? "rgba(66,217,155,.28)" : "rgba(212,212,216,.24)"; ctx.fillRect(x, y, 24, h);
-      });
+      ctx.restore();
     }
 
-    const shade = ctx.createLinearGradient(0, 0, 1080, 0);
-    shade.addColorStop(0, "rgba(11,11,11,.98)"); shade.addColorStop(0.58, "rgba(11,11,11,.9)"); shade.addColorStop(1, "rgba(11,11,11,.2)");
-    ctx.fillStyle = shade; ctx.fillRect(0, 0, 1080, 1080);
+    /* 3 — left-to-right dark fade so text stays readable */
+    const shade = ctx.createLinearGradient(0, 0, S, 0);
+    shade.addColorStop(0,    "rgba(10,10,10,1)");
+    shade.addColorStop(0.52, "rgba(10,10,10,0.92)");
+    shade.addColorStop(0.78, "rgba(10,10,10,0.60)");
+    shade.addColorStop(1,    "rgba(10,10,10,0.10)");
+    ctx.fillStyle = shade; ctx.fillRect(0, 0, S, S);
 
-    ctx.fillStyle = "#fff"; ctx.font = "900 58px Arial,sans-serif"; ctx.fillText("TRADEWAY", 82, 125);
-    ctx.fillStyle = "#75819b"; ctx.font = "500 30px Arial,sans-serif"; ctx.fillText(date, 82, 245);
-    ctx.fillStyle = "#fff"; ctx.font = "900 72px Arial,sans-serif"; ctx.fillText(trade.symbol, 82, 355);
-    ctx.font = "700 38px Arial,sans-serif"; ctx.fillText(trade.side, 82, 440);
-    ctx.fillStyle = "rgba(255,255,255,.28)"; ctx.fillRect(225, 400, 3, 50);
-    ctx.fillStyle = accent; ctx.fillText(trade.pnl > 0 ? "WIN" : trade.pnl < 0 ? "LOSS" : "BE", 260, 440);
-    ctx.font = "900 92px Arial,sans-serif"; ctx.fillText(`${(trade.resultR ?? 0).toFixed(2)}R`, 82, 565);
-    ctx.font = "800 32px Arial,sans-serif"; ctx.fillText(`${win ? "+" : ""}${cash.format(trade.pnl)}`, 86, 615);
-    ctx.fillStyle = "rgba(255,255,255,.13)"; ctx.fillRect(82, 665, 916, 2);
-
-    const m = (lbl: string, val: string, x: number, y: number) => {
-      ctx.fillStyle = "#6f7b94"; ctx.font = "600 27px Arial,sans-serif"; ctx.fillText(lbl, x, y);
-      ctx.fillStyle = "#fff"; ctx.font = "800 39px Arial,sans-serif"; ctx.fillText(val, x, y + 58);
-    };
-    m("Entry Price", String(trade.entry), 82, 750); m("Exit Price", String(trade.exit), 570, 750);
-    m("Lot Size", String(trade.quantity), 82, 900); m("Risk", trade.riskPercent || cash.format(trade.riskAmount || 0), 330, 900);
-    m("Setup", trade.setup || "Unspecified", 570, 900);
-
-    ctx.strokeStyle = accent; ctx.lineWidth = 8; ctx.lineCap = "round";
-    ctx.beginPath(); ctx.moveTo(690, 550); ctx.bezierCurveTo(760, 500, 820, 430, 900, 330); ctx.stroke();
+    /* 4 — accent left border strip */
     ctx.fillStyle = accent;
-    ctx.beginPath(); ctx.moveTo(900, 330); ctx.lineTo(846, 350); ctx.lineTo(884, 392); ctx.closePath(); ctx.fill();
+    ctx.fillRect(0, 0, 6, S);
+
+    /* ── TEXT ── */
+    const X = 72; // left margin
+
+    /* TRADEWAY logo */
+    ctx.fillStyle = "#ffffff";
+    ctx.font = "900 50px 'Arial Black', Arial, sans-serif";
+    ctx.fillText("TRADEWAY", X, 108);
+
+    /* date — top right */
+    ctx.fillStyle = "#6b7280";
+    ctx.font = "500 26px Arial, sans-serif";
+    ctx.textAlign = "right";
+    ctx.fillText(dateStr, S - 56, 96);
+    ctx.textAlign = "left";
+
+    /* Symbol */
+    ctx.fillStyle = "#f9fafb";
+    ctx.font = "900 100px 'Arial Black', Arial, sans-serif";
+    ctx.fillText(trade.symbol, X, 268);
+
+    /* Side + Result chips */
+    const drawChip = (label: string, x: number, y: number, bg2: string, fg: string) => {
+      ctx.font = "800 26px Arial, sans-serif";
+      const tw = ctx.measureText(label).width;
+      const pw = tw + 36, ph = 48, r = 12;
+      ctx.fillStyle = bg2; rRect(ctx, x, y, pw, ph, r); ctx.fill();
+      ctx.fillStyle = fg; ctx.fillText(label, x + 18, y + 33);
+      return pw + 14;
+    };
+
+    const sideColor  = trade.side === "Long" ? ["rgba(52,211,153,.2)", "#34d399"] : ["rgba(248,113,113,.2)", "#f87171"];
+    const resultLabel = trade.pnl > 0 ? "WIN" : trade.pnl < 0 ? "LOSS" : "BREAKEVEN";
+    const resultColor = win ? ["rgba(52,211,153,.2)", "#34d399"] : ["rgba(248,113,113,.2)", "#f87171"];
+
+    let cx = X;
+    cx += drawChip(trade.side.toUpperCase(), cx, 304, sideColor[0], sideColor[1]);
+    drawChip(resultLabel, cx, 304, resultColor[0], resultColor[1]);
+
+    /* P&L — big */
+    const pnlStr = `${win ? "+" : ""}$${cash.format(Math.abs(trade.pnl))}`;
+    const pnlSize = pnlStr.length > 12 ? 82 : pnlStr.length > 9 ? 92 : 104;
+    ctx.fillStyle = accent;
+    ctx.font = `900 ${pnlSize}px 'Arial Black', Arial, sans-serif`;
+    ctx.fillText(pnlStr, X, 460);
+
+    /* R value (only if valid) */
+    let nextY = 510;
+    if (trade.resultR && Math.abs(trade.resultR) > 0.01) {
+      ctx.fillStyle = accent; ctx.globalAlpha = 0.7;
+      ctx.font = "700 44px Arial, sans-serif";
+      ctx.fillText(`${trade.resultR.toFixed(2)}R`, X, 525);
+      ctx.globalAlpha = 1;
+      nextY = 560;
+    }
+
+    /* divider */
+    ctx.fillStyle = "rgba(255,255,255,0.1)";
+    ctx.fillRect(X, nextY + 10, 560, 1.5);
+
+    /* optional tags (setup / session) */
+    let tagX = X;
+    const drawTag = (val: string, x: number, y: number) => {
+      ctx.font = "600 25px Arial, sans-serif";
+      const tw = ctx.measureText(val).width;
+      ctx.fillStyle = "rgba(255,255,255,0.07)"; rRect(ctx, x, y, tw + 28, 42, 10); ctx.fill();
+      ctx.fillStyle = "#9ca3af"; ctx.fillText(val, x + 14, y + 29);
+      return tw + 44;
+    };
+    const tagY = nextY + 36;
+    if (trade.setup?.trim())   tagX += drawTag(trade.setup.trim(), tagX, tagY);
+    if (trade.session?.trim()) drawTag(trade.session.trim(), tagX, tagY);
+
+    /* decorative arrow (top-right) */
+    ctx.strokeStyle = accent; ctx.lineWidth = 7; ctx.lineCap = "round";
+    ctx.globalAlpha = 0.55;
+    ctx.beginPath(); ctx.moveTo(660, 520); ctx.bezierCurveTo(760, 440, 840, 360, 950, 270); ctx.stroke();
+    ctx.fillStyle = accent;
+    ctx.beginPath(); ctx.moveTo(950, 270); ctx.lineTo(900, 295); ctx.lineTo(936, 335); ctx.closePath(); ctx.fill();
+    ctx.globalAlpha = 1;
+
+    /* bottom: tiny tradeway.app */
+    ctx.fillStyle = "rgba(255,255,255,0.15)";
+    ctx.font = "500 22px Arial, sans-serif";
+    ctx.textAlign = "center";
+    ctx.fillText("tradeway.app", S / 2, S - 36);
+    ctx.textAlign = "left";
 
     return canvas.toDataURL("image/png", 1);
   };
@@ -93,116 +176,152 @@ async function makeFeedCard(trade: JournalEntry): Promise<string> {
   return draw(null);
 }
 
+/* ── STORY CARD  1080 × 1920 ──────────────────────────────────────────────── */
 async function makeStoryCard(trade: JournalEntry): Promise<string> {
   const W = 1080, H = 1920;
   const canvas = document.createElement("canvas");
   canvas.width = W; canvas.height = H;
   const ctx = canvas.getContext("2d");
   if (!ctx) return "";
-  const win = trade.pnl >= 0;
-  const accent = win ? "#42d99b" : "#fb7185";
-  const date = new Date(`${trade.rawDate}T00:00:00`).toLocaleDateString("en-US", {
-    month: "long", day: "numeric", year: "numeric",
-  });
+
+  const win     = trade.pnl >= 0;
+  const accent  = win ? "#34d399" : "#f87171";
+  const dateStr = new Date(`${trade.rawDate}T00:00:00`).toLocaleDateString("en-US",
+    { month: "short", day: "numeric", year: "numeric" });
 
   const draw = (chart: HTMLImageElement | null) => {
     /* background */
     const bg = ctx.createLinearGradient(0, 0, 0, H);
-    bg.addColorStop(0, "#080808"); bg.addColorStop(0.5, "#111"); bg.addColorStop(1, "#1a1a1a");
+    bg.addColorStop(0, "#060606"); bg.addColorStop(0.6, "#101010"); bg.addColorStop(1, "#181818");
     ctx.fillStyle = bg; ctx.fillRect(0, 0, W, H);
 
-    /* ghost chart texture */
+    /* accent strip */
+    ctx.fillStyle = accent; ctx.fillRect(0, 0, 6, H);
+
+    /* ghost chart background (upper half) */
     if (chart) {
-      const s = Math.max(W / chart.width, (H * 0.55) / chart.height);
-      ctx.globalAlpha = 0.18;
-      ctx.drawImage(chart, (W - chart.width * s) / 2, 0, chart.width * s, chart.height * s);
+      const scale = Math.max(W / chart.width, (H * 0.52) / chart.height);
+      ctx.save();
+      ctx.globalAlpha = 0.14;
+      ctx.drawImage(chart, (W - chart.width * scale) / 2, 0, chart.width * scale, chart.height * scale);
       ctx.globalAlpha = 1;
-    } else {
-      [130, 210, 160, 290, 220, 370, 280, 190].forEach((h, i) => {
-        const x = 560 + i * 68, y = 700 - h;
-        ctx.strokeStyle = "rgba(212,212,216,.12)"; ctx.lineWidth = 4;
-        ctx.beginPath(); ctx.moveTo(x + 15, y - 55); ctx.lineTo(x + 15, y + h + 55); ctx.stroke();
-        ctx.fillStyle = i % 3 === 0 ? "rgba(66,217,155,.16)" : "rgba(212,212,216,.14)"; ctx.fillRect(x, y, 30, h);
-      });
+      ctx.restore();
     }
 
-    /* top vignette */
-    const vig = ctx.createLinearGradient(0, 0, 0, H * 0.58);
-    vig.addColorStop(0, "rgba(8,8,8,1)"); vig.addColorStop(0.55, "rgba(8,8,8,.85)"); vig.addColorStop(1, "rgba(8,8,8,0)");
-    ctx.fillStyle = vig; ctx.fillRect(0, 0, W, H * 0.58);
+    /* top vignette — keeps text readable */
+    const vig = ctx.createLinearGradient(0, 0, 0, H * 0.56);
+    vig.addColorStop(0, "rgba(6,6,6,1)");
+    vig.addColorStop(0.6, "rgba(6,6,6,0.88)");
+    vig.addColorStop(1,   "rgba(6,6,6,0)");
+    ctx.fillStyle = vig; ctx.fillRect(0, 0, W, H * 0.56);
+
+    const X = 80;
 
     /* TRADEWAY */
-    ctx.fillStyle = "#fff"; ctx.font = "900 58px Arial,sans-serif"; ctx.fillText("TRADEWAY", 80, 148);
+    ctx.fillStyle = "#ffffff";
+    ctx.font = "900 54px 'Arial Black', Arial, sans-serif";
+    ctx.fillText("TRADEWAY", X, 148);
+    /* accent dot */
     ctx.fillStyle = accent;
-    ctx.beginPath(); ctx.arc(80 + ctx.measureText("TRADEWAY").width + 20, 126, 11, 0, Math.PI * 2); ctx.fill();
-    ctx.fillStyle = "#5a6476"; ctx.font = "500 29px Arial,sans-serif"; ctx.fillText(date, 80, 210);
+    ctx.beginPath();
+    ctx.arc(X + ctx.measureText("TRADEWAY").width + 20, 128, 10, 0, Math.PI * 2);
+    ctx.fill();
+
+    /* date */
+    ctx.fillStyle = "#6b7280";
+    ctx.font = "500 28px Arial, sans-serif";
+    ctx.fillText(dateStr, X, 206);
 
     /* symbol */
-    ctx.fillStyle = "#fff"; ctx.font = "900 112px Arial,sans-serif"; ctx.fillText(trade.symbol, 80, 380);
+    ctx.fillStyle = "#f9fafb";
+    ctx.font = "900 118px 'Arial Black', Arial, sans-serif";
+    ctx.fillText(trade.symbol, X, 378);
 
     /* chips */
-    const chipDraw = (label: string, x: number, bg2: string, fg: string) => {
-      ctx.font = "800 25px Arial,sans-serif";
+    const chip = (label: string, x: number, y: number, bg2: string, fg: string) => {
+      ctx.font = "800 27px Arial, sans-serif";
       const tw = ctx.measureText(label).width + 44;
-      ctx.fillStyle = bg2;
-      ctx.beginPath(); ctx.roundRect(x, 410, tw, 54, 14); ctx.fill();
-      ctx.fillStyle = fg; ctx.fillText(label, x + 22, 445);
+      ctx.fillStyle = bg2; rRect(ctx, x, y, tw, 54, 14); ctx.fill();
+      ctx.fillStyle = fg; ctx.fillText(label, x + 22, y + 37);
       return tw + 16;
     };
-    const sBg = trade.side === "Long" ? "rgba(66,217,155,.18)" : "rgba(251,113,133,.18)";
-    const sFg = trade.side === "Long" ? "#42d99b" : "#fb7185";
-    const rBg = win ? "rgba(66,217,155,.18)" : "rgba(251,113,133,.18)";
-    const rFg = win ? "#42d99b" : "#fb7185";
-    const cw = chipDraw(trade.side.toUpperCase(), 80, sBg, sFg);
-    chipDraw(trade.pnl > 0 ? "WIN" : trade.pnl < 0 ? "LOSS" : "BE", 80 + cw, rBg, rFg);
+    const sBg = trade.side === "Long" ? "rgba(52,211,153,.2)" : "rgba(248,113,113,.2)";
+    const sFg = trade.side === "Long" ? "#34d399" : "#f87171";
+    const rLabel = trade.pnl > 0 ? "WIN" : trade.pnl < 0 ? "LOSS" : "BE";
+    const rBg = win ? "rgba(52,211,153,.2)" : "rgba(248,113,113,.2)";
+    const cw2 = chip(trade.side.toUpperCase(), X, 414, sBg, sFg);
+    chip(rLabel, X + cw2, 414, rBg, win ? "#34d399" : "#f87171");
 
     /* P&L */
-    const pnlFont = Math.abs(trade.pnl) >= 10000 ? 100 : 122;
-    ctx.fillStyle = accent; ctx.font = `900 ${pnlFont}px Arial,sans-serif`;
-    ctx.fillText(`${win ? "+" : ""}${cash.format(trade.pnl)}`, 80, 628);
+    const pnlStr = `${win ? "+" : ""}$${cash.format(Math.abs(trade.pnl))}`;
+    const pnlSize = pnlStr.length > 12 ? 92 : pnlStr.length > 9 ? 108 : 126;
+    ctx.fillStyle = accent;
+    ctx.font = `900 ${pnlSize}px 'Arial Black', Arial, sans-serif`;
+    ctx.fillText(pnlStr, X, 604);
 
-    /* R */
-    if (trade.resultR) {
-      ctx.font = "800 54px Arial,sans-serif"; ctx.globalAlpha = 0.72;
-      ctx.fillText(`${trade.resultR.toFixed(2)}R`, 80, 712);
+    /* R value */
+    let statsY = 680;
+    if (trade.resultR && Math.abs(trade.resultR) > 0.01) {
+      ctx.fillStyle = accent; ctx.globalAlpha = 0.72;
+      ctx.font = "700 56px Arial, sans-serif";
+      ctx.fillText(`${trade.resultR.toFixed(2)}R`, X, 682);
       ctx.globalAlpha = 1;
+      statsY = 750;
     }
 
     /* divider */
-    ctx.fillStyle = "rgba(255,255,255,.09)"; ctx.fillRect(80, 762, W - 160, 2);
+    ctx.fillStyle = "rgba(255,255,255,0.09)";
+    ctx.fillRect(X, statsY + 6, W - X * 2, 1.5);
 
-    /* stats */
-    const stat = (lbl: string, val: string, x: number, y: number) => {
-      ctx.fillStyle = "#4a5568"; ctx.font = "600 27px Arial,sans-serif"; ctx.fillText(lbl, x, y);
-      ctx.fillStyle = "#dde2ed"; ctx.font = "700 38px Arial,sans-serif"; ctx.fillText(val, x, y + 52);
+    /* optional tags */
+    let tagX = X;
+    const tag = (val: string, x: number, y: number) => {
+      ctx.font = "600 27px Arial, sans-serif";
+      const tw = ctx.measureText(val).width + 32;
+      ctx.fillStyle = "rgba(255,255,255,0.07)"; rRect(ctx, x, y, tw, 46, 12); ctx.fill();
+      ctx.fillStyle = "#9ca3af"; ctx.fillText(val, x + 16, y + 32);
+      return tw + 16;
     };
-    stat("ENTRY", String(trade.entry), 80, 810);  stat("EXIT", String(trade.exit), 580, 810);
-    stat("LOT SIZE", String(trade.quantity), 80, 930); stat("RISK", trade.riskPercent || cash.format(trade.riskAmount || 0), 580, 930);
-    if (trade.setup)   stat("SETUP",   trade.setup,   80,  1050);
-    if (trade.session) stat("SESSION", trade.session, 580, 1050);
+    const tagY2 = statsY + 36;
+    if (trade.setup?.trim())   tagX += tag(trade.setup.trim(), tagX, tagY2);
+    if (trade.session?.trim()) tag(trade.session.trim(), tagX, tagY2);
 
-    /* clear chart */
-    const czY = 1170, czH = 570;
+    /* ── Clear chart image (lower section) ── */
+    const chartZoneTop = 920, chartZoneH = 760;
     if (chart) {
-      const s = Math.min((W - 100) / chart.width, czH / chart.height);
-      const cw2 = chart.width * s, ch2 = chart.height * s;
-      const cx2 = (W - cw2) / 2;
-      ctx.fillStyle = "rgba(255,255,255,.04)";
-      ctx.beginPath(); ctx.roundRect(cx2 - 18, czY - 18, cw2 + 36, ch2 + 36, 22); ctx.fill();
-      ctx.drawImage(chart, cx2, czY, cw2, ch2);
-      ctx.strokeStyle = "rgba(255,255,255,.07)"; ctx.lineWidth = 2;
-      ctx.beginPath(); ctx.roundRect(cx2 - 18, czY - 18, cw2 + 36, ch2 + 36, 22); ctx.stroke();
+      const scale = Math.min((W - 100) / chart.width, chartZoneH / chart.height);
+      const cw3 = chart.width * scale, ch3 = chart.height * scale;
+      const cx3 = (W - cw3) / 2, cy3 = chartZoneTop + (chartZoneH - ch3) / 2;
+
+      /* card bg */
+      ctx.fillStyle = "rgba(255,255,255,0.04)";
+      rRect(ctx, cx3 - 18, cy3 - 18, cw3 + 36, ch3 + 36, 20); ctx.fill();
+      ctx.drawImage(chart, cx3, cy3, cw3, ch3);
+      ctx.strokeStyle = "rgba(255,255,255,0.07)"; ctx.lineWidth = 2;
+      rRect(ctx, cx3 - 18, cy3 - 18, cw3 + 36, ch3 + 36, 20); ctx.stroke();
+    } else {
+      /* decorative mini candles when no chart */
+      [120, 195, 145, 270, 200, 340, 255, 175, 310].forEach((h, i) => {
+        const bx = 150 + i * 90, by = chartZoneTop + 380 - h;
+        ctx.strokeStyle = "rgba(212,212,216,0.15)"; ctx.lineWidth = 4;
+        ctx.beginPath(); ctx.moveTo(bx + 18, by - 50); ctx.lineTo(bx + 18, by + h + 50); ctx.stroke();
+        ctx.fillStyle = i % 3 === 0 ? "rgba(52,211,153,.22)" : "rgba(212,212,216,.18)";
+        ctx.fillRect(bx, by, 36, h);
+      });
     }
 
-    /* bottom fade */
-    const btm = ctx.createLinearGradient(0, H * 0.88, 0, H);
-    btm.addColorStop(0, "rgba(8,8,8,0)"); btm.addColorStop(1, "rgba(8,8,8,.96)");
-    ctx.fillStyle = btm; ctx.fillRect(0, H * 0.88, W, H * 0.12);
+    /* bottom gradient overlay */
+    const btm = ctx.createLinearGradient(0, H * 0.87, 0, H);
+    btm.addColorStop(0, "rgba(6,6,6,0)"); btm.addColorStop(1, "rgba(6,6,6,0.96)");
+    ctx.fillStyle = btm; ctx.fillRect(0, H * 0.87, W, H * 0.13);
 
     /* footer */
     ctx.textAlign = "center";
-    ctx.fillStyle = "#3a4050"; ctx.font = "600 28px Arial,sans-serif"; ctx.fillText("tradeway.app", W / 2, H - 90);
-    ctx.font = "500 23px Arial,sans-serif"; ctx.fillText("Track. Trade. Grow.", W / 2, H - 48);
+    ctx.fillStyle = "#374151";
+    ctx.font = "600 28px Arial, sans-serif";
+    ctx.fillText("tradeway.app", W / 2, H - 88);
+    ctx.font = "500 22px Arial, sans-serif";
+    ctx.fillText("Track. Trade. Grow.", W / 2, H - 50);
     ctx.textAlign = "left";
 
     return canvas.toDataURL("image/png", 1);
@@ -225,39 +344,40 @@ async function uploadDataUrl(dataUrl: string, filename: string): Promise<string>
   return json.imageUrl;
 }
 
-/* ─── Component ──────────────────────────────────────────────────────────────── */
+/* ─── Component ───────────────────────────────────────────────────────────── */
 
 export function TradeShareComposer({ trade, onClose }: TradeShareComposerProps) {
   const { user } = useAuth();
-  const [caption, setCaption] = useState("");
+  const [caption, setCaption]       = useState("");
   const [feedCardUrl, setFeedCardUrl] = useState("");
   const [storyCardUrl, setStoryCardUrl] = useState("");
   const [generating, setGenerating] = useState(false);
-  const [sharing, setSharing] = useState(false);
-  const [shared, setShared] = useState(false);
-  const [error, setError] = useState("");
-  const [activeTab, setActiveTab] = useState<"feed" | "story">("feed");
+  const [sharing, setSharing]       = useState(false);
+  const [shared, setShared]         = useState(false);
+  const [error, setError]           = useState("");
+  const [activeTab, setActiveTab]   = useState<"feed" | "story">("feed");
 
-  const username = String(user?.user_metadata?.user_name ?? user?.email?.split("@")[0] ?? "you");
-  const fullName = String(user?.user_metadata?.full_name ?? user?.user_metadata?.name ?? username);
+  const username  = String(user?.user_metadata?.user_name ?? user?.email?.split("@")[0] ?? "you");
+  const fullName  = String(user?.user_metadata?.full_name ?? user?.user_metadata?.name ?? username);
   const avatarUrl = typeof user?.user_metadata?.avatar_url === "string" ? user.user_metadata.avatar_url : null;
 
-  /* generate images when trade changes */
   useEffect(() => {
     if (!trade) {
       setCaption(""); setFeedCardUrl(""); setStoryCardUrl(""); setShared(false); setError(""); return;
     }
     const win = trade.pnl >= 0;
-    const parts = [`${trade.symbol} ${trade.side.toUpperCase()}`, `${win ? "+" : ""}$${cash.format(Math.abs(trade.pnl))}`];
-    if (trade.resultR) parts.push(`${trade.resultR.toFixed(1)}R`);
-    if (trade.setup) parts.push(trade.setup);
+    const parts = [
+      `${trade.symbol} ${trade.side.toUpperCase()}`,
+      `${win ? "+" : ""}$${cash.format(Math.abs(trade.pnl))}`,
+    ];
+    if (trade.resultR && Math.abs(trade.resultR) > 0.01) parts.push(`${trade.resultR.toFixed(2)}R`);
+    if (trade.setup?.trim()) parts.push(trade.setup.trim());
     let text = parts.join(" · ");
-    if (trade.note && text.length < 220) text += `\n${trade.note.slice(0, 280 - text.length - 1)}`;
+    if (trade.note?.trim() && text.length < 220) text += `\n${trade.note.trim().slice(0, 280 - text.length - 1)}`;
     setCaption(text);
     setShared(false); setError(""); setActiveTab("feed");
 
-    setGenerating(true);
-    setFeedCardUrl(""); setStoryCardUrl("");
+    setGenerating(true); setFeedCardUrl(""); setStoryCardUrl("");
     Promise.all([makeFeedCard(trade), makeStoryCard(trade)]).then(([feed, story]) => {
       setFeedCardUrl(feed); setStoryCardUrl(story); setGenerating(false);
     }).catch(() => setGenerating(false));
@@ -269,8 +389,12 @@ export function TradeShareComposer({ trade, onClose }: TradeShareComposerProps) 
     try {
       let shareImageUrl: string | undefined;
       if (feedCardUrl) {
-        try { shareImageUrl = await uploadDataUrl(feedCardUrl, `${trade.symbol}-${trade.rawDate}-tradeway.png`); }
-        catch { /* post without card if upload fails */ }
+        try {
+          shareImageUrl = await uploadDataUrl(
+            feedCardUrl,
+            `${trade.symbol}-${trade.rawDate}-tradeway.png`,
+          );
+        } catch { /* post without card if upload fails */ }
       }
       await apiRequest("/api/posts", {
         method: "POST",
@@ -295,10 +419,10 @@ export function TradeShareComposer({ trade, onClose }: TradeShareComposerProps) 
   };
 
   const downloadStory = () => {
-    if (!storyCardUrl) return;
+    if (!storyCardUrl || !trade) return;
     const a = document.createElement("a");
     a.href = storyCardUrl;
-    a.download = `${trade?.symbol ?? "trade"}-${trade?.rawDate ?? "story"}-story.png`;
+    a.download = `${trade.symbol}-${trade.rawDate}-story.png`;
     a.click();
   };
 
@@ -311,7 +435,7 @@ export function TradeShareComposer({ trade, onClose }: TradeShareComposerProps) 
         showCloseButton={false}
         className="max-h-[95dvh] overflow-hidden border border-[#2a2a2a] bg-[#0b0b0b] p-0 shadow-2xl shadow-black/80 sm:max-w-lg"
       >
-        {/* ── Header ── */}
+        {/* Header */}
         <div className="flex items-center justify-between border-b border-[#2a2a2a] px-4 py-3">
           <button type="button" onClick={onClose}
             className="grid h-8 w-8 place-items-center rounded-full text-[#8a8a8a] transition hover:bg-[#2a2a2a] hover:text-white">
@@ -332,7 +456,7 @@ export function TradeShareComposer({ trade, onClose }: TradeShareComposerProps) 
           )}
         </div>
 
-        {/* ── Body ── */}
+        {/* Body */}
         {shared ? (
           <div className="flex flex-col items-center justify-center gap-4 py-14 text-center">
             <span className="text-5xl">🚀</span>
@@ -351,7 +475,7 @@ export function TradeShareComposer({ trade, onClose }: TradeShareComposerProps) 
           </div>
         ) : (
           <div className="overflow-y-auto">
-            {/* Composer row */}
+            {/* Composer */}
             <div className="flex gap-3 p-4">
               <div className="shrink-0">
                 {avatarUrl ? (
@@ -364,13 +488,14 @@ export function TradeShareComposer({ trade, onClose }: TradeShareComposerProps) 
               </div>
               <div className="min-w-0 flex-1">
                 <p className="mb-1.5 text-sm font-semibold text-[#f1f1f1]">
-                  {fullName}<span className="ml-1.5 text-xs font-normal text-[#8a8a8a]">@{username}</span>
+                  {fullName}
+                  <span className="ml-1.5 text-xs font-normal text-[#8a8a8a]">@{username}</span>
                 </p>
-                <textarea value={caption} onChange={(e) => setCaption(e.target.value)} maxLength={280} rows={3}
-                  placeholder="Trade haqida yozing..." autoFocus
+                <textarea value={caption} onChange={(e) => setCaption(e.target.value)}
+                  maxLength={280} rows={3} placeholder="Trade haqida yozing..." autoFocus
                   className="w-full resize-none bg-transparent text-[15px] leading-6 text-[#f1f1f1] placeholder:text-[#5a5a5a] outline-none" />
 
-                {/* ── Trade card preview ── */}
+                {/* Trade preview card */}
                 <div className={`mt-3 overflow-hidden rounded-2xl border ${win ? "border-emerald-500/25" : "border-rose-500/25"} bg-[#161616]`}>
                   <div className={`flex items-center justify-between px-4 py-3 ${win ? "bg-emerald-500/[.06]" : "bg-rose-500/[.06]"}`}>
                     <div className="flex min-w-0 items-center gap-2">
@@ -378,15 +503,17 @@ export function TradeShareComposer({ trade, onClose }: TradeShareComposerProps) 
                       <span className={`rounded px-1.5 py-0.5 text-[10px] font-black ${trade.side === "Long" ? "bg-emerald-500/20 text-emerald-300" : "bg-rose-500/20 text-rose-300"}`}>
                         {trade.side.toUpperCase()}
                       </span>
-                      {trade.setup ? <span className="truncate text-[11px] text-[#8a8a8a]">{trade.setup}</span> : null}
+                      {trade.setup?.trim() ? <span className="truncate text-[11px] text-[#8a8a8a]">{trade.setup}</span> : null}
                     </div>
                     <span className={`ml-3 shrink-0 font-mono text-base font-black ${win ? "text-emerald-400" : "text-rose-400"}`}>
                       {win ? "+" : ""}${cash.format(Math.abs(trade.pnl))}
                     </span>
                   </div>
                   <div className="flex items-center gap-3 border-t border-[#2a2a2a] px-4 py-2">
-                    {trade.resultR ? <span className="font-mono text-[11px] text-[#8a8a8a]">{trade.resultR.toFixed(1)}R</span> : null}
-                    {trade.session ? <span className="text-[11px] text-[#8a8a8a]">{trade.session}</span> : null}
+                    {trade.resultR && Math.abs(trade.resultR) > 0.01
+                      ? <span className="font-mono text-[11px] text-[#8a8a8a]">{trade.resultR.toFixed(2)}R</span>
+                      : null}
+                    {trade.session?.trim() ? <span className="text-[11px] text-[#8a8a8a]">{trade.session}</span> : null}
                     <span className="text-[11px] text-[#8a8a8a]">{trade.date}</span>
                     <span className={`ml-auto rounded px-1.5 py-0.5 text-[9px] font-black ${win ? "bg-emerald-500/15 text-emerald-400" : "bg-rose-500/15 text-rose-400"}`}>
                       {trade.pnl > 0 ? "WIN" : trade.pnl < 0 ? "LOSS" : "BE"}
@@ -405,9 +532,8 @@ export function TradeShareComposer({ trade, onClose }: TradeShareComposerProps) 
               </div>
             </div>
 
-            {/* ── Image previews (Feed card | Story) ── */}
-            <div className="border-t border-[#1f1f1f] px-4 pb-0 pt-3">
-              {/* Tabs */}
+            {/* Image preview tabs */}
+            <div className="border-t border-[#1a1a1a] px-4 pb-2 pt-3">
               <div className="mb-3 flex gap-1">
                 {(["feed", "story"] as const).map((tab) => (
                   <button key={tab} type="button" onClick={() => setActiveTab(tab)}
@@ -417,22 +543,18 @@ export function TradeShareComposer({ trade, onClose }: TradeShareComposerProps) 
                 ))}
               </div>
 
-              {/* Preview */}
-              <div className={`relative mx-auto overflow-hidden rounded-xl bg-[#111] ${activeTab === "story" ? "aspect-[9/16] max-w-[180px]" : "aspect-square max-w-[280px]"}`}>
+              <div className={`relative mx-auto overflow-hidden rounded-xl bg-[#111] ${activeTab === "story" ? "aspect-[9/16] max-w-[164px]" : "aspect-square max-w-[260px]"}`}>
                 {generating ? (
                   <div className="grid h-full place-items-center">
-                    <LoaderCircle size={22} className="animate-spin text-zinc-500" />
+                    <LoaderCircle size={22} className="animate-spin text-zinc-600" />
                   </div>
                 ) : (
-                  <img
-                    src={activeTab === "feed" ? feedCardUrl : storyCardUrl}
-                    alt={activeTab === "feed" ? "Feed card" : "IG Story"}
-                    className="h-full w-full object-cover"
-                  />
+                  <img src={activeTab === "feed" ? feedCardUrl : storyCardUrl}
+                    alt={activeTab === "feed" ? "Feed card preview" : "IG Story preview"}
+                    className="h-full w-full object-cover" />
                 )}
               </div>
 
-              {/* Story download button */}
               {activeTab === "story" && storyCardUrl && (
                 <div className="mt-3 flex justify-center">
                   <button type="button" onClick={downloadStory}
@@ -443,7 +565,7 @@ export function TradeShareComposer({ trade, onClose }: TradeShareComposerProps) 
               )}
             </div>
 
-            {/* ── Footer ── */}
+            {/* Footer */}
             <div className="flex items-center justify-between px-4 py-3">
               <span className={`text-[11px] ${caption.length > 250 ? "text-amber-400" : "text-[#8a8a8a]"}`}>
                 {caption.length} / 280
