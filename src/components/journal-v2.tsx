@@ -2,7 +2,7 @@
 
 import {
   ArrowLeft, BarChart3, BookOpen, CalendarDays, CheckCircle2, ChevronDown, ChevronLeft, ChevronRight,
-  Check, Download, ImageIcon, LoaderCircle, MoreHorizontal, Plus, Search, Share2, ShieldCheck,
+  Download, ImageIcon, LoaderCircle, MoreHorizontal, Plus, Search, ShieldCheck,
   Target, Trash2, TrendingDown, TrendingUp, WalletCards, X, Zap,
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -28,7 +28,6 @@ import { PropAccountDialog } from "./prop-account-dialog";
 import { PropFirmLogo } from "./prop-firm-logo";
 import { Mt5Settings } from "./mt5-settings";
 import { TradeReviewModal } from "./trade-review-modal";
-import { TradeShareComposer } from "./trade-share-composer";
 import type { JournalEntry, PropAccount } from "./types";
 
 type AccountRow = { id: string; name: string; account_type?: "prop" | "real" | null; firm: string; prop_site?: string | null; prop_login?: string | null; import_source?: "manual" | "metaapi" | "ctrader" | "official_api" | null; platform?: string | null; phase: string; market_type: string; account_size: string; initial_balance: string; profit_target: string; max_drawdown: string; daily_drawdown: string; start_date: string; status: PropAccount["status"] };
@@ -458,7 +457,6 @@ function Workspace(p: {
 }) {
   const { account, stats, equity, setups, mistakes, planRate, monthCount, calendar, trades, bibleTrades, month } = p;
   const [selectedTrade, setSelectedTrade] = useState<JournalEntry | null>(null);
-  const [shareTarget, setShareTarget] = useState<JournalEntry | null>(null);
   const [activeTab, setActiveTab] = useState<WorkspaceTab>("overview");
   const currentPnl = (equity.at(-1)?.equity ?? account.initialBalance) - account.initialBalance;
   const currentEquity = account.initialBalance + currentPnl;
@@ -760,15 +758,6 @@ function Workspace(p: {
                               <span className="font-mono text-[9px] text-zinc-500">{(e.resultR || 0).toFixed(2)}R</span>
                             </span>
                           </span>
-                          <button
-                            type="button"
-                            aria-label="Feedga ulashish"
-                            title="Feedga ulashish"
-                            onClick={(ev) => { ev.stopPropagation(); setShareTarget(e); }}
-                            className="grid h-8 w-8 shrink-0 place-items-center rounded-lg text-zinc-600 opacity-0 transition hover:bg-white/[.06] hover:text-zinc-300 group-hover:opacity-100"
-                          >
-                            <Share2 size={14} />
-                          </button>
                           <ChevronDown className="-rotate-90 text-zinc-600 transition-transform group-hover:translate-x-0.5 group-hover:text-zinc-300" size={16} />
                         </div>
                       );
@@ -906,11 +895,6 @@ function Workspace(p: {
             <Mt5Settings account={account} onSynced={p.onMt5Synced} />
           </TabsContent>
         </Tabs>
-        <TradeShareComposer
-        trade={shareTarget}
-        onClose={() => setShareTarget(null)}
-      />
-
       {selectedTrade ? (
           <TradeEditor
             trade={selectedTrade}
@@ -1081,9 +1065,6 @@ function TradeEditor({ trade, saving, onClose, onSave, onDelete }: { trade: Jour
 
 function TradeReviewImage({ trade, chartUrls }: { trade: JournalEntry; chartUrls: string[] }) {
   const [generatedUrl, setGeneratedUrl] = useState("");
-  const [posting, setPosting] = useState(false);
-  const [posted, setPosted] = useState(false);
-  const [postError, setPostError] = useState("");
 
   useEffect(() => {
     let active = true;
@@ -1226,44 +1207,6 @@ function TradeReviewImage({ trade, chartUrls }: { trade: JournalEntry; chartUrls
     link.click();
   };
 
-  const uploadGeneratedImage = async () => {
-    const blob = await fetch(generatedUrl).then((response) => response.blob());
-    const form = new FormData();
-    form.append("image", new File([blob], `${trade.symbol}-${trade.rawDate}-tradeway.png`, { type: "image/png" }));
-    const response = await fetch("/api/posts/image", { method: "POST", credentials: "same-origin", body: form });
-    const payload = (await response.json()) as { imageUrl?: string; error?: string };
-    if (!response.ok || !payload.imageUrl) throw new Error(payload.error || "Share image upload failed.");
-    return payload.imageUrl;
-  };
-
-  const postTrade = async () => {
-    if (!generatedUrl || posting || posted) return;
-    setPosting(true);
-    setPostError("");
-    try {
-      const shareImageUrl = await uploadGeneratedImage();
-      await apiRequest("/api/posts", {
-        method: "POST",
-        body: JSON.stringify({
-          journalEntryId: trade.id,
-          content: (trade.note || `${trade.setup || "Journal"} trade`).slice(0, 280),
-          symbol: trade.symbol,
-          side: trade.side.toUpperCase(),
-          result: trade.pnl > 0 ? "WIN" : trade.pnl < 0 ? "LOSS" : "BE",
-          pnl: trade.pnl,
-          resultR: trade.resultR ?? 0,
-          chartImageUrls: chartUrls,
-          shareImageUrl,
-        }),
-      });
-      setPosted(true);
-    } catch (error) {
-      setPostError(error instanceof Error ? error.message : "Trade could not be posted.");
-    } finally {
-      setPosting(false);
-    }
-  };
-
   return (
     <section className="mx-auto w-full max-w-[380px] overflow-hidden rounded-2xl border border-white/10 bg-[#171717] shadow-xl shadow-black/25">
       <div className="flex items-center justify-between border-b border-white/8 px-4 py-3">
@@ -1275,10 +1218,6 @@ function TradeReviewImage({ trade, chartUrls }: { trade: JournalEntry; chartUrls
           <Button type="button" disabled={!generatedUrl} onClick={download} size="sm" variant="outline" className="border-white/10 bg-white/[.04]">
             <Download size={15} /> PNG
           </Button>
-          <Button type="button" disabled={!generatedUrl || posting || posted} onClick={() => void postTrade()} size="sm" className="bg-white text-black hover:bg-zinc-200">
-            {posting ? <LoaderCircle className="animate-spin" size={15} /> : posted ? <Check size={15} /> : <Share2 size={15} />}
-            {posted ? "Posted" : "Post trade"}
-          </Button>
         </div>
       </div>
       {generatedUrl ? (
@@ -1288,7 +1227,6 @@ function TradeReviewImage({ trade, chartUrls }: { trade: JournalEntry; chartUrls
           <LoaderCircle className="animate-spin" size={24} />
         </div>
       )}
-      {postError ? <p className="border-t border-rose-400/15 bg-rose-400/10 px-4 py-2 text-xs text-rose-200">{postError}</p> : null}
     </section>
   );
 }

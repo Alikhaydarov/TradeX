@@ -11,16 +11,12 @@ import {
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { apiRequest } from "@/lib/api-client";
+import { useLanguage } from "@/lib/i18n";
+import { LanguageSwitcher } from "./language-switcher";
 import { SocialActions } from "./social-actions-v2";
 import { TraderAvatar } from "./trader-avatar";
 import { VerifiedBadge } from "./verified-badge";
 import type { Section } from "./types";
-
-const baseNav = [
-  { id: "feed" as const, label: "Home", hint: "Market pulse", icon: Home },
-  { id: "journal" as const, label: "Journal", hint: "Accounts and trade records", icon: BookOpen },
-  { id: "account" as const, label: "Profile", hint: "Proof and settings", icon: UserRound },
-];
 
 function usernameFromUser(user: User | null) {
   const raw = String(
@@ -52,6 +48,7 @@ export function Sidebar({
 }) {
   const [isVerified, setIsVerified] = useState(false);
   const [profileUsername, setProfileUsername] = useState("");
+  const { t } = useLanguage();
   const name = String(user?.user_metadata.full_name ?? user?.user_metadata.name ?? "Mehmon trader");
   const username = usernameFromUser(user);
   const handle = user ? `@${profileUsername || username}` : "Sign in with Google";
@@ -78,6 +75,11 @@ export function Sidebar({
     };
   }, [user]);
 
+  const baseNav = [
+    { id: "feed" as const, label: t("home"), hint: t("marketPulse"), icon: Home },
+    { id: "journal" as const, label: t("journal"), hint: t("accountsRecords"), icon: BookOpen },
+    { id: "account" as const, label: t("profile"), hint: t("proofSettings"), icon: UserRound },
+  ];
   const nav = isAdmin
     ? [...baseNav, { id: "admin" as const, label: "Admin", hint: "User verification", icon: ShieldCheck }]
     : baseNav;
@@ -129,7 +131,7 @@ export function Sidebar({
         </nav>
 
         <button onClick={onPost} className="mt-5 flex items-center justify-center gap-2 rounded-lg bg-white py-3 text-sm font-black text-zinc-950 shadow-lg shadow-black/20 transition-colors hover:bg-zinc-200">
-          <Plus size={18} /> Share a trade
+          <Plus size={18} /> {t("shareTrade")}
         </button>
 
         <div className="mt-auto space-y-3">
@@ -142,6 +144,7 @@ export function Sidebar({
               <SocialActions />
             </div>
           </div>
+          <LanguageSwitcher />
 
           <button onClick={openProfile} className="flex w-full items-center gap-3 rounded-lg border border-border bg-white/[.025] p-2 text-left transition-colors hover:bg-white/[.05]">
             <TraderAvatar name={name} value={avatar} className="h-10 w-10 text-xs" />

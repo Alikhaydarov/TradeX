@@ -1,17 +1,20 @@
 "use client";
 
-import { Bookmark, Check, Eye, Heart, Link2, MessageCircle, MoreHorizontal, Pencil, Repeat2, Send, Share2, Trash2, X } from "lucide-react";
+import { Bookmark, Check, Eye, Heart, Link2, MessageCircle, MoreHorizontal, Pencil, Plus, Repeat2, Search, Send, Share2, Trash2, X } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { apiRequest } from "@/lib/api-client";
+import { useLanguage } from "@/lib/i18n";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { SkeletonBlock, XSpinner } from "./app-loader";
 import { SocialActions } from "./social-actions-v2";
+import { TradeShareComposer } from "./trade-share-composer";
 import { useAuth } from "./auth-context";
 import { TraderAvatar } from "./trader-avatar";
 import { VerifiedBadge } from "./verified-badge";
-import type { Post, PostReply } from "./types";
+import type { JournalEntry, Post, PostReply } from "./types";
 
 interface PostRecord {
   id: string;
@@ -34,6 +37,35 @@ interface PostRecord {
   reposts_count: number;
   views_count?: number | null;
   created_at: string;
+}
+
+interface FeedTradeRow {
+  id: string;
+  prop_account_id?: string | null;
+  symbol: string;
+  side: "Long" | "Short";
+  entry_price: string;
+  exit_price: string;
+  quantity: string;
+  fees: string;
+  pnl: string;
+  note: string;
+  traded_at: string;
+  account_name?: string;
+  market_type?: string;
+  setup?: string;
+  emotion?: string;
+  risk_amount?: string;
+  result_r?: string;
+  risk_percent?: string;
+  session?: string;
+  following_plan?: boolean;
+  error_made?: boolean;
+  mistake_type?: string;
+  review_completed?: boolean;
+  to_trading_bible?: boolean;
+  image_url?: string | null;
+  tags?: string[];
 }
 
 function FeedSkeleton() {
@@ -70,7 +102,7 @@ function formatCount(value: number) {
 function formatFeedTime(value: string | Date | number) {
   const date = typeof value === "string" || typeof value === "number" ? new Date(value) : value;
   const minutes = Math.max(0, Math.round((Date.now() - date.getTime()) / 60000));
-  if (minutes < 1) return "hozir";
+  if (minutes < 1) return "now";
   if (minutes < 60) return `${minutes}m`;
   const hours = Math.round(minutes / 60);
   if (hours < 24) return `${hours}h`;
@@ -78,6 +110,50 @@ function formatFeedTime(value: string | Date | number) {
   if (days < 7) return `${days}d`;
   const weeks = Math.round(days / 7);
   return `${weeks}w`;
+}
+
+function parseTradeImages(value?: string | null) {
+  if (!value) return [];
+  try {
+    const parsed = JSON.parse(value);
+    return Array.isArray(parsed) ? parsed.filter((item): item is string => typeof item === "string").slice(0, 3) : [value];
+  } catch {
+    return [value];
+  }
+}
+
+function tradeFromRow(row: FeedTradeRow): JournalEntry {
+  const imageUrls = parseTradeImages(row.image_url);
+  return {
+    id: row.id,
+    propAccountId: row.prop_account_id,
+    symbol: row.symbol,
+    side: row.side,
+    entry: Number(row.entry_price || 0),
+    exit: Number(row.exit_price || 0),
+    quantity: Number(row.quantity || 0),
+    fees: Number(row.fees || 0),
+    pnl: Number(row.pnl || 0),
+    note: row.note || "",
+    rawDate: row.traded_at,
+    date: new Date(`${row.traded_at}T00:00:00`).toLocaleDateString("en-US"),
+    accountName: row.account_name,
+    marketType: row.market_type,
+    setup: row.setup || "",
+    emotion: row.emotion || "Neutral",
+    riskAmount: Number(row.risk_amount || 0),
+    resultR: Number(row.result_r || 0),
+    riskPercent: row.risk_percent || "",
+    session: row.session || "",
+    followingPlan: row.following_plan ?? true,
+    errorMade: row.error_made ?? false,
+    mistakeType: row.mistake_type || "",
+    reviewCompleted: row.review_completed ?? false,
+    toTradingBible: row.to_trading_bible ?? false,
+    imageUrl: imageUrls[0] ?? null,
+    imageUrls,
+    tags: row.tags || [],
+  };
 }
 
 function toPost(record: PostRecord, liked = false, bookmarked = false, reposted = false): Post {
@@ -128,6 +204,7 @@ function openProfile(username: string) {
 
 export function FeedV3({ onLogin }: { onLogin: () => void }) {
   const { user } = useAuth();
+  const { t } = useLanguage();
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [actingId, setActingId] = useState<string | null>(null);
@@ -139,6 +216,11 @@ export function FeedV3({ onLogin }: { onLogin: () => void }) {
   const [deleteTarget, setDeleteTarget] = useState<Post | null>(null);
   const [editingPost, setEditingPost] = useState<Post | null>(null);
   const [editingText, setEditingText] = useState("");
+  const [tradePickerOpen, setTradePickerOpen] = useState(false);
+  const [tradePickerLoading, setTradePickerLoading] = useState(false);
+  const [tradePickerQuery, setTradePickerQuery] = useState("");
+  const [shareTrades, setShareTrades] = useState<JournalEntry[]>([]);
+  const [shareTarget, setShareTarget] = useState<JournalEntry | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [lightboxUrl, setLightboxUrl] = useState<string | null>(null);
@@ -164,9 +246,37 @@ export function FeedV3({ onLogin }: { onLogin: () => void }) {
       .finally(() => setLoading(false));
   };
 
+  const loadShareTrades = () => {
+    if (!user) return;
+    setTradePickerLoading(true);
+    apiRequest<{ entries: FeedTradeRow[] }>("/api/journal")
+      .then((data) => setShareTrades(data.entries.map(tradeFromRow)))
+      .catch((nextError: Error) => setError(nextError.message))
+      .finally(() => setTradePickerLoading(false));
+  };
+
+  const openTradePicker = () => {
+    if (!user) return onLogin();
+    setTradePickerOpen(true);
+    if (!shareTrades.length) loadShareTrades();
+  };
+
+  const filteredShareTrades = useMemo(() => {
+    const query = tradePickerQuery.trim().toLowerCase();
+    const trades = [...shareTrades].sort((a, b) => String(b.rawDate).localeCompare(String(a.rawDate)));
+    if (!query) return trades;
+    return trades.filter((trade) => `${trade.symbol} ${trade.setup} ${trade.session} ${trade.note}`.toLowerCase().includes(query));
+  }, [shareTrades, tradePickerQuery]);
+
   useEffect(() => {
     loadPosts();
   }, [user]);
+
+  useEffect(() => {
+    const handler = () => openTradePicker();
+    window.addEventListener("tradeway:share-trade", handler);
+    return () => window.removeEventListener("tradeway:share-trade", handler);
+  });
 
   useEffect(() => {
     if (!user) {
@@ -407,6 +517,9 @@ export function FeedV3({ onLogin }: { onLogin: () => void }) {
             <p className="text-[10px] font-bold uppercase tracking-[.22em] text-zinc-300/70">TradeWay workspace</p>
             <h1 className="mt-1 text-2xl font-black tracking-tight">TradeWay</h1>
           </div>
+          <Button onClick={openTradePicker} className="hidden h-10 rounded-lg bg-white px-4 text-sm font-black text-black hover:bg-zinc-200 sm:inline-flex">
+            <Plus size={16} /> {t("shareTrade")}
+          </Button>
           <SocialActions className="lg:hidden" />
         </div>
       </header>
@@ -414,6 +527,18 @@ export function FeedV3({ onLogin }: { onLogin: () => void }) {
       {error ? <div className="mx-auto mt-4 max-w-3xl rounded-2xl border border-rose-300/15 bg-rose-400/10 px-4 py-3 text-sm text-rose-200 backdrop-blur-xl">{error}</div> : null}
 
       <div className="mx-auto max-w-3xl px-3 py-3 sm:px-5 sm:py-4">
+        <button
+          type="button"
+          onClick={openTradePicker}
+          className="mb-3 flex w-full items-center justify-between rounded-lg border border-border bg-card px-4 py-3 text-left transition-colors hover:bg-white/[.035] sm:hidden"
+        >
+          <span>
+            <span className="block text-sm font-black text-white">{t("shareJournalTrade")}</span>
+            <span className="mt-0.5 block text-xs text-zinc-500">{t("reviewedOnly")}</span>
+          </span>
+          <span className="grid size-9 place-items-center rounded-lg bg-white text-black"><Plus size={17} /></span>
+        </button>
+
         <div className="flex items-center px-1">
           <h2 className="text-sm font-bold">Trade feed</h2>
           <span className="ml-auto text-[10px] text-zinc-600">{stats.posts} trades</span>
@@ -557,6 +682,86 @@ export function FeedV3({ onLogin }: { onLogin: () => void }) {
           />
         </div>
       ) : null}
+
+      <Dialog open={tradePickerOpen} onOpenChange={setTradePickerOpen}>
+        <DialogContent className="max-h-[88dvh] overflow-hidden border-border bg-[#171717] p-0 sm:max-w-lg">
+          <DialogHeader className="border-b border-border px-4 py-4">
+            <DialogTitle className="text-xl font-black">{t("shareTrade")}</DialogTitle>
+            <p className="text-sm text-zinc-500">{t("pickTrade")}</p>
+          </DialogHeader>
+          <div className="border-b border-border p-3">
+            <label className="flex h-11 items-center gap-2 rounded-lg border border-border bg-black/15 px-3 focus-within:border-white/25">
+              <Search size={17} className="text-zinc-500" />
+              <input
+                value={tradePickerQuery}
+                onChange={(event) => setTradePickerQuery(event.target.value)}
+                placeholder={t("searchTrade")}
+                className="min-w-0 flex-1 bg-transparent text-sm outline-none placeholder:text-zinc-600"
+              />
+            </label>
+          </div>
+          <div className="max-h-[55dvh] overflow-y-auto p-2">
+            {tradePickerLoading ? (
+              <div className="grid min-h-48 place-items-center text-sm text-zinc-500"><XSpinner size="sm" /> Loading trades</div>
+            ) : filteredShareTrades.length ? (
+              <div className="space-y-1">
+                {filteredShareTrades.map((trade) => {
+                  const win = trade.pnl >= 0;
+                  return (
+                    <button
+                      key={trade.id}
+                      type="button"
+                      onClick={() => {
+                        setTradePickerOpen(false);
+                        setShareTarget(trade);
+                      }}
+                      className="flex w-full items-center gap-3 rounded-lg px-3 py-3 text-left transition-colors hover:bg-white/[.045]"
+                    >
+                      <span className="grid size-10 shrink-0 place-items-center rounded-lg border border-white/8 bg-black/25 text-[10px] font-black text-zinc-300">
+                        {trade.symbol.slice(0, 2)}
+                      </span>
+                      <span className="min-w-0 flex-1">
+                        <span className="flex min-w-0 items-center gap-2">
+                          <strong className="truncate text-sm">{trade.symbol}</strong>
+                          <span className={`rounded px-1.5 py-0.5 text-[9px] font-black uppercase ${trade.side === "Long" ? "bg-emerald-400/15 text-emerald-300" : "bg-rose-400/15 text-rose-300"}`}>
+                            {trade.side}
+                          </span>
+                          <span className="text-[10px] text-zinc-600">{trade.rawDate}</span>
+                        </span>
+                        <span className="mt-1 block truncate text-xs text-zinc-500">{trade.setup || trade.session || trade.note || "No review note"}</span>
+                      </span>
+                      <span className="shrink-0 text-right">
+                        <strong className={`block font-mono text-sm font-black ${win ? "text-emerald-300" : "text-rose-300"}`}>
+                          {win ? "+" : ""}${Math.abs(trade.pnl).toFixed(2)}
+                        </strong>
+                        <span className="font-mono text-[10px] text-zinc-600">{(trade.resultR || 0).toFixed(2)}R</span>
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="grid min-h-48 place-items-center px-6 text-center">
+                <div>
+                  <p className="text-sm font-bold">{t("noTrades")}</p>
+                  <p className="mt-1 text-xs leading-5 text-zinc-500">{t("addTradeFirst")}</p>
+                  <Button className="mt-4 bg-white text-black hover:bg-zinc-200" onClick={() => { setTradePickerOpen(false); window.history.pushState(null, "", "/journal"); window.dispatchEvent(new Event("popstate")); }}>
+                    {t("openJournal")}
+                  </Button>
+                </div>
+              </div>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <TradeShareComposer
+        trade={shareTarget}
+        onClose={() => {
+          setShareTarget(null);
+          loadPosts();
+        }}
+      />
 
       {deleteTarget ? (
         <div className="fixed inset-0 z-[99999] flex h-[100dvh] w-screen items-center justify-center overflow-hidden bg-black/75 p-4 backdrop-blur-md">
