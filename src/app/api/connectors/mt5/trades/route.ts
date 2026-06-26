@@ -1,5 +1,9 @@
 import { getSupabaseAdminClient } from "@/lib/supabase/admin";
-import { importMt5TradesToJournal, type IncomingMt5Trade } from "@/lib/backend/mt5-import";
+import {
+  importMt5TradesToJournal,
+  importMt5TradesToJournalViaPostgres,
+  type IncomingMt5Trade,
+} from "@/lib/backend/mt5-import";
 
 export const runtime = "nodejs";
 
@@ -14,9 +18,6 @@ export async function POST(request: Request) {
     return Response.json({ error: "Unauthorized connector request." }, { status: 401 });
   }
 
-  const supabase = getSupabaseAdminClient();
-  if (!supabase) return Response.json({ error: "Supabase service role is not configured." }, { status: 500 });
-
   const body = await request.json() as { accountId?: unknown; trades?: unknown };
   const accountId = asString(body.accountId);
   const trades = Array.isArray(body.trades) ? body.trades as IncomingMt5Trade[] : [];
@@ -25,7 +26,10 @@ export async function POST(request: Request) {
   }
 
   try {
-    const result = await importMt5TradesToJournal(supabase, accountId, trades);
+    const supabase = getSupabaseAdminClient();
+    const result = supabase
+      ? await importMt5TradesToJournal(supabase, accountId, trades)
+      : await importMt5TradesToJournalViaPostgres(accountId, trades);
     return Response.json(result);
   } catch (error) {
     return Response.json({ error: error instanceof Error ? error.message : "MT5 import failed." }, { status: 500 });

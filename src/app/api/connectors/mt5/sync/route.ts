@@ -1,6 +1,11 @@
 import { authenticateRequest, badRequest, serverError, unauthorized } from "@/lib/backend/auth";
 import { decryptSecret } from "@/lib/backend/crypto";
-import { importMt5TradesToJournal, type IncomingMt5Trade } from "@/lib/backend/mt5-import";
+import {
+  importMt5TradesToJournal,
+  importMt5TradesToJournalViaPostgres,
+  type IncomingMt5Trade,
+} from "@/lib/backend/mt5-import";
+import { getPostgresPool } from "@/lib/backend/postgres";
 import { requirePremium } from "@/lib/backend/premium";
 import { getMt5ClosedTrades } from "@/lib/server/mt5-bridge";
 import { getSupabaseAdminClient } from "@/lib/supabase/admin";
@@ -69,16 +74,30 @@ export async function POST(request: Request) {
   if (!from) return badRequest("from date is invalid.");
 
   const supabase = getSupabaseAdminClient();
-  if (!supabase) return serverError("Supabase service role is not configured.");
+  let account: TradingAccountSyncRow | null = null;
 
-  const { data: account, error } = await supabase
-    .from("trading_accounts")
-    .select("id, user_id, broker_server, account_login, encrypted_password")
-    .eq("id", accountId)
-    .eq("user_id", auth.user.id)
-    .single<TradingAccountSyncRow>();
+  if (supabase) {
+    const { data, error } = await supabase
+      .from("trading_accounts")
+      .select("id, user_id, broker_server, account_login, encrypted_password")
+      .eq("id", accountId)
+      .eq("user_id", auth.user.id)
+      .single<TradingAccountSyncRow>();
+    if (error) return serverError(error.message);
+    account = data;
+  } else {
+    const pool = getPostgresPool();
+    if (!pool) return serverError("SUPABASE_SERVICE_ROLE_KEY or DATABASE_URL is required for MT5 sync.");
+    const result = await pool.query<TradingAccountSyncRow>(
+      `select id, user_id, broker_server, account_login, encrypted_password
+       from public.trading_accounts
+       where id = $1 and user_id = $2
+       limit 1`,
+      [accountId, auth.user.id],
+    );
+    account = result.rows[0] || null;
+  }
 
-  if (error) return serverError(error.message);
   if (!account?.account_login || !account.broker_server || !account.encrypted_password) {
     return badRequest("MT5 account credentials are incomplete.");
   }
@@ -93,20 +112,27 @@ export async function POST(request: Request) {
       to,
     });
 
-    const result = await importMt5TradesToJournal(
-      supabase,
-      accountId,
-      bridgeTrades.map((trade) => toIncomingTrade(trade as Record<string, unknown>)),
-    );
+    const incoming = bridgeTrades.map((trade) => toIncomingTrade(trade as Record<string, unknown>));
+    const result = supabase
+      ? await importMt5TradesToJournal(supabase, accountId, incoming)
+      : await importMt5TradesToJournalViaPostgres(accountId, incoming);
 
     return Response.json({ ...result, status: "connected" });
   } catch (syncError) {
     const message = syncError instanceof Error ? syncError.message : "MT5 sync failed.";
-    await supabase
-      .from("trading_accounts")
-      .update({ status: "error", updated_at: new Date().toISOString() })
-      .eq("id", accountId)
-      .eq("user_id", auth.user.id);
+    if (supabase) {
+      await supabase
+        .from("trading_accounts")
+        .update({ status: "error", updated_at: new Date().toISOString() })
+        .eq("id", accountId)
+        .eq("user_id", auth.user.id);
+    } else {
+      const pool = getPostgresPool();
+      await pool?.query(
+        `update public.trading_accounts set status = 'error', updated_at = now() where id = $1 and user_id = $2`,
+        [accountId, auth.user.id],
+      );
+    }
 
     return serverError(message);
   }
