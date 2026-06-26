@@ -49,7 +49,9 @@ export interface Mt5ImportResult {
 }
 
 function asString(value: unknown) {
-  return typeof value === "string" ? value.trim() : "";
+  if (typeof value === "string") return value.trim();
+  if (typeof value === "number" || typeof value === "bigint") return String(value);
+  return "";
 }
 
 function asNumber(value: unknown) {
