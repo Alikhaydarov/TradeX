@@ -70,6 +70,7 @@ export async function PATCH(request: Request) {
           plan: "premium",
           premium_until: null,
           ai_enabled: true,
+          traderox_enabled: true,
           auto_sync_enabled: true,
         })
         .eq("id", body.userId);

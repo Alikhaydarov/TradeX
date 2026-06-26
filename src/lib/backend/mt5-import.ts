@@ -13,9 +13,15 @@ export interface IncomingMt5Trade {
   swap?: unknown;
   grossPnl?: unknown;
   netPnl?: unknown;
+  riskAmount?: unknown;
+  riskPercent?: unknown;
+  rr?: unknown;
+  setupName?: unknown;
+  sessionName?: unknown;
   openedAt?: unknown;
   closedAt?: unknown;
   status?: unknown;
+  rawPayload?: unknown;
 }
 
 interface TradingAccountImportRow {
@@ -129,6 +135,11 @@ export async function importMt5TradesToJournal(
     const swap = safeMoney(asNumber(trade.swap));
     const grossPnl = asNumber(trade.grossPnl);
     const netPnl = asNumber(trade.netPnl) ?? grossPnl ?? 0;
+    const riskAmount = asNumber(trade.riskAmount);
+    const riskPercent = asNumber(trade.riskPercent);
+    const rr = asNumber(trade.rr);
+    const setupName = asString(trade.setupName);
+    const sessionName = asString(trade.sessionName) || "unknown";
     const closedAt = asDate(trade.closedAt);
     const openedAt = asDate(trade.openedAt);
     const side = normalizeSide(asString(trade.side));
@@ -146,9 +157,15 @@ export async function importMt5TradesToJournal(
       swap,
       grossPnl,
       netPnl,
+      riskAmount,
+      riskPercent,
+      rr,
+      setupName,
+      sessionName,
       openedAt,
       closedAt,
       status: asString(trade.status) || "closed",
+      rawPayload: trade.rawPayload,
     };
 
     rawRows.push({
@@ -164,15 +181,21 @@ export async function importMt5TradesToJournal(
       account_id: accountId,
       platform: "MT5",
       external_position_id: externalPositionId || externalDealId,
+      external_deal_id: externalDealId || null,
       symbol,
       side,
       volume,
+      risk_amount: riskAmount,
+      risk_percent: riskPercent,
       entry_price: entryPrice,
       exit_price: exitPrice,
       commission,
       swap,
       gross_pnl: grossPnl,
       net_pnl: netPnl,
+      rr,
+      setup_name: setupName || null,
+      session_name: sessionName,
       opened_at: openedAt,
       closed_at: closedAt,
       status: payload.status,
@@ -196,8 +219,8 @@ export async function importMt5TradesToJournal(
       pnl: netPnl,
       setup: "MT5 Auto Sync",
       emotion: "Neutral",
-      risk_amount: 0,
-      result_r: 0,
+      risk_amount: riskAmount ?? 0,
+      result_r: rr ?? 0,
       note: `Imported from MT5 ${account.broker_server || ""}`.trim(),
       traded_at: toDateOnly(closedAt || openedAt),
       tags: ["mt5", "auto-sync"],
@@ -292,6 +315,11 @@ export async function importMt5TradesToJournalViaPostgres(
       const swap = safeMoney(asNumber(trade.swap));
       const grossPnl = asNumber(trade.grossPnl);
       const netPnl = asNumber(trade.netPnl) ?? grossPnl ?? 0;
+      const riskAmount = asNumber(trade.riskAmount);
+      const riskPercent = asNumber(trade.riskPercent);
+      const rr = asNumber(trade.rr);
+      const setupName = asString(trade.setupName);
+      const sessionName = asString(trade.sessionName) || "unknown";
       const closedAt = asDate(trade.closedAt);
       const openedAt = asDate(trade.openedAt);
       const side = normalizeSide(asString(trade.side));
@@ -309,9 +337,15 @@ export async function importMt5TradesToJournalViaPostgres(
         swap,
         grossPnl,
         netPnl,
+        riskAmount,
+        riskPercent,
+        rr,
+        setupName,
+        sessionName,
         openedAt,
         closedAt,
         status,
+        rawPayload: trade.rawPayload,
       };
 
       await client.query(
@@ -323,36 +357,49 @@ export async function importMt5TradesToJournalViaPostgres(
 
       await client.query(
         `insert into public.trades (
-          account_id, platform, external_position_id, symbol, side, volume, entry_price, exit_price,
-          commission, swap, gross_pnl, net_pnl, opened_at, closed_at, status, unique_key
+          account_id, platform, external_position_id, external_deal_id, symbol, side, volume,
+          risk_amount, risk_percent, entry_price, exit_price, commission, swap, gross_pnl,
+          net_pnl, rr, setup_name, session_name, opened_at, closed_at, status, unique_key
         )
-        values ($1, 'MT5', $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)
+        values ($1, 'MT5', $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21)
         on conflict (unique_key) do update set
           external_position_id = excluded.external_position_id,
+          external_deal_id = excluded.external_deal_id,
           symbol = excluded.symbol,
           side = excluded.side,
           volume = excluded.volume,
+          risk_amount = excluded.risk_amount,
+          risk_percent = excluded.risk_percent,
           entry_price = excluded.entry_price,
           exit_price = excluded.exit_price,
           commission = excluded.commission,
           swap = excluded.swap,
           gross_pnl = excluded.gross_pnl,
           net_pnl = excluded.net_pnl,
+          rr = excluded.rr,
+          setup_name = excluded.setup_name,
+          session_name = excluded.session_name,
           opened_at = excluded.opened_at,
           closed_at = excluded.closed_at,
           status = excluded.status`,
         [
           accountId,
           externalPositionId || externalDealId,
+          externalDealId || null,
           symbol,
           side,
           volume,
+          riskAmount,
+          riskPercent,
           entryPrice,
           exitPrice,
           commission,
           swap,
           grossPnl,
           netPnl,
+          rr,
+          setupName || null,
+          sessionName,
           openedAt,
           closedAt,
           status,

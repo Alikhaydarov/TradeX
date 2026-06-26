@@ -3,6 +3,7 @@ import type { ApiAuth } from "./auth";
 export interface PremiumStatus {
   isPremium: boolean;
   aiEnabled: boolean;
+  traderoxEnabled: boolean;
   autoSyncEnabled: boolean;
   isVerified: boolean;
 }
@@ -11,6 +12,7 @@ interface PremiumProfileRow {
   plan: string | null;
   premium_until: string | null;
   ai_enabled: boolean | null;
+  traderox_enabled: boolean | null;
   auto_sync_enabled: boolean | null;
   is_verified: boolean | null;
 }
@@ -23,7 +25,7 @@ function isFutureOrNull(value: string | null) {
 export async function getPremiumStatus(auth: ApiAuth): Promise<PremiumStatus> {
   const { data, error } = await auth.supabase
     .from("profiles")
-    .select("plan, premium_until, ai_enabled, auto_sync_enabled, is_verified")
+    .select("plan, premium_until, ai_enabled, traderox_enabled, auto_sync_enabled, is_verified")
     .eq("id", auth.user.id)
     .maybeSingle<PremiumProfileRow>();
 
@@ -34,6 +36,7 @@ export async function getPremiumStatus(auth: ApiAuth): Promise<PremiumStatus> {
   return {
     isPremium,
     aiEnabled: isPremium && Boolean(data?.ai_enabled),
+    traderoxEnabled: isPremium && Boolean(data?.traderox_enabled),
     autoSyncEnabled: isPremium && Boolean(data?.auto_sync_enabled),
     isVerified: isPremium && Boolean(data?.is_verified),
   };

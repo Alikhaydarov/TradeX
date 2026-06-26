@@ -4,6 +4,10 @@ import {
   importMt5TradesToJournalViaPostgres,
   type IncomingMt5Trade,
 } from "@/lib/backend/mt5-import";
+import {
+  persistTraderoxAnalysis,
+  persistTraderoxAnalysisViaPostgres,
+} from "@/lib/backend/traderox-persist";
 
 export const runtime = "nodejs";
 
@@ -30,7 +34,17 @@ export async function POST(request: Request) {
     const result = supabase
       ? await importMt5TradesToJournal(supabase, accountId, trades)
       : await importMt5TradesToJournalViaPostgres(accountId, trades);
-    return Response.json(result);
+    const traderox = supabase
+      ? await persistTraderoxAnalysis(supabase, accountId)
+      : await persistTraderoxAnalysisViaPostgres(accountId);
+    return Response.json({
+      ...result,
+      traderox: {
+        disciplineScore: traderox.disciplineScore,
+        alerts: traderox.alerts.length,
+        findings: traderox.findings.length,
+      },
+    });
   } catch (error) {
     return Response.json({ error: error instanceof Error ? error.message : "MT5 import failed." }, { status: 500 });
   }

@@ -116,6 +116,7 @@ interface TradingStats {
 interface PremiumStatus {
   isPremium: boolean;
   aiEnabled: boolean;
+  traderoxEnabled: boolean;
   autoSyncEnabled: boolean;
   isVerified: boolean;
 }
@@ -303,7 +304,7 @@ export function Account({ onLogin, profileUsername }: { onLogin: () => void; pro
     let active = true;
     apiRequest<PremiumStatus>("/api/premium/status")
       .then((status) => { if (active) setPremium(status); })
-      .catch(() => { if (active) setPremium({ isPremium: false, aiEnabled: false, autoSyncEnabled: false, isVerified: false }); });
+      .catch(() => { if (active) setPremium({ isPremium: false, aiEnabled: false, traderoxEnabled: false, autoSyncEnabled: false, isVerified: false }); });
     return () => { active = false; };
   }, [user, profileUsername]);
 
@@ -613,6 +614,7 @@ export function Account({ onLogin, profileUsername }: { onLogin: () => void; pro
                   {[
                     ["Verified", premium.isVerified ? "Enabled" : "Pending"],
                     ["AI enabled", premium.aiEnabled ? "Enabled" : "Off"],
+                    ["Traderox", premium.traderoxEnabled ? "Enabled" : "Off"],
                     ["Auto Sync", premium.autoSyncEnabled ? "Enabled" : "Off"],
                   ].map(([label, value]) => (
                     <div key={label} className="rounded-lg border border-white/8 bg-[#111111] px-3 py-3">
