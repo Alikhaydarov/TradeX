@@ -15,6 +15,7 @@ interface TradingAccountRow {
   auto_sync_enabled: boolean | null;
   last_synced_at: string | null;
   created_at: string | null;
+  prop_account_id?: string | null;
 }
 
 function cleanString(value: unknown) {
@@ -33,13 +34,25 @@ export async function POST(request: Request) {
       brokerServer?: unknown;
       accountLogin?: unknown;
       investorPassword?: unknown;
+      propAccountId?: unknown;
     };
     const brokerServer = cleanString(body.brokerServer);
     const accountLogin = cleanString(body.accountLogin);
     const investorPassword = cleanString(body.investorPassword);
+    const propAccountId = cleanString(body.propAccountId);
 
     if (!brokerServer || !accountLogin || !investorPassword) {
       return badRequest("Broker server, account login and investor password are required.");
+    }
+
+    if (propAccountId) {
+      const { error: propError } = await auth.supabase
+        .from("prop_accounts")
+        .select("id")
+        .eq("id", propAccountId)
+        .eq("user_id", auth.user.id)
+        .single();
+      if (propError) return badRequest("Selected account was not found.");
     }
 
     let encryptedPassword: string;
@@ -51,19 +64,20 @@ export async function POST(request: Request) {
 
     const { data, error } = await auth.supabase
       .from("trading_accounts")
-      .insert({
+      .upsert({
         user_id: auth.user.id,
         platform: "MT5",
         broker_server: brokerServer.slice(0, 160),
         account_login: accountLogin.slice(0, 80),
+        prop_account_id: propAccountId || null,
         encrypted_password: encryptedPassword,
         password_type: "investor",
         status: "pending",
         sync_mode: "normal",
         auto_sync_enabled: true,
         updated_at: new Date().toISOString(),
-      })
-      .select("id, platform, broker_server, account_login, password_type, status, sync_mode, auto_sync_enabled, last_synced_at, created_at")
+      }, { onConflict: "user_id,platform,broker_server,account_login" })
+      .select("id, platform, broker_server, account_login, prop_account_id, password_type, status, sync_mode, auto_sync_enabled, last_synced_at, created_at")
       .single<TradingAccountRow>();
 
     if (error) return serverError(error.message);
