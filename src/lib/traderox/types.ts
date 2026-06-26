@@ -12,8 +12,8 @@ export interface TraderoxTrade {
   rr?: number | null;
   setupName?: string | null;
   sessionName?: string | null;
-  openedAt?: string | null;
-  closedAt?: string | null;
+  openedAt?: string | Date | null;
+  closedAt?: string | Date | null;
 }
 
 export interface TraderoxAccount {

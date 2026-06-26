@@ -1,7 +1,9 @@
 import type { TraderoxAccount, TraderoxFinding, TraderoxStats, TraderoxTrade } from "./types";
 
-function dateKey(value?: string | null) {
-  return value ? value.slice(0, 10) : "unknown";
+function dateKey(value?: string | Date | null) {
+  if (!value) return "unknown";
+  if (value instanceof Date) return value.toISOString().slice(0, 10);
+  return String(value).slice(0, 10);
 }
 
 function sortedTrades(trades: TraderoxTrade[]) {
