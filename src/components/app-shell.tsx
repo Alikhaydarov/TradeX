@@ -15,8 +15,9 @@ const FeedV3 = dynamic(() => import("./feed-v3").then((mod) => mod.FeedV3), { ss
 const Journal = dynamic(() => import("./journal").then((mod) => mod.Journal), { ssr: false, loading: () => null });
 const Account = dynamic(() => import("./account").then((mod) => mod.Account), { ssr: false, loading: () => null });
 const AdminPanel = dynamic(() => import("./admin-panel").then((mod) => mod.AdminPanel), { ssr: false, loading: () => null });
+const Pricing = dynamic(() => import("./pricing").then((mod) => mod.Pricing), { ssr: false, loading: () => null });
 
-const reservedPaths = new Set(["", "chat", "journal", "backtest", "profile", "account", "admin"]);
+const reservedPaths = new Set(["", "chat", "journal", "backtest", "profile", "account", "pricing", "admin"]);
 
 function usernameFromPath(pathname: string) {
   const first = pathname.replace(/^\//, "").split("/")[0] ?? "";
@@ -26,6 +27,7 @@ function usernameFromPath(pathname: string) {
 
 function sectionFromPath(pathname: string): Section {
   if (pathname.startsWith("/journal")) return "journal";
+  if (pathname.startsWith("/pricing")) return "pricing";
   if (pathname.startsWith("/profile") || pathname.startsWith("/account") || usernameFromPath(pathname)) return "account";
   if (pathname.startsWith("/admin")) return "admin";
   return "feed";
@@ -34,6 +36,7 @@ function sectionFromPath(pathname: string): Section {
 function pathFromSection(section: Section) {
   if (section === "journal") return "/journal";
   if (section === "account") return "/profile";
+  if (section === "pricing") return "/pricing";
   if (section === "admin") return "/admin";
   return "/";
 }
@@ -144,6 +147,7 @@ export function AppShell() {
       void import("./feed-v3");
       void import("./journal");
       void import("./account");
+      void import("./pricing");
     };
     const timer = window.setTimeout(preload, 700);
     return () => window.clearTimeout(timer);
@@ -197,6 +201,7 @@ export function AppShell() {
   const renderSection = (item: Section) => {
     if (item === "journal") return <Journal onLogin={openLogin} />;
     if (item === "account") return <Account onLogin={openLogin} profileUsername={profileUsername || undefined} />;
+    if (item === "pricing") return <Pricing />;
     if (item === "admin" && isAdmin) return <AdminPanel onLogin={openLogin} />;
     return <FeedV3 onLogin={openLogin} />;
   };

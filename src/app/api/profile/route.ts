@@ -23,6 +23,12 @@ interface AuthorRow {
   username: string;
   avatar_url: string | null;
   is_verified: boolean | null;
+  plan?: string | null;
+  premium_until?: string | null;
+}
+
+function premiumVerified(profile: { is_verified?: boolean | null; plan?: string | null; premium_until?: string | null }) {
+  return Boolean(profile.is_verified) && profile.plan === "premium" && (!profile.premium_until || new Date(profile.premium_until).getTime() > Date.now());
 }
 
 function hydrateAuthors<T extends { id: string; user_id: string; author_avatar?: string | null }>(
@@ -38,7 +44,7 @@ function hydrateAuthors<T extends { id: string; user_id: string; author_avatar?:
       author_name: author.full_name,
       author_handle: author.username,
       author_avatar: author.avatar_url || post.author_avatar,
-      author_is_verified: Boolean(author.is_verified),
+      author_is_verified: premiumVerified(author),
     };
   });
 }
@@ -70,7 +76,7 @@ async function getBookmarkedPosts(auth: AuthClient) {
 
   const authorIds = Array.from(new Set((rawPosts ?? []).map((post) => post.user_id as string)));
   const { data: authors, error: authorsError } = authorIds.length
-    ? await auth.supabase.from("profiles").select("id, full_name, username, avatar_url, is_verified").in("id", authorIds)
+    ? await auth.supabase.from("profiles").select("id, full_name, username, avatar_url, is_verified, plan, premium_until").in("id", authorIds)
     : { data: [] as AuthorRow[], error: null };
 
   if (authorsError) throw new Error(authorsError.message);
@@ -87,7 +93,7 @@ export async function GET(request: Request) {
 
   const { data, error } = await auth.supabase
     .from("profiles")
-    .select("id, username, full_name, avatar_url, bio, trading_style, location, is_verified")
+    .select("id, username, full_name, avatar_url, bio, trading_style, location, is_verified, plan, premium_until, ai_enabled, auto_sync_enabled")
     .eq("id", auth.user.id)
     .single();
 
@@ -113,11 +119,11 @@ export async function GET(request: Request) {
     if (postsResult.error) return serverError(postsResult.error.message);
 
     const hydratedPosts = hydrateAuthors(postsResult.data ?? [], [
-      { id: data.id, full_name: data.full_name, username: data.username, avatar_url: data.avatar_url, is_verified: data.is_verified },
+      { id: data.id, full_name: data.full_name, username: data.username, avatar_url: data.avatar_url, is_verified: data.is_verified, plan: data.plan, premium_until: data.premium_until },
     ]);
 
     return Response.json({
-      profile: { ...data, ...counts },
+      profile: { ...data, is_verified: premiumVerified(data), ...counts },
       posts: hydratedPosts,
       bookmarkedPosts,
       ...insights,
@@ -159,7 +165,7 @@ export async function PATCH(request: Request) {
       updated_at: new Date().toISOString(),
     })
     .eq("id", auth.user.id)
-    .select("id, username, full_name, avatar_url, bio, trading_style, location, is_verified")
+    .select("id, username, full_name, avatar_url, bio, trading_style, location, is_verified, plan, premium_until, ai_enabled, auto_sync_enabled")
     .single();
 
   if (error) {
@@ -186,5 +192,5 @@ export async function PATCH(request: Request) {
   ]);
 
   const counts = await getFollowCounts(auth, auth.user.id);
-  return Response.json({ profile: { ...data, ...counts } });
+  return Response.json({ profile: { ...data, is_verified: premiumVerified(data), ...counts } });
 }

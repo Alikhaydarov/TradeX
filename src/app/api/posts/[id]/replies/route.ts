@@ -17,6 +17,12 @@ interface ReplyAuthor {
   full_name: string;
   avatar_url: string | null;
   is_verified: boolean;
+  plan?: string | null;
+  premium_until?: string | null;
+}
+
+function premiumVerified(profile: Pick<ReplyAuthor, "is_verified" | "plan" | "premium_until">) {
+  return Boolean(profile.is_verified) && profile.plan === "premium" && (!profile.premium_until || new Date(profile.premium_until).getTime() > Date.now());
 }
 
 function mapReplies(replies: ReplyRecord[], authors: ReplyAuthor[]) {
@@ -30,7 +36,7 @@ function mapReplies(replies: ReplyRecord[], authors: ReplyAuthor[]) {
       name: author?.full_name ?? "Trader",
       username: author?.username ?? "trader",
       avatar: author?.avatar_url ?? null,
-      isVerified: author?.is_verified ?? false,
+      isVerified: author ? premiumVerified(author) : false,
       content: reply.content,
       createdAt: reply.created_at,
     };
@@ -59,7 +65,7 @@ export async function GET(
   const { data: authors, error: authorsError } = authorIds.length
     ? await supabase
         .from("profiles")
-        .select("id, username, full_name, avatar_url, is_verified")
+        .select("id, username, full_name, avatar_url, is_verified, plan, premium_until")
         .in("id", authorIds)
         .returns<ReplyAuthor[]>()
     : { data: [], error: null };
@@ -84,7 +90,7 @@ export async function POST(
 
   const { data: author, error: authorError } = await auth.supabase
     .from("profiles")
-    .select("id, username, full_name, avatar_url, is_verified")
+    .select("id, username, full_name, avatar_url, is_verified, plan, premium_until")
     .eq("id", auth.user.id)
     .single<ReplyAuthor>();
 

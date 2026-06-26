@@ -1,6 +1,7 @@
 import { authenticateRequest, badRequest, serverError, unauthorized } from "@/lib/backend/auth";
-import { decryptPassword, encryptPassword } from "@/lib/backend/encrypt";
+import { encryptPassword } from "@/lib/backend/encrypt";
 import { createMetaApiAccount, getMetaApiToken } from "@/lib/backend/metaapi";
+import { getPremiumStatus, requirePremium } from "@/lib/backend/premium";
 
 export const runtime = "nodejs";
 
@@ -9,19 +10,21 @@ export async function GET(request: Request, context: { params: Promise<{ id: str
   if (!auth) return unauthorized();
   const { id } = await context.params;
 
-  const [{ data: conn }, { data: profile }] = await Promise.all([
+  const [{ data: conn }, premium] = await Promise.all([
     auth.supabase
       .from("mt5_connections")
-      .select("login, server, platform, status, last_error, last_synced_at, auto_sync, updated_at")
+      .select("login, server, platform, status, last_error, last_synced_at, updated_at")
       .eq("user_id", auth.user.id)
       .eq("prop_account_id", id)
       .maybeSingle(),
-    auth.supabase.from("profiles").select("is_verified").eq("id", auth.user.id).maybeSingle(),
+    getPremiumStatus(auth),
   ]);
 
   return Response.json({
-    connection: conn,
-    isVerified: Boolean(profile?.is_verified),
+    connection: conn ? { ...conn, auto_sync: true } : null,
+    isVerified: premium.isVerified,
+    isPremium: premium.isPremium,
+    autoSyncEnabled: premium.autoSyncEnabled,
     metaApiConfigured: Boolean(getMetaApiToken()),
   });
 }
@@ -29,6 +32,8 @@ export async function GET(request: Request, context: { params: Promise<{ id: str
 export async function PUT(request: Request, context: { params: Promise<{ id: string }> }) {
   const auth = await authenticateRequest(request);
   if (!auth) return unauthorized();
+  const premiumError = await requirePremium(auth);
+  if (premiumError) return premiumError;
   const { id } = await context.params;
 
   const body = await request.json() as {
@@ -37,7 +42,6 @@ export async function PUT(request: Request, context: { params: Promise<{ id: str
   const login    = String(body.login    ?? "").trim();
   const password = String(body.password ?? "").trim();
   const server   = String(body.server   ?? "").trim();
-  const autoSync = body.autoSync !== false;
 
   if (!/^\d+$/.test(login) || !server) return badRequest("MT5 login (raqam) va server nomi kerak.");
   if (!password) return badRequest("MT5 parol kerak.");
@@ -104,14 +108,13 @@ export async function PUT(request: Request, context: { params: Promise<{ id: str
       metaapi_account_id: metaapiAccountId,
       status,
       last_error: lastError,
-      auto_sync: autoSync,
       updated_at: now,
     }, { onConflict: "user_id,prop_account_id" })
-    .select("login, server, platform, status, last_error, last_synced_at, auto_sync")
+    .select("login, server, platform, status, last_error, last_synced_at")
     .single();
 
   if (error) return serverError(error.message);
-  return Response.json({ connection: conn, metaApiConfigured: Boolean(metaToken) });
+  return Response.json({ connection: conn ? { ...conn, auto_sync: true } : null, metaApiConfigured: Boolean(metaToken) });
 }
 
 export async function DELETE(request: Request, context: { params: Promise<{ id: string }> }) {

@@ -1,12 +1,14 @@
 import { authenticateRequest, serverError, unauthorized } from "@/lib/backend/auth";
-import { decryptPassword } from "@/lib/backend/encrypt";
 import { fetchDeals, getMetaApiToken, reconstructTrades } from "@/lib/backend/metaapi";
+import { requirePremium } from "@/lib/backend/premium";
 
 export const runtime = "nodejs";
 
 export async function POST(request: Request, context: { params: Promise<{ id: string }> }) {
   const auth = await authenticateRequest(request);
   if (!auth) return unauthorized();
+  const premiumError = await requirePremium(auth);
+  if (premiumError) return premiumError;
   const { id } = await context.params;
 
   if (!getMetaApiToken()) {
@@ -16,7 +18,7 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
   // Get connection
   const { data: conn, error: connErr } = await auth.supabase
     .from("mt5_connections")
-    .select("metaapi_account_id, password_encrypted, last_synced_at, auto_sync")
+    .select("metaapi_account_id, password_encrypted, last_synced_at")
     .eq("user_id", auth.user.id)
     .eq("prop_account_id", id)
     .maybeSingle();

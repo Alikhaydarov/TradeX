@@ -1,4 +1,4 @@
-export type Section = "feed" | "chat" | "journal" | "backtest" | "account" | "admin";
+export type Section = "feed" | "chat" | "journal" | "backtest" | "account" | "pricing" | "admin";
 
 export interface Post {
   id: string;

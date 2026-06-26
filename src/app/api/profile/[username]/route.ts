@@ -20,6 +20,10 @@ async function followCounts(supabase: NonNullable<Awaited<ReturnType<typeof getS
   };
 }
 
+function premiumVerified(profile: { is_verified?: boolean | null; plan?: string | null; premium_until?: string | null }) {
+  return Boolean(profile.is_verified) && profile.plan === "premium" && (!profile.premium_until || new Date(profile.premium_until).getTime() > Date.now());
+}
+
 export async function GET(request: Request, context: Params) {
   const supabase = await getSupabaseServerClient();
   if (!supabase) return serverError("Database ulanmagan.");
@@ -29,7 +33,7 @@ export async function GET(request: Request, context: Params) {
 
   const { data: profile, error } = await supabase
     .from("profiles")
-    .select("id, username, full_name, avatar_url, bio, trading_style, location, is_verified")
+    .select("id, username, full_name, avatar_url, bio, trading_style, location, is_verified, plan, premium_until, ai_enabled, auto_sync_enabled")
     .eq("username", username)
     .maybeSingle();
 
@@ -71,12 +75,13 @@ export async function GET(request: Request, context: Params) {
     author_name: profile.full_name,
     author_handle: profile.username,
     author_avatar: profile.avatar_url || post.author_avatar,
-    author_is_verified: Boolean(profile.is_verified),
+    author_is_verified: premiumVerified(profile),
   }));
 
   return Response.json({
     profile: {
       ...profile,
+      is_verified: premiumVerified(profile),
       ...counts,
       isFollowing,
     },

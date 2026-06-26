@@ -24,6 +24,12 @@ interface ProfileRecord {
   full_name: string;
   avatar_url: string | null;
   is_verified: boolean | null;
+  plan: string | null;
+  premium_until: string | null;
+}
+
+function premiumVerified(profile: Pick<ProfileRecord, "is_verified" | "plan" | "premium_until">) {
+  return Boolean(profile.is_verified) && profile.plan === "premium" && (!profile.premium_until || new Date(profile.premium_until).getTime() > Date.now());
 }
 
 async function hydrateVerification(
@@ -35,12 +41,12 @@ async function hydrateVerification(
 
   const { data, error } = await auth.supabase
     .from("profiles")
-    .select("id, is_verified")
+    .select("id, is_verified, plan, premium_until")
     .in("id", userIds)
-    .returns<Array<{ id: string; is_verified: boolean | null }>>();
+    .returns<Array<Pick<ProfileRecord, "id" | "is_verified" | "plan" | "premium_until">>>();
 
   if (error) throw new Error(error.message);
-  const verification = new Map((data ?? []).map((profile) => [profile.id, Boolean(profile.is_verified)]));
+  const verification = new Map((data ?? []).map((profile) => [profile.id, premiumVerified(profile)]));
   return messages.map((message) => ({
     ...message,
     sender_is_verified: verification.get(message.user_id) ?? false,
@@ -106,7 +112,7 @@ export async function POST(
 
     const { data: profile, error: profileError } = await auth.supabase
       .from("profiles")
-      .select("id, username, full_name, avatar_url, is_verified")
+      .select("id, username, full_name, avatar_url, is_verified, plan, premium_until")
       .eq("id", auth.user.id)
       .single<ProfileRecord>();
 
@@ -173,7 +179,7 @@ export async function POST(
     return Response.json({
       message: {
         ...data,
-        sender_is_verified: Boolean(profile.is_verified),
+        sender_is_verified: premiumVerified(profile),
       },
     }, { status: 201 });
   } catch (error) {

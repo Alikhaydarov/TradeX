@@ -15,6 +15,12 @@ interface ProfileRow {
   username: string;
   avatar_url: string | null;
   is_verified: boolean | null;
+  plan?: string | null;
+  premium_until?: string | null;
+}
+
+function premiumVerified(profile: ProfileRow) {
+  return Boolean(profile.is_verified) && profile.plan === "premium" && (!profile.premium_until || new Date(profile.premium_until).getTime() > Date.now());
 }
 
 export async function GET(request: Request) {
@@ -39,7 +45,7 @@ export async function GET(request: Request) {
   const { data: profiles, error: profileError } = userIds.length
     ? await supabase
       .from("profiles")
-      .select("id, full_name, username, avatar_url, is_verified")
+      .select("id, full_name, username, avatar_url, is_verified, plan, premium_until")
       .in("id", userIds)
     : { data: [], error: null };
 
@@ -55,7 +61,7 @@ export async function GET(request: Request) {
       author_name: profile.full_name,
       author_handle: profile.username,
       author_avatar: profile.avatar_url || post.author_avatar,
-      author_is_verified: Boolean(profile.is_verified),
+      author_is_verified: premiumVerified(profile),
     };
   });
 

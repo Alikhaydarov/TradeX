@@ -8,11 +8,15 @@ import {
   Eye,
   Heart,
   ImageIcon,
+  KeyRound,
+  LockKeyhole,
   LogOut,
   MapPin,
   MessageCircle,
   PenLine,
   Plus,
+  Server,
+  Sparkles,
   Trash2,
   TrendingUp,
   UserRound,
@@ -52,6 +56,10 @@ interface ProfileRecord {
   followingCount?: number;
   isFollowing?: boolean;
   is_verified?: boolean | null;
+  plan?: string | null;
+  premium_until?: string | null;
+  ai_enabled?: boolean | null;
+  auto_sync_enabled?: boolean | null;
 }
 
 interface ConnectionUser {
@@ -105,6 +113,13 @@ interface TradingStats {
   winRate: number;
   netPnl: number;
   averageR: number;
+}
+
+interface PremiumStatus {
+  isPremium: boolean;
+  aiEnabled: boolean;
+  autoSyncEnabled: boolean;
+  isVerified: boolean;
 }
 
 type ProfileTab = "posts" | "media";
@@ -239,6 +254,12 @@ export function Account({ onLogin, profileUsername }: { onLogin: () => void; pro
   const [achievementType, setAchievementType] = useState<"funded" | "payout">("funded");
   const [achievementImage, setAchievementImage] = useState("");
   const [achievementBusy, setAchievementBusy] = useState(false);
+  const [premium, setPremium] = useState<PremiumStatus | null>(null);
+  const [mt5BrokerServer, setMt5BrokerServer] = useState("");
+  const [mt5AccountLogin, setMt5AccountLogin] = useState("");
+  const [mt5InvestorPassword, setMt5InvestorPassword] = useState("");
+  const [mt5Busy, setMt5Busy] = useState(false);
+  const [mt5Message, setMt5Message] = useState("");
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
@@ -279,6 +300,18 @@ export function Account({ onLogin, profileUsername }: { onLogin: () => void; pro
       active = false;
       window.clearTimeout(startTimer);
     };
+  }, [user, profileUsername]);
+
+  useEffect(() => {
+    if (!user || profileUsername) {
+      setPremium(null);
+      return;
+    }
+    let active = true;
+    apiRequest<PremiumStatus>("/api/premium/status")
+      .then((status) => { if (active) setPremium(status); })
+      .catch(() => { if (active) setPremium({ isPremium: false, aiEnabled: false, autoSyncEnabled: false, isVerified: false }); });
+    return () => { active = false; };
   }, [user, profileUsername]);
 
   if (!user) {
@@ -375,6 +408,29 @@ export function Account({ onLogin, profileUsername }: { onLogin: () => void; pro
       setAchievements((current) => current.filter((item) => item.id !== id));
     } catch (nextError) {
       setError(nextError instanceof Error ? nextError.message : "Achievement remove failed.");
+    }
+  };
+
+  const connectPremiumMt5 = async () => {
+    if (!premium?.isPremium) return;
+    setMt5Busy(true);
+    setMt5Message("");
+    setError(null);
+    try {
+      const { account } = await apiRequest<{ account: { id: string; status: string } }>("/api/connectors/mt5/accounts", {
+        method: "POST",
+        body: JSON.stringify({
+          brokerServer: mt5BrokerServer,
+          accountLogin: mt5AccountLogin,
+          investorPassword: mt5InvestorPassword,
+        }),
+      });
+      setMt5InvestorPassword("");
+      setMt5Message(`MT5 Auto Sync account created: ${account.status || "pending"}.`);
+    } catch (nextError) {
+      setMt5Message(nextError instanceof Error ? nextError.message : "MT5 Auto Sync failed.");
+    } finally {
+      setMt5Busy(false);
     }
   };
 
@@ -551,6 +607,84 @@ export function Account({ onLogin, profileUsername }: { onLogin: () => void; pro
             </div>
           </div>
         </section>
+
+        {isOwnProfile ? (
+          <section className="mt-2 rounded-lg border border-border bg-card p-4">
+            <div className="flex items-start gap-3">
+              <span className={`grid size-10 shrink-0 place-items-center rounded-lg border ${premium?.isPremium ? "border-sky-300/20 bg-sky-400/10 text-sky-300" : "border-white/10 bg-white/[.04] text-zinc-400"}`}>
+                {premium?.isPremium ? <Sparkles size={18} /> : <LockKeyhole size={18} />}
+              </span>
+              <div className="min-w-0 flex-1">
+                <div className="flex flex-wrap items-center gap-2">
+                  <h3 className="text-sm font-black">TradeWay Premium</h3>
+                  {premium?.isVerified ? <VerifiedBadge size={15} /> : null}
+                  {premium?.isPremium ? <span className="rounded-full bg-sky-400/10 px-2 py-0.5 text-[10px] font-black text-sky-300">Premium active</span> : null}
+                </div>
+                <p className="mt-1 text-xs leading-5 text-zinc-500">
+                  Verified badge, AI Trade Analysis and MT5 Auto Sync are Premium features.
+                </p>
+              </div>
+            </div>
+
+            {!premium?.isPremium ? (
+              <div className="mt-4 rounded-lg border border-white/8 bg-[#111111] p-4">
+                <p className="text-sm font-bold">Galochka, AI Trade Analysis va MT5 Auto Sync faqat Premium uchun.</p>
+                <button
+                  type="button"
+                  onClick={() => { window.history.pushState(null, "", "/pricing"); window.dispatchEvent(new Event("popstate")); }}
+                  className="mt-4 inline-flex h-10 items-center justify-center rounded-lg bg-white px-4 text-sm font-black text-black transition hover:bg-zinc-200"
+                >
+                  Upgrade to Premium
+                </button>
+              </div>
+            ) : (
+              <div className="mt-4 grid gap-3 lg:grid-cols-[minmax(0,1fr)_minmax(280px,360px)]">
+                <div className="grid gap-2 sm:grid-cols-3">
+                  {[
+                    ["Verified", premium.isVerified ? "Enabled" : "Pending"],
+                    ["AI enabled", premium.aiEnabled ? "Enabled" : "Off"],
+                    ["Auto Sync", premium.autoSyncEnabled ? "Enabled" : "Off"],
+                  ].map(([label, value]) => (
+                    <div key={label} className="rounded-lg border border-white/8 bg-[#111111] px-3 py-3">
+                      <p className="text-[10px] font-black uppercase tracking-wider text-zinc-600">{label}</p>
+                      <p className="mt-1 text-sm font-black text-zinc-100">{value}</p>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="rounded-lg border border-white/8 bg-[#111111] p-3">
+                  <p className="flex items-center gap-2 text-xs font-black uppercase tracking-wider text-zinc-500"><KeyRound size={13} /> Start MT5 Auto Sync</p>
+                  <div className="mt-3 grid gap-2">
+                    <label className="grid gap-1 text-[10px] font-bold uppercase tracking-wider text-zinc-600">
+                      Broker Server
+                      <div className="relative">
+                        <Server className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-zinc-600" size={14} />
+                        <Input value={mt5BrokerServer} onChange={(event) => setMt5BrokerServer(event.target.value)} placeholder="ICMarketsEU-Live04" className="pl-9" />
+                      </div>
+                    </label>
+                    <label className="grid gap-1 text-[10px] font-bold uppercase tracking-wider text-zinc-600">
+                      Account Login
+                      <Input value={mt5AccountLogin} onChange={(event) => setMt5AccountLogin(event.target.value.replace(/\D/g, ""))} inputMode="numeric" placeholder="12345678" />
+                    </label>
+                    <label className="grid gap-1 text-[10px] font-bold uppercase tracking-wider text-zinc-600">
+                      Investor Password
+                      <Input value={mt5InvestorPassword} onChange={(event) => setMt5InvestorPassword(event.target.value)} type="password" autoComplete="new-password" placeholder="Investor password" />
+                    </label>
+                    <Button
+                      disabled={mt5Busy || !mt5BrokerServer || !mt5AccountLogin || !mt5InvestorPassword}
+                      onClick={() => void connectPremiumMt5()}
+                      className="mt-1 bg-white text-black hover:bg-zinc-200"
+                    >
+                      {mt5Busy ? <XSpinner size="sm" /> : <KeyRound size={15} />}
+                      Start MT5 Auto Sync
+                    </Button>
+                    {mt5Message ? <p className={`text-xs leading-5 ${mt5Message.includes("failed") || mt5Message.includes("required") || mt5Message.includes("faqat") ? "text-rose-300" : "text-emerald-300"}`}>{mt5Message}</p> : null}
+                  </div>
+                </div>
+              </div>
+            )}
+          </section>
+        ) : null}
 
         {(achievements.length > 0 || isOwnProfile) ? <section className="mt-2 border-y border-border bg-card px-4 py-3 sm:rounded-lg sm:border">
           <div className="flex items-center gap-2">

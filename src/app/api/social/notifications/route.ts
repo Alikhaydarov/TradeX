@@ -11,6 +11,20 @@ interface NotificationRow {
   actor_id: string | null;
 }
 
+interface ActorProfileRow {
+  id: string;
+  username: string;
+  full_name: string;
+  avatar_url: string | null;
+  is_verified: boolean | null;
+  plan: string | null;
+  premium_until: string | null;
+}
+
+function premiumVerified(profile: Pick<ActorProfileRow, "is_verified" | "plan" | "premium_until">) {
+  return Boolean(profile.is_verified) && profile.plan === "premium" && (!profile.premium_until || new Date(profile.premium_until).getTime() > Date.now());
+}
+
 export async function GET(request: Request) {
   const auth = await authenticateRequest(request);
   if (!auth) return unauthorized();
@@ -38,7 +52,7 @@ export async function GET(request: Request) {
 
   const actorIds = Array.from(new Set((data ?? []).map((item: NotificationRow) => item.actor_id).filter(Boolean))) as string[];
   const profiles = actorIds.length
-    ? await auth.supabase.from("profiles").select("id, username, full_name, avatar_url, is_verified").in("id", actorIds)
+    ? await auth.supabase.from("profiles").select("id, username, full_name, avatar_url, is_verified, plan, premium_until").in("id", actorIds).returns<ActorProfileRow[]>()
     : { data: [], error: null };
 
   if (profiles.error) return serverError(profiles.error.message);
@@ -59,7 +73,7 @@ export async function GET(request: Request) {
           username: actor.username,
           fullName: actor.full_name,
           avatarUrl: actor.avatar_url,
-          isVerified: Boolean(actor.is_verified),
+          isVerified: premiumVerified(actor),
         } : null,
       };
     }),

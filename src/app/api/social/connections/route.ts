@@ -16,6 +16,12 @@ interface ProfileRow {
   trading_style: string | null;
   location: string | null;
   is_verified?: boolean | null;
+  plan?: string | null;
+  premium_until?: string | null;
+}
+
+function premiumVerified(profile: Pick<ProfileRow, "is_verified" | "plan" | "premium_until">) {
+  return Boolean(profile.is_verified) && profile.plan === "premium" && (!profile.premium_until || new Date(profile.premium_until).getTime() > Date.now());
 }
 
 export async function GET(request: Request) {
@@ -44,7 +50,7 @@ export async function GET(request: Request) {
 
   const { data: profiles, error: profilesError } = await auth.supabase
     .from("profiles")
-    .select("id, username, full_name, avatar_url, bio, trading_style, location, is_verified")
+    .select("id, username, full_name, avatar_url, bio, trading_style, location, is_verified, plan, premium_until")
     .in("id", ids);
 
   if (profilesError) return serverError(profilesError.message);
@@ -68,7 +74,7 @@ export async function GET(request: Request) {
       bio: profile.bio ?? "",
       tradingStyle: profile.trading_style ?? "Trader",
       location: profile.location ?? "",
-      isVerified: Boolean(profile.is_verified),
+      isVerified: premiumVerified(profile),
       followersCount: (followers.data ?? []).filter((item: { following_id: string }) => item.following_id === profile.id).length,
       followingCount: (following.data ?? []).filter((item: { follower_id: string }) => item.follower_id === profile.id).length,
       isFollowing: followingSet.has(profile.id),

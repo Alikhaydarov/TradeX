@@ -16,6 +16,16 @@ interface MessageRecord {
   sender_is_verified?: boolean;
 }
 
+interface ProfileRecord {
+  is_verified: boolean | null;
+  plan: string | null;
+  premium_until: string | null;
+}
+
+function premiumVerified(profile: ProfileRecord) {
+  return Boolean(profile.is_verified) && profile.plan === "premium" && (!profile.premium_until || new Date(profile.premium_until).getTime() > Date.now());
+}
+
 export async function POST(request: Request) {
   const auth = await authenticateRequest(request);
   if (!auth) return unauthorized();
@@ -40,15 +50,15 @@ export async function POST(request: Request) {
 
   const { data: profile, error: profileError } = await auth.supabase
     .from("profiles")
-    .select("is_verified")
+    .select("is_verified, plan, premium_until")
     .eq("id", data.user_id)
-    .single<{ is_verified: boolean | null }>();
+    .single<ProfileRecord>();
 
   if (profileError) return serverError(profileError.message);
   return Response.json({
     message: {
       ...data,
-      sender_is_verified: Boolean(profile.is_verified),
+      sender_is_verified: premiumVerified(profile),
     },
   });
 }
