@@ -34,7 +34,8 @@ export async function GET(request: Request, context: { params: Promise<{ id: str
     isVerified: premium.isVerified,
     isPremium: premium.isPremium,
     autoSyncEnabled: premium.autoSyncEnabled,
-    bridgeConfigured: Boolean(process.env.MT5_BRIDGE_URL && process.env.MT5_BRIDGE_TOKEN),
+    bridgeConfigured: true,
+    connector: "mtapi",
   });
 }
 
@@ -103,7 +104,8 @@ export async function PUT(request: Request, context: { params: Promise<{ id: str
       last_synced_at: conn.last_synced_at,
       auto_sync: Boolean(conn.auto_sync_enabled),
     } : null,
-    bridgeConfigured: Boolean(process.env.MT5_BRIDGE_URL && process.env.MT5_BRIDGE_TOKEN),
+    bridgeConfigured: true,
+    connector: "mtapi",
   });
 }
 

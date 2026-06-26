@@ -249,7 +249,12 @@ export async function importMt5TradesToJournal(
 
   await supabase
     .from("trading_accounts")
-    .update({ last_synced_at: new Date().toISOString(), status: "connected", updated_at: new Date().toISOString() })
+    .update({
+      last_synced_at: new Date().toISOString(),
+      status: "connected",
+      last_error: null,
+      updated_at: new Date().toISOString(),
+    })
     .eq("id", accountId);
 
   return {
@@ -457,7 +462,7 @@ export async function importMt5TradesToJournalViaPostgres(
 
     await client.query(
       `update public.trading_accounts
-       set last_synced_at = now(), status = 'connected', updated_at = now()
+       set last_synced_at = now(), status = 'connected', last_error = null, updated_at = now()
        where id = $1`,
       [accountId],
     );

@@ -37,6 +37,7 @@ function toIncomingTrade(trade: Record<string, unknown>): IncomingMt5Trade {
     openedAt: trade.openedAt ?? trade.opened_at ?? trade.openTime ?? trade.open_time,
     closedAt: trade.closedAt ?? trade.closed_at ?? trade.closeTime ?? trade.close_time ?? trade.time,
     status: trade.status ?? "closed",
+    rawPayload: trade.rawPayload ?? trade,
   };
 }
 
