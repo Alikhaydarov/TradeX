@@ -73,6 +73,7 @@ export async function POST(request: Request) {
         encrypted_password: encryptedPassword,
         password_type: "investor",
         status: "pending",
+        last_error: null,
         sync_mode: "normal",
         auto_sync_enabled: true,
         updated_at: new Date().toISOString(),

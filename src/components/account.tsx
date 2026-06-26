@@ -8,14 +8,12 @@ import {
   Eye,
   Heart,
   ImageIcon,
-  KeyRound,
   LockKeyhole,
   LogOut,
   MapPin,
   MessageCircle,
   PenLine,
   Plus,
-  Server,
   Sparkles,
   Trash2,
   TrendingUp,
@@ -255,11 +253,6 @@ export function Account({ onLogin, profileUsername }: { onLogin: () => void; pro
   const [achievementImage, setAchievementImage] = useState("");
   const [achievementBusy, setAchievementBusy] = useState(false);
   const [premium, setPremium] = useState<PremiumStatus | null>(null);
-  const [mt5BrokerServer, setMt5BrokerServer] = useState("");
-  const [mt5AccountLogin, setMt5AccountLogin] = useState("");
-  const [mt5InvestorPassword, setMt5InvestorPassword] = useState("");
-  const [mt5Busy, setMt5Busy] = useState(false);
-  const [mt5Message, setMt5Message] = useState("");
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
@@ -408,29 +401,6 @@ export function Account({ onLogin, profileUsername }: { onLogin: () => void; pro
       setAchievements((current) => current.filter((item) => item.id !== id));
     } catch (nextError) {
       setError(nextError instanceof Error ? nextError.message : "Achievement remove failed.");
-    }
-  };
-
-  const connectPremiumMt5 = async () => {
-    if (!premium?.isPremium) return;
-    setMt5Busy(true);
-    setMt5Message("");
-    setError(null);
-    try {
-      const { account } = await apiRequest<{ account: { id: string; status: string } }>("/api/connectors/mt5/accounts", {
-        method: "POST",
-        body: JSON.stringify({
-          brokerServer: mt5BrokerServer,
-          accountLogin: mt5AccountLogin,
-          investorPassword: mt5InvestorPassword,
-        }),
-      });
-      setMt5InvestorPassword("");
-      setMt5Message(`MT5 Auto Sync account created: ${account.status || "pending"}.`);
-    } catch (nextError) {
-      setMt5Message(nextError instanceof Error ? nextError.message : "MT5 Auto Sync failed.");
-    } finally {
-      setMt5Busy(false);
     }
   };
 
@@ -638,7 +608,7 @@ export function Account({ onLogin, profileUsername }: { onLogin: () => void; pro
                 </button>
               </div>
             ) : (
-              <div className="mt-4 grid gap-3 lg:grid-cols-[minmax(0,1fr)_minmax(280px,360px)]">
+              <div className="mt-4 grid gap-3">
                 <div className="grid gap-2 sm:grid-cols-3">
                   {[
                     ["Verified", premium.isVerified ? "Enabled" : "Pending"],
@@ -651,35 +621,18 @@ export function Account({ onLogin, profileUsername }: { onLogin: () => void; pro
                     </div>
                   ))}
                 </div>
-
                 <div className="rounded-lg border border-white/8 bg-[#111111] p-3">
-                  <p className="flex items-center gap-2 text-xs font-black uppercase tracking-wider text-zinc-500"><KeyRound size={13} /> Start MT5 Auto Sync</p>
-                  <div className="mt-3 grid gap-2">
-                    <label className="grid gap-1 text-[10px] font-bold uppercase tracking-wider text-zinc-600">
-                      Broker Server
-                      <div className="relative">
-                        <Server className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-zinc-600" size={14} />
-                        <Input value={mt5BrokerServer} onChange={(event) => setMt5BrokerServer(event.target.value)} placeholder="ICMarketsEU-Live04" className="pl-9" />
-                      </div>
-                    </label>
-                    <label className="grid gap-1 text-[10px] font-bold uppercase tracking-wider text-zinc-600">
-                      Account Login
-                      <Input value={mt5AccountLogin} onChange={(event) => setMt5AccountLogin(event.target.value.replace(/\D/g, ""))} inputMode="numeric" placeholder="12345678" />
-                    </label>
-                    <label className="grid gap-1 text-[10px] font-bold uppercase tracking-wider text-zinc-600">
-                      Investor Password
-                      <Input value={mt5InvestorPassword} onChange={(event) => setMt5InvestorPassword(event.target.value)} type="password" autoComplete="new-password" placeholder="Investor password" />
-                    </label>
-                    <Button
-                      disabled={mt5Busy || !mt5BrokerServer || !mt5AccountLogin || !mt5InvestorPassword}
-                      onClick={() => void connectPremiumMt5()}
-                      className="mt-1 bg-white text-black hover:bg-zinc-200"
-                    >
-                      {mt5Busy ? <XSpinner size="sm" /> : <KeyRound size={15} />}
-                      Start MT5 Auto Sync
-                    </Button>
-                    {mt5Message ? <p className={`text-xs leading-5 ${mt5Message.includes("failed") || mt5Message.includes("required") || mt5Message.includes("faqat") ? "text-rose-300" : "text-emerald-300"}`}>{mt5Message}</p> : null}
-                  </div>
+                  <p className="text-xs font-black uppercase tracking-wider text-zinc-500">MT5 Auto Sync</p>
+                  <p className="mt-1 text-xs leading-5 text-zinc-500">
+                    MT5 is connected inside each trading account settings, so every imported trade goes into the correct journal.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => { window.history.pushState(null, "", "/journal"); window.dispatchEvent(new Event("popstate")); }}
+                    className="mt-3 inline-flex h-9 items-center justify-center rounded-lg border border-white/10 px-3 text-xs font-black text-zinc-200 transition hover:bg-white/[.06]"
+                  >
+                    Open Journal Accounts
+                  </button>
                 </div>
               </div>
             )}

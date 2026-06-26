@@ -1,8 +1,64 @@
 import { authenticateRequest, serverError, unauthorized } from "@/lib/backend/auth";
-import { fetchDeals, getMetaApiToken, reconstructTrades } from "@/lib/backend/metaapi";
+import { decryptSecret } from "@/lib/backend/crypto";
+import {
+  importMt5TradesToJournal,
+  importMt5TradesToJournalViaPostgres,
+  type IncomingMt5Trade,
+} from "@/lib/backend/mt5-import";
+import { getPostgresPool } from "@/lib/backend/postgres";
 import { requirePremium } from "@/lib/backend/premium";
+import { getMt5ClosedTrades } from "@/lib/server/mt5-bridge";
+import { getSupabaseAdminClient } from "@/lib/supabase/admin";
 
 export const runtime = "nodejs";
+
+interface TradingAccountSyncRow {
+  id: string;
+  user_id: string;
+  broker_server: string | null;
+  account_login: string | null;
+  encrypted_password: string | null;
+  last_synced_at: string | null;
+}
+
+function toIncomingTrade(trade: Record<string, unknown>): IncomingMt5Trade {
+  return {
+    externalDealId: trade.id ?? trade.ticket,
+    externalPositionId: trade.positionId ?? trade.position_id,
+    symbol: trade.symbol,
+    side: trade.side ?? trade.type,
+    volume: trade.volume ?? trade.lots ?? trade.quantity,
+    entryPrice: trade.entryPrice ?? trade.entry_price ?? trade.openPrice ?? trade.open_price,
+    exitPrice: trade.exitPrice ?? trade.exit_price ?? trade.closePrice ?? trade.close_price,
+    commission: trade.commission,
+    swap: trade.swap,
+    grossPnl: trade.grossPnl ?? trade.gross_pnl ?? trade.profit ?? trade.pnl,
+    netPnl: trade.netPnl ?? trade.net_pnl ?? trade.profit ?? trade.pnl,
+    openedAt: trade.openedAt ?? trade.opened_at ?? trade.openTime ?? trade.open_time,
+    closedAt: trade.closedAt ?? trade.closed_at ?? trade.closeTime ?? trade.close_time ?? trade.time,
+    status: trade.status ?? "closed",
+  };
+}
+
+async function updateConnectionError(accountId: string, userId: string, message: string) {
+  const supabase = getSupabaseAdminClient();
+  if (supabase) {
+    await supabase
+      .from("trading_accounts")
+      .update({ status: "error", last_error: message, updated_at: new Date().toISOString() })
+      .eq("id", accountId)
+      .eq("user_id", userId);
+    return;
+  }
+
+  const pool = getPostgresPool();
+  await pool?.query(
+    `update public.trading_accounts
+     set status = 'error', last_error = $3, updated_at = now()
+     where id = $1 and user_id = $2`,
+    [accountId, userId, message],
+  );
+}
 
 export async function POST(request: Request, context: { params: Promise<{ id: string }> }) {
   const auth = await authenticateRequest(request);
@@ -11,104 +67,66 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
   if (premiumError) return premiumError;
   const { id } = await context.params;
 
-  if (!getMetaApiToken()) {
-    return Response.json({ error: "METAAPI_TOKEN .env ga qo'shilmagan." }, { status: 501 });
+  const supabase = getSupabaseAdminClient();
+  let account: TradingAccountSyncRow | null = null;
+
+  if (supabase) {
+    const { data, error } = await supabase
+      .from("trading_accounts")
+      .select("id, user_id, broker_server, account_login, encrypted_password, last_synced_at")
+      .eq("user_id", auth.user.id)
+      .eq("prop_account_id", id)
+      .eq("platform", "MT5")
+      .maybeSingle<TradingAccountSyncRow>();
+    if (error) return serverError(error.message);
+    account = data;
+  } else {
+    const pool = getPostgresPool();
+    if (!pool) return serverError("DATABASE_URL is not configured.");
+    const result = await pool.query<TradingAccountSyncRow>(
+      `select id, user_id, broker_server, account_login, encrypted_password, last_synced_at
+       from public.trading_accounts
+       where user_id = $1 and prop_account_id = $2 and platform = 'MT5'
+       limit 1`,
+      [auth.user.id, id],
+    );
+    account = result.rows[0] || null;
   }
 
-  // Get connection
-  const { data: conn, error: connErr } = await auth.supabase
-    .from("mt5_connections")
-    .select("metaapi_account_id, password_encrypted, last_synced_at")
-    .eq("user_id", auth.user.id)
-    .eq("prop_account_id", id)
-    .maybeSingle();
-
-  if (connErr) return serverError(connErr.message);
-  if (!conn) return Response.json({ error: "MT5 ulanishi topilmadi. Avval login/parol kiriting." }, { status: 404 });
-  if (!conn.metaapi_account_id) {
-    return Response.json({ error: "MetaAPI account ID yo'q. Login ma'lumotlarini qayta saqlang." }, { status: 400 });
+  if (!account) {
+    return Response.json({ error: "MT5 connection not found. Add credentials in Settings first." }, { status: 404 });
+  }
+  if (!account.account_login || !account.broker_server || !account.encrypted_password) {
+    return Response.json({ error: "MT5 credentials are incomplete." }, { status: 400 });
   }
 
-  // Determine sync window
-  const from = conn.last_synced_at
-    ? new Date(conn.last_synced_at)
-    : new Date(Date.now() - 90 * 24 * 60 * 60 * 1000); // last 90 days
+  const from = account.last_synced_at
+    ? new Date(account.last_synced_at)
+    : new Date(Date.now() - 90 * 24 * 60 * 60 * 1000);
   const to = new Date();
 
-  // Fetch deals from MetaAPI
-  let deals;
   try {
-    deals = await fetchDeals(conn.metaapi_account_id, from, to);
-  } catch (err) {
-    const msg = err instanceof Error ? err.message : "MetaAPI xato";
-    await auth.supabase.from("mt5_connections").update({ last_error: msg, status: "error", updated_at: new Date().toISOString() })
-      .eq("user_id", auth.user.id).eq("prop_account_id", id);
-    return Response.json({ error: msg }, { status: 502 });
-  }
-
-  // Reconstruct completed trades from deals
-  const trades = reconstructTrades(deals);
-
-  if (trades.length === 0) {
-    await auth.supabase.from("mt5_connections")
-      .update({ last_synced_at: to.toISOString(), last_error: null, status: "connected", updated_at: new Date().toISOString() })
-      .eq("user_id", auth.user.id).eq("prop_account_id", id);
-    return Response.json({ imported: 0, message: "Yangi tradelar topilmadi." });
-  }
-
-  // Get prop account details for journal entry defaults
-  const { data: propAcc } = await auth.supabase
-    .from("prop_accounts")
-    .select("id, market_type")
-    .eq("id", id)
-    .maybeSingle();
-
-  // Insert new trades (skip duplicates via external_id unique index)
-  let imported = 0;
-  let skipped  = 0;
-
-  for (const t of trades) {
-    const pnl = t.pnl;
-    const riskAmount = Math.abs(pnl) * 0.01; // placeholder
-
-    const { error: insertErr } = await auth.supabase.from("journal_entries").insert({
-      user_id: auth.user.id,
-      prop_account_id: id,
-      symbol: t.symbol,
-      side: t.side,
-      entry_price: String(t.entryPrice),
-      exit_price: String(t.exitPrice),
-      quantity: String(t.volume),
-      fees: String(t.commission),
-      pnl: String(pnl),
-      note: t.comment || "",
-      traded_at: t.closedAt,
-      market_type: propAcc?.market_type ?? "CFD",
-      result_r: "0",
-      risk_amount: String(riskAmount),
-      external_source: "metaapi",
-      external_id: t.externalId,
-      tags: [],
+    const password = decryptSecret(account.encrypted_password);
+    const bridgeTrades = await getMt5ClosedTrades({
+      login: account.account_login,
+      password,
+      server: account.broker_server,
+      from: from.toISOString(),
+      to: to.toISOString(),
     });
 
-    if (insertErr) {
-      // Duplicate → skip (unique index on external_source + external_id)
-      if (insertErr.code === "23505") { skipped++; }
-      else { return serverError(insertErr.message); }
-    } else {
-      imported++;
-    }
+    const incoming = bridgeTrades.map((trade) => toIncomingTrade(trade as Record<string, unknown>));
+    const result = supabase
+      ? await importMt5TradesToJournal(supabase, account.id, incoming)
+      : await importMt5TradesToJournalViaPostgres(account.id, incoming);
+
+    return Response.json({
+      ...result,
+      message: result.imported > 0 ? "Trades imported into journal." : "No new closed trades found.",
+    });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "MT5 sync failed.";
+    await updateConnectionError(account.id, auth.user.id, message);
+    return Response.json({ error: message }, { status: 502 });
   }
-
-  // Update last_synced_at
-  await auth.supabase.from("mt5_connections")
-    .update({
-      last_synced_at: to.toISOString(),
-      last_error: null,
-      status: "connected",
-      updated_at: new Date().toISOString(),
-    })
-    .eq("user_id", auth.user.id).eq("prop_account_id", id);
-
-  return Response.json({ imported, skipped, total: trades.length });
 }

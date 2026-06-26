@@ -28,17 +28,17 @@ export function Mt5Settings({ account, onSynced }: { account: PropAccount; onSyn
   const [login, setLogin]     = useState("");
   const [password, setPassword] = useState("");
   const [server, setServer]   = useState("");
-  const [metaApiConfigured, setMetaApiConfigured] = useState(false);
+  const [bridgeConfigured, setBridgeConfigured] = useState(false);
   const [busy, setBusy]       = useState<"save" | "sync" | "disconnect" | null>(null);
   const [message, setMessage] = useState("");
   const [syncResult, setSyncResult] = useState<SyncResult | null>(null);
   const [isVerified, setIsVerified] = useState<boolean | null>(null);
 
   useEffect(() => {
-    apiRequest<{ connection: Connection | null; isVerified: boolean; metaApiConfigured: boolean }>(
+    apiRequest<{ connection: Connection | null; isVerified: boolean; bridgeConfigured: boolean }>(
       `/api/prop-accounts/${account.id}/mt5`
-    ).then(({ connection: c, isVerified: v, metaApiConfigured: m }) => {
-      setIsVerified(v); setMetaApiConfigured(m);
+    ).then(({ connection: c, isVerified: v, bridgeConfigured: m }) => {
+      setIsVerified(v); setBridgeConfigured(m);
       if (!c) return;
       setConnection(c);
       setLogin(c.login ?? ""); setServer(c.server ?? "");
@@ -49,16 +49,13 @@ export function Mt5Settings({ account, onSynced }: { account: PropAccount; onSyn
     if (!login || !password || !server) { setMessage("Login, parol va server nomini kiriting."); return; }
     setBusy("save"); setMessage(""); setSyncResult(null);
     try {
-      const { connection: c } = await apiRequest<{ connection: Connection; metaApiConfigured: boolean }>(
+      const { connection: c } = await apiRequest<{ connection: Connection; bridgeConfigured: boolean }>(
         `/api/prop-accounts/${account.id}/mt5`,
         { method: "PUT", body: JSON.stringify({ login, password, server }) }
       );
       setConnection(c);
       setPassword("");
-      setMessage(metaApiConfigured
-        ? "MT5 ulandi! Auto-sync yoqildi."
-        : "Login ma'lumotlari saqlandi. METAAPI_TOKEN sozlansa auto-sync ishlaydi."
-      );
+      setMessage("MT5 credentials saved. Sync runs from this account Settings.");
     } catch (e) {
       setMessage(e instanceof Error ? e.message : "Saqlanmadi.");
     } finally { setBusy(null); }
@@ -125,15 +122,13 @@ export function Mt5Settings({ account, onSynced }: { account: PropAccount; onSyn
             {connection.last_error && <p className="mt-0.5 text-[10px] text-rose-500">{connection.last_error}</p>}
           </div>
           <div className="flex shrink-0 gap-2">
-            {metaApiConfigured && (
-              <button type="button" onClick={() => void sync()} disabled={busy === "sync"}
-                className="flex items-center gap-1.5 rounded-lg border border-[#2a2a2a] px-3 py-1.5 text-xs font-semibold text-zinc-300 transition hover:bg-white/[.06] disabled:opacity-50">
-                {busy === "sync"
-                  ? <LoaderCircle size={12} className="animate-spin" />
-                  : <RefreshCw size={12} />}
-                Sync
-              </button>
-            )}
+            <button type="button" onClick={() => void sync()} disabled={busy === "sync"}
+              className="flex items-center gap-1.5 rounded-lg border border-[#2a2a2a] px-3 py-1.5 text-xs font-semibold text-zinc-300 transition hover:bg-white/[.06] disabled:opacity-50">
+              {busy === "sync"
+                ? <LoaderCircle size={12} className="animate-spin" />
+                : <RefreshCw size={12} />}
+              Sync
+            </button>
             <button type="button" onClick={() => void disconnect()} disabled={!!busy}
               className="grid h-7 w-7 place-items-center rounded-lg border border-[#2a2a2a] text-zinc-600 transition hover:border-rose-500/30 hover:text-rose-400">
               <Unplug size={12} />
@@ -205,11 +200,11 @@ export function Mt5Settings({ account, onSynced }: { account: PropAccount; onSyn
         </button>
       </div>
 
-      {!metaApiConfigured && (
+      {!bridgeConfigured && (
         <div className="rounded-xl border border-amber-500/15 bg-amber-500/5 px-4 py-3">
-          <p className="text-xs font-semibold text-amber-400">Auto-sync hali sozlanmagan</p>
+          <p className="text-xs font-semibold text-amber-400">MT5 bridge is not configured</p>
           <p className="mt-1 text-[11px] text-amber-600">
-            Server admini <code className="rounded bg-black/30 px-1">METAAPI_TOKEN</code> env ga qo'shishi kerak. Login ma'lumotlari saqlanib turadi.
+            Credentials are saved, but live history import needs <code className="rounded bg-black/30 px-1">MT5_BRIDGE_URL</code> and <code className="rounded bg-black/30 px-1">MT5_BRIDGE_TOKEN</code>.
           </p>
         </div>
       )}

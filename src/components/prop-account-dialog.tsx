@@ -27,7 +27,7 @@ const MARKETS = ["CFD", "Futures", "Crypto", "Forex"];
 const SIZES = [5000, 10000, 25000, 50000, 100000, 200000];
 const IMPORT_SOURCES = [
   { value: "manual", label: "Manual journal", helper: "Add or review trades inside TradeWay." },
-  { value: "metaapi", label: "MT5 via MetaAPI", helper: "Best v1 path for importing closed MT5 history safely." },
+  { value: "mt5_bridge", label: "MT5 Bridge", helper: "Read-only closed trade history import through your MT5 bridge." },
   { value: "ctrader", label: "cTrader Open API", helper: "Prepared for firms that give cTrader access." },
   { value: "tradovate", label: "Tradovate", helper: "Futures history connector placeholder." },
   { value: "ninjatrader", label: "NinjaTrader", helper: "Futures broker/platform connector placeholder." },

@@ -1,6 +1,5 @@
 import { authenticateRequest, badRequest, serverError, unauthorized } from "@/lib/backend/auth";
-import { encryptPassword } from "@/lib/backend/encrypt";
-import { createMetaApiAccount, getMetaApiToken } from "@/lib/backend/metaapi";
+import { encryptSecret } from "@/lib/backend/crypto";
 import { getPremiumStatus, requirePremium } from "@/lib/backend/premium";
 
 export const runtime = "nodejs";
@@ -12,20 +11,30 @@ export async function GET(request: Request, context: { params: Promise<{ id: str
 
   const [{ data: conn }, premium] = await Promise.all([
     auth.supabase
-      .from("mt5_connections")
-      .select("login, server, platform, status, last_error, last_synced_at, updated_at")
+      .from("trading_accounts")
+      .select("id, account_login, broker_server, platform, status, last_error, last_synced_at, auto_sync_enabled, updated_at")
       .eq("user_id", auth.user.id)
       .eq("prop_account_id", id)
+      .eq("platform", "MT5")
       .maybeSingle(),
     getPremiumStatus(auth),
   ]);
 
   return Response.json({
-    connection: conn ? { ...conn, auto_sync: true } : null,
+    connection: conn ? {
+      id: conn.id,
+      login: conn.account_login,
+      server: conn.broker_server,
+      platform: "mt5",
+      status: conn.status,
+      last_error: conn.last_error,
+      last_synced_at: conn.last_synced_at,
+      auto_sync: Boolean(conn.auto_sync_enabled),
+    } : null,
     isVerified: premium.isVerified,
     isPremium: premium.isPremium,
     autoSyncEnabled: premium.autoSyncEnabled,
-    metaApiConfigured: Boolean(getMetaApiToken()),
+    bridgeConfigured: Boolean(process.env.MT5_BRIDGE_URL && process.env.MT5_BRIDGE_TOKEN),
   });
 }
 
@@ -55,66 +64,47 @@ export async function PUT(request: Request, context: { params: Promise<{ id: str
     .maybeSingle();
   if (!propAccount) return badRequest("Prop account topilmadi.");
 
-  // Encrypt password
   let passwordEncrypted: string;
   try {
-    passwordEncrypted = encryptPassword(password);
-  } catch {
-    return serverError("Parolni shifrlashda xato.");
-  }
-
-  // Try to register with MetaAPI (if configured)
-  let metaapiAccountId: string | null = null;
-  let status = "ready";
-  let lastError: string | null = null;
-
-  const metaToken = getMetaApiToken();
-  if (metaToken) {
-    try {
-      // Check if we already have a MetaAPI account
-      const { data: existing } = await auth.supabase
-        .from("mt5_connections")
-        .select("metaapi_account_id")
-        .eq("user_id", auth.user.id)
-        .eq("prop_account_id", id)
-        .maybeSingle();
-
-      if (existing?.metaapi_account_id) {
-        metaapiAccountId = existing.metaapi_account_id;
-        status = "connected";
-      } else {
-        metaapiAccountId = await createMetaApiAccount({
-          login, password, server, name: propAccount.name,
-        });
-        status = "connected";
-      }
-    } catch (err) {
-      // Don't fail the whole request - just store creds, sync will retry
-      lastError = err instanceof Error ? err.message : "MetaAPI xato";
-      status = "error";
-    }
+    passwordEncrypted = encryptSecret(password);
+  } catch (error) {
+    return serverError(error instanceof Error ? error.message : "Parolni shifrlashda xato.");
   }
 
   const now = new Date().toISOString();
   const { data: conn, error } = await auth.supabase
-    .from("mt5_connections")
+    .from("trading_accounts")
     .upsert({
       user_id: auth.user.id,
       prop_account_id: id,
-      login,
-      server,
-      password_encrypted: passwordEncrypted,
-      platform: metaToken ? "metaapi" : "mt5",
-      metaapi_account_id: metaapiAccountId,
-      status,
-      last_error: lastError,
+      account_login: login,
+      broker_server: server,
+      encrypted_password: passwordEncrypted,
+      platform: "MT5",
+      password_type: "investor",
+      status: "pending",
+      sync_mode: "normal",
+      auto_sync_enabled: true,
+      last_error: null,
       updated_at: now,
-    }, { onConflict: "user_id,prop_account_id" })
-    .select("login, server, platform, status, last_error, last_synced_at")
+    }, { onConflict: "user_id,platform,broker_server,account_login" })
+    .select("id, account_login, broker_server, platform, status, last_error, last_synced_at, auto_sync_enabled")
     .single();
 
   if (error) return serverError(error.message);
-  return Response.json({ connection: conn ? { ...conn, auto_sync: true } : null, metaApiConfigured: Boolean(metaToken) });
+  return Response.json({
+    connection: conn ? {
+      id: conn.id,
+      login: conn.account_login,
+      server: conn.broker_server,
+      platform: "mt5",
+      status: conn.status,
+      last_error: conn.last_error,
+      last_synced_at: conn.last_synced_at,
+      auto_sync: Boolean(conn.auto_sync_enabled),
+    } : null,
+    bridgeConfigured: Boolean(process.env.MT5_BRIDGE_URL && process.env.MT5_BRIDGE_TOKEN),
+  });
 }
 
 export async function DELETE(request: Request, context: { params: Promise<{ id: string }> }) {
@@ -123,10 +113,11 @@ export async function DELETE(request: Request, context: { params: Promise<{ id: 
   const { id } = await context.params;
 
   const { error } = await auth.supabase
-    .from("mt5_connections")
+    .from("trading_accounts")
     .delete()
     .eq("user_id", auth.user.id)
-    .eq("prop_account_id", id);
+    .eq("prop_account_id", id)
+    .eq("platform", "MT5");
 
   if (error) return serverError(error.message);
   return Response.json({ success: true });
