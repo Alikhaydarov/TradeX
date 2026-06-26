@@ -6,7 +6,7 @@ function values(body: Record<string, unknown>) {
   const name = String(body.name || "").trim().slice(0, 80);
   const accountType = String(body.accountType || "prop").trim() === "real" ? "real" : "prop";
   const importSourceRaw = String(body.importSource || "manual").trim();
-  const importSource = ["manual", "metaapi", "ctrader", "official_api"].includes(importSourceRaw) ? importSourceRaw : "manual";
+  const importSource = ["manual", "metaapi", "ctrader", "tradovate", "ninjatrader", "official_api"].includes(importSourceRaw) ? importSourceRaw : "manual";
   const accountSize = Number(body.accountSize);
   const initialBalance = Number(body.initialBalance || accountSize);
   const profitTarget = Number(body.profitTarget || 0);

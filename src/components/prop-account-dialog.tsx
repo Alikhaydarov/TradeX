@@ -1,6 +1,6 @@
 "use client";
 import { ChevronDown, KeyRound, LoaderCircle, Plus, ShieldCheck, TrendingUp } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Button } from "./ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog";
 import { Input } from "./ui/input";
@@ -29,7 +29,21 @@ const IMPORT_SOURCES = [
   { value: "manual", label: "Manual journal", helper: "Add or review trades inside TradeWay." },
   { value: "metaapi", label: "MT5 via MetaAPI", helper: "Best v1 path for importing closed MT5 history safely." },
   { value: "ctrader", label: "cTrader Open API", helper: "Prepared for firms that give cTrader access." },
+  { value: "tradovate", label: "Tradovate", helper: "Futures history connector placeholder." },
+  { value: "ninjatrader", label: "NinjaTrader", helper: "Futures broker/platform connector placeholder." },
   { value: "official_api", label: "Official prop API", helper: "Use only when a prop firm provides a real API." },
+];
+
+const CFD_PLATFORMS = [
+  { value: "mt5", label: "MT5" },
+  { value: "ctrader", label: "cTrader" },
+  { value: "manual", label: "Manual" },
+];
+
+const FUTURES_PLATFORMS = [
+  { value: "tradovate", label: "Tradovate" },
+  { value: "ninjatrader", label: "NinjaTrader" },
+  { value: "manual", label: "Manual" },
 ];
 
 export function PropAccountDialog({
@@ -45,7 +59,7 @@ export function PropAccountDialog({
   const [market, setMarket] = useState("CFD");
   const [size, setSize] = useState(100000);
   const [platform, setPlatform] = useState("mt5");
-  const [importSource, setImportSource] = useState("metaapi");
+  const [importSource, setImportSource] = useState("manual");
   const [propLogin, setPropLogin] = useState("");
   const [firmOpen, setFirmOpen] = useState(false);
   const [mt5Open, setMt5Open] = useState(false);
@@ -54,26 +68,36 @@ export function PropAccountDialog({
   const [mt5Server, setMt5Server] = useState("");
   const sourceList = accountType === "prop" ? FIRMS : BROKERS;
   const selectedFirm = sourceList.find(f => f.name === firm) || sourceList[sourceList.length - 1];
+  const platformOptions = useMemo(() => market === "Futures" ? FUTURES_PLATFORMS : CFD_PLATFORMS, [market]);
+  const importOptions = useMemo(() => {
+    if (market === "Futures") return IMPORT_SOURCES.filter((source) => ["manual", "tradovate", "ninjatrader", "official_api"].includes(source.value));
+    return IMPORT_SOURCES.filter((source) => ["manual", "metaapi", "ctrader", "official_api"].includes(source.value));
+  }, [market]);
+
+  useEffect(() => {
+    if (!platformOptions.some((option) => option.value === platform)) setPlatform(platformOptions[0].value);
+    if (!importOptions.some((option) => option.value === importSource)) setImportSource(importOptions[0].value);
+  }, [importOptions, importSource, platform, platformOptions]);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[92dvh] overflow-y-auto border-[#2a2a2a] bg-[#121212] p-0 sm:max-w-xl">
-        <div className="relative overflow-hidden border-b border-[#2a2a2a] px-6 py-5">
-          <div className="absolute inset-0 bg-gradient-to-r from-white/[.03] via-transparent to-white/[.02]" />
+      <DialogContent className="max-h-[92dvh] overflow-y-auto border-[#2a2a2a] bg-[#111] p-0 sm:max-w-2xl">
+        <div className="relative overflow-hidden border-b border-[#2a2a2a] px-5 py-4">
           <DialogHeader className="relative">
             <div className="flex items-center gap-3">
-              <span className="grid size-10 place-items-center rounded-xl bg-white/[.06] text-zinc-300">
+              <span className="grid size-9 place-items-center rounded-lg bg-white/[.06] text-zinc-300">
                 <ShieldCheck size={20} />
               </span>
               <div>
                 <DialogTitle className="text-lg font-bold">Add trading account</DialogTitle>
-                <p className="text-xs text-[#8a8a8a]">Create a real or prop account, then connect the safest import route.</p>
+                <p className="text-xs text-[#8a8a8a]">Prop or real account. CFD and Futures ready.</p>
               </div>
             </div>
           </DialogHeader>
         </div>
 
-        <form action={onSave} className="space-y-5 p-6">
+        <form action={onSave} className="space-y-4 p-4 sm:p-5">
+          <div className="grid gap-3 sm:grid-cols-[.8fr_1.2fr]">
           <div className="space-y-2">
             <Label className="text-xs font-semibold uppercase tracking-wider text-[#8a8a8a]">Account type</Label>
             <div className="grid grid-cols-2 gap-2 rounded-xl border border-[#2a2a2a] bg-[#1b1b1b] p-1.5">
@@ -136,7 +160,9 @@ export function PropAccountDialog({
             <input type="hidden" name="firm" value={firm} />
             <input type="hidden" name="propSite" value={accountType === "prop" ? firm : ""} />
           </div>
+          </div>
 
+          <div className="grid gap-3 sm:grid-cols-[1.2fr_.8fr]">
           <div className="space-y-2">
             <Label className="text-xs font-semibold uppercase tracking-wider text-[#8a8a8a]">Account name</Label>
             <Input
@@ -158,12 +184,13 @@ export function PropAccountDialog({
                 className="border-[#2a2a2a] bg-[#1b1b1b] focus:border-white/25"
               />
               <p className="text-[11px] leading-5 text-[#8a8a8a]">
-                TradeWay does not store prop dashboard passwords. History import should use MT5, cTrader or an official prop API connector.
+                Prop dashboard password is not stored.
               </p>
             </div>
           ) : <input type="hidden" name="propLogin" value="" />}
+          </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <div className="space-y-2">
               <Label className="text-xs font-semibold uppercase tracking-wider text-[#8a8a8a]">Stage</Label>
               <div className="grid grid-cols-2 gap-1.5 rounded-xl border border-[#2a2a2a] bg-[#1b1b1b] p-1.5">
@@ -187,7 +214,16 @@ export function PropAccountDialog({
                   <button
                     key={m}
                     type="button"
-                    onClick={() => setMarket(m)}
+                    onClick={() => {
+                      setMarket(m);
+                      if (m === "Futures") {
+                        setPlatform("tradovate");
+                        setImportSource("manual");
+                      } else {
+                        setPlatform("mt5");
+                        setImportSource("manual");
+                      }
+                    }}
                     className={`rounded-lg py-1.5 text-xs font-medium transition ${market === m ? "bg-white/[.10] text-zinc-300" : "text-[#8a8a8a] hover:text-[#f1f1f1]"}`}
                   >
                     {m}
@@ -198,9 +234,10 @@ export function PropAccountDialog({
             </div>
           </div>
 
+          <div className="grid gap-3 sm:grid-cols-[.9fr_1.1fr]">
           <div className="space-y-2">
             <Label className="text-xs font-semibold uppercase tracking-wider text-[#8a8a8a]">Account size</Label>
-            <div className="grid grid-cols-3 gap-2">
+            <div className="grid grid-cols-3 gap-1.5">
               {SIZES.map(s => (
                 <button
                   key={s}
@@ -218,28 +255,32 @@ export function PropAccountDialog({
 
           <div className="space-y-2">
             <Label className="text-xs font-semibold uppercase tracking-wider text-[#8a8a8a]">Import route</Label>
-            <div className="grid gap-2">
-              {IMPORT_SOURCES.map(source => (
+            <div className="grid gap-1.5">
+              {importOptions.map(source => (
                 <button
                   key={source.value}
                   type="button"
                   onClick={() => setImportSource(source.value)}
-                  className={`rounded-xl border p-3 text-left transition ${importSource === source.value ? "border-white/25 bg-white/[.07]" : "border-[#2a2a2a] bg-[#1b1b1b] hover:border-white/15"}`}
+                  className={`flex items-center justify-between rounded-lg border px-3 py-2 text-left transition ${importSource === source.value ? "border-white/25 bg-white/[.07]" : "border-[#2a2a2a] bg-[#1b1b1b] hover:border-white/15"}`}
                 >
-                  <span className="block text-sm font-bold text-zinc-100">{source.label}</span>
-                  <span className="mt-1 block text-[11px] leading-5 text-[#8a8a8a]">{source.helper}</span>
+                  <span>
+                    <span className="block text-sm font-bold text-zinc-100">{source.label}</span>
+                    <span className="block text-[11px] leading-4 text-[#8a8a8a]">{source.helper}</span>
+                  </span>
+                  <span className={`size-2 rounded-full ${importSource === source.value ? "bg-emerald-300" : "bg-white/10"}`} />
                 </button>
               ))}
             </div>
             <input type="hidden" name="importSource" value={importSource} />
           </div>
+          </div>
 
           <div className="space-y-2">
             <Label className="text-xs font-semibold uppercase tracking-wider text-[#8a8a8a]">Platform</Label>
             <div className="grid grid-cols-3 gap-2">
-              {["mt5", "ctrader", "manual"].map(item => (
-                <button key={item} type="button" onClick={() => setPlatform(item)} className={`rounded-xl border py-2.5 text-xs font-bold uppercase transition ${platform === item ? "border-white/25 bg-white/[.06] text-zinc-100" : "border-[#2a2a2a] bg-[#1b1b1b] text-[#8a8a8a] hover:border-white/15"}`}>
-                  {item}
+              {platformOptions.map(item => (
+                <button key={item.value} type="button" onClick={() => setPlatform(item.value)} className={`rounded-xl border py-2.5 text-xs font-bold transition ${platform === item.value ? "border-white/25 bg-white/[.06] text-zinc-100" : "border-[#2a2a2a] bg-[#1b1b1b] text-[#8a8a8a] hover:border-white/15"}`}>
+                  {item.label}
                 </button>
               ))}
             </div>
@@ -286,7 +327,8 @@ export function PropAccountDialog({
           <input type="hidden" name="status" value="Active" />
 
           {/* ── MT5 Auto-sync (optional) ── */}
-          <div className="rounded-xl border border-[#2a2a2a] bg-[#1b1b1b] overflow-hidden">
+          {market !== "Futures" ? (
+          <div className="overflow-hidden rounded-xl border border-[#2a2a2a] bg-[#1b1b1b]">
             <button
               type="button"
               onClick={() => setMt5Open(v => !v)}
@@ -309,45 +351,45 @@ export function PropAccountDialog({
                 <p className="text-[11px] text-[#8a8a8a]">
                   Enter platform credentials only when you want TradeWay to prepare MT5 import for this account.
                 </p>
-                <div className="grid grid-cols-2 gap-2">
+                <div className="grid gap-2 sm:grid-cols-2">
                   <div className="space-y-1.5">
-                    <label className="text-[10px] font-semibold uppercase tracking-wider text-[#8a8a8a]">
+                    <Label className="text-[10px] font-semibold uppercase tracking-wider text-[#8a8a8a]">
                       Login (Account ID)
-                    </label>
-                    <input
+                    </Label>
+                    <Input
                       name="mt5Login"
                       value={mt5Login}
                       onChange={e => setMt5Login(e.target.value.replace(/\D/g, ""))}
                       placeholder="12345678"
                       inputMode="numeric"
-                      className="w-full rounded-lg border border-[#2a2a2a] bg-[#111] px-3 py-2 font-mono text-sm text-zinc-200 placeholder:text-zinc-700 outline-none focus:border-white/25"
+                      className="border-[#2a2a2a] bg-[#111] font-mono text-sm text-zinc-200 placeholder:text-zinc-700 focus:border-white/25"
                     />
                   </div>
                   <div className="space-y-1.5">
-                    <label className="text-[10px] font-semibold uppercase tracking-wider text-[#8a8a8a]">
+                    <Label className="text-[10px] font-semibold uppercase tracking-wider text-[#8a8a8a]">
                       Password
-                    </label>
-                    <input
+                    </Label>
+                    <Input
                       name="mt5Password"
                       type="password"
                       value={mt5Password}
                       onChange={e => setMt5Password(e.target.value)}
                       placeholder="••••••••"
                       autoComplete="new-password"
-                      className="w-full rounded-lg border border-[#2a2a2a] bg-[#111] px-3 py-2 text-sm text-zinc-200 placeholder:text-zinc-700 outline-none focus:border-white/25"
+                      className="border-[#2a2a2a] bg-[#111] text-sm text-zinc-200 placeholder:text-zinc-700 focus:border-white/25"
                     />
                   </div>
                 </div>
                 <div className="space-y-1.5">
-                  <label className="text-[10px] font-semibold uppercase tracking-wider text-[#8a8a8a]">
+                  <Label className="text-[10px] font-semibold uppercase tracking-wider text-[#8a8a8a]">
                     Broker Server
-                  </label>
-                  <input
+                  </Label>
+                  <Input
                     name="mt5Server"
                     value={mt5Server}
                     onChange={e => setMt5Server(e.target.value)}
                     placeholder="FTMODemo-Server, ICMarketsEU-Live04 ..."
-                    className="w-full rounded-lg border border-[#2a2a2a] bg-[#111] px-3 py-2 text-sm text-zinc-200 placeholder:text-zinc-700 outline-none focus:border-white/25"
+                    className="border-[#2a2a2a] bg-[#111] text-sm text-zinc-200 placeholder:text-zinc-700 focus:border-white/25"
                   />
                   <p className="text-[10px] text-[#6a6a6a]">
                     MT5 terminalda: Tools → Options → Server — server nomini ko'chiring
@@ -356,6 +398,7 @@ export function PropAccountDialog({
               </div>
             )}
           </div>
+          ) : null}
 
           <Button
             disabled={saving}
