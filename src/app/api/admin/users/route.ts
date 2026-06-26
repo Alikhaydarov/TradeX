@@ -62,6 +62,21 @@ export async function PATCH(request: Request) {
     });
 
     if (error) return serverError(error.message);
+
+    if (body.isVerified) {
+      const { error: premiumError } = await auth.supabase
+        .from("profiles")
+        .update({
+          plan: "premium",
+          premium_until: null,
+          ai_enabled: true,
+          auto_sync_enabled: true,
+        })
+        .eq("id", body.userId);
+
+      if (premiumError) return serverError(premiumError.message);
+    }
+
     return Response.json({ success: true });
   } catch (error) {
     return serverError(error instanceof Error ? error.message : undefined);

@@ -593,8 +593,8 @@ export function FeedV3({ onLogin }: { onLogin: () => void }) {
                     {post.text && post.text !== `${post.symbol} trade` ? <p className="mt-3 whitespace-pre-line text-[15px] leading-6 text-slate-100">{post.text}</p> : null}
 
                     {post.imageUrls?.length ? (
-                      <div className={`mt-3 overflow-hidden rounded-xl border border-white/10 ${post.imageUrls.length === 1 ? "" : post.imageUrls.length === 2 ? "grid gap-px bg-white/10 grid-cols-2" : "grid gap-px bg-white/10 grid-cols-3"}`}>
-                        {post.imageUrls.map((url, index) => (
+                      <div className={`mt-3 overflow-hidden rounded-xl border border-white/10 ${post.imageUrls.length === 1 ? "" : post.imageUrls.length === 2 || post.imageUrls.length === 4 ? "grid grid-cols-2 gap-px bg-white/10" : "grid grid-cols-3 gap-px bg-white/10"}`}>
+                        {post.imageUrls.slice(0, 4).map((url, index) => (
                           <button key={url} type="button" onClick={() => setLightboxUrl(url)} className="group relative aspect-square w-full overflow-hidden bg-black/90">
                             <img src={url} alt={index === post.imageUrls!.length - 1 ? `${post.symbol} TradeWay share card` : `${post.symbol} trade screenshot ${index + 1}`} className="h-full w-full object-cover transition-transform duration-200 group-hover:scale-[1.03]" loading="lazy" />
                           </button>
