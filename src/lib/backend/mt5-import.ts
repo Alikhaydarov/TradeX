@@ -372,7 +372,9 @@ export async function importMt5TradesToJournalViaPostgres(
           $8, $9, $10, $11, $12, $13, $14, 'MT5 Auto Sync', 'Neutral', 0,
           0, $15, $16, array['mt5','auto-sync'], 'mt5', $17, now()
         )
-        on conflict (user_id, external_source, external_id) do update set
+        on conflict (user_id, external_source, external_id)
+        where external_source is not null and external_id is not null
+        do update set
           symbol = excluded.symbol,
           side = excluded.side,
           entry_price = excluded.entry_price,
