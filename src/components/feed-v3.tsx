@@ -229,7 +229,6 @@ export function FeedV3({ onLogin }: { onLogin: () => void }) {
 
   const stats = useMemo(() => ({
     posts: posts.length,
-    views: posts.reduce((sum, post) => sum + post.views, 0),
   }), [posts]);
 
   const loadPosts = () => {
@@ -424,7 +423,7 @@ export function FeedV3({ onLogin }: { onLogin: () => void }) {
       const { replies } = await apiRequest<{ replies: PostReply[] }>(`/api/posts/${post.id}/replies`);
       setRepliesByPost((current) => ({ ...current, [post.id]: replies }));
     } catch (nextError) {
-      setError(nextError instanceof Error ? nextError.message : "Javoblar yuklanmadi.");
+      setError(nextError instanceof Error ? nextError.message : "Replies could not be loaded.");
     } finally {
       setLoadingReplies(null);
     }
@@ -465,7 +464,7 @@ export function FeedV3({ onLogin }: { onLogin: () => void }) {
       setReplyDrafts((current) => ({ ...current, [post.id]: content }));
       setRepliesByPost((current) => ({ ...current, [post.id]: (current[post.id] ?? []).filter((item) => item.id !== optimisticReply.id) }));
       setPosts((current) => current.map((item) => item.id === post.id ? { ...item, replies: Math.max(0, item.replies - 1) } : item));
-      setError(nextError instanceof Error ? nextError.message : "Javob yuborilmadi.");
+      setError(nextError instanceof Error ? nextError.message : "Reply could not be sent.");
     } finally {
       setSavingReply(null);
     }
@@ -503,7 +502,7 @@ export function FeedV3({ onLogin }: { onLogin: () => void }) {
       setPosts((current) => current.filter((item) => item.id !== deleteTarget.id));
       setDeleteTarget(null);
     } catch (nextError) {
-      setError(nextError instanceof Error ? nextError.message : "Post o'chirilmadi. Faqat muallif yoki katta admin o'chira oladi.");
+      setError(nextError instanceof Error ? nextError.message : "Post could not be deleted. Only the author or admin can delete it.");
     } finally {
       setActingId(null);
     }
@@ -511,11 +510,11 @@ export function FeedV3({ onLogin }: { onLogin: () => void }) {
 
   return (
     <div className="min-h-full">
-      <header className="sticky top-0 z-20 border-b border-white/8 bg-[#171717]/90 px-3 py-3 backdrop-blur-2xl sm:px-6 sm:py-4">
+      <header className="sticky top-0 z-20 border-b border-white/8 bg-[#171717]/90 px-3 py-2.5 backdrop-blur-2xl sm:px-6 sm:py-3">
         <div className="mx-auto flex max-w-3xl items-center gap-3">
           <div className="min-w-0 flex-1">
-            <p className="text-[10px] font-bold uppercase tracking-[.22em] text-zinc-300/70">TradeWay workspace</p>
-            <h1 className="mt-1 text-2xl font-black tracking-tight">TradeWay</h1>
+            <h1 className="text-lg font-black tracking-tight">Trade feed</h1>
+            <p className="mt-0.5 text-[10px] text-zinc-500">Shared journal trades</p>
           </div>
           <Button onClick={openTradePicker} className="hidden h-10 rounded-lg bg-white px-4 text-sm font-black text-black hover:bg-zinc-200 sm:inline-flex">
             <Plus size={16} /> {t("shareTrade")}
@@ -540,7 +539,7 @@ export function FeedV3({ onLogin }: { onLogin: () => void }) {
         </button>
 
         <div className="flex items-center px-1">
-          <h2 className="text-sm font-bold">Trade feed</h2>
+          <h2 className="text-xs font-black uppercase tracking-[.18em] text-zinc-500">Latest</h2>
           <span className="ml-auto text-[10px] text-zinc-600">{stats.posts} trades</span>
         </div>
 
@@ -617,7 +616,7 @@ export function FeedV3({ onLogin }: { onLogin: () => void }) {
                     {openReplies === post.id ? (
                       <div className="mt-4 border-t border-white/8 pt-4">
                         {loadingReplies === post.id ? (
-                          <div className="flex items-center gap-2 py-4 text-xs text-slate-500"><XSpinner size="sm" /> Javoblar yuklanmoqda</div>
+                          <div className="flex items-center gap-2 py-4 text-xs text-slate-500"><XSpinner size="sm" /> Loading replies</div>
                         ) : (
                           <div className="space-y-3">
                             {(repliesByPost[post.id] ?? []).map((reply) => (
@@ -633,7 +632,7 @@ export function FeedV3({ onLogin }: { onLogin: () => void }) {
                                 </div>
                               </div>
                             ))}
-                            {!repliesByPost[post.id]?.length ? <p className="py-2 text-xs text-slate-500">Hali javob yo&apos;q. Birinchi bo&apos;lib fikr bildiring.</p> : null}
+                            {!repliesByPost[post.id]?.length ? <p className="py-2 text-xs text-slate-500">No replies yet.</p> : null}
                           </div>
                         )}
 
@@ -642,10 +641,10 @@ export function FeedV3({ onLogin }: { onLogin: () => void }) {
                             value={replyDrafts[post.id] ?? ""}
                             onChange={(event) => setReplyDrafts((current) => ({ ...current, [post.id]: event.target.value }))}
                             maxLength={280}
-                            placeholder="Javob yozing..."
+                            placeholder="Write a reply..."
                             className="min-h-10 flex-1 resize-none border-0 bg-transparent px-2 py-2 text-sm shadow-none focus-visible:ring-0"
                           />
-                          <Button onClick={() => void addReply(post)} disabled={!replyDrafts[post.id]?.trim() || savingReply === post.id} size="icon-sm" className="h-9 w-9 shrink-0 rounded-xl bg-white text-slate-950 hover:bg-white" aria-label="Javob yuborish">
+                          <Button onClick={() => void addReply(post)} disabled={!replyDrafts[post.id]?.trim() || savingReply === post.id} size="icon-sm" className="h-9 w-9 shrink-0 rounded-xl bg-white text-slate-950 hover:bg-white" aria-label="Send reply">
                             {savingReply === post.id ? <XSpinner size="sm" /> : <Send size={14} />}
                           </Button>
                         </div>
@@ -656,7 +655,7 @@ export function FeedV3({ onLogin }: { onLogin: () => void }) {
               </article>
             ))}
 
-            {!posts.length ? <div className="p-10 text-center text-sm text-slate-500">Hali post yo&apos;q.</div> : null}
+            {!posts.length ? <div className="p-10 text-center text-sm text-slate-500">No trades shared yet.</div> : null}
           </div>
         )}
       </div>

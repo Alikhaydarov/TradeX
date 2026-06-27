@@ -283,8 +283,8 @@ export function SocialActions({ className = "" }: { className?: string }) {
     const refresh = () => {
       if (document.visibilityState === "visible") loadUnread();
     };
-    const timer = window.setTimeout(loadUnread, 150);
-    const interval = window.setInterval(refresh, 5000);
+    const timer = window.setTimeout(loadUnread, 800);
+    const interval = window.setInterval(refresh, 30000);
     window.addEventListener("focus", refresh);
     document.addEventListener("visibilitychange", refresh);
     return () => {

@@ -598,14 +598,16 @@ export function Account({ onLogin, profileUsername }: { onLogin: () => void; pro
             </div>
 
             {!premium?.isPremium ? (
-              <div className="mt-4 rounded-lg border border-white/8 bg-[#111111] p-4">
-                <p className="text-sm font-bold">Galochka, AI Trade Analysis va MT5 Auto Sync faqat Premium uchun.</p>
+              <div className="mt-4 flex flex-col gap-3 rounded-lg border border-white/8 bg-[#111111] p-3 sm:flex-row sm:items-center">
+                <p className="min-w-0 flex-1 text-xs leading-5 text-zinc-400">
+                  Verified badge, AI reports and MT5 Auto Sync unlock with Premium.
+                </p>
                 <button
                   type="button"
                   onClick={() => { window.history.pushState(null, "", "/pricing"); window.dispatchEvent(new Event("popstate")); }}
-                  className="mt-4 inline-flex h-10 items-center justify-center rounded-lg bg-white px-4 text-sm font-black text-black transition hover:bg-zinc-200"
+                  className="inline-flex h-9 shrink-0 items-center justify-center rounded-lg bg-white px-3 text-xs font-black text-black transition hover:bg-zinc-200"
                 >
-                  Upgrade to Premium
+                  Upgrade
                 </button>
               </div>
             ) : (
@@ -614,7 +616,6 @@ export function Account({ onLogin, profileUsername }: { onLogin: () => void; pro
                   {[
                     ["Verified", premium.isVerified ? "Enabled" : "Pending"],
                     ["AI enabled", premium.aiEnabled ? "Enabled" : "Off"],
-                    ["Traderox", premium.traderoxEnabled ? "Enabled" : "Off"],
                     ["Auto Sync", premium.autoSyncEnabled ? "Enabled" : "Off"],
                   ].map(([label, value]) => (
                     <div key={label} className="rounded-lg border border-white/8 bg-[#111111] px-3 py-3">

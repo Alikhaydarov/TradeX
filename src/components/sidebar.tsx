@@ -135,16 +135,10 @@ export function Sidebar({
         </button>
 
         <div className="mt-auto space-y-3">
-          <div className="rounded-lg border border-border bg-white/[.025] p-3">
-            <div className="flex items-center justify-between gap-3">
-              <div className="min-w-0">
-                <p className="text-[10px] font-black uppercase tracking-[.2em] text-slate-500">Social</p>
-                <p className="mt-1 text-[10px] leading-4 text-slate-600">Notifications</p>
-              </div>
-              <SocialActions />
-            </div>
+          <div className="flex items-center justify-between gap-2">
+            <SocialActions />
+            <LanguageSwitcher compact />
           </div>
-          <LanguageSwitcher />
 
           <button onClick={openProfile} className="flex w-full items-center gap-3 rounded-lg border border-border bg-white/[.025] p-2 text-left transition-colors hover:bg-white/[.05]">
             <TraderAvatar name={name} value={avatar} className="h-10 w-10 text-xs" />
