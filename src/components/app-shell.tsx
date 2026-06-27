@@ -107,7 +107,6 @@ export function AppShell() {
   const [isAdmin, setIsAdmin] = useState(false);
   const [notificationsMounted, setNotificationsMounted] = useState(false);
   const [profileOpening, setProfileOpening] = useState(false);
-  const [visitedSections, setVisitedSections] = useState<Section[]>(() => [getCurrentSection()]);
   const { user } = useAuth();
   const openLogin = () => setAuthOpen(true);
   const chatOpen = false;
@@ -116,7 +115,6 @@ export function AppShell() {
     const syncFromPath = () => {
       const nextSection = getCurrentSection();
       setSection(nextSection);
-      setVisitedSections((current) => current.includes(nextSection) ? current : [...current, nextSection]);
       setProfileUsername(getCurrentProfileUsername());
     };
     const handleOpenProfile = () => {
@@ -141,17 +139,6 @@ export function AppShell() {
     const timer = window.setTimeout(() => setProfileOpening(false), 900);
     return () => window.clearTimeout(timer);
   }, [profileOpening]);
-
-  useEffect(() => {
-    const preload = () => {
-      void import("./feed-v3");
-      void import("./journal");
-      void import("./account");
-      void import("./pricing");
-    };
-    const timer = window.setTimeout(preload, 700);
-    return () => window.clearTimeout(timer);
-  }, []);
 
   useEffect(() => {
     const timer = window.setTimeout(() => setNotificationsMounted(true), 2500);
@@ -194,7 +181,6 @@ export function AppShell() {
     if (nextSection === section && nextSection !== "account") return;
     setProfileUsername("");
     setSection(nextSection);
-    setVisitedSections((current) => current.includes(nextSection) ? current : [...current, nextSection]);
     window.history.pushState(null, "", pathFromSection(nextSection));
   };
 
@@ -232,14 +218,7 @@ export function AppShell() {
         />
         <div className="hidden w-[232px] shrink-0 lg:block" aria-hidden="true" />
         <main className={chatOpen ? "fixed inset-0 z-50 min-w-0 flex-1 overflow-hidden bg-background shadow-2xl shadow-black/35 lg:static lg:z-auto lg:min-h-[calc(100dvh-1.5rem)] lg:rounded-xl lg:border lg:border-border" : "min-h-[100dvh] min-w-0 flex-1 overflow-x-hidden bg-background pb-[calc(5.5rem+env(safe-area-inset-bottom))] shadow-2xl shadow-black/25 lg:min-h-[calc(100dvh-1.5rem)] lg:rounded-xl lg:border lg:border-border lg:pb-0"}>
-          {visitedSections.map((item) => {
-            if (item === "admin" && !isAdmin) return null;
-            return (
-              <div key={item} className={item === section ? "block min-h-full" : "hidden"}>
-                {renderSection(item)}
-              </div>
-            );
-          })}
+          <div className="block min-h-full">{renderSection(section)}</div>
         </main>
         {!chatOpen && <RightPanel />}
       </div>
