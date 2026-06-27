@@ -14,7 +14,7 @@ const SIZES = [10000, 25000, 50000, 100000, 200000];
 
 const PLATFORM_BY_MARKET = {
   CFD: [
-    { value: "mt5", label: "MT5", helper: "Auto import through MTAPI" },
+    { value: "mt5", label: "MT5", helper: "Auto import through TradeWay Bridge" },
     { value: "manual", label: "Manual", helper: "Journal only" },
   ],
   Futures: [
@@ -41,7 +41,7 @@ export function PropAccountDialog({
 
   const sources = accountType === "prop" ? PROP_FIRMS : BROKERS;
   const platformOptions = useMemo(() => PLATFORM_BY_MARKET[market], [market]);
-  const importSource = platform === "mt5" ? "mtapi" : platform === "manual" ? "manual" : platform;
+  const importSource = platform === "mt5" ? "mt5_bridge" : platform === "manual" ? "manual" : platform;
   const phase = accountType === "real" ? "Live" : "Challenge";
 
   function changeAccountType(next: "prop" | "real") {
@@ -209,7 +209,7 @@ export function PropAccountDialog({
                   />
                   <p className="flex items-start gap-2 text-[11px] leading-5 text-[#8a8a8a]">
                     <Sparkles size={13} className="mt-0.5 shrink-0" />
-                    TradeWay finds the MTAPI host automatically from the server name and imports closed history only.
+                    TradeWay imports closed history through our read-only MT5 bridge.
                   </p>
                 </div>
               ) : null}

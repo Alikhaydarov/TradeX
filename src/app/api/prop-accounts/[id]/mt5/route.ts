@@ -36,7 +36,7 @@ export async function GET(request: Request, context: { params: Promise<{ id: str
     isPremium: premium.isPremium,
     autoSyncEnabled: premium.autoSyncEnabled,
     bridgeConfigured: true,
-    connector: "mtapi",
+    connector: "mt5_bridge",
   });
 }
 
@@ -113,7 +113,7 @@ export async function PUT(request: Request, context: { params: Promise<{ id: str
       auto_sync: Boolean(conn.auto_sync_enabled),
     } : null,
     bridgeConfigured: true,
-    connector: "mtapi",
+    connector: "mt5_bridge",
   });
 }
 

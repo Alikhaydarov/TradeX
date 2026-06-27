@@ -18,7 +18,7 @@ uvicorn mt5_bridge:app --host 0.0.0.0 --port 8787
 Then set these env variables on Vercel:
 
 ```text
-MT5_BRIDGE_URL=https://your-bridge-domain.example
+MT5_BRIDGE_BASE_URL=https://your-bridge-domain.example
 MT5_BRIDGE_TOKEN=the-same-token
 ```
 
