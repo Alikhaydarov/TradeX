@@ -1,5 +1,6 @@
 import { authenticateRequest, badRequest, serverError, unauthorized } from "@/lib/backend/auth";
 import { encryptSecret } from "@/lib/backend/crypto";
+import { enqueueMt5SyncJob } from "@/lib/backend/mt5-sync-queue";
 import { getPremiumStatus, requirePremium } from "@/lib/backend/premium";
 
 export const runtime = "nodejs";
@@ -93,6 +94,13 @@ export async function PUT(request: Request, context: { params: Promise<{ id: str
     .single();
 
   if (error) return serverError(error.message);
+  if (conn) {
+    await enqueueMt5SyncJob({
+      accountId: conn.id,
+      userId: auth.user.id,
+      priority: 25,
+    });
+  }
   return Response.json({
     connection: conn ? {
       id: conn.id,

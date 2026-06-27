@@ -1,5 +1,6 @@
 import { authenticateRequest, badRequest, serverError, unauthorized } from "@/lib/backend/auth";
 import { encryptSecret } from "@/lib/backend/crypto";
+import { enqueueMt5SyncJob } from "@/lib/backend/mt5-sync-queue";
 import { requirePremium } from "@/lib/backend/premium";
 
 export const runtime = "nodejs";
@@ -82,6 +83,12 @@ export async function POST(request: Request) {
       .single<TradingAccountRow>();
 
     if (error) return serverError(error.message);
+
+    await enqueueMt5SyncJob({
+      accountId: data.id,
+      userId: auth.user.id,
+      priority: 25,
+    });
 
     return Response.json({ account: data }, { status: 201 });
   } catch (error) {
