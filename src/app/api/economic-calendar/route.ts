@@ -24,7 +24,6 @@ type CalendarEvent = {
 };
 
 const FEED_URL = "https://nfs.faireconomy.media/ff_calendar_thisweek.json";
-const IMPORTANT_IMPACTS = new Set(["High", "Medium"]);
 
 function formatEvent(event: ForexFactoryEvent, index: number): CalendarEvent | null {
   if (!event.date || !event.title || !event.country) return null;
@@ -71,14 +70,13 @@ export async function GET() {
     const events = raw
       .map(formatEvent)
       .filter((event): event is CalendarEvent => Boolean(event))
-      .filter((event) => IMPORTANT_IMPACTS.has(event.impact))
+      .filter((event) => event.impact === "High")
       .sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
 
-    const upcoming = events.filter((event) => new Date(event.timestamp).getTime() >= now).slice(0, 8);
-    const fallback = events.slice(-8);
+    const upcoming = events.filter((event) => new Date(event.timestamp).getTime() >= now);
 
     return NextResponse.json({
-      events: upcoming.length ? upcoming : fallback,
+      events: upcoming.length ? upcoming : events,
       source: "Forex Factory",
       timezone: "America/New_York",
       updatedAt: new Date().toISOString(),
