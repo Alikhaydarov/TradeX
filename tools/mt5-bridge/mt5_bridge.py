@@ -1,5 +1,5 @@
 import os
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from typing import Any
 
 import MetaTrader5 as mt5
@@ -8,6 +8,8 @@ from pydantic import BaseModel, ConfigDict, Field
 
 
 app = FastAPI(title="TradeWay MT5 Bridge")
+
+DEFAULT_MT5_TIMEOUT_MS = 120000
 
 
 class HistoryRequest(BaseModel):
@@ -39,22 +41,58 @@ def deal_value(deal: Any, key: str, default: Any = None) -> Any:
     return getattr(deal, key, default)
 
 
+@app.get("/")
+def root():
+    return {"name": "TradeWay MT5 Bridge", "status": "ok", "mode": "read-only"}
+
+
+@app.get("/health")
+def health():
+    return {"status": "ok"}
+
+
+@app.get("/status")
+def status(authorization: str | None = Header(default=None)):
+    require_token(authorization)
+    return {
+        "status": "ok",
+        "mt5Module": "loaded",
+        "mode": "read-only",
+    }
+
+
 @app.post("/history/closed-trades")
 def closed_trades(payload: HistoryRequest, authorization: str | None = Header(default=None)):
     require_token(authorization)
 
     login = int(payload.login)
-    if not mt5.initialize(login=login, password=payload.password, server=payload.server):
+    terminal_path = os.environ.get("MT5_TERMINAL_PATH")
+    portable = os.environ.get("MT5_PORTABLE", "").lower() in {"1", "true", "yes"}
+    initialized = mt5.initialize(
+        terminal_path,
+        login=login,
+        password=payload.password,
+        server=payload.server,
+        timeout=DEFAULT_MT5_TIMEOUT_MS,
+        portable=portable,
+    ) if terminal_path else mt5.initialize(
+        login=login,
+        password=payload.password,
+        server=payload.server,
+        timeout=DEFAULT_MT5_TIMEOUT_MS,
+        portable=portable,
+    )
+    if not initialized:
         code, message = mt5.last_error()
         raise HTTPException(status_code=400, detail=f"MT5 initialize failed: {code} {message}")
 
     try:
-        if not mt5.login(login=login, password=payload.password, server=payload.server):
+        if not mt5.login(login=login, password=payload.password, server=payload.server, timeout=DEFAULT_MT5_TIMEOUT_MS):
             code, message = mt5.last_error()
             raise HTTPException(status_code=400, detail=f"MT5 login failed: {code} {message}")
 
         now = datetime.now(timezone.utc)
-        start = parse_date(payload.from_, now.replace(month=max(1, now.month - 3)))
+        start = parse_date(payload.from_, now - timedelta(days=90))
         end = parse_date(payload.to, now)
 
         deals = mt5.history_deals_get(start, end)
