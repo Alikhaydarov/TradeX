@@ -1,13 +1,7 @@
 import { authenticateRequest, serverError, unauthorized } from "@/lib/backend/auth";
-import { decryptSecret } from "@/lib/backend/crypto";
-import {
-  importMt5TradesToJournal,
-  importMt5TradesToJournalViaPostgres,
-  type IncomingMt5Trade,
-} from "@/lib/backend/mt5-import";
+import { enqueueMt5SyncJob } from "@/lib/backend/mt5-sync-queue";
 import { getPostgresPool } from "@/lib/backend/postgres";
 import { requirePremium } from "@/lib/backend/premium";
-import { getMt5ClosedTrades } from "@/lib/server/mt5-bridge";
 import { getSupabaseAdminClient } from "@/lib/supabase/admin";
 
 export const runtime = "nodejs";
@@ -19,46 +13,6 @@ interface TradingAccountSyncRow {
   account_login: string | null;
   encrypted_password: string | null;
   last_synced_at: string | null;
-}
-
-function toIncomingTrade(trade: Record<string, unknown>): IncomingMt5Trade {
-  return {
-    externalDealId: trade.id ?? trade.ticket,
-    externalPositionId: trade.positionId ?? trade.position_id,
-    symbol: trade.symbol,
-    side: trade.side ?? trade.type,
-    volume: trade.volume ?? trade.lots ?? trade.quantity,
-    entryPrice: trade.entryPrice ?? trade.entry_price ?? trade.openPrice ?? trade.open_price,
-    exitPrice: trade.exitPrice ?? trade.exit_price ?? trade.closePrice ?? trade.close_price,
-    commission: trade.commission,
-    swap: trade.swap,
-    grossPnl: trade.grossPnl ?? trade.gross_pnl ?? trade.profit ?? trade.pnl,
-    netPnl: trade.netPnl ?? trade.net_pnl ?? trade.profit ?? trade.pnl,
-    openedAt: trade.openedAt ?? trade.opened_at ?? trade.openTime ?? trade.open_time,
-    closedAt: trade.closedAt ?? trade.closed_at ?? trade.closeTime ?? trade.close_time ?? trade.time,
-    status: trade.status ?? "closed",
-    rawPayload: trade.rawPayload ?? trade,
-  };
-}
-
-async function updateConnectionError(accountId: string, userId: string, message: string) {
-  const supabase = getSupabaseAdminClient();
-  if (supabase) {
-    await supabase
-      .from("trading_accounts")
-      .update({ status: "error", last_error: message, updated_at: new Date().toISOString() })
-      .eq("id", accountId)
-      .eq("user_id", userId);
-    return;
-  }
-
-  const pool = getPostgresPool();
-  await pool?.query(
-    `update public.trading_accounts
-     set status = 'error', last_error = $3, updated_at = now()
-     where id = $1 and user_id = $2`,
-    [accountId, userId, message],
-  );
 }
 
 export async function POST(request: Request, context: { params: Promise<{ id: string }> }) {
@@ -107,27 +61,39 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
   const to = new Date();
 
   try {
-    const password = decryptSecret(account.encrypted_password);
-    const bridgeTrades = await getMt5ClosedTrades({
-      login: account.account_login,
-      password,
-      server: account.broker_server,
+    const job = await enqueueMt5SyncJob({
+      accountId: account.id,
+      userId: auth.user.id,
       from: from.toISOString(),
       to: to.toISOString(),
+      priority: 10,
     });
 
-    const incoming = bridgeTrades.map((trade) => toIncomingTrade(trade as Record<string, unknown>));
-    const result = supabase
-      ? await importMt5TradesToJournal(supabase, account.id, incoming)
-      : await importMt5TradesToJournalViaPostgres(account.id, incoming);
+    if (!job) return serverError("DATABASE_URL is required to queue MT5 sync.");
+
+    if (supabase) {
+      await supabase
+        .from("trading_accounts")
+        .update({ status: "pending", last_error: null, updated_at: new Date().toISOString() })
+        .eq("id", account.id)
+        .eq("user_id", auth.user.id);
+    } else {
+      const pool = getPostgresPool();
+      await pool?.query(
+        `update public.trading_accounts
+         set status = 'pending', last_error = null, updated_at = now()
+         where id = $1 and user_id = $2`,
+        [account.id, auth.user.id],
+      );
+    }
 
     return Response.json({
-      ...result,
-      message: result.imported > 0 ? "Trades imported into journal." : "No new closed trades found.",
+      queued: true,
+      jobId: job.id,
+      message: "MT5 sync queued. The local bridge worker will import trades into the journal.",
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : "MT5 sync failed.";
-    await updateConnectionError(account.id, auth.user.id, message);
-    return Response.json({ error: message }, { status: 502 });
+    return Response.json({ error: message }, { status: 500 });
   }
 }
