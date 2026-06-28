@@ -1,4 +1,5 @@
 import os
+import csv
 from datetime import datetime, timedelta, timezone
 from typing import Any
 
@@ -39,6 +40,83 @@ def parse_date(value: str | None, fallback: datetime) -> datetime:
 
 def deal_value(deal: Any, key: str, default: Any = None) -> Any:
     return getattr(deal, key, default)
+
+
+def parse_export_time(value: str | None) -> str | None:
+    if not value:
+        return None
+    for fmt in ("%Y.%m.%d %H:%M:%S", "%Y-%m-%d %H:%M:%S"):
+        try:
+            return datetime.strptime(value, fmt).replace(tzinfo=timezone.utc).isoformat()
+        except ValueError:
+            continue
+    return None
+
+
+def as_float(value: str | None) -> float:
+    try:
+        return float(value or 0)
+    except ValueError:
+        return 0
+
+
+def read_exported_trades() -> list[dict[str, Any]]:
+    export_file = os.environ.get("MT5_EXPORT_FILE")
+    if not export_file:
+        terminal_path = os.environ.get("MT5_TERMINAL_PATH") or r"C:\Program Files\MetaTrader 5\terminal64.exe"
+        export_file = os.path.join(os.path.dirname(terminal_path), "MQL5", "Files", "tradeway_closed_trades.csv")
+
+    if not os.path.exists(export_file):
+        raise HTTPException(
+            status_code=503,
+            detail=f"MT5 IPC is unavailable and export file was not found: {export_file}. Run TradeWayHistoryExport in MT5.",
+        )
+
+    with open(export_file, newline="", encoding="mbcs") as handle:
+        rows = list(csv.DictReader(handle))
+
+    positions: dict[str, dict[str, Any]] = {}
+    for deal in rows:
+        position_id = str(deal.get("position_id") or deal.get("order_id") or deal.get("ticket") or "")
+        if not position_id:
+            continue
+        entry = (deal.get("entry") or "").upper()
+        deal_type = (deal.get("deal_type") or "").upper()
+        row = positions.setdefault(position_id, {
+            "externalPositionId": position_id,
+            "externalDealId": str(deal.get("ticket") or position_id),
+            "symbol": deal.get("symbol") or "",
+            "side": "Long" if deal_type == "BUY" else "Short",
+            "volume": 0,
+            "entryPrice": None,
+            "exitPrice": None,
+            "commission": 0,
+            "swap": 0,
+            "grossPnl": 0,
+            "netPnl": 0,
+            "openedAt": None,
+            "closedAt": None,
+            "status": "closed",
+        })
+        row["commission"] += as_float(deal.get("commission"))
+        row["swap"] += as_float(deal.get("swap"))
+        row["grossPnl"] += as_float(deal.get("profit"))
+        row["netPnl"] = row["grossPnl"] + row["commission"] + row["swap"]
+        price = as_float(deal.get("price"))
+        time_value = parse_export_time(deal.get("time"))
+
+        if entry == "IN":
+            row["entryPrice"] = price
+            row["openedAt"] = time_value
+            row["volume"] = as_float(deal.get("volume"))
+        elif entry in {"OUT", "OUT_BY", "INOUT"}:
+            row["externalDealId"] = str(deal.get("ticket") or position_id)
+            row["exitPrice"] = price
+            row["closedAt"] = time_value
+
+    closed = [trade for trade in positions.values() if trade["entryPrice"] and trade["exitPrice"]]
+    closed.sort(key=lambda item: item.get("closedAt") or "", reverse=True)
+    return closed
 
 
 @app.get("/")
@@ -84,6 +162,8 @@ def closed_trades(payload: HistoryRequest, authorization: str | None = Header(de
     )
     if not initialized:
         code, message = mt5.last_error()
+        if code == -10005:
+            return {"trades": read_exported_trades(), "source": "file_export"}
         raise HTTPException(status_code=400, detail=f"MT5 initialize failed: {code} {message}")
 
     try:
