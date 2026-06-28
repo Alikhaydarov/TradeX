@@ -30,4 +30,22 @@ Invoke-RestMethod http://127.0.0.1:8787/health
 Invoke-RestMethod http://127.0.0.1:8787/status -Headers @{ Authorization = "Bearer your-token" }
 ```
 
+## Temporary public tunnel
+
+For local testing from Vercel, install Cloudflare Tunnel and expose the bridge:
+
+```powershell
+winget install --id Cloudflare.cloudflared --accept-source-agreements --accept-package-agreements
+.\run_tunnel.ps1
+```
+
+Copy the printed `https://...trycloudflare.com` URL into Vercel:
+
+```text
+MT5_BRIDGE_BASE_URL=https://your-quick-tunnel.trycloudflare.com
+MT5_BRIDGE_TOKEN=the-same-token-from-.env
+```
+
+Quick tunnels are for testing only. Production should use a named Cloudflare Tunnel, static domain, or Windows VPS.
+
 TradeWay will call `/history/closed-trades`, import closed MT5 deals into `trades`, and mirror them into `journal_entries` by trade date.
