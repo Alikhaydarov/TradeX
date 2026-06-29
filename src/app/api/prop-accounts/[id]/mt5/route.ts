@@ -2,6 +2,7 @@ import { authenticateRequest, badRequest, serverError, unauthorized } from "@/li
 import { encryptSecret } from "@/lib/backend/crypto";
 import { enqueueMt5SyncJob } from "@/lib/backend/mt5-sync-queue";
 import { getPremiumStatus, requirePremium } from "@/lib/backend/premium";
+import { connectMt5Api, isMt5ApiConfigured } from "@/lib/server/mt5-api";
 
 export const runtime = "nodejs";
 
@@ -35,8 +36,8 @@ export async function GET(request: Request, context: { params: Promise<{ id: str
     isVerified: premium.isVerified,
     isPremium: premium.isPremium,
     autoSyncEnabled: premium.autoSyncEnabled,
-    bridgeConfigured: true,
-    connector: "mt5_bridge",
+    bridgeConfigured: isMt5ApiConfigured() || true,
+    connector: isMt5ApiConfigured() ? "mt5_api" : "mt5_bridge",
   });
 }
 
@@ -94,6 +95,25 @@ export async function PUT(request: Request, context: { params: Promise<{ id: str
     .single();
 
   if (error) return serverError(error.message);
+  if (isMt5ApiConfigured()) {
+    try {
+      await connectMt5Api({
+        login,
+        password,
+        server,
+        userId: auth.user.id,
+        propAccountId: id,
+      });
+    } catch (mt5ApiError) {
+      const message = mt5ApiError instanceof Error ? mt5ApiError.message : "MT5 API connect failed.";
+      await auth.supabase
+        .from("trading_accounts")
+        .update({ status: "error", last_error: message, updated_at: new Date().toISOString() })
+        .eq("id", conn.id)
+        .eq("user_id", auth.user.id);
+      return Response.json({ error: message }, { status: 502 });
+    }
+  }
   if (conn) {
     await enqueueMt5SyncJob({
       accountId: conn.id,
@@ -113,7 +133,7 @@ export async function PUT(request: Request, context: { params: Promise<{ id: str
       auto_sync: Boolean(conn.auto_sync_enabled),
     } : null,
     bridgeConfigured: true,
-    connector: "mt5_bridge",
+    connector: isMt5ApiConfigured() ? "mt5_api" : "mt5_bridge",
   });
 }
 

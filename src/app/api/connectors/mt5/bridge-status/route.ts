@@ -1,4 +1,5 @@
 import { authenticateRequest, unauthorized } from "@/lib/backend/auth";
+import { getMt5ApiStatus, isMt5ApiConfigured } from "@/lib/server/mt5-api";
 
 export const runtime = "nodejs";
 
@@ -8,6 +9,25 @@ const bridgeToken = process.env.MT5_BRIDGE_TOKEN || "";
 export async function GET(request: Request) {
   const auth = await authenticateRequest(request);
   if (!auth) return unauthorized();
+
+  if (isMt5ApiConfigured()) {
+    try {
+      const status = await getMt5ApiStatus();
+      return Response.json({
+        configured: true,
+        reachable: true,
+        connector: "mt5_api",
+        bridge: status,
+      });
+    } catch (error) {
+      return Response.json({
+        configured: true,
+        reachable: false,
+        connector: "mt5_api",
+        error: error instanceof Error ? error.message : "MT5 API status check failed.",
+      }, { status: 502 });
+    }
+  }
 
   if (!bridgeBaseUrl) {
     return Response.json({

@@ -140,7 +140,13 @@ MT5_API_URL=https://abc123.ngrok-free.app
 
 Redeploy production.
 
-If this TradeWay deployment uses self-hosted bridge env instead, set:
+TradeWay will use `MT5_API_URL` first. In this mode:
+
+- Saving MT5 credentials calls `POST /connect`
+- Manual sync calls `POST /sync-now`
+- Status check calls `GET /status`
+
+Legacy bridge mode is still available. If you are using the older bridge server instead of your FastAPI server, set:
 
 ```env
 MT5_BRIDGE_BASE_URL=https://abc123.ngrok-free.app

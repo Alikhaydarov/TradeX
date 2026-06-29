@@ -2,6 +2,7 @@ import { authenticateRequest, serverError, unauthorized } from "@/lib/backend/au
 import { enqueueMt5SyncJob } from "@/lib/backend/mt5-sync-queue";
 import { getPostgresPool } from "@/lib/backend/postgres";
 import { requirePremium } from "@/lib/backend/premium";
+import { isMt5ApiConfigured, syncNowMt5Api } from "@/lib/server/mt5-api";
 import { getSupabaseAdminClient } from "@/lib/supabase/admin";
 
 export const runtime = "nodejs";
@@ -61,6 +62,14 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
   const to = new Date();
 
   try {
+    if (isMt5ApiConfigured()) {
+      const result = await syncNowMt5Api({ userId: auth.user.id, propAccountId: id });
+      return Response.json({
+        ...result,
+        message: result.message || "MT5 VPS sync triggered.",
+      });
+    }
+
     const job = await enqueueMt5SyncJob({
       accountId: account.id,
       userId: auth.user.id,
