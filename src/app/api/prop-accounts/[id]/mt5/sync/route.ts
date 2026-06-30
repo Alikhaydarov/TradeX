@@ -63,7 +63,7 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
 
   try {
     if (isMt5ApiConfigured()) {
-      const result = await syncNowMt5Api({ userId: auth.user.id, propAccountId: id });
+      const result = await syncNowMt5Api({ userId: auth.user.id, accountId: account.id, propAccountId: id });
       return Response.json({
         ...result,
         message: result.message || "MT5 VPS sync triggered.",

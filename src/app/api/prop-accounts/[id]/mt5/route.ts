@@ -102,6 +102,7 @@ export async function PUT(request: Request, context: { params: Promise<{ id: str
         password,
         server,
         userId: auth.user.id,
+        accountId: conn.id,
         propAccountId: id,
       });
     } catch (mt5ApiError) {

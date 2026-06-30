@@ -28,6 +28,7 @@ export function connectMt5Api(input: {
   password: string;
   server: string;
   userId: string;
+  accountId?: string;
   propAccountId?: string;
 }) {
   return request<{ success?: boolean; message?: string; account?: unknown }>("/connect", {
@@ -37,16 +38,18 @@ export function connectMt5Api(input: {
       password: input.password,
       server: input.server,
       user_id: input.userId,
+      account_id: input.accountId,
       prop_account_id: input.propAccountId,
     }),
   });
 }
 
-export function syncNowMt5Api(input?: { userId?: string; propAccountId?: string }) {
+export function syncNowMt5Api(input?: { userId?: string; accountId?: string; propAccountId?: string }) {
   return request<{ success?: boolean; imported?: number; total?: number; message?: string }>("/sync-now", {
     method: "POST",
     body: JSON.stringify({
       user_id: input?.userId,
+      account_id: input?.accountId,
       prop_account_id: input?.propAccountId,
     }),
   });
