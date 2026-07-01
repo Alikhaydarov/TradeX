@@ -91,12 +91,12 @@ export function Sidebar({
 
   return (
     <>
-      <aside className="fixed left-[max(0.75rem,calc((100vw-1560px)/2+0.75rem))] top-3 z-40 hidden h-[calc(100dvh-1.5rem)] w-[232px] shrink-0 flex-col rounded-xl border border-border bg-[#111111] p-3 shadow-2xl shadow-black/25 lg:flex">
-        <button onClick={() => onChange("feed")} className="flex items-center gap-3 rounded-lg px-2 py-2 text-left transition-colors hover:bg-white/[.035]" aria-label="TradeWay home">
-          <span className="grid h-11 w-11 place-items-center rounded-lg bg-gradient-to-br from-zinc-100 via-zinc-400 to-zinc-800 text-lg font-black text-black shadow-lg shadow-black/40">TW</span>
+      <aside className="fixed left-[max(0.75rem,calc((100vw-1560px)/2+0.75rem))] top-3 z-40 hidden h-[calc(100dvh-1.5rem)] w-[232px] shrink-0 flex-col rounded-[1.5rem] border border-white/10 bg-[rgba(8,8,8,0.72)] p-3 shadow-[0_22px_70px_rgba(0,0,0,.58),inset_0_1px_0_rgba(255,255,255,.05)] backdrop-blur-2xl lg:flex">
+        <button onClick={() => onChange("feed")} className="flex items-center gap-3 rounded-2xl px-2 py-2 text-left transition-colors hover:bg-white/[.045]" aria-label="TradeWay home">
+          <span className="grid h-11 w-11 place-items-center rounded-2xl bg-white text-lg font-black text-black shadow-[0_12px_28px_rgba(255,255,255,.08)]">TW</span>
           <span>
             <strong className="block text-base tracking-tight">TradeWay</strong>
-            <small className="text-[11px] text-slate-500">Trader workspace</small>
+            <small className="text-[11px] text-zinc-500">Trader workspace</small>
           </span>
         </button>
 
@@ -109,13 +109,13 @@ export function Sidebar({
               <button
                 key={id}
                 onClick={() => onChange(id)}
-                className={`group flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left transition-colors ${
+                className={`group flex w-full items-center gap-3 rounded-2xl px-3 py-2.5 text-left transition-all ${
                   selected
-                    ? "bg-white/[.08] text-white ring-1 ring-white/15"
-                    : "text-slate-500 hover:bg-white/[.025] hover:text-slate-300"
+                    ? "bg-white/[.095] text-white ring-1 ring-white/15 shadow-[inset_0_1px_0_rgba(255,255,255,.045)]"
+                    : "text-zinc-500 hover:bg-white/[.04] hover:text-zinc-300"
                 }`}
               >
-                <span className={`grid h-9 w-9 place-items-center rounded-lg transition-colors duration-100 ${selected ? "bg-white/14 text-zinc-200" : "bg-white/[.025] text-zinc-500 group-hover:bg-white/[.04] group-hover:text-zinc-300"}`}>
+                <span className={`grid h-9 w-9 place-items-center rounded-2xl transition-colors duration-100 ${selected ? "bg-white/14 text-zinc-100" : "bg-white/[.035] text-zinc-500 group-hover:bg-white/[.06] group-hover:text-zinc-300"}`}>
                   <Icon size={18} strokeWidth={selected ? 2.5 : 2} />
                 </span>
                 <span className="min-w-0">
@@ -123,14 +123,14 @@ export function Sidebar({
                     <strong className="block text-sm">{label}</strong>
                     {unavailable ? <small className="rounded-md border border-amber-300/15 bg-amber-400/10 px-1.5 py-0.5 text-[8px] font-black uppercase text-amber-200">Soon</small> : null}
                   </span>
-                  <small className="block truncate text-[10px] text-slate-500">{hint}</small>
+                  <small className="block truncate text-[10px] text-zinc-500">{hint}</small>
                 </span>
               </button>
             );
           })}
         </nav>
 
-        <button onClick={onPost} className="mt-5 flex items-center justify-center gap-2 rounded-lg bg-white py-3 text-sm font-black text-zinc-950 shadow-lg shadow-black/20 transition-colors hover:bg-zinc-200">
+        <button onClick={onPost} className="mt-5 flex items-center justify-center gap-2 rounded-2xl bg-white py-3 text-sm font-black text-zinc-950 shadow-[0_14px_32px_rgba(255,255,255,.08)] transition-colors hover:bg-zinc-200">
           <Plus size={18} /> {t("shareTrade")}
         </button>
 
@@ -140,27 +140,27 @@ export function Sidebar({
             <LanguageSwitcher compact />
           </div>
 
-          <button onClick={openProfile} className="flex w-full items-center gap-3 rounded-lg border border-border bg-white/[.025] p-2 text-left transition-colors hover:bg-white/[.05]">
+          <button onClick={openProfile} className="flex w-full items-center gap-3 rounded-2xl border border-white/10 bg-white/[.035] p-2 text-left shadow-[inset_0_1px_0_rgba(255,255,255,.035)] backdrop-blur-xl transition-colors hover:bg-white/[.06]">
             <TraderAvatar name={name} value={avatar} className="h-10 w-10 text-xs" />
             <span className="min-w-0 flex-1">
               <span className="flex min-w-0 items-center gap-1">
                 <strong className="truncate text-xs">{name}</strong>
                 {user && isVerified ? <VerifiedBadge size={13} /> : null}
               </span>
-              <small className="block truncate text-[10px] text-slate-500">{handle}</small>
+              <small className="block truncate text-[10px] text-zinc-500">{handle}</small>
             </span>
-            {!user ? <LogIn size={16} className="text-slate-500" /> : null}
+            {!user ? <LogIn size={16} className="text-zinc-500" /> : null}
           </button>
         </div>
       </aside>
 
       {!hideMobile && (
-        <nav className="fixed inset-x-2 bottom-[max(.5rem,env(safe-area-inset-bottom))] z-50 flex h-16 items-center justify-around rounded-xl border border-border bg-[#111111]/96 px-1.5 shadow-2xl shadow-black/40 backdrop-blur-xl sm:inset-x-3 sm:px-2 lg:hidden">
+        <nav className="fixed inset-x-2 bottom-[max(.5rem,env(safe-area-inset-bottom))] z-50 flex h-16 items-center justify-around rounded-[1.75rem] border border-white/10 bg-[rgba(8,8,8,0.78)] px-1.5 shadow-[0_18px_58px_rgba(0,0,0,.58),inset_0_1px_0_rgba(255,255,255,.045)] backdrop-blur-2xl sm:inset-x-3 sm:px-2 lg:hidden">
           {nav.map((item) => {
             const { id, label, icon: Icon } = item;
             const unavailable = "unavailable" in item && item.unavailable;
             return (
-              <button key={id} onClick={() => onChange(id)} className={`relative grid h-11 w-11 place-items-center rounded-lg transition-colors duration-100 ${active === id ? "bg-white/[.09] text-zinc-100 ring-1 ring-white/15" : "text-zinc-500"}`} aria-label={unavailable ? `${label} is not available yet` : label}>
+              <button key={id} onClick={() => onChange(id)} className={`relative grid h-11 w-11 place-items-center rounded-2xl transition-colors duration-100 ${active === id ? "bg-white/[.105] text-zinc-100 ring-1 ring-white/15" : "text-zinc-500 hover:bg-white/[.045] hover:text-zinc-300"}`} aria-label={unavailable ? `${label} is not available yet` : label}>
                 <Icon size={21} strokeWidth={active === id ? 2.6 : 2} />
                 {unavailable ? <span className="absolute right-1.5 top-1.5 size-1.5 rounded-full bg-amber-300" /> : null}
               </button>
