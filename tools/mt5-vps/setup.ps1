@@ -41,6 +41,7 @@ supabase
 python-dotenv
 MetaTrader5
 pydantic
+certifi
 "@ | Set-Content -Encoding UTF8 "C:\mt5-api\requirements.txt"
 
 Write-Host "[5/8] Python dependencies..."

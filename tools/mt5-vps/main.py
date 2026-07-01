@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import os
+import ssl
 import urllib.error
 import urllib.request
 from datetime import datetime, timedelta, timezone
@@ -12,6 +13,8 @@ from apscheduler.schedulers.background import BackgroundScheduler
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel, Field
+
+import certifi
 
 try:
     import MetaTrader5 as mt5
@@ -36,6 +39,10 @@ DEFAULT_LOOKBACK_DAYS = int(os.getenv("MT5_LOOKBACK_DAYS", "90"))
 
 app = FastAPI(title="TradeWay MT5 Auto Sync", version="1.0.0")
 scheduler = BackgroundScheduler(timezone="UTC")
+
+
+def https_context() -> ssl.SSLContext:
+    return ssl.create_default_context(cafile=certifi.where())
 
 
 class ConnectPayload(BaseModel):
@@ -117,7 +124,7 @@ def fetch_remote_accounts() -> dict[str, Any]:
         },
     )
     try:
-        with urllib.request.urlopen(request, timeout=60) as response:
+        with urllib.request.urlopen(request, timeout=60, context=https_context()) as response:
             payload = json.loads(response.read().decode("utf-8") or "{}")
     except urllib.error.HTTPError as error:
         body = error.read().decode("utf-8", errors="ignore")
@@ -254,7 +261,7 @@ def post_trades(account_id: str, trades: list[dict[str, Any]]) -> dict[str, Any]
         },
     )
     try:
-        with urllib.request.urlopen(request, timeout=60) as response:
+        with urllib.request.urlopen(request, timeout=60, context=https_context()) as response:
             body = response.read().decode("utf-8")
             return json.loads(body) if body else {"ok": True}
     except urllib.error.HTTPError as error:
