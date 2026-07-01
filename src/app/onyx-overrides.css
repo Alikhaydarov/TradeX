@@ -1,0 +1,92 @@
+/* Final Onyx polish overrides. Kept separate so the base UI can be adjusted safely. */
+
+/* Make old hard-coded dark panels match the #020202 glass system. */
+[class*="bg-[#171717]"],
+[class*="bg-[#111111]"],
+[class*="bg-[#101010]"],
+[class*="bg-[#0d0d0d]"],
+[class*="bg-[#0b0b0b]"],
+[class*="bg-[#070707]"] {
+  background-color: rgba(255, 255, 255, 0.035) !important;
+  border-color: rgba(255, 255, 255, 0.08) !important;
+  backdrop-filter: blur(18px) saturate(140%);
+  -webkit-backdrop-filter: blur(18px) saturate(140%);
+}
+
+[class*="border-border"] {
+  border-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+[class*="bg-card"] {
+  background-color: rgba(255, 255, 255, 0.035) !important;
+}
+
+[class*="text-slate-500"],
+[class*="text-zinc-500"] {
+  color: rgba(255, 255, 255, 0.46) !important;
+}
+
+/* Compact social/profile post images so screenshots do not take the whole screen. */
+article button:has(img[alt="Trade media"]),
+article button:has(img[alt*="trade screenshot"]),
+article button:has(img[alt*="TradeWay share card"]),
+article a:has(img[alt="Post media"]),
+article a:has(img[alt*="Trade media"]) {
+  min-height: 0 !important;
+  aspect-ratio: 16 / 10 !important;
+  max-height: 360px !important;
+  border-radius: 1rem !important;
+}
+
+article img[alt="Post media"],
+article img[alt="Trade media"],
+article img[alt*="trade screenshot"],
+article img[alt*="TradeWay share card"] {
+  max-height: 360px !important;
+  object-fit: cover !important;
+}
+
+/* Hide the old profile Premium promo block. Pricing remains accessible from the app route. */
+.mx-auto.max-w-3xl > section.mt-2.rounded-lg.border.border-border.bg-card.p-4 {
+  display: none !important;
+}
+
+/* Add Account platform grid: keep MT5 active, show other platforms as Premium-locked visually. */
+form .grid.gap-4.sm\:grid-cols-2.lg\:grid-cols-4 > button:not(:nth-child(3)) {
+  position: relative;
+  filter: grayscale(0.35);
+}
+
+form .grid.gap-4.sm\:grid-cols-2.lg\:grid-cols-4 > button:not(:nth-child(3))::after {
+  content: "🔒 Premium";
+  position: absolute;
+  right: 0.7rem;
+  top: 0.7rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.46);
+  color: rgba(255, 255, 255, 0.76);
+  padding: 0.22rem 0.48rem;
+  font-size: 0.62rem;
+  font-weight: 900;
+  line-height: 1;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+@media (max-width: 639px) {
+  article button:has(img[alt="Trade media"]),
+  article button:has(img[alt*="trade screenshot"]),
+  article button:has(img[alt*="TradeWay share card"]),
+  article a:has(img[alt="Post media"]),
+  article a:has(img[alt*="Trade media"]) {
+    max-height: 260px !important;
+  }
+
+  article img[alt="Post media"],
+  article img[alt="Trade media"],
+  article img[alt*="trade screenshot"],
+  article img[alt*="TradeWay share card"] {
+    max-height: 260px !important;
+  }
+}
