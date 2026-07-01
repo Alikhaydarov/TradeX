@@ -161,7 +161,7 @@ export interface PropAccount {
   maxDrawdown: number;
   dailyDrawdown: number;
   startDate: string;
-  status: "Active" | "Passed" | "Failed" | "Paused";
+  status: "Active" | "Processing" | "Passed" | "Failed" | "Paused";
 }
 
 export interface BacktestResult {
