@@ -123,9 +123,7 @@
   --sidebar-ring: rgba(255, 255, 255, 0.42);
 }
 
-* {
-  box-sizing: border-box;
-}
+* { box-sizing: border-box; }
 
 html {
   background: #020202;
@@ -163,63 +161,18 @@ body::before {
   mask-image: radial-gradient(circle at top, black, transparent 70%);
 }
 
-button,
-input,
-textarea,
-select {
-  font: inherit;
-}
+button, input, textarea, select { font: inherit; }
+button, [role="button"] { touch-action: manipulation; }
+img, video, canvas, svg { max-width: 100%; }
+main, section, article, aside, header, footer, nav, div { min-width: 0; }
+p, h1, h2, h3, h4, h5, h6, span, strong, small, button, a { overflow-wrap: anywhere; }
 
-button,
-[role="button"] {
-  touch-action: manipulation;
-}
-
-img,
-video,
-canvas,
-svg {
-  max-width: 100%;
-}
-
-main,
-section,
-article,
-aside,
-header,
-footer,
-nav,
-div {
-  min-width: 0;
-}
-
-p,
-h1,
-h2,
-h3,
-h4,
-h5,
-h6,
-span,
-strong,
-small,
-button,
-a {
-  overflow-wrap: anywhere;
-}
-
-.recharts-responsive-container,
-.recharts-wrapper,
-.recharts-surface {
-  max-width: 100%;
-}
+.recharts-responsive-container, .recharts-wrapper, .recharts-surface { max-width: 100%; }
 
 .glass {
   background: rgba(255, 255, 255, 0.04);
   border: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow:
-    0 16px 48px rgba(0, 0, 0, 0.44),
-    inset 0 1px 0 rgba(255, 255, 255, 0.055);
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.44), inset 0 1px 0 rgba(255, 255, 255, 0.055);
   backdrop-filter: blur(18px) saturate(140%);
   -webkit-backdrop-filter: blur(18px) saturate(140%);
 }
@@ -227,9 +180,7 @@ a {
 .glass-soft {
   background: rgba(255, 255, 255, 0.026);
   border: 1px solid rgba(255, 255, 255, 0.06);
-  box-shadow:
-    0 10px 32px rgba(0, 0, 0, 0.34),
-    inset 0 1px 0 rgba(255, 255, 255, 0.035);
+  box-shadow: 0 10px 32px rgba(0, 0, 0, 0.34), inset 0 1px 0 rgba(255, 255, 255, 0.035);
   backdrop-filter: blur(12px) saturate(130%);
   -webkit-backdrop-filter: blur(12px) saturate(130%);
 }
@@ -237,9 +188,7 @@ a {
 .glass-strong {
   background: rgba(8, 8, 8, 0.74);
   border: 1px solid rgba(255, 255, 255, 0.09);
-  box-shadow:
-    0 22px 70px rgba(0, 0, 0, 0.58),
-    inset 0 1px 0 rgba(255, 255, 255, 0.055);
+  box-shadow: 0 22px 70px rgba(0, 0, 0, 0.58), inset 0 1px 0 rgba(255, 255, 255, 0.055);
   backdrop-filter: blur(26px) saturate(150%);
   -webkit-backdrop-filter: blur(26px) saturate(150%);
 }
@@ -271,73 +220,89 @@ a {
   -webkit-backdrop-filter: blur(26px) saturate(150%);
 }
 
-.premium-border {
-  border: 1px solid rgba(255, 255, 255, 0.08);
+.premium-border { border: 1px solid rgba(255, 255, 255, 0.08); }
+.premium-text-dim { color: rgba(255, 255, 255, 0.62); }
+.premium-shadow { box-shadow: 0 18px 58px rgba(0, 0, 0, 0.46); }
+
+/* Onyx normalization for older hard-coded panels */
+[class*="bg-[#171717]"],
+[class*="bg-[#111111]"],
+[class*="bg-[#101010]"],
+[class*="bg-[#0d0d0d]"],
+[class*="bg-[#0b0b0b]"],
+[class*="bg-[#070707]"] {
+  background-color: rgba(255, 255, 255, 0.035) !important;
+  border-color: rgba(255, 255, 255, 0.08) !important;
+  backdrop-filter: blur(18px) saturate(140%);
+  -webkit-backdrop-filter: blur(18px) saturate(140%);
 }
 
-.premium-text-dim {
-  color: rgba(255, 255, 255, 0.62);
+[class*="border-border"] { border-color: rgba(255, 255, 255, 0.08) !important; }
+[class*="bg-card"] { background-color: rgba(255, 255, 255, 0.035) !important; }
+[class*="text-slate-500"], [class*="text-zinc-500"] { color: rgba(255, 255, 255, 0.46) !important; }
+
+/* Compact social/profile media so post images are not huge */
+article button:has(img[alt="Trade media"]),
+article button:has(img[alt*="trade screenshot"]),
+article button:has(img[alt*="TradeWay share card"]),
+article a:has(img[alt="Post media"]),
+article a:has(img[alt*="Trade media"]) {
+  min-height: 0 !important;
+  aspect-ratio: 16 / 10 !important;
+  max-height: 360px !important;
+  border-radius: 1rem !important;
 }
 
-.premium-shadow {
-  box-shadow: 0 18px 58px rgba(0, 0, 0, 0.46);
+article img[alt="Post media"],
+article img[alt="Trade media"],
+article img[alt*="trade screenshot"],
+article img[alt*="TradeWay share card"] {
+  max-height: 360px !important;
+  object-fit: cover !important;
+}
+
+/* Hide the old profile premium promo card; pricing stays available from sidebar/route */
+.mx-auto.max-w-3xl > section.mt-2.rounded-lg.border.border-border.bg-card.p-4 {
+  display: none !important;
 }
 
 @media (max-width: 639px) {
-  body {
-    background-attachment: scroll;
+  body { background-attachment: scroll; }
+  input, textarea, select, [data-slot="select-trigger"] { font-size: 16px; }
+  [role="dialog"] { max-width: calc(100vw - 1rem); }
+
+  article button:has(img[alt="Trade media"]),
+  article button:has(img[alt*="trade screenshot"]),
+  article button:has(img[alt*="TradeWay share card"]),
+  article a:has(img[alt="Post media"]),
+  article a:has(img[alt*="Trade media"]) {
+    max-height: 260px !important;
   }
 
-  input,
-  textarea,
-  select,
-  [data-slot="select-trigger"] {
-    font-size: 16px;
-  }
-
-  [role="dialog"] {
-    max-width: calc(100vw - 1rem);
+  article img[alt="Post media"],
+  article img[alt="Trade media"],
+  article img[alt*="trade screenshot"],
+  article img[alt*="TradeWay share card"] {
+    max-height: 260px !important;
   }
 }
 
-form label,
-form input,
-form textarea,
-form [data-slot="select-trigger"] {
+form label, form input, form textarea, form [data-slot="select-trigger"] {
   min-width: 0;
   max-width: 100%;
 }
 
-input[type="date"] {
-  min-inline-size: 0;
-}
+input[type="date"] { min-inline-size: 0; }
 
-::-webkit-scrollbar {
-  width: 6px;
-}
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.18); border-radius: 999px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.28); }
 
-::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.18);
-  border-radius: 999px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.28);
-}
-
-::selection {
-  background: rgb(255 255 255 / 18%);
-  color: #fff;
-}
+::selection { background: rgb(255 255 255 / 18%); color: #fff; }
 
 @media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
+  *, *::before, *::after {
     scroll-behavior: auto !important;
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
