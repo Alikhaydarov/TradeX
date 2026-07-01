@@ -75,7 +75,12 @@ async function triggerVpsSyncNow(accountId: string) {
       "Content-Type": "application/json",
       ...(connectorSecret ? { Authorization: `Bearer ${connectorSecret}` } : {}),
     },
-    body: JSON.stringify({ account_id: accountId }),
+    body: JSON.stringify({
+      account_id: accountId,
+      wait_for_new: true,
+      fresh_attempts: 8,
+      fresh_wait_seconds: 3,
+    }),
     cache: "no-store",
     signal: AbortSignal.timeout(120000),
   });
