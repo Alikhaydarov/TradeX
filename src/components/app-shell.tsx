@@ -1,8 +1,8 @@
 "use client";
 
-import { ArrowRight, LockKeyhole, ShieldCheck, Sparkles } from "lucide-react";
 import dynamic from "next/dynamic";
 import { useEffect, useState } from "react";
+import { AuthLanding } from "./auth/auth-landing";
 import { AuthModal } from "./auth-modal";
 import { NotificationListener } from "./notification-listener";
 import { RightPanel } from "./right-panel";
@@ -49,55 +49,6 @@ function getCurrentSection() {
 function getCurrentProfileUsername() {
   if (typeof window === "undefined") return "";
   return usernameFromPath(window.location.pathname);
-}
-
-function AuthGate({ onLogin }: { onLogin: () => void }) {
-  return (
-    <main className="grid min-h-[100dvh] place-items-center overflow-hidden bg-background px-4 py-[max(1rem,env(safe-area-inset-top))] pb-[max(1rem,env(safe-area-inset-bottom))] text-foreground sm:px-6">
-      <section className="auth-card-in auth-border-run relative w-full max-w-[500px] overflow-hidden rounded-xl border border-border bg-[#111111] p-5 shadow-2xl shadow-black/55 sm:p-7">
-        <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/30 to-transparent" />
-
-        <div className="flex items-start justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <div className="auth-logo-pulse grid size-12 place-items-center rounded-lg border border-white/15 bg-gradient-to-br from-zinc-200 via-zinc-500 to-zinc-900 text-base font-black text-black shadow-xl shadow-black/35">TW</div>
-            <div>
-              <p className="text-[10px] font-black uppercase tracking-[.24em] text-zinc-400">Private workspace</p>
-              <h1 className="mt-1 text-3xl font-black leading-none tracking-tight">TradeWay</h1>
-            </div>
-          </div>
-          <span className="hidden h-9 items-center gap-1.5 rounded-full border border-emerald-300/15 bg-emerald-400/10 px-3 text-[11px] font-black text-emerald-300 sm:inline-flex">
-            <ShieldCheck size={14} /> Secure
-          </span>
-        </div>
-
-        <p className="mt-6 text-[15px] leading-7 text-zinc-300">
-          Sign in to your trading workspace. Journal, account progress, proof profile and trade sharing stay in one fast flow.
-        </p>
-
-        <button
-          onClick={onLogin}
-          className="group mt-7 flex h-12 w-full items-center justify-center gap-2 rounded-lg bg-white px-4 text-sm font-black text-zinc-950 shadow-lg shadow-white/5 transition-colors hover:bg-zinc-200 active:bg-zinc-300"
-        >
-          <LockKeyhole size={17} />
-          Login / Register
-          <ArrowRight size={16} className="transition group-hover:translate-x-0.5" />
-        </button>
-
-        <div className="mt-5 grid grid-cols-3 gap-2 text-center text-[11px] font-black text-slate-400">
-          <span className="rounded-lg border border-white/8 bg-white/[.035] px-2 py-2">Journal</span>
-          <span className="rounded-lg border border-white/8 bg-white/[.035] px-2 py-2">Accounts</span>
-          <span className="rounded-lg border border-white/8 bg-white/[.035] px-2 py-2">Proof</span>
-        </div>
-
-        <div className="mt-4 flex items-start gap-2 rounded-lg border border-amber-300/12 bg-amber-300/[.055] p-3 text-amber-100">
-          <Sparkles size={16} className="mt-0.5 shrink-0 text-amber-200" />
-          <p className="text-xs leading-5 text-zinc-300">
-            <strong className="text-amber-100">Trading plan first.</strong> Risk, setup and review notes stay attached to each trade.
-          </p>
-        </div>
-      </section>
-    </main>
-  );
 }
 
 export function AppShell() {
@@ -195,7 +146,7 @@ export function AppShell() {
   if (!user) {
     return (
       <>
-        <AuthGate onLogin={openLogin} />
+        <AuthLanding onLogin={openLogin} />
         <AuthModal open={authOpen} onClose={() => setAuthOpen(false)} />
       </>
     );
