@@ -1,7 +1,7 @@
 "use client";
 
 import { CheckCircle2, KeyRound, LoaderCircle, RefreshCw, Server, Unplug, UserRound } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { apiRequest } from "@/lib/api-client";
 import type { PropAccount } from "./types";
 
@@ -32,6 +32,10 @@ function asCount(value: unknown) {
   return Number.isFinite(number) ? number : 0;
 }
 
+function wait(ms: number) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
 export function Mt5Settings({ account, onSynced }: { account: PropAccount; onSynced: () => Promise<void> }) {
   const [connection, setConnection] = useState<Connection | null>(null);
   const [login, setLogin]     = useState("");
@@ -42,6 +46,8 @@ export function Mt5Settings({ account, onSynced }: { account: PropAccount; onSyn
   const [message, setMessage] = useState("");
   const [syncResult, setSyncResult] = useState<SyncResult | null>(null);
   const [isVerified, setIsVerified] = useState<boolean | null>(null);
+  const [polling, setPolling] = useState(false);
+  const pollToken = useRef(0);
 
   useEffect(() => {
     apiRequest<{ connection: Connection | null; isVerified: boolean; bridgeConfigured: boolean }>(
@@ -53,6 +59,30 @@ export function Mt5Settings({ account, onSynced }: { account: PropAccount; onSyn
       setLogin(c.login ?? ""); setServer(c.server ?? "");
     }).catch(() => setIsVerified(false));
   }, [account.id]);
+
+  useEffect(() => () => { pollToken.current += 1; }, []);
+
+  const pollJournal = async () => {
+    const token = pollToken.current + 1;
+    pollToken.current = token;
+    setPolling(true);
+    try {
+      for (let attempt = 1; attempt <= 18; attempt += 1) {
+        await wait(attempt === 1 ? 3000 : 5000);
+        if (pollToken.current !== token) return;
+        await onSynced();
+      }
+      if (pollToken.current === token) {
+        setMessage("Journal 90 sekund tekshirildi. Trade ko'rinmasa, MT5 history hali yangilanmagan yoki VPS auto-sync kutyapti.");
+      }
+    } catch (e) {
+      if (pollToken.current === token) {
+        setMessage(e instanceof Error ? e.message : "Journal refresh xato.");
+      }
+    } finally {
+      if (pollToken.current === token) setPolling(false);
+    }
+  };
 
   const save = async () => {
     if (!login || !password || !server) { setMessage("Login, parol va server nomini kiriting."); return; }
@@ -71,6 +101,8 @@ export function Mt5Settings({ account, onSynced }: { account: PropAccount; onSyn
   };
 
   const sync = async () => {
+    pollToken.current += 1;
+    setPolling(false);
     setBusy("sync"); setMessage(""); setSyncResult(null);
     try {
       const result = await apiRequest<SyncResult>(
@@ -78,8 +110,13 @@ export function Mt5Settings({ account, onSynced }: { account: PropAccount; onSyn
         { method: "POST" }
       );
       setSyncResult(result);
-      if (!result.queued) await onSynced();
+      await onSynced();
       setConnection(c => c ? { ...c, last_synced_at: new Date().toISOString() } : c);
+
+      const imported = asCount(result.imported) + asCount(result.journalImported);
+      if (result.queued || imported === 0) {
+        void pollJournal();
+      }
     } catch (e) {
       setMessage(e instanceof Error ? e.message : "Sync xato.");
     } finally { setBusy(null); }
@@ -114,7 +151,6 @@ export function Mt5Settings({ account, onSynced }: { account: PropAccount; onSyn
 
   return (
     <div className="space-y-4 px-4 pb-4">
-      {/* Connection status bar */}
       {connection && (
         <div className={`flex items-center justify-between rounded-xl border px-4 py-3 text-sm ${
           connection.status === "connected"
@@ -136,12 +172,12 @@ export function Mt5Settings({ account, onSynced }: { account: PropAccount; onSyn
             {connection.last_error && <p className="mt-0.5 text-[10px] text-rose-500">{connection.last_error}</p>}
           </div>
           <div className="flex shrink-0 gap-2">
-            <button type="button" onClick={() => void sync()} disabled={busy === "sync"}
+            <button type="button" onClick={() => void sync()} disabled={busy === "sync" || polling}
               className="flex items-center gap-1.5 rounded-lg border border-[#2a2a2a] px-3 py-1.5 text-xs font-semibold text-zinc-300 transition hover:bg-white/[.06] disabled:opacity-50">
-              {busy === "sync"
+              {busy === "sync" || polling
                 ? <LoaderCircle size={12} className="animate-spin" />
                 : <RefreshCw size={12} />}
-              Sync
+              {polling ? "Checking" : "Sync"}
             </button>
             <button type="button" onClick={() => void disconnect()} disabled={!!busy}
               className="grid h-7 w-7 place-items-center rounded-lg border border-[#2a2a2a] text-zinc-600 transition hover:border-rose-500/30 hover:text-rose-400">
@@ -151,12 +187,11 @@ export function Mt5Settings({ account, onSynced }: { account: PropAccount; onSyn
         </div>
       )}
 
-      {/* Sync result */}
       {syncResult && (
         <div className={`flex items-start gap-2.5 rounded-xl border px-4 py-3 ${
           syncResult.error
             ? "border-rose-500/20 bg-rose-500/5"
-            : syncResult.queued
+            : syncResult.queued || polling
             ? "border-amber-500/20 bg-amber-500/5"
             : importedCount > 0
             ? "border-emerald-500/20 bg-emerald-500/5"
@@ -169,7 +204,7 @@ export function Mt5Settings({ account, onSynced }: { account: PropAccount; onSyn
               <div className="text-xs">
                 <LoaderCircle size={14} className="mb-0.5 inline animate-spin text-amber-400" />{" "}
                 <span className="font-semibold text-amber-300">Sync navbatga qo'yildi.</span>
-                <span className="text-zinc-400"> VPS worker import qilgandan keyin journal yangilanadi.</span>
+                <span className="text-zinc-400"> Journal avtomatik tekshirilyapti.</span>
                 {syncResult.message ? <span className="text-zinc-500"> — {syncResult.message}</span> : null}
               </div>
             )
@@ -185,6 +220,15 @@ export function Mt5Settings({ account, onSynced }: { account: PropAccount; onSyn
                 {syncResult.message ? <span className="text-zinc-500"> — {syncResult.message}</span> : null}
               </div>
             )
+            : polling
+            ? (
+              <div className="text-xs">
+                <LoaderCircle size={14} className="mb-0.5 inline animate-spin text-amber-400" />{" "}
+                <span className="font-semibold text-amber-300">MT5 history tekshirilyapti.</span>
+                <span className="text-zinc-400"> Trade kelishi bilan journal yangilanadi.</span>
+                {syncResult.message ? <span className="text-zinc-500"> — {syncResult.message}</span> : null}
+              </div>
+            )
             : (
               <div className="text-xs">
                 <CheckCircle2 size={14} className="mb-0.5 inline text-zinc-400" />{" "}
@@ -197,7 +241,6 @@ export function Mt5Settings({ account, onSynced }: { account: PropAccount; onSyn
         </div>
       )}
 
-      {/* Credentials form */}
       <div className="space-y-3 rounded-xl border border-[#2a2a2a] bg-[#141414] p-4">
         <p className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-[#8a8a8a]">
           <KeyRound size={12} /> MT5 Credentials
