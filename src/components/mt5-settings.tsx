@@ -16,12 +16,21 @@ type Connection = {
 };
 
 type SyncResult = {
-  imported: number;
-  skipped: number;
-  total: number;
+  imported?: number;
+  journalImported?: number;
+  skipped?: number;
+  total?: number;
+  queued?: boolean;
+  immediate?: boolean;
+  jobId?: string;
   message?: string;
   error?: string;
 };
+
+function asCount(value: unknown) {
+  const number = typeof value === "number" ? value : Number(value);
+  return Number.isFinite(number) ? number : 0;
+}
 
 export function Mt5Settings({ account, onSynced }: { account: PropAccount; onSynced: () => Promise<void> }) {
   const [connection, setConnection] = useState<Connection | null>(null);
@@ -69,7 +78,7 @@ export function Mt5Settings({ account, onSynced }: { account: PropAccount; onSyn
         { method: "POST" }
       );
       setSyncResult(result);
-      if ((result.imported ?? 0) > 0) await onSynced();
+      if (!result.queued) await onSynced();
       setConnection(c => c ? { ...c, last_synced_at: new Date().toISOString() } : c);
     } catch (e) {
       setMessage(e instanceof Error ? e.message : "Sync xato.");
@@ -97,6 +106,11 @@ export function Mt5Settings({ account, onSynced }: { account: PropAccount; onSyn
   const lastSync = connection?.last_synced_at
     ? new Date(connection.last_synced_at).toLocaleString("uz-UZ")
     : null;
+
+  const importedCount = asCount(syncResult?.imported);
+  const journalCount = asCount(syncResult?.journalImported);
+  const skippedCount = asCount(syncResult?.skipped);
+  const checkedCount = asCount(syncResult?.total);
 
   return (
     <div className="space-y-4 px-4 pb-4">
@@ -140,17 +154,42 @@ export function Mt5Settings({ account, onSynced }: { account: PropAccount; onSyn
       {/* Sync result */}
       {syncResult && (
         <div className={`flex items-start gap-2.5 rounded-xl border px-4 py-3 ${
-          syncResult.error ? "border-rose-500/20 bg-rose-500/5" : "border-emerald-500/20 bg-emerald-500/5"
+          syncResult.error
+            ? "border-rose-500/20 bg-rose-500/5"
+            : syncResult.queued
+            ? "border-amber-500/20 bg-amber-500/5"
+            : importedCount > 0
+            ? "border-emerald-500/20 bg-emerald-500/5"
+            : "border-zinc-500/20 bg-zinc-500/5"
         }`}>
           {syncResult.error
             ? <span className="text-xs text-rose-400">{syncResult.error}</span>
+            : syncResult.queued
+            ? (
+              <div className="text-xs">
+                <LoaderCircle size={14} className="mb-0.5 inline animate-spin text-amber-400" />{" "}
+                <span className="font-semibold text-amber-300">Sync navbatga qo'yildi.</span>
+                <span className="text-zinc-400"> VPS worker import qilgandan keyin journal yangilanadi.</span>
+                {syncResult.message ? <span className="text-zinc-500"> — {syncResult.message}</span> : null}
+              </div>
+            )
+            : importedCount > 0
+            ? (
+              <div className="text-xs">
+                <CheckCircle2 size={14} className="mb-0.5 inline text-emerald-400" />{" "}
+                <span className="font-semibold text-emerald-300">{importedCount} ta trade</span>
+                <span className="text-zinc-400"> import qilindi</span>
+                {journalCount ? <span className="text-zinc-500"> · {journalCount} ta journalga saqlandi</span> : null}
+                {checkedCount ? <span className="text-zinc-600"> · {checkedCount} ta MT5 trade tekshirildi</span> : null}
+                {skippedCount ? <span className="text-zinc-600"> · {skippedCount} ta skip</span> : null}
+                {syncResult.message ? <span className="text-zinc-500"> — {syncResult.message}</span> : null}
+              </div>
+            )
             : (
               <div className="text-xs">
-                <CheckCircle2 size={14} className="mb-0.5 inline text-emerald-400" />
-                {" "}
-                <span className="font-semibold text-emerald-300">{syncResult.imported} ta trade</span>
-                <span className="text-zinc-400"> import qilindi</span>
-                {syncResult.skipped ? <span className="text-zinc-600"> ({syncResult.skipped} ta allaqachon bor edi)</span> : null}
+                <CheckCircle2 size={14} className="mb-0.5 inline text-zinc-400" />{" "}
+                <span className="font-semibold text-zinc-300">Yangi trade topilmadi.</span>
+                {checkedCount ? <span className="text-zinc-500"> {checkedCount} ta MT5 trade tekshirildi.</span> : null}
                 {syncResult.message ? <span className="text-zinc-500"> — {syncResult.message}</span> : null}
               </div>
             )
