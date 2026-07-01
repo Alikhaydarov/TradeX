@@ -1,7 +1,6 @@
 "use client";
 
 import {
-  Ban,
   Bell,
   BrainCircuit,
   CheckCircle2,
@@ -138,7 +137,6 @@ function buildCoachDashboard(entries: EntryRow[]): CoachDashboard {
   const recent = sorted.slice(0, 20);
   const today = sorted.filter((entry) => entry.traded_at === todayId());
   const wins = recent.filter((entry) => number(entry.pnl) > 0);
-  const losses = recent.filter((entry) => number(entry.pnl) < 0);
   const todayPnl = today.reduce((sum, entry) => sum + number(entry.pnl), 0);
   const recentPnl = recent.reduce((sum, entry) => sum + number(entry.pnl), 0);
   const avgR = recent.length ? recent.reduce((sum, entry) => sum + number(entry.result_r), 0) / recent.length : 0;
@@ -262,7 +260,7 @@ export function JournalAiNudges({ section }: { section: Section }) {
     return () => window.clearInterval(timer);
   }, [section]);
 
-  if (section !== "journal" || dismissed) return null;
+  if (section !== "journal" || dismissed || warningCount === 0) return null;
 
   return (
     <aside className="fixed bottom-[5.4rem] right-3 z-[45] sm:right-4 lg:bottom-5 lg:right-5">
@@ -282,7 +280,7 @@ export function JournalAiNudges({ section }: { section: Section }) {
               </span>
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2">
-                  <h3 className="truncate text-sm font-black">TradeWay AI Coach</h3>
+                  <h3 className="truncate text-sm font-black">Critical AI alert</h3>
                   <span className={cn("rounded-full border px-2 py-0.5 text-[10px] font-black uppercase", modeClass[dashboard.mode])}>{dashboard.mode}</span>
                 </div>
                 <p className="truncate text-[11px] text-zinc-500">{dashboard.headline}</p>
@@ -296,7 +294,7 @@ export function JournalAiNudges({ section }: { section: Section }) {
               <div className={cn("rounded-2xl border p-3", modeClass[dashboard.mode])}>
                 <div className="flex items-start justify-between gap-3">
                   <div>
-                    <p className="text-xs font-black uppercase tracking-[.16em] text-white/55">Today command</p>
+                    <p className="text-xs font-black uppercase tracking-[.16em] text-white/55">Emergency command</p>
                     <p className="mt-1 text-sm font-black leading-5 text-white">{dashboard.command}</p>
                   </div>
                   <div className="grid size-14 shrink-0 place-items-center rounded-2xl border border-white/10 bg-black/25 text-lg font-black">
@@ -318,7 +316,7 @@ export function JournalAiNudges({ section }: { section: Section }) {
               ) : null}
 
               <CoachSection title="Critical alerts" empty="Critical warning yo'q.">
-                {dashboard.alerts.map((nudge) => {
+                {dashboard.alerts.filter((nudge) => nudge.type === "warning").map((nudge) => {
                   const Icon = typeIcon[nudge.type];
                   return (
                     <div key={nudge.id} className={cn("rounded-2xl border p-3", typeClass[nudge.type])}>
@@ -334,13 +332,11 @@ export function JournalAiNudges({ section }: { section: Section }) {
                 })}
               </CoachSection>
 
-              <CoachList title="Action plan" items={dashboard.actions} icon="✓" />
               <CoachList title="Do not do" items={dashboard.blocked} icon="×" danger />
-              {dashboard.weakPatterns.length ? <CoachList title="Weak patterns" items={dashboard.weakPatterns} icon="!" /> : null}
-              <CoachList title="Review questions" items={dashboard.reviewQuestions} icon="?" />
+              <CoachList title="Immediate action" items={dashboard.actions.slice(0, 3)} icon="✓" />
 
               <div className="flex items-center justify-between gap-2 pt-1">
-                <span className="inline-flex items-center gap-1.5 text-[10px] font-semibold text-zinc-500"><Sparkles size={12} /> Auto refresh 45s</span>
+                <span className="inline-flex items-center gap-1.5 text-[10px] font-semibold text-zinc-500"><Sparkles size={12} /> AI Coach tab has the full plan</span>
                 <Button type="button" variant="outline" size="sm" onClick={() => void load()} disabled={loading} className="h-8 rounded-xl text-[11px]">
                   {loading ? <LoaderCircle className="animate-spin" size={13} /> : <RefreshCw size={13} />} Refresh
                 </Button>
@@ -351,15 +347,13 @@ export function JournalAiNudges({ section }: { section: Section }) {
 
         <button
           onClick={() => setOpen((value) => !value)}
-          className="group relative grid size-14 place-items-center rounded-full border border-white/12 bg-[rgba(10,10,10,.84)] text-[#d9f96d] shadow-[0_18px_50px_rgba(0,0,0,.45),inset_0_1px_0_rgba(255,255,255,.06)] backdrop-blur-2xl transition hover:scale-[1.03] hover:bg-white/[.06] active:scale-95 sm:size-16"
-          aria-label="Open TradeWay AI"
+          className="group relative grid size-14 place-items-center rounded-full border border-rose-300/24 bg-rose-400/[.12] text-rose-100 shadow-[0_18px_50px_rgba(0,0,0,.45),inset_0_1px_0_rgba(255,255,255,.06)] backdrop-blur-2xl transition hover:scale-[1.03] hover:bg-rose-400/[.18] active:scale-95 sm:size-16"
+          aria-label="Open critical TradeWay AI alert"
         >
-          <BrainCircuit size={26} />
-          {warningCount ? (
-            <span className="absolute -right-1 -top-1 grid min-w-[22px] place-items-center rounded-full border border-rose-300/20 bg-rose-400 px-1.5 py-0.5 text-[10px] font-black leading-none text-black">
-              {warningCount}
-            </span>
-          ) : null}
+          <ShieldAlert size={26} />
+          <span className="absolute -right-1 -top-1 grid min-w-[22px] place-items-center rounded-full border border-rose-300/20 bg-rose-400 px-1.5 py-0.5 text-[10px] font-black leading-none text-black">
+            {warningCount}
+          </span>
           <span className="pointer-events-none absolute inset-0 rounded-full ring-1 ring-white/10" />
         </button>
       </div>
