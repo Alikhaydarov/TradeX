@@ -50,10 +50,21 @@ export interface TraderoxFinding {
   metadata?: Record<string, unknown>;
 }
 
+export interface TraderoxCoachInsight {
+  name: "Traderox AI";
+  title: string;
+  summary: string;
+  mood: "protect" | "neutral" | "push";
+  nextAction: string;
+  recentTradeFeedback: string;
+  actionItems: string[];
+}
+
 export interface TraderoxReport {
   disciplineScore: number;
   stats: TraderoxStats;
   findings: TraderoxFinding[];
   alerts: TraderoxFinding[];
   recommendations: string[];
+  coach: TraderoxCoachInsight;
 }
