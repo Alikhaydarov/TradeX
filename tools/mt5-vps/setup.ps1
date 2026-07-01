@@ -2,7 +2,9 @@ param(
   [Parameter(Mandatory = $true)]
   [string]$Secret,
 
-  [string]$WebhookUrl = "https://tradewayio.vercel.app/api/connectors/mt5/trades"
+  [string]$WebhookUrl = "https://tradewayio.vercel.app/api/connectors/mt5/trades",
+
+  [string]$AccountsUrl = "https://tradewayio.vercel.app/api/connectors/mt5/pending-accounts"
 )
 
 $ErrorActionPreference = "Continue"
@@ -26,6 +28,7 @@ Invoke-WebRequest "https://raw.githubusercontent.com/Alikhaydarov/TradeX/main/to
 Write-Host "[4/8] Env and requirements..."
 @"
 TRADEWAY_WEBHOOK_URL=$WebhookUrl
+TRADEWAY_ACCOUNTS_URL=$AccountsUrl
 MT5_CONNECTOR_SECRET=$Secret
 MT5_LOOKBACK_DAYS=90
 "@ | Set-Content -Encoding UTF8 "C:\mt5-api\.env"

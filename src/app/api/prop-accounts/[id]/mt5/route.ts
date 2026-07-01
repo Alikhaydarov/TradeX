@@ -95,7 +95,7 @@ export async function PUT(request: Request, context: { params: Promise<{ id: str
     .single();
 
   if (error) return serverError(error.message);
-  if (isMt5ApiConfigured()) {
+  if (process.env.MT5_API_DIRECT_CONNECT === "true" && isMt5ApiConfigured()) {
     try {
       await connectMt5Api({
         login,

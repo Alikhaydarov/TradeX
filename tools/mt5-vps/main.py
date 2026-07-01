@@ -27,6 +27,10 @@ TRADEWAY_WEBHOOK_URL = os.getenv(
     "TRADEWAY_WEBHOOK_URL",
     "https://tradewayio.vercel.app/api/connectors/mt5/trades",
 )
+TRADEWAY_ACCOUNTS_URL = os.getenv(
+    "TRADEWAY_ACCOUNTS_URL",
+    "https://tradewayio.vercel.app/api/connectors/mt5/pending-accounts",
+)
 MT5_CONNECTOR_SECRET = os.getenv("MT5_CONNECTOR_SECRET", "")
 DEFAULT_LOOKBACK_DAYS = int(os.getenv("MT5_LOOKBACK_DAYS", "90"))
 
@@ -79,8 +83,16 @@ def write_accounts(accounts: list[dict[str, Any]]) -> None:
 def upsert_account(record: AccountRecord) -> None:
     accounts = read_accounts()
     key = record.account_id
+    existing = next((account for account in accounts if account.get("account_id") == key), {})
     next_accounts = [account for account in accounts if account.get("account_id") != key]
-    next_accounts.append(record.model_dump())
+    next_record = {
+        **existing,
+        **record.model_dump(),
+        "last_ticket": existing.get("last_ticket"),
+        "last_sync_at": existing.get("last_sync_at"),
+        "last_error": existing.get("last_error"),
+    }
+    next_accounts.append(next_record)
     write_accounts(next_accounts)
 
 
@@ -90,6 +102,51 @@ def update_account(account_id: str, **patch: Any) -> None:
         if account.get("account_id") == account_id:
             account.update(patch)
     write_accounts(accounts)
+
+
+def fetch_remote_accounts() -> dict[str, Any]:
+    if not MT5_CONNECTOR_SECRET:
+        return {"fetched": 0, "error": "MT5_CONNECTOR_SECRET is missing in .env"}
+
+    request = urllib.request.Request(
+        TRADEWAY_ACCOUNTS_URL,
+        method="GET",
+        headers={
+            "Accept": "application/json",
+            "Authorization": f"Bearer {MT5_CONNECTOR_SECRET}",
+        },
+    )
+    try:
+        with urllib.request.urlopen(request, timeout=60) as response:
+            payload = json.loads(response.read().decode("utf-8") or "{}")
+    except urllib.error.HTTPError as error:
+        body = error.read().decode("utf-8", errors="ignore")
+        return {"fetched": 0, "error": f"Account fetch failed: {error.code} {body}"}
+    except Exception as error:
+        return {"fetched": 0, "error": f"Account fetch failed: {error}"}
+
+    remote_accounts = payload.get("accounts") or []
+    fetched = 0
+    for item in remote_accounts:
+        account_id = str(item.get("accountId") or "").strip()
+        login = str(item.get("login") or "").strip()
+        password = str(item.get("password") or "")
+        server = str(item.get("server") or "").strip()
+        user_id = str(item.get("userId") or "").strip()
+        if not account_id or not login or not password or not server or not user_id:
+            continue
+
+        upsert_account(AccountRecord(
+            login=login,
+            password=password,
+            server=server,
+            user_id=user_id,
+            account_id=account_id,
+            prop_account_id=item.get("propAccountId"),
+        ))
+        fetched += 1
+
+    return {"fetched": fetched, "failed": payload.get("failed") or []}
 
 
 def require_mt5() -> Any:
@@ -237,6 +294,12 @@ def sync_account(account: dict[str, Any]) -> dict[str, Any]:
 
 
 def sync_all() -> None:
+    fetch_result = fetch_remote_accounts()
+    if fetch_result.get("error"):
+        print(f"[accounts:error] {fetch_result['error']}", flush=True)
+    else:
+        print(f"[accounts] fetched={fetch_result.get('fetched', 0)}", flush=True)
+
     for account in read_accounts():
         if not account.get("is_active", True):
             continue
@@ -268,8 +331,10 @@ def root() -> dict[str, Any]:
 @app.get("/status")
 def status() -> dict[str, Any]:
     accounts = read_accounts()
+    fetch_result = fetch_remote_accounts()
     return {
         "ok": True,
+        "accountFetch": fetch_result,
         "accounts": [
             {
                 "login": account.get("login"),

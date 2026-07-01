@@ -62,7 +62,7 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
   const to = new Date();
 
   try {
-    if (isMt5ApiConfigured()) {
+    if (process.env.MT5_API_DIRECT_CONNECT === "true" && isMt5ApiConfigured()) {
       const result = await syncNowMt5Api({ userId: auth.user.id, accountId: account.id, propAccountId: id });
       return Response.json({
         ...result,
