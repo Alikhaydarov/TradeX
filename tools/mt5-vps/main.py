@@ -23,7 +23,6 @@ try:
 except Exception:  # pragma: no cover - only happens when package is missing
     mt5 = None
 
-
 BASE_DIR = Path(__file__).resolve().parent
 ACCOUNTS_FILE = BASE_DIR / "accounts.json"
 load_dotenv(BASE_DIR / ".env")
@@ -40,12 +39,12 @@ MT5_CONNECTOR_SECRET = os.getenv("MT5_CONNECTOR_SECRET", "")
 DEFAULT_LOOKBACK_DAYS = int(os.getenv("MT5_LOOKBACK_DAYS", "1825"))
 MT5_TERMINAL_PATH = os.getenv("MT5_TERMINAL_PATH", r"C:\Program Files\MetaTrader 5\terminal64.exe")
 MT5_FORCE_RESTART_TERMINAL = os.getenv("MT5_FORCE_RESTART_TERMINAL", "false").lower() == "true"
-SYNC_INTERVAL_SECONDS = max(30, int(os.getenv("MT5_SYNC_INTERVAL_SECONDS", "60")))
+SYNC_INTERVAL_SECONDS = max(10, int(os.getenv("MT5_SYNC_INTERVAL_SECONDS", "15")))
 MT5_REQUIRE_AUTH = os.getenv("MT5_REQUIRE_AUTH", "false").lower() == "true"
 MANUAL_FRESH_ATTEMPTS = max(1, int(os.getenv("MT5_MANUAL_FRESH_ATTEMPTS", "8")))
 MANUAL_FRESH_WAIT_SECONDS = max(1.0, float(os.getenv("MT5_MANUAL_FRESH_WAIT_SECONDS", "3")))
 
-app = FastAPI(title="TradeWay MT5 Auto Sync", version="1.1.0")
+app = FastAPI(title="TradeWay MT5 Auto Sync", version="1.2.0")
 scheduler = BackgroundScheduler(timezone="UTC")
 
 
@@ -227,16 +226,16 @@ def mt5_login(account: dict[str, Any]) -> None:
 
 def history_deals_with_retry(terminal: Any, from_dt: datetime, to_dt: datetime) -> list[Any]:
     last_error: tuple[int, str] | None = None
-    for attempt in range(1, 9):
+    for attempt in range(1, 7):
         deals = terminal.history_deals_get(from_dt, to_dt)
         if deals is None:
             last_error = terminal.last_error()
         else:
             deal_list = list(deals)
-            if deal_list or attempt >= 4:
+            if deal_list or attempt >= 3:
                 return deal_list
             last_error = terminal.last_error()
-        time.sleep(min(attempt, 5))
+        time.sleep(min(attempt, 3))
     if last_error:
         code, message = last_error
         raise RuntimeError(f"MT5 history_deals_get failed: {code} {message}")
@@ -358,16 +357,11 @@ def sync_account(
 
         if not wait_for_new or not previous_ticket or last_ticket != previous_ticket:
             break
-
         if attempt < attempts:
             time.sleep(wait_seconds)
 
     if last_ticket and previous_ticket == last_ticket:
-        update_account(
-            account["account_id"],
-            last_sync_at=utc_now().isoformat(),
-            last_error=None,
-        )
+        update_account(account["account_id"], last_sync_at=utc_now().isoformat(), last_error=None)
         return {
             "success": True,
             "imported": 0,
