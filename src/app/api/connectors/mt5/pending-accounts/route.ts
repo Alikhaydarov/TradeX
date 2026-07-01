@@ -1,4 +1,5 @@
 import { decryptSecret } from "@/lib/backend/crypto";
+import { getPostgresPool } from "@/lib/backend/postgres";
 import { getSupabaseAdminClient } from "@/lib/supabase/admin";
 
 export const runtime = "nodejs";
@@ -25,31 +26,48 @@ export async function GET(request: Request) {
     return Response.json({ error: "Unauthorized connector request." }, { status: 401 });
   }
 
-  const supabase = getSupabaseAdminClient();
-  if (!supabase) {
-    return Response.json({ error: "SUPABASE_SERVICE_ROLE_KEY is required." }, { status: 500 });
-  }
-
   const { searchParams } = new URL(request.url);
   const limit = Math.max(1, Math.min(100, Number(searchParams.get("limit") || 50)));
 
-  const { data, error } = await supabase
-    .from("trading_accounts")
-    .select("id, user_id, prop_account_id, account_login, broker_server, encrypted_password, status, auto_sync_enabled, last_synced_at")
-    .eq("platform", "MT5")
-    .eq("auto_sync_enabled", true)
-    .order("updated_at", { ascending: false })
-    .limit(limit)
-    .returns<TradingAccountCredentialRow[]>();
+  const supabase = getSupabaseAdminClient();
+  let data: TradingAccountCredentialRow[] = [];
 
-  if (error) {
-    return Response.json({ error: error.message }, { status: 500 });
+  if (supabase) {
+    const result = await supabase
+      .from("trading_accounts")
+      .select("id, user_id, prop_account_id, account_login, broker_server, encrypted_password, status, auto_sync_enabled, last_synced_at")
+      .eq("platform", "MT5")
+      .eq("auto_sync_enabled", true)
+      .order("updated_at", { ascending: false })
+      .limit(limit)
+      .returns<TradingAccountCredentialRow[]>();
+
+    if (result.error) {
+      return Response.json({ error: result.error.message }, { status: 500 });
+    }
+    data = result.data || [];
+  } else {
+    const pool = getPostgresPool();
+    if (!pool) {
+      return Response.json({ error: "SUPABASE_SERVICE_ROLE_KEY or DATABASE_URL is required." }, { status: 500 });
+    }
+
+    const result = await pool.query<TradingAccountCredentialRow>(
+      `select id, user_id, prop_account_id, account_login, broker_server,
+              encrypted_password, status, auto_sync_enabled, last_synced_at
+       from public.trading_accounts
+       where platform = 'MT5' and auto_sync_enabled is true
+       order by updated_at desc
+       limit $1`,
+      [limit],
+    );
+    data = result.rows;
   }
 
   const accounts = [];
   const failed: Array<{ accountId: string; error: string }> = [];
 
-  for (const account of data || []) {
+  for (const account of data) {
     if (!account.account_login || !account.broker_server || !account.encrypted_password) continue;
 
     try {
