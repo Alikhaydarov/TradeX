@@ -42,8 +42,10 @@ MT5_TERMINAL_PATH = os.getenv("MT5_TERMINAL_PATH", r"C:\Program Files\MetaTrader
 MT5_FORCE_RESTART_TERMINAL = os.getenv("MT5_FORCE_RESTART_TERMINAL", "false").lower() == "true"
 SYNC_INTERVAL_SECONDS = max(30, int(os.getenv("MT5_SYNC_INTERVAL_SECONDS", "60")))
 MT5_REQUIRE_AUTH = os.getenv("MT5_REQUIRE_AUTH", "false").lower() == "true"
+MANUAL_FRESH_ATTEMPTS = max(1, int(os.getenv("MT5_MANUAL_FRESH_ATTEMPTS", "8")))
+MANUAL_FRESH_WAIT_SECONDS = max(1.0, float(os.getenv("MT5_MANUAL_FRESH_WAIT_SECONDS", "3")))
 
-app = FastAPI(title="TradeWay MT5 Auto Sync", version="1.0.0")
+app = FastAPI(title="TradeWay MT5 Auto Sync", version="1.1.0")
 scheduler = BackgroundScheduler(timezone="UTC")
 
 
@@ -64,6 +66,9 @@ class SyncPayload(BaseModel):
     user_id: str | None = None
     account_id: str | None = None
     prop_account_id: str | None = None
+    wait_for_new: bool = False
+    fresh_attempts: int | None = Field(default=None, ge=1, le=20)
+    fresh_wait_seconds: float | None = Field(default=None, ge=0.5, le=10)
 
 
 class AccountRecord(BaseModel):
@@ -330,20 +335,49 @@ def post_trades(account_id: str, trades: list[dict[str, Any]]) -> dict[str, Any]
         raise RuntimeError(f"TradeWay webhook failed: {error.code} {body}") from error
 
 
-def sync_account(account: dict[str, Any]) -> dict[str, Any]:
+def sync_account(
+    account: dict[str, Any],
+    *,
+    wait_for_new: bool = False,
+    fresh_attempts: int | None = None,
+    fresh_wait_seconds: float | None = None,
+) -> dict[str, Any]:
     mt5_login(account)
     terminal = require_mt5()
-    to_dt = utc_now()
-    from_dt = to_dt - timedelta(days=DEFAULT_LOOKBACK_DAYS)
-    deal_list = history_deals_with_retry(terminal, from_dt, to_dt)
-    last_ticket = max((int(getattr(deal, "ticket", 0) or 0) for deal in deal_list), default=0)
-    if last_ticket and account.get("last_ticket") == last_ticket:
+    attempts = fresh_attempts or MANUAL_FRESH_ATTEMPTS
+    wait_seconds = fresh_wait_seconds or MANUAL_FRESH_WAIT_SECONDS
+    previous_ticket = int(account.get("last_ticket") or 0)
+    deal_list: list[Any] = []
+    last_ticket = 0
+
+    for attempt in range(1, attempts + 1):
+        to_dt = utc_now()
+        from_dt = to_dt - timedelta(days=DEFAULT_LOOKBACK_DAYS)
+        deal_list = history_deals_with_retry(terminal, from_dt, to_dt)
+        last_ticket = max((int(getattr(deal, "ticket", 0) or 0) for deal in deal_list), default=0)
+
+        if not wait_for_new or not previous_ticket or last_ticket != previous_ticket:
+            break
+
+        if attempt < attempts:
+            time.sleep(wait_seconds)
+
+    if last_ticket and previous_ticket == last_ticket:
         update_account(
             account["account_id"],
             last_sync_at=utc_now().isoformat(),
             last_error=None,
         )
-        return {"success": True, "imported": 0, "skipped": 0, "total": 0, "message": "Canary unchanged; skipped full import."}
+        return {
+            "success": True,
+            "imported": 0,
+            "skipped": 0,
+            "total": 0,
+            "latestTicket": last_ticket,
+            "previousTicket": previous_ticket,
+            "freshAttempts": attempts if wait_for_new else 1,
+            "message": "No new MT5 ticket yet. Trade may still be updating in terminal history.",
+        }
 
     trades = normalize_deals_to_trades(deal_list)
     result = post_trades(account["account_id"], trades)
@@ -353,7 +387,14 @@ def sync_account(account: dict[str, Any]) -> dict[str, Any]:
         last_sync_at=utc_now().isoformat(),
         last_error=None,
     )
-    return {"success": True, "total": len(trades), **result}
+    return {
+        "success": True,
+        "total": len(trades),
+        "latestTicket": last_ticket,
+        "previousTicket": previous_ticket,
+        "freshAttempts": attempts if wait_for_new else 1,
+        **result,
+    }
 
 
 def sync_all() -> None:
@@ -389,6 +430,8 @@ def root() -> dict[str, Any]:
         "accounts": len(read_accounts()),
         "webhookConfigured": bool(MT5_CONNECTOR_SECRET),
         "syncIntervalSeconds": SYNC_INTERVAL_SECONDS,
+        "manualFreshAttempts": MANUAL_FRESH_ATTEMPTS,
+        "manualFreshWaitSeconds": MANUAL_FRESH_WAIT_SECONDS,
     }
 
 
@@ -401,6 +444,8 @@ def status(authorization: str | None = Header(default=None)) -> dict[str, Any]:
         "ok": True,
         "accountFetch": fetch_result,
         "syncIntervalSeconds": SYNC_INTERVAL_SECONDS,
+        "manualFreshAttempts": MANUAL_FRESH_ATTEMPTS,
+        "manualFreshWaitSeconds": MANUAL_FRESH_WAIT_SECONDS,
         "accounts": [
             {
                 "login": account.get("login"),
@@ -458,6 +503,8 @@ def connect(payload: ConnectPayload, authorization: str | None = Header(default=
 def sync_now(payload: SyncPayload | None = None, authorization: str | None = Header(default=None)) -> dict[str, Any]:
     require_api_auth(authorization)
     payload = payload or SyncPayload()
+
+    fetch_result = fetch_remote_accounts()
     accounts = read_accounts()
     if payload.account_id:
         accounts = [account for account in accounts if account.get("account_id") == payload.account_id]
@@ -470,15 +517,29 @@ def sync_now(payload: SyncPayload | None = None, authorization: str | None = Hea
 
     results = []
     imported_total = 0
+    journal_total = 0
     for account in accounts:
-        result = sync_account(account)
+        result = sync_account(
+            account,
+            wait_for_new=payload.wait_for_new,
+            fresh_attempts=payload.fresh_attempts,
+            fresh_wait_seconds=payload.fresh_wait_seconds,
+        )
         imported_total += int(result.get("imported", result.get("total", 0)) or 0)
+        journal_total += int(result.get("journalImported", 0) or 0)
         results.append({
             "login": account.get("login"),
             "account_id": account.get("account_id"),
             "result": result,
         })
-    return {"success": True, "imported": imported_total, "total": len(results), "results": results}
+    return {
+        "success": True,
+        "imported": imported_total,
+        "journalImported": journal_total,
+        "total": len(results),
+        "accountFetch": fetch_result,
+        "results": results,
+    }
 
 
 if __name__ == "__main__":
