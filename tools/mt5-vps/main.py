@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import os
 import ssl
+import subprocess
 import urllib.error
 import urllib.request
 from datetime import datetime, timedelta, timezone
@@ -165,19 +166,41 @@ def require_mt5() -> Any:
 
 def mt5_login(account: dict[str, Any]) -> None:
     terminal = require_mt5()
+    try:
+        terminal.shutdown()
+    except Exception:
+        pass
+    subprocess.run(
+        ["taskkill", "/IM", "terminal64.exe", "/F"],
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+        check=False,
+    )
     terminal_path = MT5_TERMINAL_PATH if Path(MT5_TERMINAL_PATH).exists() else None
-    initialized = terminal.initialize(path=terminal_path) if terminal_path else terminal.initialize()
+    initialize_kwargs = {
+        "login": int(account["login"]),
+        "password": str(account["password"]),
+        "server": str(account["server"]),
+        "timeout": 120000,
+    }
+    initialized = (
+        terminal.initialize(path=terminal_path, **initialize_kwargs)
+        if terminal_path
+        else terminal.initialize(**initialize_kwargs)
+    )
     if not initialized:
         code, message = terminal.last_error()
         raise RuntimeError(f"MT5 initialize failed: {code} {message}")
-    ok = terminal.login(
-        int(account["login"]),
-        password=str(account["password"]),
-        server=str(account["server"]),
-    )
-    if not ok:
-        code, message = terminal.last_error()
-        raise RuntimeError(f"MT5 login failed: {code} {message}")
+    if terminal.account_info() is None:
+        ok = terminal.login(
+            int(account["login"]),
+            password=str(account["password"]),
+            server=str(account["server"]),
+            timeout=120000,
+        )
+        if not ok:
+            code, message = terminal.last_error()
+            raise RuntimeError(f"MT5 login failed: {code} {message}")
 
 
 def iso_from_mt5_time(value: int | float | None) -> str | None:
