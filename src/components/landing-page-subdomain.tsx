@@ -1,8 +1,6 @@
 "use client";
 
 import { ArrowRight, Bot, CalendarDays, LineChart, LockKeyhole, ShieldCheck, Sparkles, Zap } from "lucide-react";
-import { useState } from "react";
-import { AuthModal } from "./auth-modal";
 import { useAuth } from "./auth-context";
 
 function appDashboardUrl() {
@@ -25,15 +23,9 @@ const features = [
 
 export function LandingPageSubdomain() {
   const { user } = useAuth();
-  const [authOpen, setAuthOpen] = useState(false);
 
   const openApp = () => {
     window.location.href = appDashboardUrl();
-  };
-
-  const start = () => {
-    if (user) openApp();
-    else setAuthOpen(true);
   };
 
   return (
@@ -51,7 +43,7 @@ export function LandingPageSubdomain() {
             <p className="text-[10px] font-bold uppercase tracking-[.24em] text-zinc-500">Performance OS</p>
           </div>
         </div>
-        <button onClick={start} className="inline-flex h-10 items-center gap-2 rounded-full bg-white px-4 text-xs font-black text-black hover:bg-zinc-200">
+        <button onClick={openApp} className="inline-flex h-10 items-center gap-2 rounded-full bg-white px-4 text-xs font-black text-black hover:bg-zinc-200">
           {user ? "Open app" : "Sign in"}
           <ArrowRight size={14} />
         </button>
@@ -69,7 +61,7 @@ export function LandingPageSubdomain() {
             TradeWay connects your MT5 account, imports closed trade history and gives coach feedback through Traderox AI.
           </p>
           <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-            <button onClick={start} className="inline-flex h-13 items-center justify-center gap-2 rounded-2xl bg-white px-6 text-sm font-black text-black shadow-2xl shadow-white/10 hover:bg-zinc-200">
+            <button onClick={openApp} className="inline-flex h-13 items-center justify-center gap-2 rounded-2xl bg-white px-6 text-sm font-black text-black shadow-2xl shadow-white/10 hover:bg-zinc-200">
               {user ? "Open dashboard" : "Get started"}
               <ArrowRight size={17} />
             </button>
@@ -110,8 +102,6 @@ export function LandingPageSubdomain() {
         <span>© {new Date().getFullYear()} TradeWay</span>
         <span className="inline-flex items-center gap-2"><ShieldCheck size={13} /> Built for disciplined prop traders.</span>
       </footer>
-
-      <AuthModal open={authOpen} onClose={() => setAuthOpen(false)} />
     </main>
   );
 }
