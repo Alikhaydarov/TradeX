@@ -13,7 +13,7 @@ from typing import Any
 
 from apscheduler.schedulers.background import BackgroundScheduler
 from dotenv import load_dotenv
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, Header, HTTPException
 from pydantic import BaseModel, Field
 
 import certifi
@@ -40,6 +40,8 @@ MT5_CONNECTOR_SECRET = os.getenv("MT5_CONNECTOR_SECRET", "")
 DEFAULT_LOOKBACK_DAYS = int(os.getenv("MT5_LOOKBACK_DAYS", "1825"))
 MT5_TERMINAL_PATH = os.getenv("MT5_TERMINAL_PATH", r"C:\Program Files\MetaTrader 5\terminal64.exe")
 MT5_FORCE_RESTART_TERMINAL = os.getenv("MT5_FORCE_RESTART_TERMINAL", "false").lower() == "true"
+SYNC_INTERVAL_SECONDS = max(30, int(os.getenv("MT5_SYNC_INTERVAL_SECONDS", "60")))
+MT5_REQUIRE_AUTH = os.getenv("MT5_REQUIRE_AUTH", "false").lower() == "true"
 
 app = FastAPI(title="TradeWay MT5 Auto Sync", version="1.0.0")
 scheduler = BackgroundScheduler(timezone="UTC")
@@ -79,6 +81,13 @@ class AccountRecord(BaseModel):
 
 def utc_now() -> datetime:
     return datetime.now(timezone.utc)
+
+
+def require_api_auth(authorization: str | None) -> None:
+    if not MT5_REQUIRE_AUTH:
+        return
+    if not MT5_CONNECTOR_SECRET or authorization != f"Bearer {MT5_CONNECTOR_SECRET}":
+        raise HTTPException(status_code=401, detail="Unauthorized")
 
 
 def read_accounts() -> list[dict[str, Any]]:
@@ -334,7 +343,7 @@ def sync_account(account: dict[str, Any]) -> dict[str, Any]:
             last_sync_at=utc_now().isoformat(),
             last_error=None,
         )
-        return {"success": True, "skipped": True, "message": "Canary unchanged; skipped full import."}
+        return {"success": True, "imported": 0, "skipped": 0, "total": 0, "message": "Canary unchanged; skipped full import."}
 
     trades = normalize_deals_to_trades(deal_list)
     result = post_trades(account["account_id"], trades)
@@ -368,7 +377,7 @@ def sync_all() -> None:
 @app.on_event("startup")
 def start_scheduler() -> None:
     if not scheduler.running:
-        scheduler.add_job(sync_all, "interval", minutes=5, id="mt5-auto-sync", replace_existing=True)
+        scheduler.add_job(sync_all, "interval", seconds=SYNC_INTERVAL_SECONDS, id="mt5-auto-sync", replace_existing=True)
         scheduler.start()
 
 
@@ -379,16 +388,19 @@ def root() -> dict[str, Any]:
         "service": "TradeWay MT5 Auto Sync",
         "accounts": len(read_accounts()),
         "webhookConfigured": bool(MT5_CONNECTOR_SECRET),
+        "syncIntervalSeconds": SYNC_INTERVAL_SECONDS,
     }
 
 
 @app.get("/status")
-def status() -> dict[str, Any]:
+def status(authorization: str | None = Header(default=None)) -> dict[str, Any]:
+    require_api_auth(authorization)
     accounts = read_accounts()
     fetch_result = fetch_remote_accounts()
     return {
         "ok": True,
         "accountFetch": fetch_result,
+        "syncIntervalSeconds": SYNC_INTERVAL_SECONDS,
         "accounts": [
             {
                 "login": account.get("login"),
@@ -407,7 +419,8 @@ def status() -> dict[str, Any]:
 
 
 @app.post("/connect")
-def connect(payload: ConnectPayload) -> dict[str, Any]:
+def connect(payload: ConnectPayload, authorization: str | None = Header(default=None)) -> dict[str, Any]:
+    require_api_auth(authorization)
     account_id = payload.account_id or payload.prop_account_id
     if not account_id:
         raise HTTPException(status_code=400, detail="account_id is required.")
@@ -442,7 +455,8 @@ def connect(payload: ConnectPayload) -> dict[str, Any]:
 
 
 @app.post("/sync-now")
-def sync_now(payload: SyncPayload | None = None) -> dict[str, Any]:
+def sync_now(payload: SyncPayload | None = None, authorization: str | None = Header(default=None)) -> dict[str, Any]:
+    require_api_auth(authorization)
     payload = payload or SyncPayload()
     accounts = read_accounts()
     if payload.account_id:
