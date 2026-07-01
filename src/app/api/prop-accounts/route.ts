@@ -2,6 +2,8 @@ import { authenticateRequest, badRequest, serverError, unauthorized } from "@/li
 
 export const runtime = "nodejs";
 
+const ACCOUNT_STATUSES = new Set(["Processing", "Active", "Passed", "Failed", "Paused"]);
+
 function values(body: Record<string, unknown>) {
   const name = String(body.name || "").trim().slice(0, 80);
   const accountType = String(body.accountType || "prop").trim() === "real" ? "real" : "prop";
@@ -29,7 +31,7 @@ function values(body: Record<string, unknown>) {
     max_drawdown: Math.max(0,maxDrawdown),
     daily_drawdown: Math.max(0,dailyDrawdown),
     start_date: body.startDate || new Date().toISOString().slice(0,10),
-    status: body.status || "Active",
+    status: ACCOUNT_STATUSES.has(String(body.status || "")) ? String(body.status) : "Active",
     updated_at: new Date().toISOString()
   };
 }
@@ -44,8 +46,15 @@ export async function POST(request: Request) {
   const auth = await authenticateRequest(request); if (!auth) return unauthorized();
   const payload = values(await request.json()); if (!payload) return badRequest("Check account details.");
   const insertPayload = { ...payload, user_id: auth.user.id };
-  const { data, error } = await auth.supabase.from("prop_accounts").insert(insertPayload).select().single();
+  let { data, error } = await auth.supabase.from("prop_accounts").insert(insertPayload).select().single();
   if (!error) return Response.json({account:data},{status:201});
+
+  if (/prop_accounts_status_check|status.*check constraint/i.test(error.message) && insertPayload.status === "Processing") {
+    const retry = await auth.supabase.from("prop_accounts").insert({ ...insertPayload, status: "Paused" }).select().single();
+    data = retry.data;
+    error = retry.error;
+    if (!error) return Response.json({account:data},{status:201});
+  }
 
   const schemaIsOld = /account_type|prop_site|prop_login|import_source|platform/i.test(error.message);
   if (!schemaIsOld) return serverError(error.message);

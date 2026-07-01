@@ -1,7 +1,7 @@
 "use client";
 
 import {
-  ArrowLeft, BarChart3, BookOpen, CalendarDays, CheckCircle2, ChevronDown, ChevronLeft, ChevronRight,
+  ArrowLeft, BarChart3, BookOpen, BrainCircuit, CalendarDays, CheckCircle2, ChevronDown, ChevronLeft, ChevronRight,
   Download, ImageIcon, LoaderCircle, MoreHorizontal, Plus, Search, ShieldCheck,
   Target, Trash2, TrendingDown, TrendingUp, WalletCards, X, Zap,
 } from "lucide-react";
@@ -35,6 +35,17 @@ type AccountRow = { id: string; name: string; account_type?: "prop" | "real" | n
 type EntryRow = { id: string; prop_account_id?: string | null; symbol: string; side: "Long" | "Short"; entry_price: string; exit_price: string; quantity: string; fees: string; pnl: string; note: string; traded_at: string; account_name?: string; market_type?: string; setup?: string; emotion?: string; risk_amount?: string; result_r?: string; risk_percent?: string; session?: string; following_plan?: boolean; error_made?: boolean; mistake_type?: string; review_completed?: boolean; to_trading_bible?: boolean; image_url?: string | null; tags?: string[] };
 type Summary = { account: PropAccount; trades: number; pnl: number; winRate: number; target: number; dd: number };
 type TradeRange = "daily" | "monthly" | "quarter" | "yearly" | "custom";
+type AiCoachReport = {
+  title: string;
+  summary: string;
+  score: number;
+  mood: "protect" | "neutral" | "push";
+  strengths: string[];
+  mistakes: string[];
+  riskWarnings: string[];
+  nextSteps: string[];
+  generatedBy: "rules" | "openai";
+};
 
 const cash = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 2 });
 const WEEKDAYS_SHORT = ["Du", "Se", "Ch", "Pa", "Ju", "Sh", "Ya"];
@@ -363,7 +374,7 @@ function Accounts({ summaries, deleting, onAdd, onOpen, onDelete }: { summaries:
 }
 
 function AccountCard({ s, deleting, onOpen, onDelete }: { s: Summary; deleting: string | null; onOpen: (id: string) => void; onDelete: (a: PropAccount) => void }) {
-  const statusColor: Record<string, string> = { Active: "text-emerald-400 bg-emerald-400/10 border-emerald-400/20", Passed: "text-zinc-300 bg-white/[.06] border-white/15", Failed: "text-rose-400 bg-rose-400/10 border-rose-400/20", Paused: "text-amber-400 bg-amber-400/10 border-amber-400/20" };
+  const statusColor: Record<string, string> = { Processing: "text-sky-300 bg-sky-400/10 border-sky-400/20", Active: "text-emerald-400 bg-emerald-400/10 border-emerald-400/20", Passed: "text-zinc-300 bg-white/[.06] border-white/15", Failed: "text-rose-400 bg-rose-400/10 border-rose-400/20", Paused: "text-amber-400 bg-amber-400/10 border-amber-400/20" };
 
   return (
     <div
@@ -442,6 +453,44 @@ function AccountCard({ s, deleting, onOpen, onDelete }: { s: Summary; deleting: 
   );
 }
 
+function AiCoachCard({ report, loading, error, onRefresh }: { report: AiCoachReport | null; loading: boolean; error: string | null; onRefresh: () => void }) {
+  const tone = report?.mood === "protect" ? "border-rose-400/20 bg-rose-400/[.055]" : report?.mood === "push" ? "border-[#d9f96d]/25 bg-[#d9f96d]/[.055]" : "border-white/10 bg-[#1b1b1b]/80";
+  return (
+    <section className={`overflow-hidden rounded-[24px] border ${tone}`}>
+      <div className="flex flex-col gap-3 border-b border-white/8 p-4 sm:flex-row sm:items-start sm:p-5">
+        <span className="grid size-11 shrink-0 place-items-center rounded-2xl border border-white/10 bg-black/20 text-[#d9f96d]"><BrainCircuit size={21} /></span>
+        <div className="min-w-0 flex-1">
+          <div className="flex flex-wrap items-center gap-2">
+            <h3 className="text-base font-black">{report?.title || "AI Trade Coach"}</h3>
+            {report ? <span className="rounded-full border border-white/10 bg-black/20 px-2 py-0.5 text-[10px] font-black uppercase text-[#8a8a8a]">{report.generatedBy}</span> : null}
+          </div>
+          <p className="mt-1 text-sm leading-6 text-[#a1a1aa]">{loading ? "Analyzing your execution, risk and discipline..." : error || report?.summary || "Premium AI coach reads your journal and turns trades into concrete next actions."}</p>
+        </div>
+        <Button type="button" variant="outline" size="sm" onClick={onRefresh} disabled={loading} className="border-[#2a2a2a] bg-transparent">
+          {loading ? <LoaderCircle className="animate-spin" size={15} /> : <Zap size={15} />} Refresh
+        </Button>
+      </div>
+      {report ? (
+        <div className="grid gap-3 p-4 sm:p-5 lg:grid-cols-[220px_1fr_1fr]">
+          <div className="rounded-2xl border border-white/8 bg-black/15 p-4">
+            <p className="text-[10px] font-black uppercase tracking-widest text-[#8a8a8a]">Coach score</p>
+            <p className="mt-2 font-mono text-4xl font-black text-white">{Math.round(report.score)}</p>
+            <div className="mt-3 h-2 overflow-hidden rounded-full bg-white/10"><div className="h-full rounded-full bg-[#d9f96d]" style={{ width: `${Math.max(0, Math.min(100, report.score))}%` }} /></div>
+          </div>
+          <div className="rounded-2xl border border-white/8 bg-black/15 p-4">
+            <p className="text-[10px] font-black uppercase tracking-widest text-[#8a8a8a]">Risk warnings</p>
+            <ul className="mt-3 space-y-2 text-sm leading-5 text-[#d4d4d8]">{(report.riskWarnings.length ? report.riskWarnings : ["No critical risk warning yet."]).map((item) => <li key={item}>- {item}</li>)}</ul>
+          </div>
+          <div className="rounded-2xl border border-white/8 bg-black/15 p-4">
+            <p className="text-[10px] font-black uppercase tracking-widest text-[#8a8a8a]">Next actions</p>
+            <ul className="mt-3 space-y-2 text-sm leading-5 text-[#d4d4d8]">{report.nextSteps.map((item) => <li key={item}>- {item}</li>)}</ul>
+          </div>
+        </div>
+      ) : null}
+    </section>
+  );
+}
+
 // Workspace.
 function Workspace(p: {
   account: PropAccount; stats: { pnl: number; wins: number; losses: number; rate: number; r: number; pf: number };
@@ -459,10 +508,31 @@ function Workspace(p: {
   const { account, stats, equity, setups, mistakes, planRate, monthCount, calendar, trades, bibleTrades, month } = p;
   const [selectedTrade, setSelectedTrade] = useState<JournalEntry | null>(null);
   const [activeTab, setActiveTab] = useState<WorkspaceTab>("overview");
+  const [coachReport, setCoachReport] = useState<AiCoachReport | null>(null);
+  const [coachLoading, setCoachLoading] = useState(false);
+  const [coachError, setCoachError] = useState<string | null>(null);
   const currentPnl = (equity.at(-1)?.equity ?? account.initialBalance) - account.initialBalance;
   const currentEquity = account.initialBalance + currentPnl;
   const targetProgress = account.profitTarget ? Math.min(100, Math.max(0, currentPnl / account.profitTarget * 100)) : 0;
   const drawdownUsed = account.maxDrawdown && currentPnl < 0 ? Math.min(100, Math.abs(currentPnl) / account.maxDrawdown * 100) : 0;
+
+  const loadCoach = useCallback(async () => {
+    setCoachLoading(true);
+    setCoachError(null);
+    try {
+      const response = await apiRequest<{ report: AiCoachReport }>(`/api/ai/trade-report?accountId=${encodeURIComponent(account.id)}`);
+      setCoachReport(response.report);
+    } catch (error) {
+      setCoachError(error instanceof Error ? error.message : "AI coach failed to load.");
+    } finally {
+      setCoachLoading(false);
+    }
+  }, [account.id]);
+
+  useEffect(() => {
+    if (activeTab !== "overview") return;
+    void loadCoach();
+  }, [activeTab, loadCoach, trades.length]);
 
   return (
     <div className="animate-page-in mx-auto max-w-[1700px]">
@@ -572,6 +642,8 @@ function Workspace(p: {
                 }
               </div>
             </section>
+
+            <AiCoachCard report={coachReport} loading={coachLoading} error={coachError} onRefresh={() => void loadCoach()} />
 
             <div className="grid gap-4 lg:grid-cols-[1fr_1fr_1fr]">
               <div className="rounded-2xl border border-[#2a2a2a] bg-[#1b1b1b]/80 p-5">
