@@ -38,64 +38,82 @@ function unique(values: string[]) {
 
 function scoreTrades(trades: CoachTrade[]) {
   if (!trades.length) return 60;
-  let score = 82;
+  let score = 84;
   const losses = trades.filter((trade) => trade.pnl < 0);
   const errorCount = trades.filter((trade) => trade.errorMade).length;
   const missingSetup = trades.filter((trade) => !trade.setup).length;
+  const missingNote = trades.filter((trade) => !trade.note).length;
+  const missingSession = trades.filter((trade) => !trade.session).length;
   const planBreaks = trades.filter((trade) => !trade.followingPlan).length;
   const overRisk = trades.filter((trade) => Math.abs(trade.resultR) > 5 || trade.riskAmount > 0 && Math.abs(trade.pnl) > trade.riskAmount * 4).length;
   score -= Math.min(25, errorCount * 5);
-  score -= Math.min(18, missingSetup * 3);
+  score -= Math.min(16, missingSetup * 3);
+  score -= Math.min(10, missingNote * 2);
+  score -= Math.min(8, missingSession * 1);
   score -= Math.min(18, planBreaks * 6);
-  score -= Math.min(15, overRisk * 5);
+  score -= Math.min(18, overRisk * 6);
   if (losses.length >= Math.ceil(trades.length * 0.6)) score -= 8;
   return Math.max(0, Math.min(100, score));
+}
+
+function todayId() {
+  return new Date().toISOString().slice(0, 10);
 }
 
 export function buildRuleCoachReport(trades: CoachTrade[]): TradeCoachReport {
   const ordered = [...trades].sort((a, b) => new Date(a.tradedAt).getTime() - new Date(b.tradedAt).getTime());
   const latest = ordered.at(-1);
+  const recent = ordered.slice(-12);
   const wins = ordered.filter((trade) => trade.pnl > 0);
   const losses = ordered.filter((trade) => trade.pnl < 0);
   const totalPnl = ordered.reduce((sum, trade) => sum + trade.pnl, 0);
   const avgR = ordered.length ? ordered.reduce((sum, trade) => sum + trade.resultR, 0) / ordered.length : 0;
+  const todayTrades = ordered.filter((trade) => trade.tradedAt === todayId());
+  const todayPnl = todayTrades.reduce((sum, trade) => sum + trade.pnl, 0);
+  const recentThree = ordered.slice(-3);
+  const lossStreak = recentThree.length === 3 && recentThree.every((trade) => trade.pnl < 0);
   const score = scoreTrades(ordered);
-  const mood: TradeCoachReport["mood"] = score < 60 ? "protect" : score > 82 ? "push" : "neutral";
+  const mood: TradeCoachReport["mood"] = score < 60 || lossStreak || todayPnl < 0 && todayTrades.length >= 2 ? "protect" : score > 82 ? "push" : "neutral";
 
   const mistakes = unique([
-    ...ordered.filter((trade) => trade.errorMade && trade.mistakeType).map((trade) => trade.mistakeType),
-    ordered.some((trade) => !trade.setup) ? "Some trades have no setup name, so the model cannot be repeated cleanly." : "",
-    ordered.some((trade) => !trade.followingPlan) ? "Plan discipline was broken on at least one trade." : "",
-    losses.length >= 3 && losses.slice(-3).length === 3 ? "Recent loss streak requires a mandatory pause." : "",
+    ...recent.filter((trade) => trade.errorMade && trade.mistakeType).map((trade) => trade.mistakeType),
+    recent.some((trade) => !trade.setup) ? "Setup nomi yozilmagan tradelar bor. Modelni takrorlash uchun setup nomi majburiy." : "",
+    recent.some((trade) => !trade.note) ? "Review note yetishmayapti. Har trade'dan keyin bitta aniq lesson yoz." : "",
+    recent.some((trade) => !trade.followingPlan) ? "Plan discipline buzilgan trade bor. Entry oldidan checklist ishlat." : "",
+    lossStreak ? "Oxirgi 3 ta trade loss. Bu revenge trade xavfini oshiradi." : "",
   ]).slice(0, 5);
 
   const riskWarnings = unique([
-    ordered.some((trade) => trade.riskAmount > 0 && Math.abs(trade.pnl) > trade.riskAmount * 4) ? "One or more trades moved far beyond planned risk. Check SL discipline and position size." : "",
-    totalPnl < 0 ? `Account is currently down ${money(totalPnl)} in this sample. Protect capital before increasing frequency.` : "",
-    avgR < 0 ? "Average R is negative. The edge is not proven yet; reduce trade count and wait for A+ setups." : "",
-  ]).slice(0, 4);
+    lossStreak ? "Mandatory pause: 3 loss ketma-ket. Keyingi trade oldidan kamida 30 daqiqa tanaffus qil." : "",
+    todayTrades.length && todayPnl < 0 ? `Bugungi P&L ${money(todayPnl)}. Bugun riskni oshirma va faqat A+ setup qoldir.` : "",
+    recent.some((trade) => trade.riskAmount > 0 && Math.abs(trade.pnl) > trade.riskAmount * 4) ? "Bir yoki bir nechta trade planned riskdan katta siljigan. Lot size va SL discipline'ni tekshir." : "",
+    totalPnl < 0 ? `Sample P&L ${money(totalPnl)}. Kapitalni himoya qilish foyda qilishdan oldin turadi.` : "",
+    avgR < 0 ? "Average R manfiy. Edge tasdiqlanmaguncha trade sonini kamaytir." : "",
+  ]).slice(0, 5);
 
   const strengths = unique([
-    wins.length > losses.length ? "Win rate is holding better than loss count." : "",
-    avgR > 1 ? `Average R is strong at ${avgR.toFixed(2)}R.` : "",
-    ordered.some((trade) => trade.setup) ? "Setup tagging has started, which makes pattern review possible." : "",
+    wins.length > losses.length ? "Win count loss countdan yuqori — discipline saqlansa edge shakllanishi mumkin." : "",
+    avgR > 1 ? `Average R kuchli: ${avgR.toFixed(2)}R.` : "",
+    recent.some((trade) => trade.setup) ? "Setup tagging boshlangan — AI endi qaysi model ishlayotganini ko'ra oladi." : "",
+    recent.every((trade) => trade.followingPlan) ? "Recent trades ichida plan break belgilanmagan." : "",
   ]).slice(0, 4);
 
   const nextSteps = unique([
-    mood === "protect" ? "Next session: trade smaller, maximum 1-2 attempts, and stop after the first rule break." : "",
-    "Before entry: write setup name, invalidation point, and risk amount.",
-    "After close: mark whether the plan was followed and write one concrete lesson.",
-    latest ? `Review the latest ${latest.symbol} trade first because it is the freshest execution sample.` : "",
+    mood === "protect" ? "Keyingi sessiya: maximum 1 ta trade, riskni pasaytir, birinchi rule breakdan keyin to'xta." : "",
+    mood === "push" ? "Discipline yaxshi. Riskni oshirmasdan faqat shu modelni takrorla." : "",
+    "Entry oldidan: setup nomi, invalidation, risk amount, session va target yozilgan bo'lsin.",
+    "Trade yopilgandan keyin: following plan, mistake type va bitta lesson yoz.",
+    latest ? `Birinchi review: oxirgi ${latest.symbol} trade'ni tekshir, chunki u eng yangi execution sample.` : "",
   ]).slice(0, 5);
 
   return {
-    title: mood === "protect" ? "AI Coach: protect capital" : mood === "push" ? "AI Coach: edge forming" : "AI Coach: execution focus",
+    title: mood === "protect" ? "AI Coach: capital protection mode" : mood === "push" ? "AI Coach: discipline yaxshi, davom et" : "AI Coach: execution focus",
     summary: latest
-      ? `Last trade: ${latest.symbol} ${latest.side} closed ${money(latest.pnl)}. Sample P&L is ${money(totalPnl)} across ${ordered.length} trades.`
-      : "No trades yet. Add trades to unlock a useful coaching report.",
+      ? `Oxirgi trade: ${latest.symbol} ${latest.side} ${money(latest.pnl)}. Sample P&L ${money(totalPnl)} / ${ordered.length} trade. Bugungi P&L: ${money(todayPnl)}.`
+      : "Hali trade yo'q. Trade qo'shilsa AI risk, discipline va journal sifatini kuzatadi.",
     score,
     mood,
-    strengths: strengths.length ? strengths : ["Journal structure is ready for coaching."],
+    strengths: strengths.length ? strengths : ["Journal structure AI coach uchun tayyor."],
     mistakes,
     riskWarnings,
     nextSteps,
@@ -154,7 +172,7 @@ export async function buildAiCoachReport(trades: CoachTrade[]): Promise<TradeCoa
         input: [
           {
             role: "system",
-            content: "You are TradeWay AI Coach. Return only compact JSON. Be direct, strict, and practical. Do not give financial advice or trade signals; focus on risk, discipline, journaling, and execution quality.",
+            content: "You are TradeWay AI Coach. Return only compact JSON. Be direct, strict, and practical. Do not give financial advice or trade signals; focus on risk, discipline, journaling, psychology, execution quality, warnings, reminders, and next actions. Use Uzbek Latin when possible.",
           },
           {
             role: "user",
