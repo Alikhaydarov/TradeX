@@ -26,7 +26,7 @@ async function handleTradeReport(request: Request) {
 
     const { data: rows, error } = await auth.supabase
       .from("journal_entries")
-      .select("id, symbol, side, pnl, result_r, risk_amount, setup, session, following_plan, error_made, mistake_type, note, traded_at")
+      .select("*")
       .eq("user_id", auth.user.id)
       .eq("prop_account_id", accountId)
       .order("traded_at", { ascending: false })
