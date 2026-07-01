@@ -36,6 +36,32 @@ function wait(ms: number) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
+async function postSyncWithTimeout(url: string): Promise<SyncResult> {
+  const controller = new AbortController();
+  const timeoutId = window.setTimeout(() => controller.abort(), 55_000);
+
+  try {
+    const response = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      signal: controller.signal,
+    });
+    const text = await response.text();
+    let payload: SyncResult = {};
+    try {
+      payload = text ? JSON.parse(text) as SyncResult : {};
+    } catch {
+      payload = { error: text || "Sync server javobi noto'g'ri formatda." };
+    }
+    if (!response.ok) {
+      throw new Error(payload.error || payload.message || `Sync xato (${response.status}).`);
+    }
+    return payload;
+  } finally {
+    window.clearTimeout(timeoutId);
+  }
+}
+
 export function Mt5Settings({ account, onSynced }: { account: PropAccount; onSynced: () => Promise<void> }) {
   const [connection, setConnection] = useState<Connection | null>(null);
   const [login, setLogin]     = useState("");
@@ -105,10 +131,23 @@ export function Mt5Settings({ account, onSynced }: { account: PropAccount; onSyn
     setPolling(false);
     setBusy("sync"); setMessage(""); setSyncResult(null);
     try {
-      const result = await apiRequest<SyncResult>(
-        `/api/prop-accounts/${account.id}/mt5/sync`,
-        { method: "POST" }
-      );
+      let result: SyncResult;
+      try {
+        result = await postSyncWithTimeout(`/api/prop-accounts/${account.id}/mt5/sync`);
+      } catch (e) {
+        if (e instanceof DOMException && e.name === "AbortError") {
+          result = {
+            queued: true,
+            imported: 0,
+            skipped: 0,
+            total: 0,
+            message: "Sync request 55 sekunddan oshdi. Journal avtomatik tekshirilyapti.",
+          };
+        } else {
+          throw e;
+        }
+      }
+
       setSyncResult(result);
       await onSynced();
       setConnection(c => c ? { ...c, last_synced_at: new Date().toISOString() } : c);
