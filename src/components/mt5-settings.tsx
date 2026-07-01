@@ -100,47 +100,38 @@ export function Mt5Settings({ account, onSynced }: { account: PropAccount; onSyn
   return (
     <div className="space-y-3 px-3 pb-4 sm:space-y-4 sm:px-4">
       {connection && (
-        <div className={`rounded-2xl border p-3 text-sm sm:p-4 ${
+        <div className={`rounded-2xl border px-3 py-3 text-sm sm:px-4 ${
           connection.status === "connected"
             ? "border-emerald-500/20 bg-emerald-500/5"
             : connection.status === "error"
               ? "border-rose-500/20 bg-rose-500/5"
               : "border-[#2a2a2a] bg-[#1b1b1b]"
         }`}>
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-            <div className="min-w-0 space-y-1">
+          <div className="flex items-start gap-2">
+            <div className="min-w-0 flex-1 space-y-1">
               <div className="flex min-w-0 flex-wrap items-center gap-2">
                 <span className={`h-2 w-2 rounded-full ${connection.status === "connected" ? "bg-emerald-400" : connection.status === "error" ? "animate-pulse bg-rose-400" : "bg-zinc-600"}`} />
                 <span className={`text-xs font-semibold ${statusColor(connection.status)}`}>
                   {connection.status === "connected" ? "Ulangan" : connection.status === "error" ? "Xato" : "Tayyor"}
                 </span>
-                <span className="hidden text-xs text-zinc-600 sm:inline">·</span>
                 <span className="max-w-full truncate font-mono text-[11px] text-zinc-400 sm:text-xs">{connection.login} @ {connection.server}</span>
               </div>
-              {lastSync && <p className="text-[10px] text-zinc-600">So'nggi sync: {lastSync}</p>}
+
+              <div className="flex flex-wrap items-center gap-1.5">
+                <span className="inline-flex items-center gap-1 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-2 py-0.5 text-[10px] font-bold text-emerald-300">
+                  <CheckCircle2 size={10} /> Auto-sync
+                </span>
+                <span className="rounded-full border border-white/10 bg-white/[.03] px-2 py-0.5 text-[10px] font-semibold text-zinc-500">~15s check</span>
+                {lastSync ? <span className="text-[10px] text-zinc-600">{lastSync}</span> : null}
+              </div>
+
               {connection.last_error && <p className="break-words text-[10px] text-rose-500">{connection.last_error}</p>}
             </div>
 
             <button type="button" onClick={() => void disconnect()} disabled={!!busy}
-              className="grid h-10 w-full place-items-center rounded-xl border border-[#2a2a2a] text-xs font-semibold text-zinc-500 transition hover:border-rose-500/30 hover:text-rose-400 disabled:opacity-50 sm:h-8 sm:w-8">
+              className="grid size-9 shrink-0 place-items-center rounded-xl border border-[#2a2a2a] text-zinc-600 transition hover:border-rose-500/30 hover:text-rose-400 disabled:opacity-50">
               {busy === "disconnect" ? <LoaderCircle size={13} className="animate-spin" /> : <Unplug size={13} />}
-              <span className="ml-2 sm:hidden">Ajratish</span>
             </button>
-          </div>
-
-          <div className="mt-3 rounded-xl border border-emerald-500/15 bg-emerald-500/5 p-3">
-            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-              <div>
-                <p className="text-[10px] font-semibold uppercase tracking-widest text-emerald-400/80">Auto-sync active</p>
-                <p className="mt-0.5 text-xs font-semibold text-zinc-200">Trade yopilganda VPS avtomatik journalga yuklaydi.</p>
-              </div>
-              <span className="inline-flex w-fit items-center gap-1.5 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-2.5 py-1 text-[10px] font-bold text-emerald-300">
-                <CheckCircle2 size={11} /> ~15s check
-              </span>
-            </div>
-            <p className="mt-2 text-[11px] leading-5 text-zinc-500">
-              Manual Sync tugmasi olib tashlandi. Journal ochiq turganda ham taxminan har 15 sekundda yangilanadi.
-            </p>
           </div>
         </div>
       )}
