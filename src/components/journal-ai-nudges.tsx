@@ -1,6 +1,6 @@
 "use client";
 
-import { AlertTriangle, Bell, BrainCircuit, CheckCircle2, ChevronDown, LoaderCircle, RefreshCw, ShieldAlert, Sparkles, X } from "lucide-react";
+import { Bell, BrainCircuit, CheckCircle2, LoaderCircle, RefreshCw, ShieldAlert, Sparkles, X } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { apiRequest } from "@/lib/api-client";
 import { cn } from "@/lib/utils";
@@ -173,7 +173,7 @@ function buildNudges(entries: EntryRow[]): AiNudge[] {
 export function JournalAiNudges({ section }: { section: Section }) {
   const [entries, setEntries] = useState<EntryRow[]>([]);
   const [loading, setLoading] = useState(false);
-  const [open, setOpen] = useState(true);
+  const [open, setOpen] = useState(false);
   const [dismissed, setDismissed] = useState(false);
 
   const nudges = useMemo(() => buildNudges(entries), [entries]);
@@ -195,6 +195,7 @@ export function JournalAiNudges({ section }: { section: Section }) {
   useEffect(() => {
     if (section !== "journal") return;
     setDismissed(false);
+    setOpen(false);
     void load();
     const timer = window.setInterval(() => void load(), 45000);
     return () => window.clearInterval(timer);
@@ -203,58 +204,82 @@ export function JournalAiNudges({ section }: { section: Section }) {
   if (section !== "journal" || dismissed) return null;
 
   return (
-    <aside className="fixed bottom-[5.25rem] left-2 right-2 z-[45] mx-auto max-w-[520px] lg:bottom-5 lg:left-auto lg:right-5 lg:mx-0 lg:w-[360px]">
-      <div className="overflow-hidden rounded-[1.6rem] border border-white/10 bg-[rgba(8,8,8,.78)] shadow-[0_22px_70px_rgba(0,0,0,.58),inset_0_1px_0_rgba(255,255,255,.045)] backdrop-blur-2xl">
-        <div className="flex items-center gap-3 border-b border-white/8 px-3 py-3 sm:px-4">
-          <span className="grid size-10 shrink-0 place-items-center rounded-2xl border border-white/10 bg-white/[.06] text-[#d9f96d]">
-            <BrainCircuit size={19} />
-          </span>
-          <div className="min-w-0 flex-1">
-            <div className="flex items-center gap-2">
-              <h3 className="truncate text-sm font-black">TradeWay AI</h3>
-              {warningCount ? <span className="rounded-full bg-rose-400/12 px-2 py-0.5 text-[10px] font-black text-rose-200">{warningCount} warning</span> : null}
-            </div>
-            <p className="truncate text-[11px] text-zinc-500">Journal reminders · risk alerts · next action</p>
-          </div>
-          <button onClick={() => setOpen((value) => !value)} className="grid size-8 place-items-center rounded-xl text-zinc-400 hover:bg-white/[.06] hover:text-white" aria-label="Toggle AI nudges">
-            <ChevronDown className={cn("transition", open ? "rotate-180" : "")} size={16} />
-          </button>
-          <button onClick={() => setDismissed(true)} className="grid size-8 place-items-center rounded-xl text-zinc-500 hover:bg-white/[.06] hover:text-white" aria-label="Close AI nudges">
-            <X size={15} />
-          </button>
-        </div>
-
-        {open ? (
-          <div className="space-y-2 p-3 sm:p-4">
-            {loading && !entries.length ? (
-              <div className="flex items-center gap-2 rounded-2xl border border-white/10 bg-white/[.035] px-3 py-3 text-xs text-zinc-400">
-                <LoaderCircle className="animate-spin" size={14} /> AI journalni o'qiyapti...
+    <aside className="fixed bottom-[5.4rem] right-3 z-[45] sm:right-4 lg:bottom-5 lg:right-5">
+      <div className="relative">
+        <div
+          className={cn(
+            "absolute bottom-[calc(100%+12px)] right-0 w-[min(92vw,380px)] origin-bottom-right transition-all duration-200",
+            open
+              ? "pointer-events-auto translate-y-0 scale-100 opacity-100"
+              : "pointer-events-none translate-y-3 scale-95 opacity-0"
+          )}
+        >
+          <div className="overflow-hidden rounded-[1.6rem] border border-white/10 bg-[rgba(8,8,8,.82)] shadow-[0_22px_70px_rgba(0,0,0,.58),inset_0_1px_0_rgba(255,255,255,.045)] backdrop-blur-2xl">
+            <div className="flex items-center gap-3 border-b border-white/8 px-4 py-3">
+              <span className="grid size-10 shrink-0 place-items-center rounded-2xl border border-white/10 bg-white/[.06] text-[#d9f96d]">
+                <BrainCircuit size={19} />
+              </span>
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-2">
+                  <h3 className="truncate text-sm font-black">TradeWay AI</h3>
+                  {warningCount ? (
+                    <span className="rounded-full bg-rose-400/12 px-2 py-0.5 text-[10px] font-black text-rose-200">
+                      {warningCount} warning
+                    </span>
+                  ) : null}
+                </div>
+                <p className="truncate text-[11px] text-zinc-500">Journal reminders · risk alerts · next action</p>
               </div>
-            ) : null}
+              <button onClick={() => setOpen(false)} className="grid size-8 place-items-center rounded-xl text-zinc-500 hover:bg-white/[.06] hover:text-white" aria-label="Close AI nudges">
+                <X size={15} />
+              </button>
+            </div>
 
-            {nudges.map((nudge) => {
-              const Icon = typeIcon[nudge.type];
-              return (
-                <div key={nudge.id} className={cn("rounded-2xl border p-3", typeClass[nudge.type])}>
-                  <div className="flex gap-2.5">
-                    <Icon className="mt-0.5 shrink-0" size={16} />
-                    <div>
-                      <p className="text-xs font-black">{nudge.title}</p>
-                      <p className="mt-1 text-[11px] leading-5 text-white/68">{nudge.text}</p>
+            <div className="space-y-2 p-3 sm:p-4">
+              {loading && !entries.length ? (
+                <div className="flex items-center gap-2 rounded-2xl border border-white/10 bg-white/[.035] px-3 py-3 text-xs text-zinc-400">
+                  <LoaderCircle className="animate-spin" size={14} /> AI journalni o&apos;qiyapti...
+                </div>
+              ) : null}
+
+              {nudges.map((nudge) => {
+                const Icon = typeIcon[nudge.type];
+                return (
+                  <div key={nudge.id} className={cn("rounded-2xl border p-3", typeClass[nudge.type])}>
+                    <div className="flex gap-2.5">
+                      <Icon className="mt-0.5 shrink-0" size={16} />
+                      <div>
+                        <p className="text-xs font-black">{nudge.title}</p>
+                        <p className="mt-1 text-[11px] leading-5 text-white/68">{nudge.text}</p>
+                      </div>
                     </div>
                   </div>
-                </div>
-              );
-            })}
+                );
+              })}
 
-            <div className="flex items-center justify-between gap-2 pt-1">
-              <span className="inline-flex items-center gap-1.5 text-[10px] font-semibold text-zinc-500"><Sparkles size={12} /> Auto refresh 45s</span>
-              <Button type="button" variant="outline" size="sm" onClick={() => void load()} disabled={loading} className="h-8 rounded-xl text-[11px]">
-                {loading ? <LoaderCircle className="animate-spin" size={13} /> : <RefreshCw size={13} />} Refresh
-              </Button>
+              <div className="flex items-center justify-between gap-2 pt-1">
+                <span className="inline-flex items-center gap-1.5 text-[10px] font-semibold text-zinc-500"><Sparkles size={12} /> Auto refresh 45s</span>
+                <Button type="button" variant="outline" size="sm" onClick={() => void load()} disabled={loading} className="h-8 rounded-xl text-[11px]">
+                  {loading ? <LoaderCircle className="animate-spin" size={13} /> : <RefreshCw size={13} />} Refresh
+                </Button>
+              </div>
             </div>
           </div>
-        ) : null}
+        </div>
+
+        <button
+          onClick={() => setOpen((value) => !value)}
+          className="group relative grid size-14 place-items-center rounded-full border border-white/12 bg-[rgba(10,10,10,.84)] text-[#d9f96d] shadow-[0_18px_50px_rgba(0,0,0,.45),inset_0_1px_0_rgba(255,255,255,.06)] backdrop-blur-2xl transition hover:scale-[1.03] hover:bg-white/[.06] active:scale-95 sm:size-16"
+          aria-label="Open TradeWay AI"
+        >
+          <BrainCircuit size={26} />
+          {warningCount ? (
+            <span className="absolute -right-1 -top-1 grid min-w-[22px] place-items-center rounded-full border border-rose-300/20 bg-rose-400 px-1.5 py-0.5 text-[10px] font-black leading-none text-black">
+              {warningCount}
+            </span>
+          ) : null}
+          <span className="pointer-events-none absolute inset-0 rounded-full ring-1 ring-white/10" />
+        </button>
       </div>
     </aside>
   );
