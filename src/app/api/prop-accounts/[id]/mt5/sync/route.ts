@@ -7,6 +7,9 @@ import { getSupabaseAdminClient } from "@/lib/supabase/admin";
 
 export const runtime = "nodejs";
 
+const vpsSyncBaseUrl = (process.env.MT5_VPS_SYNC_URL || process.env.MT5_VPS_URL || "").replace(/\/$/, "");
+const connectorSecret = process.env.MT5_CONNECTOR_SECRET || "";
+
 interface TradingAccountSyncRow {
   id: string;
   user_id: string;
@@ -14,6 +17,75 @@ interface TradingAccountSyncRow {
   account_login: string | null;
   encrypted_password: string | null;
   last_synced_at: string | null;
+}
+
+type VpsSyncPayload = {
+  success?: boolean;
+  imported?: number;
+  skipped?: number | boolean;
+  total?: number;
+  journalImported?: number;
+  message?: string;
+  error?: string;
+  results?: Array<{
+    login?: string;
+    account_id?: string;
+    result?: Record<string, unknown>;
+  }>;
+};
+
+function toNumber(value: unknown) {
+  const number = typeof value === "number" ? value : Number(value);
+  return Number.isFinite(number) ? number : 0;
+}
+
+function summarizeVpsSync(payload: VpsSyncPayload) {
+  const accountResults = payload.results || [];
+  const nestedResults = accountResults.map((item) => item.result || {});
+  const importedFromResults = nestedResults.reduce((sum, item) => sum + toNumber(item.imported), 0);
+  const journalFromResults = nestedResults.reduce((sum, item) => sum + toNumber(item.journalImported), 0);
+  const totalFromResults = nestedResults.reduce((sum, item) => sum + toNumber(item.total), 0);
+  const skippedFromResults = nestedResults.reduce((sum, item) => {
+    const skipped = item.skipped;
+    return sum + (typeof skipped === "boolean" ? 0 : toNumber(skipped));
+  }, 0);
+
+  const messages = [payload.message, ...nestedResults.map((item) => String(item.message || "").trim())]
+    .filter(Boolean);
+
+  return {
+    success: payload.success !== false,
+    immediate: true,
+    imported: toNumber(payload.imported) || importedFromResults,
+    journalImported: toNumber(payload.journalImported) || journalFromResults,
+    skipped: typeof payload.skipped === "boolean" ? skippedFromResults : (toNumber(payload.skipped) || skippedFromResults),
+    total: toNumber(payload.total) || totalFromResults,
+    message: messages[0] || "MT5 VPS sync completed.",
+    results: payload.results || [],
+  };
+}
+
+async function triggerVpsSyncNow(accountId: string) {
+  if (!vpsSyncBaseUrl) return null;
+
+  const response = await fetch(`${vpsSyncBaseUrl}/sync-now`, {
+    method: "POST",
+    headers: {
+      Accept: "application/json",
+      "Content-Type": "application/json",
+      ...(connectorSecret ? { Authorization: `Bearer ${connectorSecret}` } : {}),
+    },
+    body: JSON.stringify({ account_id: accountId }),
+    cache: "no-store",
+    signal: AbortSignal.timeout(120000),
+  });
+
+  const text = await response.text();
+  const payload = text ? JSON.parse(text) as VpsSyncPayload : {};
+  if (!response.ok) {
+    throw new Error(payload.error || payload.message || `MT5 VPS sync failed (${response.status}).`);
+  }
+  return summarizeVpsSync(payload);
 }
 
 export async function POST(request: Request, context: { params: Promise<{ id: string }> }) {
@@ -66,8 +138,14 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
       const result = await syncNowMt5Api({ userId: auth.user.id, accountId: account.id, propAccountId: id });
       return Response.json({
         ...result,
+        immediate: true,
         message: result.message || "MT5 VPS sync triggered.",
       });
+    }
+
+    const directResult = await triggerVpsSyncNow(account.id);
+    if (directResult) {
+      return Response.json(directResult);
     }
 
     const job = await enqueueMt5SyncJob({
@@ -98,8 +176,11 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
 
     return Response.json({
       queued: true,
+      imported: 0,
+      skipped: 0,
+      total: 0,
       jobId: job.id,
-      message: "MT5 sync queued. The local bridge worker will import trades into the journal.",
+      message: "MT5 sync navbatga qo'yildi. Tezkor import uchun Vercel env'ga MT5_VPS_SYNC_URL qo'shing.",
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : "MT5 sync failed.";
