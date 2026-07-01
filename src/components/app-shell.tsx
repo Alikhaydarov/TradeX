@@ -2,7 +2,7 @@
 
 import { ArrowRight, LockKeyhole, ShieldCheck, Sparkles } from "lucide-react";
 import dynamic from "next/dynamic";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { AuthModal } from "./auth-modal";
 import { NotificationListener } from "./notification-listener";
 import { RightPanel } from "./right-panel";
@@ -17,55 +17,38 @@ const Account = dynamic(() => import("./account").then((mod) => mod.Account), { 
 const AdminPanel = dynamic(() => import("./admin-panel").then((mod) => mod.AdminPanel), { ssr: false, loading: () => null });
 const Pricing = dynamic(() => import("./pricing").then((mod) => mod.Pricing), { ssr: false, loading: () => null });
 
-const reservedPaths = new Set(["", "app", "chat", "journal", "backtest", "profile", "account", "pricing", "admin"]);
+const reservedPaths = new Set(["", "chat", "journal", "backtest", "profile", "account", "pricing", "admin"]);
 
-function withBase(basePath: string, path: string) {
-  const cleanBase = basePath === "/" ? "" : basePath.replace(/\/$/, "");
-  if (!cleanBase) return path;
-  if (path === "/") return cleanBase || "/";
-  return `${cleanBase}${path}`;
-}
-
-function stripBase(pathname: string, basePath: string) {
-  const cleanBase = basePath === "/" ? "" : basePath.replace(/\/$/, "");
-  if (!cleanBase) return pathname;
-  if (pathname === cleanBase) return "/";
-  if (pathname.startsWith(`${cleanBase}/`)) return pathname.slice(cleanBase.length) || "/";
-  return pathname;
-}
-
-function usernameFromPath(pathname: string, basePath = "") {
-  const appPath = stripBase(pathname, basePath);
-  const first = appPath.replace(/^\//, "").split("/")[0] ?? "";
+function usernameFromPath(pathname: string) {
+  const first = pathname.replace(/^\//, "").split("/")[0] ?? "";
   if (reservedPaths.has(first)) return "";
   return first.toLowerCase();
 }
 
-function sectionFromPath(pathname: string, basePath = ""): Section {
-  const appPath = stripBase(pathname, basePath);
-  if (appPath.startsWith("/journal")) return "journal";
-  if (appPath.startsWith("/pricing")) return "pricing";
-  if (appPath.startsWith("/profile") || appPath.startsWith("/account") || usernameFromPath(pathname, basePath)) return "account";
-  if (appPath.startsWith("/admin")) return "admin";
+function sectionFromPath(pathname: string): Section {
+  if (pathname.startsWith("/journal")) return "journal";
+  if (pathname.startsWith("/pricing")) return "pricing";
+  if (pathname.startsWith("/profile") || pathname.startsWith("/account") || usernameFromPath(pathname)) return "account";
+  if (pathname.startsWith("/admin")) return "admin";
   return "feed";
 }
 
-function pathFromSection(section: Section, basePath = "") {
-  if (section === "journal") return withBase(basePath, "/journal");
-  if (section === "account") return withBase(basePath, "/profile");
-  if (section === "pricing") return withBase(basePath, "/pricing");
-  if (section === "admin") return withBase(basePath, "/admin");
-  return withBase(basePath, "/");
+function pathFromSection(section: Section) {
+  if (section === "journal") return "/journal";
+  if (section === "account") return "/profile";
+  if (section === "pricing") return "/pricing";
+  if (section === "admin") return "/admin";
+  return "/";
 }
 
-function getCurrentSection(basePath = "") {
+function getCurrentSection() {
   if (typeof window === "undefined") return "feed" as Section;
-  return sectionFromPath(window.location.pathname, basePath);
+  return sectionFromPath(window.location.pathname);
 }
 
-function getCurrentProfileUsername(basePath = "") {
+function getCurrentProfileUsername() {
   if (typeof window === "undefined") return "";
-  return usernameFromPath(window.location.pathname, basePath);
+  return usernameFromPath(window.location.pathname);
 }
 
 function AuthGate({ onLogin }: { onLogin: () => void }) {
@@ -117,10 +100,9 @@ function AuthGate({ onLogin }: { onLogin: () => void }) {
   );
 }
 
-export function AppShell({ basePath = "" }: { basePath?: string }) {
-  const appBase = useMemo(() => basePath.replace(/\/$/, ""), [basePath]);
-  const [section, setSection] = useState<Section>(() => getCurrentSection(appBase));
-  const [profileUsername, setProfileUsername] = useState(() => getCurrentProfileUsername(appBase));
+export function AppShell() {
+  const [section, setSection] = useState<Section>(getCurrentSection);
+  const [profileUsername, setProfileUsername] = useState(getCurrentProfileUsername);
   const [authOpen, setAuthOpen] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [notificationsMounted, setNotificationsMounted] = useState(false);
@@ -131,9 +113,9 @@ export function AppShell({ basePath = "" }: { basePath?: string }) {
 
   useEffect(() => {
     const syncFromPath = () => {
-      const nextSection = getCurrentSection(appBase);
+      const nextSection = getCurrentSection();
       setSection(nextSection);
-      setProfileUsername(getCurrentProfileUsername(appBase));
+      setProfileUsername(getCurrentProfileUsername());
     };
     const handleOpenProfile = () => {
       setProfileOpening(true);
@@ -150,7 +132,7 @@ export function AppShell({ basePath = "" }: { basePath?: string }) {
       window.removeEventListener("tradeup:open-profile", handleOpenProfile);
       window.removeEventListener("tradeup:profile-ready", handleProfileReady);
     };
-  }, [appBase]);
+  }, []);
 
   useEffect(() => {
     if (!profileOpening) return;
@@ -187,19 +169,19 @@ export function AppShell({ basePath = "" }: { basePath?: string }) {
   useEffect(() => {
     if (section === "admin" && user && !isAdmin) {
       const timer = window.setTimeout(() => {
-        window.history.replaceState(null, "", pathFromSection("feed", appBase));
+        window.history.replaceState(null, "", "/");
         setSection("feed");
       }, 0);
       return () => window.clearTimeout(timer);
     }
-  }, [section, user, isAdmin, appBase]);
+  }, [section, user, isAdmin]);
 
   const changeSection = (nextSection: Section) => {
     if (nextSection === "admin" && !isAdmin) return;
     if (nextSection === section && nextSection !== "account") return;
     setProfileUsername("");
     setSection(nextSection);
-    window.history.pushState(null, "", pathFromSection(nextSection, appBase));
+    window.history.pushState(null, "", pathFromSection(nextSection));
   };
 
   const renderSection = (item: Section) => {
