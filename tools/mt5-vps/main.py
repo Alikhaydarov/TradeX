@@ -4,6 +4,7 @@ import json
 import os
 import ssl
 import subprocess
+import time
 import urllib.error
 import urllib.request
 from datetime import datetime, timedelta, timezone
@@ -36,8 +37,9 @@ TRADEWAY_ACCOUNTS_URL = os.getenv(
     "https://tradewayio.vercel.app/api/connectors/mt5/pending-accounts",
 )
 MT5_CONNECTOR_SECRET = os.getenv("MT5_CONNECTOR_SECRET", "")
-DEFAULT_LOOKBACK_DAYS = int(os.getenv("MT5_LOOKBACK_DAYS", "90"))
+DEFAULT_LOOKBACK_DAYS = int(os.getenv("MT5_LOOKBACK_DAYS", "1825"))
 MT5_TERMINAL_PATH = os.getenv("MT5_TERMINAL_PATH", r"C:\Program Files\MetaTrader 5\terminal64.exe")
+MT5_FORCE_RESTART_TERMINAL = os.getenv("MT5_FORCE_RESTART_TERMINAL", "false").lower() == "true"
 
 app = FastAPI(title="TradeWay MT5 Auto Sync", version="1.0.0")
 scheduler = BackgroundScheduler(timezone="UTC")
@@ -82,7 +84,12 @@ def utc_now() -> datetime:
 def read_accounts() -> list[dict[str, Any]]:
     if not ACCOUNTS_FILE.exists():
         return []
-    return json.loads(ACCOUNTS_FILE.read_text(encoding="utf-8"))
+    data = json.loads(ACCOUNTS_FILE.read_text(encoding="utf-8-sig"))
+    if isinstance(data, dict):
+        return [data]
+    if isinstance(data, list):
+        return [item for item in data if isinstance(item, dict)]
+    return []
 
 
 def write_accounts(accounts: list[dict[str, Any]]) -> None:
@@ -170,12 +177,13 @@ def mt5_login(account: dict[str, Any]) -> None:
         terminal.shutdown()
     except Exception:
         pass
-    subprocess.run(
-        ["taskkill", "/IM", "terminal64.exe", "/F"],
-        stdout=subprocess.DEVNULL,
-        stderr=subprocess.DEVNULL,
-        check=False,
-    )
+    if MT5_FORCE_RESTART_TERMINAL:
+        subprocess.run(
+            ["taskkill", "/IM", "terminal64.exe", "/F"],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+            check=False,
+        )
     terminal_path = MT5_TERMINAL_PATH if Path(MT5_TERMINAL_PATH).exists() else None
     initialize_kwargs = {
         "login": int(account["login"]),
@@ -201,6 +209,24 @@ def mt5_login(account: dict[str, Any]) -> None:
         if not ok:
             code, message = terminal.last_error()
             raise RuntimeError(f"MT5 login failed: {code} {message}")
+
+
+def history_deals_with_retry(terminal: Any, from_dt: datetime, to_dt: datetime) -> list[Any]:
+    last_error: tuple[int, str] | None = None
+    for attempt in range(1, 9):
+        deals = terminal.history_deals_get(from_dt, to_dt)
+        if deals is None:
+            last_error = terminal.last_error()
+        else:
+            deal_list = list(deals)
+            if deal_list or attempt >= 4:
+                return deal_list
+            last_error = terminal.last_error()
+        time.sleep(min(attempt, 5))
+    if last_error:
+        code, message = last_error
+        raise RuntimeError(f"MT5 history_deals_get failed: {code} {message}")
+    return []
 
 
 def iso_from_mt5_time(value: int | float | None) -> str | None:
@@ -300,12 +326,7 @@ def sync_account(account: dict[str, Any]) -> dict[str, Any]:
     terminal = require_mt5()
     to_dt = utc_now()
     from_dt = to_dt - timedelta(days=DEFAULT_LOOKBACK_DAYS)
-    deals = terminal.history_deals_get(from_dt, to_dt)
-    if deals is None:
-        code, message = terminal.last_error()
-        raise RuntimeError(f"MT5 history_deals_get failed: {code} {message}")
-
-    deal_list = list(deals)
+    deal_list = history_deals_with_retry(terminal, from_dt, to_dt)
     last_ticket = max((int(getattr(deal, "ticket", 0) or 0) for deal in deal_list), default=0)
     if last_ticket and account.get("last_ticket") == last_ticket:
         update_account(
