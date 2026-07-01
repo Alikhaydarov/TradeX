@@ -36,6 +36,7 @@ TRADEWAY_ACCOUNTS_URL = os.getenv(
 )
 MT5_CONNECTOR_SECRET = os.getenv("MT5_CONNECTOR_SECRET", "")
 DEFAULT_LOOKBACK_DAYS = int(os.getenv("MT5_LOOKBACK_DAYS", "90"))
+MT5_TERMINAL_PATH = os.getenv("MT5_TERMINAL_PATH", r"C:\Program Files\MetaTrader 5\terminal64.exe")
 
 app = FastAPI(title="TradeWay MT5 Auto Sync", version="1.0.0")
 scheduler = BackgroundScheduler(timezone="UTC")
@@ -164,7 +165,9 @@ def require_mt5() -> Any:
 
 def mt5_login(account: dict[str, Any]) -> None:
     terminal = require_mt5()
-    if not terminal.initialize():
+    terminal_path = MT5_TERMINAL_PATH if Path(MT5_TERMINAL_PATH).exists() else None
+    initialized = terminal.initialize(path=terminal_path) if terminal_path else terminal.initialize()
+    if not initialized:
         code, message = terminal.last_error()
         raise RuntimeError(f"MT5 initialize failed: {code} {message}")
     ok = terminal.login(
