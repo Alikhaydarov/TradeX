@@ -8,7 +8,7 @@ function values(body: Record<string, unknown>) {
   const name = String(body.name || "").trim().slice(0, 80);
   const accountType = String(body.accountType || "prop").trim() === "real" ? "real" : "prop";
   const importSourceRaw = String(body.importSource || "manual").trim();
-  const importSource = ["manual", "mt5_bridge", "ctrader", "tradovate", "ninjatrader", "official_api"].includes(importSourceRaw) ? importSourceRaw : "manual";
+  const importSource = ["manual", "mt5_bridge", "ctrader", "tradovate", "ninjatrader", "projectx", "official_api"].includes(importSourceRaw) ? importSourceRaw : "manual";
   const accountSize = Number(body.accountSize);
   const initialBalance = Number(body.initialBalance || accountSize);
   const profitTarget = Number(body.profitTarget || 0);
