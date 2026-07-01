@@ -4,6 +4,7 @@ import { Bookmark, Check, Eye, Heart, Link2, MessageCircle, MoreHorizontal, Penc
 import { useEffect, useMemo, useRef, useState } from "react";
 import { apiRequest } from "@/lib/api-client";
 import { useLanguage } from "@/lib/i18n";
+import { formatCount, formatRelativeTime, parseTradeImages, toSocialPost, type SocialPostRecord } from "@/lib/social-format";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -12,32 +13,12 @@ import { SkeletonBlock, XSpinner } from "./app-loader";
 import { SocialActions } from "./social-actions-v2";
 import { TradeShareComposer } from "./trade-share-composer";
 import { useAuth } from "./auth-context";
+import { MediaImage } from "./media-image";
 import { TraderAvatar } from "./trader-avatar";
 import { VerifiedBadge } from "./verified-badge";
 import type { JournalEntry, Post, PostReply } from "./types";
 
-interface PostRecord {
-  id: string;
-  user_id: string;
-  content: string;
-  author_name: string;
-  author_handle: string;
-  author_avatar: string | null;
-  author_is_verified?: boolean | null;
-  image_url?: string | null;
-  symbol: string | null;
-  side: "LONG" | "SHORT" | null;
-  trade_result: "WIN" | "LOSS" | "BE" | null;
-  pnl: number | null;
-  result_r: number | null;
-  entry_price: string | null;
-  target_price: string | null;
-  likes_count: number;
-  replies_count: number;
-  reposts_count: number;
-  views_count?: number | null;
-  created_at: string;
-}
+type PostRecord = SocialPostRecord;
 
 interface FeedTradeRow {
   id: string;
@@ -93,35 +74,6 @@ function FeedSkeleton() {
   );
 }
 
-function formatCount(value: number) {
-  if (value >= 1_000_000) return `${(value / 1_000_000).toFixed(1)}M`;
-  if (value >= 1000) return `${(value / 1000).toFixed(value >= 10_000 ? 0 : 1)}K`;
-  return String(value);
-}
-
-function formatFeedTime(value: string | Date | number) {
-  const date = typeof value === "string" || typeof value === "number" ? new Date(value) : value;
-  const minutes = Math.max(0, Math.round((Date.now() - date.getTime()) / 60000));
-  if (minutes < 1) return "now";
-  if (minutes < 60) return `${minutes}m`;
-  const hours = Math.round(minutes / 60);
-  if (hours < 24) return `${hours}h`;
-  const days = Math.round(hours / 24);
-  if (days < 7) return `${days}d`;
-  const weeks = Math.round(days / 7);
-  return `${weeks}w`;
-}
-
-function parseTradeImages(value?: string | null) {
-  if (!value) return [];
-  try {
-    const parsed = JSON.parse(value);
-    return Array.isArray(parsed) ? parsed.filter((item): item is string => typeof item === "string").slice(0, 3) : [value];
-  } catch {
-    return [value];
-  }
-}
-
 function tradeFromRow(row: FeedTradeRow): JournalEntry {
   const imageUrls = parseTradeImages(row.image_url);
   return {
@@ -156,44 +108,8 @@ function tradeFromRow(row: FeedTradeRow): JournalEntry {
   };
 }
 
-function toPost(record: PostRecord, liked = false, bookmarked = false, reposted = false): Post {
-  const chartImages = record.entry_price?.startsWith("journal:")
-    ? (() => { try { const parsed = JSON.parse(record.target_price || "[]"); return Array.isArray(parsed) ? parsed.filter((item): item is string => typeof item === "string") : record.target_price ? [record.target_price] : []; } catch { return record.target_price ? [record.target_price] : []; } })()
-    : [];
-  const shareImage = record.entry_price?.startsWith("journal:") ? record.image_url : null;
-  return {
-    id: record.id,
-    userId: record.user_id,
-    name: record.author_name,
-    handle: record.author_handle.startsWith("@") ? record.author_handle : `@${record.author_handle}`,
-    avatar: record.author_avatar || record.author_name.slice(0, 2).toUpperCase(),
-    time: formatFeedTime(record.created_at),
-    text: record.content,
-    imageUrl: record.image_url ?? null,
-    chartImageUrl: chartImages[0] ?? null,
-    shareImageUrl: shareImage,
-    imageUrls: [...chartImages, ...(shareImage ? [shareImage] : [])],
-    journalEntryId: record.entry_price?.startsWith("journal:") ? record.entry_price.slice(8) : null,
-    symbol: record.symbol ?? undefined,
-    side: record.side ?? undefined,
-    result: record.trade_result ?? undefined,
-    pnl: record.pnl ?? undefined,
-    resultR: record.result_r ?? undefined,
-    price: record.entry_price?.startsWith("journal:") ? undefined : record.entry_price ?? undefined,
-    target: record.entry_price?.startsWith("journal:") ? undefined : record.target_price ?? undefined,
-    likes: record.likes_count,
-    replies: record.replies_count,
-    reposts: record.reposts_count,
-    views: record.views_count ?? 0,
-    liked,
-    bookmarked,
-    reposted,
-    isVerified: Boolean(record.author_is_verified),
-  };
-}
-
 function replyTime(value: string) {
-  return formatFeedTime(value);
+  return formatRelativeTime(value);
 }
 
 function openProfile(username: string) {
@@ -239,7 +155,7 @@ export function FeedV3({ onLogin }: { onLogin: () => void }) {
         const liked = new Set(data.likedPostIds);
         const bookmarked = new Set(data.bookmarkedPostIds);
         const reposted = new Set(data.repostedPostIds);
-        setPosts(data.posts.map((post) => toPost(post, liked.has(post.id), bookmarked.has(post.id), reposted.has(post.id))));
+        setPosts(data.posts.map((post) => toSocialPost(post, { liked: liked.has(post.id), bookmarked: bookmarked.has(post.id), reposted: reposted.has(post.id) })));
       })
       .catch((nextError: Error) => setError(nextError.message))
       .finally(() => setLoading(false));
@@ -595,13 +511,13 @@ export function FeedV3({ onLogin }: { onLogin: () => void }) {
                       <div className={`mt-3 overflow-hidden rounded-xl border border-white/10 ${post.imageUrls.length === 1 ? "" : post.imageUrls.length === 2 || post.imageUrls.length === 4 ? "grid grid-cols-2 gap-px bg-white/10" : "grid grid-cols-3 gap-px bg-white/10"}`}>
                         {post.imageUrls.slice(0, 4).map((url, index) => (
                           <button key={url} type="button" onClick={() => setLightboxUrl(url)} className="group relative aspect-square w-full overflow-hidden bg-black/90">
-                            <img src={url} alt={index === post.imageUrls!.length - 1 ? `${post.symbol} TradeWay share card` : `${post.symbol} trade screenshot ${index + 1}`} className="h-full w-full object-cover transition-transform duration-200 group-hover:scale-[1.03]" loading="lazy" />
+                            <MediaImage src={url} alt={index === post.imageUrls!.length - 1 ? `${post.symbol} TradeWay share card` : `${post.symbol} trade screenshot ${index + 1}`} className="h-full w-full object-cover transition-transform duration-200 group-hover:scale-[1.03]" />
                           </button>
                         ))}
                       </div>
                     ) : post.imageUrl ? (
                       <button type="button" onClick={() => setLightboxUrl(post.imageUrl!)} className="group relative mt-3 block w-full aspect-square overflow-hidden rounded-xl border border-white/10 bg-black/90">
-                        <img src={post.imageUrl} alt="Trade media" className="h-full w-full object-cover transition-transform duration-200 group-hover:scale-[1.03]" loading="lazy" />
+                        <MediaImage src={post.imageUrl} alt="Trade media" className="h-full w-full object-cover transition-transform duration-200 group-hover:scale-[1.03]" />
                       </button>
                     ) : null}
 
@@ -673,7 +589,7 @@ export function FeedV3({ onLogin }: { onLogin: () => void }) {
           >
             <X size={18} />
           </button>
-          <img
+          <MediaImage
             src={lightboxUrl}
             alt="Full size"
             className="max-h-[92dvh] max-w-full rounded-xl object-contain shadow-2xl"

@@ -23,6 +23,7 @@ import {
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { apiRequest } from "@/lib/api-client";
+import { formatCount, toSocialPost, type SocialPostRecord } from "@/lib/social-format";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -38,6 +39,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { XSpinner } from "./app-loader";
 import { useAuth } from "./auth-context";
+import { MediaImage } from "./media-image";
 import { TraderAvatar } from "./trader-avatar";
 import { VerifiedBadge } from "./verified-badge";
 import type { Post, Profile } from "./types";
@@ -74,28 +76,7 @@ interface ConnectionUser {
   isSelf?: boolean;
 }
 
-interface PostRecord {
-  id: string;
-  user_id: string;
-  content: string;
-  author_name: string;
-  author_handle: string;
-  author_avatar: string | null;
-  author_is_verified?: boolean | null;
-  image_url?: string | null;
-  symbol: string | null;
-  side: "LONG" | "SHORT" | null;
-  entry_price: string | null;
-  target_price: string | null;
-  trade_result?: "WIN" | "LOSS" | "BE" | null;
-  pnl?: number | null;
-  result_r?: number | null;
-  likes_count: number;
-  replies_count: number;
-  reposts_count: number;
-  views_count?: number | null;
-  created_at: string;
-}
+type PostRecord = SocialPostRecord;
 
 interface Achievement {
   id: string;
@@ -142,60 +123,6 @@ function toProfile(data: ProfileRecord): Profile & { isFollowing?: boolean } {
     isVerified: Boolean(data.is_verified),
     isFollowing: Boolean(data.isFollowing),
   };
-}
-
-function formatAccountTime(createdAt: Date) {
-  const minutes = Math.max(0, Math.round((Date.now() - createdAt.getTime()) / 60000));
-  if (minutes < 1) return "now";
-  if (minutes < 60) return `${minutes}m`;
-  const hours = Math.round(minutes / 60);
-  if (hours < 24) return `${hours}h`;
-  const days = Math.round(hours / 24);
-  if (days < 7) return `${days}d`;
-  const weeks = Math.round(days / 7);
-  if (weeks < 4) return `${weeks}w`;
-  return createdAt.toLocaleDateString("en-US", { day: "numeric", month: "short" });
-}
-
-function toPost(record: PostRecord): Post {
-  const createdAt = new Date(record.created_at);
-  const chartImages = record.entry_price?.startsWith("journal:")
-    ? (() => { try { const parsed = JSON.parse(record.target_price || "[]"); return Array.isArray(parsed) ? parsed.filter((item): item is string => typeof item === "string") : record.target_price ? [record.target_price] : []; } catch { return record.target_price ? [record.target_price] : []; } })()
-    : [];
-  const shareImage = record.entry_price?.startsWith("journal:") ? record.image_url : null;
-
-  return {
-    id: record.id,
-    userId: record.user_id,
-    name: record.author_name,
-    handle: record.author_handle.startsWith("@") ? record.author_handle : `@${record.author_handle}`,
-    avatar: record.author_avatar || record.author_name.slice(0, 2).toUpperCase(),
-    time: formatAccountTime(createdAt),
-    text: record.content,
-    imageUrl: record.image_url ?? null,
-    chartImageUrl: chartImages[0] ?? null,
-    shareImageUrl: shareImage,
-    imageUrls: [...chartImages, ...(shareImage ? [shareImage] : [])],
-    journalEntryId: record.entry_price?.startsWith("journal:") ? record.entry_price.slice(8) : null,
-    symbol: record.symbol ?? undefined,
-    side: record.side ?? undefined,
-    result: record.trade_result ?? undefined,
-    pnl: record.pnl ?? undefined,
-    resultR: record.result_r ?? undefined,
-    price: record.entry_price?.startsWith("journal:") ? undefined : record.entry_price ?? undefined,
-    target: record.entry_price?.startsWith("journal:") ? undefined : record.target_price ?? undefined,
-    likes: record.likes_count,
-    replies: record.replies_count,
-    reposts: record.reposts_count,
-    views: record.views_count ?? 0,
-    isVerified: Boolean(record.author_is_verified),
-  };
-}
-
-function formatCount(value: number) {
-  if (value >= 1_000_000) return `${(value / 1_000_000).toFixed(1)}M`;
-  if (value >= 1000) return `${(value / 1000).toFixed(value >= 10_000 ? 0 : 1)}K`;
-  return String(value);
 }
 
 function formatMoneyCompact(value: number) {
@@ -277,7 +204,7 @@ export function Account({ onLogin, profileUsername }: { onLogin: () => void; pro
       .then((data) => {
         if (!active) return;
         setProfile(toProfile(data.profile));
-        setPosts(data.posts.map(toPost));
+        setPosts(data.posts.map((post) => toSocialPost(post)));
         setAchievements(data.achievements ?? []);
         setStats(data.stats ?? { trades: 0, winRate: 0, netPnl: 0, averageR: 0 });
       })
@@ -508,7 +435,7 @@ export function Account({ onLogin, profileUsername }: { onLogin: () => void; pro
           </div>
           {post.symbol ? <div className="mt-3 flex flex-wrap items-center gap-2 rounded-lg border border-white/8 bg-black/15 px-3 py-2.5"><strong className="mr-auto text-sm">{post.symbol}</strong><span className="text-[10px] font-black text-zinc-300">{post.side}</span><span className={post.result === "WIN" ? "text-[10px] font-black text-emerald-300" : post.result === "LOSS" ? "text-[10px] font-black text-rose-300" : "text-[10px] font-black text-zinc-300"}>{post.result}</span>{typeof post.pnl === "number" ? <strong className={post.pnl >= 0 ? "text-sm text-emerald-300" : "text-sm text-rose-300"}>{post.pnl >= 0 ? "+" : ""}${post.pnl.toFixed(2)}</strong> : null}</div> : null}
           {post.text ? <p className="mt-2 whitespace-pre-line break-words text-[15px] leading-6 text-slate-50">{post.text}</p> : null}
-          {post.imageUrls?.length ? <div className={`mt-3 grid gap-px overflow-hidden rounded-xl border border-white/10 bg-white/10 ${post.imageUrls.length === 1 ? "grid-cols-1" : post.imageUrls.length === 3 ? "grid-cols-3" : "grid-cols-2"}`}>{post.imageUrls.slice(0, 4).map((url, index) => <a key={url} href={url} target="_blank" rel="noreferrer" className="grid min-h-40 place-items-center overflow-hidden bg-black/90"><img src={url} alt={`Trade media ${index + 1}`} className="h-full max-h-[520px] w-full object-cover" loading="lazy" /></a>)}</div> : post.imageUrl ? <a href={post.imageUrl} target="_blank" rel="noreferrer" className="mt-3 grid min-h-40 place-items-center overflow-hidden rounded-xl border border-white/10 bg-black/90"><img src={post.imageUrl} alt="Post media" className="max-h-[520px] max-w-full object-contain" loading="lazy" /></a> : null}
+          {post.imageUrls?.length ? <div className={`mt-3 grid gap-px overflow-hidden rounded-xl border border-white/10 bg-white/10 ${post.imageUrls.length === 1 ? "grid-cols-1" : post.imageUrls.length === 3 ? "grid-cols-3" : "grid-cols-2"}`}>{post.imageUrls.slice(0, 4).map((url, index) => <a key={url} href={url} target="_blank" rel="noreferrer" className="grid min-h-40 place-items-center overflow-hidden bg-black/90"><MediaImage src={url} alt={`Trade media ${index + 1}`} className="h-full max-h-[520px] w-full object-cover" /></a>)}</div> : post.imageUrl ? <a href={post.imageUrl} target="_blank" rel="noreferrer" className="mt-3 grid min-h-40 place-items-center overflow-hidden rounded-xl border border-white/10 bg-black/90"><MediaImage src={post.imageUrl} alt="Post media" className="max-h-[520px] max-w-full object-contain" /></a> : null}
           <div className="mt-3 grid max-w-md grid-cols-4 text-slate-500">
             <span className="flex h-8 items-center gap-1.5 rounded-full text-[12px] transition hover:text-zinc-300"><MessageCircle size={16} />{post.replies}</span>
             <span className="flex h-8 items-center gap-1.5 rounded-full text-[12px] transition hover:text-rose-200"><Heart size={16} />{post.likes}</span>
@@ -656,7 +583,7 @@ export function Account({ onLogin, profileUsername }: { onLogin: () => void; pro
               {achievements.map((item) => (
                 <article key={item.id} className="group relative w-36 shrink-0 overflow-hidden rounded-lg border border-border bg-[#111111] sm:w-40">
                   <button type="button" onClick={() => setViewingAchievement(item)} className="block w-full text-left">
-                  <img src={item.image_url} alt={item.title} className="aspect-[16/10] w-full object-cover" loading="lazy" />
+                  <MediaImage src={item.image_url} alt={item.title} className="aspect-[16/10] w-full object-cover" />
                   <div className="p-2.5">
                     <span className={`text-[9px] font-black uppercase ${item.achievement_type === "payout" ? "text-emerald-300" : "text-amber-200"}`}>{item.achievement_type}</span>
                     <h4 className="mt-1 truncate text-xs font-bold">{item.title}</h4>
@@ -691,7 +618,7 @@ export function Account({ onLogin, profileUsername }: { onLogin: () => void; pro
             <label className="grid gap-2 text-xs text-muted-foreground">Title<Input value={achievementTitle} onChange={(event) => setAchievementTitle(event.target.value)} placeholder="100K Funded Account" /></label>
             <label className="grid gap-2 text-xs text-muted-foreground">Issuer<Input value={achievementIssuer} onChange={(event) => setAchievementIssuer(event.target.value)} placeholder="FTMO" /></label>
             <label className="grid gap-2 text-xs text-muted-foreground">Certificate image<Input type="file" accept="image/jpeg,image/png,image/webp" onChange={(event) => void uploadAchievementImage(event.target.files?.[0])} /></label>
-            {achievementImage ? <img src={achievementImage} alt="Certificate preview" className="max-h-48 w-full rounded-lg border border-border object-contain" /> : null}
+            {achievementImage ? <MediaImage src={achievementImage} alt="Certificate preview" className="max-h-48 w-full rounded-lg border border-border object-contain" /> : null}
           </div>
           <DialogFooter className="mt-2">
             <Button variant="outline" onClick={() => setAchievementOpen(false)}>Cancel</Button>
@@ -707,7 +634,7 @@ export function Account({ onLogin, profileUsername }: { onLogin: () => void; pro
             <DialogDescription>{viewingAchievement?.issuer || viewingAchievement?.achievement_type}</DialogDescription>
           </DialogHeader>
           <div className="grid max-h-[calc(96dvh-72px)] place-items-center overflow-auto p-2 sm:p-4">
-            {viewingAchievement ? <img src={viewingAchievement.image_url} alt={viewingAchievement.title} className="max-h-[calc(96dvh-104px)] max-w-full object-contain" /> : null}
+            {viewingAchievement ? <MediaImage src={viewingAchievement.image_url} alt={viewingAchievement.title} className="max-h-[calc(96dvh-104px)] max-w-full object-contain" /> : null}
           </div>
         </DialogContent>
       </Dialog>

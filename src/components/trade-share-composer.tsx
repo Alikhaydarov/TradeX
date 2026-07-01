@@ -4,6 +4,7 @@ import { Download, LoaderCircle, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { apiRequest } from "@/lib/api-client";
 import { useAuth } from "./auth-context";
+import { MediaImage } from "./media-image";
 import { Dialog, DialogContent } from "./ui/dialog";
 import type { JournalEntry } from "./types";
 
@@ -479,7 +480,7 @@ export function TradeShareComposer({ trade, onClose }: TradeShareComposerProps) 
             <div className="flex gap-3 p-4">
               <div className="shrink-0">
                 {avatarUrl ? (
-                  <img src={avatarUrl} alt={fullName} className="h-10 w-10 rounded-full object-cover ring-1 ring-white/10" />
+                  <MediaImage src={avatarUrl} alt={fullName} className="h-10 w-10 rounded-full object-cover ring-1 ring-white/10" />
                 ) : (
                   <div className="grid h-10 w-10 place-items-center rounded-full bg-gradient-to-br from-zinc-700 to-zinc-900 text-[11px] font-black uppercase text-zinc-200 ring-1 ring-white/10">
                     {fullName.slice(0, 2)}
@@ -523,7 +524,7 @@ export function TradeShareComposer({ trade, onClose }: TradeShareComposerProps) 
                     <div className={`grid gap-px border-t border-[#2a2a2a] ${trade.imageUrls.length === 1 ? "" : trade.imageUrls.length === 2 ? "grid-cols-2" : "grid-cols-3"}`}>
                       {trade.imageUrls.slice(0, 3).map((url, i) => (
                         <div key={i} className="aspect-square overflow-hidden bg-black">
-                          <img src={url} alt="" className="h-full w-full object-cover" />
+                          <MediaImage src={url} alt="" className="h-full w-full object-cover" />
                         </div>
                       ))}
                     </div>
@@ -549,7 +550,7 @@ export function TradeShareComposer({ trade, onClose }: TradeShareComposerProps) 
                     <LoaderCircle size={22} className="animate-spin text-zinc-600" />
                   </div>
                 ) : (
-                  <img src={activeTab === "feed" ? feedCardUrl : storyCardUrl}
+                  <MediaImage src={activeTab === "feed" ? feedCardUrl : storyCardUrl}
                     alt={activeTab === "feed" ? "Feed card preview" : "IG Story preview"}
                     className="h-full w-full object-cover" />
                 )}

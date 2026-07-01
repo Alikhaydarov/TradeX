@@ -27,7 +27,7 @@ type AudioWindow = Window & typeof globalThis & {
 };
 
 function shortText(value: string, max = 90) {
-  return value.length > max ? `${value.slice(0, max - 1)}â€¦` : value;
+  return value.length > max ? `${value.slice(0, max - 1)}...` : value;
 }
 
 function playNotificationSound() {
@@ -90,7 +90,7 @@ export function NotificationListener() {
 
     const notify = (chat: Group, message: MessageRecord) => {
       const body = shortText(message.content);
-      setToast({ title: `${message.sender_name} · ${chat.name}`, body });
+      setToast({ title: `${message.sender_name} - ${chat.name}`, body });
       window.setTimeout(() => setToast(null), 4500);
 
       if (soundEnabled.current) playNotificationSound();
@@ -100,7 +100,7 @@ export function NotificationListener() {
         Notification.permission === "granted" &&
         (document.hidden || !document.hasFocus())
       ) {
-        const notification = new Notification(`${message.sender_name} · ${chat.name}`, {
+        const notification = new Notification(`${message.sender_name} - ${chat.name}`, {
           body,
           tag: `tradeup-chat-${chat.id}`,
         });
@@ -114,6 +114,7 @@ export function NotificationListener() {
 
     const poll = async () => {
       if (polling.current) return;
+      if (document.hidden) return;
       polling.current = true;
 
       try {
@@ -149,7 +150,7 @@ export function NotificationListener() {
     };
 
     void poll();
-    const timer = window.setInterval(() => void poll(), 10000);
+    const timer = window.setInterval(() => void poll(), 30000);
 
     return () => {
       active = false;

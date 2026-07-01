@@ -2,6 +2,7 @@
 
 import { Camera, Check, ChevronDown, ImagePlus, LoaderCircle, Plus, Trash2, X } from "lucide-react";
 import { useRef, useState, type ChangeEvent, type DragEvent } from "react";
+import { MediaImage } from "./media-image";
 import { Button } from "./ui/button";
 import { Dialog, DialogContent } from "./ui/dialog";
 import { Input } from "./ui/input";
@@ -473,7 +474,7 @@ export function TradeReviewModal({ open, saving, account, onOpenChange, onSave }
               <div
                 onDragOver={(e) => e.preventDefault()} onDrop={drop}
                 className="grid grid-cols-3 gap-2 rounded-xl border border-dashed border-[#2a2a2a] bg-[#0b0b0b] p-2">
-                {imageUrls.map((url, index) => <div key={url} className="group relative aspect-square overflow-hidden rounded-lg border border-[#2a2a2a] bg-black"><button type="button" onClick={() => setPreviewUrl(url)} className="h-full w-full"><img src={url} alt={`Trade screenshot ${index + 1}`} className="h-full w-full object-cover" /></button><button type="button" onClick={() => setImageUrls((current) => current.filter((item) => item !== url))} className="absolute right-1.5 top-1.5 grid size-7 place-items-center rounded-md bg-black/75 text-rose-200"><Trash2 size={12} /></button></div>)}
+                {imageUrls.map((url, index) => <div key={url} className="group relative aspect-square overflow-hidden rounded-lg border border-[#2a2a2a] bg-black"><button type="button" onClick={() => setPreviewUrl(url)} className="h-full w-full"><MediaImage src={url} alt={`Trade screenshot ${index + 1}`} className="h-full w-full object-cover" /></button><button type="button" onClick={() => setImageUrls((current) => current.filter((item) => item !== url))} className="absolute right-1.5 top-1.5 grid size-7 place-items-center rounded-md bg-black/75 text-rose-200"><Trash2 size={12} /></button></div>)}
                 {imageUrls.length < 3 ? <button type="button" onClick={() => inputRef.current?.click()} className="grid aspect-square place-items-center rounded-lg border border-dashed border-white/10 text-zinc-500 hover:bg-white/[.04] hover:text-white">{uploading ? <LoaderCircle className="animate-spin" size={20} /> : <ImagePlus size={22} />}</button> : null}
               </div>
               {uploadError && <p className="mt-2 text-xs text-rose-400">{uploadError}</p>}
@@ -494,7 +495,7 @@ export function TradeReviewModal({ open, saving, account, onOpenChange, onSave }
             </Button>
           </div>
         </form>
-        {previewUrl ? <div className="fixed inset-0 z-[10001] grid place-items-center bg-black/90 p-3" onClick={() => setPreviewUrl("")}><button type="button" className="absolute right-4 top-4 grid size-10 place-items-center rounded-full bg-white/10 text-white"><X size={18} /></button><img src={previewUrl} alt="Trade screenshot preview" className="max-h-[92dvh] max-w-full object-contain" /></div> : null}
+        {previewUrl ? <div className="fixed inset-0 z-[10001] grid place-items-center bg-black/90 p-3" onClick={() => setPreviewUrl("")}><button type="button" className="absolute right-4 top-4 grid size-10 place-items-center rounded-full bg-white/10 text-white"><X size={18} /></button><MediaImage src={previewUrl} alt="Trade screenshot preview" className="max-h-[92dvh] max-w-full object-contain" /></div> : null}
       </DialogContent>
     </Dialog>
   );

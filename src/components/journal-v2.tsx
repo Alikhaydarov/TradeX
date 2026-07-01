@@ -24,6 +24,7 @@ import { Separator } from "./ui/separator";
 import { Textarea } from "./ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
 import { useAuth } from "./auth-context";
+import { MediaImage } from "./media-image";
 import { PropAccountDialog } from "./prop-account-dialog";
 import { PropFirmLogo } from "./prop-firm-logo";
 import { Mt5Settings } from "./mt5-settings";
@@ -298,7 +299,7 @@ export function JournalV2({ onLogin }: { onLogin: () => void }) {
   );
 }
 
-/* â”€â”€â”€ Accounts list â”€â”€â”€ */
+// Accounts list.
 function Accounts({ summaries, deleting, onAdd, onOpen, onDelete }: { summaries: Summary[]; deleting: string | null; onAdd: () => void; onOpen: (id: string) => void; onDelete: (a: PropAccount) => void }) {
   const total = summaries.reduce((s, a) => s + a.pnl, 0);
   const capital = summaries.reduce((s, a) => s + a.account.accountSize, 0);
@@ -441,7 +442,7 @@ function AccountCard({ s, deleting, onOpen, onDelete }: { s: Summary; deleting: 
   );
 }
 
-/* â”€â”€â”€ Workspace â”€â”€â”€ */
+// Workspace.
 function Workspace(p: {
   account: PropAccount; stats: { pnl: number; wins: number; losses: number; rate: number; r: number; pf: number };
   equity: Array<{ trade: number; equity: number; label: string }>; setups: Array<{ name: string; pnl: number; trades: number; wins: number; rate: number }>;
@@ -787,7 +788,7 @@ function Workspace(p: {
                     <button key={trade.id} type="button" onClick={() => setSelectedTrade(trade)} className="group overflow-hidden rounded-2xl border border-[#2a2a2a] bg-[#121212] text-left transition hover:border-white/20 hover:bg-[#101827]">
                       {trade.imageUrl ? (
                         <div className="h-40 overflow-hidden border-b border-[#2a2a2a] bg-black">
-                          <img src={trade.imageUrl} alt={`${trade.symbol} bible chart`} className="h-full w-full object-cover transition group-hover:scale-[1.02]" />
+                          <MediaImage src={trade.imageUrl} alt={`${trade.symbol} bible chart`} className="h-full w-full object-cover transition group-hover:scale-[1.02]" />
                         </div>
                       ) : null}
                       <div className="p-4">
@@ -815,7 +816,7 @@ function Workspace(p: {
                   <div>
                     <BookOpen className="mx-auto text-[#454545]" size={38} />
                     <h3 className="mt-4 text-lg font-black">Trading Bible bo'sh</h3>
-                    <p className="mt-1 max-w-md text-sm leading-6 text-[#8a8a8a]">Trade review ochib â€œ+ to Trading Bibleâ€ ni belgilang. Eng yaxshi setup va saboqlar shu yerda playbook bo'lib yig'iladi.</p>
+                    <p className="mt-1 max-w-md text-sm leading-6 text-[#8a8a8a]">Trade review ochib "+ to Trading Bible" ni belgilang. Eng yaxshi setup va saboqlar shu yerda playbook bo'lib yig'iladi.</p>
                   </div>
                 </div>
               )}
@@ -995,7 +996,7 @@ function TradeEditor({ trade, saving, onClose, onSave, onDelete }: { trade: Jour
             <input ref={imageInputRef} type="file" multiple accept="image/jpeg,image/png,image/webp" className="hidden" onChange={(event) => void uploadTradeImages(event.target.files)} />
             <input type="hidden" name="imageUrls" value={JSON.stringify(imageUrls)} />
             <div className="grid grid-cols-3 gap-2">
-              {imageUrls.map((url, index) => <div key={url} className="group relative aspect-square overflow-hidden rounded-lg border border-white/10 bg-black"><button type="button" onClick={() => { setPreviewUrl(url); setScreenshotOpen(true); }} className="h-full w-full"><img src={url} alt={`${trade.symbol} screenshot ${index + 1}`} className="h-full w-full object-cover" loading="lazy" /></button><button type="button" onClick={() => setImageUrls((current) => current.filter((item) => item !== url))} className="absolute right-1.5 top-1.5 grid size-7 place-items-center rounded-md bg-black/75 text-rose-200"><Trash2 size={12} /></button></div>)}
+              {imageUrls.map((url, index) => <div key={url} className="group relative aspect-square overflow-hidden rounded-lg border border-white/10 bg-black"><button type="button" onClick={() => { setPreviewUrl(url); setScreenshotOpen(true); }} className="h-full w-full"><MediaImage src={url} alt={`${trade.symbol} screenshot ${index + 1}`} className="h-full w-full object-cover" /></button><button type="button" onClick={() => setImageUrls((current) => current.filter((item) => item !== url))} className="absolute right-1.5 top-1.5 grid size-7 place-items-center rounded-md bg-black/75 text-rose-200"><Trash2 size={12} /></button></div>)}
               {imageUrls.length < 3 ? <button type="button" onClick={() => imageInputRef.current?.click()} className="grid aspect-square place-items-center rounded-lg border border-dashed border-white/10 text-zinc-500 hover:bg-white/[.04] hover:text-white">{uploadingImages ? <LoaderCircle className="animate-spin" size={20} /> : <Plus size={22} />}</button> : null}
             </div>
           </div>
@@ -1055,7 +1056,7 @@ function TradeEditor({ trade, saving, onClose, onSave, onDelete }: { trade: Jour
             <DialogDescription>Chart screenshotni to&apos;liq o&apos;lchamda ko&apos;rish</DialogDescription>
           </DialogHeader>
           <div className="grid max-h-[calc(92dvh-72px)] place-items-center overflow-auto bg-black p-2 sm:p-4">
-            {previewUrl ? <img src={previewUrl} alt={`${trade.symbol} full chart screenshot`} className="max-h-[calc(92dvh-104px)] max-w-full object-contain" /> : null}
+            {previewUrl ? <MediaImage src={previewUrl} alt={`${trade.symbol} full chart screenshot`} className="max-h-[calc(92dvh-104px)] max-w-full object-contain" /> : null}
           </div>
         </DialogContent>
       </Dialog>
@@ -1221,7 +1222,7 @@ function TradeReviewImage({ trade, chartUrls }: { trade: JournalEntry; chartUrls
         </div>
       </div>
       {generatedUrl ? (
-        <img src={generatedUrl} alt={`${trade.symbol} TradeWay review image`} className="aspect-square w-full bg-[#0b0b0b] object-contain" />
+        <MediaImage src={generatedUrl} alt={`${trade.symbol} TradeWay review image`} className="aspect-square w-full bg-[#0b0b0b] object-contain" />
       ) : (
         <div className="grid aspect-square w-full place-items-center text-[#8a8a8a]">
           <LoaderCircle className="animate-spin" size={24} />
