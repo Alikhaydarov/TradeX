@@ -1,7 +1,8 @@
 "use client";
 
 import { KeyRound, LoaderCircle, Plus, ShieldCheck, Sparkles } from "lucide-react";
-import { useMemo, useState } from "react";
+import { FormEvent, useMemo, useState } from "react";
+import { apiRequest } from "@/lib/api-client";
 import { Button } from "./ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog";
 import { Input } from "./ui/input";
@@ -38,11 +39,14 @@ export function PropAccountDialog({
   const [platform, setPlatform] = useState("mt5");
   const [size, setSize] = useState(100000);
   const [connectNow, setConnectNow] = useState(true);
+  const [internalSaving, setInternalSaving] = useState(false);
 
   const sources = accountType === "prop" ? PROP_FIRMS : BROKERS;
   const platformOptions = useMemo(() => PLATFORM_BY_MARKET[market], [market]);
   const importSource = platform === "mt5" ? "mt5_bridge" : platform === "manual" ? "manual" : platform;
   const phase = accountType === "real" ? "Live" : "Challenge";
+  const createsProcessingMt5 = platform === "mt5" && connectNow;
+  const isSubmitting = saving || internalSaving;
 
   function changeAccountType(next: "prop" | "real") {
     setAccountType(next);
@@ -53,6 +57,49 @@ export function PropAccountDialog({
     setMarket(next);
     setPlatform(next === "CFD" ? "mt5" : "tradovate");
     setConnectNow(next === "CFD");
+  }
+
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    if (!createsProcessingMt5) return;
+    event.preventDefault();
+
+    const form = new FormData(event.currentTarget);
+    const body: Record<string, string> = Object.fromEntries(
+      [...form.entries()].map(([key, value]) => [key, String(value)])
+    );
+    const mt5Login = (body.mt5Login ?? "").trim();
+    const mt5Password = (body.mt5Password ?? "").trim();
+    const mt5Server = (body.mt5Server ?? "").trim();
+
+    if (!mt5Login || !mt5Password || !mt5Server) {
+      window.alert("MT5 login, investor password va server nomini kiriting.");
+      return;
+    }
+
+    delete body.mt5Login;
+    delete body.mt5Password;
+    delete body.mt5Server;
+    body.status = "Processing";
+
+    setInternalSaving(true);
+    try {
+      const result = await apiRequest<{ account: { id: string } }>("/api/prop-accounts", {
+        method: "POST",
+        body: JSON.stringify(body),
+      });
+
+      await apiRequest(`/api/prop-accounts/${result.account.id}/mt5`, {
+        method: "PUT",
+        body: JSON.stringify({ login: mt5Login, password: mt5Password, server: mt5Server }),
+      });
+
+      onOpenChange(false);
+      window.setTimeout(() => window.location.reload(), 250);
+    } catch (error) {
+      window.alert(error instanceof Error ? error.message : "Account yaratilmadi.");
+    } finally {
+      setInternalSaving(false);
+    }
   }
 
   return (
@@ -72,7 +119,7 @@ export function PropAccountDialog({
           </DialogHeader>
         </div>
 
-        <form action={onSave} className="space-y-4 p-4 sm:p-5">
+        <form action={onSave} onSubmit={handleSubmit} className="space-y-4 p-4 sm:p-5">
           <div className="grid grid-cols-2 gap-2 rounded-xl border border-[#2a2a2a] bg-[#1b1b1b] p-1">
             {(["prop", "real"] as const).map((type) => (
               <button
@@ -209,7 +256,7 @@ export function PropAccountDialog({
                   />
                   <p className="flex items-start gap-2 text-[11px] leading-5 text-[#8a8a8a]">
                     <Sparkles size={13} className="mt-0.5 shrink-0" />
-                    TradeWay imports closed history through our read-only MT5 bridge.
+                    Account avval Processing holatida turadi. MT5 history journalga tushgandan keyin avtomatik Active bo'ladi.
                   </p>
                 </div>
               ) : null}
@@ -236,11 +283,11 @@ export function PropAccountDialog({
           <input type="hidden" name="maxDrawdown" value={Math.round(size * 0.10)} />
           <input type="hidden" name="dailyDrawdown" value={Math.round(size * 0.05)} />
           <input type="hidden" name="startDate" value={new Date().toISOString().slice(0, 10)} />
-          <input type="hidden" name="status" value="Active" />
+          <input type="hidden" name="status" value={createsProcessingMt5 ? "Processing" : "Active"} />
 
-          <Button disabled={saving} className="h-11 w-full bg-white font-semibold text-black hover:bg-zinc-200">
-            {saving ? <LoaderCircle className="animate-spin" /> : <Plus size={18} />}
-            Create account
+          <Button disabled={isSubmitting} className="h-11 w-full bg-white font-semibold text-black hover:bg-zinc-200">
+            {isSubmitting ? <LoaderCircle className="animate-spin" /> : <Plus size={18} />}
+            {createsProcessingMt5 ? "Create and import history" : "Create account"}
           </Button>
         </form>
       </DialogContent>
