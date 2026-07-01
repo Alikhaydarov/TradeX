@@ -1,4 +1,5 @@
 import { getSupabaseAdminClient } from "@/lib/supabase/admin";
+import { getPostgresPool } from "@/lib/backend/postgres";
 import {
   importMt5TradesToJournal,
   importMt5TradesToJournalViaPostgres,
@@ -13,6 +14,35 @@ export const runtime = "nodejs";
 
 function asString(value: unknown) {
   return typeof value === "string" ? value.trim() : "";
+}
+
+async function activatePropAccountFromSupabase(accountId: string) {
+  const supabase = getSupabaseAdminClient();
+  if (!supabase) return;
+  const { data } = await supabase
+    .from("trading_accounts")
+    .select("prop_account_id")
+    .eq("id", accountId)
+    .maybeSingle<{ prop_account_id: string | null }>();
+
+  if (!data?.prop_account_id) return;
+
+  await supabase
+    .from("prop_accounts")
+    .update({ status: "Active", updated_at: new Date().toISOString() })
+    .eq("id", data.prop_account_id);
+}
+
+async function activatePropAccountFromPostgres(accountId: string) {
+  const pool = getPostgresPool();
+  if (!pool) return;
+  await pool.query(
+    `update public.prop_accounts p
+     set status = 'Active', updated_at = now()
+     from public.trading_accounts t
+     where t.id = $1 and t.prop_account_id = p.id`,
+    [accountId],
+  );
 }
 
 export async function POST(request: Request) {
@@ -34,6 +64,15 @@ export async function POST(request: Request) {
     const result = supabase
       ? await importMt5TradesToJournal(supabase, accountId, trades)
       : await importMt5TradesToJournalViaPostgres(accountId, trades);
+
+    if (result.journalImported > 0 || result.imported > 0) {
+      if (supabase) {
+        await activatePropAccountFromSupabase(accountId);
+      } else {
+        await activatePropAccountFromPostgres(accountId);
+      }
+    }
+
     const traderox = supabase
       ? await persistTraderoxAnalysis(supabase, accountId)
       : await persistTraderoxAnalysisViaPostgres(accountId);
