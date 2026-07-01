@@ -1,5 +1,5 @@
-import { LandingPage } from "@/components/landing-page";
+import { LandingPageSubdomain } from "@/components/landing-page-subdomain";
 
 export default function Home() {
-  return <LandingPage />;
+  return <LandingPageSubdomain />;
 }
