@@ -82,6 +82,8 @@ export async function POST(request: Request) {
         disciplineScore: traderox.disciplineScore,
         alerts: traderox.alerts.length,
         findings: traderox.findings.length,
+        coach: traderox.coach,
+        recommendations: traderox.recommendations,
       },
     });
   } catch (error) {
