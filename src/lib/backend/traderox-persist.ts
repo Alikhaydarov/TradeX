@@ -1,7 +1,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { getPostgresPool } from "@/lib/backend/postgres";
 import { buildTraderoxReport } from "@/lib/traderox/report";
-import type { TraderoxTrade } from "@/lib/traderox/types";
+import type { TraderoxReport, TraderoxTrade } from "@/lib/traderox/types";
 
 interface TraderoxAccountRow {
   id: string;
@@ -28,6 +28,14 @@ interface TraderoxTradeRow {
 function toNumber(value: number | string | null | undefined) {
   const next = Number(value ?? 0);
   return Number.isFinite(next) ? next : 0;
+}
+
+function reportStatsPayload(report: TraderoxReport) {
+  return {
+    ...report.stats,
+    recommendations: report.recommendations,
+    coach: report.coach,
+  };
 }
 
 export function toTraderoxTrade(row: TraderoxTradeRow): TraderoxTrade {
@@ -76,7 +84,7 @@ export async function persistTraderoxAnalysis(
     account_id: account.id,
     report_type: "import",
     discipline_score: report.disciplineScore,
-    stats: report.stats,
+    stats: reportStatsPayload(report),
     findings: report.findings,
   });
 
@@ -121,7 +129,7 @@ export async function persistTraderoxAnalysisViaPostgres(accountId: string) {
     await client.query(
       `insert into public.traderox_reports (user_id, account_id, report_type, discipline_score, stats, findings)
        values ($1, $2, 'import', $3, $4::jsonb, $5::jsonb)`,
-      [account.user_id, account.id, report.disciplineScore, JSON.stringify(report.stats), JSON.stringify(report.findings)],
+      [account.user_id, account.id, report.disciplineScore, JSON.stringify(reportStatsPayload(report)), JSON.stringify(report.findings)],
     );
 
     for (const alert of report.alerts) {
