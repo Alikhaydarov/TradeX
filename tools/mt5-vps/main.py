@@ -44,6 +44,7 @@ MT5_FORCE_RESTART_TERMINAL = os.getenv("MT5_FORCE_RESTART_TERMINAL", "false").lo
 SYNC_INTERVAL_SECONDS = max(10, int(os.getenv("MT5_SYNC_INTERVAL_SECONDS", "15")))
 TRADE_POST_CHUNK_SIZE = max(25, min(250, int(os.getenv("MT5_TRADE_POST_CHUNK_SIZE", "100"))))
 PRUNE_STALE_REMOTE_ACCOUNTS = os.getenv("MT5_PRUNE_STALE_REMOTE_ACCOUNTS", "true").lower() != "false"
+FORCE_RESCAN_EVERY_CYCLES = max(0, int(os.getenv("MT5_FORCE_RESCAN_EVERY_CYCLES", "20")))
 MT5_REQUIRE_AUTH = os.getenv("MT5_REQUIRE_AUTH", "false").lower() == "true"
 MANUAL_FRESH_ATTEMPTS = max(1, int(os.getenv("MT5_MANUAL_FRESH_ATTEMPTS", "8")))
 MANUAL_FRESH_WAIT_SECONDS = max(1.0, float(os.getenv("MT5_MANUAL_FRESH_WAIT_SECONDS", "3")))
@@ -70,6 +71,7 @@ class SyncPayload(BaseModel):
     account_id: str | None = None
     prop_account_id: str | None = None
     wait_for_new: bool = False
+    force_rescan: bool = True
     fresh_attempts: int | None = Field(default=None, ge=1, le=20)
     fresh_wait_seconds: float | None = Field(default=None, ge=0.5, le=10)
 
@@ -392,6 +394,7 @@ def sync_account(
     account: dict[str, Any],
     *,
     auto_sync: bool = False,
+    force_rescan: bool = False,
     wait_for_new: bool = False,
     fresh_attempts: int | None = None,
     fresh_wait_seconds: float | None = None,
@@ -416,8 +419,22 @@ def sync_account(
         if attempt < attempts:
             time.sleep(wait_seconds)
 
-    if last_ticket and previous_ticket == last_ticket:
-        update_account(account["account_id"], last_sync_at=utc_now().isoformat(), last_error=None)
+    unchanged_cycles = int(account.get("unchanged_cycles") or 0)
+    should_force_periodic_rescan = (
+        auto_sync
+        and FORCE_RESCAN_EVERY_CYCLES > 0
+        and previous_ticket > 0
+        and last_ticket == previous_ticket
+        and unchanged_cycles + 1 >= FORCE_RESCAN_EVERY_CYCLES
+    )
+
+    if last_ticket and previous_ticket == last_ticket and not force_rescan and not should_force_periodic_rescan:
+        update_account(
+            account["account_id"],
+            last_sync_at=utc_now().isoformat(),
+            last_error=None,
+            unchanged_cycles=unchanged_cycles + 1,
+        )
         return {
             "success": True,
             "imported": 0,
@@ -425,6 +442,7 @@ def sync_account(
             "total": 0,
             "latestTicket": last_ticket,
             "previousTicket": previous_ticket,
+            "unchangedCycles": unchanged_cycles + 1,
             "freshAttempts": attempts if wait_for_new else 1,
             "message": "No new MT5 ticket yet. Trade may still be updating in terminal history.",
         }
@@ -436,6 +454,7 @@ def sync_account(
         last_ticket=last_ticket or account.get("last_ticket"),
         last_sync_at=utc_now().isoformat(),
         last_error=None,
+        unchanged_cycles=0,
     )
     return {
         "success": True,
@@ -443,6 +462,7 @@ def sync_account(
         "latestTicket": last_ticket,
         "previousTicket": previous_ticket,
         "lookbackDays": DEFAULT_LOOKBACK_DAYS if not previous_ticket else (AUTO_LOOKBACK_DAYS if auto_sync else INCREMENTAL_LOOKBACK_DAYS),
+        "forcedRescan": force_rescan or should_force_periodic_rescan,
         "freshAttempts": attempts if wait_for_new else 1,
         **result,
     }
@@ -486,6 +506,7 @@ def root() -> dict[str, Any]:
         "incrementalLookbackDays": INCREMENTAL_LOOKBACK_DAYS,
         "tradePostChunkSize": TRADE_POST_CHUNK_SIZE,
         "pruneStaleRemoteAccounts": PRUNE_STALE_REMOTE_ACCOUNTS,
+        "forceRescanEveryCycles": FORCE_RESCAN_EVERY_CYCLES,
         "manualFreshAttempts": MANUAL_FRESH_ATTEMPTS,
         "manualFreshWaitSeconds": MANUAL_FRESH_WAIT_SECONDS,
     }
@@ -505,6 +526,7 @@ def status(authorization: str | None = Header(default=None)) -> dict[str, Any]:
         "incrementalLookbackDays": INCREMENTAL_LOOKBACK_DAYS,
         "tradePostChunkSize": TRADE_POST_CHUNK_SIZE,
         "pruneStaleRemoteAccounts": PRUNE_STALE_REMOTE_ACCOUNTS,
+        "forceRescanEveryCycles": FORCE_RESCAN_EVERY_CYCLES,
         "manualFreshAttempts": MANUAL_FRESH_ATTEMPTS,
         "manualFreshWaitSeconds": MANUAL_FRESH_WAIT_SECONDS,
         "accounts": [
@@ -518,6 +540,7 @@ def status(authorization: str | None = Header(default=None)) -> dict[str, Any]:
                 "last_ticket": account.get("last_ticket"),
                 "last_sync_at": account.get("last_sync_at"),
                 "last_error": account.get("last_error"),
+                "unchanged_cycles": account.get("unchanged_cycles"),
             }
             for account in accounts
         ],
@@ -582,6 +605,7 @@ def sync_now(payload: SyncPayload | None = None, authorization: str | None = Hea
     for account in accounts:
         result = sync_account(
             account,
+            force_rescan=payload.force_rescan,
             wait_for_new=payload.wait_for_new,
             fresh_attempts=payload.fresh_attempts,
             fresh_wait_seconds=payload.fresh_wait_seconds,
