@@ -63,6 +63,11 @@ function asDate(value: unknown) {
   return Number.isNaN(date.getTime()) ? null : date.toISOString();
 }
 
+function isMissingPositionsTableError(error: unknown) {
+  const message = error instanceof Error ? error.message : String(error || "");
+  return message.includes("mt5_positions") && message.includes("does not exist");
+}
+
 async function getAccount(accountId: string) {
   const supabase = getSupabaseAdminClient();
   if (supabase) {
@@ -210,6 +215,9 @@ export async function POST(request: Request) {
 
     return Response.json({ ok: true, positions: synced });
   } catch (error) {
+    if (isMissingPositionsTableError(error)) {
+      return Response.json({ ok: true, positions: 0, skipped: "mt5_positions table is not deployed yet." });
+    }
     return Response.json({ error: error instanceof Error ? error.message : "MT5 positions import failed." }, { status: 500 });
   }
 }

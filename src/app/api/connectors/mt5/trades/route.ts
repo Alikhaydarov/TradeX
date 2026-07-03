@@ -35,6 +35,11 @@ function asDate(value: unknown) {
   return Number.isNaN(date.getTime()) ? null : date.toISOString();
 }
 
+function isMissingPositionsTableError(error: unknown) {
+  const message = error instanceof Error ? error.message : String(error || "");
+  return message.includes("mt5_positions") && message.includes("does not exist");
+}
+
 async function activatePropAccountFromSupabase(accountId: string) {
   const supabase = getSupabaseAdminClient();
   if (!supabase) return;
@@ -145,10 +150,16 @@ export async function POST(request: Request) {
       : await importMt5TradesToJournalViaPostgres(accountId, trades);
 
     if (closedPositionUpdates.length) {
-      if (supabase) {
-        await closeOpenPositionsFromSupabase(accountId, closedPositionUpdates);
-      } else {
-        await closeOpenPositionsFromPostgres(accountId, closedPositionUpdates);
+      try {
+        if (supabase) {
+          await closeOpenPositionsFromSupabase(accountId, closedPositionUpdates);
+        } else {
+          await closeOpenPositionsFromPostgres(accountId, closedPositionUpdates);
+        }
+      } catch (error) {
+        if (!isMissingPositionsTableError(error)) {
+          throw error;
+        }
       }
     }
 
