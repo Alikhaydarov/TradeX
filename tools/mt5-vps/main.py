@@ -43,6 +43,7 @@ MT5_TERMINAL_PATH = os.getenv("MT5_TERMINAL_PATH", r"C:\Program Files\MetaTrader
 MT5_FORCE_RESTART_TERMINAL = os.getenv("MT5_FORCE_RESTART_TERMINAL", "false").lower() == "true"
 SYNC_INTERVAL_SECONDS = max(10, int(os.getenv("MT5_SYNC_INTERVAL_SECONDS", "15")))
 TRADE_POST_CHUNK_SIZE = max(25, min(250, int(os.getenv("MT5_TRADE_POST_CHUNK_SIZE", "100"))))
+PRUNE_STALE_REMOTE_ACCOUNTS = os.getenv("MT5_PRUNE_STALE_REMOTE_ACCOUNTS", "true").lower() != "false"
 MT5_REQUIRE_AUTH = os.getenv("MT5_REQUIRE_AUTH", "false").lower() == "true"
 MANUAL_FRESH_ATTEMPTS = max(1, int(os.getenv("MT5_MANUAL_FRESH_ATTEMPTS", "8")))
 MANUAL_FRESH_WAIT_SECONDS = max(1.0, float(os.getenv("MT5_MANUAL_FRESH_WAIT_SECONDS", "3")))
@@ -163,6 +164,8 @@ def fetch_remote_accounts() -> dict[str, Any]:
 
     remote_accounts = payload.get("accounts") or []
     fetched = 0
+    remote_ids: set[str] = set()
+    remote_keys: set[str] = set()
     for item in remote_accounts:
         account_id = str(item.get("accountId") or "").strip()
         login = str(item.get("login") or "").strip()
@@ -171,6 +174,9 @@ def fetch_remote_accounts() -> dict[str, Any]:
         user_id = str(item.get("userId") or "").strip()
         if not account_id or not login or not password or not server or not user_id:
             continue
+
+        remote_ids.add(account_id)
+        remote_keys.add(f"{login}|{server}".lower())
 
         upsert_account(AccountRecord(
             login=login,
@@ -182,7 +188,20 @@ def fetch_remote_accounts() -> dict[str, Any]:
         ))
         fetched += 1
 
-    return {"fetched": fetched, "failed": payload.get("failed") or []}
+    pruned = 0
+    if PRUNE_STALE_REMOTE_ACCOUNTS and remote_ids:
+        next_accounts = []
+        for account in read_accounts():
+            account_id = str(account.get("account_id") or "").strip()
+            account_key = f"{account.get('login') or ''}|{account.get('server') or ''}".lower()
+            if account_id not in remote_ids and account_key in remote_keys:
+                pruned += 1
+                continue
+            next_accounts.append(account)
+        if pruned:
+            write_accounts(next_accounts)
+
+    return {"fetched": fetched, "pruned": pruned, "failed": payload.get("failed") or []}
 
 
 def require_mt5() -> Any:
@@ -466,6 +485,7 @@ def root() -> dict[str, Any]:
         "autoLookbackDays": AUTO_LOOKBACK_DAYS,
         "incrementalLookbackDays": INCREMENTAL_LOOKBACK_DAYS,
         "tradePostChunkSize": TRADE_POST_CHUNK_SIZE,
+        "pruneStaleRemoteAccounts": PRUNE_STALE_REMOTE_ACCOUNTS,
         "manualFreshAttempts": MANUAL_FRESH_ATTEMPTS,
         "manualFreshWaitSeconds": MANUAL_FRESH_WAIT_SECONDS,
     }
@@ -484,6 +504,7 @@ def status(authorization: str | None = Header(default=None)) -> dict[str, Any]:
         "autoLookbackDays": AUTO_LOOKBACK_DAYS,
         "incrementalLookbackDays": INCREMENTAL_LOOKBACK_DAYS,
         "tradePostChunkSize": TRADE_POST_CHUNK_SIZE,
+        "pruneStaleRemoteAccounts": PRUNE_STALE_REMOTE_ACCOUNTS,
         "manualFreshAttempts": MANUAL_FRESH_ATTEMPTS,
         "manualFreshWaitSeconds": MANUAL_FRESH_WAIT_SECONDS,
         "accounts": [
