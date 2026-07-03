@@ -262,10 +262,6 @@ article img[alt*="TradeWay share card"] {
 }
 
 /* Hide the old profile premium promo card; pricing stays available from sidebar/route */
-.mx-auto.max-w-3xl > section.mt-2.rounded-lg.border.border-border.bg-card.p-4 {
-  display: none !important;
-}
-
 @media (max-width: 639px) {
   body { background-attachment: scroll; }
   input, textarea, select, [data-slot="select-trigger"] { font-size: 16px; }

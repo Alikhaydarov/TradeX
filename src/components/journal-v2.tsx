@@ -160,13 +160,15 @@ export function JournalV2({ onLogin }: { onLogin: () => void }) {
       setAccountOpen(false);
 
       if (mt5Login && mt5Password && mt5Server) {
-        apiRequest(`/api/prop-accounts/${next.id}/mt5`, {
+        await apiRequest(`/api/prop-accounts/${next.id}/mt5`, {
           method: "PUT",
           body: JSON.stringify({ login: mt5Login, password: mt5Password, server: mt5Server }),
-        }).catch(() => { /* non-fatal */ });
+        });
       }
+      return next;
     } catch (e) { setError(e instanceof Error ? e.message : "Account was not saved."); }
     finally { setSaving(false); }
+    return null;
   }
 
   async function removeAccount(a: PropAccount) {
@@ -341,7 +343,7 @@ function Accounts({ summaries, deleting, onAdd, onOpen, onDelete }: { summaries:
           { title: "Total P&L", value: `${total >= 0 ? "+" : ""}${cash.format(total)}`, icon: total >= 0 ? TrendingUp : TrendingDown, color: total >= 0 ? "text-emerald-400" : "text-rose-400", bg: total >= 0 ? "bg-emerald-500/8" : "bg-rose-500/8" },
           { title: "Active accounts", value: String(summaries.filter(s => s.account.status === "Active").length), icon: Zap, color: "text-zinc-300", bg: "bg-white/[.05]" },
         ].map(s => (
-          <div key={s.title} className="flex items-center gap-4 rounded-2xl border border-[#2a2a2a] bg-[#1b1b1b]/80 px-5 py-4">
+          <div key={s.title} className="flex items-center gap-4 rounded-3xl border border-white/10 bg-white/[.035] px-5 py-4 shadow-[0_18px_44px_rgba(0,0,0,.22)]">
             <span className={`grid size-11 shrink-0 place-items-center rounded-xl ${s.bg}`}>
               <s.icon size={20} className={s.color} />
             </span>
@@ -382,7 +384,7 @@ function AccountCard({ s, deleting, onOpen, onDelete }: { s: Summary; deleting: 
       tabIndex={0}
       onClick={() => onOpen(s.account.id)}
       onKeyDown={e => { if (e.key === "Enter" || e.key === " ") onOpen(s.account.id); }}
-      className="prop-card-glow group relative cursor-pointer overflow-hidden rounded-2xl border border-[#2a2a2a] bg-[#1b1b1b]/90 transition-all duration-200 hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/30"
+      className="prop-card-glow group relative cursor-pointer overflow-hidden rounded-[28px] border border-white/10 bg-white/[.035] transition-all duration-200 hover:-translate-y-0.5 hover:border-white/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/30"
     >
       {/* Top bar accent */}
       <div className="absolute inset-x-0 top-0 h-[1px] bg-gradient-to-r from-transparent via-white/20 to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
@@ -614,19 +616,19 @@ function Workspace(p: {
               </SelectContent>
             </Select>
           </div>
-          <TabsList className="hidden h-14 w-full justify-start overflow-x-auto rounded-xl border border-[#2a2a2a] bg-[#1b1b1b] p-1.5 md:inline-flex">
+          <TabsList className="hidden min-h-14 w-full justify-start overflow-x-auto rounded-2xl border border-white/10 bg-white/[.035] p-1.5 md:inline-flex">
             {WORKSPACE_TABS.map(([v, l]) => (
-              <TabsTrigger key={v} value={v} className="h-full min-w-32 flex-1 rounded-lg px-5 text-sm font-semibold data-[state=active]:bg-white/[.10] data-[state=active]:text-[#f1f1f1] data-[state=active]:shadow-sm">{l}</TabsTrigger>
+              <TabsTrigger key={v} value={v} className="h-11 min-w-[132px] flex-1 rounded-xl px-5 text-sm font-semibold text-zinc-400 data-[state=active]:bg-white data-[state=active]:text-black data-[state=active]:shadow-sm">{l}</TabsTrigger>
             ))}
           </TabsList>
 
           {/* Overview */}
           <TabsContent value="overview" className="space-y-4">
-            <section className="overflow-hidden rounded-[26px] border border-[#2a2a2a] bg-[linear-gradient(180deg,#202020,#171717_68%,#121212)] shadow-2xl shadow-black/25">
+            <section className="overflow-hidden rounded-[28px] border border-white/10 bg-[radial-gradient(circle_at_top_right,rgba(217,249,109,.14),transparent_18%),linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,.025))] shadow-[0_28px_80px_rgba(0,0,0,.34)]">
               <div className="flex flex-col gap-4 border-b border-white/8 px-4 py-4 sm:px-5 lg:flex-row lg:items-start">
                 <div className="min-w-0">
-                  <h3 className="text-base font-black">Account Balance</h3>
-                  <p className="mt-1 text-xs text-[#8792aa]">{account.name} equity performance</p>
+                  <h3 className="text-base font-black">Account balance</h3>
+                  <p className="mt-1 text-xs text-zinc-500">{account.name} equity curve and closed-trade performance.</p>
                 </div>
                 <div className="grid gap-3 sm:grid-cols-3 lg:ml-auto lg:min-w-[560px]">
                   <BalanceMetric label="Current P&L" value={`${currentPnl >= 0 ? "+" : ""}${cash.format(currentPnl)}`} tone={currentPnl >= 0 ? "good" : "bad"} />
@@ -659,8 +661,8 @@ function Workspace(p: {
 
             <AiCoachCard report={coachReport} loading={coachLoading} error={coachError} onRefresh={() => void loadCoach()} />
 
-            <div className="grid gap-4 lg:grid-cols-[1fr_1fr_1fr]">
-              <div className="rounded-2xl border border-[#2a2a2a] bg-[#1b1b1b]/80 p-5">
+            <div className="grid gap-4 lg:grid-cols-[1.25fr_.85fr_.85fr]">
+              <div className="rounded-2xl border border-white/10 bg-white/[.035] p-5">
                 <h3 className="font-bold">Challenge limits</h3>
                 <div className="mt-4 space-y-5">
                   <ProgressBar label="Profit target" value={targetProgress} color="bg-[#d9f96d]" />
@@ -671,7 +673,7 @@ function Workspace(p: {
               <MiniStat label="START BALANCE" value={cash.format(account.initialBalance)} />
             </div>
 
-            <section className="rounded-2xl border border-[#2a2a2a] bg-[#1b1b1b]/80 p-5">
+            <section className="rounded-2xl border border-white/10 bg-white/[.035] p-5">
               <div className="flex items-center justify-between gap-3">
                 <div>
                   <h3 className="font-bold">Live positions</h3>

@@ -6,6 +6,7 @@ import {
   Database,
   FileText,
   KeyRound,
+  LockKeyhole,
   LoaderCircle,
   Pencil,
   Plus,
@@ -45,7 +46,7 @@ type PlatformConfig = {
 };
 
 const PLATFORMS: PlatformConfig[] = [
-  { id: "mt5", name: "MetaTrader 5", mode: "auto", market: "CFD", badge: "Live", logo: "5", method: "Investor password", helper: "Read-only auto sync through the TradeWay VPS bridge.", premium: true },
+  { id: "mt5", name: "MetaTrader 5", mode: "auto", market: "CFD", badge: "Live", logo: "5", method: "Investor password", helper: "Read-only auto sync through the TradeWay VPS bridge." },
   { id: "tradelocker", name: "TradeLocker", mode: "coming", market: "CFD", badge: "Next", logo: "TL", method: "Email + server", helper: "Will exchange credentials for read-only keys and sync account history.", premium: true },
   { id: "ctrader", name: "cTrader", mode: "coming", market: "CFD", badge: "Next", logo: "c", method: "OAuth", helper: "Official cTrader authorization flow with read-only permissions.", premium: true },
   { id: "tradovate", name: "Tradovate", mode: "csv", market: "Futures", badge: "CSV", logo: "T", method: "CSV import", helper: "Export Orders CSV from Tradovate and import closed trades." },
@@ -99,7 +100,7 @@ function PlatformLogo({ item }: { item: PlatformConfig }) {
     <span className={cn(
       "grid size-11 place-items-center rounded-xl text-sm font-black",
       item.id === "mt5" ? "bg-emerald-400/15 text-emerald-200" :
-      item.premium ? "bg-blue-400/15 text-blue-200" :
+      item.premium ? "bg-sky-400/15 text-sky-200" :
       item.mode === "csv" ? "bg-white text-orange-600" : "bg-white/8 text-zinc-400"
     )}>
       {item.logo}
@@ -107,13 +108,17 @@ function PlatformLogo({ item }: { item: PlatformConfig }) {
   );
 }
 
+type PremiumStatus = {
+  isPremium: boolean;
+};
+
 export function PropAccountDialog({
   open, saving, onOpenChange, onSave,
 }: {
   open: boolean;
   saving: boolean;
   onOpenChange: (v: boolean) => void;
-  onSave: (f: FormData) => void | Promise<void>;
+  onSave: (f: FormData) => Promise<unknown> | unknown;
 }) {
   const [step, setStep] = useState<WizardStep>(1);
   const [accountKind, setAccountKind] = useState<AccountKind | null>(null);
@@ -124,8 +129,19 @@ export function PropAccountDialog({
   const [connectNow, setConnectNow] = useState(true);
   const [internalSaving, setInternalSaving] = useState(false);
   const [csvFileName, setCsvFileName] = useState("");
+  const [submitError, setSubmitError] = useState<string | null>(null);
+  const [platformQuery, setPlatformQuery] = useState("");
+  const [premiumStatus, setPremiumStatus] = useState<PremiumStatus>({ isPremium: false });
+  const [premiumOverlay, setPremiumOverlay] = useState<PlatformConfig | null>(null);
 
   const selectedPlatform = useMemo(() => PLATFORMS.find((item) => item.id === platform) ?? PLATFORMS[0], [platform]);
+  const filteredPlatforms = useMemo(() => {
+    const query = platformQuery.trim().toLowerCase();
+    if (!query) return PLATFORMS;
+    return PLATFORMS.filter((item) =>
+      `${item.name} ${item.market} ${item.method}`.toLowerCase().includes(query)
+    );
+  }, [platformQuery]);
   const sources = accountType === "prop" ? PROP_FIRMS : BROKERS;
   const activePlatform = accountKind === "manual" ? "manual" : platform;
   const market = accountKind === "manual" ? "CFD" : selectedPlatform.market;
@@ -151,8 +167,26 @@ export function PropAccountDialog({
       setSize(100000);
       setConnectNow(true);
       setCsvFileName("");
+      setSubmitError(null);
+      setPlatformQuery("");
+      setPremiumOverlay(null);
     }, 160);
     return () => window.clearTimeout(timer);
+  }, [open]);
+
+  useEffect(() => {
+    if (!open) return;
+    let active = true;
+    apiRequest<PremiumStatus>("/api/premium/status")
+      .then((response) => {
+        if (active) setPremiumStatus(response);
+      })
+      .catch(() => {
+        if (active) setPremiumStatus({ isPremium: false });
+      });
+    return () => {
+      active = false;
+    };
   }, [open]);
 
   function changeAccountType(next: "prop" | "real") {
@@ -170,13 +204,22 @@ export function PropAccountDialog({
     setAccountKind("automatic");
     setPlatform("mt5");
     setConnectNow(true);
+    setSubmitError(null);
     setStep(2);
   }
 
   function choosePlatform(item: PlatformConfig) {
-    if (item.mode === "coming") return;
+    if (item.premium && !premiumStatus.isPremium) {
+      setPremiumOverlay(item);
+      return;
+    }
+    if (item.mode === "coming") {
+      setSubmitError(`${item.name} connector is reserved for the next release.`);
+      return;
+    }
     setPlatform(item.id);
     setConnectNow(item.id === "mt5");
+    setSubmitError(null);
     setStep(3);
   }
 
@@ -197,43 +240,26 @@ export function PropAccountDialog({
   }
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    if (!createsProcessingMt5) return;
     event.preventDefault();
+    setSubmitError(null);
 
     const form = new FormData(event.currentTarget);
-    const body: Record<string, string> = Object.fromEntries(
-      [...form.entries()].map(([key, value]) => [key, String(value)])
-    );
-    const mt5Login = (body.mt5Login ?? "").trim();
-    const mt5Password = (body.mt5Password ?? "").trim();
-    const mt5Server = (body.mt5Server ?? "").trim();
+    const mt5Login = String(form.get("mt5Login") || "").trim();
+    const mt5Password = String(form.get("mt5Password") || "").trim();
+    const mt5Server = String(form.get("mt5Server") || "").trim();
 
-    if (!mt5Login || !mt5Password || !mt5Server) {
-      window.alert("MT5 login, investor password va server nomini kiriting.");
+    if (createsProcessingMt5 && (!mt5Login || !mt5Password || !mt5Server)) {
+      setSubmitError("Enter MT5 login, investor password and broker server.");
       return;
     }
 
-    delete body.mt5Login;
-    delete body.mt5Password;
-    delete body.mt5Server;
-    body.status = "Processing";
-
     setInternalSaving(true);
     try {
-      const result = await apiRequest<{ account: { id: string } }>("/api/prop-accounts", {
-        method: "POST",
-        body: JSON.stringify(body),
-      });
-
-      await apiRequest(`/api/prop-accounts/${result.account.id}/mt5`, {
-        method: "PUT",
-        body: JSON.stringify({ login: mt5Login, password: mt5Password, server: mt5Server }),
-      });
-
+      const created = await onSave(form);
+      if (!created) return;
       onOpenChange(false);
-      window.setTimeout(() => window.location.reload(), 250);
     } catch (error) {
-      window.alert(error instanceof Error ? error.message : "Account yaratilmadi.");
+      setSubmitError(error instanceof Error ? error.message : "Account was not created.");
     } finally {
       setInternalSaving(false);
     }
@@ -252,7 +278,7 @@ export function PropAccountDialog({
           <div className="w-[180px]" />
         </div>
 
-        <form action={onSave} onSubmit={handleSubmit} className="max-h-[calc(92dvh-73px)] overflow-y-auto">
+        <form onSubmit={handleSubmit} className="relative max-h-[calc(92dvh-73px)] overflow-y-auto">
           <div className="px-5 py-5 sm:px-8 sm:py-6">
             {step > 1 ? (
               <Button type="button" variant="outline" onClick={goBack} className="mb-4 border-white/10 bg-white/[.04]">
@@ -267,6 +293,12 @@ export function PropAccountDialog({
                 {stepDescription(step, accountKind, selectedPlatform)}
               </p>
             </div>
+
+            {submitError ? (
+              <div className="mx-auto mb-5 max-w-2xl rounded-2xl border border-rose-500/20 bg-rose-500/10 px-4 py-3 text-sm text-rose-200">
+                {submitError}
+              </div>
+            ) : null}
 
             {step === 1 ? (
               <div className="grid gap-5 md:grid-cols-2">
@@ -297,35 +329,59 @@ export function PropAccountDialog({
                   </p>
                 </div>
 
-                <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                  {PLATFORMS.map((item) => (
+                <div className="mx-auto max-w-md">
+                  <div className="flex h-12 items-center gap-3 rounded-2xl border border-white/10 bg-black/30 px-4">
+                    <Search size={16} className="text-zinc-500" />
+                    <input
+                      value={platformQuery}
+                      onChange={(event) => setPlatformQuery(event.target.value)}
+                      placeholder="Search platform..."
+                      className="h-full w-full bg-transparent text-sm text-zinc-100 outline-none placeholder:text-zinc-600"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                  {filteredPlatforms.map((item) => {
+                    const locked = item.premium && !premiumStatus.isPremium;
+                    return (
                     <button
                       key={item.id}
                       type="button"
-                      disabled={item.mode === "coming"}
                       onClick={() => choosePlatform(item)}
                       className={cn(
-                        "group min-h-[188px] rounded-2xl border p-4 text-left transition",
-                        item.mode === "coming"
-                          ? "cursor-not-allowed border-white/5 bg-white/[.018] opacity-70"
-                          : "border-white/10 bg-white/[.035] hover:border-white/25 hover:bg-white/[.06]"
+                        "group relative min-h-[188px] rounded-3xl border p-4 text-left transition",
+                        locked
+                          ? "border-sky-400/20 bg-sky-400/[.03] hover:border-sky-300/30 hover:bg-sky-400/[.05]"
+                          : item.mode === "coming"
+                            ? "border-white/5 bg-white/[.018] opacity-70"
+                            : "border-white/10 bg-white/[.035] hover:border-white/25 hover:bg-white/[.06]"
                       )}
                     >
                       <span className="flex items-start justify-between gap-3">
                         <PlatformLogo item={item} />
                         <span className="flex flex-wrap justify-end gap-1">
-                          {item.premium ? <span className="rounded-full border border-blue-300/15 bg-blue-400/10 px-2 py-0.5 text-[9px] font-black uppercase text-blue-200">Premium</span> : null}
+                          {item.premium ? <span className="rounded-full border border-sky-300/15 bg-sky-400/10 px-2 py-0.5 text-[9px] font-black uppercase text-sky-200">Premium</span> : null}
                           <span className={cn("rounded-full px-2 py-0.5 text-[9px] font-black uppercase", badgeClass(item.mode))}>{item.badge}</span>
                         </span>
                       </span>
                       <span className="mt-4 block text-base font-black text-zinc-100">{item.name}</span>
                       <span className="mt-1 block text-xs font-bold text-zinc-400">{item.method}</span>
                       <span className="mt-3 block text-xs leading-5 text-zinc-600">{item.helper}</span>
-                      <span className="mt-4 inline-flex text-[10px] font-black uppercase tracking-wider text-zinc-500">
-                        {item.mode === "auto" ? "Ready now" : item.mode === "csv" ? "Import ready" : "Connector queued"}
-                      </span>
+                      <div className="mt-4 flex items-center justify-between">
+                        <span className={cn(
+                          "rounded-full px-2.5 py-1 text-[10px] font-black uppercase tracking-wider",
+                          item.market === "CFD" ? "bg-blue-500/10 text-blue-200" : "bg-amber-400/10 text-amber-200"
+                        )}>
+                          {item.market}
+                        </span>
+                        <span className="text-[10px] font-black uppercase tracking-wider text-zinc-500">
+                          {locked ? "Upgrade required" : item.mode === "auto" ? "Ready now" : item.mode === "csv" ? "Import ready" : "Connector queued"}
+                        </span>
+                      </div>
+                      {locked ? <span className="absolute right-4 top-4 grid size-8 place-items-center rounded-2xl border border-sky-300/15 bg-sky-400/10 text-sky-200"><LockKeyhole size={14} /></span> : null}
                     </button>
-                  ))}
+                  );})}
                 </div>
               </div>
             ) : null}
@@ -392,6 +448,36 @@ export function PropAccountDialog({
           <input type="hidden" name="startDate" value={new Date().toISOString().slice(0, 10)} />
           <input type="hidden" name="status" value={createsProcessingMt5 ? "Processing" : "Active"} />
         </form>
+        {premiumOverlay ? (
+          <div className="absolute inset-0 z-20 flex items-center justify-center bg-black/55 p-4 backdrop-blur-md">
+            <div className="w-full max-w-md rounded-[28px] border border-white/10 bg-[#0d0d0d]/95 p-6 text-center shadow-[0_30px_80px_rgba(0,0,0,.55)]">
+              <span className="mx-auto grid size-14 place-items-center rounded-2xl border border-sky-300/15 bg-sky-400/10 text-sky-200">
+                <LockKeyhole size={22} />
+              </span>
+              <h3 className="mt-5 text-2xl font-black">Unlock {premiumOverlay.name}</h3>
+              <p className="mx-auto mt-2 max-w-sm text-sm leading-6 text-zinc-400">
+                {premiumOverlay.name}, AI trade analysis and advanced connector stack are part of TradeWay Premium.
+              </p>
+              <div className="mt-6 grid gap-2 sm:grid-cols-2">
+                <Button type="button" variant="outline" className="border-white/10 bg-white/[.03]" onClick={() => setPremiumOverlay(null)}>
+                  <ArrowLeft size={15} /> Back
+                </Button>
+                <Button
+                  type="button"
+                  className="bg-white text-black hover:bg-zinc-200"
+                  onClick={() => {
+                    setPremiumOverlay(null);
+                    onOpenChange(false);
+                    window.history.pushState(null, "", "/pricing");
+                    window.dispatchEvent(new Event("popstate"));
+                  }}
+                >
+                  Upgrade now
+                </Button>
+              </div>
+            </div>
+          </div>
+        ) : null}
       </DialogContent>
     </Dialog>
   );
@@ -402,9 +488,9 @@ function ChoiceCard({ icon, title, text, onClick }: { icon: React.ReactNode; tit
     <button
       type="button"
       onClick={onClick}
-      className="group flex min-h-[280px] flex-col items-center justify-center rounded-2xl border border-white/10 bg-white/[.025] p-8 text-center transition hover:border-white/25 hover:bg-white/[.05]"
+      className="group flex min-h-[280px] flex-col items-center justify-center rounded-[28px] border border-white/10 bg-white/[.02] p-8 text-center shadow-[inset_0_1px_0_rgba(255,255,255,.03)] transition hover:border-white/25 hover:bg-white/[.05]"
     >
-      <span className="grid size-10 place-items-center rounded-lg bg-white/10 text-white">{icon}</span>
+      <span className="grid size-12 place-items-center rounded-2xl bg-white/10 text-white">{icon}</span>
       <h3 className="mt-6 text-2xl font-black">{title}</h3>
       <p className="mt-4 max-w-xs text-sm font-semibold leading-6 text-zinc-500">{text}</p>
       <ChevronRight className="mt-8 transition group-hover:translate-x-1" size={28} />
