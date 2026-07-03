@@ -2,14 +2,11 @@
 
 import {
   ArrowLeft,
-  BarChart3,
-  Check,
   ChevronRight,
   Database,
   FileText,
   KeyRound,
   LoaderCircle,
-  LockKeyhole,
   Pencil,
   Plus,
   Search,

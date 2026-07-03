@@ -37,9 +37,12 @@ TRADEWAY_ACCOUNTS_URL = os.getenv(
 )
 MT5_CONNECTOR_SECRET = os.getenv("MT5_CONNECTOR_SECRET", "")
 DEFAULT_LOOKBACK_DAYS = int(os.getenv("MT5_LOOKBACK_DAYS", "1825"))
+AUTO_LOOKBACK_DAYS = int(os.getenv("MT5_AUTO_LOOKBACK_DAYS", "3"))
+INCREMENTAL_LOOKBACK_DAYS = int(os.getenv("MT5_INCREMENTAL_LOOKBACK_DAYS", "120"))
 MT5_TERMINAL_PATH = os.getenv("MT5_TERMINAL_PATH", r"C:\Program Files\MetaTrader 5\terminal64.exe")
 MT5_FORCE_RESTART_TERMINAL = os.getenv("MT5_FORCE_RESTART_TERMINAL", "false").lower() == "true"
 SYNC_INTERVAL_SECONDS = max(10, int(os.getenv("MT5_SYNC_INTERVAL_SECONDS", "15")))
+TRADE_POST_CHUNK_SIZE = max(25, min(250, int(os.getenv("MT5_TRADE_POST_CHUNK_SIZE", "100"))))
 MT5_REQUIRE_AUTH = os.getenv("MT5_REQUIRE_AUTH", "false").lower() == "true"
 MANUAL_FRESH_ATTEMPTS = max(1, int(os.getenv("MT5_MANUAL_FRESH_ATTEMPTS", "8")))
 MANUAL_FRESH_WAIT_SECONDS = max(1.0, float(os.getenv("MT5_MANUAL_FRESH_WAIT_SECONDS", "3")))
@@ -131,6 +134,10 @@ def update_account(account_id: str, **patch: Any) -> None:
         if account.get("account_id") == account_id:
             account.update(patch)
     write_accounts(accounts)
+
+
+def chunked(items: list[dict[str, Any]], size: int) -> list[list[dict[str, Any]]]:
+    return [items[index:index + size] for index in range(0, len(items), size)]
 
 
 def fetch_remote_accounts() -> dict[str, Any]:
@@ -309,13 +316,13 @@ def normalize_deals_to_trades(deals: list[Any]) -> list[dict[str, Any]]:
     return trades
 
 
-def post_trades(account_id: str, trades: list[dict[str, Any]]) -> dict[str, Any]:
+def post_trade_chunk(account_id: str, trades: list[dict[str, Any]], *, finalize: bool) -> dict[str, Any]:
     if not trades:
         return {"imported": 0, "skipped": 0, "message": "No closed trades found."}
     if not MT5_CONNECTOR_SECRET:
         raise RuntimeError("MT5_CONNECTOR_SECRET is missing in .env")
 
-    payload = json.dumps({"accountId": account_id, "trades": trades}).encode("utf-8")
+    payload = json.dumps({"accountId": account_id, "trades": trades, "finalize": finalize}).encode("utf-8")
     request = urllib.request.Request(
         TRADEWAY_WEBHOOK_URL,
         data=payload,
@@ -334,9 +341,38 @@ def post_trades(account_id: str, trades: list[dict[str, Any]]) -> dict[str, Any]
         raise RuntimeError(f"TradeWay webhook failed: {error.code} {body}") from error
 
 
+def post_trades(account_id: str, trades: list[dict[str, Any]]) -> dict[str, Any]:
+    if not trades:
+        return {"imported": 0, "skipped": 0, "journalImported": 0, "total": 0, "message": "No closed trades found."}
+
+    chunks = chunked(trades, TRADE_POST_CHUNK_SIZE)
+    totals: dict[str, Any] = {
+        "imported": 0,
+        "skipped": 0,
+        "journalImported": 0,
+        "total": 0,
+        "chunks": len(chunks),
+    }
+    last_response: dict[str, Any] = {}
+    for index, chunk in enumerate(chunks, start=1):
+        response = post_trade_chunk(account_id, chunk, finalize=index == len(chunks))
+        last_response = response
+        totals["imported"] += int(response.get("imported", 0) or 0)
+        totals["skipped"] += int(response.get("skipped", 0) or 0)
+        totals["journalImported"] += int(response.get("journalImported", 0) or 0)
+        totals["total"] += int(response.get("total", len(chunk)) or 0)
+        print(f"[chunk] account={account_id} {index}/{len(chunks)} imported={response.get('imported', 0)} journal={response.get('journalImported', 0)}", flush=True)
+
+    if last_response.get("traderox"):
+        totals["traderox"] = last_response.get("traderox")
+    totals["message"] = f"Imported {totals['journalImported']} journal trades in {len(chunks)} chunk(s)."
+    return totals
+
+
 def sync_account(
     account: dict[str, Any],
     *,
+    auto_sync: bool = False,
     wait_for_new: bool = False,
     fresh_attempts: int | None = None,
     fresh_wait_seconds: float | None = None,
@@ -351,7 +387,8 @@ def sync_account(
 
     for attempt in range(1, attempts + 1):
         to_dt = utc_now()
-        from_dt = to_dt - timedelta(days=DEFAULT_LOOKBACK_DAYS)
+        lookback_days = DEFAULT_LOOKBACK_DAYS if not previous_ticket else (AUTO_LOOKBACK_DAYS if auto_sync else INCREMENTAL_LOOKBACK_DAYS)
+        from_dt = to_dt - timedelta(days=lookback_days)
         deal_list = history_deals_with_retry(terminal, from_dt, to_dt)
         last_ticket = max((int(getattr(deal, "ticket", 0) or 0) for deal in deal_list), default=0)
 
@@ -386,6 +423,7 @@ def sync_account(
         "total": len(trades),
         "latestTicket": last_ticket,
         "previousTicket": previous_ticket,
+        "lookbackDays": DEFAULT_LOOKBACK_DAYS if not previous_ticket else (AUTO_LOOKBACK_DAYS if auto_sync else INCREMENTAL_LOOKBACK_DAYS),
         "freshAttempts": attempts if wait_for_new else 1,
         **result,
     }
@@ -402,7 +440,7 @@ def sync_all() -> None:
         if not account.get("is_active", True):
             continue
         try:
-            result = sync_account(account)
+            result = sync_account(account, auto_sync=True)
             print(f"[sync] {account.get('login')} {result}", flush=True)
         except Exception as error:
             update_account(account["account_id"], last_error=str(error))
@@ -424,6 +462,10 @@ def root() -> dict[str, Any]:
         "accounts": len(read_accounts()),
         "webhookConfigured": bool(MT5_CONNECTOR_SECRET),
         "syncIntervalSeconds": SYNC_INTERVAL_SECONDS,
+        "fullLookbackDays": DEFAULT_LOOKBACK_DAYS,
+        "autoLookbackDays": AUTO_LOOKBACK_DAYS,
+        "incrementalLookbackDays": INCREMENTAL_LOOKBACK_DAYS,
+        "tradePostChunkSize": TRADE_POST_CHUNK_SIZE,
         "manualFreshAttempts": MANUAL_FRESH_ATTEMPTS,
         "manualFreshWaitSeconds": MANUAL_FRESH_WAIT_SECONDS,
     }
@@ -438,6 +480,10 @@ def status(authorization: str | None = Header(default=None)) -> dict[str, Any]:
         "ok": True,
         "accountFetch": fetch_result,
         "syncIntervalSeconds": SYNC_INTERVAL_SECONDS,
+        "fullLookbackDays": DEFAULT_LOOKBACK_DAYS,
+        "autoLookbackDays": AUTO_LOOKBACK_DAYS,
+        "incrementalLookbackDays": INCREMENTAL_LOOKBACK_DAYS,
+        "tradePostChunkSize": TRADE_POST_CHUNK_SIZE,
         "manualFreshAttempts": MANUAL_FRESH_ATTEMPTS,
         "manualFreshWaitSeconds": MANUAL_FRESH_WAIT_SECONDS,
         "accounts": [

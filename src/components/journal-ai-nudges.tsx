@@ -14,7 +14,7 @@ import {
   TrendingUp,
   X,
 } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { apiRequest } from "@/lib/api-client";
 import { cn } from "@/lib/utils";
 import { Button } from "./ui/button";
@@ -238,7 +238,7 @@ export function JournalAiNudges({ section }: { section: Section }) {
   const dashboard = useMemo(() => buildCoachDashboard(entries), [entries]);
   const warningCount = dashboard.alerts.filter((nudge) => nudge.type === "warning").length;
 
-  const load = async () => {
+  const load = useCallback(async () => {
     if (section !== "journal") return;
     setLoading(true);
     try {
@@ -249,7 +249,7 @@ export function JournalAiNudges({ section }: { section: Section }) {
     } finally {
       setLoading(false);
     }
-  };
+  }, [section]);
 
   useEffect(() => {
     if (section !== "journal") return;
@@ -258,7 +258,7 @@ export function JournalAiNudges({ section }: { section: Section }) {
     void load();
     const timer = window.setInterval(() => void load(), 45000);
     return () => window.clearInterval(timer);
-  }, [section]);
+  }, [section, load]);
 
   if (section !== "journal" || dismissed || warningCount === 0) return null;
 

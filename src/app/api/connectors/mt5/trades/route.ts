@@ -52,9 +52,10 @@ export async function POST(request: Request) {
     return Response.json({ error: "Unauthorized connector request." }, { status: 401 });
   }
 
-  const body = await request.json() as { accountId?: unknown; trades?: unknown };
+  const body = await request.json() as { accountId?: unknown; trades?: unknown; finalize?: unknown };
   const accountId = asString(body.accountId);
   const trades = Array.isArray(body.trades) ? body.trades as IncomingMt5Trade[] : [];
+  const finalize = body.finalize !== false;
   if (!accountId || !trades.length) {
     return Response.json({ error: "accountId and trades are required." }, { status: 400 });
   }
@@ -65,7 +66,7 @@ export async function POST(request: Request) {
       ? await importMt5TradesToJournal(supabase, accountId, trades)
       : await importMt5TradesToJournalViaPostgres(accountId, trades);
 
-    if (result.journalImported > 0 || result.imported > 0) {
+    if (finalize && (result.journalImported > 0 || result.imported > 0)) {
       if (supabase) {
         await activatePropAccountFromSupabase(accountId);
       } else {
@@ -73,18 +74,21 @@ export async function POST(request: Request) {
       }
     }
 
-    const traderox = supabase
-      ? await persistTraderoxAnalysis(supabase, accountId)
-      : await persistTraderoxAnalysisViaPostgres(accountId);
+    const traderox = finalize
+      ? supabase
+        ? await persistTraderoxAnalysis(supabase, accountId)
+        : await persistTraderoxAnalysisViaPostgres(accountId)
+      : null;
     return Response.json({
       ...result,
-      traderox: {
+      finalized: finalize,
+      traderox: traderox ? {
         disciplineScore: traderox.disciplineScore,
         alerts: traderox.alerts.length,
         findings: traderox.findings.length,
         coach: traderox.coach,
         recommendations: traderox.recommendations,
-      },
+      } : null,
     });
   } catch (error) {
     return Response.json({ error: error instanceof Error ? error.message : "MT5 import failed." }, { status: 500 });

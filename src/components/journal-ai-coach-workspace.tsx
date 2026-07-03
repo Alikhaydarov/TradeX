@@ -1,7 +1,7 @@
 "use client";
 
 import { BrainCircuit, LoaderCircle, RefreshCw } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { apiRequest } from "@/lib/api-client";
 import { Button } from "./ui/button";
 import { Card, CardContent } from "./ui/card";
@@ -31,7 +31,7 @@ export function JournalAiCoachWorkspace() {
     return () => { active = false; };
   }, []);
 
-  async function refresh() {
+  const refresh = useCallback(async () => {
     if (!accountId) return;
     setWorking(true);
     setError(null);
@@ -44,9 +44,9 @@ export function JournalAiCoachWorkspace() {
     } finally {
       setWorking(false);
     }
-  }
+  }, [accountId]);
 
-  useEffect(() => { void refresh(); }, [accountId]);
+  useEffect(() => { void refresh(); }, [refresh]);
 
   if (loading) return <div className="grid min-h-[360px] place-items-center"><LoaderCircle className="animate-spin" /></div>;
 
