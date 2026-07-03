@@ -1,6 +1,6 @@
 "use client";
 
-import { CheckCircle2, KeyRound, LoaderCircle, Server, Unplug, UserRound } from "lucide-react";
+import { CheckCircle2, KeyRound, LoaderCircle, RefreshCw, Server, Unplug, UserRound } from "lucide-react";
 import { useEffect, useState } from "react";
 import { apiRequest } from "@/lib/api-client";
 import type { PropAccount } from "./types";
@@ -21,7 +21,7 @@ export function Mt5Settings({ account, onSynced }: { account: PropAccount; onSyn
   const [password, setPassword] = useState("");
   const [server, setServer] = useState("");
   const [bridgeConfigured, setBridgeConfigured] = useState(false);
-  const [busy, setBusy] = useState<"save" | "disconnect" | null>(null);
+  const [busy, setBusy] = useState<"save" | "disconnect" | "sync" | null>(null);
   const [message, setMessage] = useState("");
   const [isVerified, setIsVerified] = useState<boolean | null>(null);
 
@@ -87,6 +87,28 @@ export function Mt5Settings({ account, onSynced }: { account: PropAccount; onSyn
     }
   };
 
+  const syncMissingTrades = async () => {
+    if (!connection) {
+      setMessage("Avval MT5 connection qo'shing.");
+      return;
+    }
+    setBusy("sync");
+    setMessage("");
+    try {
+      const result = await apiRequest<{ imported?: number; journalImported?: number; message?: string }>(
+        `/api/prop-accounts/${account.id}/mt5/sync`,
+        { method: "POST", body: JSON.stringify({ force_rescan: true }) }
+      );
+      await onSynced();
+      const imported = result.journalImported ?? result.imported ?? 0;
+      setMessage(result.message || `Advanced sync completed. ${imported} trades checked.`);
+    } catch (e) {
+      setMessage(e instanceof Error ? e.message : "Advanced sync failed.");
+    } finally {
+      setBusy(null);
+    }
+  };
+
   const statusColor = (s?: string) => {
     if (s === "connected") return "text-emerald-400";
     if (s === "error") return "text-rose-400";
@@ -122,6 +144,7 @@ export function Mt5Settings({ account, onSynced }: { account: PropAccount; onSyn
                   <CheckCircle2 size={10} /> Auto-sync
                 </span>
                 <span className="rounded-full border border-white/10 bg-white/[.03] px-2 py-0.5 text-[10px] font-semibold text-zinc-500">~15s check</span>
+                <span className="rounded-full border border-white/10 bg-white/[.03] px-2 py-0.5 text-[10px] font-semibold text-zinc-500">periodic rescan</span>
                 {lastSync ? <span className="text-[10px] text-zinc-600">{lastSync}</span> : null}
               </div>
 
@@ -172,9 +195,16 @@ export function Mt5Settings({ account, onSynced }: { account: PropAccount; onSyn
 
         <button type="button" onClick={() => void save()} disabled={!!busy}
           className="flex h-10 w-full items-center justify-center gap-2 rounded-xl bg-white text-xs font-bold text-black transition hover:bg-zinc-200 disabled:opacity-50">
-          {busy === "save" ? <LoaderCircle size={13} className="animate-spin" /> : <KeyRound size={13} />}
+            {busy === "save" ? <LoaderCircle size={13} className="animate-spin" /> : <KeyRound size={13} />}
           {connection ? "Ma'lumotlarni yangilash" : "MT5 ulash va auto-sync yoqish"}
         </button>
+        {connection ? (
+          <button type="button" onClick={() => void syncMissingTrades()} disabled={!!busy}
+            className="flex h-10 w-full items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/[.035] text-xs font-bold text-zinc-100 transition hover:bg-white/[.06] disabled:opacity-50">
+            {busy === "sync" ? <LoaderCircle size={13} className="animate-spin" /> : <RefreshCw size={13} />}
+            Sync missing closed trades
+          </button>
+        ) : null}
       </div>
 
       {!bridgeConfigured && (

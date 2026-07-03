@@ -78,6 +78,7 @@ async function triggerVpsSyncNow(accountId: string) {
     body: JSON.stringify({
       account_id: accountId,
       wait_for_new: true,
+      force_rescan: true,
       fresh_attempts: 8,
       fresh_wait_seconds: 3,
     }),

@@ -40,16 +40,18 @@ type PlatformConfig = {
   badge: string;
   logo: string;
   helper: string;
+  premium?: boolean;
+  method: string;
 };
 
 const PLATFORMS: PlatformConfig[] = [
-  { id: "mt5", name: "MetaTrader 5", mode: "auto", market: "CFD", badge: "CFDs", logo: "5", helper: "Auto sync through TradeWay VPS bridge" },
-  { id: "tradovate", name: "Tradovate", mode: "csv", market: "Futures", badge: "Futures", logo: "T", helper: "CSV import for futures trade history" },
-  { id: "ninjatrader", name: "NinjaTrader", mode: "csv", market: "Futures", badge: "Futures", logo: "N", helper: "CSV import for futures trade history" },
-  { id: "projectx", name: "Project X", mode: "csv", market: "Futures", badge: "Futures", logo: "X", helper: "CSV import for futures trade history" },
-  { id: "ctrader", name: "cTrader", mode: "coming", market: "CFD", badge: "Coming Soon", logo: "c", helper: "Auto sync connector planned" },
-  { id: "tradelocker", name: "TradeLocker", mode: "coming", market: "CFD", badge: "Coming Soon", logo: "TL", helper: "Auto sync connector planned" },
-  { id: "matchtrader", name: "MatchTrader", mode: "coming", market: "CFD", badge: "Coming Soon", logo: "M", helper: "Auto sync connector planned" },
+  { id: "mt5", name: "MetaTrader 5", mode: "auto", market: "CFD", badge: "Live", logo: "5", method: "Investor password", helper: "Read-only auto sync through the TradeWay VPS bridge.", premium: true },
+  { id: "tradelocker", name: "TradeLocker", mode: "coming", market: "CFD", badge: "Next", logo: "TL", method: "Email + server", helper: "Will exchange credentials for read-only keys and sync account history.", premium: true },
+  { id: "ctrader", name: "cTrader", mode: "coming", market: "CFD", badge: "Next", logo: "c", method: "OAuth", helper: "Official cTrader authorization flow with read-only permissions.", premium: true },
+  { id: "tradovate", name: "Tradovate", mode: "csv", market: "Futures", badge: "CSV", logo: "T", method: "CSV import", helper: "Export Orders CSV from Tradovate and import closed trades." },
+  { id: "ninjatrader", name: "NinjaTrader", mode: "csv", market: "Futures", badge: "CSV", logo: "N", method: "CSV import", helper: "Export Trade Performance CSV in English and import it here." },
+  { id: "projectx", name: "Project X", mode: "csv", market: "Futures", badge: "CSV", logo: "X", method: "CSV import", helper: "Futures CSV workflow prepared for Project X statements." },
+  { id: "matchtrader", name: "MatchTrader", mode: "coming", market: "CFD", badge: "Later", logo: "M", method: "Web login", helper: "Connector research planned after MT5, TradeLocker and cTrader.", premium: true },
 ];
 
 const CSV_PLATFORMS = new Set<PlatformId>(["tradovate", "ninjatrader", "projectx"]);
@@ -97,6 +99,7 @@ function PlatformLogo({ item }: { item: PlatformConfig }) {
     <span className={cn(
       "grid size-11 place-items-center rounded-xl text-sm font-black",
       item.id === "mt5" ? "bg-emerald-400/15 text-emerald-200" :
+      item.premium ? "bg-blue-400/15 text-blue-200" :
       item.mode === "csv" ? "bg-white text-orange-600" : "bg-white/8 text-zinc-400"
     )}>
       {item.logo}
@@ -284,12 +287,17 @@ export function PropAccountDialog({
 
             {step === 2 ? (
               <div className="space-y-5">
-                <div className="mx-auto flex h-11 max-w-sm items-center gap-2 rounded-xl border border-white/10 bg-white/[.035] px-3 text-sm text-zinc-500">
-                  <Search size={16} />
-                  <span>Search platform...</span>
+                <div className="mx-auto max-w-2xl rounded-2xl border border-white/10 bg-white/[.035] p-3">
+                  <div className="flex items-center gap-2 text-sm text-zinc-400">
+                    <Search size={16} />
+                    <span className="font-semibold">Premium connectors and CSV imports</span>
+                  </div>
+                  <p className="mt-1 text-xs leading-5 text-zinc-600">
+                    CFD accounts use read-only connectors. Futures accounts start with CSV import until official API access is ready.
+                  </p>
                 </div>
 
-                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                   {PLATFORMS.map((item) => (
                     <button
                       key={item.id}
@@ -297,16 +305,25 @@ export function PropAccountDialog({
                       disabled={item.mode === "coming"}
                       onClick={() => choosePlatform(item)}
                       className={cn(
-                        "group min-h-[176px] rounded-2xl border p-4 text-center transition",
+                        "group min-h-[188px] rounded-2xl border p-4 text-left transition",
                         item.mode === "coming"
-                          ? "cursor-not-allowed border-white/5 bg-white/[.015] opacity-55"
+                          ? "cursor-not-allowed border-white/5 bg-white/[.018] opacity-70"
                           : "border-white/10 bg-white/[.035] hover:border-white/25 hover:bg-white/[.06]"
                       )}
                     >
-                      <span className="mx-auto mb-3 flex justify-center"><PlatformLogo item={item} /></span>
-                      <span className="block text-base font-black text-zinc-100">{item.name}</span>
-                      <span className="mt-1 block text-xs font-semibold text-zinc-500">{item.mode === "auto" ? "Auto Sync" : item.mode === "csv" ? "CSV Import" : "Coming Soon"}</span>
-                      <span className={cn("mt-3 inline-flex rounded-full px-3 py-1 text-[10px] font-black", badgeClass(item.mode))}>{item.badge}</span>
+                      <span className="flex items-start justify-between gap-3">
+                        <PlatformLogo item={item} />
+                        <span className="flex flex-wrap justify-end gap-1">
+                          {item.premium ? <span className="rounded-full border border-blue-300/15 bg-blue-400/10 px-2 py-0.5 text-[9px] font-black uppercase text-blue-200">Premium</span> : null}
+                          <span className={cn("rounded-full px-2 py-0.5 text-[9px] font-black uppercase", badgeClass(item.mode))}>{item.badge}</span>
+                        </span>
+                      </span>
+                      <span className="mt-4 block text-base font-black text-zinc-100">{item.name}</span>
+                      <span className="mt-1 block text-xs font-bold text-zinc-400">{item.method}</span>
+                      <span className="mt-3 block text-xs leading-5 text-zinc-600">{item.helper}</span>
+                      <span className="mt-4 inline-flex text-[10px] font-black uppercase tracking-wider text-zinc-500">
+                        {item.mode === "auto" ? "Ready now" : item.mode === "csv" ? "Import ready" : "Connector queued"}
+                      </span>
                     </button>
                   ))}
                 </div>

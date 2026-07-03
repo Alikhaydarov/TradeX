@@ -51,6 +51,7 @@ export function syncNowMt5Api(input?: { userId?: string; accountId?: string; pro
       user_id: input?.userId,
       account_id: input?.accountId,
       prop_account_id: input?.propAccountId,
+      force_rescan: true,
     }),
   });
 }
