@@ -31,6 +31,10 @@ TRADEWAY_WEBHOOK_URL = os.getenv(
     "TRADEWAY_WEBHOOK_URL",
     "https://tradewayio.vercel.app/api/connectors/mt5/trades",
 )
+TRADEWAY_POSITIONS_URL = os.getenv(
+    "TRADEWAY_POSITIONS_URL",
+    "https://tradewayio.vercel.app/api/connectors/mt5/positions",
+)
 TRADEWAY_ACCOUNTS_URL = os.getenv(
     "TRADEWAY_ACCOUNTS_URL",
     "https://tradewayio.vercel.app/api/connectors/mt5/pending-accounts",
@@ -41,7 +45,7 @@ AUTO_LOOKBACK_DAYS = int(os.getenv("MT5_AUTO_LOOKBACK_DAYS", "3"))
 INCREMENTAL_LOOKBACK_DAYS = int(os.getenv("MT5_INCREMENTAL_LOOKBACK_DAYS", "120"))
 MT5_TERMINAL_PATH = os.getenv("MT5_TERMINAL_PATH", r"C:\Program Files\MetaTrader 5\terminal64.exe")
 MT5_FORCE_RESTART_TERMINAL = os.getenv("MT5_FORCE_RESTART_TERMINAL", "false").lower() == "true"
-SYNC_INTERVAL_SECONDS = max(10, int(os.getenv("MT5_SYNC_INTERVAL_SECONDS", "15")))
+SYNC_INTERVAL_SECONDS = max(5, int(os.getenv("MT5_SYNC_INTERVAL_SECONDS", "5")))
 TRADE_POST_CHUNK_SIZE = max(25, min(250, int(os.getenv("MT5_TRADE_POST_CHUNK_SIZE", "100"))))
 PRUNE_STALE_REMOTE_ACCOUNTS = os.getenv("MT5_PRUNE_STALE_REMOTE_ACCOUNTS", "true").lower() != "false"
 FORCE_RESCAN_EVERY_CYCLES = max(0, int(os.getenv("MT5_FORCE_RESCAN_EVERY_CYCLES", "20")))
@@ -337,6 +341,48 @@ def normalize_deals_to_trades(deals: list[Any]) -> list[dict[str, Any]]:
     return trades
 
 
+def positions_with_retry(terminal: Any) -> list[Any]:
+    last_error: tuple[int, str] | None = None
+    for attempt in range(1, 5):
+        positions = terminal.positions_get()
+        if positions is None:
+            last_error = terminal.last_error()
+        else:
+            return list(positions)
+        time.sleep(min(attempt, 2))
+    if last_error:
+        code, message = last_error
+        raise RuntimeError(f"MT5 positions_get failed: {code} {message}")
+    return []
+
+
+def normalize_positions_to_payload(positions: list[Any]) -> list[dict[str, Any]]:
+    terminal = require_mt5()
+    payload: list[dict[str, Any]] = []
+    for position in positions:
+        position_id = str(getattr(position, "ticket", "") or "")
+        symbol = str(getattr(position, "symbol", "") or "").upper()
+        if not position_id or not symbol:
+            continue
+
+        side = "long" if int(getattr(position, "type", terminal.POSITION_TYPE_BUY)) == terminal.POSITION_TYPE_BUY else "short"
+        payload.append({
+            "externalPositionId": position_id,
+            "symbol": symbol,
+            "side": side,
+            "volume": float(getattr(position, "volume", 0) or 0),
+            "entryPrice": float(getattr(position, "price_open", 0) or 0),
+            "currentPrice": float(getattr(position, "price_current", 0) or 0),
+            "stopLoss": float(getattr(position, "sl", 0) or 0),
+            "takeProfit": float(getattr(position, "tp", 0) or 0),
+            "unrealizedPnl": float(getattr(position, "profit", 0) or 0),
+            "openedAt": iso_from_mt5_time(getattr(position, "time", None)),
+            "status": "open",
+            "rawPayload": position._asdict() if hasattr(position, "_asdict") else str(position),
+        })
+    return payload
+
+
 def post_trade_chunk(account_id: str, trades: list[dict[str, Any]], *, finalize: bool) -> dict[str, Any]:
     if not trades:
         return {"imported": 0, "skipped": 0, "message": "No closed trades found."}
@@ -360,6 +406,29 @@ def post_trade_chunk(account_id: str, trades: list[dict[str, Any]], *, finalize:
     except urllib.error.HTTPError as error:
         body = error.read().decode("utf-8", errors="ignore")
         raise RuntimeError(f"TradeWay webhook failed: {error.code} {body}") from error
+
+
+def post_positions(account_id: str, positions: list[dict[str, Any]]) -> dict[str, Any]:
+    if not MT5_CONNECTOR_SECRET:
+        raise RuntimeError("MT5_CONNECTOR_SECRET is missing in .env")
+
+    payload = json.dumps({"accountId": account_id, "positions": positions}).encode("utf-8")
+    request = urllib.request.Request(
+        TRADEWAY_POSITIONS_URL,
+        data=payload,
+        method="POST",
+        headers={
+            "Content-Type": "application/json",
+            "Authorization": f"Bearer {MT5_CONNECTOR_SECRET}",
+        },
+    )
+    try:
+        with urllib.request.urlopen(request, timeout=60, context=https_context()) as response:
+            body = response.read().decode("utf-8")
+            return json.loads(body) if body else {"ok": True, "positions": len(positions)}
+    except urllib.error.HTTPError as error:
+        body = error.read().decode("utf-8", errors="ignore")
+        raise RuntimeError(f"TradeWay positions webhook failed: {error.code} {body}") from error
 
 
 def post_trades(account_id: str, trades: list[dict[str, Any]]) -> dict[str, Any]:
@@ -405,6 +474,16 @@ def sync_account(
     wait_seconds = fresh_wait_seconds or MANUAL_FRESH_WAIT_SECONDS
     previous_ticket = int(account.get("last_ticket") or 0)
     deal_list: list[Any] = []
+    open_positions = normalize_positions_to_payload(positions_with_retry(terminal))
+    positions_result: dict[str, Any] = {"positions": len(open_positions)}
+    try:
+        positions_result = post_positions(account["account_id"], open_positions)
+    except Exception as error:
+        positions_result = {
+            "positions": len(open_positions),
+            "error": str(error),
+        }
+        print(f"[positions:error] {account.get('login')} {error}", flush=True)
     last_ticket = 0
 
     for attempt in range(1, attempts + 1):
@@ -440,6 +519,7 @@ def sync_account(
             "imported": 0,
             "skipped": 0,
             "total": 0,
+            "openPositions": int(positions_result.get("positions", len(open_positions)) or 0),
             "latestTicket": last_ticket,
             "previousTicket": previous_ticket,
             "unchangedCycles": unchanged_cycles + 1,
@@ -459,6 +539,7 @@ def sync_account(
     return {
         "success": True,
         "total": len(trades),
+        "openPositions": int(positions_result.get("positions", len(open_positions)) or 0),
         "latestTicket": last_ticket,
         "previousTicket": previous_ticket,
         "lookbackDays": DEFAULT_LOOKBACK_DAYS if not previous_ticket else (AUTO_LOOKBACK_DAYS if auto_sync else INCREMENTAL_LOOKBACK_DAYS),
@@ -501,6 +582,7 @@ def root() -> dict[str, Any]:
         "accounts": len(read_accounts()),
         "webhookConfigured": bool(MT5_CONNECTOR_SECRET),
         "syncIntervalSeconds": SYNC_INTERVAL_SECONDS,
+        "positionsWebhookConfigured": bool(TRADEWAY_POSITIONS_URL),
         "fullLookbackDays": DEFAULT_LOOKBACK_DAYS,
         "autoLookbackDays": AUTO_LOOKBACK_DAYS,
         "incrementalLookbackDays": INCREMENTAL_LOOKBACK_DAYS,

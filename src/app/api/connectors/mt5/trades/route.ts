@@ -12,8 +12,27 @@ import {
 
 export const runtime = "nodejs";
 
+type ClosedPositionUpdate = {
+  externalPositionId: string;
+  exitPrice: number | null;
+  netPnl: number | null;
+  closedAt: string | null;
+};
+
 function asString(value: unknown) {
   return typeof value === "string" ? value.trim() : "";
+}
+
+function asNumber(value: unknown) {
+  const number = typeof value === "number" ? value : Number(value);
+  return Number.isFinite(number) ? number : null;
+}
+
+function asDate(value: unknown) {
+  const text = asString(value);
+  if (!text) return null;
+  const date = new Date(text);
+  return Number.isNaN(date.getTime()) ? null : date.toISOString();
 }
 
 async function activatePropAccountFromSupabase(accountId: string) {
@@ -45,6 +64,64 @@ async function activatePropAccountFromPostgres(accountId: string) {
   );
 }
 
+function collectClosedPositionUpdates(trades: IncomingMt5Trade[]) {
+  const map = new Map<string, ClosedPositionUpdate>();
+  for (const trade of trades) {
+    const externalPositionId = asString(trade.externalPositionId);
+    if (!externalPositionId) continue;
+    map.set(externalPositionId, {
+      externalPositionId,
+      exitPrice: asNumber(trade.exitPrice),
+      netPnl: asNumber(trade.netPnl) ?? asNumber(trade.grossPnl),
+      closedAt: asDate(trade.closedAt),
+    });
+  }
+  return [...map.values()];
+}
+
+async function closeOpenPositionsFromSupabase(accountId: string, updates: ClosedPositionUpdate[]) {
+  const supabase = getSupabaseAdminClient();
+  if (!supabase || !updates.length) return;
+
+  for (const item of updates) {
+    const { error } = await supabase
+      .from("mt5_positions")
+      .update({
+        status: "closed",
+        current_price: item.exitPrice,
+        realized_pnl: item.netPnl,
+        unrealized_pnl: 0,
+        closed_at: item.closedAt,
+        updated_at: new Date().toISOString(),
+        last_seen_at: new Date().toISOString(),
+      })
+      .eq("account_id", accountId)
+      .eq("external_position_id", item.externalPositionId);
+    if (error) throw new Error(error.message);
+  }
+}
+
+async function closeOpenPositionsFromPostgres(accountId: string, updates: ClosedPositionUpdate[]) {
+  const pool = getPostgresPool();
+  if (!pool || !updates.length) return;
+
+  for (const item of updates) {
+    await pool.query(
+      `update public.mt5_positions
+       set status = 'closed',
+           current_price = coalesce($3, current_price),
+           realized_pnl = $4,
+           unrealized_pnl = 0,
+           closed_at = coalesce($5::timestamptz, closed_at),
+           last_seen_at = now(),
+           updated_at = now()
+       where account_id = $1
+       and external_position_id = $2`,
+      [accountId, item.externalPositionId, item.exitPrice, item.netPnl, item.closedAt],
+    );
+  }
+}
+
 export async function POST(request: Request) {
   const expected = process.env.MT5_CONNECTOR_SECRET;
   const authorization = request.headers.get("authorization");
@@ -62,9 +139,18 @@ export async function POST(request: Request) {
 
   try {
     const supabase = getSupabaseAdminClient();
+    const closedPositionUpdates = collectClosedPositionUpdates(trades);
     const result = supabase
       ? await importMt5TradesToJournal(supabase, accountId, trades)
       : await importMt5TradesToJournalViaPostgres(accountId, trades);
+
+    if (closedPositionUpdates.length) {
+      if (supabase) {
+        await closeOpenPositionsFromSupabase(accountId, closedPositionUpdates);
+      } else {
+        await closeOpenPositionsFromPostgres(accountId, closedPositionUpdates);
+      }
+    }
 
     if (finalize && (result.journalImported > 0 || result.imported > 0)) {
       if (supabase) {

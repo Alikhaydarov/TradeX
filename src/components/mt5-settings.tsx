@@ -42,7 +42,7 @@ export function Mt5Settings({ account, onSynced }: { account: PropAccount; onSyn
     if (!connection) return undefined;
     const id = window.setInterval(() => {
       void onSynced();
-    }, 15_000);
+    }, 5_000);
     return () => window.clearInterval(id);
   }, [connection, onSynced]);
 
@@ -143,7 +143,7 @@ export function Mt5Settings({ account, onSynced }: { account: PropAccount; onSyn
                 <span className="inline-flex items-center gap-1 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-2 py-0.5 text-[10px] font-bold text-emerald-300">
                   <CheckCircle2 size={10} /> Auto-sync
                 </span>
-                <span className="rounded-full border border-white/10 bg-white/[.03] px-2 py-0.5 text-[10px] font-semibold text-zinc-500">~15s check</span>
+                <span className="rounded-full border border-white/10 bg-white/[.03] px-2 py-0.5 text-[10px] font-semibold text-zinc-500">~5s check</span>
                 <span className="rounded-full border border-white/10 bg-white/[.03] px-2 py-0.5 text-[10px] font-semibold text-zinc-500">periodic rescan</span>
                 {lastSync ? <span className="text-[10px] text-zinc-600">{lastSync}</span> : null}
               </div>
