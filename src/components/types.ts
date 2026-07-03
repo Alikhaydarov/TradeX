@@ -164,6 +164,22 @@ export interface PropAccount {
   status: "Active" | "Processing" | "Passed" | "Failed" | "Paused";
 }
 
+export interface OpenPosition {
+  id: string;
+  accountId: string;
+  propAccountId?: string | null;
+  symbol: string;
+  side: "long" | "short" | string;
+  volume: number;
+  entryPrice: number | null;
+  currentPrice: number | null;
+  stopLoss: number | null;
+  takeProfit: number | null;
+  unrealizedPnl: number | null;
+  openedAt: string | null;
+  status: "open" | "closed" | string;
+}
+
 export interface BacktestResult {
   id?: string;
   createdAt?: string;

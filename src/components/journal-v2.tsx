@@ -29,7 +29,7 @@ import { PropAccountDialog } from "./prop-account-dialog";
 import { PropFirmLogo } from "./prop-firm-logo";
 import { Mt5Settings } from "./mt5-settings";
 import { TradeReviewModal } from "./trade-review-modal";
-import type { JournalEntry, PropAccount } from "./types";
+import type { JournalEntry, OpenPosition, PropAccount } from "./types";
 
 type AccountRow = { id: string; name: string; account_type?: "prop" | "real" | null; firm: string; prop_site?: string | null; prop_login?: string | null; import_source?: "manual" | "mt5_bridge" | "ctrader" | "tradovate" | "ninjatrader" | "official_api" | null; platform?: string | null; phase: string; market_type: string; account_size: string; initial_balance: string; profit_target: string; max_drawdown: string; daily_drawdown: string; start_date: string; status: PropAccount["status"] };
 type EntryRow = { id: string; prop_account_id?: string | null; symbol: string; side: "Long" | "Short"; entry_price: string; exit_price: string; quantity: string; fees: string; pnl: string; note: string; traded_at: string; account_name?: string; market_type?: string; setup?: string; emotion?: string; risk_amount?: string; result_r?: string; risk_percent?: string; session?: string; following_plan?: boolean; error_made?: boolean; mistake_type?: string; review_completed?: boolean; to_trading_bible?: boolean; image_url?: string | null; tags?: string[] };
@@ -511,6 +511,8 @@ function Workspace(p: {
   const [coachReport, setCoachReport] = useState<AiCoachReport | null>(null);
   const [coachLoading, setCoachLoading] = useState(false);
   const [coachError, setCoachError] = useState<string | null>(null);
+  const [openPositions, setOpenPositions] = useState<OpenPosition[]>([]);
+  const [positionsPendingSetup, setPositionsPendingSetup] = useState(false);
   const currentPnl = (equity.at(-1)?.equity ?? account.initialBalance) - account.initialBalance;
   const currentEquity = account.initialBalance + currentPnl;
   const targetProgress = account.profitTarget ? Math.min(100, Math.max(0, currentPnl / account.profitTarget * 100)) : 0;
@@ -529,10 +531,22 @@ function Workspace(p: {
     }
   }, [account.id]);
 
+  const loadOpenPositions = useCallback(async () => {
+    try {
+      const response = await apiRequest<{ positions: OpenPosition[]; pendingSetup?: boolean }>(`/api/prop-accounts/${account.id}/mt5/positions`);
+      setOpenPositions(response.positions || []);
+      setPositionsPendingSetup(Boolean(response.pendingSetup));
+    } catch {
+      setOpenPositions([]);
+      setPositionsPendingSetup(false);
+    }
+  }, [account.id]);
+
   useEffect(() => {
     if (activeTab !== "overview") return;
     void loadCoach();
-  }, [activeTab, loadCoach, trades.length]);
+    void loadOpenPositions();
+  }, [activeTab, loadCoach, loadOpenPositions, trades.length]);
 
   return (
     <div className="animate-page-in mx-auto max-w-[1700px]">
@@ -656,6 +670,51 @@ function Workspace(p: {
               <MiniStat label="DAILY LIMIT" value={cash.format(account.dailyDrawdown)} />
               <MiniStat label="START BALANCE" value={cash.format(account.initialBalance)} />
             </div>
+
+            <section className="rounded-2xl border border-[#2a2a2a] bg-[#1b1b1b]/80 p-5">
+              <div className="flex items-center justify-between gap-3">
+                <div>
+                  <h3 className="font-bold">Live positions</h3>
+                  <p className="mt-1 text-xs text-[#8a8a8a]">Open MT5 trades tracked by auto sync.</p>
+                </div>
+                <span className="rounded-full border border-white/10 bg-white/[.03] px-2.5 py-1 text-[10px] font-bold uppercase text-zinc-400">
+                  {openPositions.length} open
+                </span>
+              </div>
+              {openPositions.length ? (
+                <div className="mt-4 grid gap-2">
+                  {openPositions.slice(0, 4).map((position) => {
+                    const positive = (position.unrealizedPnl || 0) >= 0;
+                    return (
+                      <div key={position.id} className="flex items-center gap-3 rounded-xl border border-white/8 bg-black/20 px-3 py-3">
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center gap-2">
+                            <strong className="text-sm font-black text-zinc-100">{position.symbol}</strong>
+                            <span className={`rounded px-1.5 py-0.5 text-[9px] font-black uppercase ${position.side === "long" ? "bg-emerald-400/15 text-emerald-300" : "bg-rose-400/15 text-rose-300"}`}>
+                              {position.side}
+                            </span>
+                            <span className="text-[10px] text-zinc-500">{position.volume.toFixed(2)} lots</span>
+                          </div>
+                          <p className="mt-1 text-[11px] text-zinc-500">
+                            Entry {position.entryPrice?.toFixed(2) || "-"} · Now {position.currentPrice?.toFixed(2) || "-"}
+                          </p>
+                        </div>
+                        <div className="text-right">
+                          <strong className={`font-mono text-sm font-black ${positive ? "text-emerald-400" : "text-rose-400"}`}>
+                            {(position.unrealizedPnl || 0) >= 0 ? "+" : ""}{cash.format(position.unrealizedPnl || 0)}
+                          </strong>
+                          <p className="mt-1 text-[10px] text-zinc-600">{position.openedAt ? new Date(position.openedAt).toLocaleString("uz-UZ") : "Live"}</p>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : (
+                <p className="mt-4 text-sm text-zinc-500">
+                  {positionsPendingSetup ? "Open positions table is waiting for DB migration." : "No open MT5 positions right now."}
+                </p>
+              )}
+            </section>
           </TabsContent>
 
           {/* Calendar */}
