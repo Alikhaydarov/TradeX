@@ -249,7 +249,7 @@ export function AppShell() {
   return (
     <>
       <ActiveAccountProvider>
-      <div className="mx-auto flex min-h-[100dvh] max-w-[1720px] gap-3 bg-transparent p-0 text-foreground lg:p-4">
+      <div className="mx-auto flex min-h-[100dvh] max-w-[1860px] gap-4 bg-[#000000] p-0 text-foreground lg:p-4">
         <Sidebar
           active={section}
           onChange={changeSection}
@@ -262,8 +262,8 @@ export function AppShell() {
           hideMobile={chatOpen}
           isAdmin={isAdmin}
         />
-        <div className="hidden w-[256px] shrink-0 lg:block" aria-hidden="true" />
-        <main className={chatOpen ? "fixed inset-0 z-50 min-w-0 flex-1 overflow-hidden bg-[#111214] lg:static lg:z-auto lg:min-h-[calc(100dvh-2rem)] lg:rounded-[1.35rem] lg:border lg:border-white/6" : "min-h-[100dvh] min-w-0 flex-1 overflow-x-hidden bg-[#121214] pb-[calc(5.5rem+env(safe-area-inset-bottom))] shadow-[0_10px_30px_rgba(0,0,0,.18)] lg:min-h-[calc(100dvh-2rem)] lg:rounded-[1.35rem] lg:border lg:border-white/6 lg:pb-0"}>
+        <div className="hidden w-[272px] shrink-0 lg:block" aria-hidden="true" />
+        <main className={chatOpen ? "fixed inset-0 z-50 min-w-0 flex-1 overflow-hidden bg-[#000000] lg:static lg:z-auto lg:min-h-[calc(100dvh-2rem)] lg:rounded-[1rem] lg:border lg:border-white/8" : "min-h-[100dvh] min-w-0 flex-1 overflow-x-hidden bg-[#000000] pb-[calc(5.5rem+env(safe-area-inset-bottom))] lg:min-h-[calc(100dvh-2rem)] lg:rounded-[1rem] lg:border lg:border-white/8 lg:pb-0"}>
           <div className="block min-h-full">
             {cachedSections.map((item) =>
               visitedSections[item] ? (

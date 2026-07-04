@@ -95,7 +95,7 @@ export function Sidebar({
 
   return (
     <>
-      <aside className="fixed left-[max(1rem,calc((100vw-1720px)/2+1rem))] top-4 z-40 hidden h-[calc(100dvh-2rem)] w-[252px] shrink-0 flex-col rounded-[1.75rem] border border-white/12 bg-[rgba(20,20,24,0.66)] p-3.5 shadow-[0_24px_70px_rgba(0,0,0,.38),inset_0_1px_0_rgba(255,255,255,.065)] backdrop-blur-[28px] lg:flex">
+      <aside className="fixed left-[max(1rem,calc((100vw-1860px)/2+1rem))] top-4 z-40 hidden h-[calc(100dvh-2rem)] w-[272px] shrink-0 flex-col rounded-[1.25rem] border border-white/8 bg-[#000000] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,.04)] lg:flex">
         <button onClick={() => onChange("feed")} className="flex items-center gap-3 rounded-[1.25rem] px-2 py-2.5 text-left transition-colors hover:bg-white/[.05]" aria-label="TradeWay home">
           <span className="grid h-11 w-11 place-items-center rounded-2xl bg-[linear-gradient(180deg,rgba(255,255,255,1),rgba(232,232,236,1))] text-lg font-black text-black shadow-[0_12px_28px_rgba(255,255,255,.08)]">TW</span>
           <span>
@@ -122,7 +122,7 @@ export function Sidebar({
               </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="start" className="w-[230px] border-white/10 bg-[#090909]">
-              <DropdownMenuItem onClick={() => { setActiveAccount(null); onChange("journal"); }} className="flex items-center gap-3 px-3 py-2.5">
+              <DropdownMenuItem onClick={() => { setActiveAccount(null); }} className="flex items-center gap-3 px-3 py-2.5">
                 <span className="size-2 rounded-full bg-zinc-500" />
                 <div className="min-w-0">
                   <p className="truncate text-sm font-semibold text-white">All Accounts</p>
@@ -130,7 +130,7 @@ export function Sidebar({
                 </div>
               </DropdownMenuItem>
               {accounts.map((account) => (
-                <DropdownMenuItem key={account.id} onClick={() => { setActiveAccount(account.id); onChange("journal"); }} className="flex items-center gap-3 px-3 py-2.5">
+                <DropdownMenuItem key={account.id} onClick={() => { setActiveAccount(account.id); }} className="flex items-center gap-3 px-3 py-2.5">
                   <span className={`size-2 rounded-full ${account.status === "Active" ? "bg-emerald-500" : "bg-zinc-500"}`} />
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-sm font-semibold text-white">{account.name}</p>

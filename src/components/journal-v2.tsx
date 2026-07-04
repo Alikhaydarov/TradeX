@@ -388,7 +388,7 @@ function Accounts({ summaries, entries, deleting, onAdd, onOpen, onDelete, onAgg
   const portfolioReturn = capital ? Math.round((total / capital) * 10000) / 100 : 0;
 
   return (
-    <div className="animate-page-in mx-auto max-w-[1680px] space-y-5 p-4 lg:p-6">
+    <div className="animate-page-in mx-auto max-w-[1780px] space-y-6 p-5 lg:p-7">
       <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
         <div className="min-w-0">
           <div className="mb-2 flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.22em] text-zinc-500">
@@ -806,7 +806,7 @@ function Workspace(p: {
   }, [activeTab]);
 
   return (
-    <div className="animate-page-in mx-auto max-w-[1700px]">
+    <div className="animate-page-in mx-auto max-w-[1780px]">
       {/* Sticky header */}
       <header className="sticky top-0 z-20 flex min-w-0 items-center gap-2 border-b border-white/6 bg-[#111214]/96 px-3 py-2.5 sm:px-4 sm:py-3 lg:gap-3 lg:px-6">
         <Button variant="ghost" size="icon" onClick={p.onBack} className="shrink-0">
