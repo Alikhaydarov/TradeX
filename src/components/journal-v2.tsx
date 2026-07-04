@@ -518,6 +518,7 @@ function Workspace(p: {
 }) {
   const { account, stats, equity, setups, mistakes, planRate, monthCount, calendar, trades, bibleTrades, month } = p;
   const [selectedTrade, setSelectedTrade] = useState<JournalEntry | null>(null);
+  const [selectedDay, setSelectedDay] = useState<{ day: number; trades: JournalEntry[]; pnl: number } | null>(null);
   const [activeTab, setActiveTab] = useState<WorkspaceTab>("overview");
   const [coachReport, setCoachReport] = useState<AiCoachReport | null>(null);
   const [coachLoading, setCoachLoading] = useState(false);
@@ -758,8 +759,8 @@ function Workspace(p: {
                 <div className="grid grid-cols-7 content-start gap-1.5 [grid-auto-rows:130px]">
                   {calendar.map((c, i) =>
                     c ? (
-                      <div key={`${monthId(month)}-desktop-${i}`}
-                        className={`h-full rounded-xl border p-2.5 transition ${c.trades.length ? c.pnl >= 0 ? "border-emerald-500/20 bg-emerald-500/5" : "border-rose-500/20 bg-rose-500/5" : "border-[#2a2a2a] bg-[#121212]/40"}`}>
+                      <button key={`${monthId(month)}-desktop-${i}`} type="button" onClick={() => c.trades.length ? setSelectedDay(c) : null}
+                        className={`h-full w-full rounded-xl border p-2.5 text-left transition ${c.trades.length ? c.pnl >= 0 ? "border-emerald-500/20 bg-emerald-500/5 hover:bg-emerald-500/8" : "border-rose-500/20 bg-rose-500/5 hover:bg-rose-500/8" : "border-[#2a2a2a] bg-[#121212]/40"} ${c.trades.length ? "cursor-pointer" : "cursor-default"}`}>
                         <div className="flex items-start justify-between">
                           <span className={`grid size-6 place-items-center rounded-md text-[11px] font-bold ${c.trades.length ? "bg-[#2a2a2a] text-[#f1f1f1]" : "text-[#8a8a8a]"}`}>{c.day}</span>
                           {c.trades.length > 0 && (
@@ -773,23 +774,11 @@ function Workspace(p: {
                             <p className={`mt-3 font-mono text-sm font-black ${c.pnl >= 0 ? "text-emerald-400" : "text-rose-400"}`}>
                               {c.pnl >= 0 ? "+" : ""}{cash.format(c.pnl)}
                             </p>
-                            <div className="mt-1 flex flex-wrap gap-1">
-                              {c.trades.slice(0, 2).map((trade) => (
-                                <InstrumentBadge
-                                  key={`${c.day}-${trade.id}`}
-                                  symbol={trade.symbol}
-                                  compact
-                                  className="rounded-lg bg-[#0f0f0f]"
-                                  showFullSymbol={false}
-                                />
-                              ))}
-                              {c.trades.length > 2 ? (
-                                <span className="rounded-lg bg-white/[.05] px-1.5 py-1 text-[9px] font-black text-zinc-400">
-                                  +{c.trades.length - 2}
-                                </span>
-                              ) : null}
+                            <div className="mt-5 flex items-center justify-between">
+                              <span className="text-[10px] font-semibold uppercase tracking-[0.18em] text-zinc-500">Open day</span>
+                              <span className="rounded-full border border-white/8 bg-white/[.04] px-2 py-1 text-[10px] font-black text-zinc-300">View trades</span>
                             </div>
-                            <div className="mt-1.5 flex gap-1">
+                            <div className="mt-2 flex gap-1">
                               {c.trades.filter(t => t.pnl > 0).length > 0 && (
                                 <span className="rounded-md bg-emerald-500/15 px-1 py-0.5 text-[9px] font-bold text-emerald-400">{c.trades.filter(t => t.pnl > 0).length}W</span>
                               )}
@@ -801,7 +790,7 @@ function Workspace(p: {
                         ) : (
                           <p className="mt-8 text-center text-[10px] text-[#333333]">-</p>
                         )}
-                      </div>
+                      </button>
                     ) : (
                       <div key={`${monthId(month)}-desktop-empty-${i}`} className="h-full rounded-xl border border-transparent" />
                     )
@@ -819,15 +808,15 @@ function Workspace(p: {
                 <div className="grid grid-cols-7 gap-1">
                   {calendar.map((c, i) =>
                     c ? (
-                      <div key={`${monthId(month)}-mobile-${i}`}
-                        className={`flex flex-col items-center rounded-lg p-1 py-1.5 ${c.trades.length ? c.pnl >= 0 ? "bg-emerald-500/10" : "bg-rose-500/10" : ""}`}>
+                      <button key={`${monthId(month)}-mobile-${i}`} type="button" onClick={() => c.trades.length ? setSelectedDay(c) : null}
+                        className={`flex flex-col items-center rounded-lg p-1 py-1.5 text-center ${c.trades.length ? c.pnl >= 0 ? "bg-emerald-500/10" : "bg-rose-500/10" : ""} ${c.trades.length ? "cursor-pointer" : "cursor-default"}`}>
                         <span className={`text-[11px] font-bold ${c.trades.length ? "text-[#f1f1f1]" : "text-[#8a8a8a]"}`}>{c.day}</span>
                         {c.trades.length > 0 && (
                           <span className={`mt-0.5 text-[9px] font-black ${c.pnl >= 0 ? "text-emerald-400" : "text-rose-400"}`}>
                             {c.pnl >= 0 ? "+" : ""}{Math.abs(c.pnl) >= 1000 ? `${(c.pnl / 1000).toFixed(1)}k` : c.pnl.toFixed(0)}
                           </span>
                         )}
-                      </div>
+                      </button>
                     ) : (
                       <div key={`${monthId(month)}-mobile-empty-${i}`} />
                     )
@@ -1071,6 +1060,57 @@ function Workspace(p: {
             }}
           />
         ) : null}
+      <Dialog open={Boolean(selectedDay)} onOpenChange={(open) => { if (!open) setSelectedDay(null); }}>
+        <DialogContent className="max-h-[90dvh] overflow-hidden border-border bg-background p-0 sm:max-w-2xl">
+          <DialogHeader className="border-b border-white/8 px-5 py-4 text-left">
+            <DialogTitle className="text-white">
+              {selectedDay ? new Date(`${monthId(month)}-${String(selectedDay.day).padStart(2, "0")}T00:00:00`).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" }) : "Day trades"}
+            </DialogTitle>
+            <DialogDescription>
+              {selectedDay ? `${selectedDay.trades.length} trades / ${selectedDay.pnl >= 0 ? "+" : ""}${cash.format(selectedDay.pnl)}` : "Closed trades for this day"}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="max-h-[calc(90dvh-84px)] overflow-y-auto p-3 sm:p-4">
+            {selectedDay?.trades.length ? (
+              <div className="space-y-2">
+                {selectedDay.trades.map((trade) => {
+                  const winning = trade.pnl >= 0;
+                  return (
+                    <button
+                      key={trade.id}
+                      type="button"
+                      onClick={() => {
+                        setSelectedDay(null);
+                        setSelectedTrade(trade);
+                      }}
+                      className="flex w-full items-center gap-3 rounded-2xl border border-white/10 bg-white/[.035] px-3 py-3 text-left transition hover:bg-white/[.05]"
+                    >
+                      <InstrumentBadge symbol={trade.symbol} compact className="shrink-0 rounded-xl bg-[#151515]" showFullSymbol={false} />
+                      <span className="min-w-0 flex-1">
+                        <span className="flex min-w-0 items-center gap-2">
+                          <strong className="truncate text-sm font-black text-white">{trade.symbol}</strong>
+                          <span className={`rounded px-1.5 py-0.5 text-[9px] font-black uppercase ${trade.side === "Long" ? "bg-emerald-400/15 text-emerald-300" : "bg-rose-400/15 text-rose-300"}`}>
+                            {trade.side === "Long" ? "Buy" : "Sell"}
+                          </span>
+                        </span>
+                        <span className="mt-1 block text-xs text-zinc-500">{trade.setup || trade.session || trade.note || "Open trade review"}</span>
+                      </span>
+                      <span className="shrink-0 text-right">
+                        <strong className={`block font-mono text-sm font-black ${winning ? "text-emerald-300" : "text-rose-300"}`}>
+                          {trade.pnl >= 0 ? "+" : ""}{cash.format(trade.pnl)}
+                        </strong>
+                        <span className="mt-1 block text-[10px] text-zinc-500">{(trade.resultR || 0).toFixed(2)}R</span>
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            ) : (
+              <Empty text="No trades for this day." />
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
       </div>
     </div>
   );
