@@ -2,11 +2,11 @@
 
 import {
   ArrowLeft, BarChart3, BookOpen, BrainCircuit, CalendarDays, CheckCircle2, ChevronDown, ChevronLeft, ChevronRight,
-  Download, ImageIcon, LoaderCircle, MoreHorizontal, Plus, Search, ShieldCheck,
+  Download, ImageIcon, LoaderCircle, MoreHorizontal, Plus, RefreshCw, Search, ShieldCheck,
   Target, Trash2, TrendingDown, TrendingUp, WalletCards, X, Zap,
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import { Area, AreaChart, CartesianGrid, PolarAngleAxis, PolarGrid, PolarRadiusAxis, Radar, RadarChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { apiRequest } from "../lib/api-client";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
@@ -48,11 +48,29 @@ type AiCoachReport = {
   nextSteps: string[];
   generatedBy: "rules" | "openai";
 };
+type CalendarNewsEvent = {
+  id: string;
+  title: string;
+  currency: string;
+  impact: "High" | "Medium" | "Low";
+  time: string;
+  day: string;
+  forecast: string;
+  previous: string;
+  timestamp: string;
+};
+type CalendarNewsResponse = {
+  events: CalendarNewsEvent[];
+  source: string;
+  timezone?: string;
+  updatedAt?: string;
+  error?: string;
+};
 
 const cash = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 2 });
 const WEEKDAYS_SHORT = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 const WEEKDAYS_FULL = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
-const WORKSPACE_TABS = [["overview", "Overview"], ["calendar", "Calendar"], ["trades", "Trades"], ["bible", "Bible"], ["analytics", "Analytics"], ["settings", "Settings"]] as const;
+const WORKSPACE_TABS = [["overview", "Dashboard"], ["calendar", "Calendar"], ["trades", "Trades"], ["bible", "Bible"], ["analytics", "Analytics"], ["settings", "Settings"]] as const;
 type WorkspaceTab = typeof WORKSPACE_TABS[number][0];
 
 const accountFrom = (a: AccountRow): PropAccount => ({ id: a.id, name: a.name, accountType: a.account_type || "prop", firm: a.firm, propSite: a.prop_site || "", propLogin: a.prop_login || "", importSource: a.import_source || "manual", platform: a.platform || "mt5", phase: a.phase, marketType: a.market_type, accountSize: +a.account_size, initialBalance: +a.initial_balance, profitTarget: +a.profit_target, maxDrawdown: +a.max_drawdown, dailyDrawdown: +a.daily_drawdown, startDate: a.start_date, status: a.status });
@@ -68,6 +86,36 @@ const parseTradeImages = (value?: string | null) => {
 const entryFrom = (e: EntryRow): JournalEntry => { const imageUrls = parseTradeImages(e.image_url); return ({ id: e.id, propAccountId: e.prop_account_id, symbol: e.symbol, side: e.side, entry: +e.entry_price, exit: +e.exit_price, quantity: +e.quantity, fees: +e.fees, pnl: +e.pnl, note: e.note, rawDate: e.traded_at, date: new Date(`${e.traded_at}T00:00:00`).toLocaleDateString("uz-UZ"), accountName: e.account_name, marketType: e.market_type, setup: e.setup || "", emotion: e.emotion || "Neutral", riskAmount: +(e.risk_amount || 0), resultR: +(e.result_r || 0), riskPercent: e.risk_percent || "1.0%", session: e.session || "", followingPlan: e.following_plan ?? true, errorMade: e.error_made ?? false, mistakeType: e.mistake_type || "", reviewCompleted: e.review_completed ?? false, toTradingBible: e.to_trading_bible ?? false, imageUrl: imageUrls[0] ?? null, imageUrls, tags: e.tags || [] }); };
 const monthId = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
 const reviewScore = (entry: JournalEntry) => [entry.note, entry.setup, entry.session, entry.imageUrl, entry.reviewCompleted, entry.toTradingBible].filter(Boolean).length;
+const groupCalendarNewsByDay = (events: CalendarNewsEvent[]) =>
+  events.reduce<Record<string, CalendarNewsEvent[]>>((grouped, event) => {
+    grouped[event.day] = grouped[event.day] || [];
+    grouped[event.day].push(event);
+    return grouped;
+  }, {});
+
+function buildWeeklyStrip(account: PropAccount, month: Date, trades: JournalEntry[]) {
+  const now = new Date();
+  const isCurrentMonth = now.getFullYear() === month.getFullYear() && now.getMonth() === month.getMonth();
+  const anchor = isCurrentMonth ? new Date(now) : new Date(month.getFullYear(), month.getMonth(), 1);
+  const mondayOffset = (anchor.getDay() + 6) % 7;
+  anchor.setDate(anchor.getDate() - mondayOffset);
+
+  return Array.from({ length: 7 }, (_, index) => {
+    const day = new Date(anchor);
+    day.setDate(anchor.getDate() + index);
+    const key = day.toISOString().slice(0, 10);
+    const dayTrades = trades.filter((trade) => trade.rawDate === key);
+    const pnl = dayTrades.reduce((sum, trade) => sum + trade.pnl, 0);
+    const percent = account.accountSize ? (pnl / account.accountSize) * 100 : 0;
+    return {
+      key,
+      label: day.toLocaleDateString("en-US", { weekday: "short", day: "2-digit" }),
+      trades: dayTrades.length,
+      pnl,
+      percent,
+    };
+  });
+}
 
 export function JournalV2({ onLogin }: { onLogin: () => void }) {
   const { user } = useAuth();
@@ -335,152 +383,171 @@ function Accounts({ summaries, entries, deleting, onAdd, onOpen, onDelete }: { s
     return map;
   }, new Map<string, { symbol: string; trades: number; pnl: number }>()).values()].sort((a, b) => b.trades - a.trades).slice(0, 4);
   const bestAccount = [...summaries].sort((a, b) => b.pnl - a.pnl)[0] || null;
+  const portfolioReturn = capital ? Math.round((total / capital) * 10000) / 100 : 0;
 
   return (
-    <div className="animate-page-in mx-auto max-w-[1700px] space-y-6 p-4 lg:p-6">
-      <section className="overflow-hidden rounded-[30px] border border-white/10 bg-[radial-gradient(circle_at_top_right,rgba(217,249,109,.1),transparent_22%),linear-gradient(180deg,rgba(255,255,255,.045),rgba(255,255,255,.018))] shadow-[0_24px_70px_rgba(0,0,0,.24)] backdrop-blur-[24px]">
-        <div className="flex flex-col gap-5 px-4 py-5 lg:px-6 lg:py-6">
-          <div className="flex flex-col gap-4 lg:flex-row lg:items-end">
-            <div className="min-w-0">
-              <div className="mb-2 flex items-center gap-2">
-                <span className="grid size-7 place-items-center rounded-lg bg-white/[.06]">
-                  <ShieldCheck size={14} className="text-zinc-300" />
+    <div className="animate-page-in mx-auto max-w-[1680px] space-y-5 p-4 lg:p-6">
+      <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
+        <div className="min-w-0">
+          <div className="mb-2 flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.22em] text-zinc-500">
+            <span className="grid size-7 place-items-center rounded-xl border border-white/8 bg-white/[.04]">
+              <ShieldCheck size={14} className="text-zinc-300" />
+            </span>
+            Trading workspace
+          </div>
+          <h1 className="text-[2rem] font-black tracking-tight text-white">Accounts</h1>
+          <p className="mt-1 max-w-2xl text-sm text-zinc-500">
+            Keep prop and real accounts in one fast workspace, then jump into dashboard, calendar, trade log and analytics without clutter.
+          </p>
+        </div>
+        <div className="flex flex-wrap items-center gap-2 lg:ml-auto">
+          <button type="button" className="inline-flex h-11 min-w-[220px] items-center justify-between rounded-2xl border border-white/8 bg-[#17181b] px-4 text-sm font-semibold text-white shadow-[0_12px_36px_rgba(0,0,0,.18)]">
+            <span>All Accounts</span>
+            <ChevronDown size={16} className="text-zinc-500" />
+          </button>
+          <Button type="button" variant="outline" className="h-11 rounded-2xl border-white/10 bg-[#17181b] px-4 text-zinc-100 hover:bg-white/[.05]" onClick={() => window.location.reload()}>
+            <RefreshCw size={15} /> Refresh
+          </Button>
+          <Button onClick={onAdd} className="h-11 rounded-2xl bg-white px-4 text-black hover:bg-zinc-200">
+            <Plus size={16} /> Add Account
+          </Button>
+        </div>
+      </div>
+
+      <div className="grid gap-4 xl:grid-cols-[minmax(0,1.2fr)_minmax(320px,.8fr)]">
+        <section className="rounded-[26px] border border-white/8 bg-[#17181b] p-5 shadow-[0_20px_54px_rgba(0,0,0,.24)]">
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <p className="text-sm font-bold text-white">Total Portfolio Value</p>
+              <div className="mt-3 flex flex-wrap items-center gap-3">
+                <p className="font-mono text-4xl font-black tracking-tight text-white">{cash.format(capital)}</p>
+                <span className={`rounded-full px-3 py-1 text-sm font-black ${portfolioReturn >= 0 ? "bg-emerald-500/12 text-emerald-300" : "bg-rose-500/12 text-rose-300"}`}>
+                  {portfolioReturn >= 0 ? "+" : ""}{portfolioReturn.toFixed(2)}%
                 </span>
-                <span className="text-xs font-semibold uppercase tracking-wider text-[#8a8a8a]">Trading workspace</span>
               </div>
-              <h1 className="text-3xl font-black tracking-tight text-white">Trading accounts</h1>
-              <p className="mt-1 max-w-2xl text-sm text-[#8a8a8a]">
-                Track prop and real accounts in one calm workspace, then move into calendar, trades, analytics and trade sharing without noise.
-              </p>
+              <p className="mt-2 text-sm text-zinc-500">Total trading capital across all connected accounts.</p>
             </div>
-            <div className="flex flex-wrap items-center gap-2 lg:ml-auto">
-              <div className="rounded-2xl border border-white/8 bg-black/20 px-3 py-2 text-xs font-semibold text-zinc-400">
-                {activeAccounts} active / {summaries.length} total
-              </div>
-              <Button onClick={onAdd} className="h-10 rounded-2xl bg-white text-black hover:bg-zinc-200">
-                <Plus size={16} /> Add account
-              </Button>
+            <div className="grid gap-2 sm:grid-cols-3">
+              {[
+                { label: "Net P&L", value: `${total >= 0 ? "+" : ""}${cash.format(total)}` },
+                { label: "Win rate", value: `${winRate}%` },
+                { label: "Profit factor", value: profitFactor.toFixed(2) },
+              ].map((item) => (
+                <div key={item.label} className="rounded-2xl border border-white/8 bg-black/15 px-4 py-3">
+                  <p className="text-[10px] uppercase tracking-[0.18em] text-zinc-500">{item.label}</p>
+                  <p className="mt-1 font-mono text-lg font-black text-white">{item.value}</p>
+                </div>
+              ))}
             </div>
           </div>
+        </section>
 
-          <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        <section className="rounded-[26px] border border-white/8 bg-[#17181b] p-5 shadow-[0_20px_54px_rgba(0,0,0,.24)]">
+          <div className="grid gap-3 sm:grid-cols-3 xl:grid-cols-1">
             {[
-              { title: "Total capital", value: cash.format(capital), icon: WalletCards, tone: "text-white", bg: "bg-white/[.05]" },
-              { title: "Net P&L", value: `${total >= 0 ? "+" : ""}${cash.format(total)}`, icon: total >= 0 ? TrendingUp : TrendingDown, tone: total >= 0 ? "text-emerald-300" : "text-rose-300", bg: total >= 0 ? "bg-emerald-500/10" : "bg-rose-500/10" },
-              { title: "Win rate", value: `${winRate}%`, icon: Target, tone: "text-white", bg: "bg-white/[.05]" },
-              { title: "Profit factor", value: profitFactor.toFixed(2), icon: BarChart3, tone: "text-white", bg: "bg-white/[.05]" },
+              { label: "Accounts", value: summaries.length, note: `${activeAccounts} active now` },
+              { label: "Trades", value: totalTrades, note: `${winningTrades} wins / ${losingTrades} losses` },
+              { label: "Best account", value: bestAccount?.account.name || "N/A", note: bestAccount ? `${bestAccount.pnl >= 0 ? "+" : ""}${cash.format(bestAccount.pnl)}` : "No data yet" },
             ].map((item) => (
-              <div key={item.title} className="rounded-[24px] border border-white/8 bg-black/20 px-4 py-4">
-                <div className="flex items-center gap-3">
-                  <span className={`grid size-10 shrink-0 place-items-center rounded-xl ${item.bg}`}>
-                    <item.icon size={18} className={item.tone} />
-                  </span>
-                  <div className="min-w-0">
-                    <p className="text-[11px] uppercase tracking-wider text-zinc-500">{item.title}</p>
-                    <p className={`truncate font-mono text-lg font-black ${item.tone}`}>{item.value}</p>
-                  </div>
-                </div>
+              <div key={item.label} className="rounded-2xl border border-white/8 bg-black/15 px-4 py-3">
+                <p className="text-[10px] uppercase tracking-[0.18em] text-zinc-500">{item.label}</p>
+                <p className="mt-1 truncate text-lg font-black text-white">{item.value}</p>
+                <p className="mt-1 text-xs text-zinc-500">{item.note}</p>
               </div>
             ))}
           </div>
-        </div>
-      </section>
+        </section>
+      </div>
 
-      {!summaries.length
-        ? <div className="grid min-h-64 place-items-center rounded-2xl border border-dashed border-[#2a2a2a] text-center">
-            <div>
-              <div className="mx-auto grid size-14 place-items-center rounded-2xl bg-white/[.06]">
-                <WalletCards size={24} className="text-zinc-300" />
-              </div>
-              <h2 className="mt-4 text-xl font-bold">Add your first trading account</h2>
-              <p className="mt-1 text-sm text-[#8a8a8a]">Track real accounts, prop challenges or funded accounts.</p>
-              <Button onClick={onAdd} className="mt-5 bg-white text-black hover:bg-zinc-200"><Plus size={16} /> Create account</Button>
+      {!summaries.length ? (
+        <div className="grid min-h-72 place-items-center rounded-[26px] border border-dashed border-white/10 bg-[#17181b] text-center">
+          <div>
+            <div className="mx-auto grid size-14 place-items-center rounded-2xl bg-white/[.06]">
+              <WalletCards size={24} className="text-zinc-300" />
             </div>
+            <h2 className="mt-4 text-xl font-bold text-white">Add your first trading account</h2>
+            <p className="mt-1 text-sm text-zinc-500">Create a manual account, connect MT5 or bring in your futures workflow.</p>
+            <Button onClick={onAdd} className="mt-5 rounded-2xl bg-white text-black hover:bg-zinc-200">
+              <Plus size={16} /> Create account
+            </Button>
           </div>
-        : (
-          <div className="grid gap-4 xl:grid-cols-[minmax(0,1.15fr)_360px]">
-            <section className="grid gap-4 md:grid-cols-2 2xl:grid-cols-3">
-              {summaries.map((summary) => (
-                <AccountCard key={summary.account.id} s={summary} deleting={deleting} onOpen={onOpen} onDelete={onDelete} />
-              ))}
-            </section>
+        </div>
+      ) : (
+        <>
+          <section className="grid gap-4 md:grid-cols-2 2xl:grid-cols-3">
+            {summaries.map((summary) => (
+              <AccountCard key={summary.account.id} s={summary} deleting={deleting} onOpen={onOpen} onDelete={onDelete} />
+            ))}
+            <button
+              type="button"
+              onClick={onAdd}
+              className="group grid min-h-[255px] place-items-center rounded-[28px] border border-dashed border-white/10 bg-[#17181b] text-center transition hover:border-white/20 hover:bg-white/[.03]"
+            >
+              <div>
+                <span className="mx-auto grid size-14 place-items-center rounded-2xl border border-white/10 bg-black/20 text-zinc-400 transition group-hover:text-white">
+                  <Plus size={24} />
+                </span>
+                <p className="mt-4 text-2xl font-black text-white">Add Account</p>
+                <p className="mt-1 text-sm text-zinc-500">Create a new workspace tile for another prop or real account.</p>
+              </div>
+            </button>
+          </section>
 
-            <aside className="space-y-4">
-              <section className="rounded-[28px] border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,.045),rgba(255,255,255,.02))] p-5 shadow-[0_22px_60px_rgba(0,0,0,.18)]">
+          <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_340px]">
+            <section className="rounded-[26px] border border-white/8 bg-[#17181b] p-5 shadow-[0_18px_46px_rgba(0,0,0,.22)]">
+              <div className="flex items-start justify-between gap-3">
                 <div>
-                  <h3 className="text-lg font-black text-white">Desk snapshot</h3>
-                  <p className="mt-1 text-sm text-zinc-500">A quick pulse of your whole journal before drilling into an account.</p>
+                  <h3 className="text-lg font-black text-white">Recent Trades</h3>
+                  <p className="mt-1 text-sm text-zinc-500">Latest closed trades from every linked account.</p>
                 </div>
-                <div className="mt-4 grid gap-3">
-                  {[
-                    { label: "Accounts", value: summaries.length, note: `${activeAccounts} active now` },
-                    { label: "Trades", value: totalTrades, note: `${winningTrades} wins / ${losingTrades} losses` },
-                    { label: "Best account", value: bestAccount?.account.name || "N/A", note: bestAccount ? `${bestAccount.pnl >= 0 ? "+" : ""}${cash.format(bestAccount.pnl)}` : "No data yet" },
-                  ].map((item) => (
-                    <div key={item.label} className="rounded-2xl border border-white/8 bg-black/15 px-4 py-3">
-                      <p className="text-[11px] uppercase tracking-wider text-zinc-500">{item.label}</p>
-                      <p className="mt-1 truncate text-base font-black text-white">{item.value}</p>
-                      <p className="mt-1 text-xs text-zinc-500">{item.note}</p>
-                    </div>
+                <span className="rounded-full border border-white/8 bg-black/15 px-2.5 py-1 text-[11px] font-bold text-zinc-400">{recentTrades.length}</span>
+              </div>
+              {recentTrades.length ? (
+                <div className="mt-4 space-y-2">
+                  {recentTrades.map((trade) => (
+                    <button key={trade.id} type="button" onClick={() => trade.propAccountId ? onOpen(trade.propAccountId) : null} className="flex w-full items-center gap-3 rounded-2xl border border-white/8 bg-black/15 px-3 py-3 text-left transition hover:bg-white/[.04]">
+                      <InstrumentBadge symbol={trade.symbol} compact className="bg-[#121212]" showFullSymbol={false} />
+                      <div className="min-w-0 flex-1">
+                        <div className="flex min-w-0 items-center gap-2">
+                          <strong className="truncate text-sm text-white">{trade.symbol}</strong>
+                          <span className={`rounded px-1.5 py-0.5 text-[9px] font-black uppercase ${trade.side === "Long" ? "bg-emerald-400/15 text-emerald-300" : "bg-rose-400/15 text-rose-300"}`}>{trade.side === "Long" ? "Buy" : "Sell"}</span>
+                        </div>
+                        <p className="mt-1 truncate text-xs text-zinc-500">{trade.accountName || "TradeWay account"} / {trade.rawDate}</p>
+                      </div>
+                      <strong className={`font-mono text-sm font-black ${trade.pnl >= 0 ? "text-emerald-300" : "text-rose-300"}`}>{trade.pnl >= 0 ? "+" : ""}{cash.format(trade.pnl)}</strong>
+                    </button>
                   ))}
                 </div>
-              </section>
-
-              <section className="rounded-[28px] border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,.045),rgba(255,255,255,.02))] p-5 shadow-[0_22px_60px_rgba(0,0,0,.18)]">
-                <div className="flex items-start justify-between gap-3">
-                  <div>
-                    <h3 className="text-lg font-black text-white">Recent trades</h3>
-                    <p className="mt-1 text-sm text-zinc-500">Latest closed trades from all connected journals.</p>
-                  </div>
-                  <span className="rounded-full border border-white/8 bg-black/15 px-2.5 py-1 text-[11px] font-bold text-zinc-400">{recentTrades.length}</span>
+              ) : (
+                <div className="mt-4 grid min-h-36 place-items-center rounded-2xl border border-white/8 bg-black/15 text-center text-sm text-zinc-500">
+                  Add trades to bring activity here.
                 </div>
-                {recentTrades.length ? (
-                  <div className="mt-4 space-y-2">
-                    {recentTrades.map((trade) => (
-                      <button key={trade.id} type="button" onClick={() => trade.propAccountId ? onOpen(trade.propAccountId) : null} className="flex w-full items-center gap-3 rounded-2xl border border-white/8 bg-black/15 px-3 py-3 text-left transition hover:bg-white/[.04]">
-                        <InstrumentBadge symbol={trade.symbol} compact className="bg-[#121212]" showFullSymbol={false} />
-                        <div className="min-w-0 flex-1">
-                          <div className="flex min-w-0 items-center gap-2">
-                            <strong className="truncate text-sm text-white">{trade.symbol}</strong>
-                            <span className={`rounded px-1.5 py-0.5 text-[9px] font-black uppercase ${trade.side === "Long" ? "bg-emerald-400/15 text-emerald-300" : "bg-rose-400/15 text-rose-300"}`}>{trade.side === "Long" ? "Buy" : "Sell"}</span>
-                          </div>
-                          <p className="mt-1 truncate text-xs text-zinc-500">{trade.accountName || "TradeWay account"} / {trade.rawDate}</p>
-                        </div>
-                        <strong className={`font-mono text-sm font-black ${trade.pnl >= 0 ? "text-emerald-300" : "text-rose-300"}`}>{trade.pnl >= 0 ? "+" : ""}{cash.format(trade.pnl)}</strong>
-                      </button>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="mt-4 grid min-h-32 place-items-center rounded-2xl border border-white/8 bg-black/15 text-center text-sm text-zinc-500">
-                    Add trades to bring activity here.
-                  </div>
-                )}
-              </section>
+              )}
+            </section>
 
-              <section className="rounded-[28px] border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,.045),rgba(255,255,255,.02))] p-5 shadow-[0_22px_60px_rgba(0,0,0,.18)]">
-                <div>
-                  <h3 className="text-lg font-black text-white">Most traded markets</h3>
-                  <p className="mt-1 text-sm text-zinc-500">Symbols that define your flow right now.</p>
-                </div>
-                <div className="mt-4 space-y-2">
-                  {symbolLeaders.length ? symbolLeaders.map((leader) => (
-                    <div key={leader.symbol} className="flex items-center justify-between rounded-2xl border border-white/8 bg-black/15 px-3 py-3">
-                      <div className="flex min-w-0 items-center gap-2">
-                        <InstrumentBadge symbol={leader.symbol} compact className="bg-[#121212]" showFullSymbol={false} />
-                        <div className="min-w-0">
-                          <p className="truncate text-sm font-black text-white">{leader.symbol}</p>
-                          <p className="text-xs text-zinc-500">{leader.trades} trades logged</p>
-                        </div>
+            <section className="rounded-[26px] border border-white/8 bg-[#17181b] p-5 shadow-[0_18px_46px_rgba(0,0,0,.22)]">
+              <div>
+                <h3 className="text-lg font-black text-white">Most Traded Markets</h3>
+                <p className="mt-1 text-sm text-zinc-500">Symbols that dominate your journal right now.</p>
+              </div>
+              <div className="mt-4 space-y-2">
+                {symbolLeaders.length ? symbolLeaders.map((leader) => (
+                  <div key={leader.symbol} className="flex items-center justify-between rounded-2xl border border-white/8 bg-black/15 px-3 py-3">
+                    <div className="flex min-w-0 items-center gap-2">
+                      <InstrumentBadge symbol={leader.symbol} compact className="bg-[#121212]" showFullSymbol={false} />
+                      <div className="min-w-0">
+                        <p className="truncate text-sm font-black text-white">{leader.symbol}</p>
+                        <p className="text-xs text-zinc-500">{leader.trades} trades logged</p>
                       </div>
-                      <strong className={`font-mono text-xs font-black ${leader.pnl >= 0 ? "text-emerald-300" : "text-rose-300"}`}>{leader.pnl >= 0 ? "+" : ""}{cash.format(leader.pnl)}</strong>
                     </div>
-                  )) : <p className="text-sm text-zinc-500">No trades yet.</p>}
-                </div>
-              </section>
-            </aside>
+                    <strong className={`font-mono text-xs font-black ${leader.pnl >= 0 ? "text-emerald-300" : "text-rose-300"}`}>{leader.pnl >= 0 ? "+" : ""}{cash.format(leader.pnl)}</strong>
+                  </div>
+                )) : <p className="text-sm text-zinc-500">No trades yet.</p>}
+              </div>
+            </section>
           </div>
-        )
-      }
+        </>
+      )}
     </div>
   );
 }
@@ -633,10 +700,56 @@ function Workspace(p: {
   const [coachError, setCoachError] = useState<string | null>(null);
   const [openPositions, setOpenPositions] = useState<OpenPosition[]>([]);
   const [positionsPendingSetup, setPositionsPendingSetup] = useState(false);
+  const [calendarMode, setCalendarMode] = useState<"journal" | "news">("journal");
+  const [analyticsView, setAnalyticsView] = useState<"overview" | "strategy" | "symbols">("overview");
+  const [calendarNews, setCalendarNews] = useState<CalendarNewsResponse | null>(null);
+  const [calendarNewsLoading, setCalendarNewsLoading] = useState(false);
   const currentPnl = (equity.at(-1)?.equity ?? account.initialBalance) - account.initialBalance;
   const currentEquity = account.initialBalance + currentPnl;
   const targetProgress = account.profitTarget ? Math.min(100, Math.max(0, currentPnl / account.profitTarget * 100)) : 0;
   const drawdownUsed = account.maxDrawdown && currentPnl < 0 ? Math.min(100, Math.abs(currentPnl) / account.maxDrawdown * 100) : 0;
+  const sortedTrades = useMemo(
+    () => [...trades].sort((left, right) => String(right.rawDate).localeCompare(String(left.rawDate))),
+    [trades]
+  );
+  const weeklyStrip = useMemo(() => buildWeeklyStrip(account, month, trades), [account, month, trades]);
+  const symbolStats = useMemo(
+    () =>
+      [...trades.reduce((map, trade) => {
+        const current = map.get(trade.symbol) || { symbol: trade.symbol, trades: 0, pnl: 0, wins: 0 };
+        current.trades += 1;
+        current.pnl += trade.pnl;
+        current.wins += trade.pnl > 0 ? 1 : 0;
+        map.set(trade.symbol, current);
+        return map;
+      }, new Map<string, { symbol: string; trades: number; pnl: number; wins: number }>()).values()].sort((left, right) => right.trades - left.trades),
+    [trades]
+  );
+  const recentTrades = sortedTrades.slice(0, 5);
+  const groupedNews = useMemo(() => groupCalendarNewsByDay(calendarNews?.events || []), [calendarNews?.events]);
+  const averageWin = useMemo(() => {
+    const wins = trades.filter((trade) => trade.pnl > 0);
+    return wins.length ? wins.reduce((sum, trade) => sum + trade.pnl, 0) / wins.length : 0;
+  }, [trades]);
+  const averageLoss = useMemo(() => {
+    const losses = trades.filter((trade) => trade.pnl < 0);
+    return losses.length ? losses.reduce((sum, trade) => sum + trade.pnl, 0) / losses.length : 0;
+  }, [trades]);
+  const bestTrade = useMemo(() => [...trades].sort((left, right) => right.pnl - left.pnl)[0] || null, [trades]);
+  const worstTrade = useMemo(() => [...trades].sort((left, right) => left.pnl - right.pnl)[0] || null, [trades]);
+  const scoreRadar = useMemo(() => {
+    const pfScore = Math.max(0, Math.min(100, stats.pf * 25));
+    const rrScore = Math.max(0, Math.min(100, (stats.r + 2) * 20));
+    const recoveryScore = Math.max(0, Math.min(100, currentPnl >= 0 ? 85 + Math.min(15, stats.rate / 10) : 50 - drawdownUsed / 3));
+    return [
+      { subject: "Winrate", value: stats.rate, fullMark: 100 },
+      { subject: "Discipline", value: planRate, fullMark: 100 },
+      { subject: "Recovery", value: recoveryScore, fullMark: 100 },
+      { subject: "Profit", value: pfScore, fullMark: 100 },
+      { subject: "RR", value: rrScore, fullMark: 100 },
+    ];
+  }, [currentPnl, drawdownUsed, planRate, stats.pf, stats.r, stats.rate]);
+  const profitabilityScore = useMemo(() => Math.round(scoreRadar.reduce((sum, item) => sum + item.value, 0) / scoreRadar.length), [scoreRadar]);
 
   const loadCoach = useCallback(async () => {
     setCoachLoading(true);
@@ -667,6 +780,28 @@ function Workspace(p: {
     void loadCoach();
     void loadOpenPositions();
   }, [activeTab, loadCoach, loadOpenPositions, trades.length]);
+
+  useEffect(() => {
+    if (activeTab !== "overview" && activeTab !== "calendar") return;
+    let active = true;
+    const controller = new AbortController();
+    setCalendarNewsLoading(true);
+    fetch("/api/economic-calendar", { signal: controller.signal })
+      .then((response) => response.json() as Promise<CalendarNewsResponse>)
+      .then((payload) => {
+        if (active) setCalendarNews(payload);
+      })
+      .catch(() => {
+        if (active) setCalendarNews({ events: [], source: "Forex Factory", error: "Calendar unavailable." });
+      })
+      .finally(() => {
+        if (active) setCalendarNewsLoading(false);
+      });
+    return () => {
+      active = false;
+      controller.abort();
+    };
+  }, [activeTab]);
 
   return (
     <div className="animate-page-in mx-auto max-w-[1700px]">
@@ -777,60 +912,176 @@ function Workspace(p: {
 
           {/* Overview */}
           <TabsContent value="overview" className="space-y-4">
-            <section className="overflow-hidden rounded-[1.4rem] border border-white/8 bg-[#17181b] shadow-[0_16px_42px_rgba(0,0,0,.22)]">
-              <div className="flex flex-col gap-4 border-b border-white/8 px-4 py-4 sm:px-5 lg:flex-row lg:items-start">
-                <div className="min-w-0">
-                  <h3 className="text-base font-black">Account balance</h3>
-                  <p className="mt-1 text-xs text-zinc-500">{account.name} equity curve and closed-trade performance.</p>
+            <section className="rounded-[1.35rem] border border-white/8 bg-[#17181b] p-4 shadow-[0_18px_46px_rgba(0,0,0,.2)] sm:p-5">
+              <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
+                <div>
+                  <h3 className="text-xl font-black text-white">Welcome back, {account.name}</h3>
+                  <p className="mt-1 text-sm text-zinc-500">{new Date().toLocaleDateString("en-US", { weekday: "long", month: "short", day: "numeric", year: "numeric" })}</p>
                 </div>
-                <div className="grid gap-3 sm:grid-cols-3 lg:ml-auto lg:min-w-[560px]">
-                  <BalanceMetric label="Current P&L" value={`${currentPnl >= 0 ? "+" : ""}${cash.format(currentPnl)}`} tone={currentPnl >= 0 ? "good" : "bad"} />
-                  <BalanceMetric label="Equity" value={cash.format(currentEquity)} />
-                  <BalanceMetric label="Closed Balance" value={cash.format(currentEquity)} />
+                <div className="flex items-center gap-2 lg:ml-auto">
+                  <button type="button" className="grid size-10 place-items-center rounded-xl border border-white/8 bg-black/20 text-zinc-300">
+                    <ChevronLeft size={15} />
+                  </button>
+                  <div className="rounded-xl border border-white/8 bg-black/20 px-4 py-2 text-sm font-semibold text-white">Current Week</div>
+                  <button type="button" className="grid size-10 place-items-center rounded-xl border border-white/8 bg-black/20 text-zinc-300">
+                    <ChevronRight size={15} />
+                  </button>
                 </div>
               </div>
-              <div className="h-[250px] px-1 pb-3 pt-2 sm:h-[390px] sm:px-4 sm:pb-4 sm:pt-3">
-                {equity.length > 1
-                  ? <ResponsiveContainer width="100%" height="100%">
+
+              <div className="mt-4 grid gap-2 xl:grid-cols-7">
+                {weeklyStrip.map((day) => (
+                  <div key={day.key} className="rounded-[1rem] border border-white/8 bg-black/18 px-3 py-3">
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="text-sm font-bold text-white">{day.label}</span>
+                      <span className={`text-sm font-black ${day.percent >= 0 ? "text-emerald-400" : "text-rose-400"}`}>{day.percent >= 0 ? "+" : ""}{day.percent.toFixed(1)}%</span>
+                    </div>
+                    <p className="mt-2 text-xs text-zinc-500">{day.trades} trade{day.trades === 1 ? "" : "s"}</p>
+                  </div>
+                ))}
+              </div>
+            </section>
+
+            <div className="grid gap-4 xl:grid-cols-[minmax(0,1.15fr)_minmax(340px,.85fr)_minmax(340px,.85fr)]">
+              <section className="overflow-hidden rounded-[1.35rem] border border-white/8 bg-[#17181b] shadow-[0_18px_46px_rgba(0,0,0,.2)] xl:col-span-2">
+                <div className="flex flex-col gap-4 border-b border-white/8 px-4 py-4 sm:px-5 lg:flex-row lg:items-start">
+                  <div className="min-w-0">
+                    <h3 className="text-base font-black text-white">Account Balance</h3>
+                    <p className="mt-1 text-xs text-zinc-500">{account.name} equity curve across closed trades.</p>
+                  </div>
+                  <div className="grid gap-3 sm:grid-cols-3 lg:ml-auto lg:min-w-[560px]">
+                    <BalanceMetric label="Current P&L" value={`${currentPnl >= 0 ? "+" : ""}${cash.format(currentPnl)}`} tone={currentPnl >= 0 ? "good" : "bad"} />
+                    <BalanceMetric label="Equity" value={cash.format(currentEquity)} />
+                    <BalanceMetric label="Closed balance" value={cash.format(currentEquity)} />
+                  </div>
+                </div>
+                <div className="h-[260px] px-1 pb-3 pt-2 sm:h-[390px] sm:px-4 sm:pb-4 sm:pt-3">
+                  {equity.length > 1 ? (
+                    <ResponsiveContainer width="100%" height="100%">
                       <AreaChart data={equity} margin={{ left: 8, right: 14, top: 16, bottom: 4 }}>
                         <defs>
                           <linearGradient id="balanceFill" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="0%" stopColor="#d9f96d" stopOpacity={0.42} />
-                            <stop offset="42%" stopColor="#a1a1aa" stopOpacity={0.18} />
-                            <stop offset="100%" stopColor="#171717" stopOpacity={0.03} />
+                            <stop offset="0%" stopColor="#22c55e" stopOpacity={0.34} />
+                            <stop offset="55%" stopColor="#22c55e" stopOpacity={0.12} />
+                            <stop offset="100%" stopColor="#171717" stopOpacity={0.02} />
                           </linearGradient>
                         </defs>
                         <CartesianGrid stroke="rgba(255,255,255,.07)" vertical={false} />
                         <XAxis dataKey="trade" axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: "#707b91" }} />
                         <YAxis width={72} axisLine={false} tickLine={false} tickFormatter={(value) => `$${Number(value / 1000).toFixed(1)}K`} tick={{ fontSize: 11, fill: "#707b91" }} domain={["dataMin - 100", "dataMax + 100"]} />
                         <Tooltip formatter={v => cash.format(Number(v))} labelFormatter={(_, payload) => payload?.[0]?.payload?.label ?? "Balance"} contentStyle={{ background: "#171717", border: "1px solid #333333", borderRadius: 12, color: "#f1f1f1" }} />
-                        <Area type="monotone" dataKey="equity" stroke="#d9f96d" fill="url(#balanceFill)" strokeWidth={3} dot={false} activeDot={{ r: 5, fill: "#d9f96d", stroke: "#171717", strokeWidth: 2 }} />
+                        <Area type="monotone" dataKey="equity" stroke="#22c55e" fill="url(#balanceFill)" strokeWidth={3} dot={false} activeDot={{ r: 5, fill: "#22c55e", stroke: "#171717", strokeWidth: 2 }} />
                       </AreaChart>
                     </ResponsiveContainer>
-                  : <Empty text="Add trades to build the balance chart." />
-                }
-              </div>
-            </section>
-
-            <AiCoachCard report={coachReport} loading={coachLoading} error={coachError} onRefresh={() => void loadCoach()} />
-
-            <div className="grid gap-4 lg:grid-cols-[1.25fr_.85fr_.85fr]">
-              <div className="rounded-2xl border border-white/10 bg-white/[.035] p-5">
-                <h3 className="font-bold">Challenge limits</h3>
-                <div className="mt-4 space-y-5">
-                  <ProgressBar label="Profit target" value={targetProgress} color="bg-[#d9f96d]" />
-                  <ProgressBar label="Max drawdown" value={drawdownUsed} color="bg-rose-500" />
+                  ) : <Empty text="Add trades to build the balance chart." />}
                 </div>
+              </section>
+
+              <div className="grid gap-4">
+                <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-1">
+                  <MetricPanel title="Most Traded Asset" value={symbolStats[0]?.symbol || "N/A"} note={symbolStats[0] ? `${symbolStats[0].trades} trades` : "No data yet"} />
+                  <MetricPanel title="Total Trades" value={String(trades.length)} note={`${stats.wins} winning / ${stats.losses} losing`} />
+                </div>
+                <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-1">
+                  <MetricPanel title="Trade Winrate" value={`${stats.rate}%`} note={`${planRate}% discipline score`} accent="good" />
+                  <MetricPanel title="Profit Factor" value={stats.pf.toFixed(2)} note={`${stats.pnl >= 0 ? "+" : ""}${cash.format(stats.pnl)} this month`} accent={stats.pf >= 1 ? "good" : "bad"} />
+                </div>
+                <section className="rounded-[1.2rem] border border-white/8 bg-[#17181b] p-4">
+                  <div className="flex items-center justify-between gap-3">
+                    <div>
+                      <h4 className="text-sm font-black text-white">Challenge Limits</h4>
+                      <p className="mt-1 text-xs text-zinc-500">Daily and overall protection.</p>
+                    </div>
+                    <span className="rounded-full border border-white/8 bg-black/20 px-2.5 py-1 text-[10px] font-bold text-zinc-400">{account.status}</span>
+                  </div>
+                  <div className="mt-4 space-y-4">
+                    <ProgressBar label="Profit target" value={targetProgress} color="bg-emerald-500" />
+                    <ProgressBar label="Max drawdown used" value={drawdownUsed} color="bg-rose-500" />
+                    <div className="grid grid-cols-2 gap-2">
+                      <MiniStat label="DAILY LIMIT" value={cash.format(account.dailyDrawdown)} />
+                      <MiniStat label="START BALANCE" value={cash.format(account.initialBalance)} />
+                    </div>
+                  </div>
+                </section>
               </div>
-              <MiniStat label="DAILY LIMIT" value={cash.format(account.dailyDrawdown)} />
-              <MiniStat label="START BALANCE" value={cash.format(account.initialBalance)} />
             </div>
 
-            <section className="rounded-2xl border border-white/10 bg-white/[.035] p-5">
+            <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_360px]">
+              <section className="rounded-[1.3rem] border border-white/8 bg-[#17181b] p-5 shadow-[0_18px_46px_rgba(0,0,0,.2)]">
+                <div className="flex items-center justify-between gap-3">
+                  <div>
+                    <h3 className="text-lg font-black text-white">Recent Trades</h3>
+                    <p className="mt-1 text-sm text-zinc-500">Latest entries registered in this account.</p>
+                  </div>
+                  <Button type="button" variant="outline" size="sm" className="border-white/10 bg-black/15" onClick={() => setActiveTab("trades")}>
+                    See all
+                  </Button>
+                </div>
+                {recentTrades.length ? (
+                  <div className="mt-4 space-y-2">
+                    {recentTrades.map((trade) => (
+                      <button
+                        key={trade.id}
+                        type="button"
+                        onClick={() => setSelectedTrade(trade)}
+                        className="flex w-full items-center gap-3 rounded-2xl border border-white/8 bg-black/15 px-3 py-3 text-left transition hover:bg-white/[.04]"
+                      >
+                        <InstrumentBadge symbol={trade.symbol} compact className="bg-[#121212]" showFullSymbol={false} />
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center gap-2">
+                            <strong className="truncate text-sm text-white">{trade.symbol}</strong>
+                            <span className={`rounded px-1.5 py-0.5 text-[9px] font-black uppercase ${trade.side === "Long" ? "bg-emerald-400/15 text-emerald-300" : "bg-rose-400/15 text-rose-300"}`}>
+                              {trade.side === "Long" ? "Buy" : "Sell"}
+                            </span>
+                          </div>
+                          <p className="mt-1 truncate text-xs text-zinc-500">{trade.setup || trade.session || trade.rawDate}</p>
+                        </div>
+                        <strong className={`font-mono text-sm font-black ${trade.pnl >= 0 ? "text-emerald-300" : "text-rose-300"}`}>{trade.pnl >= 0 ? "+" : ""}{cash.format(trade.pnl)}</strong>
+                      </button>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="mt-4 grid min-h-44 place-items-center rounded-2xl border border-white/8 bg-black/15 text-center text-sm text-zinc-500">
+                    You don&apos;t have any trades yet. Register a trade to get started.
+                  </div>
+                )}
+              </section>
+
+              <section className="rounded-[1.3rem] border border-white/8 bg-[#17181b] p-5 shadow-[0_18px_46px_rgba(0,0,0,.2)]">
+                <div className="flex items-center justify-between gap-3">
+                  <div>
+                    <h3 className="text-lg font-black text-white">High Impact News</h3>
+                    <p className="mt-1 text-sm text-zinc-500">Today&apos;s upcoming red events in New York time.</p>
+                  </div>
+                </div>
+                <div className="mt-4 space-y-2">
+                  {calendarNewsLoading && !calendarNews ? (
+                    <div className="rounded-2xl border border-white/8 bg-black/15 px-3 py-4 text-sm text-zinc-500">Loading news...</div>
+                  ) : null}
+                  {!calendarNewsLoading && calendarNews?.error ? (
+                    <div className="rounded-2xl border border-rose-500/15 bg-rose-500/10 px-3 py-4 text-sm text-rose-200">{calendarNews.error}</div>
+                  ) : null}
+                  {!calendarNewsLoading && calendarNews && !calendarNews.error && calendarNews.events.length === 0 ? (
+                    <div className="rounded-2xl border border-white/8 bg-black/15 px-3 py-4 text-sm text-zinc-500">There are no high impact news events today.</div>
+                  ) : null}
+                  {(calendarNews?.events || []).slice(0, 5).map((event) => (
+                    <div key={event.id} className="rounded-2xl border border-white/8 bg-black/15 px-3 py-3">
+                      <div className="flex items-center gap-2">
+                        <span className="w-14 shrink-0 font-mono text-[11px] font-bold text-zinc-200">{event.time}</span>
+                        <span className="rounded-md bg-rose-400/15 px-1.5 py-0.5 text-[10px] font-black text-rose-200">{event.currency}</span>
+                        <p className="min-w-0 flex-1 truncate text-xs font-semibold text-zinc-300">{event.title}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </section>
+            </div>
+
+            <section className="rounded-[1.3rem] border border-white/8 bg-[#17181b] p-5 shadow-[0_18px_46px_rgba(0,0,0,.2)]">
               <div className="flex items-center justify-between gap-3">
                 <div>
-                  <h3 className="font-bold">Live positions</h3>
-                  <p className="mt-1 text-xs text-[#8a8a8a]">Open MT5 trades tracked by auto sync.</p>
+                  <h3 className="font-bold text-white">Live Positions</h3>
+                  <p className="mt-1 text-xs text-zinc-500">Open MT5 trades tracked by auto sync.</p>
                 </div>
                 <span className="rounded-full border border-white/10 bg-white/[.03] px-2.5 py-1 text-[10px] font-bold uppercase text-zinc-400">
                   {openPositions.length} open
@@ -858,7 +1109,7 @@ function Workspace(p: {
                           <strong className={`font-mono text-sm font-black ${positive ? "text-emerald-400" : "text-rose-400"}`}>
                             {(position.unrealizedPnl || 0) >= 0 ? "+" : ""}{cash.format(position.unrealizedPnl || 0)}
                           </strong>
-                          <p className="mt-1 text-[10px] text-zinc-600">{position.openedAt ? new Date(position.openedAt).toLocaleString("uz-UZ") : "Live"}</p>
+                          <p className="mt-1 text-[10px] text-zinc-600">{position.openedAt ? new Date(position.openedAt).toLocaleString("en-US") : "Live"}</p>
                         </div>
                       </div>
                     );
@@ -870,11 +1121,68 @@ function Workspace(p: {
                 </p>
               )}
             </section>
+
+            <AiCoachCard report={coachReport} loading={coachLoading} error={coachError} onRefresh={() => void loadCoach()} />
           </TabsContent>
 
           {/* Calendar */}
           <TabsContent value="calendar">
             <div className="space-y-4">
+              <div className="flex items-center justify-center">
+                <div className="inline-flex rounded-2xl border border-white/8 bg-[#17181b] p-1">
+                  <button type="button" onClick={() => setCalendarMode("journal")} className={`rounded-xl px-4 py-2 text-sm font-semibold transition ${calendarMode === "journal" ? "bg-white text-black" : "text-zinc-400"}`}>Journal</button>
+                  <button type="button" onClick={() => setCalendarMode("news")} className={`rounded-xl px-4 py-2 text-sm font-semibold transition ${calendarMode === "news" ? "bg-white text-black" : "text-zinc-400"}`}>Economic Calendar</button>
+                </div>
+              </div>
+
+              {calendarMode === "news" ? (
+                <section className="rounded-[1.3rem] border border-white/8 bg-[#17181b] p-5 shadow-[0_18px_46px_rgba(0,0,0,.2)]">
+                  <div className="flex items-center justify-between gap-3">
+                    <div>
+                      <h3 className="text-lg font-black text-white">Red News Window</h3>
+                      <p className="mt-1 text-sm text-zinc-500">Weekly high impact events in New York time from Forex Factory.</p>
+                    </div>
+                    <span className="rounded-full border border-white/8 bg-black/15 px-2.5 py-1 text-[10px] font-bold uppercase text-zinc-400">NY time</span>
+                  </div>
+                  <div className="mt-5 grid gap-5 lg:grid-cols-2 2xl:grid-cols-3">
+                    {calendarNewsLoading && !calendarNews ? (
+                      <div className="rounded-2xl border border-white/8 bg-black/15 px-4 py-4 text-sm text-zinc-500">Loading calendar...</div>
+                    ) : null}
+                    {!calendarNewsLoading && calendarNews?.error ? (
+                      <div className="rounded-2xl border border-rose-500/20 bg-rose-500/10 px-4 py-4 text-sm text-rose-200">{calendarNews.error}</div>
+                    ) : null}
+                    {!calendarNewsLoading && calendarNews && !calendarNews.error && !calendarNews.events.length ? (
+                      <div className="rounded-2xl border border-white/8 bg-black/15 px-4 py-4 text-sm text-zinc-500">No red news found this week.</div>
+                    ) : null}
+                    {Object.entries(groupedNews).map(([day, events]) => (
+                      <div key={day} className="rounded-[1.2rem] border border-white/8 bg-black/15 p-4">
+                        <div className="flex items-center justify-between gap-2">
+                          <p className="text-[11px] font-black uppercase tracking-[0.2em] text-zinc-500">{day}</p>
+                          <span className="rounded-full border border-white/8 bg-white/[.04] px-2 py-0.5 text-[10px] font-bold text-zinc-400">{events.length}</span>
+                        </div>
+                        <div className="mt-3 space-y-2">
+                          {events.map((event) => (
+                            <div key={event.id} className="rounded-xl border border-white/8 bg-[#111214] px-3 py-3">
+                              <div className="flex items-center gap-2">
+                                <span className="w-14 shrink-0 font-mono text-[11px] font-bold text-zinc-200">{event.time}</span>
+                                <span className="rounded-md bg-rose-400/15 px-1.5 py-0.5 text-[10px] font-black text-rose-200">{event.currency}</span>
+                                <p className="min-w-0 flex-1 truncate text-xs font-semibold text-zinc-300">{event.title}</p>
+                              </div>
+                              <div className="mt-2 grid grid-cols-2 gap-2 text-[10px] text-zinc-500">
+                                <span>Forecast: {event.forecast}</span>
+                                <span>Previous: {event.previous}</span>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </section>
+              ) : null}
+
+              {calendarMode === "journal" ? (
+                <>
               <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
                 {[
                   { label: "Total trades", value: String(monthCount), note: `${calendar.filter((day) => day?.trades.length).length} active days` },
@@ -970,96 +1278,108 @@ function Workspace(p: {
                 </div>
               </div>
             </div>
+                </>
+              ) : null}
             </div>
           </TabsContent>
 
           {/* Trades */}
           <TabsContent value="trades">
-            <div className="overflow-hidden rounded-[1.25rem] border border-white/8 bg-[#17181b]">
-              <div className="space-y-3 border-b border-white/8 px-5 py-4">
-                <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-                <div>
-                  <h3 className="font-bold">Trade journal</h3>
-                  <p className="text-xs text-[#8a8a8a]">{trades.length} trade{trades.length === 1 ? "" : "s"}</p>
-                </div>
-                <div className="relative sm:ml-auto sm:w-72">
-                  <Search className="absolute left-3 top-2.5 text-[#8a8a8a]" size={15} />
-                  <Input value={p.query} onChange={e => p.onQuery(e.target.value)} className="pl-9 text-sm" placeholder="Search symbol or setup" />
-                </div>
-                </div>
-                <div className="flex flex-col gap-2 lg:flex-row lg:items-end">
-                  <div className="w-full sm:w-56">
-                    <span className="mb-1.5 block text-[10px] font-semibold uppercase tracking-widest text-[#8a8a8a]">Period</span>
-                    <Select value={p.tradeRange} onValueChange={(value) => p.onRange(value as TradeRange)}>
-                      <SelectTrigger className="w-full">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent position="popper" align="start">
-                        <SelectItem value="daily">Today</SelectItem>
-                        <SelectItem value="monthly">This month</SelectItem>
-                        <SelectItem value="quarter">Last 3 months</SelectItem>
-                        <SelectItem value="yearly">This year</SelectItem>
-                        <SelectItem value="custom">Custom range</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  {p.tradeRange === "custom" ? (
-                    <div className="grid gap-2 sm:grid-cols-2 lg:ml-auto lg:w-[420px]">
-                      <label className="text-[10px] font-semibold uppercase tracking-widest text-[#8a8a8a]">From<Input type="date" value={p.customStart} onChange={event => p.onCustomStart(event.target.value)} className="mt-1.5 text-sm" /></label>
-                      <label className="text-[10px] font-semibold uppercase tracking-widest text-[#8a8a8a]">To<Input type="date" value={p.customEnd} onChange={event => p.onCustomEnd(event.target.value)} className="mt-1.5 text-sm" /></label>
+            <div className="space-y-4">
+              <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_320px]">
+                <section className="overflow-hidden rounded-[1.3rem] border border-white/8 bg-[#17181b] shadow-[0_18px_46px_rgba(0,0,0,.2)]">
+                  <div className="space-y-4 border-b border-white/8 px-5 py-4">
+                    <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+                      <div>
+                        <h3 className="text-lg font-black text-white">Trade Log</h3>
+                        <p className="text-xs text-zinc-500">Select a trade to review its full story.</p>
+                      </div>
+                      <div className="relative sm:ml-auto sm:w-72">
+                        <Search className="absolute left-3 top-2.5 text-zinc-500" size={15} />
+                        <Input value={p.query} onChange={e => p.onQuery(e.target.value)} className="pl-9 text-sm" placeholder="Search symbol or setup" />
+                      </div>
                     </div>
-                  ) : (
-                    <p className="pb-3 text-xs text-[#8a8a8a] lg:ml-auto">
-                      {p.tradeRange === "daily" ? "Today only" : p.tradeRange === "monthly" ? "Current month" : p.tradeRange === "quarter" ? "Last 3 months" : "Current year"}
-                    </p>
-                  )}
-                </div>
-              </div>
-              {trades.length
-                ? <div className="divide-y divide-white/6 bg-[#121316] p-2 sm:p-3">
-                    {trades.map(e => {
-                      const winning = e.pnl >= 0;
-                      return (
-                        <div
-                          key={e.id}
-                          role="button"
-                          tabIndex={0}
-                          onClick={() => setSelectedTrade(e)}
-                          onKeyDown={(ev) => { if (ev.key === "Enter" || ev.key === " ") setSelectedTrade(e); }}
-                          className="group flex min-h-[74px] w-full cursor-pointer items-center gap-3 rounded-[0.95rem] px-3 py-2.5 text-left transition-colors hover:bg-white/[.04] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/16 sm:px-4"
-                        >
-                          <InstrumentBadge symbol={e.symbol} compact className="shrink-0 rounded-xl bg-black/18" showFullSymbol={false} />
-                          <span className="min-w-0 flex-1">
-                            <span className="flex min-w-0 items-center gap-1.5">
-                              <strong className="truncate text-[13px] font-bold text-zinc-100 sm:text-sm">{e.symbol}</strong>
-                              <span className="size-1 rounded-full bg-zinc-600" />
-                              <span className="truncate text-[10px] text-zinc-500">{e.setup || e.session || e.date}</span>
-                            </span>
-                            <span className="mt-1 flex items-center gap-1.5">
-                              <span className={`rounded px-1.5 py-0.5 text-[9px] font-black uppercase ${e.side === "Long" ? "bg-emerald-400/15 text-emerald-300" : "bg-rose-400/15 text-rose-300"}`}>
-                                {e.side === "Long" ? "Buy" : "Sell"}
-                              </span>
-                              <span className="font-mono text-[10px] text-zinc-400">{e.quantity.toFixed(2)} lots</span>
-                              {e.riskPercent ? <span className="hidden text-[10px] text-zinc-600 sm:inline">Risk {e.riskPercent}</span> : null}
-                            </span>
-                          </span>
-                          <span className="shrink-0 text-right">
-                            <strong className={`block rounded-md px-2 py-0.5 font-mono text-[11px] font-black sm:text-xs ${winning ? "bg-emerald-400/10 text-emerald-300" : "bg-rose-400/10 text-rose-300"}`}>
-                              {e.pnl >= 0 ? "+" : ""}{cash.format(e.pnl)}
-                            </strong>
-                            <span className="mt-1 flex items-center justify-end gap-1">
-                              <span className={`rounded px-1 py-0.5 text-[8px] font-black ${!winning ? "bg-rose-400/20 text-rose-300" : "bg-white/[.04] text-zinc-600"}`}>SL</span>
-                              <span className={`rounded px-1 py-0.5 text-[8px] font-black ${winning ? "bg-emerald-400/20 text-emerald-300" : "bg-white/[.04] text-zinc-600"}`}>TP</span>
-                              <span className="font-mono text-[9px] text-zinc-500">{(e.resultR || 0).toFixed(2)}R</span>
-                            </span>
-                          </span>
-                          <ChevronRight className="text-zinc-600 transition-transform group-hover:translate-x-0.5 group-hover:text-zinc-300" size={16} />
+                    <div className="flex flex-col gap-2 lg:flex-row lg:items-end">
+                      <div className="w-full sm:w-56">
+                        <span className="mb-1.5 block text-[10px] font-semibold uppercase tracking-widest text-zinc-500">Period</span>
+                        <Select value={p.tradeRange} onValueChange={(value) => p.onRange(value as TradeRange)}>
+                          <SelectTrigger className="w-full">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent position="popper" align="start">
+                            <SelectItem value="daily">Today</SelectItem>
+                            <SelectItem value="monthly">This month</SelectItem>
+                            <SelectItem value="quarter">Last 3 months</SelectItem>
+                            <SelectItem value="yearly">This year</SelectItem>
+                            <SelectItem value="custom">Custom range</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      {p.tradeRange === "custom" ? (
+                        <div className="grid gap-2 sm:grid-cols-2 lg:ml-auto lg:w-[420px]">
+                          <label className="text-[10px] font-semibold uppercase tracking-widest text-zinc-500">From<Input type="date" value={p.customStart} onChange={event => p.onCustomStart(event.target.value)} className="mt-1.5 text-sm" /></label>
+                          <label className="text-[10px] font-semibold uppercase tracking-widest text-zinc-500">To<Input type="date" value={p.customEnd} onChange={event => p.onCustomEnd(event.target.value)} className="mt-1.5 text-sm" /></label>
                         </div>
-                      );
-                    })}
+                      ) : (
+                        <p className="pb-3 text-xs text-zinc-500 lg:ml-auto">
+                          {p.tradeRange === "daily" ? "Today only" : p.tradeRange === "monthly" ? "Current month" : p.tradeRange === "quarter" ? "Last 3 months" : "Current year"}
+                        </p>
+                      )}
+                    </div>
                   </div>
-                : <Empty text="No trades in this range yet." />
-              }
+                  {trades.length ? (
+                    <div className="overflow-x-auto">
+                      <div className="min-w-[820px] px-3 py-3">
+                        <div className="grid grid-cols-[48px_1.3fr_1fr_.9fr_1fr_1fr_.9fr] rounded-2xl bg-black/20 px-4 py-3 text-xs font-semibold text-zinc-500">
+                          <span />
+                          <span>Entry date</span>
+                          <span>Symbol</span>
+                          <span>Side</span>
+                          <span>Trade duration</span>
+                          <span>Risk/Reward</span>
+                          <span className="text-right">P&amp;L</span>
+                        </div>
+                        <div className="mt-2 space-y-2">
+                          {sortedTrades.map((trade) => {
+                            const winning = trade.pnl >= 0;
+                            return (
+                              <button
+                                key={trade.id}
+                                type="button"
+                                onClick={() => setSelectedTrade(trade)}
+                                className="grid w-full grid-cols-[48px_1.3fr_1fr_.9fr_1fr_1fr_.9fr] items-center rounded-2xl border border-white/8 bg-black/12 px-4 py-3 text-left transition hover:bg-white/[.04]"
+                              >
+                                <span className="grid size-5 place-items-center rounded-full border border-white/10" />
+                                <span className="text-sm font-semibold text-white">{new Date(`${trade.rawDate}T00:00:00`).toLocaleString("en-GB", { day: "2-digit", month: "2-digit", year: "numeric" })}</span>
+                                <span className="flex items-center gap-2">
+                                  <InstrumentBadge symbol={trade.symbol} compact className="bg-[#121212]" showFullSymbol={false} />
+                                  <span className="font-bold text-white">{trade.symbol}</span>
+                                </span>
+                                <span className={`text-sm font-bold ${trade.side === "Long" ? "text-emerald-300" : "text-rose-300"}`}>{trade.side === "Long" ? "Buy ↑" : "Sell ↓"}</span>
+                                <span className="text-sm text-zinc-400">{trade.session || "-"}</span>
+                                <span className="font-mono text-sm text-zinc-300">{(trade.resultR || 0).toFixed(2)}R</span>
+                                <span className={`text-right font-mono text-base font-black ${winning ? "text-emerald-400" : "text-rose-400"}`}>{trade.pnl >= 0 ? "+" : ""}{cash.format(trade.pnl)}</span>
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    </div>
+                  ) : <Empty text="No trades in this range yet." />}
+                </section>
+
+                <section className="rounded-[1.3rem] border border-white/8 bg-[#17181b] p-5 shadow-[0_18px_46px_rgba(0,0,0,.2)]">
+                  <h3 className="text-lg font-black text-white">Trade Snapshot</h3>
+                  <p className="mt-1 text-sm text-zinc-500">A lighter side panel so the main log stays clean.</p>
+                  <div className="mt-4 space-y-3">
+                    <MiniStat label="Trades" value={String(trades.length)} />
+                    <MiniStat label="Winning" value={String(stats.wins)} />
+                    <MiniStat label="Losing" value={String(stats.losses)} />
+                    <MiniStat label="Avg win" value={averageWin ? cash.format(averageWin) : "-"} />
+                    <MiniStat label="Avg loss" value={averageLoss ? cash.format(averageLoss) : "-"} />
+                  </div>
+                </section>
+              </div>
             </div>
           </TabsContent>
 
@@ -1118,75 +1438,166 @@ function Workspace(p: {
           </TabsContent>
 
           {/* Analytics */}
-          <TabsContent value="analytics" className="grid gap-4 xl:grid-cols-2">
-            <div className="rounded-2xl border border-[#2a2a2a] bg-[#1b1b1b]/80 p-5">
-              <h3 className="font-bold">Setup performance</h3>
-              <div className="mt-4 space-y-4">
-                {setups.length
-                  ? setups.map(s => (
-                      <div key={s.name}>
+          <TabsContent value="analytics" className="space-y-4">
+            <div className="flex flex-wrap items-center gap-2">
+              {[
+                ["overview", "Overview"],
+                ["strategy", "Strategy"],
+                ["symbols", "Symbols"],
+              ].map(([value, label]) => (
+                <button key={value} type="button" onClick={() => setAnalyticsView(value as "overview" | "strategy" | "symbols")} className={`rounded-xl px-4 py-2 text-sm font-semibold transition ${analyticsView === value ? "bg-white text-black" : "border border-white/8 bg-[#17181b] text-zinc-400"}`}>
+                  {label}
+                </button>
+              ))}
+              <div className="ml-auto rounded-xl border border-white/8 bg-[#17181b] px-4 py-2 text-sm font-semibold text-white">All time</div>
+            </div>
+
+            {analyticsView === "overview" ? (
+              <div className="grid gap-4 xl:grid-cols-[minmax(0,1.05fr)_minmax(360px,.95fr)]">
+                <section className="overflow-hidden rounded-[1.3rem] border border-white/8 bg-[#17181b] shadow-[0_18px_46px_rgba(0,0,0,.2)]">
+                  <div className="border-b border-white/8 px-5 py-4">
+                    <h3 className="font-bold text-white">Account Balance</h3>
+                    <p className="mt-1 text-xs text-zinc-500">{month.toLocaleDateString("en-US", { month: "short", day: "numeric" })} - {new Date().toLocaleDateString("en-US", { month: "short", day: "numeric" })}</p>
+                  </div>
+                  <div className="h-[330px] p-4">
+                    {equity.length > 1 ? (
+                      <ResponsiveContainer width="100%" height="100%">
+                        <AreaChart data={equity} margin={{ left: 8, right: 8, top: 16, bottom: 4 }}>
+                          <defs>
+                            <linearGradient id="analyticsBalanceFill" x1="0" y1="0" x2="0" y2="1">
+                              <stop offset="0%" stopColor="#22c55e" stopOpacity={0.35} />
+                              <stop offset="100%" stopColor="#171717" stopOpacity={0.05} />
+                            </linearGradient>
+                          </defs>
+                          <CartesianGrid stroke="rgba(255,255,255,.07)" vertical={false} />
+                          <XAxis dataKey="trade" axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: "#707b91" }} />
+                          <YAxis width={72} axisLine={false} tickLine={false} tickFormatter={(value) => `$${Number(value / 1000).toFixed(1)}K`} tick={{ fontSize: 11, fill: "#707b91" }} />
+                          <Tooltip formatter={v => cash.format(Number(v))} labelFormatter={(_, payload) => payload?.[0]?.payload?.label ?? "Balance"} contentStyle={{ background: "#171717", border: "1px solid #333333", borderRadius: 12, color: "#f1f1f1" }} />
+                          <Area type="monotone" dataKey="equity" stroke="#22c55e" fill="url(#analyticsBalanceFill)" strokeWidth={3} dot={false} />
+                        </AreaChart>
+                      </ResponsiveContainer>
+                    ) : <Empty text="Add trades to unlock analytics charts." />}
+                  </div>
+                </section>
+
+                <section className="overflow-hidden rounded-[1.3rem] border border-white/8 bg-[#17181b] shadow-[0_18px_46px_rgba(0,0,0,.2)]">
+                  <div className="flex items-center justify-between border-b border-white/8 px-5 py-4">
+                    <div>
+                      <h3 className="font-bold text-white">TradeWay Profitability Score</h3>
+                      <p className="mt-1 text-xs text-zinc-500">{trades.length < 5 ? "Early read, score becomes sharper after 5+ trades." : "Live score based on execution quality."}</p>
+                    </div>
+                    <span className="rounded-full border border-white/8 bg-black/20 px-3 py-1 text-xs font-black text-white">{profitabilityScore}</span>
+                  </div>
+                  <div className="grid gap-4 p-4 sm:grid-cols-[1fr_96px]">
+                    <div className="h-[260px]">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <RadarChart data={scoreRadar}>
+                          <PolarGrid stroke="rgba(255,255,255,.12)" />
+                          <PolarAngleAxis dataKey="subject" tick={{ fill: "#d4d4d8", fontSize: 12 }} />
+                          <PolarRadiusAxis angle={30} domain={[0, 100]} tick={false} axisLine={false} />
+                          <Radar dataKey="value" stroke="#22c55e" fill="#22c55e" fillOpacity={0.36} />
+                        </RadarChart>
+                      </ResponsiveContainer>
+                    </div>
+                    <div className="flex flex-col justify-between rounded-2xl border border-white/8 bg-black/15 px-4 py-3">
+                      <p className="text-sm font-bold text-white">Score</p>
+                      <p className="text-4xl font-black text-white">{profitabilityScore}</p>
+                      <div className="h-full min-h-28 rounded-full bg-white/5 p-2">
+                        <div className="h-full w-full rounded-full bg-gradient-to-b from-emerald-400 to-emerald-600" style={{ clipPath: `inset(${100 - profitabilityScore}% 0 0 0 round 999px)` }} />
+                      </div>
+                    </div>
+                  </div>
+                </section>
+
+                <div className="grid gap-4 sm:grid-cols-2 xl:col-span-2 xl:grid-cols-4">
+                  <MetricPanel title="Average Win" value={averageWin ? cash.format(averageWin) : "-"} note={bestTrade ? `Best ${bestTrade.symbol}` : "No winning trade"} accent="good" />
+                  <MetricPanel title="Average Loss" value={averageLoss ? cash.format(averageLoss) : "-"} note={worstTrade ? `Worst ${worstTrade.symbol}` : "No losing trade"} accent="bad" />
+                  <MetricPanel title="Best Trade" value={bestTrade ? `${bestTrade.pnl >= 0 ? "+" : ""}${cash.format(bestTrade.pnl)}` : "-"} note={bestTrade?.symbol || "No data"} accent={bestTrade && bestTrade.pnl >= 0 ? "good" : "neutral"} />
+                  <MetricPanel title="Worst Trade" value={worstTrade ? `${worstTrade.pnl >= 0 ? "+" : ""}${cash.format(worstTrade.pnl)}` : "-"} note={worstTrade?.symbol || "No data"} accent={worstTrade && worstTrade.pnl < 0 ? "bad" : "neutral"} />
+                </div>
+              </div>
+            ) : null}
+
+            {analyticsView === "strategy" ? (
+              <div className="grid gap-4 xl:grid-cols-2">
+                <section className="rounded-[1.3rem] border border-white/8 bg-[#17181b] p-5">
+                  <h3 className="font-bold text-white">Setup Performance</h3>
+                  <div className="mt-4 space-y-4">
+                    {setups.length ? setups.map((setup) => (
+                      <div key={setup.name}>
                         <div className="flex text-sm">
-                          <span className="text-[#f1f1f1]">{s.name}</span>
-                          <span className={`ml-auto font-mono font-bold ${s.pnl >= 0 ? "text-emerald-400" : "text-rose-400"}`}>
-                            {s.rate}% / {s.pnl >= 0 ? "+" : ""}{cash.format(s.pnl)}
+                          <span className="text-white">{setup.name}</span>
+                          <span className={`ml-auto font-mono font-bold ${setup.pnl >= 0 ? "text-emerald-400" : "text-rose-400"}`}>
+                            {setup.rate}% / {setup.pnl >= 0 ? "+" : ""}{cash.format(setup.pnl)}
                           </span>
                         </div>
-                        <ProgressBar label={`${s.trades} trades`} value={s.rate} color="bg-zinc-300" />
+                        <ProgressBar label={`${setup.trades} trades`} value={setup.rate} color="bg-zinc-300" />
                       </div>
-                    ))
-                  : <Empty text="Setup statistikasi yo'q." />
-                }
-              </div>
-            </div>
-
-            <div className="rounded-2xl border border-[#2a2a2a] bg-[#1b1b1b]/80 p-5">
-              <h3 className="font-bold">Discipline</h3>
-              <p className="text-xs text-[#8a8a8a]">Notion: Following plan?</p>
-              <div className="mt-4">
-                <ProgressBar label={`${monthCount} trade ichidan`} value={planRate} color="bg-emerald-500" />
-              </div>
-              <div className="mt-4 grid grid-cols-2 gap-2.5">
-                <MiniStat label="PLANGA MOS" value={`${planRate}%`} />
-                <MiniStat label="XATOLI TRADE" value={String(mistakes.reduce((s, m) => s + m.trades, 0))} />
-              </div>
-            </div>
-
-            <div className="rounded-2xl border border-[#2a2a2a] bg-[#1b1b1b]/80 p-5 xl:col-span-2">
-              <h3 className="font-bold">Outside of Plan</h3>
-              <p className="text-xs text-[#8a8a8a]">Eng ko&apos;p uchragan xatolar va ular keltirgan zarar</p>
-              <div className="mt-4 space-y-3">
-                {mistakes.length
-                  ? mistakes.map(m => (
-                      <div key={m.name} className="flex items-center justify-between rounded-xl bg-[#121212]/60 px-4 py-2.5">
+                    )) : <Empty text="No setup analytics yet." />}
+                  </div>
+                </section>
+                <section className="rounded-[1.3rem] border border-white/8 bg-[#17181b] p-5">
+                  <h3 className="font-bold text-white">Discipline & Mistakes</h3>
+                  <div className="mt-4">
+                    <ProgressBar label={`${monthCount} trades reviewed`} value={planRate} color="bg-emerald-500" />
+                  </div>
+                  <div className="mt-4 grid grid-cols-2 gap-2.5">
+                    <MiniStat label="PLAN ALIGNMENT" value={`${planRate}%`} />
+                    <MiniStat label="MISTAKE TRADES" value={String(mistakes.reduce((sum, item) => sum + item.trades, 0))} />
+                  </div>
+                  <div className="mt-4 space-y-3">
+                    {mistakes.length ? mistakes.map((mistake) => (
+                      <div key={mistake.name} className="flex items-center justify-between rounded-xl bg-black/15 px-4 py-3">
                         <div>
-                          <p className="text-sm font-medium">{m.name}</p>
-                          <p className="text-[11px] text-[#8a8a8a]">{m.trades} marta takrorlandi</p>
+                          <p className="text-sm font-medium text-white">{mistake.name}</p>
+                          <p className="text-[11px] text-zinc-500">{mistake.trades} repeats</p>
                         </div>
-                        <b className={`font-mono font-bold ${m.pnl >= 0 ? "text-emerald-400" : "text-rose-400"}`}>
-                          {m.pnl >= 0 ? "+" : ""}{cash.format(m.pnl)}
+                        <b className={`font-mono font-bold ${mistake.pnl >= 0 ? "text-emerald-400" : "text-rose-400"}`}>
+                          {mistake.pnl >= 0 ? "+" : ""}{cash.format(mistake.pnl)}
                         </b>
                       </div>
-                    ))
-                  : <Empty text="Bu oyda xato qayd etilmagan. Ajoyib disciplina!" />
-                }
+                    )) : <Empty text="No mistakes recorded this month." />}
+                  </div>
+                </section>
               </div>
-            </div>
+            ) : null}
 
-            <div className="rounded-2xl border border-[#2a2a2a] bg-[#1b1b1b]/80 p-5 xl:col-span-2">
-              <h3 className="font-bold">Account details</h3>
-              <div className="mt-4 grid grid-cols-2 gap-2.5 sm:grid-cols-3">
-                {[
-                  ["FIRM", account.firm || "Independent"],
-                  ["PHASE", account.phase],
-                  ["MARKET", account.marketType],
-                  ["PLATFORM", (account.platform || "manual").toUpperCase()],
-                  ["START DATE", account.startDate],
-                  ["TARGET", cash.format(account.profitTarget)],
-                  ["MAX DD", cash.format(account.maxDrawdown)],
-                  ["DAILY DD", cash.format(account.dailyDrawdown)],
-                ].map(([l, v]) => <MiniStat key={l} label={l} value={v} />)}
+            {analyticsView === "symbols" ? (
+              <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_340px]">
+                <section className="rounded-[1.3rem] border border-white/8 bg-[#17181b] p-5">
+                  <h3 className="font-bold text-white">Most Traded Symbols</h3>
+                  <div className="mt-4 space-y-2">
+                    {symbolStats.length ? symbolStats.map((symbol) => (
+                      <div key={symbol.symbol} className="flex items-center justify-between rounded-2xl border border-white/8 bg-black/15 px-3 py-3">
+                        <div className="flex items-center gap-2">
+                          <InstrumentBadge symbol={symbol.symbol} compact className="bg-[#121212]" showFullSymbol={false} />
+                          <div>
+                            <p className="text-sm font-bold text-white">{symbol.symbol}</p>
+                            <p className="text-xs text-zinc-500">{symbol.trades} trades / {symbol.wins} wins</p>
+                          </div>
+                        </div>
+                        <strong className={`font-mono text-sm font-black ${symbol.pnl >= 0 ? "text-emerald-300" : "text-rose-300"}`}>{symbol.pnl >= 0 ? "+" : ""}{cash.format(symbol.pnl)}</strong>
+                      </div>
+                    )) : <Empty text="No symbol data yet." />}
+                  </div>
+                </section>
+                <section className="rounded-[1.3rem] border border-white/8 bg-[#17181b] p-5">
+                  <h3 className="font-bold text-white">Account Details</h3>
+                  <div className="mt-4 grid grid-cols-2 gap-2.5">
+                    {[
+                      ["FIRM", account.firm || "Independent"],
+                      ["PHASE", account.phase],
+                      ["MARKET", account.marketType],
+                      ["PLATFORM", (account.platform || "manual").toUpperCase()],
+                      ["START DATE", account.startDate],
+                      ["TARGET", cash.format(account.profitTarget)],
+                      ["MAX DD", cash.format(account.maxDrawdown)],
+                      ["DAILY DD", cash.format(account.dailyDrawdown)],
+                    ].map(([label, value]) => <MiniStat key={label} label={label} value={value} />)}
+                  </div>
+                </section>
               </div>
-            </div>
+            ) : null}
           </TabsContent>
           <TabsContent value="settings">
             <Mt5Settings account={account} onSynced={p.onMt5Synced} />
@@ -1600,6 +2011,17 @@ function BalanceMetric({ label, value, tone = "neutral" }: { label: string; valu
       <p className="text-[10px] font-semibold uppercase tracking-wider text-[#848da3]">{label}</p>
       <b className={`mt-1 block truncate font-mono text-xl font-black ${color}`}>{value}</b>
     </div>
+  );
+}
+
+function MetricPanel({ title, value, note, accent = "neutral" }: { title: string; value: string; note: string; accent?: "neutral" | "good" | "bad" }) {
+  const color = accent === "good" ? "text-emerald-400" : accent === "bad" ? "text-rose-400" : "text-white";
+  return (
+    <section className="rounded-[1.2rem] border border-white/8 bg-[#17181b] p-4 shadow-[0_14px_34px_rgba(0,0,0,.18)]">
+      <p className="text-sm font-bold text-zinc-400">{title}</p>
+      <p className={`mt-3 font-mono text-[2rem] font-black tracking-tight ${color}`}>{value}</p>
+      <p className="mt-2 text-sm text-zinc-500">{note}</p>
+    </section>
   );
 }
 
