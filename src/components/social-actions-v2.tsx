@@ -1,6 +1,6 @@
 "use client";
 
-import { Bell, Search, Users, X } from "lucide-react";
+import { Bell, Heart, MessageCircle, Repeat2, Search, UserPlus, Users, X } from "lucide-react";
 import { useEffect, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { apiRequest } from "@/lib/api-client";
@@ -25,6 +25,7 @@ type SearchUser = {
 
 type NotificationItem = {
   id: string;
+  type?: string;
   message: string;
   isRead: boolean;
   createdAt: string;
@@ -47,6 +48,14 @@ function openProfile(username: string) {
   const clean = username.replace(/^@/, "").toLowerCase();
   window.history.pushState(null, "", `/${clean}`);
   window.dispatchEvent(new Event("tradeup:open-profile"));
+}
+
+function notificationMeta(type?: string) {
+  if (type === "post_like") return { icon: Heart, tint: "text-rose-300", label: "Like" };
+  if (type === "post_reply") return { icon: MessageCircle, tint: "text-sky-300", label: "Reply" };
+  if (type === "post_repost") return { icon: Repeat2, tint: "text-emerald-300", label: "Repost" };
+  if (type === "follow") return { icon: UserPlus, tint: "text-amber-300", label: "Follow" };
+  return { icon: Bell, tint: "text-zinc-300", label: "Alert" };
 }
 
 function Modal({ title, subtitle, onClose, children }: { title: string; subtitle: string; onClose: () => void; children: ReactNode }) {
@@ -182,7 +191,7 @@ function SearchDialog({ onClose }: { onClose: () => void }) {
         {error ? <p className="mt-3 rounded-2xl border border-rose-300/15 bg-rose-400/10 px-3 py-2 text-xs text-rose-200">{error}</p> : null}
       </form>
       <div className="min-h-[360px] flex-1 overflow-y-auto overscroll-contain">
-          {cleanQuery.length < 2 ? <div className="grid min-h-56 place-items-center px-6 text-center text-sm text-slate-500">Kamida 2 ta harf yozing.</div> : null}
+          {cleanQuery.length < 2 ? <div className="grid min-h-56 place-items-center px-6 text-center text-sm text-slate-500">Type at least 2 letters.</div> : null}
           {users.map((item) => (
             <button key={item.id} type="button" onClick={() => goToProfile(item.username)} className="flex min-h-[76px] w-full touch-manipulation items-center gap-3 border-b border-white/6 px-4 py-3.5 text-left transition hover:bg-white/[.045] active:bg-white/[.06]">
               <TraderAvatar name={item.fullName} value={item.avatarUrl} className="h-12 w-12 text-xs" />
@@ -194,7 +203,7 @@ function SearchDialog({ onClose }: { onClose: () => void }) {
               {item.isFollowing ? <span className="rounded-full border border-white/15 px-2 py-1 text-[10px] font-bold text-zinc-300">Following</span> : null}
             </button>
           ))}
-          {!loading && cleanQuery.length >= 2 && !users.length ? <div className="grid min-h-56 place-items-center px-6 text-center text-sm text-slate-500">User topilmadi.</div> : null}
+          {!loading && cleanQuery.length >= 2 && !users.length ? <div className="grid min-h-56 place-items-center px-6 text-center text-sm text-slate-500">No matching users found.</div> : null}
       </div>
     </Modal>
   );
@@ -244,14 +253,22 @@ function NotificationsDialog({ onClose, onRead }: { onClose: () => void; onRead:
             </div>
           </div>
         ) : null}
-        {items.map((item) => (
+        {items.map((item) => {
+          const meta = notificationMeta(item.type);
+          const Icon = meta.icon;
+          return (
           <button
             key={item.id}
             type="button"
             onClick={() => goActor(item.actor?.username)}
             className={`flex w-full gap-3 border-b border-white/6 px-4 py-3.5 text-left transition hover:bg-white/[.04] active:bg-white/[.06] ${item.isRead ? "bg-transparent" : "bg-white/[.04]"}`}
           >
-            <TraderAvatar name={item.actor?.fullName ?? "TradeWay"} value={item.actor?.avatarUrl ?? null} className="h-12 w-12 shrink-0 text-xs" />
+            <div className="relative">
+              <TraderAvatar name={item.actor?.fullName ?? "TradeWay"} value={item.actor?.avatarUrl ?? null} className="h-12 w-12 shrink-0 text-xs" />
+              <span className={`absolute -bottom-1 -right-1 grid size-5 place-items-center rounded-full border border-[#171717] bg-[#0f1011] ${meta.tint}`}>
+                <Icon size={11} />
+              </span>
+            </div>
             <span className="min-w-0 flex-1">
               <span className="flex min-w-0 items-center gap-1.5">
                 <span className="truncate text-[15px] font-black text-white">{item.actor?.fullName ?? "TradeWay"}</span>
@@ -259,12 +276,13 @@ function NotificationsDialog({ onClose, onRead }: { onClose: () => void; onRead:
                 {!item.isRead ? <span className="size-2 rounded-full bg-white" /> : null}
               </span>
               <span className="mt-0.5 block truncate text-xs text-slate-500">
-                {item.actor?.username ? `@${item.actor.username}` : "system"} - {ago(item.createdAt)}
+                {item.actor?.username ? `@${item.actor.username}` : "system"} - {meta.label} - {ago(item.createdAt)}
               </span>
               <span className="mt-1 block line-clamp-2 text-sm leading-5 text-slate-300">{item.message}</span>
             </span>
           </button>
-        ))}
+          );
+        })}
       </div>
     </Modal>
   );
@@ -284,7 +302,7 @@ export function SocialActions({ className = "" }: { className?: string }) {
       if (document.visibilityState === "visible") loadUnread();
     };
     const timer = window.setTimeout(loadUnread, 800);
-    const interval = window.setInterval(refresh, 30000);
+    const interval = window.setInterval(refresh, 8000);
     window.addEventListener("focus", refresh);
     document.addEventListener("visibilitychange", refresh);
     return () => {

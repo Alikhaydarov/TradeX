@@ -1,4 +1,5 @@
 import { authenticateRequest, badRequest, serverError, unauthorized } from "@/lib/backend/auth";
+import { sendSocialNotification } from "@/lib/backend/social-notifications";
 import { getSupabaseServerClient } from "@/lib/supabase/server";
 
 export const runtime = "nodejs";
@@ -116,12 +117,13 @@ export async function POST(
 
   if (post?.user_id && post.user_id !== auth.user.id) {
     const actorName = author.full_name || author.username || "A trader";
-    await auth.supabase.from("notifications").insert({
-      user_id: post.user_id,
-      actor_id: auth.user.id,
+    await sendSocialNotification(auth.supabase, {
+      userId: post.user_id,
+      actorId: auth.user.id,
       type: "post_reply",
-      message: `${actorName} replied to your post: ${content.slice(0, 100)}`,
-      is_read: false,
+      message: `${actorName} replied to your trade post: ${content.slice(0, 100)}`,
+      entityId: postId,
+      entityType: "post",
     });
   }
 

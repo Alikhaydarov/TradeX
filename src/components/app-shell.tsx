@@ -5,6 +5,7 @@ import dynamic from "next/dynamic";
 import { useEffect, useState } from "react";
 import { AuthModal } from "./auth-modal";
 import { NotificationListener } from "./notification-listener";
+import { PremiumUpsellDialog } from "./premium-upsell-dialog";
 import { RightPanel } from "./right-panel";
 import { Sidebar } from "./sidebar";
 import { useAuth } from "./auth-context";
@@ -53,9 +54,10 @@ function getCurrentProfileUsername() {
 
 function AuthGate({ onLogin }: { onLogin: () => void }) {
   return (
-    <main className="grid min-h-[100dvh] place-items-center overflow-hidden bg-background px-4 py-[max(1rem,env(safe-area-inset-top))] pb-[max(1rem,env(safe-area-inset-bottom))] text-foreground sm:px-6">
-      <section className="auth-card-in auth-border-run relative w-full max-w-[500px] overflow-hidden rounded-[1.75rem] border border-white/10 bg-[rgba(8,8,8,0.74)] p-5 shadow-[0_24px_80px_rgba(0,0,0,.65),inset_0_1px_0_rgba(255,255,255,.055)] backdrop-blur-2xl sm:p-7">
+    <main className="grid min-h-[100dvh] place-items-center overflow-hidden bg-[radial-gradient(circle_at_top,rgba(255,255,255,.05),transparent_24%),radial-gradient(circle_at_bottom,rgba(217,249,109,.06),transparent_24%),#080808] px-4 py-[max(1rem,env(safe-area-inset-top))] pb-[max(1rem,env(safe-area-inset-bottom))] text-foreground sm:px-6">
+      <section className="auth-card-in auth-border-run relative w-full max-w-[540px] overflow-hidden rounded-[1.9rem] border border-white/10 bg-[rgba(8,8,8,0.78)] p-5 shadow-[0_24px_80px_rgba(0,0,0,.65),inset_0_1px_0_rgba(255,255,255,.055)] backdrop-blur-2xl sm:p-7">
         <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/30 to-transparent" />
+        <div className="pointer-events-none absolute inset-x-10 bottom-0 h-24 bg-[radial-gradient(circle,rgba(217,249,109,.08),transparent_60%)] blur-2xl" />
 
         <div className="flex items-start justify-between gap-4">
           <div className="flex items-center gap-3">
@@ -94,6 +96,19 @@ function AuthGate({ onLogin }: { onLogin: () => void }) {
           <p className="text-xs leading-5 text-zinc-300">
             <strong className="text-amber-100">Trading plan first.</strong> Risk, setup and review notes stay attached to each trade.
           </p>
+        </div>
+
+        <div className="mt-4 grid grid-cols-3 gap-2 text-center">
+          {[
+            ["Secure auth", "Google OAuth"],
+            ["Premium ready", "AI + MT5"],
+            ["Fast journal", "Proof workflow"],
+          ].map(([title, text]) => (
+            <div key={title} className="rounded-2xl border border-white/8 bg-white/[.025] px-3 py-3">
+              <p className="text-[10px] font-black uppercase tracking-wider text-zinc-400">{title}</p>
+              <p className="mt-1 text-[11px] text-zinc-500">{text}</p>
+            </div>
+          ))}
         </div>
       </section>
     </main>
@@ -192,6 +207,15 @@ export function AppShell() {
     return <FeedV3 onLogin={openLogin} />;
   };
 
+  if (!user && section === "pricing") {
+    return (
+      <>
+        <Pricing onLogin={openLogin} />
+        <AuthModal open={authOpen} onClose={() => setAuthOpen(false)} />
+      </>
+    );
+  }
+
   if (!user) {
     return (
       <>
@@ -224,6 +248,7 @@ export function AppShell() {
       </div>
       {profileOpening ? <div className="pointer-events-none fixed left-0 right-0 top-0 z-[2147483646] h-0.5 overflow-hidden bg-white/5"><div className="h-full w-1/3 animate-[profileProgress_.8s_ease-in-out_infinite] bg-white" /></div> : null}
       {notificationsMounted && <NotificationListener />}
+      <PremiumUpsellDialog />
       <AuthModal open={authOpen} onClose={() => setAuthOpen(false)} />
     </>
   );

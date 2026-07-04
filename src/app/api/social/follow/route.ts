@@ -1,4 +1,5 @@
 import { authenticateRequest, badRequest, serverError, unauthorized } from "@/lib/backend/auth";
+import { sendSocialNotification } from "@/lib/backend/social-notifications";
 
 export const runtime = "nodejs";
 
@@ -53,15 +54,15 @@ export async function POST(request: Request) {
 
   const actorName = actor?.full_name || actor?.username || "A trader";
 
-  await auth.supabase
-    .from("notifications")
-    .insert({
-      user_id: targetUserId,
-      actor_id: auth.user.id,
-      type: "follow",
-      message: `${actorName} started following you.`,
-      is_read: false,
-    });
+  await sendSocialNotification(auth.supabase, {
+    userId: targetUserId,
+    actorId: auth.user.id,
+    type: "follow",
+    message: `${actorName} started following your profile.`,
+    entityId: targetUserId,
+    entityType: "profile",
+    dedupe: true,
+  });
 
   const { count } = await auth.supabase
     .from("user_follows")

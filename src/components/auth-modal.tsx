@@ -37,29 +37,29 @@ export function AuthModal({
       <section className="w-full max-w-md rounded-3xl border border-white/15 bg-[#171717] p-6 shadow-2xl shadow-black/50 backdrop-blur-2xl">
         <div className="flex items-center">
           <span className="text-2xl font-black tracking-tighter">TW</span>
-          <button onClick={onClose} className="ml-auto rounded-full p-2 hover:bg-white/10" aria-label="Yopish">
+          <button onClick={onClose} className="ml-auto rounded-full p-2 hover:bg-white/10" aria-label="Close">
             <X size={20} />
           </button>
         </div>
-        <h2 className="mt-7 text-3xl font-black">TradeWay&apos;ga qo&apos;shiling</h2>
+        <h2 className="mt-7 text-3xl font-black">Join TradeWay</h2>
         <p className="mt-2 text-sm leading-6 text-xmuted">
-          Postlaringiz, profilingiz va guruh chatlaringiz barcha qurilmalarda saqlanadi.
+          Your profile, posts and trading workspace stay synced across devices.
         </p>
         <button
           onClick={login}
           className="mt-7 flex w-full items-center justify-center gap-3 rounded-full bg-white py-3 font-bold text-black transition hover:bg-[#e6e6e6]"
         >
           <GoogleMark />
-          Google orqali davom etish
+          Continue with Google
         </button>
         {!configured && (
           <div className="mt-4 rounded-2xl border border-amber-500/30 bg-amber-500/10 p-3 text-sm text-amber-200">
-            Backend hozir mavjud emas. Server konfiguratsiyasini tekshiring.
+            Backend is not configured yet. Check the server environment and auth settings.
           </div>
         )}
         {error && <p className="mt-3 text-sm text-rose-400">{error}</p>}
         <p className="mt-5 text-center text-xs leading-5 text-xmuted">
-          Davom etish orqali foydalanish shartlari va maxfiylik siyosatiga rozilik bildirasiz.
+          By continuing, you agree to the platform terms and privacy policy.
         </p>
       </section>
     </div>

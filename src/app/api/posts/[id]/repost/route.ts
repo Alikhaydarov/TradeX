@@ -1,4 +1,5 @@
 import { authenticateRequest, serverError, unauthorized } from "@/lib/backend/auth";
+import { sendSocialNotification } from "@/lib/backend/social-notifications";
 
 export const runtime = "nodejs";
 
@@ -40,12 +41,14 @@ export async function POST(
     ]);
     if (post?.user_id && post.user_id !== auth.user.id) {
       const actorName = actor?.full_name || actor?.username || "A trader";
-      await auth.supabase.from("notifications").insert({
-        user_id: post.user_id,
-        actor_id: auth.user.id,
+      await sendSocialNotification(auth.supabase, {
+        userId: post.user_id,
+        actorId: auth.user.id,
         type: "post_repost",
-        message: `${actorName} reposted your post.`,
-        is_read: false,
+        message: `${actorName} reposted your trade post.`,
+        entityId: postId,
+        entityType: "post",
+        dedupe: true,
       });
     }
   }

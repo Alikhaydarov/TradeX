@@ -3,7 +3,6 @@
 import {
   ArrowLeft,
   ChevronRight,
-  Database,
   FileText,
   KeyRound,
   LockKeyhole,
@@ -19,6 +18,8 @@ import {
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import { apiRequest } from "@/lib/api-client";
 import { cn } from "@/lib/utils";
+import { PlatformLogoBadge } from "./platform-logo-badge";
+import { PropFirmLogo } from "./prop-firm-logo";
 import { Button } from "./ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog";
 import { Input } from "./ui/input";
@@ -92,19 +93,6 @@ function StepDots({ step }: { step: WizardStep }) {
         </div>
       ))}
     </div>
-  );
-}
-
-function PlatformLogo({ item }: { item: PlatformConfig }) {
-  return (
-    <span className={cn(
-      "grid size-11 place-items-center rounded-xl text-sm font-black",
-      item.id === "mt5" ? "bg-emerald-400/15 text-emerald-200" :
-      item.premium ? "bg-sky-400/15 text-sky-200" :
-      item.mode === "csv" ? "bg-white text-orange-600" : "bg-white/8 text-zinc-400"
-    )}>
-      {item.logo}
-    </span>
   );
 }
 
@@ -350,7 +338,7 @@ export function PropAccountDialog({
                       type="button"
                       onClick={() => choosePlatform(item)}
                       className={cn(
-                        "group relative min-h-[188px] rounded-3xl border p-4 text-left transition",
+                        "group relative min-h-[196px] rounded-[28px] border p-4 text-left shadow-[0_18px_48px_rgba(0,0,0,.22)] transition",
                         locked
                           ? "border-sky-400/20 bg-sky-400/[.03] hover:border-sky-300/30 hover:bg-sky-400/[.05]"
                           : item.mode === "coming"
@@ -359,7 +347,7 @@ export function PropAccountDialog({
                       )}
                     >
                       <span className="flex items-start justify-between gap-3">
-                        <PlatformLogo item={item} />
+                        <PlatformLogoBadge platform={item.id} />
                         <span className="flex flex-wrap justify-end gap-1">
                           {item.premium ? <span className="rounded-full border border-sky-300/15 bg-sky-400/10 px-2 py-0.5 text-[9px] font-black uppercase text-sky-200">Premium</span> : null}
                           <span className={cn("rounded-full px-2 py-0.5 text-[9px] font-black uppercase", badgeClass(item.mode))}>{item.badge}</span>
@@ -389,6 +377,32 @@ export function PropAccountDialog({
             {step === 3 ? (
               <div className="grid overflow-hidden rounded-2xl border border-white/10 bg-[#0d0d0d] md:grid-cols-[1.1fr_.9fr]">
                 <div className="space-y-4 p-5 sm:p-6">
+                  <div className="rounded-2xl border border-white/10 bg-white/[.035] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,.03)]">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="rounded-full bg-white/[.06] px-2.5 py-1 text-[10px] font-black uppercase tracking-wider text-zinc-300">
+                        {accountType === "prop" ? "Prop account" : "Real account"}
+                      </span>
+                      {accountKind === "automatic" ? <PlatformLogoBadge platform={selectedPlatform.id} compact /> : null}
+                    </div>
+                    <div className="mt-3 flex items-center gap-3">
+                      <PropFirmLogo firm={firm} compact />
+                      <div className="min-w-0">
+                        <p className="text-sm font-black text-zinc-100">{firm}</p>
+                        <p className="text-xs text-zinc-500">
+                          {accountKind === "manual"
+                            ? "Manual journal workspace"
+                            : selectedPlatform.id === "mt5"
+                              ? "Auto sync with MT5 bridge"
+                              : `${selectedPlatform.name} import flow`}
+                        </p>
+                      </div>
+                      <div className="ml-auto text-right">
+                        <p className="text-[10px] uppercase tracking-widest text-zinc-500">Size</p>
+                        <p className="font-mono text-sm font-black text-zinc-100">${size.toLocaleString()}</p>
+                      </div>
+                    </div>
+                  </div>
+
                   <AccountBasics
                     accountType={accountType}
                     changeAccountType={changeAccountType}
@@ -620,9 +634,13 @@ function SideGuide({ accountKind, platform }: { accountKind: AccountKind | null;
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-3">
-        <span className="grid size-10 place-items-center rounded-xl bg-white/10 text-zinc-200">
-          {isManual ? <Pencil size={18} /> : isCsv ? <Database size={18} /> : <KeyRound size={18} />}
-        </span>
+        {isManual ? (
+          <span className="grid size-10 place-items-center rounded-xl bg-white/10 text-zinc-200">
+            <Pencil size={18} />
+          </span>
+        ) : (
+          <PlatformLogoBadge platform={platform.id} compact />
+        )}
         <div>
           <h3 className="text-xl font-black">{isManual ? "Manual" : isCsv ? platform.name : "MetaTrader 5"}</h3>
           <p className="text-xs font-semibold text-zinc-500">{isManual ? "Add trades manually" : isCsv ? "CSV import" : "Auto sync"}</p>

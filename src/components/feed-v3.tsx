@@ -13,6 +13,7 @@ import { SkeletonBlock, XSpinner } from "./app-loader";
 import { SocialActions } from "./social-actions-v2";
 import { TradeShareComposer } from "./trade-share-composer";
 import { useAuth } from "./auth-context";
+import { InstrumentBadge } from "./instrument-badge";
 import { MediaImage } from "./media-image";
 import { TraderAvatar } from "./trader-avatar";
 import { VerifiedBadge } from "./verified-badge";
@@ -110,6 +111,10 @@ function tradeFromRow(row: FeedTradeRow): JournalEntry {
 
 function replyTime(value: string) {
   return formatRelativeTime(value);
+}
+
+function timeMeta(handle: string, value: string) {
+  return `${handle} / ${value}`;
 }
 
 function openProfile(username: string) {
@@ -271,7 +276,7 @@ export function FeedV3({ onLogin }: { onLogin: () => void }) {
       setPosts((current) => current.map((item) => item.id === post.id ? { ...item, ...state } : item));
     } catch (nextError) {
       setPosts((current) => current.map((item) => item.id === post.id ? { ...item, liked: post.liked, likes: post.likes } : item));
-      setError(nextError instanceof Error ? nextError.message : "Like saqlanmadi.");
+      setError(nextError instanceof Error ? nextError.message : "Like could not be saved.");
     }
   };
 
@@ -284,7 +289,7 @@ export function FeedV3({ onLogin }: { onLogin: () => void }) {
       setPosts((current) => current.map((item) => item.id === post.id ? { ...item, bookmarked: state.bookmarked } : item));
     } catch (nextError) {
       setPosts((current) => current.map((item) => item.id === post.id ? { ...item, bookmarked: post.bookmarked } : item));
-      setError(nextError instanceof Error ? nextError.message : "Post saqlanmadi.");
+      setError(nextError instanceof Error ? nextError.message : "Bookmark could not be saved.");
     }
   };
 
@@ -298,7 +303,7 @@ export function FeedV3({ onLogin }: { onLogin: () => void }) {
       setPosts((current) => current.map((item) => item.id === post.id ? { ...item, ...state } : item));
     } catch (nextError) {
       setPosts((current) => current.map((item) => item.id === post.id ? { ...item, reposted: post.reposted, reposts: post.reposts } : item));
-      setError(nextError instanceof Error ? nextError.message : "Repost saqlanmadi.");
+      setError(nextError instanceof Error ? nextError.message : "Repost could not be saved.");
     }
   };
 
@@ -396,7 +401,7 @@ export function FeedV3({ onLogin }: { onLogin: () => void }) {
       }
     } catch (nextError) {
       if (nextError instanceof Error && nextError.name === "AbortError") return;
-      setError("Post havolasini ulashib bo'lmadi.");
+      setError("Post link could not be shared.");
     }
   };
 
@@ -462,28 +467,28 @@ export function FeedV3({ onLogin }: { onLogin: () => void }) {
         {loading ? (
           <FeedSkeleton />
         ) : (
-          <div className="mt-3 overflow-hidden rounded-lg border border-border bg-card">
+          <div className="mt-3 overflow-hidden rounded-[1.6rem] border border-border bg-card shadow-[0_18px_54px_rgba(0,0,0,.22)]">
             {posts.map((post) => (
               <article
                 key={post.id}
                 id={`post-${post.id}`}
                 ref={(node) => observePost(node, post.id)}
-                className="border-b border-border px-3 py-4 transition-colors last:border-b-0 hover:bg-white/[.018] sm:px-5"
+                className="border-b border-border/80 px-3 py-4 transition-colors last:border-b-0 hover:bg-white/[.02] sm:px-5 sm:py-5"
               >
-                <div className="flex gap-3">
-                  <button type="button" onClick={() => openProfile(post.handle)} className="h-11 w-11 shrink-0 rounded-full"><TraderAvatar name={post.name} value={post.avatar} className="h-11 w-11 text-xs" /></button>
+                <div className="flex gap-3.5">
+                  <button type="button" onClick={() => openProfile(post.handle)} className="h-11 w-11 shrink-0 rounded-full sm:h-12 sm:w-12"><TraderAvatar name={post.name} value={post.avatar} className="h-11 w-11 rounded-full text-xs ring-1 ring-white/10 sm:h-12 sm:w-12" /></button>
                   <div className="min-w-0 flex-1">
                     <div className="flex items-start gap-3">
                       <div className="min-w-0 flex-1">
-                        <button type="button" onClick={() => openProfile(post.handle)} className="flex max-w-full items-center gap-1 truncate text-left text-sm font-bold hover:underline">
+                        <button type="button" onClick={() => openProfile(post.handle)} className="flex max-w-full items-center gap-1 truncate text-left text-[15px] font-black tracking-tight hover:underline">
                           {post.name}
                           {post.isVerified && <VerifiedBadge size={14} />}
                         </button>
-                        <p className="truncate text-[11px] text-slate-500">{post.handle} <span className="px-1 text-zinc-700">·</span> {post.time}</p>
+                        <p className="truncate text-[11px] text-slate-500">{timeMeta(post.handle, post.time)}</p>
                       </div>
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                          <button className="grid size-9 shrink-0 place-items-center rounded-lg text-zinc-600 transition-colors hover:bg-white/[.04] hover:text-zinc-200" aria-label="Post options"><MoreHorizontal size={18} /></button>
+                          <button className="grid size-9 shrink-0 place-items-center rounded-xl border border-white/0 text-zinc-600 transition-colors hover:border-white/8 hover:bg-white/[.04] hover:text-zinc-200" aria-label="Post options"><MoreHorizontal size={18} /></button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end" className="w-44">
                           <DropdownMenuItem onClick={() => void sharePost(post)} className="min-h-9 px-2.5"><Link2 /> Copy link</DropdownMenuItem>
@@ -496,8 +501,8 @@ export function FeedV3({ onLogin }: { onLogin: () => void }) {
                     </div>
 
                     {post.symbol ? (
-                      <div className="mt-3 flex flex-wrap items-center gap-2 rounded-lg border border-white/8 bg-black/15 px-3 py-2.5">
-                        <strong className="mr-auto text-sm tracking-wide">{post.symbol}</strong>
+                      <div className="mt-3 flex flex-wrap items-center gap-2 rounded-2xl border border-white/8 bg-black/15 px-3 py-2.5 shadow-[inset_0_1px_0_rgba(255,255,255,.04)]">
+                        <InstrumentBadge symbol={post.symbol} compact className="mr-auto rounded-xl bg-white/[.03]" />
                         <span className={`rounded-md px-2 py-1 text-[9px] font-black ${post.side === "LONG" ? "bg-emerald-300/10 text-emerald-300" : "bg-rose-300/10 text-rose-300"}`}>{post.side}</span>
                         <span className={`rounded-md px-2 py-1 text-[9px] font-black ${post.result === "WIN" ? "bg-emerald-300/10 text-emerald-300" : post.result === "LOSS" ? "bg-rose-300/10 text-rose-300" : "bg-white/8 text-zinc-300"}`}>{post.result}</span>
                         {typeof post.pnl === "number" ? <strong className={post.pnl >= 0 ? "text-sm text-emerald-300" : "text-sm text-rose-300"}>{post.pnl >= 0 ? "+" : ""}${post.pnl.toFixed(2)}</strong> : null}
@@ -521,12 +526,12 @@ export function FeedV3({ onLogin }: { onLogin: () => void }) {
                       </button>
                     ) : null}
 
-                    <div className="mt-3 grid grid-cols-5 items-center text-zinc-500">
-                      <button onClick={() => void toggleReplies(post)} className={`flex h-11 items-center justify-center gap-1.5 rounded-lg text-[11px] transition-colors hover:bg-white/[.04] hover:text-zinc-200 ${openReplies === post.id ? "text-zinc-100" : ""}`} aria-label="Replies"><MessageCircle size={17} />{post.replies}</button>
-                      <button onClick={() => void toggleRepost(post)} className={`flex h-11 items-center justify-center gap-1.5 rounded-lg text-[11px] transition-colors hover:bg-emerald-400/[.06] hover:text-emerald-300 ${post.reposted ? "text-emerald-300" : ""}`} aria-label="Repost"><Repeat2 size={17} />{post.reposts}</button>
-                      <button onClick={() => void toggleLike(post)} className={`flex h-11 items-center justify-center gap-1.5 rounded-lg text-[11px] transition-colors hover:bg-rose-400/[.06] hover:text-rose-300 ${post.liked ? "text-rose-300" : ""}`} aria-label="Like"><Heart size={17} fill={post.liked ? "currentColor" : "none"} />{post.likes}</button>
-                      <span className="flex h-11 items-center justify-center gap-1.5 text-[11px]" aria-label={`${post.views} views`}><Eye size={17} />{formatCount(post.views)}</span>
-                      <button onClick={() => void sharePost(post)} className="grid h-11 place-items-center rounded-lg transition-colors hover:bg-white/[.04] hover:text-zinc-200" aria-label="Share"><Share2 size={17} /></button>
+                    <div className="mt-3 grid grid-cols-5 items-center rounded-2xl border border-white/8 bg-white/[.02] p-1 text-zinc-500">
+                      <button onClick={() => void toggleReplies(post)} className={`flex h-11 items-center justify-center gap-1.5 rounded-xl text-[11px] transition-colors hover:bg-white/[.04] hover:text-zinc-200 ${openReplies === post.id ? "bg-white/[.05] text-zinc-100" : ""}`} aria-label="Replies"><MessageCircle size={17} />{post.replies}</button>
+                      <button onClick={() => void toggleRepost(post)} className={`flex h-11 items-center justify-center gap-1.5 rounded-xl text-[11px] transition-colors hover:bg-emerald-400/[.06] hover:text-emerald-300 ${post.reposted ? "bg-emerald-400/[.08] text-emerald-300" : ""}`} aria-label="Repost"><Repeat2 size={17} />{post.reposts}</button>
+                      <button onClick={() => void toggleLike(post)} className={`flex h-11 items-center justify-center gap-1.5 rounded-xl text-[11px] transition-colors hover:bg-rose-400/[.06] hover:text-rose-300 ${post.liked ? "bg-rose-400/[.08] text-rose-300" : ""}`} aria-label="Like"><Heart size={17} fill={post.liked ? "currentColor" : "none"} />{post.likes}</button>
+                      <span className="flex h-11 items-center justify-center gap-1.5 rounded-xl text-[11px]" aria-label={`${post.views} views`}><Eye size={17} />{formatCount(post.views)}</span>
+                      <button onClick={() => void sharePost(post)} className="grid h-11 place-items-center rounded-xl transition-colors hover:bg-white/[.04] hover:text-zinc-200" aria-label="Share"><Share2 size={17} /></button>
                     </div>
 
                     {openReplies === post.id ? (
@@ -542,7 +547,7 @@ export function FeedV3({ onLogin }: { onLogin: () => void }) {
                                   <div className="flex items-center gap-1.5">
                                     <strong className="truncate text-xs">{reply.name}</strong>
                                     {reply.isVerified ? <VerifiedBadge size={13} /> : null}
-                                    <span className="text-[10px] text-slate-600">@{reply.username} <span className="px-1 text-zinc-700">·</span> {replyTime(reply.createdAt)}</span>
+                                    <span className="text-[10px] text-slate-600">@{reply.username} <span className="px-1 text-zinc-700">/</span> {replyTime(reply.createdAt)}</span>
                                   </div>
                                   <p className="mt-1 whitespace-pre-line text-sm leading-5 text-slate-300">{reply.content}</p>
                                 </div>
@@ -632,9 +637,7 @@ export function FeedV3({ onLogin }: { onLogin: () => void }) {
                       }}
                       className="flex w-full items-center gap-3 rounded-lg px-3 py-3 text-left transition-colors hover:bg-white/[.045]"
                     >
-                      <span className="grid size-10 shrink-0 place-items-center rounded-lg border border-white/8 bg-black/25 text-[10px] font-black text-zinc-300">
-                        {trade.symbol.slice(0, 2)}
-                      </span>
+                      <InstrumentBadge symbol={trade.symbol} compact className="shrink-0 rounded-xl bg-black/25" showFullSymbol={false} />
                       <span className="min-w-0 flex-1">
                         <span className="flex min-w-0 items-center gap-2">
                           <strong className="truncate text-sm">{trade.symbol}</strong>
@@ -717,3 +720,4 @@ export function FeedV3({ onLogin }: { onLogin: () => void }) {
     </div>
   );
 }
+

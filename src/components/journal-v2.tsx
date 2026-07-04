@@ -24,7 +24,9 @@ import { Separator } from "./ui/separator";
 import { Textarea } from "./ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
 import { useAuth } from "./auth-context";
+import { InstrumentBadge } from "./instrument-badge";
 import { MediaImage } from "./media-image";
+import { PlatformLogoBadge } from "./platform-logo-badge";
 import { PropAccountDialog } from "./prop-account-dialog";
 import { PropFirmLogo } from "./prop-firm-logo";
 import { Mt5Settings } from "./mt5-settings";
@@ -395,7 +397,14 @@ function AccountCard({ s, deleting, onOpen, onDelete }: { s: Summary; deleting: 
           <PropFirmLogo firm={s.account.firm} />
           <div className="min-w-0 flex-1">
             <p className="truncate font-bold">{s.account.name}</p>
-            <p className="text-xs text-[#8a8a8a]">{s.account.accountType === "real" ? "Real" : "Prop"} / {s.account.phase} / {s.account.marketType}</p>
+            <div className="mt-1 flex flex-wrap items-center gap-1.5 text-xs text-[#8a8a8a]">
+              <span>{s.account.accountType === "real" ? "Real" : "Prop"}</span>
+              <span>/</span>
+              <span>{s.account.phase}</span>
+              <span>/</span>
+              <span>{s.account.marketType}</span>
+              <PlatformLogoBadge platform={s.account.platform} compact className="ml-1" />
+            </div>
           </div>
           <div className="flex shrink-0 items-center gap-1.5">
             <span className={`rounded-lg border px-2 py-0.5 text-[11px] font-semibold ${statusColor[s.account.status] || statusColor.Active}`}>
@@ -560,7 +569,12 @@ function Workspace(p: {
         <PropFirmLogo firm={account.firm} compact />
         <div className="min-w-0">
           <h1 className="truncate text-base font-black lg:text-lg">{account.name}</h1>
-          <p className="text-[11px] text-[#8a8a8a]">{account.phase} / {cash.format(account.accountSize)}</p>
+          <div className="flex flex-wrap items-center gap-1.5 text-[11px] text-[#8a8a8a]">
+            <span>{account.phase}</span>
+            <span>/</span>
+            <span>{cash.format(account.accountSize)}</span>
+            <PlatformLogoBadge platform={account.platform} compact className="ml-1" />
+          </div>
         </div>
         <span className={`ml-1 hidden rounded-lg border px-2 py-0.5 text-[11px] font-semibold md:block ${account.status === "Active" ? "border-emerald-400/20 bg-emerald-400/10 text-emerald-400" : "border-[#2a2a2a] text-[#8a8a8a]"}`}>
           {account.status}
@@ -574,7 +588,7 @@ function Workspace(p: {
           </Button>
           <Button onClick={p.onTrade} className="bg-white text-black hover:bg-zinc-200">
             <Plus size={16} />
-            <span className="hidden sm:inline">Trade qo&apos;shish</span>
+            <span className="hidden sm:inline">Add trade</span>
           </Button>
         </div>
       </header>
@@ -691,14 +705,14 @@ function Workspace(p: {
                       <div key={position.id} className="flex items-center gap-3 rounded-xl border border-white/8 bg-black/20 px-3 py-3">
                         <div className="min-w-0 flex-1">
                           <div className="flex items-center gap-2">
-                            <strong className="text-sm font-black text-zinc-100">{position.symbol}</strong>
+                            <InstrumentBadge symbol={position.symbol} compact className="bg-[#121212]" />
                             <span className={`rounded px-1.5 py-0.5 text-[9px] font-black uppercase ${position.side === "long" ? "bg-emerald-400/15 text-emerald-300" : "bg-rose-400/15 text-rose-300"}`}>
                               {position.side}
                             </span>
                             <span className="text-[10px] text-zinc-500">{position.volume.toFixed(2)} lots</span>
                           </div>
                           <p className="mt-1 text-[11px] text-zinc-500">
-                            Entry {position.entryPrice?.toFixed(2) || "-"} · Now {position.currentPrice?.toFixed(2) || "-"}
+                            Entry {position.entryPrice?.toFixed(2) || "-"} / Now {position.currentPrice?.toFixed(2) || "-"}
                           </p>
                         </div>
                         <div className="text-right">
@@ -865,9 +879,7 @@ function Workspace(p: {
                           onKeyDown={(ev) => { if (ev.key === "Enter" || ev.key === " ") setSelectedTrade(e); }}
                           className="group flex min-h-[68px] w-full cursor-pointer items-center gap-3 rounded-lg px-3 py-2.5 text-left transition-colors hover:bg-white/[.045] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/20 sm:px-4"
                         >
-                          <span className="grid size-8 shrink-0 place-items-center rounded-md border border-white/8 bg-[#1b1b1b] text-[9px] font-black text-zinc-300">
-                            {e.symbol.slice(0, 2)}
-                          </span>
+                          <InstrumentBadge symbol={e.symbol} compact className="shrink-0 rounded-xl bg-[#151515]" showFullSymbol={false} />
                           <span className="min-w-0 flex-1">
                             <span className="flex min-w-0 items-center gap-1.5">
                               <strong className="truncate text-[13px] font-bold text-zinc-100 sm:text-sm">{e.symbol}</strong>

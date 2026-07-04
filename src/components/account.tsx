@@ -38,6 +38,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { XSpinner } from "./app-loader";
+import { InstrumentBadge } from "./instrument-badge";
 import { useAuth } from "./auth-context";
 import { MediaImage } from "./media-image";
 import { TraderAvatar } from "./trader-avatar";
@@ -181,6 +182,7 @@ export function Account({ onLogin, profileUsername }: { onLogin: () => void; pro
   const [achievementImage, setAchievementImage] = useState("");
   const [achievementBusy, setAchievementBusy] = useState(false);
   const [premium, setPremium] = useState<PremiumStatus | null>(null);
+  const [billingLoading, setBillingLoading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
@@ -275,7 +277,7 @@ export function Account({ onLogin, profileUsername }: { onLogin: () => void; pro
   }
 
   if (!profile) {
-    return <div className="grid min-h-[70vh] place-items-center text-slate-500">Profile topilmadi.</div>;
+    return <div className="grid min-h-[70vh] place-items-center text-slate-500">Profile not found.</div>;
   }
 
   const isOwnProfile = profile.id === user.id;
@@ -430,10 +432,10 @@ export function Account({ onLogin, profileUsername }: { onLogin: () => void; pro
             <p className="max-w-full truncate font-black text-white">{post.name}</p>
             {post.isVerified ? <VerifiedBadge /> : null}
             <p className="truncate text-xs text-slate-500">{post.handle}</p>
-            <span className="text-xs text-slate-700">·</span>
+            <span className="text-xs text-slate-700">/</span>
             <p className="text-xs text-slate-500">{post.time}</p>
           </div>
-          {post.symbol ? <div className="mt-3 flex flex-wrap items-center gap-2 rounded-lg border border-white/8 bg-black/15 px-3 py-2.5"><strong className="mr-auto text-sm">{post.symbol}</strong><span className="text-[10px] font-black text-zinc-300">{post.side}</span><span className={post.result === "WIN" ? "text-[10px] font-black text-emerald-300" : post.result === "LOSS" ? "text-[10px] font-black text-rose-300" : "text-[10px] font-black text-zinc-300"}>{post.result}</span>{typeof post.pnl === "number" ? <strong className={post.pnl >= 0 ? "text-sm text-emerald-300" : "text-sm text-rose-300"}>{post.pnl >= 0 ? "+" : ""}${post.pnl.toFixed(2)}</strong> : null}</div> : null}
+          {post.symbol ? <div className="mt-3 flex flex-wrap items-center gap-2 rounded-2xl border border-white/8 bg-black/15 px-3 py-2.5 shadow-[inset_0_1px_0_rgba(255,255,255,.04)]"><InstrumentBadge symbol={post.symbol} compact className="mr-auto rounded-xl bg-white/[.03]" /><span className="text-[10px] font-black text-zinc-300">{post.side}</span><span className={post.result === "WIN" ? "text-[10px] font-black text-emerald-300" : post.result === "LOSS" ? "text-[10px] font-black text-rose-300" : "text-[10px] font-black text-zinc-300"}>{post.result}</span>{typeof post.pnl === "number" ? <strong className={post.pnl >= 0 ? "text-sm text-emerald-300" : "text-sm text-rose-300"}>{post.pnl >= 0 ? "+" : ""}${post.pnl.toFixed(2)}</strong> : null}</div> : null}
           {post.text ? <p className="mt-2 whitespace-pre-line break-words text-[15px] leading-6 text-slate-50">{post.text}</p> : null}
           {post.imageUrls?.length ? <div className={`mt-3 grid gap-px overflow-hidden rounded-xl border border-white/10 bg-white/10 ${post.imageUrls.length === 1 ? "grid-cols-1" : post.imageUrls.length === 3 ? "grid-cols-3" : "grid-cols-2"}`}>{post.imageUrls.slice(0, 4).map((url, index) => <a key={url} href={url} target="_blank" rel="noreferrer" className="grid min-h-40 place-items-center overflow-hidden bg-black/90"><MediaImage src={url} alt={`Trade media ${index + 1}`} className="h-full max-h-[520px] w-full object-cover" /></a>)}</div> : post.imageUrl ? <a href={post.imageUrl} target="_blank" rel="noreferrer" className="mt-3 grid min-h-40 place-items-center overflow-hidden rounded-xl border border-white/10 bg-black/90"><MediaImage src={post.imageUrl} alt="Post media" className="max-h-[520px] max-w-full object-contain" /></a> : null}
           <div className="mt-3 grid max-w-md grid-cols-4 text-slate-500">
@@ -516,10 +518,10 @@ export function Account({ onLogin, profileUsername }: { onLogin: () => void; pro
                 <div className="flex flex-wrap items-center gap-2">
                   <h3 className="text-sm font-black">TradeWay Premium</h3>
                   {premium?.isVerified ? <VerifiedBadge size={15} /> : null}
-                  {premium?.isPremium ? <span className="rounded-full bg-sky-400/10 px-2 py-0.5 text-[10px] font-black text-sky-300">Premium active</span> : null}
+                  {premium?.isPremium ? <span className="rounded-full bg-sky-400/10 px-2 py-0.5 text-[10px] font-black text-sky-300">Premium active</span> : <span className="rounded-full bg-white/[.06] px-2 py-0.5 text-[10px] font-black text-zinc-400">Free plan</span>}
                 </div>
                 <p className="mt-1 text-xs leading-5 text-zinc-500">
-                  Verified badge, AI Trade Analysis and MT5 Auto Sync are Premium features.
+                  Verified badge, AI trade coaching and MT5 Auto Sync live in one clean workspace.
                 </p>
               </div>
             </div>
@@ -527,7 +529,7 @@ export function Account({ onLogin, profileUsername }: { onLogin: () => void; pro
             {!premium?.isPremium ? (
               <div className="mt-4 flex flex-col gap-3 rounded-lg border border-white/8 bg-[#111111] p-3 sm:flex-row sm:items-center">
                 <p className="min-w-0 flex-1 text-xs leading-5 text-zinc-400">
-                  Verified badge, AI reports and MT5 Auto Sync unlock with Premium.
+                  Upgrade when you want AI review, blue verification and account-level sync in one flow.
                 </p>
                 <button
                   type="button"
@@ -552,17 +554,38 @@ export function Account({ onLogin, profileUsername }: { onLogin: () => void; pro
                   ))}
                 </div>
                 <div className="rounded-lg border border-white/8 bg-[#111111] p-3">
-                  <p className="text-xs font-black uppercase tracking-wider text-zinc-500">MT5 Auto Sync</p>
+                  <p className="text-xs font-black uppercase tracking-wider text-zinc-500">Billing & access</p>
                   <p className="mt-1 text-xs leading-5 text-zinc-500">
-                    MT5 is connected inside each trading account settings, so every imported trade goes into the correct journal.
+                    MT5 is connected inside each trading account settings, so every imported trade lands in the correct journal and account workspace.
                   </p>
-                  <button
-                    type="button"
-                    onClick={() => { window.history.pushState(null, "", "/journal"); window.dispatchEvent(new Event("popstate")); }}
-                    className="mt-3 inline-flex h-9 items-center justify-center rounded-lg border border-white/10 px-3 text-xs font-black text-zinc-200 transition hover:bg-white/[.06]"
-                  >
-                    Open Journal Accounts
-                  </button>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    <button
+                      type="button"
+                      onClick={() => { window.history.pushState(null, "", "/journal"); window.dispatchEvent(new Event("popstate")); }}
+                      className="inline-flex h-9 items-center justify-center rounded-lg border border-white/10 px-3 text-xs font-black text-zinc-200 transition hover:bg-white/[.06]"
+                    >
+                      Open journal accounts
+                    </button>
+                    <button
+                      type="button"
+                      onClick={async () => {
+                        setBillingLoading(true);
+                        setError(null);
+                        try {
+                          const response = await apiRequest<{ url: string }>("/api/stripe/portal", { method: "POST" });
+                          window.location.assign(response.url);
+                        } catch (nextError) {
+                          setError(nextError instanceof Error ? nextError.message : "Billing portal is not ready yet.");
+                        } finally {
+                          setBillingLoading(false);
+                        }
+                      }}
+                      className="inline-flex h-9 items-center justify-center rounded-lg bg-white px-3 text-xs font-black text-black transition hover:bg-zinc-200"
+                    >
+                      {billingLoading ? <XSpinner size="sm" /> : null}
+                      Manage billing
+                    </button>
+                  </div>
                 </div>
               </div>
             )}
@@ -661,7 +684,7 @@ export function Account({ onLogin, profileUsername }: { onLogin: () => void; pro
                 <div className="grid gap-2"><Label htmlFor="profile-name">Name</Label><Input id="profile-name" value={draftProfile.fullName} onChange={(event) => setDraftProfile({ ...draftProfile, fullName: event.target.value })} /></div>
                 <div className="grid gap-2"><Label htmlFor="profile-username">Username</Label><div className="relative"><span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-sm text-slate-500">@</span><Input id="profile-username" value={draftProfile.username} onChange={(event) => setDraftProfile({ ...draftProfile, username: event.target.value.replace(/\s/g, "") })} className="pl-8" /></div></div>
                 <div className="grid gap-2"><Label htmlFor="profile-avatar">Avatar URL</Label><Input id="profile-avatar" value={draftProfile.avatarUrl ?? ""} onChange={(event) => setDraftProfile({ ...draftProfile, avatarUrl: event.target.value })} placeholder="https://..." /></div>
-                <div className="grid gap-2"><Label>Trading style</Label><Select value={draftProfile.tradingStyle} onValueChange={(value) => setDraftProfile({ ...draftProfile, tradingStyle: value })}><SelectTrigger className="w-full"><SelectValue placeholder="Trading style tanlang" /></SelectTrigger><SelectContent><SelectItem value="Price Action">Price Action</SelectItem><SelectItem value="Scalping">Scalping</SelectItem><SelectItem value="Swing Trading">Swing Trading</SelectItem><SelectItem value="Algorithmic">Algorithmic</SelectItem></SelectContent></Select></div>
+                <div className="grid gap-2"><Label>Trading style</Label><Select value={draftProfile.tradingStyle} onValueChange={(value) => setDraftProfile({ ...draftProfile, tradingStyle: value })}><SelectTrigger className="w-full"><SelectValue placeholder="Choose your trading style" /></SelectTrigger><SelectContent><SelectItem value="Price Action">Price Action</SelectItem><SelectItem value="Scalping">Scalping</SelectItem><SelectItem value="Swing Trading">Swing Trading</SelectItem><SelectItem value="Algorithmic">Algorithmic</SelectItem></SelectContent></Select></div>
                 <div className="grid gap-2"><Label htmlFor="profile-location">Location</Label><div className="relative"><MapPin className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" size={16} /><Input id="profile-location" value={draftProfile.location} onChange={(event) => setDraftProfile({ ...draftProfile, location: event.target.value })} placeholder="Korea" className="pl-10" /></div></div>
                 <div className="grid gap-2"><Label htmlFor="profile-bio">Bio</Label><Textarea id="profile-bio" value={draftProfile.bio} onChange={(event) => setDraftProfile({ ...draftProfile, bio: event.target.value })} maxLength={160} className="min-h-28" placeholder="Write something about your trading journey..." /><span className="text-right text-[11px] text-slate-600">{draftProfile.bio.length}/160</span></div>
               </div>
@@ -729,3 +752,4 @@ export function Account({ onLogin, profileUsername }: { onLogin: () => void; pro
     </div>
   );
 }
+
