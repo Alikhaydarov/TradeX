@@ -773,9 +773,22 @@ function Workspace(p: {
                             <p className={`mt-3 font-mono text-sm font-black ${c.pnl >= 0 ? "text-emerald-400" : "text-rose-400"}`}>
                               {c.pnl >= 0 ? "+" : ""}{cash.format(c.pnl)}
                             </p>
-                            <p className="mt-1 truncate text-[10px] text-[#8a8a8a]">
-                              {c.trades.map(t => t.symbol).join(", ")}
-                            </p>
+                            <div className="mt-1 flex flex-wrap gap-1">
+                              {c.trades.slice(0, 2).map((trade) => (
+                                <InstrumentBadge
+                                  key={`${c.day}-${trade.id}`}
+                                  symbol={trade.symbol}
+                                  compact
+                                  className="rounded-lg bg-[#0f0f0f]"
+                                  showFullSymbol={false}
+                                />
+                              ))}
+                              {c.trades.length > 2 ? (
+                                <span className="rounded-lg bg-white/[.05] px-1.5 py-1 text-[9px] font-black text-zinc-400">
+                                  +{c.trades.length - 2}
+                                </span>
+                              ) : null}
+                            </div>
                             <div className="mt-1.5 flex gap-1">
                               {c.trades.filter(t => t.pnl > 0).length > 0 && (
                                 <span className="rounded-md bg-emerald-500/15 px-1 py-0.5 text-[9px] font-bold text-emerald-400">{c.trades.filter(t => t.pnl > 0).length}W</span>
@@ -1030,9 +1043,11 @@ function Workspace(p: {
                   ["FIRM", account.firm || "Independent"],
                   ["PHASE", account.phase],
                   ["MARKET", account.marketType],
+                  ["PLATFORM", (account.platform || "manual").toUpperCase()],
                   ["START DATE", account.startDate],
                   ["TARGET", cash.format(account.profitTarget)],
                   ["MAX DD", cash.format(account.maxDrawdown)],
+                  ["DAILY DD", cash.format(account.dailyDrawdown)],
                 ].map(([l, v]) => <MiniStat key={l} label={l} value={v} />)}
               </div>
             </div>

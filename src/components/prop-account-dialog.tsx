@@ -346,27 +346,39 @@ export function PropAccountDialog({
                             : "border-white/10 bg-white/[.035] hover:border-white/25 hover:bg-white/[.06]"
                       )}
                     >
-                      <span className="flex items-start justify-between gap-3">
-                        <PlatformLogoBadge platform={item.id} />
-                        <span className="flex flex-wrap justify-end gap-1">
-                          {item.premium ? <span className="rounded-full border border-sky-300/15 bg-sky-400/10 px-2 py-0.5 text-[9px] font-black uppercase text-sky-200">Premium</span> : null}
-                          <span className={cn("rounded-full px-2 py-0.5 text-[9px] font-black uppercase", badgeClass(item.mode))}>{item.badge}</span>
+                      <div className={cn("transition", locked ? "pointer-events-none blur-[2px] opacity-45" : "")}>
+                        <span className="flex items-start justify-between gap-3">
+                          <PlatformLogoBadge platform={item.id} />
+                          <span className="flex flex-wrap justify-end gap-1">
+                            {item.premium ? <span className="rounded-full border border-sky-300/15 bg-sky-400/10 px-2 py-0.5 text-[9px] font-black uppercase text-sky-200">Premium</span> : null}
+                            <span className={cn("rounded-full px-2 py-0.5 text-[9px] font-black uppercase", badgeClass(item.mode))}>{item.badge}</span>
+                          </span>
                         </span>
-                      </span>
-                      <span className="mt-4 block text-base font-black text-zinc-100">{item.name}</span>
-                      <span className="mt-1 block text-xs font-bold text-zinc-400">{item.method}</span>
-                      <span className="mt-3 block text-xs leading-5 text-zinc-600">{item.helper}</span>
-                      <div className="mt-4 flex items-center justify-between">
-                        <span className={cn(
-                          "rounded-full px-2.5 py-1 text-[10px] font-black uppercase tracking-wider",
-                          item.market === "CFD" ? "bg-blue-500/10 text-blue-200" : "bg-amber-400/10 text-amber-200"
-                        )}>
-                          {item.market}
-                        </span>
-                        <span className="text-[10px] font-black uppercase tracking-wider text-zinc-500">
-                          {locked ? "Upgrade required" : item.mode === "auto" ? "Ready now" : item.mode === "csv" ? "Import ready" : "Connector queued"}
-                        </span>
+                        <span className="mt-4 block text-base font-black text-zinc-100">{item.name}</span>
+                        <span className="mt-1 block text-xs font-bold text-zinc-400">{item.method}</span>
+                        <span className="mt-3 block text-xs leading-5 text-zinc-600">{item.helper}</span>
+                        <div className="mt-4 flex items-center justify-between">
+                          <span className={cn(
+                            "rounded-full px-2.5 py-1 text-[10px] font-black uppercase tracking-wider",
+                            item.market === "CFD" ? "bg-blue-500/10 text-blue-200" : "bg-amber-400/10 text-amber-200"
+                          )}>
+                            {item.market}
+                          </span>
+                          <span className="text-[10px] font-black uppercase tracking-wider text-zinc-500">
+                            {locked ? "Upgrade required" : item.mode === "auto" ? "Ready now" : item.mode === "csv" ? "Import ready" : "Connector queued"}
+                          </span>
+                        </div>
                       </div>
+                      {locked ? (
+                        <span className="absolute inset-0 flex flex-col items-center justify-center rounded-[28px] bg-black/18 px-4 text-center backdrop-blur-sm">
+                          <span className="grid size-10 place-items-center rounded-2xl border border-sky-300/20 bg-sky-400/12 text-sky-100">
+                            <LockKeyhole size={16} />
+                          </span>
+                          <span className="mt-3 text-sm font-black text-white">Premium connector</span>
+                          <span className="mt-1 text-[11px] font-medium leading-5 text-zinc-300">Upgrade to unlock {item.name} and advanced sync.</span>
+                          <span className="mt-4 inline-flex rounded-full border border-white/12 bg-white/10 px-3 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-white">Upgrade</span>
+                        </span>
+                      ) : null}
                       {locked ? <span className="absolute right-4 top-4 grid size-8 place-items-center rounded-2xl border border-sky-300/15 bg-sky-400/10 text-sky-200"><LockKeyhole size={14} /></span> : null}
                     </button>
                   );})}

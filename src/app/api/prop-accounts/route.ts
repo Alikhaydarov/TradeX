@@ -1,8 +1,10 @@
 import { authenticateRequest, badRequest, serverError, unauthorized } from "@/lib/backend/auth";
+import type { ApiAuth } from "@/lib/backend/auth";
 
 export const runtime = "nodejs";
 
 const ACCOUNT_STATUSES = new Set(["Processing", "Active", "Passed", "Failed", "Paused"]);
+const DUPLICATE_NAME_PATTERN = /prop_accounts_user_id_name_key|duplicate key value/i;
 
 function values(body: Record<string, unknown>) {
   const name = String(body.name || "").trim().slice(0, 80);
@@ -36,6 +38,42 @@ function values(body: Record<string, unknown>) {
   };
 }
 
+async function findUniqueAccountName(auth: ApiAuth, name: string) {
+  const { data, error } = await auth.supabase
+    .from("prop_accounts")
+    .select("name")
+    .eq("user_id", auth.user.id)
+    .ilike("name", `${name}%`);
+
+  if (error) throw new Error(error.message);
+
+  const existingNames = new Set((data || []).map((item) => String(item.name || "").trim().toLowerCase()));
+  if (!existingNames.has(name.toLowerCase())) return name;
+
+  for (let index = 2; index < 200; index += 1) {
+    const candidate = `${name} ${index}`;
+    if (!existingNames.has(candidate.toLowerCase())) return candidate;
+  }
+
+  return `${name} ${Date.now().toString().slice(-4)}`;
+}
+
+async function insertPropAccount(auth: ApiAuth, insertPayload: Record<string, unknown>) {
+  let payload = { ...insertPayload };
+  let attempt = await auth.supabase.from("prop_accounts").insert(payload).select().single();
+  if (!attempt.error) return attempt;
+
+  if (DUPLICATE_NAME_PATTERN.test(attempt.error.message)) {
+    payload = {
+      ...payload,
+      name: await findUniqueAccountName(auth, String(insertPayload.name || "Account").trim() || "Account"),
+    };
+    attempt = await auth.supabase.from("prop_accounts").insert(payload).select().single();
+  }
+
+  return attempt;
+}
+
 export async function GET(request: Request) {
   const auth = await authenticateRequest(request); if (!auth) return unauthorized();
   const { data, error } = await auth.supabase.from("prop_accounts").select("*").eq("user_id",auth.user.id).order("created_at",{ascending:false});
@@ -46,11 +84,11 @@ export async function POST(request: Request) {
   const auth = await authenticateRequest(request); if (!auth) return unauthorized();
   const payload = values(await request.json()); if (!payload) return badRequest("Check account details.");
   const insertPayload = { ...payload, user_id: auth.user.id };
-  let { data, error } = await auth.supabase.from("prop_accounts").insert(insertPayload).select().single();
+  let { data, error } = await insertPropAccount(auth, insertPayload);
   if (!error) return Response.json({account:data},{status:201});
 
   if (/prop_accounts_status_check|status.*check constraint/i.test(error.message) && insertPayload.status === "Processing") {
-    const retry = await auth.supabase.from("prop_accounts").insert({ ...insertPayload, status: "Paused" }).select().single();
+    const retry = await insertPropAccount(auth, { ...insertPayload, status: "Paused" });
     data = retry.data;
     error = retry.error;
     if (!error) return Response.json({account:data},{status:201});
@@ -61,7 +99,7 @@ export async function POST(request: Request) {
 
   const { account_type, prop_site, prop_login, import_source, platform, ...legacyPayload } = insertPayload;
   void account_type; void prop_site; void prop_login; void import_source; void platform;
-  const fallback = await auth.supabase.from("prop_accounts").insert(legacyPayload).select().single();
+  const fallback = await insertPropAccount(auth, legacyPayload);
   if (fallback.error) return serverError(fallback.error.message);
   return Response.json({account:fallback.data},{status:201});
 }

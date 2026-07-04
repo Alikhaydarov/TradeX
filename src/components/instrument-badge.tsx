@@ -2,19 +2,25 @@
 
 import { cn } from "@/lib/utils";
 
-const INSTRUMENT_META: Record<string, { mark: string; tone: string; label: string }> = {
-  USD: { mark: "🇺🇸", tone: "bg-emerald-500/12 text-emerald-200", label: "US Dollar" },
-  EUR: { mark: "🇪🇺", tone: "bg-sky-500/12 text-sky-200", label: "Euro" },
-  GBP: { mark: "🇬🇧", tone: "bg-indigo-500/12 text-indigo-200", label: "British Pound" },
-  JPY: { mark: "🇯🇵", tone: "bg-rose-500/12 text-rose-200", label: "Japanese Yen" },
-  CHF: { mark: "🇨🇭", tone: "bg-rose-500/12 text-rose-200", label: "Swiss Franc" },
-  AUD: { mark: "🇦🇺", tone: "bg-cyan-500/12 text-cyan-200", label: "Australian Dollar" },
-  NZD: { mark: "🇳🇿", tone: "bg-cyan-500/12 text-cyan-200", label: "New Zealand Dollar" },
-  CAD: { mark: "🇨🇦", tone: "bg-rose-500/12 text-rose-200", label: "Canadian Dollar" },
-  XAU: { mark: "Au", tone: "bg-amber-400/14 text-amber-200", label: "Gold" },
-  XAG: { mark: "Ag", tone: "bg-slate-400/14 text-slate-200", label: "Silver" },
-  BTC: { mark: "₿", tone: "bg-orange-400/14 text-orange-200", label: "Bitcoin" },
-  ETH: { mark: "Ξ", tone: "bg-violet-400/14 text-violet-200", label: "Ethereum" },
+type InstrumentMeta = {
+  short: string;
+  label: string;
+  tone: string;
+};
+
+const INSTRUMENT_META: Record<string, InstrumentMeta> = {
+  USD: { short: "US", label: "US Dollar", tone: "bg-rose-500/18 text-rose-100 border-rose-400/20" },
+  EUR: { short: "EU", label: "Euro", tone: "bg-sky-500/18 text-sky-100 border-sky-400/20" },
+  GBP: { short: "GB", label: "British Pound", tone: "bg-indigo-500/18 text-indigo-100 border-indigo-400/20" },
+  JPY: { short: "JP", label: "Japanese Yen", tone: "bg-zinc-200/10 text-zinc-100 border-zinc-200/15" },
+  CHF: { short: "CH", label: "Swiss Franc", tone: "bg-rose-500/18 text-rose-100 border-rose-400/20" },
+  AUD: { short: "AU", label: "Australian Dollar", tone: "bg-cyan-500/18 text-cyan-100 border-cyan-400/20" },
+  NZD: { short: "NZ", label: "New Zealand Dollar", tone: "bg-teal-500/18 text-teal-100 border-teal-400/20" },
+  CAD: { short: "CA", label: "Canadian Dollar", tone: "bg-red-500/18 text-red-100 border-red-400/20" },
+  XAU: { short: "AU", label: "Gold", tone: "bg-amber-400/18 text-amber-100 border-amber-300/20" },
+  XAG: { short: "AG", label: "Silver", tone: "bg-slate-400/18 text-slate-100 border-slate-300/20" },
+  BTC: { short: "BT", label: "Bitcoin", tone: "bg-orange-500/18 text-orange-100 border-orange-400/20" },
+  ETH: { short: "ET", label: "Ethereum", tone: "bg-violet-500/18 text-violet-100 border-violet-400/20" },
 };
 
 function normalizeSymbol(symbol: string) {
@@ -23,20 +29,33 @@ function normalizeSymbol(symbol: string) {
 
 function splitSymbol(symbol: string) {
   const normalized = normalizeSymbol(symbol);
+
   if (normalized.includes("/")) {
     const [base, quote] = normalized.split("/");
-    return { base, quote, normalized };
+    return { base, quote, normalized: `${base}/${quote}` };
   }
 
   if (/^[A-Z]{6}$/.test(normalized)) {
-    return { base: normalized.slice(0, 3), quote: normalized.slice(3), normalized };
+    return {
+      base: normalized.slice(0, 3),
+      quote: normalized.slice(3, 6),
+      normalized: `${normalized.slice(0, 3)}/${normalized.slice(3, 6)}`,
+    };
   }
 
   if (/^(XAU|XAG|BTC|ETH)[A-Z]{3}$/.test(normalized)) {
-    return { base: normalized.slice(0, 3), quote: normalized.slice(3), normalized };
+    return {
+      base: normalized.slice(0, 3),
+      quote: normalized.slice(3, 6),
+      normalized: `${normalized.slice(0, 3)}/${normalized.slice(3, 6)}`,
+    };
   }
 
-  return { base: normalized.slice(0, 3), quote: normalized.slice(3, 6), normalized };
+  return {
+    base: normalized.slice(0, 3),
+    quote: normalized.slice(3, 6),
+    normalized,
+  };
 }
 
 function InstrumentMark({
@@ -47,9 +66,9 @@ function InstrumentMark({
   compact?: boolean;
 }) {
   const meta = INSTRUMENT_META[code] ?? {
-    mark: code.slice(0, 2),
-    tone: "bg-white/[.08] text-zinc-200",
+    short: code.slice(0, 2),
     label: code,
+    tone: "bg-white/[.08] text-zinc-100 border-white/10",
   };
 
   return (
@@ -57,12 +76,12 @@ function InstrumentMark({
       title={meta.label}
       aria-label={meta.label}
       className={cn(
-        "grid shrink-0 place-items-center rounded-full border border-white/8 font-black tracking-tight shadow-[inset_0_1px_0_rgba(255,255,255,.05)]",
-        compact ? "size-5 text-[9px]" : "size-6 text-[10px]",
+        "grid shrink-0 place-items-center rounded-full border font-black tracking-[0.08em] shadow-[0_8px_18px_rgba(0,0,0,.24)]",
+        compact ? "size-7 text-[8px]" : "size-9 text-[10px]",
         meta.tone,
       )}
     >
-      {meta.mark}
+      {meta.short}
     </span>
   );
 }
@@ -84,16 +103,21 @@ export function InstrumentBadge({
   return (
     <span
       className={cn(
-        "inline-flex min-w-0 items-center gap-2 rounded-2xl border border-white/8 bg-white/[.03] px-2.5 py-1.5 shadow-[inset_0_1px_0_rgba(255,255,255,.04)]",
-        compact ? "gap-1.5 px-2 py-1" : "",
+        "inline-flex min-w-0 items-center gap-3 rounded-[22px] border border-white/10 bg-[#171717] px-3 py-2 text-zinc-100 shadow-[inset_0_1px_0_rgba(255,255,255,.05)]",
+        compact ? "gap-2.5 rounded-[18px] px-2.5 py-1.5" : "",
         className,
       )}
     >
-      <span className="flex shrink-0 items-center -space-x-1.5">
+      <span className="flex shrink-0 items-center -space-x-2">
         {base ? <InstrumentMark code={base} compact={compact} /> : null}
         {quote ? <InstrumentMark code={quote} compact={compact} /> : null}
       </span>
-      <span className={cn("truncate font-black tracking-[0.08em] text-zinc-100", compact ? "text-[11px]" : "text-xs")}>
+      <span
+        className={cn(
+          "truncate font-black tracking-normal text-white",
+          compact ? "text-base leading-none" : "text-lg leading-none",
+        )}
+      >
         {label}
       </span>
     </span>

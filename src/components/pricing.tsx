@@ -137,23 +137,36 @@ export function Pricing({ onLogin }: { onLogin?: () => void } = {}) {
     <main className="min-h-[100dvh] bg-background px-3 py-6 text-foreground sm:px-5 lg:px-8">
       <div className="mx-auto max-w-6xl">
         <section className="overflow-hidden rounded-[2rem] border border-white/10 bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,.09),transparent_38%),linear-gradient(180deg,rgba(255,255,255,.045),rgba(255,255,255,.015))] p-5 shadow-[0_28px_90px_rgba(0,0,0,.52)] backdrop-blur-2xl sm:p-7">
-          <div className="grid gap-8 lg:grid-cols-[1.1fr_.9fr] lg:items-end">
+          <div className="grid gap-6 lg:grid-cols-[1.1fr_.9fr] lg:items-end">
             <div>
               <Badge className="rounded-full bg-white text-black hover:bg-white">
                 <Crown className="size-3.5" /> TradeWay Premium
               </Badge>
-              <h1 className="mt-4 max-w-2xl text-4xl font-black tracking-tight text-white sm:text-5xl">
+              <h1 className="mt-4 max-w-2xl text-3xl font-black tracking-tight text-white sm:text-5xl">
                 Turn your journal into a verified trading workspace.
               </h1>
               <p className="mt-4 max-w-2xl text-sm leading-7 text-zinc-400 sm:text-base">
                 Premium unlocks the blue badge, AI trade coaching and MT5 Auto Sync, so your profile, journal and account analytics stay in one fast loop.
               </p>
 
-              <div className="mt-6 flex flex-wrap gap-2">
+              <div className="mt-5 flex flex-wrap gap-2">
                 {["Verified badge", "AI trade coach", "MT5 Auto Sync", "Read-only analytics"].map((item) => (
                   <span key={item} className="rounded-full border border-white/10 bg-white/[.045] px-3 py-2 text-xs font-bold text-zinc-300">
                     {item}
                   </span>
+                ))}
+              </div>
+
+              <div className="mt-5 grid grid-cols-3 gap-2">
+                {[
+                  ["$15", "Standard"],
+                  ["$25", "Pro"],
+                  ["24/7", "Sync flow"],
+                ].map(([value, label]) => (
+                  <div key={label} className="rounded-2xl border border-white/8 bg-white/[.025] px-3 py-3">
+                    <p className="text-lg font-black text-white">{value}</p>
+                    <p className="mt-1 text-[11px] uppercase tracking-wider text-zinc-500">{label}</p>
+                  </div>
                 ))}
               </div>
             </div>
@@ -208,7 +221,7 @@ export function Pricing({ onLogin }: { onLogin?: () => void } = {}) {
         {message ? <div className="mt-4 rounded-2xl border border-emerald-300/15 bg-emerald-400/10 px-4 py-3 text-sm text-emerald-200">{message}</div> : null}
         {error ? <div className="mt-4 rounded-2xl border border-rose-300/15 bg-rose-400/10 px-4 py-3 text-sm text-rose-200">{error}</div> : null}
 
-        <section className="mt-6 grid gap-4 lg:grid-cols-2">
+        <section className="mt-5 grid gap-4 lg:grid-cols-2">
           {plans.map((plan) => {
             const loading = checkoutPlan === plan.id;
             return (
