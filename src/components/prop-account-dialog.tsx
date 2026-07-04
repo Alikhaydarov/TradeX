@@ -231,6 +231,12 @@ export function PropAccountDialog({
     event.preventDefault();
     setSubmitError(null);
 
+    if (accountKind === "automatic" && selectedPlatform.premium && !premiumStatus.isPremium) {
+      setPremiumOverlay(selectedPlatform);
+      setSubmitError("Upgrade to Premium to continue with this connector.");
+      return;
+    }
+
     const form = new FormData(event.currentTarget);
     const mt5Login = String(form.get("mt5Login") || "").trim();
     const mt5Password = String(form.get("mt5Password") || "").trim();
@@ -252,6 +258,14 @@ export function PropAccountDialog({
       setInternalSaving(false);
     }
   }
+
+  useEffect(() => {
+    if (!open || step !== 3) return;
+    if (accountKind === "automatic" && selectedPlatform.premium && !premiumStatus.isPremium) {
+      setPremiumOverlay(selectedPlatform);
+      setStep(2);
+    }
+  }, [accountKind, open, premiumStatus.isPremium, selectedPlatform, step]);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -307,6 +321,31 @@ export function PropAccountDialog({
 
             {step === 2 ? (
               <div className="space-y-5">
+                {!premiumStatus.isPremium ? (
+                  <div className="mx-auto max-w-2xl overflow-hidden rounded-[24px] border border-sky-300/12 bg-[linear-gradient(135deg,rgba(18,32,48,.95),rgba(10,10,10,.96))] shadow-[0_22px_50px_rgba(0,0,0,.24)]">
+                    <div className="flex flex-col gap-4 px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-5">
+                      <div className="min-w-0">
+                        <p className="text-[10px] font-black uppercase tracking-[0.22em] text-sky-200/75">TradeWay Premium</p>
+                        <h3 className="mt-1 text-base font-black text-white sm:text-lg">Unlock cTrader, TradeLocker, MatchTrader and AI-powered sync tools</h3>
+                        <p className="mt-1 text-xs leading-5 text-zinc-400 sm:text-sm">
+                          Free accounts can use MT5 and futures import. Premium opens advanced connectors and the full automation stack.
+                        </p>
+                      </div>
+                      <Button
+                        type="button"
+                        className="shrink-0 bg-white text-black hover:bg-zinc-200"
+                        onClick={() => {
+                          onOpenChange(false);
+                          window.history.pushState(null, "", "/pricing");
+                          window.dispatchEvent(new Event("popstate"));
+                        }}
+                      >
+                        Upgrade
+                      </Button>
+                    </div>
+                  </div>
+                ) : null}
+
                 <div className="mx-auto max-w-2xl rounded-2xl border border-white/10 bg-white/[.035] p-3">
                   <div className="flex items-center gap-2 text-sm text-zinc-400">
                     <Search size={16} />
@@ -376,7 +415,7 @@ export function PropAccountDialog({
                           </span>
                           <span className="mt-3 text-sm font-black text-white">Premium connector</span>
                           <span className="mt-1 text-[11px] font-medium leading-5 text-zinc-300">Upgrade to unlock {item.name} and advanced sync.</span>
-                          <span className="mt-4 inline-flex rounded-full border border-white/12 bg-white/10 px-3 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-white">Upgrade</span>
+                          <span className="mt-4 inline-flex rounded-full border border-white/12 bg-white/10 px-3 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-white">Upgrade now</span>
                         </span>
                       ) : null}
                       {locked ? <span className="absolute right-4 top-4 grid size-8 place-items-center rounded-2xl border border-sky-300/15 bg-sky-400/10 text-sky-200"><LockKeyhole size={14} /></span> : null}

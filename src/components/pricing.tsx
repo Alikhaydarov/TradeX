@@ -15,6 +15,10 @@ interface PremiumStatus {
   isVerified: boolean;
 }
 
+interface StripeConfigStatus {
+  configured: boolean;
+}
+
 type BillingPlan = {
   id: "standard" | "pro";
   name: string;
@@ -58,6 +62,7 @@ export function Pricing({ onLogin }: { onLogin?: () => void } = {}) {
   const [premium, setPremium] = useState<PremiumStatus | null>(null);
   const [checkoutPlan, setCheckoutPlan] = useState<string | null>(null);
   const [portalLoading, setPortalLoading] = useState(false);
+  const [billingConfigured, setBillingConfigured] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -80,6 +85,21 @@ export function Pricing({ onLogin }: { onLogin?: () => void } = {}) {
       active = false;
     };
   }, [user]);
+
+  useEffect(() => {
+    let active = true;
+    apiRequest<StripeConfigStatus>("/api/stripe/config")
+      .then((data) => {
+        if (active) setBillingConfigured(Boolean(data.configured));
+      })
+      .catch(() => {
+        if (active) setBillingConfigured(false);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, []);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -107,6 +127,13 @@ export function Pricing({ onLogin }: { onLogin?: () => void } = {}) {
     setCheckoutPlan(plan.id);
     setError(null);
     setMessage(null);
+
+    if (!billingConfigured) {
+      setCheckoutPlan(null);
+      setError("Stripe billing is not configured yet. Add Stripe keys and price IDs to enable checkout.");
+      return;
+    }
+
     try {
       const response = await apiRequest<{ url: string }>("/api/stripe/checkout", {
         method: "POST",
@@ -218,6 +245,7 @@ export function Pricing({ onLogin }: { onLogin?: () => void } = {}) {
           </div>
         </section>
 
+        {!billingConfigured ? <div className="mt-4 rounded-2xl border border-amber-300/15 bg-amber-400/10 px-4 py-3 text-sm text-amber-100">Stripe pricing UI is ready, but checkout will stay locked until Stripe env keys and monthly price IDs are added.</div> : null}
         {message ? <div className="mt-4 rounded-2xl border border-emerald-300/15 bg-emerald-400/10 px-4 py-3 text-sm text-emerald-200">{message}</div> : null}
         {error ? <div className="mt-4 rounded-2xl border border-rose-300/15 bg-rose-400/10 px-4 py-3 text-sm text-rose-200">{error}</div> : null}
 
@@ -256,10 +284,10 @@ export function Pricing({ onLogin }: { onLogin?: () => void } = {}) {
                   <Button
                     className="h-12 rounded-2xl bg-white text-black hover:bg-zinc-200"
                     onClick={() => void startCheckout(plan)}
-                    disabled={loading}
+                    disabled={loading || !billingConfigured}
                   >
                     {loading ? <LoaderCircle className="size-4 animate-spin" /> : <ShieldCheck className="size-4" />}
-                    {user ? `Start ${plan.name}` : "Sign in to subscribe"}
+                    {!billingConfigured ? "Stripe setup required" : user ? `Start ${plan.name}` : "Sign in to subscribe"}
                   </Button>
                   <p className="text-xs leading-5 text-zinc-500">
                     Secure Stripe subscription. Premium instantly unlocks blue badge, AI analysis and MT5 Auto Sync after webhook confirmation.

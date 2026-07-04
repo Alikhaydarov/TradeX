@@ -1,10 +1,12 @@
 import { authenticateRequest, badRequest, serverError, unauthorized } from "@/lib/backend/auth";
 import type { ApiAuth } from "@/lib/backend/auth";
+import { getPremiumStatus } from "@/lib/backend/premium";
 
 export const runtime = "nodejs";
 
 const ACCOUNT_STATUSES = new Set(["Processing", "Active", "Passed", "Failed", "Paused"]);
 const DUPLICATE_NAME_PATTERN = /prop_accounts_user_id_name_key|duplicate key value/i;
+const PREMIUM_PLATFORMS = new Set(["tradelocker", "ctrader", "matchtrader"]);
 
 function values(body: Record<string, unknown>) {
   const name = String(body.name || "").trim().slice(0, 80);
@@ -83,6 +85,20 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   const auth = await authenticateRequest(request); if (!auth) return unauthorized();
   const payload = values(await request.json()); if (!payload) return badRequest("Check account details.");
+
+  if (PREMIUM_PLATFORMS.has(String(payload.platform || "").toLowerCase())) {
+    const premium = await getPremiumStatus(auth);
+    if (!premium.isPremium) {
+      return Response.json(
+        {
+          error: "This connector is available only on TradeWay Premium.",
+          upgradeUrl: "/pricing",
+        },
+        { status: 403 },
+      );
+    }
+  }
+
   const insertPayload = { ...payload, user_id: auth.user.id };
   let { data, error } = await insertPropAccount(auth, insertPayload);
   if (!error) return Response.json({account:data},{status:201});
