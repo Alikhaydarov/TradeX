@@ -17,10 +17,10 @@ const INSTRUMENT_META: Record<string, InstrumentMeta> = {
   AUD: { short: "AU", label: "Australian Dollar", tone: "bg-cyan-500/18 text-cyan-100 border-cyan-400/20" },
   NZD: { short: "NZ", label: "New Zealand Dollar", tone: "bg-teal-500/18 text-teal-100 border-teal-400/20" },
   CAD: { short: "CA", label: "Canadian Dollar", tone: "bg-red-500/18 text-red-100 border-red-400/20" },
-  XAU: { short: "AU", label: "Gold", tone: "bg-amber-400/18 text-amber-100 border-amber-300/20" },
-  XAG: { short: "AG", label: "Silver", tone: "bg-slate-400/18 text-slate-100 border-slate-300/20" },
-  BTC: { short: "BT", label: "Bitcoin", tone: "bg-orange-500/18 text-orange-100 border-orange-400/20" },
-  ETH: { short: "ET", label: "Ethereum", tone: "bg-violet-500/18 text-violet-100 border-violet-400/20" },
+  XAU: { short: "GLD", label: "Gold", tone: "bg-amber-400/18 text-amber-100 border-amber-300/20" },
+  XAG: { short: "SLV", label: "Silver", tone: "bg-slate-400/18 text-slate-100 border-slate-300/20" },
+  BTC: { short: "₿", label: "Bitcoin", tone: "bg-orange-500/18 text-orange-100 border-orange-400/20" },
+  ETH: { short: "Ξ", label: "Ethereum", tone: "bg-violet-500/18 text-violet-100 border-violet-400/20" },
 };
 
 function normalizeSymbol(symbol: string) {
@@ -77,7 +77,13 @@ function InstrumentMark({
       aria-label={meta.label}
       className={cn(
         "grid shrink-0 place-items-center rounded-full border font-black tracking-[0.08em] shadow-[0_8px_18px_rgba(0,0,0,.24)]",
-        compact ? "size-7 text-[8px]" : "size-9 text-[10px]",
+        compact
+          ? meta.short.length >= 3
+            ? "size-7 text-[6px]"
+            : "size-7 text-[8px]"
+          : meta.short.length >= 3
+            ? "size-9 text-[8px]"
+            : "size-9 text-[10px]",
         meta.tone,
       )}
     >
