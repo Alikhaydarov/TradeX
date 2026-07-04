@@ -3,8 +3,10 @@
 import type { User } from "@supabase/supabase-js";
 import {
   BookOpen,
+  ChevronDown,
   Home,
   LogIn,
+  Pencil,
   Plus,
   ShieldCheck,
   UserRound,
@@ -12,7 +14,10 @@ import {
 import { useEffect, useState } from "react";
 import { apiRequest } from "@/lib/api-client";
 import { useLanguage } from "@/lib/i18n";
+import { useActiveAccountStore } from "./active-account-context";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "./ui/dropdown-menu";
 import { LanguageSwitcher } from "./language-switcher";
+import { PropFirmLogo } from "./prop-firm-logo";
 import { SocialActions } from "./social-actions-v2";
 import { TraderAvatar } from "./trader-avatar";
 import type { Section } from "./types";
@@ -45,12 +50,15 @@ export function Sidebar({
   hideMobile?: boolean;
   isAdmin?: boolean;
 }) {
+  const { accounts, activeAccountId, setActiveAccount } = useActiveAccountStore();
   const [profileUsername, setProfileUsername] = useState("");
   const { t } = useLanguage();
   const name = String(user?.user_metadata.full_name ?? user?.user_metadata.name ?? "Mehmon trader");
   const username = usernameFromUser(user);
   const handle = user ? `@${profileUsername || username}` : "Sign in with Google";
   const avatar = typeof user?.user_metadata.avatar_url === "string" ? user.user_metadata.avatar_url : null;
+  const activeAccount = accounts.find((account) => account.id === activeAccountId) || null;
+  const activeBalance = activeAccount ? new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format(activeAccount.accountSize) : "$0";
 
   useEffect(() => {
     if (!user) return;
@@ -95,6 +103,45 @@ export function Sidebar({
             <small className="text-[11px] text-zinc-500">Trader workspace</small>
           </span>
         </button>
+
+        <div className="mt-4 rounded-[1rem] border border-white/8 bg-[#050505] p-2">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button className="flex w-full items-center gap-3 rounded-[0.9rem] px-2 py-2 text-left transition hover:bg-white/[.04]">
+                <span className={`mt-0.5 size-2 shrink-0 rounded-full ${activeAccount ? "bg-emerald-500" : "bg-zinc-500"}`} />
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-sm font-bold text-white">{activeAccount?.name || "All Accounts"}</p>
+                  <p className="truncate text-[11px] text-zinc-500">{activeAccount ? activeBalance : "Aggregate view"}</p>
+                </div>
+                <span className="grid size-8 place-items-center rounded-xl border border-white/8 bg-white/[.03] text-zinc-400">
+                  <Pencil size={14} />
+                </span>
+                <span className="grid size-8 place-items-center rounded-xl border border-white/8 bg-white/[.03] text-zinc-400">
+                  <ChevronDown size={14} />
+                </span>
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start" className="w-[230px] border-white/10 bg-[#090909]">
+              <DropdownMenuItem onClick={() => { setActiveAccount(null); onChange("journal"); }} className="flex items-center gap-3 px-3 py-2.5">
+                <span className="size-2 rounded-full bg-zinc-500" />
+                <div className="min-w-0">
+                  <p className="truncate text-sm font-semibold text-white">All Accounts</p>
+                  <p className="truncate text-[11px] text-zinc-500">Combined portfolio view</p>
+                </div>
+              </DropdownMenuItem>
+              {accounts.map((account) => (
+                <DropdownMenuItem key={account.id} onClick={() => { setActiveAccount(account.id); onChange("journal"); }} className="flex items-center gap-3 px-3 py-2.5">
+                  <span className={`size-2 rounded-full ${account.status === "Active" ? "bg-emerald-500" : "bg-zinc-500"}`} />
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm font-semibold text-white">{account.name}</p>
+                    <p className="truncate text-[11px] text-zinc-500">{new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format(account.accountSize)}</p>
+                  </div>
+                  <PropFirmLogo firm={account.firm} compact />
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
 
         <nav className="mt-6 space-y-1.5">
           {nav.map((item) => {

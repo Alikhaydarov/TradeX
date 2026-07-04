@@ -23,6 +23,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from ".
 import { Separator } from "./ui/separator";
 import { Textarea } from "./ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
+import { useActiveAccountStore } from "./active-account-context";
 import { useAuth } from "./auth-context";
 import { InstrumentBadge } from "./instrument-badge";
 import { MediaImage } from "./media-image";
@@ -119,9 +120,8 @@ function buildWeeklyStrip(account: PropAccount, month: Date, trades: JournalEntr
 
 export function JournalV2({ onLogin }: { onLogin: () => void }) {
   const { user } = useAuth();
-  const [accounts, setAccounts] = useState<PropAccount[]>([]);
+  const { accounts, activeAccountId, setActiveAccount, addAccount, setAccounts } = useActiveAccountStore();
   const [entries, setEntries] = useState<JournalEntry[]>([]);
-  const [accountId, setAccountId] = useState<string | null>(null);
   const [month, setMonth] = useState(() => new Date());
   const [accountOpen, setAccountOpen] = useState(false);
   const [tradeOpen, setTradeOpen] = useState(false);
@@ -142,17 +142,15 @@ export function JournalV2({ onLogin }: { onLogin: () => void }) {
       apiRequest<{ entries: EntryRow[] }>("/api/journal"),
     ]).then(([a, e]) => {
       if (active) {
-        const nextAccounts = a.accounts.map(accountFrom);
-        setAccounts(nextAccounts);
+        setAccounts(a.accounts.map(accountFrom));
         setEntries(e.entries.map(entryFrom));
-        setAccountId((current) => current || nextAccounts[0]?.id || null);
       }
     }).catch((e: Error) => active && setError(e.message)).finally(() => active && setLoading(false));
     return () => { active = false; };
-  }, [user]);
+  }, [setAccounts, user]);
 
-  const account = accounts.find(a => a.id === accountId) || null;
-  const accountEntries = useMemo(() => entries.filter(e => e.propAccountId === accountId), [entries, accountId]);
+  const account = accounts.find(a => a.id === activeAccountId) || null;
+  const accountEntries = useMemo(() => activeAccountId ? entries.filter(e => e.propAccountId === activeAccountId) : entries, [entries, activeAccountId]);
   const bibleEntries = useMemo(() => accountEntries.filter(e => e.toTradingBible).sort((a, b) => reviewScore(b) - reviewScore(a)), [accountEntries]);
   const monthEntries = useMemo(() => accountEntries.filter(e => e.rawDate?.startsWith(monthId(month))), [accountEntries, month]);
   const rangeEntries = useMemo(() => {
@@ -195,7 +193,7 @@ export function JournalV2({ onLogin }: { onLogin: () => void }) {
   const planRate = useMemo(() => monthEntries.length ? Math.round(monthEntries.filter(e => e.followingPlan).length / monthEntries.length * 100) : 0, [monthEntries]);
   const calendar = useMemo(() => { const y = month.getFullYear(), m = month.getMonth(), offset = (new Date(y, m, 1).getDay() + 6) % 7, count = new Date(y, m + 1, 0).getDate(), cells = 42; return Array.from({ length: cells }, (_, i) => { const day = i - offset + 1; if (day < 1 || day > count) return null; const key = `${monthId(month)}-${String(day).padStart(2, "0")}`, trades = accountEntries.filter(e => e.rawDate === key); return { day, trades, pnl: trades.reduce((s, e) => s + e.pnl, 0) }; }); }, [month, accountEntries]);
 
-  async function addAccount(form: FormData) {
+  async function createAccount(form: FormData) {
     setSaving(true);
     try {
       const body: Record<string, string> = Object.fromEntries(
@@ -210,8 +208,7 @@ export function JournalV2({ onLogin }: { onLogin: () => void }) {
         method: "POST", body: JSON.stringify(body),
       });
       const next = accountFrom(r.account);
-      setAccounts(v => [next, ...v]);
-      setAccountId(next.id);
+      addAccount(next);
       setAccountOpen(false);
 
       if (mt5Login && mt5Password && mt5Server) {
@@ -231,8 +228,8 @@ export function JournalV2({ onLogin }: { onLogin: () => void }) {
     setDeleting(a.id);
     try {
       await apiRequest(`/api/prop-accounts/${a.id}`, { method: "DELETE" });
-      setAccounts(v => v.filter(x => x.id !== a.id));
-      if (accountId === a.id) setAccountId(null);
+      setAccounts(accounts.filter(x => x.id !== a.id));
+      if (activeAccountId === a.id) setActiveAccount(null);
     } catch (e) { setError(e instanceof Error ? e.message : "Account o'chirilmadi"); }
     finally { setDeleting(null); }
   }
@@ -358,17 +355,17 @@ export function JournalV2({ onLogin }: { onLogin: () => void }) {
         </div>
       )}
       {account
-        ? <Workspace account={account} accounts={accounts} stats={stats} equity={equity} setups={setups} mistakes={mistakes} planRate={planRate} monthCount={monthEntries.length} calendar={calendar} trades={shown} bibleTrades={bibleEntries} query={query} month={month} deleting={deleting === account.id} saving={saving} tradeRange={tradeRange} customStart={customStart} customEnd={customEnd} onRange={setTradeRange} onCustomStart={setCustomStart} onCustomEnd={setCustomEnd} onQuery={setQuery} onBack={() => setAccountId(null)} onAccountChange={setAccountId} onTrade={() => setTradeOpen(true)} onDelete={() => removeAccount(account)} onCsv={exportCsv} onPrev={() => shiftMonth(-1)} onNext={() => shiftMonth(1)} onToday={() => setMonth(new Date())} onUpdateTrade={updateTrade} onRemoveTrade={removeTrade} onMt5Synced={reloadJournal} />
-        : <Accounts summaries={summaries} entries={entries} deleting={deleting} onAdd={() => setAccountOpen(true)} onOpen={setAccountId} onDelete={removeAccount} />
+        ? <Workspace account={account} accounts={accounts} stats={stats} equity={equity} setups={setups} mistakes={mistakes} planRate={planRate} monthCount={monthEntries.length} calendar={calendar} trades={shown} bibleTrades={bibleEntries} query={query} month={month} deleting={deleting === account.id} saving={saving} tradeRange={tradeRange} customStart={customStart} customEnd={customEnd} onRange={setTradeRange} onCustomStart={setCustomStart} onCustomEnd={setCustomEnd} onQuery={setQuery} onBack={() => setActiveAccount(null)} onAccountChange={setActiveAccount} onTrade={() => setTradeOpen(true)} onDelete={() => removeAccount(account)} onCsv={exportCsv} onPrev={() => shiftMonth(-1)} onNext={() => shiftMonth(1)} onToday={() => setMonth(new Date())} onUpdateTrade={updateTrade} onRemoveTrade={removeTrade} onMt5Synced={reloadJournal} />
+        : <Accounts summaries={summaries} entries={entries} deleting={deleting} onAdd={() => setAccountOpen(true)} onOpen={setActiveAccount} onDelete={removeAccount} onAggregate={() => setActiveAccount(null)} />
       }
-      <PropAccountDialog open={accountOpen} saving={saving} onOpenChange={setAccountOpen} onSave={addAccount} />
+      <PropAccountDialog open={accountOpen} saving={saving} onOpenChange={setAccountOpen} onSave={createAccount} />
       <TradeReviewModal open={tradeOpen} saving={saving} account={account} onOpenChange={setTradeOpen} onSave={addTrade} />
     </div>
   );
 }
 
 // Accounts list.
-function Accounts({ summaries, entries, deleting, onAdd, onOpen, onDelete }: { summaries: Summary[]; entries: JournalEntry[]; deleting: string | null; onAdd: () => void; onOpen: (id: string) => void; onDelete: (a: PropAccount) => void }) {
+function Accounts({ summaries, entries, deleting, onAdd, onOpen, onDelete, onAggregate }: { summaries: Summary[]; entries: JournalEntry[]; deleting: string | null; onAdd: () => void; onOpen: (id: string) => void; onDelete: (a: PropAccount) => void; onAggregate: () => void }) {
   const total = summaries.reduce((sum, item) => sum + item.pnl, 0);
   const capital = summaries.reduce((sum, item) => sum + item.account.accountSize, 0);
   const activeAccounts = summaries.filter((item) => item.account.status === "Active").length;
@@ -406,7 +403,7 @@ function Accounts({ summaries, entries, deleting, onAdd, onOpen, onDelete }: { s
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2 lg:ml-auto">
-          <button type="button" className="inline-flex h-11 min-w-[220px] items-center justify-between rounded-2xl border border-white/8 bg-[#17181b] px-4 text-sm font-semibold text-white shadow-[0_12px_36px_rgba(0,0,0,.18)]">
+          <button type="button" onClick={onAggregate} className="inline-flex h-11 min-w-[220px] items-center justify-between rounded-2xl border border-white/8 bg-[#17181b] px-4 text-sm font-semibold text-white shadow-[0_12px_36px_rgba(0,0,0,.18)]">
             <span>All Accounts</span>
             <ChevronDown size={16} className="text-zinc-500" />
           </button>

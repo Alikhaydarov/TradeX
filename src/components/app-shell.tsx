@@ -7,6 +7,7 @@ import { FeedV3 } from "./feed-v3";
 import { Journal } from "./journal";
 import { Account } from "./account";
 import { AdminPanel } from "./admin-panel";
+import { ActiveAccountProvider } from "./active-account-context";
 import { Pricing } from "./pricing";
 import { NotificationListener } from "./notification-listener";
 import { PremiumUpsellDialog } from "./premium-upsell-dialog";
@@ -247,6 +248,7 @@ export function AppShell() {
 
   return (
     <>
+      <ActiveAccountProvider>
       <div className="mx-auto flex min-h-[100dvh] max-w-[1720px] gap-3 bg-transparent p-0 text-foreground lg:p-4">
         <Sidebar
           active={section}
@@ -278,6 +280,7 @@ export function AppShell() {
         </main>
         {!chatOpen && <RightPanel />}
       </div>
+      </ActiveAccountProvider>
       {profileOpening ? <div className="pointer-events-none fixed inset-0 z-[2147483646] grid place-items-center bg-[#0b0b0d]/84 backdrop-blur-[2px]"><div className="flex items-center gap-3 rounded-full border border-white/8 bg-[#17171a] px-4 py-2 text-sm font-semibold text-zinc-200 shadow-[0_18px_48px_rgba(0,0,0,.34)]"><span className="inline-flex size-4 animate-spin rounded-full border-2 border-white/20 border-t-white" /> Opening profile</div></div> : null}
       {notificationsMounted && <NotificationListener />}
       <PremiumUpsellDialog />
