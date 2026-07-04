@@ -264,7 +264,7 @@ export function TradeReviewModal({ open, saving, account, onOpenChange, onSave }
       {/* Custom close button lives in the modal header. */}
       <DialogContent
         showCloseButton={false}
-        className="max-h-[95dvh] overflow-hidden border border-[#2a2a2a] bg-[#0b0b0b] p-0 sm:max-w-3xl shadow-2xl shadow-black/70"
+        className="max-h-[95dvh] overflow-hidden border border-[#2a2a2a] bg-[#0b0b0b] p-0 sm:max-w-5xl shadow-2xl shadow-black/70"
       >
         {/* Header */}
         <div className="relative flex items-center gap-3 border-b border-[#2a2a2a] bg-[#171717] px-5 py-4">
@@ -288,9 +288,8 @@ export function TradeReviewModal({ open, saving, account, onOpenChange, onSave }
 
         {/* Body */}
         <form action={submit} className="flex max-h-[calc(95dvh-61px)] flex-col overflow-hidden">
-
-          {/* Left: fields */}
-          <div className="flex-1 space-y-5 overflow-y-auto p-4 pb-28 sm:p-6">
+          <div className="grid flex-1 overflow-hidden lg:grid-cols-[minmax(0,1.08fr)_minmax(320px,.92fr)]">
+            <div className="space-y-5 overflow-y-auto p-4 pb-24 sm:p-6">
 
             {/* Symbol + Side + Date */}
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
@@ -442,21 +441,39 @@ export function TradeReviewModal({ open, saving, account, onOpenChange, onSave }
             <input type="hidden" name="reviewCompleted" value={reviewCompleted ? "true" : "false"} />
             <input type="hidden" name="toTradingBible" value={toBible ? "true" : "false"} />
 
-            {/* Note */}
-            <div className="space-y-1.5">
-              <SectionLabel>Trade review / Xulosa</SectionLabel>
-              <Textarea
-                name="note"
-                className="min-h-28 resize-y border-[#2a2a2a] bg-[#121212] text-sm focus:border-zinc-500 transition-all"
-                placeholder="Pre-trade: sabab. Execution: kirish/chiqish. Review: xato va keyingi qoida."
-              />
             </div>
 
-            <input ref={inputRef} type="file" multiple accept="image/jpeg,image/png,image/webp" className="hidden"
-              onChange={(e) => void upload(e.target.files ?? undefined)} />
-            <input type="hidden" name="imageUrls" value={JSON.stringify(imageUrls)} />
+            <div className="overflow-y-auto border-t border-[#2a2a2a] p-4 pb-24 sm:p-6 lg:border-l lg:border-t-0">
+              <div className="rounded-2xl border border-white/8 bg-[#121212] p-4">
+                <div className="mb-3 flex items-center justify-between gap-3">
+                  <div>
+                    <p className="text-sm font-semibold text-[#f1f1f1]">Trade context</p>
+                    <p className="mt-1 text-[11px] text-[#8a8a8a]">Add screenshots and the reasoning behind the trade.</p>
+                  </div>
+                  <span className={`rounded-full px-2.5 py-1 text-[10px] font-black ${outcome === "win" ? "bg-emerald-400/10 text-emerald-300" : "bg-rose-400/10 text-rose-300"}`}>
+                    {outcome === "win" ? "WIN FLOW" : "LOSS REVIEW"}
+                  </span>
+                </div>
 
-            <div className="rounded-xl border border-[#2a2a2a] bg-[#121212] p-3">
+                <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-1">
+                  {[
+                    { label: "Session", value: session || "Not selected" },
+                    { label: "Setup", value: setup || "Not selected" },
+                    { label: "Risk", value: riskPct || "Not selected" },
+                  ].map((item) => (
+                    <div key={item.label} className="rounded-xl border border-white/8 bg-black/20 px-3 py-3">
+                      <p className="text-[10px] uppercase tracking-widest text-[#8a8a8a]">{item.label}</p>
+                      <p className="mt-1 truncate text-sm font-bold text-white">{item.value}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <input ref={inputRef} type="file" multiple accept="image/jpeg,image/png,image/webp" className="hidden"
+                onChange={(e) => void upload(e.target.files ?? undefined)} />
+              <input type="hidden" name="imageUrls" value={JSON.stringify(imageUrls)} />
+
+              <div className="mt-4 rounded-2xl border border-[#2a2a2a] bg-[#121212] p-3">
               <div className="mb-3 flex items-center gap-3">
                 <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-white/[.06] ring-1 ring-white/10">
                   <Camera size={16} className="text-zinc-300" />
@@ -478,10 +495,20 @@ export function TradeReviewModal({ open, saving, account, onOpenChange, onSave }
                 {imageUrls.length < 3 ? <button type="button" onClick={() => inputRef.current?.click()} className="grid aspect-square place-items-center rounded-lg border border-dashed border-white/10 text-zinc-500 hover:bg-white/[.04] hover:text-white">{uploading ? <LoaderCircle className="animate-spin" size={20} /> : <ImagePlus size={22} />}</button> : null}
               </div>
               {uploadError && <p className="mt-2 text-xs text-rose-400">{uploadError}</p>}
-            </div>
+              </div>
 
-            <div className="rounded-xl border border-[#2a2a2a] bg-[#121212] p-3 text-[11px] leading-5 text-[#8a8a8a]">
-              <b className="text-[#a1a1aa]">Review tavsiyasi:</b> trade ochilish sababi, invalidation nuqtasi va chiqish qarorini yozing.
+              <div className="mt-4 space-y-1.5">
+                <SectionLabel>Trade review / Xulosa</SectionLabel>
+                <Textarea
+                  name="note"
+                  className="min-h-40 resize-y border-[#2a2a2a] bg-[#121212] text-sm focus:border-zinc-500 transition-all"
+                  placeholder="Pre-trade thesis, entry trigger, invalidation, exit logic, emotions and what should be repeated or removed next time."
+                />
+              </div>
+
+              <div className="mt-4 rounded-xl border border-[#2a2a2a] bg-[#121212] p-3 text-[11px] leading-5 text-[#8a8a8a]">
+                <b className="text-[#a1a1aa]">Coach tip:</b> write what you saw, why you trusted the setup, and what must change next time. The better this note is, the better your AI coaching and trade posts will feel later.
+              </div>
             </div>
           </div>
 
