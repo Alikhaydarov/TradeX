@@ -15,7 +15,6 @@ import { useLanguage } from "@/lib/i18n";
 import { LanguageSwitcher } from "./language-switcher";
 import { SocialActions } from "./social-actions-v2";
 import { TraderAvatar } from "./trader-avatar";
-import { VerifiedBadge } from "./verified-badge";
 import type { Section } from "./types";
 
 function usernameFromUser(user: User | null) {
@@ -46,7 +45,6 @@ export function Sidebar({
   hideMobile?: boolean;
   isAdmin?: boolean;
 }) {
-  const [isVerified, setIsVerified] = useState(false);
   const [profileUsername, setProfileUsername] = useState("");
   const { t } = useLanguage();
   const name = String(user?.user_metadata.full_name ?? user?.user_metadata.name ?? "Mehmon trader");
@@ -61,12 +59,10 @@ export function Sidebar({
     apiRequest<{ profile: { username?: string | null; is_verified?: boolean | null } }>("/api/profile")
       .then(({ profile }) => {
         if (!active) return;
-        setIsVerified(Boolean(profile.is_verified));
         setProfileUsername(profile.username || "");
       })
       .catch(() => {
         if (!active) return;
-        setIsVerified(false);
         setProfileUsername("");
       });
 
@@ -145,7 +141,6 @@ export function Sidebar({
             <span className="min-w-0 flex-1">
               <span className="flex min-w-0 items-center gap-1">
                 <strong className="truncate text-xs">{name}</strong>
-                {user && isVerified ? <VerifiedBadge size={13} /> : null}
               </span>
               <small className="block truncate text-[10px] text-zinc-500">{handle}</small>
             </span>

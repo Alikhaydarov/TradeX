@@ -42,7 +42,6 @@ import { InstrumentBadge } from "./instrument-badge";
 import { useAuth } from "./auth-context";
 import { MediaImage } from "./media-image";
 import { TraderAvatar } from "./trader-avatar";
-import { VerifiedBadge } from "./verified-badge";
 import type { Post, Profile } from "./types";
 
 interface ProfileRecord {
@@ -430,7 +429,6 @@ export function Account({ onLogin, profileUsername }: { onLogin: () => void; pro
         <div className="min-w-0">
           <div className="flex min-w-0 flex-wrap items-center gap-x-1.5 gap-y-0.5 text-[13px] leading-5 sm:text-sm">
             <p className="max-w-full truncate font-black text-white">{post.name}</p>
-            {post.isVerified ? <VerifiedBadge /> : null}
             <p className="truncate text-xs text-slate-500">{post.handle}</p>
             <span className="text-xs text-slate-700">/</span>
             <p className="text-xs text-slate-500">{post.time}</p>
@@ -472,7 +470,6 @@ export function Account({ onLogin, profileUsername }: { onLogin: () => void; pro
             <div className="mt-3">
               <div className="flex min-w-0 items-center gap-2">
                 <h2 className="truncate text-xl font-black leading-7 sm:text-2xl">{profile.fullName}</h2>
-                {profile.isVerified ? <VerifiedBadge className="h-4 w-4" /> : null}
                 {saved && <span className="rounded-full bg-emerald-400/10 px-2 py-1 text-[10px] font-bold text-emerald-300">Saved</span>}
               </div>
               <p className="text-xs text-zinc-500">@{profile.username}</p>
@@ -517,7 +514,6 @@ export function Account({ onLogin, profileUsername }: { onLogin: () => void; pro
               <div className="min-w-0 flex-1">
                 <div className="flex flex-wrap items-center gap-2">
                   <h3 className="text-sm font-black">TradeWay Premium</h3>
-                  {premium?.isVerified ? <VerifiedBadge size={15} /> : null}
                   {premium?.isPremium ? <span className="rounded-full bg-sky-400/10 px-2 py-0.5 text-[10px] font-black text-sky-300">Premium active</span> : <span className="rounded-full bg-white/[.06] px-2 py-0.5 text-[10px] font-black text-zinc-400">Free plan</span>}
                 </div>
                 <p className="mt-1 text-xs leading-5 text-zinc-500">
@@ -543,7 +539,6 @@ export function Account({ onLogin, profileUsername }: { onLogin: () => void; pro
               <div className="mt-4 grid gap-3">
                 <div className="grid gap-2 sm:grid-cols-3">
                   {[
-                    ["Verified", premium.isVerified ? "Enabled" : "Pending"],
                     ["AI enabled", premium.aiEnabled ? "Enabled" : "Off"],
                     ["Auto Sync", premium.autoSyncEnabled ? "Enabled" : "Off"],
                   ].map(([label, value]) => (
@@ -728,7 +723,6 @@ export function Account({ onLogin, profileUsername }: { onLogin: () => void; pro
                   <div className="min-w-0 flex-1">
                     <button onClick={() => { openProfileRoute(item.username); setConnectionsOpen(null); }} className="flex min-w-0 items-center gap-1.5 text-left">
                       <span className="truncate text-sm font-black">{item.fullName}</span>
-                      {item.isVerified ? <VerifiedBadge /> : null}
                     </button>
                     <p className="truncate text-xs text-slate-500">@{item.username}</p>
                     {item.bio ? <p className="mt-1 line-clamp-2 text-xs leading-5 text-slate-400">{item.bio}</p> : null}

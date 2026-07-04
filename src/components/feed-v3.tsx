@@ -17,7 +17,6 @@ import { useAuth } from "./auth-context";
 import { InstrumentBadge } from "./instrument-badge";
 import { MediaImage } from "./media-image";
 import { TraderAvatar } from "./trader-avatar";
-import { VerifiedBadge } from "./verified-badge";
 import type { JournalEntry, Post, PostReply } from "./types";
 
 type PostRecord = SocialPostRecord;
@@ -497,7 +496,6 @@ export function FeedV3({ onLogin }: { onLogin: () => void }) {
                       <div className="min-w-0 flex-1">
                         <button type="button" onClick={() => openProfile(post.handle)} className="flex max-w-full items-center gap-1 truncate text-left text-[15px] font-black tracking-tight hover:underline">
                           {post.name}
-                          {post.isVerified && <VerifiedBadge size={14} />}
                         </button>
                         <p className="truncate text-[11px] text-slate-500">{timeMeta(post.handle, post.time)}</p>
                       </div>
@@ -561,7 +559,6 @@ export function FeedV3({ onLogin }: { onLogin: () => void }) {
                                 <div className="min-w-0 flex-1">
                                   <div className="flex items-center gap-1.5">
                                     <strong className="truncate text-xs">{reply.name}</strong>
-                                    {reply.isVerified ? <VerifiedBadge size={13} /> : null}
                                     <span className="text-[10px] text-slate-600">@{reply.username} <span className="px-1 text-zinc-700">/</span> {replyTime(reply.createdAt)}</span>
                                   </div>
                                   <p className="mt-1 whitespace-pre-line text-sm leading-5 text-slate-300">{reply.content}</p>

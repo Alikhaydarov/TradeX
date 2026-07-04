@@ -70,7 +70,7 @@ type CalendarNewsResponse = {
 const cash = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 2 });
 const WEEKDAYS_SHORT = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 const WEEKDAYS_FULL = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
-const WORKSPACE_TABS = [["overview", "Dashboard"], ["calendar", "Calendar"], ["trades", "Trades"], ["bible", "Bible"], ["analytics", "Analytics"], ["settings", "Settings"]] as const;
+const WORKSPACE_TABS = [["home", "Home"], ["overview", "Dashboard"], ["calendar", "Calendar"], ["trades", "Trades"], ["bible", "Bible"], ["analytics", "Analytics"], ["settings", "Settings"]] as const;
 type WorkspaceTab = typeof WORKSPACE_TABS[number][0];
 
 const accountFrom = (a: AccountRow): PropAccount => ({ id: a.id, name: a.name, accountType: a.account_type || "prop", firm: a.firm, propSite: a.prop_site || "", propLogin: a.prop_login || "", importSource: a.import_source || "manual", platform: a.platform || "mt5", phase: a.phase, marketType: a.market_type, accountSize: +a.account_size, initialBalance: +a.initial_balance, profitTarget: +a.profit_target, maxDrawdown: +a.max_drawdown, dailyDrawdown: +a.daily_drawdown, startDate: a.start_date, status: a.status });
@@ -141,7 +141,12 @@ export function JournalV2({ onLogin }: { onLogin: () => void }) {
       apiRequest<{ accounts: AccountRow[] }>("/api/prop-accounts"),
       apiRequest<{ entries: EntryRow[] }>("/api/journal"),
     ]).then(([a, e]) => {
-      if (active) { setAccounts(a.accounts.map(accountFrom)); setEntries(e.entries.map(entryFrom)); }
+      if (active) {
+        const nextAccounts = a.accounts.map(accountFrom);
+        setAccounts(nextAccounts);
+        setEntries(e.entries.map(entryFrom));
+        setAccountId((current) => current || nextAccounts[0]?.id || null);
+      }
     }).catch((e: Error) => active && setError(e.message)).finally(() => active && setLoading(false));
     return () => { active = false; };
   }, [user]);
@@ -694,7 +699,7 @@ function Workspace(p: {
   const { account, accounts, stats, equity, setups, mistakes, planRate, monthCount, calendar, trades, bibleTrades, month } = p;
   const [selectedTrade, setSelectedTrade] = useState<JournalEntry | null>(null);
   const [selectedDay, setSelectedDay] = useState<{ day: number; trades: JournalEntry[]; pnl: number } | null>(null);
-  const [activeTab, setActiveTab] = useState<WorkspaceTab>("overview");
+  const [activeTab, setActiveTab] = useState<WorkspaceTab>("home");
   const [coachReport, setCoachReport] = useState<AiCoachReport | null>(null);
   const [coachLoading, setCoachLoading] = useState(false);
   const [coachError, setCoachError] = useState<string | null>(null);
@@ -776,13 +781,13 @@ function Workspace(p: {
   }, [account.id]);
 
   useEffect(() => {
-    if (activeTab !== "overview") return;
+    if (activeTab !== "home" && activeTab !== "overview") return;
     void loadCoach();
     void loadOpenPositions();
   }, [activeTab, loadCoach, loadOpenPositions, trades.length]);
 
   useEffect(() => {
-    if (activeTab !== "overview" && activeTab !== "calendar") return;
+    if (activeTab !== "home" && activeTab !== "overview" && activeTab !== "calendar") return;
     let active = true;
     const controller = new AbortController();
     setCalendarNewsLoading(true);
@@ -909,6 +914,97 @@ function Workspace(p: {
               <TabsTrigger key={v} value={v} className="h-10 min-w-[120px] flex-1 rounded-[0.85rem] px-4 text-sm font-semibold text-zinc-400 data-[state=active]:bg-white data-[state=active]:text-black data-[state=active]:shadow-sm">{l}</TabsTrigger>
             ))}
           </TabsList>
+
+          <TabsContent value="home" className="space-y-4">
+            <section className="rounded-[1.35rem] border border-white/8 bg-[#17181b] p-5 shadow-[0_18px_46px_rgba(0,0,0,.2)]">
+              <div className="flex flex-col gap-4 xl:flex-row xl:items-start">
+                <div className="min-w-0 flex-1">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-zinc-500">Selected account</p>
+                  <div className="mt-3 flex flex-wrap items-center gap-3">
+                    <PropFirmLogo firm={account.firm} compact />
+                    <div className="min-w-0">
+                      <h2 className="truncate text-2xl font-black text-white">{account.name}</h2>
+                      <p className="mt-1 text-sm text-zinc-500">{account.accountType === "real" ? "Real account" : "Prop account"} / {account.marketType} / {account.phase}</p>
+                    </div>
+                    <span className={`rounded-full border px-3 py-1 text-[11px] font-bold ${account.status === "Active" ? "border-emerald-400/20 bg-emerald-400/10 text-emerald-300" : "border-white/10 bg-white/[.04] text-zinc-300"}`}>
+                      {account.status}
+                    </span>
+                  </div>
+                  <div className="mt-5 grid gap-3 sm:grid-cols-3">
+                    <QuickMetric label="Balance" value={cash.format(account.accountSize)} note="Everything below follows this account" />
+                    <QuickMetric label="Trades" value={String(trades.length)} note={`${stats.wins} wins / ${stats.losses} losses`} />
+                    <QuickMetric label="Net P&L" value={`${currentPnl >= 0 ? "+" : ""}${cash.format(currentPnl)}`} note={`${stats.rate}% win rate`} tone={currentPnl >= 0 ? "good" : "bad"} />
+                  </div>
+                </div>
+                <div className="grid w-full gap-3 xl:w-[360px]">
+                  <button type="button" onClick={p.onTrade} className="rounded-[1.1rem] border border-white/10 bg-white px-4 py-3 text-left text-sm font-black text-black transition hover:bg-zinc-200">
+                    Add trade
+                  </button>
+                  <button type="button" onClick={() => window.dispatchEvent(new Event("tradeway:share-trade"))} className="rounded-[1.1rem] border border-white/10 bg-white/[.04] px-4 py-3 text-left text-sm font-semibold text-white transition hover:bg-white/[.08]">
+                    Share trade from this account
+                  </button>
+                  <div className="rounded-[1.1rem] border border-white/8 bg-black/20 p-4">
+                    <p className="text-[10px] uppercase tracking-[0.18em] text-zinc-500">Flow</p>
+                    <p className="mt-2 text-sm leading-6 text-zinc-300">Change the account at the top and Home, Dashboard, Calendar, Trades and Analytics all switch to that account instantly.</p>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <div className="grid gap-4 xl:grid-cols-[minmax(0,1.2fr)_minmax(320px,.8fr)]">
+              <section className="rounded-[1.3rem] border border-white/8 bg-[#17181b] p-5 shadow-[0_18px_46px_rgba(0,0,0,.2)]">
+                <div className="flex items-center justify-between gap-3">
+                  <div>
+                    <h3 className="text-lg font-black text-white">Share-ready trades</h3>
+                    <p className="mt-1 text-sm text-zinc-500">Open a trade or send your best setup to Home from this account.</p>
+                  </div>
+                  <Button type="button" variant="outline" size="sm" className="border-white/10 bg-black/15" onClick={() => setActiveTab("trades")}>
+                    Open log
+                  </Button>
+                </div>
+                <div className="mt-4 space-y-2">
+                  {recentTrades.length ? recentTrades.map((trade) => (
+                    <button key={trade.id} type="button" onClick={() => setSelectedTrade(trade)} className="flex w-full items-center gap-3 rounded-2xl border border-white/8 bg-black/15 px-3 py-3 text-left transition hover:bg-white/[.04]">
+                      <InstrumentBadge symbol={trade.symbol} compact className="bg-[#121212]" showFullSymbol={false} />
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-2">
+                          <strong className="truncate text-sm text-white">{trade.symbol}</strong>
+                          <span className={`rounded px-1.5 py-0.5 text-[9px] font-black uppercase ${trade.side === "Long" ? "bg-emerald-400/15 text-emerald-300" : "bg-rose-400/15 text-rose-300"}`}>{trade.side === "Long" ? "Buy" : "Sell"}</span>
+                        </div>
+                        <p className="mt-1 truncate text-xs text-zinc-500">{trade.setup || trade.session || trade.rawDate}</p>
+                      </div>
+                      <strong className={`font-mono text-sm font-black ${trade.pnl >= 0 ? "text-emerald-300" : "text-rose-300"}`}>{trade.pnl >= 0 ? "+" : ""}{cash.format(trade.pnl)}</strong>
+                    </button>
+                  )) : <div className="grid min-h-40 place-items-center rounded-2xl border border-white/8 bg-black/15 text-center text-sm text-zinc-500">No trades in this account yet.</div>}
+                </div>
+              </section>
+
+              <div className="grid gap-4">
+                <AiCoachCard report={coachReport} loading={coachLoading} error={coachError} onRefresh={loadCoach} />
+                <section className="rounded-[1.3rem] border border-white/8 bg-[#17181b] p-5 shadow-[0_18px_46px_rgba(0,0,0,.2)]">
+                  <div className="flex items-center justify-between gap-3">
+                    <div>
+                      <h3 className="text-lg font-black text-white">High Impact News</h3>
+                      <p className="mt-1 text-sm text-zinc-500">Weekly red news in New York time.</p>
+                    </div>
+                  </div>
+                  <div className="mt-4 space-y-2">
+                    {calendarNewsLoading && !calendarNews ? <div className="rounded-2xl border border-white/8 bg-black/15 px-3 py-4 text-sm text-zinc-500">Loading news...</div> : null}
+                    {!calendarNewsLoading && (calendarNews?.events || []).length === 0 ? <div className="rounded-2xl border border-white/8 bg-black/15 px-3 py-4 text-sm text-zinc-500">No high impact news loaded yet.</div> : null}
+                    {(calendarNews?.events || []).slice(0, 4).map((event) => (
+                      <div key={event.id} className="rounded-2xl border border-white/8 bg-black/15 px-3 py-3">
+                        <div className="flex items-center gap-2">
+                          <span className="w-14 shrink-0 font-mono text-[11px] font-bold text-zinc-200">{event.time}</span>
+                          <span className="rounded-md bg-rose-400/15 px-1.5 py-0.5 text-[10px] font-black text-rose-200">{event.currency}</span>
+                          <p className="min-w-0 flex-1 truncate text-xs font-semibold text-zinc-300">{event.title}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </section>
+              </div>
+            </div>
+          </TabsContent>
 
           {/* Overview */}
           <TabsContent value="overview" className="space-y-4">
@@ -2022,6 +2118,17 @@ function MetricPanel({ title, value, note, accent = "neutral" }: { title: string
       <p className={`mt-3 font-mono text-[2rem] font-black tracking-tight ${color}`}>{value}</p>
       <p className="mt-2 text-sm text-zinc-500">{note}</p>
     </section>
+  );
+}
+
+function QuickMetric({ label, value, note, tone = "neutral" }: { label: string; value: string; note: string; tone?: "neutral" | "good" | "bad" }) {
+  const color = tone === "good" ? "text-emerald-300" : tone === "bad" ? "text-rose-300" : "text-white";
+  return (
+    <div className="rounded-[1rem] border border-white/8 bg-black/18 px-4 py-3">
+      <p className="text-[10px] uppercase tracking-[0.18em] text-zinc-500">{label}</p>
+      <p className={`mt-1 truncate font-mono text-lg font-black ${color}`}>{value}</p>
+      <p className="mt-1 text-xs text-zinc-500">{note}</p>
+    </div>
   );
 }
 

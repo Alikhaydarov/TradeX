@@ -85,9 +85,28 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   const auth = await authenticateRequest(request); if (!auth) return unauthorized();
   const payload = values(await request.json()); if (!payload) return badRequest("Check account details.");
+  const premium = await getPremiumStatus(auth);
+
+  if (!premium.isPremium) {
+    const { count, error: countError } = await auth.supabase
+      .from("prop_accounts")
+      .select("id", { count: "exact", head: true })
+      .eq("user_id", auth.user.id);
+
+    if (countError) return serverError(countError.message);
+
+    if ((count || 0) >= 1) {
+      return Response.json(
+        {
+          error: "Free plan allows only 1 account. Upgrade to Premium to add more accounts.",
+          upgradeUrl: "/pricing",
+        },
+        { status: 403 },
+      );
+    }
+  }
 
   if (PREMIUM_PLATFORMS.has(String(payload.platform || "").toLowerCase())) {
-    const premium = await getPremiumStatus(auth);
     if (!premium.isPremium) {
       return Response.json(
         {

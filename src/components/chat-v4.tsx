@@ -25,7 +25,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { XSpinner } from "./app-loader";
 import { useAuth } from "./auth-context";
 import { TraderAvatar } from "./trader-avatar";
-import { VerifiedBadge } from "./verified-badge";
 import type { ChatMember, Group, GroupMessage, UserOption } from "./types";
 
 interface MessageRecord {
@@ -82,7 +81,6 @@ function MemberLine({ members = [] }: { members?: ChatMember[] }) {
         <span key={member.id} className="inline-flex items-center gap-0.5">
           {index > 0 ? <span>,&nbsp;</span> : null}
           <span>{member.name}</span>
-          {member.isVerified ? <VerifiedBadge size={10} /> : null}
         </span>
       ))}
       {members.length > 3 ? <span> +{members.length - 3}</span> : null}
@@ -416,7 +414,6 @@ export function ChatV4({ onLogin, onBack }: { onLogin: () => void; onBack: () =>
       <span className="min-w-0 flex-1">
         <span className="flex items-center gap-1.5">
           <strong className="block truncate text-xs">{option.name}</strong>
-          {option.isVerified && <VerifiedBadge size={13} />}
         </span>
         <small className="block truncate text-[10px] text-slate-500">@{option.username}</small>
       </span>
@@ -605,7 +602,6 @@ export function ChatV4({ onLogin, onBack }: { onLogin: () => void; onBack: () =>
                             <div className={`mb-1 flex items-center gap-2 ${own ? "justify-end" : ""}`}>
                               <span className="inline-flex items-center gap-1">
                                 <strong className="text-[10px]">{own ? "You" : message.name}</strong>
-                                {message.isVerified ? <VerifiedBadge size={11} /> : null}
                               </span>
                               <span className="text-[9px] text-slate-600">{message.createdAt}</span>
                               {!sendingMessage && <button onClick={() => setReplyingTo(message)} className="grid h-6 w-6 place-items-center rounded-lg text-slate-500 hover:bg-white/[.06] hover:text-zinc-300" aria-label="Reply"><Reply size={12} /></button>}

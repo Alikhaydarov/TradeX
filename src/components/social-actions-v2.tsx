@@ -8,7 +8,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { XSpinner } from "./app-loader";
 import { TraderAvatar } from "./trader-avatar";
-import { VerifiedBadge } from "./verified-badge";
 
 type SearchUser = {
   id: string;
@@ -196,7 +195,7 @@ function SearchDialog({ onClose }: { onClose: () => void }) {
             <button key={item.id} type="button" onClick={() => goToProfile(item.username)} className="flex min-h-[76px] w-full touch-manipulation items-center gap-3 border-b border-white/6 px-4 py-3.5 text-left transition hover:bg-white/[.045] active:bg-white/[.06]">
               <TraderAvatar name={item.fullName} value={item.avatarUrl} className="h-12 w-12 text-xs" />
               <span className="min-w-0 flex-1">
-                <span className="flex min-w-0 items-center gap-1.5"><span className="truncate text-[15px] font-black">{item.fullName}</span>{item.isVerified ? <VerifiedBadge /> : null}</span>
+                <span className="flex min-w-0 items-center gap-1.5"><span className="truncate text-[15px] font-black">{item.fullName}</span></span>
                 <span className="block truncate text-xs text-slate-500">@{item.username}</span>
                 {item.bio ? <span className="mt-1 block truncate text-xs text-slate-400">{item.bio}</span> : <span className="mt-1 block truncate text-xs text-slate-600">{item.tradingStyle || "Trader"}</span>}
               </span>
@@ -272,7 +271,6 @@ function NotificationsDialog({ onClose, onRead }: { onClose: () => void; onRead:
             <span className="min-w-0 flex-1">
               <span className="flex min-w-0 items-center gap-1.5">
                 <span className="truncate text-[15px] font-black text-white">{item.actor?.fullName ?? "TradeWay"}</span>
-                {item.actor?.isVerified ? <VerifiedBadge /> : null}
                 {!item.isRead ? <span className="size-2 rounded-full bg-white" /> : null}
               </span>
               <span className="mt-0.5 block truncate text-xs text-slate-500">
