@@ -50,8 +50,8 @@ type AiCoachReport = {
 };
 
 const cash = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 2 });
-const WEEKDAYS_SHORT = ["Du", "Se", "Ch", "Pa", "Ju", "Sh", "Ya"];
-const WEEKDAYS_FULL = ["Dushanba", "Seshanba", "Chorshanba", "Payshanba", "Juma", "Shanba", "Yakshanba"];
+const WEEKDAYS_SHORT = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+const WEEKDAYS_FULL = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
 const WORKSPACE_TABS = [["overview", "Overview"], ["calendar", "Calendar"], ["trades", "Trades"], ["bible", "Bible"], ["analytics", "Analytics"], ["settings", "Settings"]] as const;
 type WorkspaceTab = typeof WORKSPACE_TABS[number][0];
 
@@ -671,7 +671,7 @@ function Workspace(p: {
   return (
     <div className="animate-page-in mx-auto max-w-[1700px]">
       {/* Sticky header */}
-      <header className="sticky top-0 z-20 flex min-w-0 items-center gap-2 border-b border-[#2a2a2a] bg-[#0e0e0e]/90 px-3 py-2.5 backdrop-blur-xl sm:px-4 sm:py-3 lg:gap-3 lg:px-6">
+      <header className="sticky top-0 z-20 flex min-w-0 items-center gap-2 border-b border-white/6 bg-[#111214]/96 px-3 py-2.5 sm:px-4 sm:py-3 lg:gap-3 lg:px-6">
         <Button variant="ghost" size="icon" onClick={p.onBack} className="shrink-0">
           <ArrowLeft size={18} />
         </Button>
@@ -744,7 +744,7 @@ function Workspace(p: {
           ].map((s, index) => (
             <Card key={s.title} size="sm" className={`gap-0 py-0 ${index === 4 ? "col-span-2 sm:col-span-1" : ""}`}>
               <CardContent className="flex min-h-18 items-center gap-2 p-3 sm:min-h-20 sm:gap-3 sm:p-4">
-                <span className="grid size-9 shrink-0 place-items-center rounded-lg bg-muted sm:size-10">
+                <span className="grid size-9 shrink-0 place-items-center rounded-lg bg-black/18 sm:size-10">
                   <s.icon size={18} className={s.color} />
                 </span>
                 <div className="min-w-0">
@@ -759,7 +759,7 @@ function Workspace(p: {
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as WorkspaceTab)} className="gap-4">
           <div className="block md:hidden">
-            <span className="mb-1.5 block text-[10px] font-semibold uppercase tracking-widest text-[#8a8a8a]">View</span>
+            <span className="mb-1.5 block text-[10px] font-semibold uppercase tracking-widest text-[#8a8a8a]">Workspace</span>
             <Select value={activeTab} onValueChange={(value) => setActiveTab(value as WorkspaceTab)}>
               <SelectTrigger className="w-full">
                 <SelectValue />
@@ -769,15 +769,15 @@ function Workspace(p: {
               </SelectContent>
             </Select>
           </div>
-          <TabsList className="hidden min-h-14 w-full justify-start overflow-x-auto rounded-2xl border border-white/10 bg-white/[.035] p-1.5 md:inline-flex">
+          <TabsList className="hidden min-h-12 w-full justify-start overflow-x-auto rounded-[1rem] border border-white/8 bg-[#17181b] p-1 md:inline-flex">
             {WORKSPACE_TABS.map(([v, l]) => (
-              <TabsTrigger key={v} value={v} className="h-11 min-w-[132px] flex-1 rounded-xl px-5 text-sm font-semibold text-zinc-400 data-[state=active]:bg-white data-[state=active]:text-black data-[state=active]:shadow-sm">{l}</TabsTrigger>
+              <TabsTrigger key={v} value={v} className="h-10 min-w-[120px] flex-1 rounded-[0.85rem] px-4 text-sm font-semibold text-zinc-400 data-[state=active]:bg-white data-[state=active]:text-black data-[state=active]:shadow-sm">{l}</TabsTrigger>
             ))}
           </TabsList>
 
           {/* Overview */}
           <TabsContent value="overview" className="space-y-4">
-            <section className="overflow-hidden rounded-[28px] border border-white/10 bg-[radial-gradient(circle_at_top_right,rgba(217,249,109,.14),transparent_18%),linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,.025))] shadow-[0_28px_80px_rgba(0,0,0,.34)]">
+            <section className="overflow-hidden rounded-[1.4rem] border border-white/8 bg-[#17181b] shadow-[0_16px_42px_rgba(0,0,0,.22)]">
               <div className="flex flex-col gap-4 border-b border-white/8 px-4 py-4 sm:px-5 lg:flex-row lg:items-start">
                 <div className="min-w-0">
                   <h3 className="text-base font-black">Account balance</h3>
@@ -882,7 +882,7 @@ function Workspace(p: {
                   { label: "Most traded setup", value: setups[0]?.name || "No setup yet", note: setups[0] ? `${setups[0].trades} trades` : "Add reviewed trades" },
                   { label: "Plan alignment", value: `${planRate}%`, note: "Rules followed this month" },
                 ].map((item) => (
-                  <div key={item.label} className="rounded-2xl border border-white/10 bg-white/[.035] p-4">
+                  <div key={item.label} className="rounded-[1rem] border border-white/8 bg-[#17181b] p-4">
                     <p className="text-[11px] uppercase tracking-wider text-zinc-500">{item.label}</p>
                     <p className="mt-1 truncate text-xl font-black text-white">{item.value}</p>
                     <p className="mt-1 text-xs text-zinc-500">{item.note}</p>
@@ -890,17 +890,17 @@ function Workspace(p: {
                 ))}
               </div>
 
-              <div className="overflow-hidden rounded-[24px] border border-border bg-card">
-                <div className="flex flex-col gap-3 border-b border-[#2a2a2a] px-3 py-3 sm:px-5 sm:py-4 lg:flex-row lg:items-center">
+              <div className="overflow-hidden rounded-[1.3rem] border border-white/8 bg-[#17181b]">
+                <div className="flex flex-col gap-3 border-b border-white/8 px-3 py-3 sm:px-5 sm:py-4 lg:flex-row lg:items-center">
                 <div>
                   <h3 className="font-bold capitalize">{month.toLocaleDateString("en-US", { month: "long", year: "numeric" })} performance</h3>
                   <p className="text-xs text-[#8a8a8a]">Open any day to review the exact trades behind that result.</p>
                 </div>
-                <div className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-1 rounded-xl border border-[#2a2a2a] bg-[#121212] p-1 sm:flex sm:gap-2 lg:ml-auto">
+                <div className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-1 rounded-[0.95rem] border border-white/8 bg-[#141518] p-1 sm:flex sm:gap-2 lg:ml-auto">
                   <Button variant="ghost" size="icon-sm" onClick={p.onPrev}><ChevronLeft size={16} /></Button>
                   <strong className="min-w-0 text-center text-xs capitalize sm:min-w-32 sm:text-sm">{month.toLocaleDateString("en-US", { month: "short", year: "numeric" })}</strong>
                   <Button variant="ghost" size="icon-sm" onClick={p.onNext}><ChevronRight size={16} /></Button>
-                  <Button variant="outline" size="sm" onClick={p.onToday} className="col-span-3 w-full border-[#2a2a2a] bg-transparent text-xs sm:w-auto">Current month</Button>
+                  <Button variant="outline" size="sm" onClick={p.onToday} className="col-span-3 w-full border-white/8 bg-transparent text-xs sm:w-auto">Current month</Button>
                 </div>
               </div>
               {/* Desktop calendar */}
@@ -910,43 +910,35 @@ function Workspace(p: {
                     <div key={d} className="py-2 text-center text-[11px] font-semibold uppercase tracking-wider text-[#8a8a8a]">{d}</div>
                   ))}
                 </div>
-                <div className="grid grid-cols-7 content-start gap-1.5 [grid-auto-rows:130px]">
+                <div className="grid grid-cols-7 content-start gap-1.5 [grid-auto-rows:108px]">
                   {calendar.map((c, i) =>
                     c ? (
                       <button key={`${monthId(month)}-desktop-${i}`} type="button" onClick={() => c.trades.length ? setSelectedDay(c) : null}
-                        className={`h-full w-full rounded-xl border p-2.5 text-left transition ${c.trades.length ? c.pnl >= 0 ? "border-emerald-500/20 bg-emerald-500/5 hover:bg-emerald-500/8" : "border-rose-500/20 bg-rose-500/5 hover:bg-rose-500/8" : "border-[#2a2a2a] bg-[#121212]/40"} ${c.trades.length ? "cursor-pointer" : "cursor-default"}`}>
+                        className={`h-full w-full rounded-[1rem] border p-2.5 text-left transition ${c.trades.length ? c.pnl >= 0 ? "border-emerald-500/18 bg-emerald-500/[.07] hover:bg-emerald-500/[.1]" : "border-rose-500/18 bg-rose-500/[.07] hover:bg-rose-500/[.1]" : "border-white/6 bg-[#141518]"} ${c.trades.length ? "cursor-pointer" : "cursor-default"}`}>
                         <div className="flex items-start justify-between">
-                          <span className={`grid size-6 place-items-center rounded-md text-[11px] font-bold ${c.trades.length ? "bg-[#2a2a2a] text-[#f1f1f1]" : "text-[#8a8a8a]"}`}>{c.day}</span>
+                          <span className={`grid size-6 place-items-center rounded-md text-[11px] font-bold ${c.trades.length ? "bg-black/18 text-[#f1f1f1]" : "text-[#8a8a8a]"}`}>{c.day}</span>
                           {c.trades.length > 0 && (
-                            <span className="rounded-md bg-[#2a2a2a] px-1.5 py-0.5 text-[10px] font-medium text-[#8a8a8a]">
-                              {c.trades.length}t
+                            <span className="rounded-md bg-black/18 px-1.5 py-0.5 text-[10px] font-medium text-[#8a8a8a]">
+                              {c.trades.length}
                             </span>
                           )}
                         </div>
                         {c.trades.length > 0 ? (
                           <>
-                            <p className={`mt-3 font-mono text-sm font-black ${c.pnl >= 0 ? "text-emerald-400" : "text-rose-400"}`}>
+                            <p className={`mt-4 font-mono text-sm font-black ${c.pnl >= 0 ? "text-emerald-400" : "text-rose-400"}`}>
                               {c.pnl >= 0 ? "+" : ""}{cash.format(c.pnl)}
                             </p>
-                            <div className="mt-5 flex items-center justify-between">
-                              <span className="text-[10px] font-semibold uppercase tracking-[0.18em] text-zinc-500">Open day</span>
-                              <span className="rounded-full border border-white/8 bg-white/[.04] px-2 py-1 text-[10px] font-black text-zinc-300">View trades</span>
-                            </div>
-                            <div className="mt-2 flex gap-1">
-                              {c.trades.filter(t => t.pnl > 0).length > 0 && (
-                                <span className="rounded-md bg-emerald-500/15 px-1 py-0.5 text-[9px] font-bold text-emerald-400">{c.trades.filter(t => t.pnl > 0).length}W</span>
-                              )}
-                              {c.trades.filter(t => t.pnl <= 0).length > 0 && (
-                                <span className="rounded-md bg-rose-500/15 px-1 py-0.5 text-[9px] font-bold text-rose-400">{c.trades.filter(t => t.pnl <= 0).length}L</span>
-                              )}
+                            <div className="mt-4 flex items-center justify-between text-[10px]">
+                              <span className="font-semibold uppercase tracking-[0.18em] text-zinc-500">Closed day</span>
+                              <span className="text-zinc-400">{c.trades.length} trade{c.trades.length > 1 ? "s" : ""}</span>
                             </div>
                           </>
                         ) : (
-                          <p className="mt-8 text-center text-[10px] text-[#333333]">-</p>
+                          <p className="mt-8 text-center text-[10px] text-[#333333]">No trades</p>
                         )}
                       </button>
                     ) : (
-                      <div key={`${monthId(month)}-desktop-empty-${i}`} className="h-full rounded-xl border border-transparent" />
+                      <div key={`${monthId(month)}-desktop-empty-${i}`} className="h-full rounded-[1rem] border border-transparent" />
                     )
                   )}
                 </div>
@@ -963,7 +955,7 @@ function Workspace(p: {
                   {calendar.map((c, i) =>
                     c ? (
                       <button key={`${monthId(month)}-mobile-${i}`} type="button" onClick={() => c.trades.length ? setSelectedDay(c) : null}
-                        className={`flex flex-col items-center rounded-lg p-1 py-1.5 text-center ${c.trades.length ? c.pnl >= 0 ? "bg-emerald-500/10" : "bg-rose-500/10" : ""} ${c.trades.length ? "cursor-pointer" : "cursor-default"}`}>
+                        className={`flex min-h-[56px] flex-col items-center justify-center rounded-[0.9rem] border p-1 py-1.5 text-center ${c.trades.length ? c.pnl >= 0 ? "border-emerald-500/18 bg-emerald-500/[.07]" : "border-rose-500/18 bg-rose-500/[.07]" : "border-white/6 bg-[#141518]"} ${c.trades.length ? "cursor-pointer" : "cursor-default"}`}>
                         <span className={`text-[11px] font-bold ${c.trades.length ? "text-[#f1f1f1]" : "text-[#8a8a8a]"}`}>{c.day}</span>
                         {c.trades.length > 0 && (
                           <span className={`mt-0.5 text-[9px] font-black ${c.pnl >= 0 ? "text-emerald-400" : "text-rose-400"}`}>
@@ -983,16 +975,16 @@ function Workspace(p: {
 
           {/* Trades */}
           <TabsContent value="trades">
-            <div className="rounded-2xl border border-[#2a2a2a] bg-[#1b1b1b]/80 overflow-hidden">
-              <div className="space-y-3 border-b border-[#2a2a2a] px-5 py-4">
+            <div className="overflow-hidden rounded-[1.25rem] border border-white/8 bg-[#17181b]">
+              <div className="space-y-3 border-b border-white/8 px-5 py-4">
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
                 <div>
                   <h3 className="font-bold">Trade journal</h3>
-                  <p className="text-xs text-[#8a8a8a]">{trades.length} ta trade</p>
+                  <p className="text-xs text-[#8a8a8a]">{trades.length} trade{trades.length === 1 ? "" : "s"}</p>
                 </div>
                 <div className="relative sm:ml-auto sm:w-72">
                   <Search className="absolute left-3 top-2.5 text-[#8a8a8a]" size={15} />
-                  <Input value={p.query} onChange={e => p.onQuery(e.target.value)} className="border-[#2a2a2a] bg-[#121212] pl-9 text-sm" placeholder="Symbol yoki setup" />
+                  <Input value={p.query} onChange={e => p.onQuery(e.target.value)} className="pl-9 text-sm" placeholder="Search symbol or setup" />
                 </div>
                 </div>
                 <div className="flex flex-col gap-2 lg:flex-row lg:items-end">
@@ -1018,13 +1010,13 @@ function Workspace(p: {
                     </div>
                   ) : (
                     <p className="pb-3 text-xs text-[#8a8a8a] lg:ml-auto">
-                      {p.tradeRange === "daily" ? "Bugungi tradelar" : p.tradeRange === "monthly" ? "Joriy oy natijalari" : p.tradeRange === "quarter" ? "Oxirgi uch oy" : "Joriy yil"}
+                      {p.tradeRange === "daily" ? "Today only" : p.tradeRange === "monthly" ? "Current month" : p.tradeRange === "quarter" ? "Last 3 months" : "Current year"}
                     </p>
                   )}
                 </div>
               </div>
               {trades.length
-                ? <div className="divide-y divide-border bg-[#0f0f0f] p-2 sm:p-3">
+                ? <div className="divide-y divide-white/6 bg-[#121316] p-2 sm:p-3">
                     {trades.map(e => {
                       const winning = e.pnl >= 0;
                       return (
@@ -1034,9 +1026,9 @@ function Workspace(p: {
                           tabIndex={0}
                           onClick={() => setSelectedTrade(e)}
                           onKeyDown={(ev) => { if (ev.key === "Enter" || ev.key === " ") setSelectedTrade(e); }}
-                          className="group flex min-h-[68px] w-full cursor-pointer items-center gap-3 rounded-lg px-3 py-2.5 text-left transition-colors hover:bg-white/[.045] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/20 sm:px-4"
+                          className="group flex min-h-[74px] w-full cursor-pointer items-center gap-3 rounded-[0.95rem] px-3 py-2.5 text-left transition-colors hover:bg-white/[.04] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/16 sm:px-4"
                         >
-                          <InstrumentBadge symbol={e.symbol} compact className="shrink-0 rounded-xl bg-[#151515]" showFullSymbol={false} />
+                          <InstrumentBadge symbol={e.symbol} compact className="shrink-0 rounded-xl bg-black/18" showFullSymbol={false} />
                           <span className="min-w-0 flex-1">
                             <span className="flex min-w-0 items-center gap-1.5">
                               <strong className="truncate text-[13px] font-bold text-zinc-100 sm:text-sm">{e.symbol}</strong>
@@ -1047,7 +1039,7 @@ function Workspace(p: {
                               <span className={`rounded px-1.5 py-0.5 text-[9px] font-black uppercase ${e.side === "Long" ? "bg-emerald-400/15 text-emerald-300" : "bg-rose-400/15 text-rose-300"}`}>
                                 {e.side === "Long" ? "Buy" : "Sell"}
                               </span>
-                              <span className="font-mono text-[10px] text-zinc-400">{e.quantity.toFixed(2)} Lots</span>
+                              <span className="font-mono text-[10px] text-zinc-400">{e.quantity.toFixed(2)} lots</span>
                               {e.riskPercent ? <span className="hidden text-[10px] text-zinc-600 sm:inline">Risk {e.riskPercent}</span> : null}
                             </span>
                           </span>
@@ -1061,12 +1053,12 @@ function Workspace(p: {
                               <span className="font-mono text-[9px] text-zinc-500">{(e.resultR || 0).toFixed(2)}R</span>
                             </span>
                           </span>
-                          <ChevronDown className="-rotate-90 text-zinc-600 transition-transform group-hover:translate-x-0.5 group-hover:text-zinc-300" size={16} />
+                          <ChevronRight className="text-zinc-600 transition-transform group-hover:translate-x-0.5 group-hover:text-zinc-300" size={16} />
                         </div>
                       );
                     })}
                   </div>
-                : <Empty text="Bu oyda trade yo'q." />
+                : <Empty text="No trades in this range yet." />
               }
             </div>
           </TabsContent>

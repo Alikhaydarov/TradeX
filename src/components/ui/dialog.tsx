@@ -39,7 +39,7 @@ function DialogOverlay({
     <DialogPrimitive.Overlay
       data-slot="dialog-overlay"
       className={cn(
-        "fixed inset-0 isolate z-[10000] bg-black/72 duration-100 supports-backdrop-filter:backdrop-blur-md data-open:animate-in data-open:fade-in-0 data-closed:animate-out data-closed:fade-out-0",
+        "fixed inset-0 isolate z-[10000] bg-black/76 duration-100 data-open:animate-in data-open:fade-in-0 data-closed:animate-out data-closed:fade-out-0",
         className
       )}
       {...props}
@@ -61,7 +61,7 @@ function DialogContent({
       <DialogPrimitive.Content
         data-slot="dialog-content"
         className={cn(
-          "fixed inset-x-2 bottom-2 z-[10001] grid max-h-[calc(100dvh-1rem)] w-auto gap-4 overflow-y-auto rounded-[1.75rem] border border-white/10 bg-[rgba(8,8,8,0.74)] p-4 pb-[max(1rem,env(safe-area-inset-bottom))] text-sm text-popover-foreground shadow-[0_24px_80px_rgba(0,0,0,.72),inset_0_1px_0_rgba(255,255,255,.055)] backdrop-blur-2xl duration-100 outline-none data-open:animate-in data-open:fade-in-0 data-open:slide-in-from-bottom-4 data-closed:animate-out data-closed:fade-out-0 data-closed:slide-out-to-bottom-4 sm:top-1/2 sm:left-1/2 sm:bottom-auto sm:max-h-[calc(100dvh-2rem)] sm:w-full sm:max-w-sm sm:-translate-x-1/2 sm:-translate-y-1/2 sm:pb-4 sm:data-open:zoom-in-95 sm:data-closed:zoom-out-95",
+          "fixed inset-x-2 bottom-2 z-[10001] grid max-h-[calc(100dvh-1rem)] w-auto gap-4 overflow-y-auto rounded-[1.35rem] border border-white/8 bg-[#17181b] p-4 pb-[max(1rem,env(safe-area-inset-bottom))] text-sm text-popover-foreground shadow-[0_24px_70px_rgba(0,0,0,.52)] duration-100 outline-none data-open:animate-in data-open:fade-in-0 data-open:slide-in-from-bottom-4 data-closed:animate-out data-closed:fade-out-0 data-closed:slide-out-to-bottom-4 sm:top-1/2 sm:left-1/2 sm:bottom-auto sm:max-h-[calc(100dvh-2rem)] sm:w-full sm:max-w-sm sm:-translate-x-1/2 sm:-translate-y-1/2 sm:pb-4 sm:data-open:zoom-in-95 sm:data-closed:zoom-out-95",
           className
         )}
         {...props}
@@ -71,7 +71,7 @@ function DialogContent({
           <DialogPrimitive.Close data-slot="dialog-close" asChild>
             <Button
               variant="ghost"
-              className="absolute top-2 right-2 rounded-2xl bg-black/15 text-zinc-300 backdrop-blur-xl hover:bg-white/10 hover:text-white"
+              className="absolute top-2 right-2 rounded-xl bg-transparent text-zinc-400 hover:bg-white/6 hover:text-white"
               size="icon-sm"
             >
               <XIcon />
@@ -106,7 +106,7 @@ function DialogFooter({
     <div
       data-slot="dialog-footer"
       className={cn(
-        "-mx-4 -mb-4 flex flex-col-reverse gap-2 rounded-b-[1.75rem] border-t border-white/8 bg-white/[.035] p-4 backdrop-blur-xl sm:flex-row sm:justify-end",
+        "-mx-4 -mb-4 flex flex-col-reverse gap-2 rounded-b-[1.35rem] border-t border-white/8 bg-black/10 p-4 sm:flex-row sm:justify-end",
         className
       )}
       {...props}

@@ -1,9 +1,13 @@
 "use client";
 
 import { ArrowRight, LockKeyhole, ShieldCheck, Sparkles } from "lucide-react";
-import dynamic from "next/dynamic";
 import { useEffect, useState } from "react";
 import { AuthModal } from "./auth-modal";
+import { FeedV3 } from "./feed-v3";
+import { Journal } from "./journal";
+import { Account } from "./account";
+import { AdminPanel } from "./admin-panel";
+import { Pricing } from "./pricing";
 import { NotificationListener } from "./notification-listener";
 import { PremiumUpsellDialog } from "./premium-upsell-dialog";
 import { RightPanel } from "./right-panel";
@@ -11,12 +15,6 @@ import { Sidebar } from "./sidebar";
 import { useAuth } from "./auth-context";
 import { apiRequest } from "@/lib/api-client";
 import type { Section } from "./types";
-
-const FeedV3 = dynamic(() => import("./feed-v3").then((mod) => mod.FeedV3), { ssr: false, loading: () => null });
-const Journal = dynamic(() => import("./journal").then((mod) => mod.Journal), { ssr: false, loading: () => null });
-const Account = dynamic(() => import("./account").then((mod) => mod.Account), { ssr: false, loading: () => null });
-const AdminPanel = dynamic(() => import("./admin-panel").then((mod) => mod.AdminPanel), { ssr: false, loading: () => null });
-const Pricing = dynamic(() => import("./pricing").then((mod) => mod.Pricing), { ssr: false, loading: () => null });
 
 const reservedPaths = new Set(["", "chat", "journal", "backtest", "profile", "account", "pricing", "admin"]);
 
@@ -51,6 +49,8 @@ function getCurrentProfileUsername() {
   if (typeof window === "undefined") return "";
   return usernameFromPath(window.location.pathname);
 }
+
+const cachedSections: Section[] = ["feed", "journal", "account", "pricing", "admin"];
 
 function AuthGate({ onLogin }: { onLogin: () => void }) {
   return (
@@ -122,9 +122,29 @@ export function AppShell() {
   const [isAdmin, setIsAdmin] = useState(false);
   const [notificationsMounted, setNotificationsMounted] = useState(false);
   const [profileOpening, setProfileOpening] = useState(false);
+  const [visitedSections, setVisitedSections] = useState<Record<Section, boolean>>(() => ({
+    feed: true,
+    chat: false,
+    journal: section === "journal",
+    backtest: false,
+    account: section === "account",
+    pricing: section === "pricing",
+    admin: section === "admin",
+  }));
   const { user } = useAuth();
   const openLogin = () => setAuthOpen(true);
   const chatOpen = false;
+
+  useEffect(() => {
+    setVisitedSections((current) =>
+      current[section]
+        ? current
+        : {
+            ...current,
+            [section]: true,
+          },
+    );
+  }, [section]);
 
   useEffect(() => {
     const syncFromPath = () => {
@@ -151,12 +171,12 @@ export function AppShell() {
 
   useEffect(() => {
     if (!profileOpening) return;
-    const timer = window.setTimeout(() => setProfileOpening(false), 900);
+    const timer = window.setTimeout(() => setProfileOpening(false), 180);
     return () => window.clearTimeout(timer);
   }, [profileOpening]);
 
   useEffect(() => {
-    const timer = window.setTimeout(() => setNotificationsMounted(true), 2500);
+    const timer = window.setTimeout(() => setNotificationsMounted(true), 800);
     return () => window.clearTimeout(timer);
   }, []);
 
@@ -174,7 +194,7 @@ export function AppShell() {
         .catch(() => {
           if (active) setIsAdmin(false);
         });
-    }, 1200);
+    }, 0);
     return () => {
       active = false;
       window.clearTimeout(timer);
@@ -227,7 +247,7 @@ export function AppShell() {
 
   return (
     <>
-      <div className="mx-auto flex min-h-[100dvh] max-w-[1720px] gap-4 bg-transparent p-0 text-foreground lg:p-4">
+      <div className="mx-auto flex min-h-[100dvh] max-w-[1720px] gap-3 bg-transparent p-0 text-foreground lg:p-4">
         <Sidebar
           active={section}
           onChange={changeSection}
@@ -241,12 +261,24 @@ export function AppShell() {
           isAdmin={isAdmin}
         />
         <div className="hidden w-[256px] shrink-0 lg:block" aria-hidden="true" />
-        <main className={chatOpen ? "fixed inset-0 z-50 min-w-0 flex-1 overflow-hidden bg-[rgba(18,18,22,.72)] shadow-2xl shadow-black/35 backdrop-blur-[28px] lg:static lg:z-auto lg:min-h-[calc(100dvh-2rem)] lg:rounded-[1.75rem] lg:border lg:border-white/12" : "min-h-[100dvh] min-w-0 flex-1 overflow-x-hidden bg-[linear-gradient(180deg,rgba(255,255,255,.05),rgba(255,255,255,.03))] pb-[calc(5.5rem+env(safe-area-inset-bottom))] shadow-[0_20px_60px_rgba(0,0,0,.2),inset_0_1px_0_rgba(255,255,255,.045)] backdrop-blur-xl lg:min-h-[calc(100dvh-2rem)] lg:rounded-[1.75rem] lg:border lg:border-white/10 lg:pb-0"}>
-          <div className="block min-h-full">{renderSection(section)}</div>
+        <main className={chatOpen ? "fixed inset-0 z-50 min-w-0 flex-1 overflow-hidden bg-[#111214] lg:static lg:z-auto lg:min-h-[calc(100dvh-2rem)] lg:rounded-[1.35rem] lg:border lg:border-white/6" : "min-h-[100dvh] min-w-0 flex-1 overflow-x-hidden bg-[#121214] pb-[calc(5.5rem+env(safe-area-inset-bottom))] shadow-[0_10px_30px_rgba(0,0,0,.18)] lg:min-h-[calc(100dvh-2rem)] lg:rounded-[1.35rem] lg:border lg:border-white/6 lg:pb-0"}>
+          <div className="block min-h-full">
+            {cachedSections.map((item) =>
+              visitedSections[item] ? (
+                <section
+                  key={item}
+                  className={item === section ? "min-h-full" : "hidden"}
+                  aria-hidden={item === section ? undefined : true}
+                >
+                  {renderSection(item)}
+                </section>
+              ) : null,
+            )}
+          </div>
         </main>
         {!chatOpen && <RightPanel />}
       </div>
-      {profileOpening ? <div className="pointer-events-none fixed left-0 right-0 top-0 z-[2147483646] h-0.5 overflow-hidden bg-white/5"><div className="h-full w-1/3 animate-[profileProgress_.8s_ease-in-out_infinite] bg-white" /></div> : null}
+      {profileOpening ? <div className="pointer-events-none fixed inset-0 z-[2147483646] grid place-items-center bg-[#0b0b0d]/84 backdrop-blur-[2px]"><div className="flex items-center gap-3 rounded-full border border-white/8 bg-[#17171a] px-4 py-2 text-sm font-semibold text-zinc-200 shadow-[0_18px_48px_rgba(0,0,0,.34)]"><span className="inline-flex size-4 animate-spin rounded-full border-2 border-white/20 border-t-white" /> Opening profile</div></div> : null}
       {notificationsMounted && <NotificationListener />}
       <PremiumUpsellDialog />
       <AuthModal open={authOpen} onClose={() => setAuthOpen(false)} />
