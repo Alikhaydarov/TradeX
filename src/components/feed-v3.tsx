@@ -6,6 +6,7 @@ import { apiRequest } from "@/lib/api-client";
 import { useLanguage } from "@/lib/i18n";
 import { formatCount, formatRelativeTime, parseTradeImages, toSocialPost, type SocialPostRecord } from "@/lib/social-format";
 import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
@@ -52,7 +53,7 @@ interface FeedTradeRow {
 
 function FeedSkeleton() {
   return (
-    <div className="mt-3 overflow-hidden rounded-[28px] border border-white/10 bg-white/[.025] backdrop-blur-2xl">
+    <div className="mt-3 overflow-hidden rounded-[1.3rem] border border-white/8 bg-[#17181b]">
       {Array.from({ length: 4 }).map((_, index) => (
         <div key={index} className="border-b border-white/8 p-4 last:border-b-0 sm:p-5">
           <div className="flex gap-3">
@@ -140,6 +141,7 @@ export function FeedV3({ onLogin }: { onLogin: () => void }) {
   const [tradePickerOpen, setTradePickerOpen] = useState(false);
   const [tradePickerLoading, setTradePickerLoading] = useState(false);
   const [tradePickerQuery, setTradePickerQuery] = useState("");
+  const [shareAccountFilter, setShareAccountFilter] = useState("all");
   const [shareTrades, setShareTrades] = useState<JournalEntry[]>([]);
   const [shareTarget, setShareTarget] = useState<JournalEntry | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
@@ -181,12 +183,28 @@ export function FeedV3({ onLogin }: { onLogin: () => void }) {
     if (!shareTrades.length) loadShareTrades();
   };
 
+  const shareAccountOptions = useMemo(() => {
+    const seen = new Set<string>();
+    return shareTrades.reduce<Array<{ id: string; label: string }>>((options, trade) => {
+      const id = trade.propAccountId || "";
+      if (!id || seen.has(id)) return options;
+      seen.add(id);
+      options.push({
+        id,
+        label: trade.accountName?.trim() || `${trade.marketType || "Trading"} account`,
+      });
+      return options;
+    }, []);
+  }, [shareTrades]);
+
   const filteredShareTrades = useMemo(() => {
     const query = tradePickerQuery.trim().toLowerCase();
-    const trades = [...shareTrades].sort((a, b) => String(b.rawDate).localeCompare(String(a.rawDate)));
+    const trades = [...shareTrades]
+      .filter((trade) => shareAccountFilter === "all" ? true : trade.propAccountId === shareAccountFilter)
+      .sort((a, b) => String(b.rawDate).localeCompare(String(a.rawDate)));
     if (!query) return trades;
-    return trades.filter((trade) => `${trade.symbol} ${trade.setup} ${trade.session} ${trade.note}`.toLowerCase().includes(query));
-  }, [shareTrades, tradePickerQuery]);
+    return trades.filter((trade) => `${trade.symbol} ${trade.accountName} ${trade.setup} ${trade.session} ${trade.note}`.toLowerCase().includes(query));
+  }, [shareTrades, shareAccountFilter, tradePickerQuery]);
 
   useEffect(() => {
     loadPosts();
@@ -431,20 +449,17 @@ export function FeedV3({ onLogin }: { onLogin: () => void }) {
 
   return (
     <div className="min-h-full">
-      <header className="sticky top-0 z-20 border-b border-white/10 bg-[rgba(18,18,22,.7)] px-3 py-3 backdrop-blur-[28px] sm:px-6">
+      <header className="sticky top-0 z-20 border-b border-white/8 bg-[#111214]/96 px-3 py-3 sm:px-6">
         <div className="mx-auto flex max-w-4xl items-center gap-3">
           <div className="min-w-0 flex-1">
             <h1 className="text-lg font-black tracking-tight">Trade feed</h1>
-            <p className="mt-0.5 text-[10px] text-zinc-500">Shared journal trades</p>
+            <p className="mt-0.5 text-[10px] text-zinc-500">Shared trade reviews only</p>
           </div>
-          <Button onClick={openTradePicker} className="hidden h-10 rounded-lg bg-white px-4 text-sm font-black text-black hover:bg-zinc-200 sm:inline-flex">
-            <Plus size={16} /> {t("shareTrade")}
-          </Button>
           <SocialActions className="lg:hidden" />
         </div>
       </header>
 
-      {error ? <div className="mx-auto mt-4 max-w-4xl rounded-2xl border border-rose-300/15 bg-rose-400/10 px-4 py-3 text-sm text-rose-200 backdrop-blur-xl">{error}</div> : null}
+      {error ? <div className="mx-auto mt-4 max-w-4xl rounded-[1rem] border border-rose-300/15 bg-rose-400/10 px-4 py-3 text-sm text-rose-200">{error}</div> : null}
 
       <div className="mx-auto max-w-4xl px-3 py-4 sm:px-5 sm:py-5">
         <button
@@ -460,20 +475,20 @@ export function FeedV3({ onLogin }: { onLogin: () => void }) {
         </button>
 
         <div className="flex items-center px-1">
-          <h2 className="text-xs font-black uppercase tracking-[.18em] text-zinc-500">Latest</h2>
-          <span className="ml-auto text-[10px] text-zinc-600">{stats.posts} trades</span>
+          <h2 className="text-xs font-black uppercase tracking-[.18em] text-zinc-500">Community tape</h2>
+          <span className="ml-auto text-[10px] text-zinc-600">{stats.posts} posts</span>
         </div>
 
         {loading ? (
           <FeedSkeleton />
         ) : (
-          <div className="mt-3 overflow-hidden rounded-[1.6rem] border border-border bg-card shadow-[0_18px_54px_rgba(0,0,0,.22)]">
+          <div className="mt-3 space-y-3">
             {posts.map((post) => (
               <article
                 key={post.id}
                 id={`post-${post.id}`}
                 ref={(node) => observePost(node, post.id)}
-                className="border-b border-border/80 px-3 py-4 transition-colors last:border-b-0 hover:bg-white/[.02] sm:px-5 sm:py-5"
+                className="rounded-[1.25rem] border border-white/8 bg-[#17181b] px-3 py-4 transition-colors hover:bg-[#191a1e] sm:px-5 sm:py-5"
               >
                 <div className="flex gap-3.5">
                   <button type="button" onClick={() => openProfile(post.handle)} className="h-11 w-11 shrink-0 rounded-full sm:h-12 sm:w-12"><TraderAvatar name={post.name} value={post.avatar} className="h-11 w-11 rounded-full text-xs ring-1 ring-white/10 sm:h-12 sm:w-12" /></button>
@@ -501,7 +516,7 @@ export function FeedV3({ onLogin }: { onLogin: () => void }) {
                     </div>
 
                     {post.symbol ? (
-                      <div className="mt-3 flex flex-wrap items-center gap-2 rounded-2xl border border-white/8 bg-black/15 px-3 py-2.5 shadow-[inset_0_1px_0_rgba(255,255,255,.04)]">
+                      <div className="mt-3 flex flex-wrap items-center gap-2 rounded-[1rem] border border-white/8 bg-black/14 px-3 py-2.5">
                         <InstrumentBadge symbol={post.symbol} compact className="mr-auto rounded-xl bg-white/[.03]" />
                         <span className={`rounded-md px-2 py-1 text-[9px] font-black ${post.side === "LONG" ? "bg-emerald-300/10 text-emerald-300" : "bg-rose-300/10 text-rose-300"}`}>{post.side}</span>
                         <span className={`rounded-md px-2 py-1 text-[9px] font-black ${post.result === "WIN" ? "bg-emerald-300/10 text-emerald-300" : post.result === "LOSS" ? "bg-rose-300/10 text-rose-300" : "bg-white/8 text-zinc-300"}`}>{post.result}</span>
@@ -526,7 +541,7 @@ export function FeedV3({ onLogin }: { onLogin: () => void }) {
                       </button>
                     ) : null}
 
-                    <div className="mt-3 grid grid-cols-5 items-center rounded-2xl border border-white/8 bg-white/[.02] p-1 text-zinc-500">
+                    <div className="mt-3 grid grid-cols-5 items-center rounded-[1rem] border border-white/8 bg-black/10 p-1 text-zinc-500">
                       <button onClick={() => void toggleReplies(post)} className={`flex h-11 items-center justify-center gap-1.5 rounded-xl text-[11px] transition-colors hover:bg-white/[.04] hover:text-zinc-200 ${openReplies === post.id ? "bg-white/[.05] text-zinc-100" : ""}`} aria-label="Replies"><MessageCircle size={17} />{post.replies}</button>
                       <button onClick={() => void toggleRepost(post)} className={`flex h-11 items-center justify-center gap-1.5 rounded-xl text-[11px] transition-colors hover:bg-emerald-400/[.06] hover:text-emerald-300 ${post.reposted ? "bg-emerald-400/[.08] text-emerald-300" : ""}`} aria-label="Repost"><Repeat2 size={17} />{post.reposts}</button>
                       <button onClick={() => void toggleLike(post)} className={`flex h-11 items-center justify-center gap-1.5 rounded-xl text-[11px] transition-colors hover:bg-rose-400/[.06] hover:text-rose-300 ${post.liked ? "bg-rose-400/[.08] text-rose-300" : ""}`} aria-label="Like"><Heart size={17} fill={post.liked ? "currentColor" : "none"} />{post.likes}</button>
@@ -541,7 +556,7 @@ export function FeedV3({ onLogin }: { onLogin: () => void }) {
                         ) : (
                           <div className="space-y-3">
                             {(repliesByPost[post.id] ?? []).map((reply) => (
-                              <div key={reply.id} className="flex gap-2.5 rounded-2xl bg-white/[.025] p-3">
+                              <div key={reply.id} className="flex gap-2.5 rounded-[1rem] bg-black/12 p-3">
                                 <TraderAvatar name={reply.name} value={reply.avatar} className="h-8 w-8 shrink-0 text-[10px]" />
                                 <div className="min-w-0 flex-1">
                                   <div className="flex items-center gap-1.5">
@@ -557,7 +572,7 @@ export function FeedV3({ onLogin }: { onLogin: () => void }) {
                           </div>
                         )}
 
-                        <div className="mt-3 flex items-end gap-2 rounded-2xl border border-white/8 bg-black/10 p-2 focus-within:border-white/20">
+                        <div className="mt-3 flex items-end gap-2 rounded-[1rem] border border-white/8 bg-black/10 p-2 focus-within:border-white/20">
                           <Textarea
                             value={replyDrafts[post.id] ?? ""}
                             onChange={(event) => setReplyDrafts((current) => ({ ...current, [post.id]: event.target.value }))}
@@ -576,7 +591,7 @@ export function FeedV3({ onLogin }: { onLogin: () => void }) {
               </article>
             ))}
 
-            {!posts.length ? <div className="p-10 text-center text-sm text-slate-500">No trades shared yet.</div> : null}
+            {!posts.length ? <div className="rounded-[1.25rem] border border-white/8 bg-[#17181b] p-10 text-center text-sm text-slate-500">No trades shared yet.</div> : null}
           </div>
         )}
       </div>
@@ -610,6 +625,24 @@ export function FeedV3({ onLogin }: { onLogin: () => void }) {
             <p className="text-sm text-zinc-500">{t("pickTrade")}</p>
           </DialogHeader>
           <div className="border-b border-border p-3">
+            {shareAccountOptions.length > 1 ? (
+              <div className="mb-3">
+                <span className="mb-1.5 block text-[10px] font-semibold uppercase tracking-[0.18em] text-zinc-500">Account</span>
+                <Select value={shareAccountFilter} onValueChange={setShareAccountFilter}>
+                  <SelectTrigger className="h-11 rounded-lg border border-border bg-black/15">
+                    <SelectValue placeholder="All accounts" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All accounts</SelectItem>
+                    {shareAccountOptions.map((option) => (
+                      <SelectItem key={option.id} value={option.id}>
+                        {option.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            ) : null}
             <label className="flex h-11 items-center gap-2 rounded-lg border border-border bg-black/15 px-3 focus-within:border-white/25">
               <Search size={17} className="text-zinc-500" />
               <input
@@ -647,6 +680,7 @@ export function FeedV3({ onLogin }: { onLogin: () => void }) {
                           <span className="text-[10px] text-zinc-600">{trade.rawDate}</span>
                         </span>
                         <span className="mt-1 block truncate text-xs text-zinc-500">{trade.setup || trade.session || trade.note || "No review note"}</span>
+                        {trade.accountName ? <span className="mt-1 block truncate text-[10px] text-zinc-600">{trade.accountName}</span> : null}
                       </span>
                       <span className="shrink-0 text-right">
                         <strong className={`block font-mono text-sm font-black ${win ? "text-emerald-300" : "text-rose-300"}`}>
