@@ -66,8 +66,8 @@ export function RightPanel() {
   if (pathname?.startsWith("/journal")) return null;
 
   return (
-    <aside className="sticky top-3 hidden h-[calc(100dvh-1.5rem)] w-[280px] shrink-0 overflow-y-auto xl:block">
-      <section className="rounded-[1.5rem] border border-white/10 bg-white/[.035] p-3 shadow-[0_18px_58px_rgba(0,0,0,.46),inset_0_1px_0_rgba(255,255,255,.04)] backdrop-blur-2xl">
+    <aside className="sticky top-4 hidden h-[calc(100dvh-2rem)] w-[318px] shrink-0 overflow-y-auto 2xl:block">
+      <section className="rounded-[1.75rem] border border-white/12 bg-[linear-gradient(180deg,rgba(255,255,255,.05),rgba(255,255,255,.03))] p-3.5 shadow-[0_20px_60px_rgba(0,0,0,.22),inset_0_1px_0_rgba(255,255,255,.05)] backdrop-blur-[28px]">
         <div className="flex items-start gap-2">
           <span className="grid size-8 shrink-0 place-items-center rounded-2xl bg-rose-300/10 text-rose-200">
             <CalendarClock size={16} />

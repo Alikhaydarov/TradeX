@@ -431,8 +431,8 @@ export function FeedV3({ onLogin }: { onLogin: () => void }) {
 
   return (
     <div className="min-h-full">
-      <header className="sticky top-0 z-20 border-b border-white/8 bg-[#171717]/90 px-3 py-2.5 backdrop-blur-2xl sm:px-6 sm:py-3">
-        <div className="mx-auto flex max-w-3xl items-center gap-3">
+      <header className="sticky top-0 z-20 border-b border-white/10 bg-[rgba(18,18,22,.7)] px-3 py-3 backdrop-blur-[28px] sm:px-6">
+        <div className="mx-auto flex max-w-4xl items-center gap-3">
           <div className="min-w-0 flex-1">
             <h1 className="text-lg font-black tracking-tight">Trade feed</h1>
             <p className="mt-0.5 text-[10px] text-zinc-500">Shared journal trades</p>
@@ -444,9 +444,9 @@ export function FeedV3({ onLogin }: { onLogin: () => void }) {
         </div>
       </header>
 
-      {error ? <div className="mx-auto mt-4 max-w-3xl rounded-2xl border border-rose-300/15 bg-rose-400/10 px-4 py-3 text-sm text-rose-200 backdrop-blur-xl">{error}</div> : null}
+      {error ? <div className="mx-auto mt-4 max-w-4xl rounded-2xl border border-rose-300/15 bg-rose-400/10 px-4 py-3 text-sm text-rose-200 backdrop-blur-xl">{error}</div> : null}
 
-      <div className="mx-auto max-w-3xl px-3 py-3 sm:px-5 sm:py-4">
+      <div className="mx-auto max-w-4xl px-3 py-4 sm:px-5 sm:py-5">
         <button
           type="button"
           onClick={openTradePicker}

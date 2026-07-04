@@ -54,8 +54,8 @@ function getCurrentProfileUsername() {
 
 function AuthGate({ onLogin }: { onLogin: () => void }) {
   return (
-    <main className="grid min-h-[100dvh] place-items-center overflow-hidden bg-[radial-gradient(circle_at_top,rgba(255,255,255,.05),transparent_24%),radial-gradient(circle_at_bottom,rgba(217,249,109,.06),transparent_24%),#080808] px-4 py-[max(1rem,env(safe-area-inset-top))] pb-[max(1rem,env(safe-area-inset-bottom))] text-foreground sm:px-6">
-      <section className="auth-card-in auth-border-run relative w-full max-w-[540px] overflow-hidden rounded-[1.9rem] border border-white/10 bg-[rgba(8,8,8,0.78)] p-5 shadow-[0_24px_80px_rgba(0,0,0,.65),inset_0_1px_0_rgba(255,255,255,.055)] backdrop-blur-2xl sm:p-7">
+    <main className="grid min-h-[100dvh] place-items-center overflow-hidden bg-[radial-gradient(circle_at_top,rgba(255,255,255,.06),transparent_24%),radial-gradient(circle_at_bottom,rgba(148,163,184,.08),transparent_24%),linear-gradient(180deg,#111114_0%,#0b0b0d_48%,#09090b_100%)] px-4 py-[max(1rem,env(safe-area-inset-top))] pb-[max(1rem,env(safe-area-inset-bottom))] text-foreground sm:px-6">
+      <section className="auth-card-in auth-border-run relative w-full max-w-[620px] overflow-hidden rounded-[2rem] border border-white/12 bg-[rgba(18,18,22,0.66)] p-5 shadow-[0_28px_90px_rgba(0,0,0,.44),inset_0_1px_0_rgba(255,255,255,.07)] backdrop-blur-[28px] sm:p-8">
         <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/30 to-transparent" />
         <div className="pointer-events-none absolute inset-x-10 bottom-0 h-24 bg-[radial-gradient(circle,rgba(217,249,109,.08),transparent_60%)] blur-2xl" />
 
@@ -227,7 +227,7 @@ export function AppShell() {
 
   return (
     <>
-      <div className="mx-auto flex min-h-[100dvh] max-w-[1560px] gap-3 bg-transparent p-0 text-foreground lg:p-3">
+      <div className="mx-auto flex min-h-[100dvh] max-w-[1720px] gap-4 bg-transparent p-0 text-foreground lg:p-4">
         <Sidebar
           active={section}
           onChange={changeSection}
@@ -240,8 +240,8 @@ export function AppShell() {
           hideMobile={chatOpen}
           isAdmin={isAdmin}
         />
-        <div className="hidden w-[232px] shrink-0 lg:block" aria-hidden="true" />
-        <main className={chatOpen ? "fixed inset-0 z-50 min-w-0 flex-1 overflow-hidden bg-[rgba(8,8,8,.78)] shadow-2xl shadow-black/45 backdrop-blur-2xl lg:static lg:z-auto lg:min-h-[calc(100dvh-1.5rem)] lg:rounded-[1.5rem] lg:border lg:border-white/10" : "min-h-[100dvh] min-w-0 flex-1 overflow-x-hidden bg-[rgba(255,255,255,.018)] pb-[calc(5.5rem+env(safe-area-inset-bottom))] shadow-[0_18px_58px_rgba(0,0,0,.32),inset_0_1px_0_rgba(255,255,255,.025)] backdrop-blur-sm lg:min-h-[calc(100dvh-1.5rem)] lg:rounded-[1.5rem] lg:border lg:border-white/8 lg:pb-0"}>
+        <div className="hidden w-[256px] shrink-0 lg:block" aria-hidden="true" />
+        <main className={chatOpen ? "fixed inset-0 z-50 min-w-0 flex-1 overflow-hidden bg-[rgba(18,18,22,.72)] shadow-2xl shadow-black/35 backdrop-blur-[28px] lg:static lg:z-auto lg:min-h-[calc(100dvh-2rem)] lg:rounded-[1.75rem] lg:border lg:border-white/12" : "min-h-[100dvh] min-w-0 flex-1 overflow-x-hidden bg-[linear-gradient(180deg,rgba(255,255,255,.05),rgba(255,255,255,.03))] pb-[calc(5.5rem+env(safe-area-inset-bottom))] shadow-[0_20px_60px_rgba(0,0,0,.2),inset_0_1px_0_rgba(255,255,255,.045)] backdrop-blur-xl lg:min-h-[calc(100dvh-2rem)] lg:rounded-[1.75rem] lg:border lg:border-white/10 lg:pb-0"}>
           <div className="block min-h-full">{renderSection(section)}</div>
         </main>
         {!chatOpen && <RightPanel />}
