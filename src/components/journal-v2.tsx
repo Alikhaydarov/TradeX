@@ -42,12 +42,9 @@ type AiCoachReport = {
   summary: string;
   score: number;
   mood: "protect" | "neutral" | "push";
-  disciplineSummary: string;
-  psychologySummary: string;
   strengths: string[];
   mistakes: string[];
   riskWarnings: string[];
-  hardRules: string[];
   nextSteps: string[];
   generatedBy: "rules" | "openai";
 };
@@ -340,8 +337,8 @@ function Accounts({ summaries, entries, deleting, onAdd, onOpen, onDelete }: { s
   const bestAccount = [...summaries].sort((a, b) => b.pnl - a.pnl)[0] || null;
 
   return (
-    <div className="animate-page-in mx-auto max-w-[1560px] space-y-5 p-4 lg:p-6">
-      <section className="overflow-hidden rounded-[24px] border border-white/8 bg-[#0e0f10] shadow-[0_16px_48px_rgba(0,0,0,.32)]">
+    <div className="animate-page-in mx-auto max-w-[1700px] space-y-6 p-4 lg:p-6">
+      <section className="overflow-hidden rounded-[30px] border border-white/10 bg-[radial-gradient(circle_at_top_right,rgba(217,249,109,.1),transparent_22%),linear-gradient(180deg,rgba(255,255,255,.045),rgba(255,255,255,.018))] shadow-[0_24px_70px_rgba(0,0,0,.24)] backdrop-blur-[24px]">
         <div className="flex flex-col gap-5 px-4 py-5 lg:px-6 lg:py-6">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-end">
             <div className="min-w-0">
@@ -349,15 +346,15 @@ function Accounts({ summaries, entries, deleting, onAdd, onOpen, onDelete }: { s
                 <span className="grid size-7 place-items-center rounded-lg bg-white/[.06]">
                   <ShieldCheck size={14} className="text-zinc-300" />
                 </span>
-                <span className="text-xs font-semibold uppercase tracking-wider text-[#8a8a8a]">Journal workspace</span>
+                <span className="text-xs font-semibold uppercase tracking-wider text-[#8a8a8a]">Trading workspace</span>
               </div>
               <h1 className="text-3xl font-black tracking-tight text-white">Trading accounts</h1>
               <p className="mt-1 max-w-2xl text-sm text-[#8a8a8a]">
-                Keep prop and real accounts in one clean desk, then move through calendar, trades, analytics and coaching without visual clutter.
+                Track prop and real accounts in one calm workspace, then move into calendar, trades, analytics and trade sharing without noise.
               </p>
             </div>
             <div className="flex flex-wrap items-center gap-2 lg:ml-auto">
-              <div className="rounded-2xl border border-white/8 bg-black px-3 py-2 text-xs font-semibold text-zinc-400">
+              <div className="rounded-2xl border border-white/8 bg-black/20 px-3 py-2 text-xs font-semibold text-zinc-400">
                 {activeAccounts} active / {summaries.length} total
               </div>
               <Button onClick={onAdd} className="h-10 rounded-2xl bg-white text-black hover:bg-zinc-200">
@@ -368,12 +365,12 @@ function Accounts({ summaries, entries, deleting, onAdd, onOpen, onDelete }: { s
 
           <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
             {[
-              { title: "Total capital", value: cash.format(capital), icon: WalletCards, tone: "text-white", bg: "bg-white/[.04]" },
+              { title: "Total capital", value: cash.format(capital), icon: WalletCards, tone: "text-white", bg: "bg-white/[.05]" },
               { title: "Net P&L", value: `${total >= 0 ? "+" : ""}${cash.format(total)}`, icon: total >= 0 ? TrendingUp : TrendingDown, tone: total >= 0 ? "text-emerald-300" : "text-rose-300", bg: total >= 0 ? "bg-emerald-500/10" : "bg-rose-500/10" },
-              { title: "Win rate", value: `${winRate}%`, icon: Target, tone: "text-white", bg: "bg-white/[.04]" },
-              { title: "Profit factor", value: profitFactor.toFixed(2), icon: BarChart3, tone: "text-white", bg: "bg-white/[.04]" },
+              { title: "Win rate", value: `${winRate}%`, icon: Target, tone: "text-white", bg: "bg-white/[.05]" },
+              { title: "Profit factor", value: profitFactor.toFixed(2), icon: BarChart3, tone: "text-white", bg: "bg-white/[.05]" },
             ].map((item) => (
-              <div key={item.title} className="rounded-[20px] border border-white/8 bg-black px-4 py-4">
+              <div key={item.title} className="rounded-[24px] border border-white/8 bg-black/20 px-4 py-4">
                 <div className="flex items-center gap-3">
                   <span className={`grid size-10 shrink-0 place-items-center rounded-xl ${item.bg}`}>
                     <item.icon size={18} className={item.tone} />
@@ -401,7 +398,7 @@ function Accounts({ summaries, entries, deleting, onAdd, onOpen, onDelete }: { s
             </div>
           </div>
         : (
-          <div className="grid gap-4 xl:grid-cols-[minmax(0,1.1fr)_340px]">
+          <div className="grid gap-4 xl:grid-cols-[minmax(0,1.15fr)_360px]">
             <section className="grid gap-4 md:grid-cols-2 2xl:grid-cols-3">
               {summaries.map((summary) => (
                 <AccountCard key={summary.account.id} s={summary} deleting={deleting} onOpen={onOpen} onDelete={onDelete} />
@@ -409,7 +406,7 @@ function Accounts({ summaries, entries, deleting, onAdd, onOpen, onDelete }: { s
             </section>
 
             <aside className="space-y-4">
-              <section className="rounded-[22px] border border-white/8 bg-[#0f1011] p-5">
+              <section className="rounded-[28px] border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,.045),rgba(255,255,255,.02))] p-5 shadow-[0_22px_60px_rgba(0,0,0,.18)]">
                 <div>
                   <h3 className="text-lg font-black text-white">Desk snapshot</h3>
                   <p className="mt-1 text-sm text-zinc-500">A quick pulse of your whole journal before drilling into an account.</p>
@@ -420,7 +417,7 @@ function Accounts({ summaries, entries, deleting, onAdd, onOpen, onDelete }: { s
                     { label: "Trades", value: totalTrades, note: `${winningTrades} wins / ${losingTrades} losses` },
                     { label: "Best account", value: bestAccount?.account.name || "N/A", note: bestAccount ? `${bestAccount.pnl >= 0 ? "+" : ""}${cash.format(bestAccount.pnl)}` : "No data yet" },
                   ].map((item) => (
-                    <div key={item.label} className="rounded-2xl border border-white/8 bg-black px-4 py-3">
+                    <div key={item.label} className="rounded-2xl border border-white/8 bg-black/15 px-4 py-3">
                       <p className="text-[11px] uppercase tracking-wider text-zinc-500">{item.label}</p>
                       <p className="mt-1 truncate text-base font-black text-white">{item.value}</p>
                       <p className="mt-1 text-xs text-zinc-500">{item.note}</p>
@@ -429,7 +426,7 @@ function Accounts({ summaries, entries, deleting, onAdd, onOpen, onDelete }: { s
                 </div>
               </section>
 
-              <section className="rounded-[22px] border border-white/8 bg-[#0f1011] p-5">
+              <section className="rounded-[28px] border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,.045),rgba(255,255,255,.02))] p-5 shadow-[0_22px_60px_rgba(0,0,0,.18)]">
                 <div className="flex items-start justify-between gap-3">
                   <div>
                     <h3 className="text-lg font-black text-white">Recent trades</h3>
@@ -460,7 +457,7 @@ function Accounts({ summaries, entries, deleting, onAdd, onOpen, onDelete }: { s
                 )}
               </section>
 
-              <section className="rounded-[22px] border border-white/8 bg-[#0f1011] p-5">
+              <section className="rounded-[28px] border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,.045),rgba(255,255,255,.02))] p-5 shadow-[0_22px_60px_rgba(0,0,0,.18)]">
                 <div>
                   <h3 className="text-lg font-black text-white">Most traded markets</h3>
                   <p className="mt-1 text-sm text-zinc-500">Symbols that define your flow right now.</p>
@@ -497,7 +494,7 @@ function AccountCard({ s, deleting, onOpen, onDelete, compact = false }: { s: Su
       tabIndex={0}
       onClick={() => onOpen(s.account.id)}
       onKeyDown={e => { if (e.key === "Enter" || e.key === " ") onOpen(s.account.id); }}
-      className={`group relative cursor-pointer overflow-hidden border border-white/8 bg-[#0f1011] transition-all duration-200 hover:-translate-y-0.5 hover:border-white/16 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/20 ${compact ? "rounded-[20px]" : "rounded-[22px]"}`}
+      className={`prop-card-glow group relative cursor-pointer overflow-hidden border border-white/10 bg-white/[.035] transition-all duration-200 hover:-translate-y-0.5 hover:border-white/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/30 ${compact ? "rounded-[24px]" : "rounded-[28px]"}`}
     >
       {/* Top bar accent */}
       <div className="absolute inset-x-0 top-0 h-[1px] bg-gradient-to-r from-transparent via-white/20 to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
@@ -551,7 +548,7 @@ function AccountCard({ s, deleting, onOpen, onDelete, compact = false }: { s: Su
         </div>
 
         {/* Stats row */}
-        <div className={`${compact ? "mt-2.5" : "mt-3"} flex gap-4 rounded-xl bg-black px-4 py-2.5`}>
+        <div className={`${compact ? "mt-2.5" : "mt-3"} flex gap-4 rounded-xl bg-[#121212]/60 px-4 py-2.5`}>
           {[["Trades", s.trades], ["Win rate", `${s.winRate}%`]].map(([l, v]) => (
             <div key={String(l)}>
               <p className="text-[10px] text-[#8a8a8a]">{l}</p>
@@ -576,11 +573,11 @@ function AccountCard({ s, deleting, onOpen, onDelete, compact = false }: { s: Su
 }
 
 function AiCoachCard({ report, loading, error, onRefresh }: { report: AiCoachReport | null; loading: boolean; error: string | null; onRefresh: () => void }) {
-  const tone = report?.mood === "protect" ? "border-rose-400/16 bg-rose-400/[.045]" : report?.mood === "push" ? "border-[#d9f96d]/16 bg-[#d9f96d]/[.045]" : "border-white/8 bg-[#17181b]";
+  const tone = report?.mood === "protect" ? "border-rose-400/20 bg-rose-400/[.055]" : report?.mood === "push" ? "border-[#d9f96d]/25 bg-[#d9f96d]/[.055]" : "border-white/10 bg-[#1b1b1b]/80";
   return (
-    <section className={`overflow-hidden rounded-[1.3rem] border ${tone}`}>
+    <section className={`overflow-hidden rounded-[24px] border ${tone}`}>
       <div className="flex flex-col gap-3 border-b border-white/8 p-4 sm:flex-row sm:items-start sm:p-5">
-        <span className="grid size-11 shrink-0 place-items-center rounded-2xl border border-white/10 bg-black/18 text-[#d9f96d]"><BrainCircuit size={21} /></span>
+        <span className="grid size-11 shrink-0 place-items-center rounded-2xl border border-white/10 bg-black/20 text-[#d9f96d]"><BrainCircuit size={21} /></span>
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
             <h3 className="text-base font-black">{report?.title || "AI Trade Coach"}</h3>
@@ -593,27 +590,19 @@ function AiCoachCard({ report, loading, error, onRefresh }: { report: AiCoachRep
         </Button>
       </div>
       {report ? (
-        <div className="grid gap-3 p-4 sm:p-5 xl:grid-cols-[220px_1fr_1fr]">
-          <div className="rounded-[1rem] border border-white/8 bg-black/12 p-4">
+        <div className="grid gap-3 p-4 sm:p-5 lg:grid-cols-[220px_1fr_1fr]">
+          <div className="rounded-2xl border border-white/8 bg-black/15 p-4">
             <p className="text-[10px] font-black uppercase tracking-widest text-[#8a8a8a]">Coach score</p>
             <p className="mt-2 font-mono text-4xl font-black text-white">{Math.round(report.score)}</p>
             <div className="mt-3 h-2 overflow-hidden rounded-full bg-white/10"><div className="h-full rounded-full bg-[#d9f96d]" style={{ width: `${Math.max(0, Math.min(100, report.score))}%` }} /></div>
-            <div className="mt-4 space-y-2 text-xs leading-5 text-zinc-400">
-              <p><span className="font-bold text-zinc-200">Discipline</span><br />{report.disciplineSummary}</p>
-              <p><span className="font-bold text-zinc-200">Psychology</span><br />{report.psychologySummary}</p>
-            </div>
           </div>
-          <div className="rounded-[1rem] border border-white/8 bg-black/12 p-4">
+          <div className="rounded-2xl border border-white/8 bg-black/15 p-4">
             <p className="text-[10px] font-black uppercase tracking-widest text-[#8a8a8a]">Risk warnings</p>
             <ul className="mt-3 space-y-2 text-sm leading-5 text-[#d4d4d8]">{(report.riskWarnings.length ? report.riskWarnings : ["No critical risk warning yet."]).map((item) => <li key={item}>- {item}</li>)}</ul>
-            <p className="mt-4 text-[10px] font-black uppercase tracking-widest text-[#8a8a8a]">Hard rules</p>
-            <ul className="mt-3 space-y-2 text-sm leading-5 text-[#d4d4d8]">{(report.hardRules.length ? report.hardRules : ["No hard-stop rule triggered yet."]).map((item) => <li key={item}>- {item}</li>)}</ul>
           </div>
-          <div className="rounded-[1rem] border border-white/8 bg-black/12 p-4">
+          <div className="rounded-2xl border border-white/8 bg-black/15 p-4">
             <p className="text-[10px] font-black uppercase tracking-widest text-[#8a8a8a]">Next actions</p>
             <ul className="mt-3 space-y-2 text-sm leading-5 text-[#d4d4d8]">{report.nextSteps.map((item) => <li key={item}>- {item}</li>)}</ul>
-            <p className="mt-4 text-[10px] font-black uppercase tracking-widest text-[#8a8a8a]">Strengths</p>
-            <ul className="mt-3 space-y-2 text-sm leading-5 text-[#d4d4d8]">{(report.strengths.length ? report.strengths : ["Structure is ready for deeper coaching."]).map((item) => <li key={item}>- {item}</li>)}</ul>
           </div>
         </div>
       ) : null}
@@ -682,7 +671,7 @@ function Workspace(p: {
   return (
     <div className="animate-page-in mx-auto max-w-[1700px]">
       {/* Sticky header */}
-      <header className="sticky top-0 z-20 flex min-w-0 items-center gap-2 border-b border-white/8 bg-[#070707]/96 px-3 py-2.5 sm:px-4 sm:py-3 lg:gap-3 lg:px-6">
+      <header className="sticky top-0 z-20 flex min-w-0 items-center gap-2 border-b border-white/6 bg-[#111214]/96 px-3 py-2.5 sm:px-4 sm:py-3 lg:gap-3 lg:px-6">
         <Button variant="ghost" size="icon" onClick={p.onBack} className="shrink-0">
           <ArrowLeft size={18} />
         </Button>
@@ -698,7 +687,7 @@ function Workspace(p: {
         </div>
         <div className="hidden min-w-[220px] xl:block">
           <Select value={account.id} onValueChange={p.onAccountChange}>
-            <SelectTrigger className="h-10 rounded-xl border-white/10 bg-black">
+            <SelectTrigger className="h-10 rounded-xl border-white/10 bg-white/[.04]">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -731,7 +720,7 @@ function Workspace(p: {
         <div className="xl:hidden">
           <span className="mb-1.5 block text-[10px] font-semibold uppercase tracking-widest text-[#8a8a8a]">Account</span>
           <Select value={account.id} onValueChange={p.onAccountChange}>
-            <SelectTrigger className="h-11 rounded-2xl border-white/10 bg-black">
+            <SelectTrigger className="h-11 rounded-2xl border-white/10 bg-white/[.04]">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -780,15 +769,15 @@ function Workspace(p: {
               </SelectContent>
             </Select>
           </div>
-          <TabsList className="hidden min-h-12 w-full justify-start overflow-x-auto rounded-[1rem] border border-white/8 bg-[#0f1011] p-1 md:inline-flex">
+          <TabsList className="hidden min-h-12 w-full justify-start overflow-x-auto rounded-[1rem] border border-white/8 bg-[#17181b] p-1 md:inline-flex">
             {WORKSPACE_TABS.map(([v, l]) => (
-              <TabsTrigger key={v} value={v} className="h-10 min-w-[120px] flex-1 rounded-[0.85rem] px-4 text-sm font-semibold text-zinc-400 data-[state=active]:bg-white/[.08] data-[state=active]:text-white data-[state=active]:shadow-none">{l}</TabsTrigger>
+              <TabsTrigger key={v} value={v} className="h-10 min-w-[120px] flex-1 rounded-[0.85rem] px-4 text-sm font-semibold text-zinc-400 data-[state=active]:bg-white data-[state=active]:text-black data-[state=active]:shadow-sm">{l}</TabsTrigger>
             ))}
           </TabsList>
 
           {/* Overview */}
           <TabsContent value="overview" className="space-y-4">
-            <section className="overflow-hidden rounded-[1.2rem] border border-white/8 bg-[#0f1011]">
+            <section className="overflow-hidden rounded-[1.4rem] border border-white/8 bg-[#17181b] shadow-[0_16px_42px_rgba(0,0,0,.22)]">
               <div className="flex flex-col gap-4 border-b border-white/8 px-4 py-4 sm:px-5 lg:flex-row lg:items-start">
                 <div className="min-w-0">
                   <h3 className="text-base font-black">Account balance</h3>
@@ -800,7 +789,7 @@ function Workspace(p: {
                   <BalanceMetric label="Closed Balance" value={cash.format(currentEquity)} />
                 </div>
               </div>
-              <div className="h-[240px] px-1 pb-3 pt-2 sm:h-[350px] sm:px-4 sm:pb-4 sm:pt-3">
+              <div className="h-[250px] px-1 pb-3 pt-2 sm:h-[390px] sm:px-4 sm:pb-4 sm:pt-3">
                 {equity.length > 1
                   ? <ResponsiveContainer width="100%" height="100%">
                       <AreaChart data={equity} margin={{ left: 8, right: 14, top: 16, bottom: 4 }}>
@@ -826,7 +815,7 @@ function Workspace(p: {
             <AiCoachCard report={coachReport} loading={coachLoading} error={coachError} onRefresh={() => void loadCoach()} />
 
             <div className="grid gap-4 lg:grid-cols-[1.25fr_.85fr_.85fr]">
-              <div className="rounded-2xl border border-white/8 bg-[#0f1011] p-5">
+              <div className="rounded-2xl border border-white/10 bg-white/[.035] p-5">
                 <h3 className="font-bold">Challenge limits</h3>
                 <div className="mt-4 space-y-5">
                   <ProgressBar label="Profit target" value={targetProgress} color="bg-[#d9f96d]" />
@@ -837,7 +826,7 @@ function Workspace(p: {
               <MiniStat label="START BALANCE" value={cash.format(account.initialBalance)} />
             </div>
 
-            <section className="rounded-2xl border border-white/8 bg-[#0f1011] p-5">
+            <section className="rounded-2xl border border-white/10 bg-white/[.035] p-5">
               <div className="flex items-center justify-between gap-3">
                 <div>
                   <h3 className="font-bold">Live positions</h3>
@@ -893,7 +882,7 @@ function Workspace(p: {
                   { label: "Most traded setup", value: setups[0]?.name || "No setup yet", note: setups[0] ? `${setups[0].trades} trades` : "Add reviewed trades" },
                   { label: "Plan alignment", value: `${planRate}%`, note: "Rules followed this month" },
                 ].map((item) => (
-                  <div key={item.label} className="rounded-[1rem] border border-white/8 bg-[#0f1011] p-4">
+                  <div key={item.label} className="rounded-[1rem] border border-white/8 bg-[#17181b] p-4">
                     <p className="text-[11px] uppercase tracking-wider text-zinc-500">{item.label}</p>
                     <p className="mt-1 truncate text-xl font-black text-white">{item.value}</p>
                     <p className="mt-1 text-xs text-zinc-500">{item.note}</p>
@@ -901,7 +890,7 @@ function Workspace(p: {
                 ))}
               </div>
 
-              <div className="overflow-hidden rounded-[1.15rem] border border-white/8 bg-[#0f1011]">
+              <div className="overflow-hidden rounded-[1.3rem] border border-white/8 bg-[#17181b]">
                 <div className="flex flex-col gap-3 border-b border-white/8 px-3 py-3 sm:px-5 sm:py-4 lg:flex-row lg:items-center">
                 <div>
                   <h3 className="font-bold capitalize">{month.toLocaleDateString("en-US", { month: "long", year: "numeric" })} performance</h3>
@@ -921,11 +910,11 @@ function Workspace(p: {
                     <div key={d} className="py-2 text-center text-[11px] font-semibold uppercase tracking-wider text-[#8a8a8a]">{d}</div>
                   ))}
                 </div>
-                <div className="grid grid-cols-7 content-start gap-1.5 [grid-auto-rows:96px]">
+                <div className="grid grid-cols-7 content-start gap-1.5 [grid-auto-rows:108px]">
                   {calendar.map((c, i) =>
                     c ? (
                       <button key={`${monthId(month)}-desktop-${i}`} type="button" onClick={() => c.trades.length ? setSelectedDay(c) : null}
-                        className={`h-full w-full rounded-[0.95rem] border p-2.5 text-left transition ${c.trades.length ? c.pnl >= 0 ? "border-emerald-500/18 bg-emerald-500/[.06] hover:bg-emerald-500/[.08]" : "border-rose-500/18 bg-rose-500/[.06] hover:bg-rose-500/[.08]" : "border-white/6 bg-[#0a0a0a]"} ${c.trades.length ? "cursor-pointer" : "cursor-default"}`}>
+                        className={`h-full w-full rounded-[1rem] border p-2.5 text-left transition ${c.trades.length ? c.pnl >= 0 ? "border-emerald-500/18 bg-emerald-500/[.07] hover:bg-emerald-500/[.1]" : "border-rose-500/18 bg-rose-500/[.07] hover:bg-rose-500/[.1]" : "border-white/6 bg-[#141518]"} ${c.trades.length ? "cursor-pointer" : "cursor-default"}`}>
                         <div className="flex items-start justify-between">
                           <span className={`grid size-6 place-items-center rounded-md text-[11px] font-bold ${c.trades.length ? "bg-black/18 text-[#f1f1f1]" : "text-[#8a8a8a]"}`}>{c.day}</span>
                           {c.trades.length > 0 && (
@@ -966,7 +955,7 @@ function Workspace(p: {
                   {calendar.map((c, i) =>
                     c ? (
                       <button key={`${monthId(month)}-mobile-${i}`} type="button" onClick={() => c.trades.length ? setSelectedDay(c) : null}
-                        className={`flex min-h-[56px] flex-col items-center justify-center rounded-[0.9rem] border p-1 py-1.5 text-center ${c.trades.length ? c.pnl >= 0 ? "border-emerald-500/18 bg-emerald-500/[.06]" : "border-rose-500/18 bg-rose-500/[.06]" : "border-white/6 bg-[#0a0a0a]"} ${c.trades.length ? "cursor-pointer" : "cursor-default"}`}>
+                        className={`flex min-h-[56px] flex-col items-center justify-center rounded-[0.9rem] border p-1 py-1.5 text-center ${c.trades.length ? c.pnl >= 0 ? "border-emerald-500/18 bg-emerald-500/[.07]" : "border-rose-500/18 bg-rose-500/[.07]" : "border-white/6 bg-[#141518]"} ${c.trades.length ? "cursor-pointer" : "cursor-default"}`}>
                         <span className={`text-[11px] font-bold ${c.trades.length ? "text-[#f1f1f1]" : "text-[#8a8a8a]"}`}>{c.day}</span>
                         {c.trades.length > 0 && (
                           <span className={`mt-0.5 text-[9px] font-black ${c.pnl >= 0 ? "text-emerald-400" : "text-rose-400"}`}>
@@ -986,7 +975,7 @@ function Workspace(p: {
 
           {/* Trades */}
           <TabsContent value="trades">
-            <div className="overflow-hidden rounded-[1.1rem] border border-white/8 bg-[#0f1011]">
+            <div className="overflow-hidden rounded-[1.25rem] border border-white/8 bg-[#17181b]">
               <div className="space-y-3 border-b border-white/8 px-5 py-4">
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
                 <div>
@@ -1027,7 +1016,7 @@ function Workspace(p: {
                 </div>
               </div>
               {trades.length
-                ? <div className="divide-y divide-white/6 bg-[#0a0a0a] p-2 sm:p-3">
+                ? <div className="divide-y divide-white/6 bg-[#121316] p-2 sm:p-3">
                     {trades.map(e => {
                       const winning = e.pnl >= 0;
                       return (
@@ -1037,7 +1026,7 @@ function Workspace(p: {
                           tabIndex={0}
                           onClick={() => setSelectedTrade(e)}
                           onKeyDown={(ev) => { if (ev.key === "Enter" || ev.key === " ") setSelectedTrade(e); }}
-                          className="group flex min-h-[74px] w-full cursor-pointer items-center gap-3 rounded-[0.95rem] border border-transparent px-3 py-2.5 text-left transition-colors hover:border-white/8 hover:bg-white/[.03] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/16 sm:px-4"
+                          className="group flex min-h-[74px] w-full cursor-pointer items-center gap-3 rounded-[0.95rem] px-3 py-2.5 text-left transition-colors hover:bg-white/[.04] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/16 sm:px-4"
                         >
                           <InstrumentBadge symbol={e.symbol} compact className="shrink-0 rounded-xl bg-black/18" showFullSymbol={false} />
                           <span className="min-w-0 flex-1">
