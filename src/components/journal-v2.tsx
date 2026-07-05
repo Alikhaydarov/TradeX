@@ -808,7 +808,7 @@ function Workspace(p: {
   return (
     <div className="animate-page-in mx-auto max-w-[1780px]">
       {/* Sticky header */}
-      <header className="sticky top-0 z-20 flex min-w-0 items-center gap-2 border-b border-white/6 bg-[#111214]/96 px-3 py-2.5 sm:px-4 sm:py-3 lg:gap-3 lg:px-6">
+      <header className="sticky top-[72px] z-20 flex min-w-0 items-center gap-2 border-b border-white/6 bg-[#0b0b0b]/96 px-3 py-2.5 sm:px-4 sm:py-3 lg:top-0 lg:gap-3 lg:px-6">
         <Button variant="ghost" size="icon" onClick={p.onBack} className="shrink-0">
           <ArrowLeft size={18} />
         </Button>
@@ -913,7 +913,7 @@ function Workspace(p: {
           </TabsList>
 
           <TabsContent value="home" className="space-y-4">
-            <section className="rounded-[1.35rem] border border-white/8 bg-[#17181b] p-5 shadow-[0_18px_46px_rgba(0,0,0,.2)]">
+            <section className="rounded-[1.35rem] border border-white/8 bg-[#0b0b0b] p-4 shadow-[0_18px_46px_rgba(0,0,0,.2)] sm:p-5">
               <div className="flex flex-col gap-4 xl:flex-row xl:items-start">
                 <div className="min-w-0 flex-1">
                   <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-zinc-500">Selected account</p>
@@ -949,7 +949,7 @@ function Workspace(p: {
             </section>
 
             <div className="grid gap-4 xl:grid-cols-[minmax(0,1.2fr)_minmax(320px,.8fr)]">
-              <section className="rounded-[1.3rem] border border-white/8 bg-[#17181b] p-5 shadow-[0_18px_46px_rgba(0,0,0,.2)]">
+              <section className="rounded-[1.3rem] border border-white/8 bg-[#0b0b0b] p-4 shadow-[0_18px_46px_rgba(0,0,0,.2)] sm:p-5">
                 <div className="flex items-center justify-between gap-3">
                   <div>
                     <h3 className="text-lg font-black text-white">Share-ready trades</h3>
@@ -978,7 +978,7 @@ function Workspace(p: {
 
               <div className="grid gap-4">
                 <AiCoachCard report={coachReport} loading={coachLoading} error={coachError} onRefresh={loadCoach} />
-                <section className="rounded-[1.3rem] border border-white/8 bg-[#17181b] p-5 shadow-[0_18px_46px_rgba(0,0,0,.2)]">
+                <section className="rounded-[1.3rem] border border-white/8 bg-[#0b0b0b] p-4 shadow-[0_18px_46px_rgba(0,0,0,.2)] sm:p-5">
                   <div className="flex items-center justify-between gap-3">
                     <div>
                       <h3 className="text-lg font-black text-white">High Impact News</h3>

@@ -6,15 +6,18 @@ import {
   ChevronDown,
   Home,
   LogIn,
+  Menu,
   Pencil,
   Plus,
   ShieldCheck,
   UserRound,
+  X,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { apiRequest } from "@/lib/api-client";
 import { useLanguage } from "@/lib/i18n";
 import { useActiveAccountStore } from "./active-account-context";
+import { Dialog, DialogContent } from "./ui/dialog";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "./ui/dropdown-menu";
 import { LanguageSwitcher } from "./language-switcher";
 import { PropFirmLogo } from "./prop-firm-logo";
@@ -52,6 +55,7 @@ export function Sidebar({
 }) {
   const { accounts, activeAccountId, setActiveAccount } = useActiveAccountStore();
   const [profileUsername, setProfileUsername] = useState("");
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { t } = useLanguage();
   const name = String(user?.user_metadata.full_name ?? user?.user_metadata.name ?? "Mehmon trader");
   const username = usernameFromUser(user);
@@ -90,6 +94,7 @@ export function Sidebar({
 
   const openProfile = () => {
     if (!user) return onLogin();
+    setMobileMenuOpen(false);
     onChange("account");
   };
 
@@ -197,18 +202,151 @@ export function Sidebar({
       </aside>
 
       {!hideMobile && (
-      <nav className="fixed inset-x-2 bottom-[max(.5rem,env(safe-area-inset-bottom))] z-50 flex h-16 items-center justify-around rounded-[1.75rem] border border-white/12 bg-[rgba(20,20,24,0.68)] px-1.5 shadow-[0_18px_58px_rgba(0,0,0,.34),inset_0_1px_0_rgba(255,255,255,.055)] backdrop-blur-[28px] sm:inset-x-3 sm:px-2 lg:hidden">
-          {nav.map((item) => {
-            const { id, label, icon: Icon } = item;
-            const unavailable = "unavailable" in item && item.unavailable;
-            return (
-              <button key={id} onClick={() => onChange(id)} className={`relative grid h-11 w-11 place-items-center rounded-2xl transition-colors duration-100 ${active === id ? "bg-white/[.105] text-zinc-100 ring-1 ring-white/15" : "text-zinc-500 hover:bg-white/[.045] hover:text-zinc-300"}`} aria-label={unavailable ? `${label} is not available yet` : label}>
-                <Icon size={21} strokeWidth={active === id ? 2.6 : 2} />
-                {unavailable ? <span className="absolute right-1.5 top-1.5 size-1.5 rounded-full bg-amber-300" /> : null}
+        <>
+          <header className="fixed inset-x-0 top-0 z-50 flex h-[72px] items-center border-b border-white/8 bg-black/95 px-4 backdrop-blur-xl lg:hidden">
+            <button
+              type="button"
+              onClick={() => setMobileMenuOpen(true)}
+              className="grid size-11 place-items-center rounded-2xl border border-white/10 bg-white/[.03] text-white"
+              aria-label="Open navigation"
+            >
+              <Menu size={20} />
+            </button>
+            <div className="ml-3 min-w-0 flex-1">
+              <p className="truncate text-lg font-black text-white">
+                {nav.find((item) => item.id === active)?.label || "TradeWay"}
+              </p>
+              <p className="truncate text-xs text-zinc-500">
+                {activeAccount?.name || "All Accounts"}
+              </p>
+            </div>
+            <div className="flex items-center gap-2">
+              <LanguageSwitcher compact />
+              <button
+                type="button"
+                onClick={onPost}
+                className="grid size-11 place-items-center rounded-2xl border border-white/10 bg-white text-black shadow-[0_10px_24px_rgba(255,255,255,.08)]"
+                aria-label={t("shareTrade")}
+              >
+                <Plus size={18} />
               </button>
-            );
-          })}
-        </nav>
+            </div>
+          </header>
+
+          <Dialog open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
+            <DialogContent
+              showCloseButton={false}
+              className="left-0 top-0 h-[100dvh] w-[88vw] max-w-[420px] translate-x-0 translate-y-0 rounded-none border-r border-white/10 bg-black p-0 sm:max-w-[420px] lg:hidden"
+            >
+              <div className="flex h-full flex-col">
+                <div className="flex items-center justify-between border-b border-white/8 px-5 py-5">
+                  <div className="flex items-center gap-3">
+                    <span className="grid h-11 w-11 place-items-center rounded-2xl bg-white text-base font-black text-black">TW</span>
+                    <div>
+                      <strong className="block text-base text-white">TradeWay</strong>
+                      <small className="text-xs text-zinc-500">Free</small>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="grid size-10 place-items-center rounded-2xl border border-white/10 bg-white/[.03] text-zinc-300"
+                    aria-label="Close navigation"
+                  >
+                    <X size={18} />
+                  </button>
+                </div>
+
+                <div className="border-b border-white/8 px-5 py-4">
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <button className="flex w-full items-center gap-3 rounded-[1.15rem] border border-white/8 bg-[#0b0b0b] px-3 py-3 text-left">
+                        <span className={`mt-0.5 size-2 shrink-0 rounded-full ${activeAccount ? "bg-emerald-500" : "bg-zinc-500"}`} />
+                        <div className="min-w-0 flex-1">
+                          <p className="truncate text-base font-bold text-white">{activeAccount?.name || "All Accounts"}</p>
+                          <p className="truncate text-xs text-zinc-500">{activeAccount ? activeBalance : "Aggregate view"}</p>
+                        </div>
+                        <span className="grid size-10 place-items-center rounded-xl border border-white/8 bg-white/[.03] text-zinc-400">
+                          <Pencil size={15} />
+                        </span>
+                        <span className="grid size-10 place-items-center rounded-xl border border-white/8 bg-white/[.03] text-zinc-400">
+                          <ChevronDown size={15} />
+                        </span>
+                      </button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="start" className="w-[260px] border-white/10 bg-[#090909]">
+                      <DropdownMenuItem onClick={() => setActiveAccount(null)} className="flex items-center gap-3 px-3 py-3">
+                        <span className="size-2 rounded-full bg-zinc-500" />
+                        <div className="min-w-0">
+                          <p className="truncate text-sm font-semibold text-white">All Accounts</p>
+                          <p className="truncate text-[11px] text-zinc-500">Combined portfolio view</p>
+                        </div>
+                      </DropdownMenuItem>
+                      {accounts.map((account) => (
+                        <DropdownMenuItem key={account.id} onClick={() => setActiveAccount(account.id)} className="flex items-center gap-3 px-3 py-3">
+                          <span className={`size-2 rounded-full ${account.status === "Active" ? "bg-emerald-500" : "bg-zinc-500"}`} />
+                          <div className="min-w-0 flex-1">
+                            <p className="truncate text-sm font-semibold text-white">{account.name}</p>
+                            <p className="truncate text-[11px] text-zinc-500">{new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format(account.accountSize)}</p>
+                          </div>
+                          <PropFirmLogo firm={account.firm} compact />
+                        </DropdownMenuItem>
+                      ))}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
+
+                <div className="flex-1 overflow-y-auto px-5 py-5">
+                  <p className="mb-3 text-[11px] font-bold uppercase tracking-[0.2em] text-zinc-500">Journaling</p>
+                  <nav className="space-y-2">
+                    {nav.map((item) => {
+                      const { id, label, hint, icon: Icon } = item;
+                      const selected = active === id;
+                      return (
+                        <button
+                          key={id}
+                          type="button"
+                          onClick={() => {
+                            setMobileMenuOpen(false);
+                            onChange(id);
+                          }}
+                          className={`flex w-full items-center gap-3 rounded-[1.15rem] px-4 py-3 text-left transition ${
+                            selected ? "bg-white/[.09] text-white ring-1 ring-white/12" : "text-zinc-400 hover:bg-white/[.04] hover:text-white"
+                          }`}
+                        >
+                          <span className={`grid size-11 place-items-center rounded-2xl ${selected ? "bg-white/[.10] text-white" : "bg-white/[.03] text-zinc-500"}`}>
+                            <Icon size={20} />
+                          </span>
+                          <span className="min-w-0">
+                            <strong className="block text-base">{label}</strong>
+                            <small className="block truncate text-xs text-zinc-500">{hint}</small>
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </nav>
+                </div>
+
+                <div className="border-t border-white/8 p-5">
+                  <div className="mb-3 flex items-center justify-between gap-2">
+                    <SocialActions />
+                  </div>
+                  <button
+                    onClick={openProfile}
+                    className="flex w-full items-center gap-3 rounded-2xl border border-white/10 bg-white/[.03] p-3 text-left"
+                  >
+                    <TraderAvatar name={name} value={avatar} className="h-11 w-11 text-xs" />
+                    <span className="min-w-0 flex-1">
+                      <strong className="block truncate text-sm text-white">{name}</strong>
+                      <small className="block truncate text-xs text-zinc-500">{handle}</small>
+                    </span>
+                    {!user ? <LogIn size={16} className="text-zinc-500" /> : null}
+                  </button>
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
+        </>
       )}
     </>
   );
