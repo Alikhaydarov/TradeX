@@ -3,13 +3,19 @@
 import type { User } from "@supabase/supabase-js";
 import {
   BookOpen,
+  CalendarDays,
   ChevronDown,
   Home,
+  LayoutDashboard,
   LogIn,
   Menu,
+  MoreHorizontal,
   Pencil,
   Plus,
   ShieldCheck,
+  SquareChartGantt,
+  Target,
+  TrendingUp,
   UserRound,
   X,
 } from "lucide-react";
@@ -19,9 +25,7 @@ import { useLanguage } from "@/lib/i18n";
 import { useActiveAccountStore } from "./active-account-context";
 import { Dialog, DialogContent } from "./ui/dialog";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "./ui/dropdown-menu";
-import { LanguageSwitcher } from "./language-switcher";
 import { PropFirmLogo } from "./prop-firm-logo";
-import { SocialActions } from "./social-actions-v2";
 import { TraderAvatar } from "./trader-avatar";
 import type { Section } from "./types";
 
@@ -56,7 +60,7 @@ export function Sidebar({
   const { accounts, activeAccountId, setActiveAccount } = useActiveAccountStore();
   const [profileUsername, setProfileUsername] = useState("");
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const { t } = useLanguage();
+  const { t, locale, locales, labels, setLocale } = useLanguage();
   const name = String(user?.user_metadata.full_name ?? user?.user_metadata.name ?? "Mehmon trader");
   const username = usernameFromUser(user);
   const handle = user ? `@${profileUsername || username}` : "Sign in with Google";
@@ -91,6 +95,19 @@ export function Sidebar({
   const nav = isAdmin
     ? [...baseNav, { id: "admin" as const, label: "Admin", hint: "User verification", icon: ShieldCheck }]
     : baseNav;
+  const journalNav = [
+    { id: "overview", label: "Dashboard", icon: LayoutDashboard },
+    { id: "calendar", label: "Calendar", icon: CalendarDays },
+    { id: "trades", label: "Trades", icon: SquareChartGantt },
+    { id: "analytics", label: "Analytics", icon: TrendingUp },
+    { id: "bible", label: "Strategies", icon: Target },
+  ] as const;
+
+  const openJournalTab = (tab: typeof journalNav[number]["id"]) => {
+    onChange("journal");
+    window.dispatchEvent(new CustomEvent("tradeway:journal-tab", { detail: { tab } }));
+    setMobileMenuOpen(false);
+  };
 
   const openProfile = () => {
     if (!user) return onLogin();
@@ -178,26 +195,60 @@ export function Sidebar({
           })}
         </nav>
 
+        {active === "journal" ? (
+          <div className="mt-5 space-y-2">
+            <p className="px-3 text-[11px] font-bold uppercase tracking-[0.2em] text-zinc-500">Journaling</p>
+            <div className="space-y-1">
+              {journalNav.map((item) => {
+                const Icon = item.icon;
+                return (
+                  <button
+                    key={item.id}
+                    type="button"
+                    onClick={() => openJournalTab(item.id)}
+                    className="flex w-full items-center gap-3 rounded-2xl px-3 py-2.5 text-left text-zinc-300 transition hover:bg-white/[.04] hover:text-white"
+                  >
+                    <span className="grid h-9 w-9 place-items-center rounded-2xl bg-white/[.035] text-zinc-400">
+                      <Icon size={17} />
+                    </span>
+                    <strong className="text-sm font-semibold">{item.label}</strong>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        ) : null}
+
         <button onClick={onPost} className="mt-5 flex items-center justify-center gap-2 rounded-2xl bg-white py-3 text-sm font-black text-zinc-950 shadow-[0_14px_32px_rgba(255,255,255,.08)] transition-colors hover:bg-zinc-200">
           <Plus size={18} /> {t("shareTrade")}
         </button>
 
-        <div className="mt-auto space-y-3">
-          <div className="flex items-center justify-between gap-2">
-            <SocialActions />
-            <LanguageSwitcher compact />
-          </div>
-
-          <button onClick={openProfile} className="flex w-full items-center gap-3 rounded-2xl border border-white/10 bg-white/[.035] p-2 text-left shadow-[inset_0_1px_0_rgba(255,255,255,.035)] backdrop-blur-xl transition-colors hover:bg-white/[.06]">
+        <div className="mt-auto">
+          <div className="flex w-full items-center gap-3 rounded-2xl border border-white/10 bg-white/[.035] p-2 text-left shadow-[inset_0_1px_0_rgba(255,255,255,.035)] backdrop-blur-xl transition-colors hover:bg-white/[.06]">
             <TraderAvatar name={name} value={avatar} className="h-10 w-10 text-xs" />
-            <span className="min-w-0 flex-1">
+            <button onClick={openProfile} className="min-w-0 flex-1 text-left">
               <span className="flex min-w-0 items-center gap-1">
                 <strong className="truncate text-xs">{name}</strong>
               </span>
               <small className="block truncate text-[10px] text-zinc-500">{handle}</small>
-            </span>
+            </button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button type="button" className="grid size-8 place-items-center rounded-xl text-zinc-400 transition hover:bg-white/[.05] hover:text-white">
+                  <MoreHorizontal size={16} />
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-44 border-white/10 bg-[#090909]">
+                {locales.map((item) => (
+                  <DropdownMenuItem key={item} onClick={() => setLocale(item)} className="flex items-center justify-between px-3 py-2.5">
+                    <span>{labels[item]}</span>
+                    {locale === item ? <span className="text-[10px] font-bold text-zinc-400">Active</span> : null}
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
             {!user ? <LogIn size={16} className="text-zinc-500" /> : null}
-          </button>
+          </div>
         </div>
       </aside>
 
@@ -221,7 +272,6 @@ export function Sidebar({
               </p>
             </div>
             <div className="flex items-center gap-2">
-              <LanguageSwitcher compact />
               <button
                 type="button"
                 onClick={onPost}
@@ -297,7 +347,7 @@ export function Sidebar({
                 </div>
 
                 <div className="flex-1 overflow-y-auto px-5 py-5">
-                  <p className="mb-3 text-[11px] font-bold uppercase tracking-[0.2em] text-zinc-500">Journaling</p>
+                  <p className="mb-3 text-[11px] font-bold uppercase tracking-[0.2em] text-zinc-500">Workspace</p>
                   <nav className="space-y-2">
                     {nav.map((item) => {
                       const { id, label, hint, icon: Icon } = item;
@@ -325,23 +375,55 @@ export function Sidebar({
                       );
                     })}
                   </nav>
+                  {active === "journal" ? (
+                    <div className="mt-5">
+                      <p className="mb-3 text-[11px] font-bold uppercase tracking-[0.2em] text-zinc-500">Journaling</p>
+                      <div className="space-y-2">
+                        {journalNav.map((item) => {
+                          const Icon = item.icon;
+                          return (
+                            <button
+                              key={item.id}
+                              type="button"
+                              onClick={() => openJournalTab(item.id)}
+                              className="flex w-full items-center gap-3 rounded-[1.15rem] px-4 py-3 text-left text-zinc-300 transition hover:bg-white/[.04] hover:text-white"
+                            >
+                              <span className="grid size-11 place-items-center rounded-2xl bg-white/[.03] text-zinc-500">
+                                <Icon size={20} />
+                              </span>
+                              <strong className="block text-base">{item.label}</strong>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  ) : null}
                 </div>
 
                 <div className="border-t border-white/8 p-5">
-                  <div className="mb-3 flex items-center justify-between gap-2">
-                    <SocialActions />
-                  </div>
-                  <button
-                    onClick={openProfile}
-                    className="flex w-full items-center gap-3 rounded-2xl border border-white/10 bg-white/[.03] p-3 text-left"
-                  >
+                  <div className="flex w-full items-center gap-3 rounded-2xl border border-white/10 bg-white/[.03] p-3 text-left">
                     <TraderAvatar name={name} value={avatar} className="h-11 w-11 text-xs" />
-                    <span className="min-w-0 flex-1">
+                    <button onClick={openProfile} className="min-w-0 flex-1 text-left">
                       <strong className="block truncate text-sm text-white">{name}</strong>
                       <small className="block truncate text-xs text-zinc-500">{handle}</small>
-                    </span>
+                    </button>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <button type="button" className="grid size-9 place-items-center rounded-xl text-zinc-400 transition hover:bg-white/[.05] hover:text-white">
+                          <MoreHorizontal size={16} />
+                        </button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end" className="w-44 border-white/10 bg-[#090909]">
+                        {locales.map((item) => (
+                          <DropdownMenuItem key={item} onClick={() => setLocale(item)} className="flex items-center justify-between px-3 py-2.5">
+                            <span>{labels[item]}</span>
+                            {locale === item ? <span className="text-[10px] font-bold text-zinc-400">Active</span> : null}
+                          </DropdownMenuItem>
+                        ))}
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                     {!user ? <LogIn size={16} className="text-zinc-500" /> : null}
-                  </button>
+                  </div>
                 </div>
               </div>
             </DialogContent>

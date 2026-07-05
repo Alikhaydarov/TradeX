@@ -778,6 +778,18 @@ function Workspace(p: {
   }, [account.id]);
 
   useEffect(() => {
+    const handleSidebarTab = (event: Event) => {
+      const nextTab = (event as CustomEvent<{ tab?: WorkspaceTab }>).detail?.tab;
+      if (nextTab && WORKSPACE_TABS.some(([value]) => value === nextTab)) {
+        setActiveTab(nextTab);
+      }
+    };
+
+    window.addEventListener("tradeway:journal-tab", handleSidebarTab as EventListener);
+    return () => window.removeEventListener("tradeway:journal-tab", handleSidebarTab as EventListener);
+  }, []);
+
+  useEffect(() => {
     if (activeTab !== "home" && activeTab !== "overview") return;
     void loadCoach();
     void loadOpenPositions();
