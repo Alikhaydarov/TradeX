@@ -2,7 +2,6 @@
 
 import type { User } from "@supabase/supabase-js";
 import {
-  BookOpen,
   CalendarDays,
   ChevronDown,
   Home,
@@ -10,11 +9,9 @@ import {
   LogIn,
   Menu,
   MoreHorizontal,
-  Pencil,
   Plus,
   ShieldCheck,
   SquareChartGantt,
-  Target,
   TrendingUp,
   UserRound,
   X,
@@ -25,7 +22,6 @@ import { useLanguage } from "@/lib/i18n";
 import { useActiveAccountStore } from "./active-account-context";
 import { Dialog, DialogContent } from "./ui/dialog";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "./ui/dropdown-menu";
-import { PropFirmLogo } from "./prop-firm-logo";
 import { TraderAvatar } from "./trader-avatar";
 import type { Section } from "./types";
 
@@ -57,7 +53,7 @@ export function Sidebar({
   hideMobile?: boolean;
   isAdmin?: boolean;
 }) {
-  const { accounts, activeAccountId, setActiveAccount } = useActiveAccountStore();
+  const { accounts, activeAccountId } = useActiveAccountStore();
   const [profileUsername, setProfileUsername] = useState("");
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { t, locale, locales, labels, setLocale } = useLanguage();
@@ -89,7 +85,6 @@ export function Sidebar({
 
   const baseNav = [
     { id: "feed" as const, label: t("home"), hint: t("marketPulse"), icon: Home },
-    { id: "journal" as const, label: t("journal"), hint: t("accountsRecords"), icon: BookOpen },
     { id: "account" as const, label: t("profile"), hint: t("proofSettings"), icon: UserRound },
   ];
   const nav = isAdmin
@@ -100,12 +95,16 @@ export function Sidebar({
     { id: "calendar", label: "Calendar", icon: CalendarDays },
     { id: "trades", label: "Trades", icon: SquareChartGantt },
     { id: "analytics", label: "Analytics", icon: TrendingUp },
-    { id: "bible", label: "Strategies", icon: Target },
   ] as const;
 
-  const openJournalTab = (tab: typeof journalNav[number]["id"]) => {
+  const openAccountsPage = () => {
     onChange("journal");
-    window.dispatchEvent(new CustomEvent("tradeway:journal-tab", { detail: { tab } }));
+    setMobileMenuOpen(false);
+  };
+
+  const openHomeTab = (tab: typeof journalNav[number]["id"]) => {
+    onChange("feed");
+    window.dispatchEvent(new CustomEvent("tradeway:home-tab", { detail: { tab } }));
     setMobileMenuOpen(false);
   };
 
@@ -126,44 +125,16 @@ export function Sidebar({
           </span>
         </button>
 
-        <div className="mt-4 rounded-[1rem] border border-white/8 bg-[#050505] p-2">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <button className="flex w-full items-center gap-3 rounded-[0.9rem] px-2 py-2 text-left transition hover:bg-white/[.04]">
-                <span className={`mt-0.5 size-2 shrink-0 rounded-full ${activeAccount ? "bg-emerald-500" : "bg-zinc-500"}`} />
-                <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm font-bold text-white">{activeAccount?.name || "All Accounts"}</p>
-                  <p className="truncate text-[11px] text-zinc-500">{activeAccount ? activeBalance : "Aggregate view"}</p>
-                </div>
-                <span className="grid size-8 place-items-center rounded-xl border border-white/8 bg-white/[.03] text-zinc-400">
-                  <Pencil size={14} />
-                </span>
-                <span className="grid size-8 place-items-center rounded-xl border border-white/8 bg-white/[.03] text-zinc-400">
-                  <ChevronDown size={14} />
-                </span>
-              </button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="start" className="w-[230px] border-white/10 bg-[#090909]">
-              <DropdownMenuItem onClick={() => { setActiveAccount(null); }} className="flex items-center gap-3 px-3 py-2.5">
-                <span className="size-2 rounded-full bg-zinc-500" />
-                <div className="min-w-0">
-                  <p className="truncate text-sm font-semibold text-white">All Accounts</p>
-                  <p className="truncate text-[11px] text-zinc-500">Combined portfolio view</p>
-                </div>
-              </DropdownMenuItem>
-              {accounts.map((account) => (
-                <DropdownMenuItem key={account.id} onClick={() => { setActiveAccount(account.id); }} className="flex items-center gap-3 px-3 py-2.5">
-                  <span className={`size-2 rounded-full ${account.status === "Active" ? "bg-emerald-500" : "bg-zinc-500"}`} />
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-semibold text-white">{account.name}</p>
-                    <p className="truncate text-[11px] text-zinc-500">{new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format(account.accountSize)}</p>
-                  </div>
-                  <PropFirmLogo firm={account.firm} compact />
-                </DropdownMenuItem>
-              ))}
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
+        <button type="button" onClick={openAccountsPage} className="mt-4 flex w-full items-center gap-3 rounded-[1rem] border border-white/8 bg-[#050505] p-4 text-left transition hover:bg-white/[.03]">
+          <span className={`size-2 shrink-0 rounded-full ${activeAccount ? "bg-emerald-500" : "bg-zinc-500"}`} />
+          <div className="min-w-0 flex-1">
+            <p className="truncate text-sm font-bold text-white">{activeAccount?.name || "All Accounts"}</p>
+            <p className="truncate text-[11px] text-zinc-500">{activeAccount ? activeBalance : "Open accounts workspace"}</p>
+          </div>
+          <span className="grid size-8 shrink-0 place-items-center rounded-xl border border-white/8 bg-white/[.03] text-zinc-400">
+            <ChevronDown size={14} />
+          </span>
+        </button>
 
         <nav className="mt-6 space-y-1.5">
           {nav.map((item) => {
@@ -195,9 +166,9 @@ export function Sidebar({
           })}
         </nav>
 
-        {active === "journal" ? (
+        {active === "feed" ? (
           <div className="mt-5 space-y-2">
-            <p className="px-3 text-[11px] font-bold uppercase tracking-[0.2em] text-zinc-500">Journaling</p>
+            <p className="px-3 text-[11px] font-bold uppercase tracking-[0.2em] text-zinc-500">Workspace</p>
             <div className="space-y-1">
               {journalNav.map((item) => {
                 const Icon = item.icon;
@@ -205,7 +176,7 @@ export function Sidebar({
                   <button
                     key={item.id}
                     type="button"
-                    onClick={() => openJournalTab(item.id)}
+                    onClick={() => openHomeTab(item.id)}
                     className="flex w-full items-center gap-3 rounded-2xl px-3 py-2.5 text-left text-zinc-300 transition hover:bg-white/[.04] hover:text-white"
                   >
                     <span className="grid h-9 w-9 place-items-center rounded-2xl bg-white/[.035] text-zinc-400">
@@ -265,7 +236,7 @@ export function Sidebar({
             </button>
             <div className="ml-3 min-w-0 flex-1">
               <p className="truncate text-lg font-black text-white">
-                {nav.find((item) => item.id === active)?.label || "TradeWay"}
+                {active === "journal" ? "Accounts" : nav.find((item) => item.id === active)?.label || "TradeWay"}
               </p>
               <p className="truncate text-xs text-zinc-500">
                 {activeAccount?.name || "All Accounts"}
@@ -308,42 +279,16 @@ export function Sidebar({
                 </div>
 
                 <div className="border-b border-white/8 px-5 py-4">
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <button className="flex w-full items-center gap-3 rounded-[1.15rem] border border-white/8 bg-[#0b0b0b] px-3 py-3 text-left">
-                        <span className={`mt-0.5 size-2 shrink-0 rounded-full ${activeAccount ? "bg-emerald-500" : "bg-zinc-500"}`} />
-                        <div className="min-w-0 flex-1">
-                          <p className="truncate text-base font-bold text-white">{activeAccount?.name || "All Accounts"}</p>
-                          <p className="truncate text-xs text-zinc-500">{activeAccount ? activeBalance : "Aggregate view"}</p>
-                        </div>
-                        <span className="grid size-10 place-items-center rounded-xl border border-white/8 bg-white/[.03] text-zinc-400">
-                          <Pencil size={15} />
-                        </span>
-                        <span className="grid size-10 place-items-center rounded-xl border border-white/8 bg-white/[.03] text-zinc-400">
-                          <ChevronDown size={15} />
-                        </span>
-                      </button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="start" className="w-[260px] border-white/10 bg-[#090909]">
-                      <DropdownMenuItem onClick={() => setActiveAccount(null)} className="flex items-center gap-3 px-3 py-3">
-                        <span className="size-2 rounded-full bg-zinc-500" />
-                        <div className="min-w-0">
-                          <p className="truncate text-sm font-semibold text-white">All Accounts</p>
-                          <p className="truncate text-[11px] text-zinc-500">Combined portfolio view</p>
-                        </div>
-                      </DropdownMenuItem>
-                      {accounts.map((account) => (
-                        <DropdownMenuItem key={account.id} onClick={() => setActiveAccount(account.id)} className="flex items-center gap-3 px-3 py-3">
-                          <span className={`size-2 rounded-full ${account.status === "Active" ? "bg-emerald-500" : "bg-zinc-500"}`} />
-                          <div className="min-w-0 flex-1">
-                            <p className="truncate text-sm font-semibold text-white">{account.name}</p>
-                            <p className="truncate text-[11px] text-zinc-500">{new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format(account.accountSize)}</p>
-                          </div>
-                          <PropFirmLogo firm={account.firm} compact />
-                        </DropdownMenuItem>
-                      ))}
-                    </DropdownMenuContent>
-                  </DropdownMenu>
+                  <button type="button" onClick={openAccountsPage} className="flex w-full items-center gap-3 rounded-[1.15rem] border border-white/8 bg-[#0b0b0b] px-3 py-3 text-left">
+                    <span className={`mt-0.5 size-2 shrink-0 rounded-full ${activeAccount ? "bg-emerald-500" : "bg-zinc-500"}`} />
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-base font-bold text-white">{activeAccount?.name || "All Accounts"}</p>
+                      <p className="truncate text-xs text-zinc-500">{activeAccount ? activeBalance : "Open accounts workspace"}</p>
+                    </div>
+                    <span className="grid size-10 shrink-0 place-items-center rounded-xl border border-white/8 bg-white/[.03] text-zinc-400">
+                      <ChevronDown size={15} />
+                    </span>
+                  </button>
                 </div>
 
                 <div className="flex-1 overflow-y-auto px-5 py-5">
@@ -375,9 +320,9 @@ export function Sidebar({
                       );
                     })}
                   </nav>
-                  {active === "journal" ? (
+                  {active === "feed" ? (
                     <div className="mt-5">
-                      <p className="mb-3 text-[11px] font-bold uppercase tracking-[0.2em] text-zinc-500">Journaling</p>
+                      <p className="mb-3 text-[11px] font-bold uppercase tracking-[0.2em] text-zinc-500">Workspace</p>
                       <div className="space-y-2">
                         {journalNav.map((item) => {
                           const Icon = item.icon;
@@ -385,7 +330,7 @@ export function Sidebar({
                             <button
                               key={item.id}
                               type="button"
-                              onClick={() => openJournalTab(item.id)}
+                              onClick={() => openHomeTab(item.id)}
                               className="flex w-full items-center gap-3 rounded-[1.15rem] px-4 py-3 text-left text-zinc-300 transition hover:bg-white/[.04] hover:text-white"
                             >
                               <span className="grid size-11 place-items-center rounded-2xl bg-white/[.03] text-zinc-500">

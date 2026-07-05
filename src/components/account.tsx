@@ -556,10 +556,10 @@ export function Account({ onLogin, profileUsername }: { onLogin: () => void; pro
                   <div className="mt-3 flex flex-wrap gap-2">
                     <button
                       type="button"
-                      onClick={() => { window.history.pushState(null, "", "/journal"); window.dispatchEvent(new Event("popstate")); }}
+                      onClick={() => { window.history.pushState(null, "", "/accounts"); window.dispatchEvent(new Event("popstate")); }}
                       className="inline-flex h-9 items-center justify-center rounded-lg border border-white/10 px-3 text-xs font-black text-zinc-200 transition hover:bg-white/[.06]"
                     >
-                      Open journal accounts
+                      Open accounts workspace
                     </button>
                     <button
                       type="button"

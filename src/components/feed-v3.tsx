@@ -15,11 +15,13 @@ import { SocialActions } from "./social-actions-v2";
 import { TradeShareComposer } from "./trade-share-composer";
 import { useAuth } from "./auth-context";
 import { InstrumentBadge } from "./instrument-badge";
+import { JournalV2 } from "./journal-v2";
 import { MediaImage } from "./media-image";
 import { TraderAvatar } from "./trader-avatar";
 import type { JournalEntry, Post, PostReply } from "./types";
 
 type PostRecord = SocialPostRecord;
+type HomeWorkspaceTab = "overview" | "calendar" | "trades" | "analytics" | "bible";
 
 interface FeedTradeRow {
   id: string;
@@ -146,6 +148,7 @@ export function FeedV3({ onLogin }: { onLogin: () => void }) {
   const [isAdmin, setIsAdmin] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [lightboxUrl, setLightboxUrl] = useState<string | null>(null);
+  const [workspaceTab, setWorkspaceTab] = useState<HomeWorkspaceTab>("overview");
   const viewed = useRef(new Set<string>());
   const observer = useRef<IntersectionObserver | null>(null);
 
@@ -214,6 +217,15 @@ export function FeedV3({ onLogin }: { onLogin: () => void }) {
     window.addEventListener("tradeway:share-trade", handler);
     return () => window.removeEventListener("tradeway:share-trade", handler);
   });
+
+  useEffect(() => {
+    const handler = (event: Event) => {
+      const nextTab = (event as CustomEvent<{ tab?: HomeWorkspaceTab }>).detail?.tab;
+      if (nextTab) setWorkspaceTab(nextTab);
+    };
+    window.addEventListener("tradeway:home-tab", handler as EventListener);
+    return () => window.removeEventListener("tradeway:home-tab", handler as EventListener);
+  }, []);
 
   useEffect(() => {
     if (!user) {
@@ -593,6 +605,16 @@ export function FeedV3({ onLogin }: { onLogin: () => void }) {
         )}
       </div>
 
+      <div className="mx-auto mt-2 max-w-6xl px-3 pb-6 sm:px-5 sm:pb-8">
+        <div className="mb-3 flex items-center justify-between px-1">
+          <div>
+            <h2 className="text-xs font-black uppercase tracking-[.18em] text-zinc-500">Account workspace</h2>
+            <p className="mt-1 text-sm text-zinc-500">Dashboard, calendar, trades and analytics now live under Home.</p>
+          </div>
+        </div>
+        <JournalV2 onLogin={onLogin} embedded forcedTab={workspaceTab} />
+      </div>
+
       {lightboxUrl ? (
         <div
           className="fixed inset-0 z-[99998] flex items-center justify-center bg-black/92 p-4 backdrop-blur-sm"
@@ -694,7 +716,7 @@ export function FeedV3({ onLogin }: { onLogin: () => void }) {
                 <div>
                   <p className="text-sm font-bold">{t("noTrades")}</p>
                   <p className="mt-1 text-xs leading-5 text-zinc-500">{t("addTradeFirst")}</p>
-                  <Button className="mt-4 bg-white text-black hover:bg-zinc-200" onClick={() => { setTradePickerOpen(false); window.history.pushState(null, "", "/journal"); window.dispatchEvent(new Event("popstate")); }}>
+                  <Button className="mt-4 bg-white text-black hover:bg-zinc-200" onClick={() => { setTradePickerOpen(false); window.history.pushState(null, "", "/accounts"); window.dispatchEvent(new Event("popstate")); }}>
                     {t("openJournal")}
                   </Button>
                 </div>

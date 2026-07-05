@@ -11,13 +11,12 @@ import { ActiveAccountProvider } from "./active-account-context";
 import { Pricing } from "./pricing";
 import { NotificationListener } from "./notification-listener";
 import { PremiumUpsellDialog } from "./premium-upsell-dialog";
-import { RightPanel } from "./right-panel";
 import { Sidebar } from "./sidebar";
 import { useAuth } from "./auth-context";
 import { apiRequest } from "@/lib/api-client";
 import type { Section } from "./types";
 
-const reservedPaths = new Set(["", "chat", "journal", "backtest", "profile", "account", "pricing", "admin"]);
+const reservedPaths = new Set(["", "chat", "journal", "accounts", "backtest", "profile", "account", "pricing", "admin"]);
 
 function usernameFromPath(pathname: string) {
   const first = pathname.replace(/^\//, "").split("/")[0] ?? "";
@@ -26,7 +25,7 @@ function usernameFromPath(pathname: string) {
 }
 
 function sectionFromPath(pathname: string): Section {
-  if (pathname.startsWith("/journal")) return "journal";
+  if (pathname.startsWith("/journal") || pathname.startsWith("/accounts")) return "journal";
   if (pathname.startsWith("/pricing")) return "pricing";
   if (pathname.startsWith("/profile") || pathname.startsWith("/account") || usernameFromPath(pathname)) return "account";
   if (pathname.startsWith("/admin")) return "admin";
@@ -34,7 +33,7 @@ function sectionFromPath(pathname: string): Section {
 }
 
 function pathFromSection(section: Section) {
-  if (section === "journal") return "/journal";
+  if (section === "journal") return "/accounts";
   if (section === "account") return "/profile";
   if (section === "pricing") return "/pricing";
   if (section === "admin") return "/admin";
@@ -278,7 +277,6 @@ export function AppShell() {
             )}
           </div>
         </main>
-        {!chatOpen && <RightPanel />}
       </div>
       </ActiveAccountProvider>
       {profileOpening ? <div className="pointer-events-none fixed inset-0 z-[2147483646] grid place-items-center bg-[#0b0b0d]/84 backdrop-blur-[2px]"><div className="flex items-center gap-3 rounded-full border border-white/8 bg-[#17171a] px-4 py-2 text-sm font-semibold text-zinc-200 shadow-[0_18px_48px_rgba(0,0,0,.34)]"><span className="inline-flex size-4 animate-spin rounded-full border-2 border-white/20 border-t-white" /> Opening profile</div></div> : null}

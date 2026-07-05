@@ -118,7 +118,15 @@ function buildWeeklyStrip(account: PropAccount, month: Date, trades: JournalEntr
   });
 }
 
-export function JournalV2({ onLogin }: { onLogin: () => void }) {
+export function JournalV2({
+  onLogin,
+  embedded = false,
+  forcedTab,
+}: {
+  onLogin: () => void;
+  embedded?: boolean;
+  forcedTab?: WorkspaceTab;
+}) {
   const { user } = useAuth();
   const { accounts, activeAccountId, setActiveAccount, addAccount, setAccounts } = useActiveAccountStore();
   const [entries, setEntries] = useState<JournalEntry[]>([]);
@@ -346,17 +354,30 @@ export function JournalV2({ onLogin }: { onLogin: () => void }) {
   if (loading) return <div className="grid min-h-[70dvh] place-items-center"><LoaderCircle className="animate-spin text-zinc-300" size={28} /></div>;
 
   return (
-    <div className="min-h-full">
+    <div className={embedded ? "min-h-0" : "min-h-full"}>
       {error && (
-        <div className="mx-4 mt-4 flex items-center gap-3 rounded-xl border border-rose-500/20 bg-rose-500/10 p-3 text-sm text-rose-300">
+        <div className={`${embedded ? "mb-4" : "mx-4 mt-4"} flex items-center gap-3 rounded-xl border border-rose-500/20 bg-rose-500/10 p-3 text-sm text-rose-300`}>
           <X size={16} className="shrink-0" />
           {error}
           <button onClick={() => setError(null)} className="ml-auto"><X size={14} /></button>
         </div>
       )}
       {account
-        ? <Workspace account={account} accounts={accounts} stats={stats} equity={equity} setups={setups} mistakes={mistakes} planRate={planRate} monthCount={monthEntries.length} calendar={calendar} trades={shown} bibleTrades={bibleEntries} query={query} month={month} deleting={deleting === account.id} saving={saving} tradeRange={tradeRange} customStart={customStart} customEnd={customEnd} onRange={setTradeRange} onCustomStart={setCustomStart} onCustomEnd={setCustomEnd} onQuery={setQuery} onBack={() => setActiveAccount(null)} onAccountChange={setActiveAccount} onTrade={() => setTradeOpen(true)} onDelete={() => removeAccount(account)} onCsv={exportCsv} onPrev={() => shiftMonth(-1)} onNext={() => shiftMonth(1)} onToday={() => setMonth(new Date())} onUpdateTrade={updateTrade} onRemoveTrade={removeTrade} onMt5Synced={reloadJournal} />
-        : <Accounts summaries={summaries} entries={entries} deleting={deleting} onAdd={() => setAccountOpen(true)} onOpen={setActiveAccount} onDelete={removeAccount} onAggregate={() => setActiveAccount(null)} />
+        ? <Workspace embedded={embedded} forcedTab={forcedTab} account={account} accounts={accounts} stats={stats} equity={equity} setups={setups} mistakes={mistakes} planRate={planRate} monthCount={monthEntries.length} calendar={calendar} trades={shown} bibleTrades={bibleEntries} query={query} month={month} deleting={deleting === account.id} saving={saving} tradeRange={tradeRange} customStart={customStart} customEnd={customEnd} onRange={setTradeRange} onCustomStart={setCustomStart} onCustomEnd={setCustomEnd} onQuery={setQuery} onBack={() => setActiveAccount(null)} onAccountChange={setActiveAccount} onTrade={() => setTradeOpen(true)} onDelete={() => removeAccount(account)} onCsv={exportCsv} onPrev={() => shiftMonth(-1)} onNext={() => shiftMonth(1)} onToday={() => setMonth(new Date())} onUpdateTrade={updateTrade} onRemoveTrade={removeTrade} onMt5Synced={reloadJournal} />
+        : embedded ? (
+          <div className="rounded-[1.5rem] border border-white/8 bg-[#0b0b0b] p-5 shadow-[0_18px_46px_rgba(0,0,0,.22)]">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-zinc-500">Workspace</p>
+                <h3 className="mt-2 text-xl font-black text-white">Select an account to load dashboard, calendar, trades and analytics.</h3>
+                <p className="mt-1 text-sm text-zinc-500">Home keeps the feed at the top, and your account workspace opens right under it.</p>
+              </div>
+              <Button type="button" className="h-11 rounded-2xl bg-white px-4 text-black hover:bg-zinc-200" onClick={() => { window.history.pushState(null, "", "/accounts"); window.dispatchEvent(new Event("popstate")); }}>
+                Open accounts
+              </Button>
+            </div>
+          </div>
+        ) : <Accounts summaries={summaries} entries={entries} deleting={deleting} onAdd={() => setAccountOpen(true)} onOpen={setActiveAccount} onDelete={removeAccount} onAggregate={() => setActiveAccount(null)} />
       }
       <PropAccountDialog open={accountOpen} saving={saving} onOpenChange={setAccountOpen} onSave={createAccount} />
       <TradeReviewModal open={tradeOpen} saving={saving} account={account} onOpenChange={setTradeOpen} onSave={addTrade} />
@@ -681,6 +702,8 @@ function AiCoachCard({ report, loading, error, onRefresh }: { report: AiCoachRep
 
 // Workspace.
 function Workspace(p: {
+  embedded?: boolean;
+  forcedTab?: WorkspaceTab;
   account: PropAccount; accounts: PropAccount[]; stats: { pnl: number; wins: number; losses: number; rate: number; r: number; pf: number };
   equity: Array<{ trade: number; equity: number; label: string }>; setups: Array<{ name: string; pnl: number; trades: number; wins: number; rate: number }>;
   mistakes: Array<{ name: string; pnl: number; trades: number }>; planRate: number; monthCount: number;
@@ -693,7 +716,7 @@ function Workspace(p: {
   onRemoveTrade: (id: string) => Promise<void>;
   onMt5Synced: () => Promise<void>;
 }) {
-  const { account, accounts, stats, equity, setups, mistakes, planRate, monthCount, calendar, trades, bibleTrades, month } = p;
+  const { account, accounts, stats, equity, setups, mistakes, planRate, monthCount, calendar, trades, bibleTrades, month, embedded = false, forcedTab } = p;
   const [selectedTrade, setSelectedTrade] = useState<JournalEntry | null>(null);
   const [selectedDay, setSelectedDay] = useState<{ day: number; trades: JournalEntry[]; pnl: number } | null>(null);
   const [activeTab, setActiveTab] = useState<WorkspaceTab>("home");
@@ -729,6 +752,10 @@ function Workspace(p: {
   );
   const recentTrades = sortedTrades.slice(0, 5);
   const groupedNews = useMemo(() => groupCalendarNewsByDay(calendarNews?.events || []), [calendarNews?.events]);
+  const workspaceTabs = useMemo(
+    () => (embedded ? WORKSPACE_TABS.filter(([value]) => value !== "settings") : WORKSPACE_TABS),
+    [embedded],
+  );
   const averageWin = useMemo(() => {
     const wins = trades.filter((trade) => trade.pnl > 0);
     return wins.length ? wins.reduce((sum, trade) => sum + trade.pnl, 0) / wins.length : 0;
@@ -778,6 +805,11 @@ function Workspace(p: {
   }, [account.id]);
 
   useEffect(() => {
+    if (!forcedTab) return;
+    setActiveTab(forcedTab);
+  }, [forcedTab]);
+
+  useEffect(() => {
     const handleSidebarTab = (event: Event) => {
       const nextTab = (event as CustomEvent<{ tab?: WorkspaceTab }>).detail?.tab;
       if (nextTab && WORKSPACE_TABS.some(([value]) => value === nextTab)) {
@@ -786,7 +818,11 @@ function Workspace(p: {
     };
 
     window.addEventListener("tradeway:journal-tab", handleSidebarTab as EventListener);
-    return () => window.removeEventListener("tradeway:journal-tab", handleSidebarTab as EventListener);
+    window.addEventListener("tradeway:home-tab", handleSidebarTab as EventListener);
+    return () => {
+      window.removeEventListener("tradeway:journal-tab", handleSidebarTab as EventListener);
+      window.removeEventListener("tradeway:home-tab", handleSidebarTab as EventListener);
+    };
   }, []);
 
   useEffect(() => {
@@ -866,21 +902,23 @@ function Workspace(p: {
       </header>
 
       <div className="space-y-3 p-3 sm:p-4 lg:space-y-4 lg:p-6">
-          <div className="hidden xl:hidden">
-          <span className="mb-1.5 block text-[10px] font-semibold uppercase tracking-widest text-[#8a8a8a]">Account</span>
-          <Select value={account.id} onValueChange={p.onAccountChange}>
-            <SelectTrigger className="h-11 rounded-2xl border-white/10 bg-white/[.04]">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {accounts.map((item) => (
-                <SelectItem key={item.id} value={item.id}>
-                  {item.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
+        {!embedded ? (
+          <div className="w-full sm:w-[320px]">
+            <span className="mb-1.5 block text-[10px] font-semibold uppercase tracking-widest text-[#8a8a8a]">Account</span>
+            <Select value={account.id} onValueChange={p.onAccountChange}>
+              <SelectTrigger className="h-11 rounded-2xl border-white/10 bg-white/[.04]">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {accounts.map((item) => (
+                  <SelectItem key={item.id} value={item.id}>
+                    {item.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        ) : null}
 
         {/* Stats */}
         <div className="grid grid-cols-2 gap-2 sm:gap-3 xl:grid-cols-5">
@@ -914,12 +952,12 @@ function Workspace(p: {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent position="popper" align="start">
-                {WORKSPACE_TABS.map(([v, l]) => <SelectItem key={v} value={v}>{l}</SelectItem>)}
+                {workspaceTabs.map(([v, l]) => <SelectItem key={v} value={v}>{l}</SelectItem>)}
               </SelectContent>
             </Select>
           </div>
           <TabsList className="hidden min-h-12 w-full justify-start overflow-x-auto rounded-[1rem] border border-white/8 bg-[#17181b] p-1 md:inline-flex">
-            {WORKSPACE_TABS.map(([v, l]) => (
+            {workspaceTabs.map(([v, l]) => (
               <TabsTrigger key={v} value={v} className="h-10 min-w-[120px] flex-1 rounded-[0.85rem] px-4 text-sm font-semibold text-zinc-400 data-[state=active]:bg-white data-[state=active]:text-black data-[state=active]:shadow-sm">{l}</TabsTrigger>
             ))}
           </TabsList>
@@ -1706,9 +1744,11 @@ function Workspace(p: {
               </div>
             ) : null}
           </TabsContent>
-          <TabsContent value="settings">
-            <Mt5Settings account={account} onSynced={p.onMt5Synced} />
-          </TabsContent>
+          {!embedded && account.platform === "mt5" ? (
+            <TabsContent value="settings">
+              <Mt5Settings account={account} onSynced={p.onMt5Synced} />
+            </TabsContent>
+          ) : null}
         </Tabs>
       {selectedTrade ? (
           <TradeEditor
