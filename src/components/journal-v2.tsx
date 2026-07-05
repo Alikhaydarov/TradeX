@@ -912,10 +912,13 @@ function Workspace(p: {
             <section className="rounded-[1.35rem] border border-white/8 bg-[#0b0b0b] p-4 shadow-[0_18px_46px_rgba(0,0,0,.2)] sm:p-5">
               <div className="flex flex-col gap-4 lg:flex-row lg:items-center">
                 <div>
-                  <h3 className="max-w-[10ch] text-[2.05rem] leading-[1.05] font-black tracking-tight text-white sm:max-w-none sm:text-xl">
-                    Welcome back, {account.name}
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-zinc-500">
+                    {account.name} <span className="mx-1 text-zinc-700">&gt;</span> Dashboard
+                  </p>
+                  <h3 className="mt-2 text-xl font-black tracking-tight text-white sm:text-2xl">
+                    Account overview
                   </h3>
-                  <p className="mt-2 text-sm text-zinc-500">{new Date().toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric", year: "numeric" })}</p>
+                  <p className="mt-1 text-sm text-zinc-500">{new Date().toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric", year: "numeric" })}</p>
                 </div>
                 <div className="grid grid-cols-[48px_minmax(0,1fr)_48px] gap-2 sm:flex sm:items-center lg:ml-auto">
                   <button type="button" className="grid size-12 place-items-center rounded-2xl border border-white/8 bg-black/20 text-zinc-300">

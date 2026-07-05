@@ -195,6 +195,29 @@ p, h1, h2, h3, h4, h5, h6, span, strong, small, button, a { overflow-wrap: anywh
 .premium-text-dim { color: rgba(255, 255, 255, 0.62); }
 .premium-shadow { box-shadow: 0 18px 58px rgba(0, 0, 0, 0.46); }
 
+[data-slot="dialog-overlay"],
+[data-slot="alert-dialog-overlay"] {
+  background: rgba(0, 0, 0, 0.92) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+[data-slot="dialog-content"],
+[data-slot="alert-dialog-content"],
+[data-slot="dropdown-menu-content"],
+[data-slot="dropdown-menu-sub-content"] {
+  background: #050505 !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+[data-slot="button"][data-variant="outline"],
+[data-slot="button"][data-variant="secondary"] {
+  background: #0b0b0b !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
 /* Onyx normalization for older hard-coded panels */
 [class*="bg-[#171717]"],
 [class*="bg-[#111111]"],

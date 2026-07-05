@@ -163,7 +163,7 @@ export function Pricing({ onLogin }: { onLogin?: () => void } = {}) {
   return (
     <main className="min-h-[100dvh] bg-background px-3 py-6 text-foreground sm:px-5 lg:px-8">
       <div className="mx-auto max-w-6xl">
-        <section className="overflow-hidden rounded-[2rem] border border-white/10 bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,.09),transparent_38%),linear-gradient(180deg,rgba(255,255,255,.045),rgba(255,255,255,.015))] p-5 shadow-[0_28px_90px_rgba(0,0,0,.52)] backdrop-blur-2xl sm:p-7">
+        <section className="overflow-hidden rounded-[2rem] border border-white/10 bg-[#050505] p-5 shadow-[0_28px_90px_rgba(0,0,0,.52)] sm:p-7">
           <div className="grid gap-6 lg:grid-cols-[1.1fr_.9fr] lg:items-end">
             <div>
               <Badge className="rounded-full bg-white text-black hover:bg-white">
@@ -178,7 +178,7 @@ export function Pricing({ onLogin }: { onLogin?: () => void } = {}) {
 
               <div className="mt-5 flex flex-wrap gap-2">
                 {["Verified badge", "AI trade coach", "MT5 Auto Sync", "Read-only analytics"].map((item) => (
-                  <span key={item} className="rounded-full border border-white/10 bg-white/[.045] px-3 py-2 text-xs font-bold text-zinc-300">
+                  <span key={item} className="rounded-full border border-white/10 bg-[#0d0d0d] px-3 py-2 text-xs font-bold text-zinc-300">
                     {item}
                   </span>
                 ))}
@@ -190,7 +190,7 @@ export function Pricing({ onLogin }: { onLogin?: () => void } = {}) {
                   ["$25", "Pro"],
                   ["24/7", "Sync flow"],
                 ].map(([value, label]) => (
-                  <div key={label} className="rounded-2xl border border-white/8 bg-white/[.025] px-3 py-3">
+                  <div key={label} className="rounded-2xl border border-white/8 bg-[#0b0b0b] px-3 py-3">
                     <p className="text-lg font-black text-white">{value}</p>
                     <p className="mt-1 text-[11px] uppercase tracking-wider text-zinc-500">{label}</p>
                   </div>
@@ -198,7 +198,7 @@ export function Pricing({ onLogin }: { onLogin?: () => void } = {}) {
               </div>
             </div>
 
-            <Card className="border-white/10 bg-black/25 py-0">
+            <Card className="border-white/10 bg-[#0b0b0b] py-0">
               <CardHeader className="px-5 py-5">
                 <CardTitle className="flex items-center gap-2 text-white">
                   <Sparkles className="size-5 text-sky-300" /> Current account access
@@ -211,16 +211,16 @@ export function Pricing({ onLogin }: { onLogin?: () => void } = {}) {
               </CardHeader>
               <CardContent className="space-y-3 px-5 pb-5">
                 {activeFeatures.map((feature) => (
-                  <div key={feature.label} className="flex items-center justify-between rounded-2xl border border-white/8 bg-white/[.035] px-4 py-3">
+                  <div key={feature.label} className="flex items-center justify-between rounded-2xl border border-white/8 bg-[#0d0d0d] px-4 py-3">
                     <span className="text-sm font-semibold text-white">{feature.label}</span>
-                    <span className={`rounded-full px-2.5 py-1 text-[11px] font-black ${feature.active ? "bg-emerald-400/15 text-emerald-300" : "bg-white/[.06] text-zinc-500"}`}>
+                    <span className={`rounded-full px-2.5 py-1 text-[11px] font-black ${feature.active ? "bg-emerald-400/15 text-emerald-300" : "bg-[#161616] text-zinc-500"}`}>
                       {feature.active ? "Enabled" : "Locked"}
                     </span>
                   </div>
                 ))}
               </CardContent>
               {premium?.isPremium ? (
-                <CardFooter className="justify-end gap-2 border-white/8 bg-white/[.025] px-5">
+                <CardFooter className="justify-end gap-2 border-white/8 bg-[#090909] px-5">
                   <Button
                     variant="outline"
                     className="h-10 rounded-2xl border-white/10 bg-transparent text-zinc-200 hover:bg-white/[.04]"
@@ -253,8 +253,8 @@ export function Pricing({ onLogin }: { onLogin?: () => void } = {}) {
           {plans.map((plan) => {
             const loading = checkoutPlan === plan.id;
             return (
-              <Card key={plan.id} className="relative overflow-hidden py-0">
-                <div className={`pointer-events-none absolute inset-x-0 top-0 h-32 bg-gradient-to-br ${plan.accent}`} />
+              <Card key={plan.id} className="relative overflow-hidden border-white/10 bg-[#0b0b0b] py-0">
+                <div className="pointer-events-none absolute inset-x-0 top-0 h-20 bg-gradient-to-b from-white/6 to-transparent" />
                 <CardHeader className="relative px-5 py-5">
                   <div className="flex items-start justify-between gap-4">
                     <div>
@@ -272,7 +272,7 @@ export function Pricing({ onLogin }: { onLogin?: () => void } = {}) {
                 </CardHeader>
                 <CardContent className="relative space-y-3 px-5 pb-5">
                   {plan.features.map((feature) => (
-                    <div key={feature} className="flex items-start gap-3 rounded-2xl border border-white/8 bg-black/15 px-4 py-3">
+                    <div key={feature} className="flex items-start gap-3 rounded-2xl border border-white/8 bg-[#0d0d0d] px-4 py-3">
                       <span className="mt-0.5 rounded-full bg-emerald-400/10 p-1 text-emerald-300">
                         <Check className="size-3.5" />
                       </span>
@@ -280,7 +280,7 @@ export function Pricing({ onLogin }: { onLogin?: () => void } = {}) {
                     </div>
                   ))}
                 </CardContent>
-                <CardFooter className="relative flex-col items-stretch gap-3 border-white/8 bg-white/[.025] px-5">
+                <CardFooter className="relative flex-col items-stretch gap-3 border-white/8 bg-[#090909] px-5">
                   <Button
                     className="h-12 rounded-2xl bg-white text-black hover:bg-zinc-200"
                     onClick={() => void startCheckout(plan)}
@@ -314,7 +314,7 @@ export function Pricing({ onLogin }: { onLogin?: () => void } = {}) {
                 ["AI coaching", "Trade analysis endpoints unlock for review summaries and risk prompts."],
                 ["Auto Sync", "MT5 account connections become available inside account settings."],
               ].map(([title, body]) => (
-                <div key={title} className="rounded-3xl border border-white/8 bg-black/15 p-4">
+                <div key={title} className="rounded-3xl border border-white/8 bg-[#0d0d0d] p-4">
                   <h3 className="text-sm font-black text-white">{title}</h3>
                   <p className="mt-2 text-xs leading-6 text-zinc-500">{body}</p>
                 </div>
@@ -335,7 +335,7 @@ export function Pricing({ onLogin }: { onLogin?: () => void } = {}) {
                 "Premium access is controlled on the backend, so locked APIs stay protected even if the UI is bypassed.",
                 "Pro tier is ready for future advanced AI and connector features without changing today's base app flow.",
               ].map((item) => (
-                <div key={item} className="rounded-2xl border border-white/8 bg-black/15 px-4 py-3 text-sm leading-6 text-zinc-300">
+                <div key={item} className="rounded-2xl border border-white/8 bg-[#0d0d0d] px-4 py-3 text-sm leading-6 text-zinc-300">
                   {item}
                 </div>
               ))}

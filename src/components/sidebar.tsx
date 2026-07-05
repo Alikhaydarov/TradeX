@@ -12,7 +12,6 @@ import {
   Plus,
   ShieldCheck,
   SquareChartGantt,
-  Target,
   TrendingUp,
   UserRound,
   X,
@@ -85,16 +84,15 @@ export function Sidebar({
   }, [user]);
 
   const baseNav = [
-    { id: "feed" as const, label: t("home"), hint: t("marketPulse"), icon: Home },
-    { id: "dashboard" as const, label: "Dashboard", hint: "Selected account overview", icon: LayoutDashboard },
-    { id: "calendar" as const, label: "Calendar", hint: "Monthly execution view", icon: CalendarDays },
-    { id: "trades" as const, label: "Trades", hint: "Trade log and review", icon: SquareChartGantt },
-    { id: "analytics" as const, label: "Analytics", hint: "Performance breakdown", icon: TrendingUp },
-    { id: "bible" as const, label: "Strategies", hint: "Trading bible and playbook", icon: Target },
-    { id: "account" as const, label: t("profile"), hint: t("proofSettings"), icon: UserRound },
+    { id: "feed" as const, label: t("home"), icon: Home },
+    { id: "dashboard" as const, label: "Dashboard", icon: LayoutDashboard },
+    { id: "calendar" as const, label: "Calendar", icon: CalendarDays },
+    { id: "trades" as const, label: "Trades", icon: SquareChartGantt },
+    { id: "analytics" as const, label: "Analytics", icon: TrendingUp },
+    { id: "account" as const, label: t("profile"), icon: UserRound },
   ];
   const nav = isAdmin
-    ? [...baseNav, { id: "admin" as const, label: "Admin", hint: "User verification", icon: ShieldCheck }]
+    ? [...baseNav, { id: "admin" as const, label: "Admin", icon: ShieldCheck }]
     : baseNav;
   const openAccountsPage = () => {
     onChange("accounts");
@@ -131,8 +129,7 @@ export function Sidebar({
 
         <nav className="mt-6 space-y-1.5">
           {nav.map((item) => {
-            const { id, label, hint, icon: Icon } = item;
-            const unavailable = "unavailable" in item && item.unavailable;
+            const { id, label, icon: Icon } = item;
             const selected = active === id;
             return (
               <button
@@ -147,13 +144,7 @@ export function Sidebar({
                 <span className={`grid h-9 w-9 place-items-center rounded-2xl transition-colors duration-100 ${selected ? "bg-white/14 text-zinc-100" : "bg-white/[.035] text-zinc-500 group-hover:bg-white/[.06] group-hover:text-zinc-300"}`}>
                   <Icon size={18} strokeWidth={selected ? 2.5 : 2} />
                 </span>
-                <span className="min-w-0">
-                  <span className="flex items-center gap-2">
-                    <strong className="block text-sm">{label}</strong>
-                    {unavailable ? <small className="rounded-md border border-amber-300/15 bg-amber-400/10 px-1.5 py-0.5 text-[8px] font-black uppercase text-amber-200">Soon</small> : null}
-                  </span>
-                  <small className="block truncate text-[10px] text-zinc-500">{hint}</small>
-                </span>
+                <strong className="block min-w-0 truncate text-sm">{label}</strong>
               </button>
             );
           })}
@@ -164,7 +155,7 @@ export function Sidebar({
         </button>
 
         <div className="mt-auto">
-          <div className="flex w-full items-center gap-3 rounded-2xl border border-white/10 bg-white/[.035] p-2 text-left shadow-[inset_0_1px_0_rgba(255,255,255,.035)] backdrop-blur-xl transition-colors hover:bg-white/[.06]">
+          <div className="flex w-full items-center gap-3 rounded-2xl border border-white/10 bg-[#0b0b0b] p-2 text-left shadow-[inset_0_1px_0_rgba(255,255,255,.035)] transition-colors hover:bg-[#121212]">
             <TraderAvatar name={name} value={avatar} className="h-10 w-10 text-xs" />
             <button onClick={openProfile} className="min-w-0 flex-1 text-left">
               <span className="flex min-w-0 items-center gap-1">
@@ -194,7 +185,7 @@ export function Sidebar({
 
       {!hideMobile && (
         <>
-          <header className="fixed inset-x-0 top-0 z-50 flex h-[72px] items-center border-b border-white/8 bg-black/95 px-4 backdrop-blur-xl lg:hidden">
+          <header className="fixed inset-x-0 top-0 z-50 flex h-[72px] items-center border-b border-white/8 bg-black px-4 lg:hidden">
             <button
               type="button"
               onClick={() => setMobileMenuOpen(true)}
@@ -261,10 +252,9 @@ export function Sidebar({
                 </div>
 
                 <div className="flex-1 overflow-y-auto px-5 py-5">
-                  <p className="mb-3 text-[11px] font-bold uppercase tracking-[0.2em] text-zinc-500">Workspace</p>
                   <nav className="space-y-2">
                     {nav.map((item) => {
-                      const { id, label, hint, icon: Icon } = item;
+                      const { id, label, icon: Icon } = item;
                       const selected = active === id;
                       return (
                         <button
@@ -281,10 +271,7 @@ export function Sidebar({
                           <span className={`grid size-11 place-items-center rounded-2xl ${selected ? "bg-white/[.10] text-white" : "bg-white/[.03] text-zinc-500"}`}>
                             <Icon size={20} />
                           </span>
-                          <span className="min-w-0">
-                            <strong className="block text-base">{label}</strong>
-                            <small className="block truncate text-xs text-zinc-500">{hint}</small>
-                          </span>
+                          <strong className="block min-w-0 truncate text-base">{label}</strong>
                         </button>
                       );
                     })}
@@ -292,7 +279,7 @@ export function Sidebar({
                 </div>
 
                 <div className="border-t border-white/8 p-5">
-                  <div className="flex w-full items-center gap-3 rounded-2xl border border-white/10 bg-white/[.03] p-3 text-left">
+                  <div className="flex w-full items-center gap-3 rounded-2xl border border-white/10 bg-[#0b0b0b] p-3 text-left">
                     <TraderAvatar name={name} value={avatar} className="h-11 w-11 text-xs" />
                     <button onClick={openProfile} className="min-w-0 flex-1 text-left">
                       <strong className="block truncate text-sm text-white">{name}</strong>

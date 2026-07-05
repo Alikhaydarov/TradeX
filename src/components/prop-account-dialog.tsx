@@ -346,7 +346,7 @@ export function PropAccountDialog({
                   </div>
                 ) : null}
 
-                <div className="mx-auto max-w-2xl rounded-2xl border border-white/10 bg-white/[.035] p-3">
+                <div className="mx-auto max-w-2xl rounded-2xl border border-white/10 bg-[#0b0b0b] p-3">
                   <div className="flex items-center gap-2 text-sm text-zinc-400">
                     <Search size={16} />
                     <span className="font-semibold">Premium connectors and CSV imports</span>
@@ -379,10 +379,10 @@ export function PropAccountDialog({
                       className={cn(
                         "group relative min-h-[196px] rounded-[28px] border p-4 text-left shadow-[0_18px_48px_rgba(0,0,0,.22)] transition",
                         locked
-                          ? "border-sky-400/20 bg-sky-400/[.03] hover:border-sky-300/30 hover:bg-sky-400/[.05]"
+                          ? "border-sky-400/20 bg-[#0b0b0b] hover:border-sky-300/30 hover:bg-[#121212]"
                           : item.mode === "coming"
-                            ? "border-white/5 bg-white/[.018] opacity-70"
-                            : "border-white/10 bg-white/[.035] hover:border-white/25 hover:bg-white/[.06]"
+                            ? "border-white/5 bg-[#080808] opacity-70"
+                            : "border-white/10 bg-[#0b0b0b] hover:border-white/25 hover:bg-[#121212]"
                       )}
                     >
                       <div className={cn("transition", locked ? "pointer-events-none blur-[2px] opacity-45" : "")}>
@@ -409,13 +409,13 @@ export function PropAccountDialog({
                         </div>
                       </div>
                       {locked ? (
-                        <span className="absolute inset-0 flex flex-col items-center justify-center rounded-[28px] bg-black/18 px-4 text-center backdrop-blur-sm">
+                        <span className="absolute inset-0 flex flex-col items-center justify-center rounded-[28px] bg-black/92 px-4 text-center">
                           <span className="grid size-10 place-items-center rounded-2xl border border-sky-300/20 bg-sky-400/12 text-sky-100">
                             <LockKeyhole size={16} />
                           </span>
                           <span className="mt-3 text-sm font-black text-white">Premium connector</span>
                           <span className="mt-1 text-[11px] font-medium leading-5 text-zinc-300">Upgrade to unlock {item.name} and advanced sync.</span>
-                          <span className="mt-4 inline-flex rounded-full border border-white/12 bg-white/10 px-3 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-white">Upgrade now</span>
+                          <span className="mt-4 inline-flex rounded-full border border-white/12 bg-[#111111] px-3 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-white">Upgrade now</span>
                         </span>
                       ) : null}
                       {locked ? <span className="absolute right-4 top-4 grid size-8 place-items-center rounded-2xl border border-sky-300/15 bg-sky-400/10 text-sky-200"><LockKeyhole size={14} /></span> : null}
@@ -428,9 +428,9 @@ export function PropAccountDialog({
             {step === 3 ? (
               <div className="grid overflow-hidden rounded-2xl border border-white/10 bg-[#0d0d0d] md:grid-cols-[1.1fr_.9fr]">
                 <div className="space-y-4 p-5 sm:p-6">
-                  <div className="rounded-2xl border border-white/10 bg-white/[.035] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,.03)]">
+                  <div className="rounded-2xl border border-white/10 bg-[#0b0b0b] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,.03)]">
                     <div className="flex flex-wrap items-center gap-2">
-                      <span className="rounded-full bg-white/[.06] px-2.5 py-1 text-[10px] font-black uppercase tracking-wider text-zinc-300">
+                      <span className="rounded-full bg-[#111111] px-2.5 py-1 text-[10px] font-black uppercase tracking-wider text-zinc-300">
                         {accountType === "prop" ? "Prop account" : "Real account"}
                       </span>
                       {accountKind === "automatic" ? <PlatformLogoBadge platform={selectedPlatform.id} compact /> : null}
@@ -474,13 +474,13 @@ export function PropAccountDialog({
                   ) : null}
 
                   {accountKind === "manual" ? (
-                    <div className="rounded-xl border border-white/10 bg-white/[.035] p-4 text-xs leading-5 text-zinc-400">
+                    <div className="rounded-xl border border-white/10 bg-[#0b0b0b] p-4 text-xs leading-5 text-zinc-400">
                       Manual account creates a clean journal without connector setup. You can add trades from the journal after creating it.
                     </div>
                   ) : null}
                 </div>
 
-                <div className="border-t border-white/10 bg-white/[.025] p-5 sm:p-6 md:border-l md:border-t-0">
+                <div className="border-t border-white/10 bg-[#090909] p-5 sm:p-6 md:border-l md:border-t-0">
                   <SideGuide accountKind={accountKind} platform={selectedPlatform} />
                 </div>
               </div>
@@ -514,7 +514,7 @@ export function PropAccountDialog({
           <input type="hidden" name="status" value={createsProcessingMt5 ? "Processing" : "Active"} />
         </form>
         {premiumOverlay ? (
-          <div className="absolute inset-0 z-20 flex items-center justify-center bg-black/55 p-4 backdrop-blur-md">
+          <div className="absolute inset-0 z-20 flex items-center justify-center bg-black/94 p-4">
             <div className="w-full max-w-md rounded-[28px] border border-white/10 bg-[#0d0d0d]/95 p-6 text-center shadow-[0_30px_80px_rgba(0,0,0,.55)]">
               <span className="mx-auto grid size-14 place-items-center rounded-2xl border border-sky-300/15 bg-sky-400/10 text-sky-200">
                 <LockKeyhole size={22} />
@@ -524,7 +524,7 @@ export function PropAccountDialog({
                 {premiumOverlay.name}, AI trade analysis and advanced connector stack are part of TradeWay Premium.
               </p>
               <div className="mt-6 grid gap-2 sm:grid-cols-2">
-                <Button type="button" variant="outline" className="border-white/10 bg-white/[.03]" onClick={() => setPremiumOverlay(null)}>
+                <Button type="button" variant="outline" className="border-white/10 bg-[#0b0b0b]" onClick={() => setPremiumOverlay(null)}>
                   <ArrowLeft size={15} /> Back
                 </Button>
                 <Button
@@ -553,9 +553,9 @@ function ChoiceCard({ icon, title, text, onClick }: { icon: React.ReactNode; tit
     <button
       type="button"
       onClick={onClick}
-      className="group flex min-h-[280px] flex-col items-center justify-center rounded-[28px] border border-white/10 bg-white/[.02] p-8 text-center shadow-[inset_0_1px_0_rgba(255,255,255,.03)] transition hover:border-white/25 hover:bg-white/[.05]"
+      className="group flex min-h-[280px] flex-col items-center justify-center rounded-[28px] border border-white/10 bg-[#0b0b0b] p-8 text-center shadow-[inset_0_1px_0_rgba(255,255,255,.03)] transition hover:border-white/25 hover:bg-[#121212]"
     >
-      <span className="grid size-12 place-items-center rounded-2xl bg-white/10 text-white">{icon}</span>
+      <span className="grid size-12 place-items-center rounded-2xl bg-[#161616] text-white">{icon}</span>
       <h3 className="mt-6 text-2xl font-black">{title}</h3>
       <p className="mt-4 max-w-xs text-sm font-semibold leading-6 text-zinc-500">{text}</p>
       <ChevronRight className="mt-8 transition group-hover:translate-x-1" size={28} />
@@ -584,7 +584,7 @@ function AccountBasics({
 }) {
   return (
     <div className="space-y-4">
-      <div className="grid grid-cols-2 gap-2 rounded-xl border border-white/10 bg-white/[.035] p-1">
+      <div className="grid grid-cols-2 gap-2 rounded-xl border border-white/10 bg-[#0b0b0b] p-1">
         {(["prop", "real"] as const).map((type) => (
           <button
             key={type}
@@ -633,10 +633,10 @@ function AccountBasics({
 
 function Mt5Fields({ connectNow, setConnectNow }: { connectNow: boolean; setConnectNow: (v: boolean | ((value: boolean) => boolean)) => void }) {
   return (
-    <div className="rounded-xl border border-white/10 bg-white/[.035] p-4">
+    <div className="rounded-xl border border-white/10 bg-[#0b0b0b] p-4">
       <button type="button" onClick={() => setConnectNow((value) => !value)} className="mb-4 flex w-full items-center justify-between text-left">
         <span className="flex items-center gap-2 text-sm font-black text-zinc-100"><KeyRound size={15} /> Connect MT5 now</span>
-        <span className={cn("rounded-full px-2 py-1 text-[10px] font-black uppercase", connectNow ? "bg-emerald-400/15 text-emerald-200" : "bg-white/10 text-zinc-400")}>{connectNow ? "On" : "Later"}</span>
+        <span className={cn("rounded-full px-2 py-1 text-[10px] font-black uppercase", connectNow ? "bg-emerald-400/15 text-emerald-200" : "bg-[#161616] text-zinc-400")}>{connectNow ? "On" : "Later"}</span>
       </button>
       {connectNow ? (
         <div className="grid gap-3">
@@ -686,7 +686,7 @@ function SideGuide({ accountKind, platform }: { accountKind: AccountKind | null;
     <div className="space-y-6">
       <div className="flex items-center gap-3">
         {isManual ? (
-          <span className="grid size-10 place-items-center rounded-xl bg-white/10 text-zinc-200">
+            <span className="grid size-10 place-items-center rounded-xl bg-[#161616] text-zinc-200">
             <Pencil size={18} />
           </span>
         ) : (
@@ -717,7 +717,7 @@ function SideGuide({ accountKind, platform }: { accountKind: AccountKind | null;
 function GuideItem({ number, title, text }: { number: string; title: string; text: string }) {
   return (
     <div>
-      <p className="flex items-center gap-2 font-black text-zinc-100"><span className="grid size-5 place-items-center rounded-full bg-white text-[11px] text-black">{number}</span>{title}</p>
+      <p className="flex items-center gap-2 font-black text-zinc-100"><span className="grid size-5 place-items-center rounded-full bg-zinc-100 text-[11px] text-black">{number}</span>{title}</p>
       <p className="mt-1 pl-7 text-xs leading-5 text-zinc-500">{text}</p>
     </div>
   );
