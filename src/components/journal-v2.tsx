@@ -772,7 +772,7 @@ function Workspace(p: {
         </div>
       </header>
 
-      <div className="space-y-3 p-3 sm:p-4 lg:space-y-4 lg:p-6">
+      <div className="space-y-3 p-3 sm:p-4 lg:space-y-4 lg:p-5">
         {!embedded ? (
           <div className="w-full sm:w-[320px]">
             <span className="mb-1.5 block text-[10px] font-semibold uppercase tracking-widest text-[#8a8a8a]">Account</span>
@@ -908,56 +908,56 @@ function Workspace(p: {
           </TabsContent>
 
           {/* Overview */}
-          <TabsContent value="overview" className="space-y-4">
-            <section className="rounded-[1.35rem] border border-white/8 bg-[#0b0b0b] p-4 shadow-[0_18px_46px_rgba(0,0,0,.2)] sm:p-5">
-              <div className="flex flex-col gap-4 lg:flex-row lg:items-center">
+          <TabsContent value="overview" className="space-y-3">
+            <section className="rounded-[1.2rem] border border-white/8 bg-[#0b0b0b] p-3 shadow-[0_18px_46px_rgba(0,0,0,.2)] sm:p-4">
+              <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
                 <div>
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-zinc-500">
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-zinc-500">
                     {account.name} <span className="mx-1 text-zinc-700">&gt;</span> Dashboard
                   </p>
-                  <h3 className="mt-2 text-xl font-black tracking-tight text-white sm:text-2xl">
+                  <h3 className="mt-1.5 text-lg font-black tracking-tight text-white sm:text-xl">
                     Account overview
                   </h3>
-                  <p className="mt-1 text-sm text-zinc-500">{new Date().toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric", year: "numeric" })}</p>
+                  <p className="mt-1 text-xs text-zinc-500">{new Date().toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric", year: "numeric" })}</p>
                 </div>
-                <div className="grid grid-cols-[48px_minmax(0,1fr)_48px] gap-2 sm:flex sm:items-center lg:ml-auto">
-                  <button type="button" className="grid size-12 place-items-center rounded-2xl border border-white/8 bg-black/20 text-zinc-300">
+                <div className="grid grid-cols-[40px_minmax(0,1fr)_40px] gap-2 sm:flex sm:items-center lg:ml-auto">
+                  <button type="button" className="grid size-10 place-items-center rounded-xl border border-white/8 bg-black/20 text-zinc-300">
                     <ChevronLeft size={15} />
                   </button>
-                  <div className="grid h-12 place-items-center rounded-2xl border border-white/8 bg-black/20 px-4 text-sm font-semibold text-white">Current Week</div>
-                  <button type="button" className="grid size-12 place-items-center rounded-2xl border border-white/8 bg-black/20 text-zinc-300">
+                  <div className="grid h-10 place-items-center rounded-xl border border-white/8 bg-black/20 px-3 text-xs font-semibold text-white">Current Week</div>
+                  <button type="button" className="grid size-10 place-items-center rounded-xl border border-white/8 bg-black/20 text-zinc-300">
                     <ChevronRight size={15} />
                   </button>
                 </div>
               </div>
 
-              <div className="mt-5 grid grid-cols-2 gap-2 xl:grid-cols-7">
+              <div className="mt-4 grid grid-cols-2 gap-2 xl:grid-cols-7">
                 {weeklyStrip.map((day) => (
-                  <div key={day.key} className="rounded-[1rem] border border-white/8 bg-black/18 px-3 py-3 sm:px-4 sm:py-3.5">
+                  <div key={day.key} className="rounded-[0.95rem] border border-white/8 bg-black/18 px-3 py-2.5 sm:px-3.5 sm:py-3">
                     <div className="flex items-center justify-between gap-2">
-                      <span className="text-sm font-bold text-white">{day.label}</span>
-                      <span className={`text-sm font-black ${day.percent >= 0 ? "text-emerald-400" : "text-rose-400"}`}>{day.percent >= 0 ? "+" : ""}{day.percent.toFixed(1)}%</span>
+                      <span className="text-xs font-bold text-white sm:text-sm">{day.label}</span>
+                      <span className={`text-xs font-black sm:text-sm ${day.percent >= 0 ? "text-emerald-400" : "text-rose-400"}`}>{day.percent >= 0 ? "+" : ""}{day.percent.toFixed(1)}%</span>
                     </div>
-                    <p className="mt-2 text-xs text-zinc-500">{day.trades} trade{day.trades === 1 ? "" : "s"}</p>
+                    <p className="mt-1.5 text-[11px] text-zinc-500">{day.trades} trade{day.trades === 1 ? "" : "s"}</p>
                   </div>
                 ))}
               </div>
             </section>
 
-            <div className="grid gap-4 xl:grid-cols-[minmax(0,1.15fr)_minmax(340px,.85fr)_minmax(340px,.85fr)]">
-              <section className="overflow-hidden rounded-[1.35rem] border border-white/8 bg-[#0b0b0b] shadow-[0_18px_46px_rgba(0,0,0,.2)] xl:col-span-2">
-                <div className="flex flex-col gap-4 border-b border-white/8 px-4 py-4 sm:px-5 lg:flex-row lg:items-start">
+            <div className="grid gap-3 xl:grid-cols-[minmax(0,1.15fr)_minmax(300px,.85fr)_minmax(300px,.85fr)]">
+              <section className="overflow-hidden rounded-[1.2rem] border border-white/8 bg-[#0b0b0b] shadow-[0_18px_46px_rgba(0,0,0,.2)] xl:col-span-2">
+                <div className="flex flex-col gap-3 border-b border-white/8 px-3 py-3 sm:px-4 lg:flex-row lg:items-start">
                   <div className="min-w-0">
-                    <h3 className="text-base font-black text-white">Account Balance</h3>
+                    <h3 className="text-sm font-black text-white sm:text-base">Account Balance</h3>
                     <p className="mt-1 text-xs text-zinc-500">{account.name} equity curve across closed trades.</p>
                   </div>
-                  <div className="grid grid-cols-1 gap-3 sm:grid-cols-3 lg:ml-auto lg:min-w-[560px]">
+                  <div className="grid grid-cols-1 gap-2 sm:grid-cols-3 lg:ml-auto lg:min-w-[520px]">
                     <BalanceMetric label="Current P&L" value={`${currentPnl >= 0 ? "+" : ""}${cash.format(currentPnl)}`} tone={currentPnl >= 0 ? "good" : "bad"} />
                     <BalanceMetric label="Equity" value={cash.format(currentEquity)} />
                     <BalanceMetric label="Closed balance" value={cash.format(currentEquity)} />
                   </div>
                 </div>
-                <div className="h-[260px] px-1 pb-3 pt-2 sm:h-[390px] sm:px-4 sm:pb-4 sm:pt-3">
+                <div className="h-[240px] px-1 pb-3 pt-2 sm:h-[340px] sm:px-3 sm:pb-3 sm:pt-2.5">
                   {equity.length > 1 ? (
                     <ResponsiveContainer width="100%" height="100%">
                       <AreaChart data={equity} margin={{ left: 8, right: 14, top: 16, bottom: 4 }}>
@@ -979,16 +979,16 @@ function Workspace(p: {
                 </div>
               </section>
 
-              <div className="grid gap-4">
-                <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-1">
+              <div className="grid gap-3">
+                <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-1">
                   <MetricPanel title="Most Traded Asset" value={symbolStats[0]?.symbol || "N/A"} note={symbolStats[0] ? `${symbolStats[0].trades} trades` : "No data yet"} />
                   <MetricPanel title="Total Trades" value={String(trades.length)} note={`${stats.wins} winning / ${stats.losses} losing`} />
                 </div>
-                <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-1">
+                <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-1">
                   <MetricPanel title="Trade Winrate" value={`${stats.rate}%`} note={`${planRate}% discipline score`} accent="good" />
                   <MetricPanel title="Profit Factor" value={stats.pf.toFixed(2)} note={`${stats.pnl >= 0 ? "+" : ""}${cash.format(stats.pnl)} this month`} accent={stats.pf >= 1 ? "good" : "bad"} />
                 </div>
-                <section className="rounded-[1.2rem] border border-white/8 bg-[#0b0b0b] p-4">
+                <section className="rounded-[1.05rem] border border-white/8 bg-[#0b0b0b] p-3">
                   <div className="flex items-center justify-between gap-3">
                     <div>
                       <h4 className="text-sm font-black text-white">Challenge Limits</h4>
@@ -996,7 +996,7 @@ function Workspace(p: {
                     </div>
                     <span className="rounded-full border border-white/8 bg-black/20 px-2.5 py-1 text-[10px] font-bold text-zinc-400">{account.status}</span>
                   </div>
-                  <div className="mt-4 space-y-4">
+                  <div className="mt-3 space-y-3">
                     <ProgressBar label="Profit target" value={targetProgress} color="bg-emerald-500" />
                     <ProgressBar label="Max drawdown used" value={drawdownUsed} color="bg-rose-500" />
                     <div className="grid grid-cols-2 gap-2">
@@ -1008,12 +1008,12 @@ function Workspace(p: {
               </div>
             </div>
 
-            <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_360px]">
-              <section className="rounded-[1.3rem] border border-white/8 bg-[#0b0b0b] p-4 shadow-[0_18px_46px_rgba(0,0,0,.2)] sm:p-5">
+            <div className="grid gap-3 xl:grid-cols-[minmax(0,1fr)_340px]">
+              <section className="rounded-[1.2rem] border border-white/8 bg-[#0b0b0b] p-3 shadow-[0_18px_46px_rgba(0,0,0,.2)] sm:p-4">
                 <div className="flex items-center justify-between gap-3">
                   <div>
-                    <h3 className="text-lg font-black text-white">Recent Trades</h3>
-                    <p className="mt-1 text-sm text-zinc-500">Latest entries registered in this account.</p>
+                    <h3 className="text-base font-black text-white">Recent Trades</h3>
+                    <p className="mt-1 text-xs text-zinc-500">Latest entries registered in this account.</p>
                   </div>
                   <Button type="button" variant="outline" size="sm" className="border-white/10 bg-black/15" onClick={() => setActiveTab("trades")}>
                     See all
@@ -1049,11 +1049,11 @@ function Workspace(p: {
                 )}
               </section>
 
-              <section className="rounded-[1.3rem] border border-white/8 bg-[#0b0b0b] p-4 shadow-[0_18px_46px_rgba(0,0,0,.2)] sm:p-5">
+              <section className="rounded-[1.2rem] border border-white/8 bg-[#0b0b0b] p-3 shadow-[0_18px_46px_rgba(0,0,0,.2)] sm:p-4">
                 <div className="flex items-center justify-between gap-3">
                   <div>
-                    <h3 className="text-lg font-black text-white">High Impact News</h3>
-                    <p className="mt-1 text-sm text-zinc-500">Today&apos;s upcoming red events in New York time.</p>
+                    <h3 className="text-base font-black text-white">High Impact News</h3>
+                    <p className="mt-1 text-xs text-zinc-500">Today&apos;s upcoming red events in New York time.</p>
                   </div>
                 </div>
                 <div className="mt-4 space-y-2">
@@ -1079,7 +1079,7 @@ function Workspace(p: {
               </section>
             </div>
 
-            <section className="rounded-[1.3rem] border border-white/8 bg-[#0b0b0b] p-4 shadow-[0_18px_46px_rgba(0,0,0,.2)] sm:p-5">
+            <section className="rounded-[1.2rem] border border-white/8 bg-[#0b0b0b] p-3 shadow-[0_18px_46px_rgba(0,0,0,.2)] sm:p-4">
               <div className="flex items-center justify-between gap-3">
                 <div>
                   <h3 className="font-bold text-white">Live Positions</h3>
