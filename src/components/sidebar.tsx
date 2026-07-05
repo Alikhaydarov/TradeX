@@ -12,6 +12,7 @@ import {
   Plus,
   ShieldCheck,
   SquareChartGantt,
+  Target,
   TrendingUp,
   UserRound,
   X,
@@ -85,26 +86,18 @@ export function Sidebar({
 
   const baseNav = [
     { id: "feed" as const, label: t("home"), hint: t("marketPulse"), icon: Home },
+    { id: "dashboard" as const, label: "Dashboard", hint: "Selected account overview", icon: LayoutDashboard },
+    { id: "calendar" as const, label: "Calendar", hint: "Monthly execution view", icon: CalendarDays },
+    { id: "trades" as const, label: "Trades", hint: "Trade log and review", icon: SquareChartGantt },
+    { id: "analytics" as const, label: "Analytics", hint: "Performance breakdown", icon: TrendingUp },
+    { id: "bible" as const, label: "Strategies", hint: "Trading bible and playbook", icon: Target },
     { id: "account" as const, label: t("profile"), hint: t("proofSettings"), icon: UserRound },
   ];
   const nav = isAdmin
     ? [...baseNav, { id: "admin" as const, label: "Admin", hint: "User verification", icon: ShieldCheck }]
     : baseNav;
-  const journalNav = [
-    { id: "overview", label: "Dashboard", icon: LayoutDashboard },
-    { id: "calendar", label: "Calendar", icon: CalendarDays },
-    { id: "trades", label: "Trades", icon: SquareChartGantt },
-    { id: "analytics", label: "Analytics", icon: TrendingUp },
-  ] as const;
-
   const openAccountsPage = () => {
-    onChange("journal");
-    setMobileMenuOpen(false);
-  };
-
-  const openHomeTab = (tab: typeof journalNav[number]["id"]) => {
-    onChange("feed");
-    window.dispatchEvent(new CustomEvent("tradeway:home-tab", { detail: { tab } }));
+    onChange("accounts");
     setMobileMenuOpen(false);
   };
 
@@ -166,30 +159,6 @@ export function Sidebar({
           })}
         </nav>
 
-        {active === "feed" ? (
-          <div className="mt-5 space-y-2">
-            <p className="px-3 text-[11px] font-bold uppercase tracking-[0.2em] text-zinc-500">Workspace</p>
-            <div className="space-y-1">
-              {journalNav.map((item) => {
-                const Icon = item.icon;
-                return (
-                  <button
-                    key={item.id}
-                    type="button"
-                    onClick={() => openHomeTab(item.id)}
-                    className="flex w-full items-center gap-3 rounded-2xl px-3 py-2.5 text-left text-zinc-300 transition hover:bg-white/[.04] hover:text-white"
-                  >
-                    <span className="grid h-9 w-9 place-items-center rounded-2xl bg-white/[.035] text-zinc-400">
-                      <Icon size={17} />
-                    </span>
-                    <strong className="text-sm font-semibold">{item.label}</strong>
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-        ) : null}
-
         <button onClick={onPost} className="mt-5 flex items-center justify-center gap-2 rounded-2xl bg-white py-3 text-sm font-black text-zinc-950 shadow-[0_14px_32px_rgba(255,255,255,.08)] transition-colors hover:bg-zinc-200">
           <Plus size={18} /> {t("shareTrade")}
         </button>
@@ -236,7 +205,7 @@ export function Sidebar({
             </button>
             <div className="ml-3 min-w-0 flex-1">
               <p className="truncate text-lg font-black text-white">
-                {active === "journal" ? "Accounts" : nav.find((item) => item.id === active)?.label || "TradeWay"}
+                {active === "accounts" ? "Accounts" : nav.find((item) => item.id === active)?.label || "TradeWay"}
               </p>
               <p className="truncate text-xs text-zinc-500">
                 {activeAccount?.name || "All Accounts"}
@@ -320,29 +289,6 @@ export function Sidebar({
                       );
                     })}
                   </nav>
-                  {active === "feed" ? (
-                    <div className="mt-5">
-                      <p className="mb-3 text-[11px] font-bold uppercase tracking-[0.2em] text-zinc-500">Workspace</p>
-                      <div className="space-y-2">
-                        {journalNav.map((item) => {
-                          const Icon = item.icon;
-                          return (
-                            <button
-                              key={item.id}
-                              type="button"
-                              onClick={() => openHomeTab(item.id)}
-                              className="flex w-full items-center gap-3 rounded-[1.15rem] px-4 py-3 text-left text-zinc-300 transition hover:bg-white/[.04] hover:text-white"
-                            >
-                              <span className="grid size-11 place-items-center rounded-2xl bg-white/[.03] text-zinc-500">
-                                <Icon size={20} />
-                              </span>
-                              <strong className="block text-base">{item.label}</strong>
-                            </button>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  ) : null}
                 </div>
 
                 <div className="border-t border-white/8 p-5">

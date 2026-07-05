@@ -16,7 +16,7 @@ import { useAuth } from "./auth-context";
 import { apiRequest } from "@/lib/api-client";
 import type { Section } from "./types";
 
-const reservedPaths = new Set(["", "chat", "journal", "accounts", "backtest", "profile", "account", "pricing", "admin"]);
+const reservedPaths = new Set(["", "chat", "accounts", "dashboard", "calendar", "trades", "analytics", "strategies", "backtest", "profile", "account", "pricing", "admin"]);
 
 function usernameFromPath(pathname: string) {
   const first = pathname.replace(/^\//, "").split("/")[0] ?? "";
@@ -25,7 +25,12 @@ function usernameFromPath(pathname: string) {
 }
 
 function sectionFromPath(pathname: string): Section {
-  if (pathname.startsWith("/journal") || pathname.startsWith("/accounts")) return "journal";
+  if (pathname.startsWith("/accounts")) return "accounts";
+  if (pathname.startsWith("/dashboard")) return "dashboard";
+  if (pathname.startsWith("/calendar")) return "calendar";
+  if (pathname.startsWith("/trades")) return "trades";
+  if (pathname.startsWith("/analytics")) return "analytics";
+  if (pathname.startsWith("/strategies")) return "bible";
   if (pathname.startsWith("/pricing")) return "pricing";
   if (pathname.startsWith("/profile") || pathname.startsWith("/account") || usernameFromPath(pathname)) return "account";
   if (pathname.startsWith("/admin")) return "admin";
@@ -33,7 +38,12 @@ function sectionFromPath(pathname: string): Section {
 }
 
 function pathFromSection(section: Section) {
-  if (section === "journal") return "/accounts";
+  if (section === "accounts") return "/accounts";
+  if (section === "dashboard") return "/dashboard";
+  if (section === "calendar") return "/calendar";
+  if (section === "trades") return "/trades";
+  if (section === "analytics") return "/analytics";
+  if (section === "bible") return "/strategies";
   if (section === "account") return "/profile";
   if (section === "pricing") return "/pricing";
   if (section === "admin") return "/admin";
@@ -50,7 +60,7 @@ function getCurrentProfileUsername() {
   return usernameFromPath(window.location.pathname);
 }
 
-const cachedSections: Section[] = ["feed", "journal", "account", "pricing", "admin"];
+const cachedSections: Section[] = ["feed", "accounts", "dashboard", "calendar", "trades", "analytics", "bible", "account", "pricing", "admin"];
 
 function AuthGate({ onLogin }: { onLogin: () => void }) {
   return (
@@ -124,8 +134,13 @@ export function AppShell() {
   const [profileOpening, setProfileOpening] = useState(false);
   const [visitedSections, setVisitedSections] = useState<Record<Section, boolean>>(() => ({
     feed: true,
+    accounts: section === "accounts",
+    dashboard: section === "dashboard",
+    calendar: section === "calendar",
+    trades: section === "trades",
+    analytics: section === "analytics",
+    bible: section === "bible",
     chat: false,
-    journal: section === "journal",
     backtest: false,
     account: section === "account",
     pricing: section === "pricing",
@@ -220,7 +235,12 @@ export function AppShell() {
   };
 
   const renderSection = (item: Section) => {
-    if (item === "journal") return <Journal onLogin={openLogin} />;
+    if (item === "accounts") return <Journal onLogin={openLogin} mode="accounts" />;
+    if (item === "dashboard") return <Journal onLogin={openLogin} mode="workspace" forcedTab="overview" />;
+    if (item === "calendar") return <Journal onLogin={openLogin} mode="workspace" forcedTab="calendar" />;
+    if (item === "trades") return <Journal onLogin={openLogin} mode="workspace" forcedTab="trades" />;
+    if (item === "analytics") return <Journal onLogin={openLogin} mode="workspace" forcedTab="analytics" />;
+    if (item === "bible") return <Journal onLogin={openLogin} mode="workspace" forcedTab="bible" />;
     if (item === "account") return <Account onLogin={openLogin} profileUsername={profileUsername || undefined} />;
     if (item === "pricing") return <Pricing />;
     if (item === "admin" && isAdmin) return <AdminPanel onLogin={openLogin} />;

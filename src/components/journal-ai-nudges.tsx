@@ -238,8 +238,11 @@ export function JournalAiNudges({ section }: { section: Section }) {
   const dashboard = useMemo(() => buildCoachDashboard(entries), [entries]);
   const warningCount = dashboard.alerts.filter((nudge) => nudge.type === "warning").length;
 
+  const journalSections: Section[] = ["accounts", "dashboard", "calendar", "trades", "analytics", "bible"];
+  const isWorkspaceSection = journalSections.includes(section);
+
   const load = useCallback(async () => {
-    if (section !== "journal") return;
+    if (!isWorkspaceSection) return;
     setLoading(true);
     try {
       const response = await apiRequest<{ entries: EntryRow[] }>("/api/journal");
@@ -249,18 +252,18 @@ export function JournalAiNudges({ section }: { section: Section }) {
     } finally {
       setLoading(false);
     }
-  }, [section]);
+  }, [isWorkspaceSection]);
 
   useEffect(() => {
-    if (section !== "journal") return;
+    if (!isWorkspaceSection) return;
     setDismissed(false);
     setOpen(false);
     void load();
     const timer = window.setInterval(() => void load(), 45000);
     return () => window.clearInterval(timer);
-  }, [section, load]);
+  }, [isWorkspaceSection, load]);
 
-  if (section !== "journal" || dismissed || warningCount === 0) return null;
+  if (!isWorkspaceSection || dismissed || warningCount === 0) return null;
 
   return (
     <aside className="fixed bottom-[5.4rem] right-3 z-[45] sm:right-4 lg:bottom-5 lg:right-5">

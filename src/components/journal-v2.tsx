@@ -120,11 +120,11 @@ function buildWeeklyStrip(account: PropAccount, month: Date, trades: JournalEntr
 
 export function JournalV2({
   onLogin,
-  embedded = false,
+  mode = "accounts",
   forcedTab,
 }: {
   onLogin: () => void;
-  embedded?: boolean;
+  mode?: "accounts" | "workspace";
   forcedTab?: WorkspaceTab;
 }) {
   const { user } = useAuth();
@@ -353,6 +353,8 @@ export function JournalV2({
 
   if (loading) return <div className="grid min-h-[70dvh] place-items-center"><LoaderCircle className="animate-spin text-zinc-300" size={28} /></div>;
 
+  const embedded = mode === "workspace";
+
   return (
     <div className={embedded ? "min-h-0" : "min-h-full"}>
       {error && (
@@ -362,9 +364,9 @@ export function JournalV2({
           <button onClick={() => setError(null)} className="ml-auto"><X size={14} /></button>
         </div>
       )}
-      {account
-        ? <Workspace embedded={embedded} forcedTab={forcedTab} account={account} accounts={accounts} stats={stats} equity={equity} setups={setups} mistakes={mistakes} planRate={planRate} monthCount={monthEntries.length} calendar={calendar} trades={shown} bibleTrades={bibleEntries} query={query} month={month} deleting={deleting === account.id} saving={saving} tradeRange={tradeRange} customStart={customStart} customEnd={customEnd} onRange={setTradeRange} onCustomStart={setCustomStart} onCustomEnd={setCustomEnd} onQuery={setQuery} onBack={() => setActiveAccount(null)} onAccountChange={setActiveAccount} onTrade={() => setTradeOpen(true)} onDelete={() => removeAccount(account)} onCsv={exportCsv} onPrev={() => shiftMonth(-1)} onNext={() => shiftMonth(1)} onToday={() => setMonth(new Date())} onUpdateTrade={updateTrade} onRemoveTrade={removeTrade} onMt5Synced={reloadJournal} />
-        : embedded ? (
+      {mode === "workspace" ? (
+        account ? <Workspace embedded forcedTab={forcedTab} account={account} accounts={accounts} stats={stats} equity={equity} setups={setups} mistakes={mistakes} planRate={planRate} monthCount={monthEntries.length} calendar={calendar} trades={shown} bibleTrades={bibleEntries} query={query} month={month} deleting={deleting === account.id} saving={saving} tradeRange={tradeRange} customStart={customStart} customEnd={customEnd} onRange={setTradeRange} onCustomStart={setCustomStart} onCustomEnd={setCustomEnd} onQuery={setQuery} onBack={() => setActiveAccount(null)} onAccountChange={setActiveAccount} onTrade={() => setTradeOpen(true)} onDelete={() => removeAccount(account)} onCsv={exportCsv} onPrev={() => shiftMonth(-1)} onNext={() => shiftMonth(1)} onToday={() => setMonth(new Date())} onUpdateTrade={updateTrade} onRemoveTrade={removeTrade} onMt5Synced={reloadJournal} />
+        : (
           <div className="rounded-[1.5rem] border border-white/8 bg-[#0b0b0b] p-5 shadow-[0_18px_46px_rgba(0,0,0,.22)]">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div>
@@ -377,8 +379,10 @@ export function JournalV2({
               </Button>
             </div>
           </div>
-        ) : <Accounts summaries={summaries} entries={entries} deleting={deleting} onAdd={() => setAccountOpen(true)} onOpen={setActiveAccount} onDelete={removeAccount} onAggregate={() => setActiveAccount(null)} />
-      }
+        )
+      ) : (
+        <Accounts summaries={summaries} entries={entries} deleting={deleting} onAdd={() => setAccountOpen(true)} onOpen={(id) => { setActiveAccount(id); window.history.pushState(null, "", "/dashboard"); window.dispatchEvent(new Event("popstate")); }} onDelete={removeAccount} onAggregate={() => setActiveAccount(null)} />
+      )}
       <PropAccountDialog open={accountOpen} saving={saving} onOpenChange={setAccountOpen} onSave={createAccount} />
       <TradeReviewModal open={tradeOpen} saving={saving} account={account} onOpenChange={setTradeOpen} onSave={addTrade} />
     </div>
@@ -655,7 +659,7 @@ function AccountCard({ s, deleting, onOpen, onDelete, compact = false }: { s: Su
       </div>
 
       <div className="flex items-center justify-between border-t border-[#2a2a2a] px-5 py-3">
-        <span className="text-xs text-[#8a8a8a]">Open journal</span>
+        <span className="text-xs text-[#8a8a8a]">Open dashboard</span>
         <ChevronRight size={16} className="text-[#8a8a8a] transition-transform group-hover:translate-x-0.5" />
       </div>
     </div>
