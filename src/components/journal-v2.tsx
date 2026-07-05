@@ -2,7 +2,7 @@
 
 import {
   ArrowLeft, BarChart3, BookOpen, BrainCircuit, CalendarDays, CheckCircle2, ChevronDown, ChevronLeft, ChevronRight,
-  Download, ImageIcon, LoaderCircle, MoreHorizontal, Plus, RefreshCw, Search, ShieldCheck,
+  Download, ImageIcon, LoaderCircle, MoreHorizontal, Plus, Search, ShieldCheck,
   Target, Trash2, TrendingDown, TrendingUp, WalletCards, X, Zap,
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -22,7 +22,7 @@ import { Input } from "./ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
 import { Separator } from "./ui/separator";
 import { Textarea } from "./ui/textarea";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
+import { Tabs, TabsContent } from "./ui/tabs";
 import { useActiveAccountStore } from "./active-account-context";
 import { useAuth } from "./auth-context";
 import { InstrumentBadge } from "./instrument-badge";
@@ -381,7 +381,7 @@ export function JournalV2({
           </div>
         )
       ) : (
-        <Accounts summaries={summaries} entries={entries} deleting={deleting} onAdd={() => setAccountOpen(true)} onOpen={(id) => { setActiveAccount(id); window.history.pushState(null, "", "/dashboard"); window.dispatchEvent(new Event("popstate")); }} onDelete={removeAccount} onAggregate={() => setActiveAccount(null)} />
+        <Accounts summaries={summaries} deleting={deleting} onAdd={() => setAccountOpen(true)} onOpen={(id) => { setActiveAccount(id); window.history.pushState(null, "", "/dashboard"); window.dispatchEvent(new Event("popstate")); }} onDelete={removeAccount} />
       )}
       <PropAccountDialog open={accountOpen} saving={saving} onOpenChange={setAccountOpen} onSave={createAccount} />
       <TradeReviewModal open={tradeOpen} saving={saving} account={account} onOpenChange={setTradeOpen} onSave={addTrade} />
@@ -390,28 +390,7 @@ export function JournalV2({
 }
 
 // Accounts list.
-function Accounts({ summaries, entries, deleting, onAdd, onOpen, onDelete, onAggregate }: { summaries: Summary[]; entries: JournalEntry[]; deleting: string | null; onAdd: () => void; onOpen: (id: string) => void; onDelete: (a: PropAccount) => void; onAggregate: () => void }) {
-  const total = summaries.reduce((sum, item) => sum + item.pnl, 0);
-  const capital = summaries.reduce((sum, item) => sum + item.account.accountSize, 0);
-  const activeAccounts = summaries.filter((item) => item.account.status === "Active").length;
-  const totalTrades = entries.length;
-  const winningTrades = entries.filter((entry) => entry.pnl > 0).length;
-  const losingTrades = entries.filter((entry) => entry.pnl < 0).length;
-  const grossWins = entries.filter((entry) => entry.pnl > 0).reduce((sum, entry) => sum + entry.pnl, 0);
-  const grossLosses = Math.abs(entries.filter((entry) => entry.pnl < 0).reduce((sum, entry) => sum + entry.pnl, 0));
-  const profitFactor = grossLosses ? grossWins / grossLosses : grossWins ? grossWins : 0;
-  const winRate = totalTrades ? Math.round((winningTrades / totalTrades) * 100) : 0;
-  const recentTrades = [...entries].sort((a, b) => String(b.rawDate).localeCompare(String(a.rawDate))).slice(0, 5);
-  const symbolLeaders = [...entries.reduce((map, entry) => {
-    const current = map.get(entry.symbol) || { symbol: entry.symbol, trades: 0, pnl: 0 };
-    current.trades += 1;
-    current.pnl += entry.pnl;
-    map.set(entry.symbol, current);
-    return map;
-  }, new Map<string, { symbol: string; trades: number; pnl: number }>()).values()].sort((a, b) => b.trades - a.trades).slice(0, 4);
-  const bestAccount = [...summaries].sort((a, b) => b.pnl - a.pnl)[0] || null;
-  const portfolioReturn = capital ? Math.round((total / capital) * 10000) / 100 : 0;
-
+function Accounts({ summaries, deleting, onAdd, onOpen, onDelete }: { summaries: Summary[]; deleting: string | null; onAdd: () => void; onOpen: (id: string) => void; onDelete: (a: PropAccount) => void }) {
   return (
     <div className="animate-page-in mx-auto max-w-[1780px] space-y-6 p-5 lg:p-7">
       <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
@@ -424,66 +403,14 @@ function Accounts({ summaries, entries, deleting, onAdd, onOpen, onDelete, onAgg
           </div>
           <h1 className="text-[2rem] font-black tracking-tight text-white">Accounts</h1>
           <p className="mt-1 max-w-2xl text-sm text-zinc-500">
-            Keep prop and real accounts in one fast workspace, then jump into dashboard, calendar, trade log and analytics without clutter.
+            Select an account card to open its dashboard workspace.
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2 lg:ml-auto">
-          <button type="button" onClick={onAggregate} className="inline-flex h-11 min-w-[220px] items-center justify-between rounded-2xl border border-white/8 bg-[#17181b] px-4 text-sm font-semibold text-white shadow-[0_12px_36px_rgba(0,0,0,.18)]">
-            <span>All Accounts</span>
-            <ChevronDown size={16} className="text-zinc-500" />
-          </button>
-          <Button type="button" variant="outline" className="h-11 rounded-2xl border-white/10 bg-[#17181b] px-4 text-zinc-100 hover:bg-white/[.05]" onClick={() => window.location.reload()}>
-            <RefreshCw size={15} /> Refresh
-          </Button>
           <Button onClick={onAdd} className="h-11 rounded-2xl bg-white px-4 text-black hover:bg-zinc-200">
             <Plus size={16} /> Add Account
           </Button>
         </div>
-      </div>
-
-      <div className="grid gap-4 xl:grid-cols-[minmax(0,1.2fr)_minmax(320px,.8fr)]">
-        <section className="rounded-[26px] border border-white/8 bg-[#17181b] p-5 shadow-[0_20px_54px_rgba(0,0,0,.24)]">
-          <div className="flex flex-wrap items-start justify-between gap-3">
-            <div>
-              <p className="text-sm font-bold text-white">Total Portfolio Value</p>
-              <div className="mt-3 flex flex-wrap items-center gap-3">
-                <p className="font-mono text-4xl font-black tracking-tight text-white">{cash.format(capital)}</p>
-                <span className={`rounded-full px-3 py-1 text-sm font-black ${portfolioReturn >= 0 ? "bg-emerald-500/12 text-emerald-300" : "bg-rose-500/12 text-rose-300"}`}>
-                  {portfolioReturn >= 0 ? "+" : ""}{portfolioReturn.toFixed(2)}%
-                </span>
-              </div>
-              <p className="mt-2 text-sm text-zinc-500">Total trading capital across all connected accounts.</p>
-            </div>
-            <div className="grid gap-2 sm:grid-cols-3">
-              {[
-                { label: "Net P&L", value: `${total >= 0 ? "+" : ""}${cash.format(total)}` },
-                { label: "Win rate", value: `${winRate}%` },
-                { label: "Profit factor", value: profitFactor.toFixed(2) },
-              ].map((item) => (
-                <div key={item.label} className="rounded-2xl border border-white/8 bg-black/15 px-4 py-3">
-                  <p className="text-[10px] uppercase tracking-[0.18em] text-zinc-500">{item.label}</p>
-                  <p className="mt-1 font-mono text-lg font-black text-white">{item.value}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        <section className="rounded-[26px] border border-white/8 bg-[#17181b] p-5 shadow-[0_20px_54px_rgba(0,0,0,.24)]">
-          <div className="grid gap-3 sm:grid-cols-3 xl:grid-cols-1">
-            {[
-              { label: "Accounts", value: summaries.length, note: `${activeAccounts} active now` },
-              { label: "Trades", value: totalTrades, note: `${winningTrades} wins / ${losingTrades} losses` },
-              { label: "Best account", value: bestAccount?.account.name || "N/A", note: bestAccount ? `${bestAccount.pnl >= 0 ? "+" : ""}${cash.format(bestAccount.pnl)}` : "No data yet" },
-            ].map((item) => (
-              <div key={item.label} className="rounded-2xl border border-white/8 bg-black/15 px-4 py-3">
-                <p className="text-[10px] uppercase tracking-[0.18em] text-zinc-500">{item.label}</p>
-                <p className="mt-1 truncate text-lg font-black text-white">{item.value}</p>
-                <p className="mt-1 text-xs text-zinc-500">{item.note}</p>
-              </div>
-            ))}
-          </div>
-        </section>
       </div>
 
       {!summaries.length ? (
@@ -500,80 +427,24 @@ function Accounts({ summaries, entries, deleting, onAdd, onOpen, onDelete, onAgg
           </div>
         </div>
       ) : (
-        <>
-          <section className="grid gap-4 md:grid-cols-2 2xl:grid-cols-3">
-            {summaries.map((summary) => (
-              <AccountCard key={summary.account.id} s={summary} deleting={deleting} onOpen={onOpen} onDelete={onDelete} />
-            ))}
-            <button
-              type="button"
-              onClick={onAdd}
-              className="group grid min-h-[255px] place-items-center rounded-[28px] border border-dashed border-white/10 bg-[#17181b] text-center transition hover:border-white/20 hover:bg-white/[.03]"
-            >
-              <div>
-                <span className="mx-auto grid size-14 place-items-center rounded-2xl border border-white/10 bg-black/20 text-zinc-400 transition group-hover:text-white">
-                  <Plus size={24} />
-                </span>
-                <p className="mt-4 text-2xl font-black text-white">Add Account</p>
-                <p className="mt-1 text-sm text-zinc-500">Create a new workspace tile for another prop or real account.</p>
-              </div>
-            </button>
-          </section>
-
-          <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_340px]">
-            <section className="rounded-[26px] border border-white/8 bg-[#17181b] p-5 shadow-[0_18px_46px_rgba(0,0,0,.22)]">
-              <div className="flex items-start justify-between gap-3">
-                <div>
-                  <h3 className="text-lg font-black text-white">Recent Trades</h3>
-                  <p className="mt-1 text-sm text-zinc-500">Latest closed trades from every linked account.</p>
-                </div>
-                <span className="rounded-full border border-white/8 bg-black/15 px-2.5 py-1 text-[11px] font-bold text-zinc-400">{recentTrades.length}</span>
-              </div>
-              {recentTrades.length ? (
-                <div className="mt-4 space-y-2">
-                  {recentTrades.map((trade) => (
-                    <button key={trade.id} type="button" onClick={() => trade.propAccountId ? onOpen(trade.propAccountId) : null} className="flex w-full items-center gap-3 rounded-2xl border border-white/8 bg-black/15 px-3 py-3 text-left transition hover:bg-white/[.04]">
-                      <InstrumentBadge symbol={trade.symbol} compact className="bg-[#121212]" showFullSymbol={false} />
-                      <div className="min-w-0 flex-1">
-                        <div className="flex min-w-0 items-center gap-2">
-                          <strong className="truncate text-sm text-white">{trade.symbol}</strong>
-                          <span className={`rounded px-1.5 py-0.5 text-[9px] font-black uppercase ${trade.side === "Long" ? "bg-emerald-400/15 text-emerald-300" : "bg-rose-400/15 text-rose-300"}`}>{trade.side === "Long" ? "Buy" : "Sell"}</span>
-                        </div>
-                        <p className="mt-1 truncate text-xs text-zinc-500">{trade.accountName || "TradeWay account"} / {trade.rawDate}</p>
-                      </div>
-                      <strong className={`font-mono text-sm font-black ${trade.pnl >= 0 ? "text-emerald-300" : "text-rose-300"}`}>{trade.pnl >= 0 ? "+" : ""}{cash.format(trade.pnl)}</strong>
-                    </button>
-                  ))}
-                </div>
-              ) : (
-                <div className="mt-4 grid min-h-36 place-items-center rounded-2xl border border-white/8 bg-black/15 text-center text-sm text-zinc-500">
-                  Add trades to bring activity here.
-                </div>
-              )}
-            </section>
-
-            <section className="rounded-[26px] border border-white/8 bg-[#17181b] p-5 shadow-[0_18px_46px_rgba(0,0,0,.22)]">
-              <div>
-                <h3 className="text-lg font-black text-white">Most Traded Markets</h3>
-                <p className="mt-1 text-sm text-zinc-500">Symbols that dominate your journal right now.</p>
-              </div>
-              <div className="mt-4 space-y-2">
-                {symbolLeaders.length ? symbolLeaders.map((leader) => (
-                  <div key={leader.symbol} className="flex items-center justify-between rounded-2xl border border-white/8 bg-black/15 px-3 py-3">
-                    <div className="flex min-w-0 items-center gap-2">
-                      <InstrumentBadge symbol={leader.symbol} compact className="bg-[#121212]" showFullSymbol={false} />
-                      <div className="min-w-0">
-                        <p className="truncate text-sm font-black text-white">{leader.symbol}</p>
-                        <p className="text-xs text-zinc-500">{leader.trades} trades logged</p>
-                      </div>
-                    </div>
-                    <strong className={`font-mono text-xs font-black ${leader.pnl >= 0 ? "text-emerald-300" : "text-rose-300"}`}>{leader.pnl >= 0 ? "+" : ""}{cash.format(leader.pnl)}</strong>
-                  </div>
-                )) : <p className="text-sm text-zinc-500">No trades yet.</p>}
-              </div>
-            </section>
-          </div>
-        </>
+        <section className="grid gap-4 md:grid-cols-2 2xl:grid-cols-3">
+          {summaries.map((summary) => (
+            <AccountCard key={summary.account.id} s={summary} deleting={deleting} onOpen={onOpen} onDelete={onDelete} />
+          ))}
+          <button
+            type="button"
+            onClick={onAdd}
+            className="group grid min-h-[255px] place-items-center rounded-[28px] border border-dashed border-white/10 bg-[#17181b] text-center transition hover:border-white/20 hover:bg-white/[.03]"
+          >
+            <div>
+              <span className="mx-auto grid size-14 place-items-center rounded-2xl border border-white/10 bg-black/20 text-zinc-400 transition group-hover:text-white">
+                <Plus size={24} />
+              </span>
+              <p className="mt-4 text-2xl font-black text-white">Add Account</p>
+              <p className="mt-1 text-sm text-zinc-500">Create a new prop or real account card.</p>
+            </div>
+          </button>
+        </section>
       )}
     </div>
   );
@@ -756,10 +627,6 @@ function Workspace(p: {
   );
   const recentTrades = sortedTrades.slice(0, 5);
   const groupedNews = useMemo(() => groupCalendarNewsByDay(calendarNews?.events || []), [calendarNews?.events]);
-  const workspaceTabs = useMemo(
-    () => (embedded ? WORKSPACE_TABS.filter(([value]) => value !== "settings") : WORKSPACE_TABS),
-    [embedded],
-  );
   const averageWin = useMemo(() => {
     const wins = trades.filter((trade) => trade.pnl > 0);
     return wins.length ? wins.reduce((sum, trade) => sum + trade.pnl, 0) / wins.length : 0;
@@ -947,25 +814,8 @@ function Workspace(p: {
           ))}
         </div>
 
-        {/* Tabs */}
+        {/* Section content */}
         <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as WorkspaceTab)} className="gap-4">
-          <div className="block md:hidden">
-            <span className="mb-1.5 block text-[10px] font-semibold uppercase tracking-widest text-[#8a8a8a]">Workspace</span>
-            <Select value={activeTab} onValueChange={(value) => setActiveTab(value as WorkspaceTab)}>
-              <SelectTrigger className="h-12 w-full rounded-2xl border-white/8 bg-[#0b0b0b]">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent position="popper" align="start">
-                {workspaceTabs.map(([v, l]) => <SelectItem key={v} value={v}>{l}</SelectItem>)}
-              </SelectContent>
-            </Select>
-          </div>
-          <TabsList className="hidden min-h-12 w-full justify-start overflow-x-auto rounded-[1rem] border border-white/8 bg-[#17181b] p-1 md:inline-flex">
-            {workspaceTabs.map(([v, l]) => (
-              <TabsTrigger key={v} value={v} className="h-10 min-w-[120px] flex-1 rounded-[0.85rem] px-4 text-sm font-semibold text-zinc-400 data-[state=active]:bg-white data-[state=active]:text-black data-[state=active]:shadow-sm">{l}</TabsTrigger>
-            ))}
-          </TabsList>
-
           <TabsContent value="home" className="space-y-4">
             <section className="rounded-[1.35rem] border border-white/8 bg-[#0b0b0b] p-4 shadow-[0_18px_46px_rgba(0,0,0,.2)] sm:p-5">
               <div className="flex flex-col gap-4 xl:flex-row xl:items-start">
