@@ -4,17 +4,23 @@
 :root {
   --tw-bg: #000000;
   --tw-panel: #090909;
-  --tw-panel-2: #121212;
-  --tw-panel-3: #181818;
+  --tw-panel-2: #101010;
+  --tw-panel-3: #151515;
   --tw-border: rgba(255, 255, 255, 0.085);
   --tw-border-strong: rgba(255, 255, 255, 0.14);
   --tw-muted: rgba(255, 255, 255, 0.48);
   --tw-soft: rgba(255, 255, 255, 0.04);
+  --tw-green: #22c55e;
+  --tw-red: #ef4444;
 }
 
 html,
 body {
   background: var(--tw-bg) !important;
+}
+
+body {
+  color: #f4f4f5 !important;
 }
 
 main,
@@ -23,6 +29,7 @@ aside {
   background-color: #000000 !important;
 }
 
+/* One visual family for panels/cards/dialogs. */
 .prop-card-glow,
 .surface,
 .surface-soft,
@@ -31,6 +38,8 @@ aside {
 .glass-soft,
 .glass-strong,
 [data-slot="card"],
+[data-slot="dialog-content"],
+[data-slot="alert-dialog-content"],
 main [class*="bg-[#0b0b0b]"],
 main [class*="bg-[#17181b]"],
 main [class*="bg-[#121212]"],
@@ -42,10 +51,40 @@ main [class*="bg-[#111111]"] {
   box-shadow: none !important;
 }
 
-.prop-card-glow,
 main section[class*="border"],
-main div[class*="border"] {
+main div[class*="border"],
+[data-slot="card"],
+[data-slot="dialog-content"],
+[data-slot="alert-dialog-content"],
+[data-slot="select-trigger"],
+input,
+textarea {
   border-color: var(--tw-border) !important;
+}
+
+/* Form controls: shadcn-like, same dark palette. */
+input,
+textarea,
+[data-slot="select-trigger"],
+[data-slot="popover-content"],
+[data-slot="select-content"] {
+  background: #080808 !important;
+  color: #f4f4f5 !important;
+  box-shadow: none !important;
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: rgba(255, 255, 255, .32) !important;
+}
+
+input:focus,
+textarea:focus,
+[data-slot="select-trigger"]:focus,
+[data-slot="button"]:focus-visible,
+button:focus-visible {
+  outline: none !important;
+  box-shadow: 0 0 0 1px rgba(255,255,255,.18) !important;
 }
 
 /* Real top breadcrumb bar like the reference. */
@@ -152,6 +191,7 @@ aside button[class*="mt-4"][class*="border"] {
   box-shadow: none !important;
 }
 
+/* Hide current noisy AI coach block until the output becomes truly useful. */
 section.overflow-hidden[class*="rounded-[24px]"] {
   display: none !important;
 }
@@ -162,6 +202,7 @@ aside div:has(> button[class*="Upgrade"]) {
   display: none !important;
 }
 
+/* Reduce mixed accent colors. */
 [class*="text-[#d9f96d]"] {
   color: #e5e7eb !important;
 }
@@ -174,14 +215,34 @@ aside div:has(> button[class*="Upgrade"]) {
   border-color: rgba(255, 255, 255, 0.18) !important;
 }
 
+.text-sky-300,
+.text-blue-300,
+.text-cyan-300,
+.text-amber-300,
+.text-yellow-300,
+.text-purple-300,
+.text-fuchsia-300 {
+  color: #d4d4d8 !important;
+}
+
+.bg-sky-400\/10,
+.bg-blue-400\/10,
+.bg-cyan-400\/10,
+.bg-amber-400\/10,
+.bg-yellow-400\/10,
+.bg-purple-400\/10,
+.bg-fuchsia-400\/10 {
+  background-color: rgba(255,255,255,.045) !important;
+}
+
 .text-emerald-400,
 .text-emerald-300 {
-  color: #22c55e !important;
+  color: var(--tw-green) !important;
 }
 
 .text-rose-400,
 .text-rose-300 {
-  color: #ef4444 !important;
+  color: var(--tw-red) !important;
 }
 
 .bg-emerald-500,
@@ -194,12 +255,28 @@ aside div:has(> button[class*="Upgrade"]) {
   background-color: #dc2626 !important;
 }
 
-[data-slot="dropdown-menu-content"] {
+/* Dropdowns/selects/popovers. */
+[data-slot="dropdown-menu-content"],
+[data-slot="select-content"],
+[data-slot="popover-content"] {
   min-width: 178px !important;
   border: 1px solid var(--tw-border) !important;
   background: #080808 !important;
   box-shadow: 0 18px 55px rgba(0, 0, 0, 0.52) !important;
   z-index: 9999 !important;
+}
+
+[data-slot="dropdown-menu-item"],
+[data-slot="select-item"] {
+  border-radius: .75rem !important;
+}
+
+[data-slot="dropdown-menu-item"]:hover,
+[data-slot="select-item"]:hover,
+[data-slot="dropdown-menu-item"][data-highlighted],
+[data-slot="select-item"][data-highlighted] {
+  background: rgba(255,255,255,.07) !important;
+  color: #fff !important;
 }
 
 .tw-account-settings-item {
@@ -216,9 +293,14 @@ aside div:has(> button[class*="Upgrade"]) {
   padding-top: .55rem !important;
 }
 
+/* Buttons: one system. */
+main [data-slot="button"],
+button {
+  box-shadow: none !important;
+}
+
 main [data-slot="button"] {
   border-radius: .72rem !important;
-  box-shadow: none !important;
 }
 
 main [data-slot="button"][class*="bg-white"] {
@@ -228,6 +310,12 @@ main [data-slot="button"][class*="bg-white"] {
 
 main [data-slot="button"][class*="bg-white"]:hover {
   background: #e4e4e7 !important;
+}
+
+.tw-floating-add-trade {
+  background: var(--tw-green) !important;
+  color: #020202 !important;
+  border-color: rgba(34,197,94,.35) !important;
 }
 
 /* Trade log/table style: one clean panel, calm rows. */
@@ -255,13 +343,19 @@ button:hover[class*="rounded-xl"] {
   background-color: #151515 !important;
 }
 
+/* Typography polish. */
 main [class*="uppercase"] {
   letter-spacing: 0.11em;
 }
 
 main [class*="text-zinc-500"],
-main [class*="text-[#8a8a8a]"] {
+main [class*="text-[#8a8a8a]"],
+.text-muted-foreground {
   color: var(--tw-muted) !important;
+}
+
+main [class*="text-zinc-400"] {
+  color: rgba(255,255,255,.62) !important;
 }
 
 @media (max-width: 1023px) {
@@ -283,6 +377,13 @@ main [class*="text-[#8a8a8a]"] {
     height: 54px !important;
     padding-left: 1rem !important;
     padding-right: 1rem !important;
+  }
+
+  .tw-floating-add-trade {
+    right: 1rem !important;
+    bottom: 1rem !important;
+    width: 3.25rem !important;
+    height: 3.25rem !important;
   }
 
   [data-slot="dropdown-menu-content"] {
