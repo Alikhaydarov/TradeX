@@ -12,6 +12,7 @@ import "./auth-landing-clean.css";
 import "./onyx-overrides.css";
 import "./responsive-fixes.css";
 import "./trades-responsive.css";
+import "./mobile-drawer-polish.css";
 import "./quality-overrides.css";
 
 const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
