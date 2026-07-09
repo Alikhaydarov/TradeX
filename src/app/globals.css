@@ -218,85 +218,122 @@ p, h1, h2, h3, h4, h5, h6, span, strong, small, button, a { overflow-wrap: anywh
   -webkit-backdrop-filter: none !important;
 }
 
-/* Onyx normalization for older hard-coded panels */
-[class*="bg-[#171717]"],
-[class*="bg-[#111111]"],
-[class*="bg-[#101010]"],
-[class*="bg-[#0d0d0d]"],
-[class*="bg-[#0b0b0b]"],
-[class*="bg-[#070707]"],
-[class*="bg-[#17181b]"],
-[class*="bg-[#121212]"],
-[class*="bg-[#141518]"] {
-  background-color: #0b0b0b !important;
-  border-color: rgba(255, 255, 255, 0.08) !important;
+.auth-landing {
+  position: relative;
+  background: radial-gradient(circle at 50% -20%, rgba(201, 162, 39, 0.11), transparent 38%), linear-gradient(180deg, #070a12 0%, #050711 48%, #04060d 100%);
 }
 
-[class*="border-border"] { border-color: rgba(255, 255, 255, 0.08) !important; }
-[class*="bg-card"] { background-color: #0b0b0b !important; }
-[class*="text-slate-500"], [class*="text-zinc-500"] { color: rgba(255, 255, 255, 0.46) !important; }
-
-/* Compact social/profile media so post images are not huge */
-article button:has(img[alt="Trade media"]),
-article button:has(img[alt*="trade screenshot"]),
-article button:has(img[alt*="TradeWay share card"]),
-article a:has(img[alt="Post media"]),
-article a:has(img[alt*="Trade media"]) {
-  min-height: 0 !important;
-  aspect-ratio: 16 / 10 !important;
-  max-height: 360px !important;
-  border-radius: 1rem !important;
+.auth-ticker {
+  position: fixed;
+  inset: 0 0 auto 0;
+  z-index: 5;
+  height: 34px;
+  overflow: hidden;
+  border-bottom: 1px solid #1c2236;
+  background: rgba(7, 10, 18, 0.72);
+  backdrop-filter: blur(7px);
 }
 
-article img[alt="Post media"],
-article img[alt="Trade media"],
-article img[alt*="trade screenshot"],
-article img[alt*="TradeWay share card"] {
-  max-height: 360px !important;
-  object-fit: cover !important;
+.auth-ticker-track {
+  display: inline-flex;
+  min-width: max-content;
+  gap: 2.25rem;
+  padding-left: 100%;
+  height: 34px;
+  align-items: center;
+  animation: authTickerScroll 36s linear infinite;
+  color: #8b90a3;
+  font-size: 12px;
+  white-space: nowrap;
 }
 
-/* Hide the old profile premium promo card; pricing stays available from sidebar/route */
-@media (max-width: 639px) {
-  body { background-attachment: scroll; }
-  input, textarea, select, [data-slot="select-trigger"] { font-size: 16px; }
-  [role="dialog"] { max-width: calc(100vw - 1rem); }
+.auth-ticker-track b {
+  color: #e8cf7a;
+  font-weight: 700;
+}
 
-  article button:has(img[alt="Trade media"]),
-  article button:has(img[alt*="trade screenshot"]),
-  article button:has(img[alt*="TradeWay share card"]),
-  article a:has(img[alt="Post media"]),
-  article a:has(img[alt*="Trade media"]) {
-    max-height: 260px !important;
+.auth-ticker-track em {
+  font-style: normal;
+  font-weight: 800;
+}
+
+.auth-up { color: #34d399; }
+.auth-down { color: #f87171; }
+
+.auth-glow {
+  pointer-events: none;
+  position: fixed;
+  z-index: 0;
+  inset: -20% auto auto 50%;
+  width: min(920px, 140vw);
+  height: min(920px, 140vw);
+  transform: translateX(-50%);
+  background: radial-gradient(circle, rgba(201,162,39,.12), rgba(201,162,39,0) 62%);
+}
+
+.auth-chart-field {
+  pointer-events: none;
+  position: fixed;
+  inset: auto 0 -8% 0;
+  z-index: 0;
+  overflow: hidden;
+  opacity: .16;
+}
+
+.auth-chart-field svg {
+  position: relative;
+  left: 50%;
+  width: 1400px;
+  max-width: none;
+  transform: translateX(-50%);
+}
+
+.auth-shell,
+.auth-card,
+.auth-copy {
+  position: relative;
+  z-index: 2;
+}
+
+.auth-card::before,
+.auth-card-line {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 1.5rem;
+  right: 1.5rem;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, #c9a227 50%, transparent);
+  opacity: .65;
+}
+
+@keyframes authTickerScroll {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-100%); }
+}
+
+@media (max-width: 1023px) {
+  .auth-shell {
+    max-width: 520px;
+    padding-top: 4.5rem;
+    padding-bottom: 2rem;
+  }
+}
+
+@media (max-width: 520px) {
+  .auth-ticker-track {
+    gap: 1.5rem;
+    font-size: 11px;
   }
 
-  article img[alt="Post media"],
-  article img[alt="Trade media"],
-  article img[alt*="trade screenshot"],
-  article img[alt*="TradeWay share card"] {
-    max-height: 260px !important;
+  .auth-card {
+    border-radius: 1rem !important;
+    padding: 1.4rem !important;
   }
 }
 
-form label, form input, form textarea, form [data-slot="select-trigger"] {
-  min-width: 0;
-  max-width: 100%;
-}
-
-input[type="date"] { min-inline-size: 0; }
-
-::-webkit-scrollbar { width: 6px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.18); border-radius: 999px; }
-::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.28); }
-
-::selection { background: rgb(255 255 255 / 18%); color: #fff; }
-
-@media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after {
-    scroll-behavior: auto !important;
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
+@media (max-width: 380px) {
+  .auth-card {
+    padding: 1.15rem !important;
   }
 }
