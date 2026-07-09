@@ -4,6 +4,7 @@ import { AppShell } from "@/components/app-shell";
 import { AccountCardMenuBridge } from "@/components/account-card-menu-bridge";
 import { AuthProvider } from "@/components/auth-context";
 import { FloatingAddTradeButton } from "@/components/floating-add-trade-button";
+import { MobileTradesBridge } from "@/components/mobile-trades-bridge";
 import { getSupabaseServerClient } from "@/lib/supabase/server";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
 import "./globals.css";
@@ -11,7 +12,6 @@ import "./auth-landing-v2.css";
 import "./auth-landing-clean.css";
 import "./onyx-overrides.css";
 import "./responsive-fixes.css";
-import "./trades-responsive.css";
 import "./mobile-drawer-polish.css";
 import "./quality-overrides.css";
 
@@ -36,6 +36,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
           <AppShell />
           <AccountCardMenuBridge />
           <FloatingAddTradeButton />
+          <MobileTradesBridge />
           <div className="hidden">{children}</div>
         </AuthProvider>
       </body>
