@@ -36,7 +36,7 @@ export function WorkspaceTopbar({ section }: { section: Section }) {
   const workspace = activeAccount?.name || "Workspace";
 
   return (
-    <header className="tw-app-topbar sticky top-0 z-[60] shrink-0 border-b border-white/8 bg-black px-4 py-3 lg:static lg:flex lg:h-[64px] lg:items-center lg:justify-between lg:px-8 lg:py-0">
+    <div role="banner" className="tw-app-topbar sticky top-0 z-[60] shrink-0 border-b border-white/8 bg-black px-4 py-3 lg:static lg:flex lg:h-[64px] lg:items-center lg:justify-between lg:px-8 lg:py-0">
       <div className="flex items-center gap-3 lg:hidden">
         <button
           type="button"
@@ -86,6 +86,6 @@ export function WorkspaceTopbar({ section }: { section: Section }) {
           <Percent size={16} />
         </button>
       ) : null}
-    </header>
+    </div>
   );
 }
