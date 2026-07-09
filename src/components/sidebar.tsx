@@ -10,7 +10,6 @@ import {
   Menu,
   MoreHorizontal,
   Plus,
-  Settings,
   ShieldCheck,
   SquareChartGantt,
   TrendingUp,
@@ -90,7 +89,6 @@ export function Sidebar({
     { id: "calendar" as const, label: "Calendar", icon: CalendarDays },
     { id: "trades" as const, label: "Trades", icon: SquareChartGantt },
     { id: "analytics" as const, label: "Analytics", icon: TrendingUp },
-    { id: "settings" as const, label: "Settings", icon: Settings },
     { id: "account" as const, label: t("profile"), icon: UserRound },
   ];
   const nav = isAdmin
@@ -114,22 +112,23 @@ export function Sidebar({
           <span className="grid h-11 w-11 place-items-center rounded-2xl bg-[linear-gradient(180deg,rgba(255,255,255,1),rgba(232,232,236,1))] text-lg font-black text-black shadow-[0_12px_28px_rgba(255,255,255,.08)]">TW</span>
           <span>
             <strong className="block text-base tracking-tight">TradeWay</strong>
-            <small className="text-[11px] text-zinc-500">Trader workspace</small>
+            <small className="text-[11px] text-zinc-500">Trading workspace</small>
           </span>
         </button>
 
         <button type="button" onClick={openAccountsPage} className="mt-4 flex w-full items-center gap-3 rounded-[1rem] border border-white/8 bg-[#050505] p-4 text-left transition hover:bg-white/[.03]">
           <span className={`size-2 shrink-0 rounded-full ${activeAccount ? "bg-emerald-500" : "bg-zinc-500"}`} />
           <div className="min-w-0 flex-1">
-            <p className="truncate text-sm font-bold text-white">{activeAccount?.name || "All Accounts"}</p>
-            <p className="truncate text-[11px] text-zinc-500">{activeAccount ? activeBalance : "Open accounts workspace"}</p>
+            <p className="truncate text-sm font-bold text-white">{activeAccount?.name || "Accounts"}</p>
+            <p className="truncate text-[11px] text-zinc-500">{activeAccount ? activeBalance : "Select trading account"}</p>
           </div>
           <span className="grid size-8 shrink-0 place-items-center rounded-xl border border-white/8 bg-white/[.03] text-zinc-400">
             <ChevronDown size={14} />
           </span>
         </button>
 
-        <nav className="mt-6 space-y-1.5">
+        <p className="mt-6 px-3 text-[10px] font-black uppercase tracking-[0.16em] text-zinc-600">Workspace</p>
+        <nav className="mt-2 space-y-1.5">
           {nav.map((item) => {
             const { id, label, icon: Icon } = item;
             const selected = active === id;
@@ -227,7 +226,7 @@ export function Sidebar({
                     <span className="grid h-11 w-11 place-items-center rounded-2xl bg-white text-base font-black text-black">TW</span>
                     <div>
                       <strong className="block text-base text-white">TradeWay</strong>
-                      <small className="text-xs text-zinc-500">Free</small>
+                      <small className="text-xs text-zinc-500">Trading workspace</small>
                     </div>
                   </div>
                   <button
@@ -244,8 +243,8 @@ export function Sidebar({
                   <button type="button" onClick={openAccountsPage} className="flex w-full items-center gap-3 rounded-[1.15rem] border border-white/8 bg-[#0b0b0b] px-3 py-3 text-left">
                     <span className={`mt-0.5 size-2 shrink-0 rounded-full ${activeAccount ? "bg-emerald-500" : "bg-zinc-500"}`} />
                     <div className="min-w-0 flex-1">
-                      <p className="truncate text-base font-bold text-white">{activeAccount?.name || "All Accounts"}</p>
-                      <p className="truncate text-xs text-zinc-500">{activeAccount ? activeBalance : "Open accounts workspace"}</p>
+                      <p className="truncate text-base font-bold text-white">{activeAccount?.name || "Accounts"}</p>
+                      <p className="truncate text-xs text-zinc-500">{activeAccount ? activeBalance : "Select trading account"}</p>
                     </div>
                     <span className="grid size-10 shrink-0 place-items-center rounded-xl border border-white/8 bg-white/[.03] text-zinc-400">
                       <ChevronDown size={15} />
@@ -254,6 +253,7 @@ export function Sidebar({
                 </div>
 
                 <div className="flex-1 overflow-y-auto px-5 py-5">
+                  <p className="mb-2 px-3 text-[10px] font-black uppercase tracking-[0.16em] text-zinc-600">Workspace</p>
                   <nav className="space-y-2">
                     {nav.map((item) => {
                       const { id, label, icon: Icon } = item;
