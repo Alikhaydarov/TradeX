@@ -1,4 +1,4 @@
-/* Global responsive hardening for TradeWay.
+/* Global responsive hardening for Tradox.
    Safe layer only: prevent overflow and clipped overlays without changing product architecture. */
 
 html,
@@ -19,7 +19,9 @@ main > div,
 main section,
 main article,
 main header,
-main footer {
+main footer,
+main nav,
+main form {
   min-width: 0;
 }
 
@@ -79,7 +81,7 @@ table {
 
 [data-slot="dialog-content"],
 [data-slot="alert-dialog-content"] {
-  width: min(calc(100vw - 20px), var(--dialog-max-width, 760px)) !important;
+  width: min(calc(100vw - 20px), var(--dialog-max-width, 900px)) !important;
   max-width: calc(100vw - 20px) !important;
   max-height: calc(100dvh - 20px) !important;
   overflow-y: auto;
@@ -116,6 +118,7 @@ select,
   a,
   input,
   textarea,
+  select,
   [data-slot="select-trigger"] {
     min-height: 42px;
   }
@@ -128,7 +131,8 @@ select,
   }
 
   main > div,
-  main section {
+  main section,
+  main article {
     max-width: 100%;
   }
 
@@ -154,10 +158,11 @@ select,
 }
 
 @media (max-width: 767px) {
-  /* Safe grid collapse only: target custom arbitrary desktop grids, not every grid-cols-2/3 utility. */
+  /* Safe grid collapse only: target custom arbitrary desktop grids and explicit desktop grids. */
   main [class*="grid-cols-["],
   main [class*="xl:grid-cols-"],
-  main [class*="lg:grid-cols-"] {
+  main [class*="lg:grid-cols-"],
+  [data-slot="dialog-content"] [class*="lg:grid-cols-"] {
     grid-template-columns: minmax(0, 1fr) !important;
   }
 
@@ -184,6 +189,41 @@ select,
   main [class*="items-center"][class*="gap-3"] {
     min-width: 0;
   }
+
+  /* Tables/cards on mobile should scroll inside their panel, not push the whole app. */
+  main table,
+  main [role="table"] {
+    min-width: 680px;
+  }
+
+  main [class*="overflow-hidden"]:has(table),
+  main [class*="rounded"]:has(table) {
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Dialogs become one-column sheets with a comfortable height. */
+  [data-slot="dialog-content"] {
+    max-height: calc(100dvh - 14px) !important;
+  }
+}
+
+@media (max-width: 640px) {
+  main [class*="sm:grid-cols-2"],
+  main [class*="sm:grid-cols-3"],
+  [data-slot="dialog-content"] [class*="sm:grid-cols-2"],
+  [data-slot="dialog-content"] [class*="sm:grid-cols-3"] {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+
+  main [class*="sm:flex-row"] {
+    flex-direction: column !important;
+    align-items: stretch !important;
+  }
+
+  main [class*="sm:items-center"] {
+    align-items: stretch !important;
+  }
 }
 
 @media (max-width: 480px) {
@@ -202,9 +242,16 @@ select,
 
   [data-slot="dialog-content"],
   [data-slot="alert-dialog-content"] {
-    width: calc(100vw - 12px) !important;
-    max-width: calc(100vw - 12px) !important;
-    max-height: calc(100dvh - 12px) !important;
+    width: calc(100vw - 10px) !important;
+    max-width: calc(100vw - 10px) !important;
+    max-height: calc(100dvh - 10px) !important;
     border-radius: 1rem !important;
+  }
+
+  [data-slot="dialog-content"] input,
+  [data-slot="dialog-content"] textarea,
+  [data-slot="dialog-content"] select,
+  [data-slot="dialog-content"] button {
+    font-size: 16px;
   }
 }
