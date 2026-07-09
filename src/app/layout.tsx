@@ -8,6 +8,7 @@ import { getSupabaseServerClient } from "@/lib/supabase/server";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
 import "./globals.css";
 import "./auth-landing-v2.css";
+import "./auth-landing-clean.css";
 import "./onyx-overrides.css";
 import "./responsive-fixes.css";
 import "./quality-overrides.css";
