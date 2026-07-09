@@ -14,52 +14,75 @@
   inset: 0;
   z-index: 0;
   overflow: hidden;
+  background:
+    radial-gradient(circle at 22% 0%, rgba(59,130,246,.14), transparent 32%),
+    radial-gradient(circle at 82% 82%, rgba(34,197,94,.10), transparent 30%),
+    linear-gradient(180deg, #020202 0%, #000000 55%, #020202 100%);
 }
 
 .auth2-grid {
   position: absolute;
   inset: 0;
   background-image:
-    linear-gradient(to right, rgba(255,255,255,0.035) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(255,255,255,0.035) 1px, transparent 1px);
-  background-size: 44px 44px;
-  mask-image: radial-gradient(ellipse 70% 60% at 50% 30%, #000 10%, transparent 75%);
-  -webkit-mask-image: radial-gradient(ellipse 70% 60% at 50% 30%, #000 10%, transparent 75%);
+    linear-gradient(to right, rgba(255,255,255,0.044) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255,255,255,0.038) 1px, transparent 1px);
+  background-size: 48px 48px;
+  mask-image: radial-gradient(ellipse 74% 58% at 50% 28%, #000 8%, rgba(0,0,0,.74) 46%, transparent 78%);
+  -webkit-mask-image: radial-gradient(ellipse 74% 58% at 50% 28%, #000 8%, rgba(0,0,0,.74) 46%, transparent 78%);
+}
+
+.auth2-grid::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(to right, rgba(59,130,246,0.11) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(59,130,246,0.075) 1px, transparent 1px);
+  background-size: 192px 192px;
+  opacity: .45;
 }
 
 .auth2-orb {
   position: absolute;
   border-radius: 9999px;
-  filter: blur(80px);
-  opacity: 0.5;
+  filter: blur(86px);
+  opacity: 0.58;
   will-change: transform;
 }
 
 .auth2-orb-1 {
-  width: 480px;
-  height: 480px;
-  background: radial-gradient(circle, rgba(59,130,246,0.35), transparent 70%);
-  top: -180px;
-  left: 10%;
-  animation: auth2DriftA 16s ease-in-out infinite;
+  width: 540px;
+  height: 540px;
+  background: radial-gradient(circle, rgba(59,130,246,0.42), transparent 70%);
+  top: -210px;
+  left: 8%;
+  animation: auth2DriftA 18s ease-in-out infinite;
 }
 
 .auth2-orb-2 {
-  width: 420px;
-  height: 420px;
-  background: radial-gradient(circle, rgba(34,197,94,0.22), transparent 70%);
-  bottom: -200px;
-  right: 8%;
-  animation: auth2DriftB 20s ease-in-out infinite;
+  width: 470px;
+  height: 470px;
+  background: radial-gradient(circle, rgba(34,197,94,0.24), transparent 70%);
+  bottom: -220px;
+  right: 6%;
+  animation: auth2DriftB 22s ease-in-out infinite;
 }
 
 .auth2-orb-3 {
-  width: 300px;
-  height: 300px;
-  background: radial-gradient(circle, rgba(168,85,247,0.16), transparent 70%);
-  top: 30%;
-  right: 25%;
-  animation: auth2DriftC 24s ease-in-out infinite;
+  width: 330px;
+  height: 330px;
+  background: radial-gradient(circle, rgba(99,102,241,0.20), transparent 70%);
+  top: 26%;
+  right: 23%;
+  animation: auth2DriftC 26s ease-in-out infinite;
+}
+
+.auth2-vignette {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse at center, transparent 0%, transparent 43%, rgba(0,0,0,.72) 100%),
+    linear-gradient(90deg, rgba(0,0,0,.58), transparent 22%, transparent 78%, rgba(0,0,0,.58));
 }
 
 .auth2-chart-line {
@@ -67,8 +90,8 @@
   bottom: 0;
   left: 0;
   width: 100%;
-  height: 45%;
-  opacity: 0.5;
+  height: 48%;
+  opacity: 0.62;
 }
 
 .auth2-chart-fill {
@@ -77,10 +100,11 @@
 
 .auth2-chart-stroke {
   fill: none;
-  stroke: rgba(255,255,255,0.35);
-  stroke-width: 1.5;
+  stroke: rgba(255,255,255,0.42);
+  stroke-width: 1.45;
   stroke-dasharray: 2400;
   stroke-dashoffset: 2400;
+  filter: drop-shadow(0 0 12px rgba(59,130,246,.18));
   animation: auth2DrawLine 4.5s ease-out forwards, auth2FloatLine 8s ease-in-out 4.5s infinite;
 }
 
@@ -96,6 +120,7 @@
   justify-content: space-between;
   border-bottom: 1px solid #141414;
   padding: 20px 28px;
+  background: rgba(0,0,0,.22);
 }
 
 .auth2-brand {
@@ -113,10 +138,11 @@
   height: 26px;
   place-items: center;
   border-radius: 6px;
-  background: #3b82f6;
-  font-size: 12px;
+  background: linear-gradient(135deg, #60a5fa, #2563eb 64%, #1d4ed8);
+  font-size: 11px;
   font-weight: 800;
   color: #ffffff;
+  box-shadow: 0 10px 28px rgba(59,130,246,.24);
 }
 
 .auth2-status {
@@ -133,6 +159,7 @@
   height: 6px;
   border-radius: 9999px;
   background: #22c55e;
+  box-shadow: 0 0 0 4px rgba(34,197,94,.11);
 }
 
 .auth2-stage {
@@ -146,6 +173,18 @@
 .auth2-card {
   width: 100%;
   max-width: 400px;
+  padding: 2px;
+  border-radius: 18px;
+  background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,0));
+}
+
+.auth2-card > * {
+  position: relative;
+}
+
+.auth2-card::before {
+  content: "";
+  position: absolute;
 }
 
 .auth2-head {
@@ -154,10 +193,10 @@
 
 .auth2-head p {
   margin-bottom: 10px;
-  color: #3b82f6;
+  color: #60a5fa;
   font-size: 12px;
-  font-weight: 600;
-  letter-spacing: 0.02em;
+  font-weight: 700;
+  letter-spacing: 0.04em;
 }
 
 .auth2-head h1 {
@@ -204,13 +243,13 @@
 .auth2-cta-secondary {
   margin-bottom: 28px;
   border: 1px solid #1a1a1a;
-  background: transparent;
+  background: rgba(10,10,10,.62) !important;
   color: #f5f5f5;
 }
 
 .auth2-cta-secondary:hover {
   border-color: #333333;
-  background: #0a0a0a;
+  background: #0a0a0a !important;
 }
 
 .auth2-tabs {
@@ -219,6 +258,7 @@
   border: 1px solid #1a1a1a;
   border-radius: 10px;
   padding: 4px;
+  background: rgba(0,0,0,.22);
 }
 
 .auth2-tabs span {
@@ -243,7 +283,7 @@
   margin-bottom: 28px;
   border: 1px solid #141414;
   border-radius: 10px;
-  background: #0a0a0a;
+  background: rgba(10,10,10,.76);
   padding: 13px 14px;
   color: #a3a3a3;
   font-size: 12.5px;
@@ -253,7 +293,7 @@
 .auth2-note svg {
   margin-top: 1px;
   flex-shrink: 0;
-  color: #3b82f6;
+  color: #60a5fa;
 }
 
 .auth2-note b {
@@ -306,17 +346,17 @@
 
 @keyframes auth2DriftA {
   0%, 100% { transform: translate(0, 0) scale(1); }
-  50% { transform: translate(60px, 40px) scale(1.15); }
+  50% { transform: translate(70px, 45px) scale(1.15); }
 }
 
 @keyframes auth2DriftB {
   0%, 100% { transform: translate(0, 0) scale(1); }
-  50% { transform: translate(-50px, -30px) scale(1.1); }
+  50% { transform: translate(-60px, -34px) scale(1.1); }
 }
 
 @keyframes auth2DriftC {
   0%, 100% { transform: translate(0, 0) scale(1); }
-  50% { transform: translate(-40px, 50px) scale(0.9); }
+  50% { transform: translate(-46px, 54px) scale(0.9); }
 }
 
 @keyframes auth2DrawLine {
@@ -335,6 +375,15 @@
 
   .auth2-stage {
     padding: 28px 18px 40px;
+  }
+
+  .auth2-orb {
+    filter: blur(64px);
+  }
+
+  .auth2-chart-line {
+    height: 38%;
+    opacity: .44;
   }
 
   .auth2-head h1 {
