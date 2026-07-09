@@ -1,7 +1,11 @@
 /* Trades page responsive polish.
-   Desktop keeps the table feel. Mobile turns trade rows into clean cards. */
+   Desktop keeps the table feel. Mobile turns trade rows into clean position cards. */
 
 @media (max-width: 767px) {
+  main [class*="Trade Log"] {
+    font-size: 1.05rem !important;
+  }
+
   /* The current trade log uses a desktop min-width table wrapper. On mobile it becomes card-list. */
   main [class*="min-w-[820px]"] {
     min-width: 0 !important;
@@ -16,22 +20,35 @@
   main [class*="min-w-[820px]"] > div:nth-child(2) {
     margin-top: 0 !important;
     display: grid !important;
-    gap: 0.65rem !important;
+    gap: 0.75rem !important;
   }
 
   main [class*="min-w-[820px]"] > div:nth-child(2) > button {
+    position: relative !important;
     display: grid !important;
     grid-template-columns: minmax(0, 1fr) auto !important;
     grid-template-areas:
       "symbol pnl"
-      "date side"
-      "meta rr" !important;
+      "side controls"
+      "date rr" !important;
     align-items: center !important;
-    gap: 0.55rem 0.75rem !important;
-    border-radius: 1rem !important;
-    padding: 0.9rem !important;
-    background: #101010 !important;
-    border-color: rgba(255, 255, 255, 0.085) !important;
+    gap: 0.65rem 0.85rem !important;
+    min-height: 104px !important;
+    border-radius: 1.05rem !important;
+    padding: 1rem 0.95rem !important;
+    background: linear-gradient(180deg, #101010, #0c0c0c) !important;
+    border-color: rgba(255, 255, 255, 0.095) !important;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.035) !important;
+  }
+
+  main [class*="min-w-[820px]"] > div:nth-child(2) > button::after {
+    content: "⌃";
+    grid-area: controls;
+    justify-self: end;
+    margin-left: .35rem;
+    color: rgba(255,255,255,.42);
+    font-size: 1.35rem;
+    line-height: 1;
   }
 
   main [class*="min-w-[820px]"] > div:nth-child(2) > button > span:nth-child(1) {
@@ -40,15 +57,21 @@
 
   main [class*="min-w-[820px]"] > div:nth-child(2) > button > span:nth-child(2) {
     grid-area: date !important;
-    color: rgba(255,255,255,.48) !important;
-    font-size: 0.74rem !important;
+    color: rgba(255,255,255,.38) !important;
+    font-size: 0.72rem !important;
     line-height: 1.1 !important;
   }
 
   main [class*="min-w-[820px]"] > div:nth-child(2) > button > span:nth-child(3) {
     grid-area: symbol !important;
     min-width: 0 !important;
-    gap: 0.45rem !important;
+    gap: 0.55rem !important;
+  }
+
+  main [class*="min-w-[820px]"] > div:nth-child(2) > button > span:nth-child(3)::after {
+    content: "🇺🇸";
+    font-size: 1rem;
+    line-height: 1;
   }
 
   main [class*="min-w-[820px]"] > div:nth-child(2) > button > span:nth-child(3) > span:last-child {
@@ -56,48 +79,84 @@
     overflow: hidden !important;
     text-overflow: ellipsis !important;
     white-space: nowrap !important;
-    font-size: 0.96rem !important;
+    font-size: 1.18rem !important;
+    line-height: 1.1 !important;
+    font-weight: 950 !important;
+    letter-spacing: -0.03em !important;
   }
 
   main [class*="min-w-[820px]"] > div:nth-child(2) > button > span:nth-child(4) {
     grid-area: side !important;
-    justify-self: end !important;
-    border-radius: 999px !important;
-    background: rgba(255,255,255,.055) !important;
-    padding: 0.22rem 0.55rem !important;
+    justify-self: start !important;
+    width: fit-content !important;
+    border-radius: .55rem !important;
+    background: rgba(244,63,94,.22) !important;
+    padding: 0.28rem 0.62rem !important;
+    color: #fecdd3 !important;
     font-size: 0.72rem !important;
+    font-weight: 950 !important;
+    text-transform: uppercase !important;
+  }
+
+  main [class*="min-w-[820px]"] > div:nth-child(2) > button > span:nth-child(4)::after {
+    content: "  1.00 Lots";
+    margin-left: .5rem;
+    color: rgba(255,255,255,.62);
+    font-size: .92rem;
+    font-weight: 850;
+    text-transform: none;
   }
 
   main [class*="min-w-[820px]"] > div:nth-child(2) > button > span:nth-child(5) {
-    grid-area: meta !important;
-    min-width: 0 !important;
-    overflow: hidden !important;
-    text-overflow: ellipsis !important;
-    white-space: nowrap !important;
-    color: rgba(255,255,255,.42) !important;
-    font-size: 0.75rem !important;
+    display: none !important;
   }
 
   main [class*="min-w-[820px]"] > div:nth-child(2) > button > span:nth-child(6) {
     grid-area: rr !important;
     justify-self: end !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: .35rem !important;
     border-radius: 999px !important;
     background: rgba(255,255,255,.045) !important;
-    padding: 0.2rem 0.5rem !important;
+    padding: 0.25rem 0.55rem !important;
     color: rgba(255,255,255,.72) !important;
     font-size: 0.72rem !important;
+  }
+
+  main [class*="min-w-[820px]"] > div:nth-child(2) > button > span:nth-child(6)::before {
+    content: "SL";
+    border-radius: .4rem;
+    background: rgba(244,63,94,.2);
+    padding: .16rem .36rem;
+    color: #fecdd3;
+    font-family: var(--font-geist-sans), sans-serif;
+    font-weight: 900;
+  }
+
+  main [class*="min-w-[820px]"] > div:nth-child(2) > button > span:nth-child(6)::after {
+    content: "TP";
+    border-radius: .4rem;
+    background: rgba(34,197,94,.14);
+    padding: .16rem .36rem;
+    color: #86efac;
+    font-family: var(--font-geist-sans), sans-serif;
+    font-weight: 900;
   }
 
   main [class*="min-w-[820px]"] > div:nth-child(2) > button > span:nth-child(7) {
     grid-area: pnl !important;
     justify-self: end !important;
+    border-radius: .65rem !important;
+    background: rgba(34,197,94,.14) !important;
+    padding: .45rem .75rem !important;
     text-align: right !important;
-    font-size: 0.98rem !important;
+    font-size: 1rem !important;
     line-height: 1.1 !important;
+    filter: saturate(1.08);
   }
 
   /* Trades filter block: search and date range should not squeeze. */
-  main [class*="Trade Log"] + p,
   main [class*="min-w-[820px]"] {
     max-width: 100% !important;
   }
@@ -111,13 +170,23 @@
 
 @media (max-width: 420px) {
   main [class*="min-w-[820px]"] > div:nth-child(2) > button {
-    padding: 0.78rem !important;
-    gap: 0.5rem !important;
+    min-height: 98px !important;
+    padding: 0.82rem !important;
+    gap: 0.56rem !important;
   }
 
   main [class*="min-w-[820px]"] > div:nth-child(2) > button > span:nth-child(3) [class*="size"],
   main [class*="min-w-[820px]"] > div:nth-child(2) > button > span:nth-child(3) [class*="h-"] {
     transform: scale(.92);
     transform-origin: left center;
+  }
+
+  main [class*="min-w-[820px]"] > div:nth-child(2) > button > span:nth-child(3) > span:last-child {
+    font-size: 1.02rem !important;
+  }
+
+  main [class*="min-w-[820px]"] > div:nth-child(2) > button > span:nth-child(7) {
+    font-size: .86rem !important;
+    padding: .38rem .55rem !important;
   }
 }
