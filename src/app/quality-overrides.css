@@ -1,0 +1,118 @@
+/* Quiet, consistent TradeWay UI layer.
+   Goal: modest, readable, dark SaaS feel; no extra architecture changes. */
+
+:root {
+  --tw-bg: #000000;
+  --tw-panel: #0a0a0a;
+  --tw-panel-2: #101010;
+  --tw-border: rgba(255, 255, 255, 0.09);
+  --tw-muted: rgba(255, 255, 255, 0.48);
+  --tw-soft: rgba(255, 255, 255, 0.04);
+}
+
+body {
+  background: var(--tw-bg) !important;
+}
+
+/* Make cards look from the same family. */
+.prop-card-glow,
+.surface,
+.surface-soft,
+.surface-strong,
+.glass,
+.glass-soft,
+.glass-strong,
+main [class*="bg-[#0b0b0b]"],
+main [class*="bg-[#17181b]"],
+main [class*="bg-[#121212]"],
+main [class*="bg-[#141518]"] {
+  background: var(--tw-panel) !important;
+  border-color: var(--tw-border) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.035), 0 18px 48px rgba(0, 0, 0, 0.24) !important;
+}
+
+/* Account dropdown must not be clipped by the card. */
+.prop-card-glow {
+  overflow: visible !important;
+}
+
+/* Keep the inner card sections calm. */
+.prop-card-glow [class*="bg-[#121212]"],
+.prop-card-glow [class*="bg-black/20"],
+.prop-card-glow [class*="bg-black/15"] {
+  background: rgba(255, 255, 255, 0.025) !important;
+  border-color: rgba(255, 255, 255, 0.075) !important;
+}
+
+/* Sidebar Settings is intentionally hidden. Account settings opens from card 3-dot menu. */
+aside nav button:nth-child(6),
+[data-slot="dialog-content"] nav button:nth-child(6) {
+  display: none !important;
+}
+
+/* Hide the current AI coach card until it becomes useful enough. */
+section.overflow-hidden[class*="rounded-[24px]"] {
+  display: none !important;
+}
+
+/* Tone down one-off neon accent colors so UI feels consistent. */
+[class*="text-[#d9f96d]"] {
+  color: #e5e7eb !important;
+}
+
+[class*="bg-[#d9f96d]"] {
+  background-color: #e5e7eb !important;
+}
+
+[class*="border-[#d9f96d]"] {
+  border-color: rgba(255, 255, 255, 0.18) !important;
+}
+
+/* PnL colors stay meaningful but less toy-like. */
+.text-emerald-400,
+.text-emerald-300 {
+  color: #34d399 !important;
+}
+
+.text-rose-400,
+.text-rose-300 {
+  color: #fb7185 !important;
+}
+
+.bg-emerald-500,
+.bg-emerald-400 {
+  background-color: #10b981 !important;
+}
+
+.bg-rose-500,
+.bg-rose-400 {
+  background-color: #f43f5e !important;
+}
+
+/* Dropdowns should feel like the rest of the product. */
+[data-slot="dropdown-menu-content"] {
+  min-width: 178px !important;
+  border: 1px solid var(--tw-border) !important;
+  background: #080808 !important;
+  box-shadow: 0 18px 55px rgba(0, 0, 0, 0.45) !important;
+  z-index: 80 !important;
+}
+
+.tw-account-settings-item + [role="menuitem"] {
+  margin-top: 2px;
+}
+
+/* Small polish for unreadable uppercase labels. */
+main [class*="uppercase"] {
+  letter-spacing: 0.12em;
+}
+
+@media (max-width: 767px) {
+  .prop-card-glow {
+    border-radius: 1.25rem !important;
+  }
+
+  [data-slot="dropdown-menu-content"] {
+    max-width: calc(100vw - 24px) !important;
+  }
+}
