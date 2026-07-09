@@ -1,0 +1,123 @@
+/* Trades page responsive polish.
+   Desktop keeps the table feel. Mobile turns trade rows into clean cards. */
+
+@media (max-width: 767px) {
+  /* The current trade log uses a desktop min-width table wrapper. On mobile it becomes card-list. */
+  main [class*="min-w-[820px]"] {
+    min-width: 0 !important;
+    width: 100% !important;
+    padding: 0.75rem !important;
+  }
+
+  main [class*="min-w-[820px]"] > div:first-child {
+    display: none !important;
+  }
+
+  main [class*="min-w-[820px]"] > div:nth-child(2) {
+    margin-top: 0 !important;
+    display: grid !important;
+    gap: 0.65rem !important;
+  }
+
+  main [class*="min-w-[820px]"] > div:nth-child(2) > button {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) auto !important;
+    grid-template-areas:
+      "symbol pnl"
+      "date side"
+      "meta rr" !important;
+    align-items: center !important;
+    gap: 0.55rem 0.75rem !important;
+    border-radius: 1rem !important;
+    padding: 0.9rem !important;
+    background: #101010 !important;
+    border-color: rgba(255, 255, 255, 0.085) !important;
+  }
+
+  main [class*="min-w-[820px]"] > div:nth-child(2) > button > span:nth-child(1) {
+    display: none !important;
+  }
+
+  main [class*="min-w-[820px]"] > div:nth-child(2) > button > span:nth-child(2) {
+    grid-area: date !important;
+    color: rgba(255,255,255,.48) !important;
+    font-size: 0.74rem !important;
+    line-height: 1.1 !important;
+  }
+
+  main [class*="min-w-[820px]"] > div:nth-child(2) > button > span:nth-child(3) {
+    grid-area: symbol !important;
+    min-width: 0 !important;
+    gap: 0.45rem !important;
+  }
+
+  main [class*="min-w-[820px]"] > div:nth-child(2) > button > span:nth-child(3) > span:last-child {
+    min-width: 0 !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+    font-size: 0.96rem !important;
+  }
+
+  main [class*="min-w-[820px]"] > div:nth-child(2) > button > span:nth-child(4) {
+    grid-area: side !important;
+    justify-self: end !important;
+    border-radius: 999px !important;
+    background: rgba(255,255,255,.055) !important;
+    padding: 0.22rem 0.55rem !important;
+    font-size: 0.72rem !important;
+  }
+
+  main [class*="min-w-[820px]"] > div:nth-child(2) > button > span:nth-child(5) {
+    grid-area: meta !important;
+    min-width: 0 !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+    color: rgba(255,255,255,.42) !important;
+    font-size: 0.75rem !important;
+  }
+
+  main [class*="min-w-[820px]"] > div:nth-child(2) > button > span:nth-child(6) {
+    grid-area: rr !important;
+    justify-self: end !important;
+    border-radius: 999px !important;
+    background: rgba(255,255,255,.045) !important;
+    padding: 0.2rem 0.5rem !important;
+    color: rgba(255,255,255,.72) !important;
+    font-size: 0.72rem !important;
+  }
+
+  main [class*="min-w-[820px]"] > div:nth-child(2) > button > span:nth-child(7) {
+    grid-area: pnl !important;
+    justify-self: end !important;
+    text-align: right !important;
+    font-size: 0.98rem !important;
+    line-height: 1.1 !important;
+  }
+
+  /* Trades filter block: search and date range should not squeeze. */
+  main [class*="Trade Log"] + p,
+  main [class*="min-w-[820px]"] {
+    max-width: 100% !important;
+  }
+
+  main [data-slot="tabs-content"] input,
+  main [data-slot="tabs-content"] button,
+  main [data-slot="tabs-content"] [data-slot="select-trigger"] {
+    min-width: 0 !important;
+  }
+}
+
+@media (max-width: 420px) {
+  main [class*="min-w-[820px]"] > div:nth-child(2) > button {
+    padding: 0.78rem !important;
+    gap: 0.5rem !important;
+  }
+
+  main [class*="min-w-[820px]"] > div:nth-child(2) > button > span:nth-child(3) [class*="size"],
+  main [class*="min-w-[820px]"] > div:nth-child(2) > button > span:nth-child(3) [class*="h-"] {
+    transform: scale(.92);
+    transform-origin: left center;
+  }
+}
