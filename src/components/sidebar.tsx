@@ -205,10 +205,10 @@ export function Sidebar({
   return (
     <>
       <aside className="fixed left-[max(1rem,calc((100vw-1860px)/2+1rem))] top-4 z-40 hidden h-[calc(100dvh-2rem)] w-[272px] shrink-0 flex-col rounded-[1.25rem] border border-white/8 bg-[#000000] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,.04)] lg:flex">
-        <button onClick={() => onChange("feed")} className="flex items-center gap-3 rounded-[1.25rem] px-2 py-2.5 text-left transition-colors hover:bg-white/[.05]" aria-label="TradeWay home">
-          <span className="grid h-11 w-11 place-items-center rounded-2xl bg-[linear-gradient(180deg,rgba(255,255,255,1),rgba(232,232,236,1))] text-lg font-black text-black shadow-[0_12px_28px_rgba(255,255,255,.08)]">TW</span>
+        <button onClick={() => onChange("feed")} className="flex items-center gap-3 rounded-[1.25rem] px-2 py-2.5 text-left transition-colors hover:bg-white/[.05]" aria-label="Tradox home">
+          <span className="grid h-11 w-11 place-items-center rounded-2xl bg-[linear-gradient(180deg,rgba(255,255,255,1),rgba(232,232,236,1))] text-lg font-black text-black shadow-[0_12px_28px_rgba(255,255,255,.08)]">TD</span>
           <span>
-            <strong className="block text-base tracking-tight">TradeWay</strong>
+            <strong className="block text-base tracking-tight">Tradox</strong>
             <small className="text-[11px] text-zinc-500">Trading workspace</small>
           </span>
         </button>
@@ -285,7 +285,7 @@ export function Sidebar({
             </button>
             <div className="ml-3 min-w-0 flex-1">
               <p className="truncate text-lg font-black text-white">
-                {active === "accounts" ? "Accounts" : nav.find((item) => item.id === active)?.label || "TradeWay"}
+                {active === "accounts" ? "Accounts" : nav.find((item) => item.id === active)?.label || "Tradox"}
               </p>
               <p className="truncate text-xs text-zinc-500">
                 {activeAccount?.name || "All Accounts"}
@@ -311,9 +311,9 @@ export function Sidebar({
               <div className="flex h-full flex-col">
                 <div className="flex items-center justify-between border-b border-white/8 px-5 py-5">
                   <div className="flex items-center gap-3">
-                    <span className="grid h-11 w-11 place-items-center rounded-2xl bg-white text-base font-black text-black">TW</span>
+                    <span className="grid h-11 w-11 place-items-center rounded-2xl bg-white text-base font-black text-black">TD</span>
                     <div>
-                      <strong className="block text-base text-white">TradeWay</strong>
+                      <strong className="block text-base text-white">Tradox</strong>
                       <small className="text-xs text-zinc-500">Trading workspace</small>
                     </div>
                   </div>
