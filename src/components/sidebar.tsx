@@ -10,6 +10,7 @@ import {
   Menu,
   MoreHorizontal,
   Plus,
+  Settings,
   ShieldCheck,
   SquareChartGantt,
   TrendingUp,
@@ -85,10 +86,11 @@ export function Sidebar({
 
   const baseNav = [
     { id: "feed" as const, label: t("home"), icon: Home },
-    { id: "dashboard" as const, label: "Dashboard", icon: LayoutDashboard },
+    { id: "dashboard" as const, label: "Overview", icon: LayoutDashboard },
     { id: "calendar" as const, label: "Calendar", icon: CalendarDays },
     { id: "trades" as const, label: "Trades", icon: SquareChartGantt },
     { id: "analytics" as const, label: "Analytics", icon: TrendingUp },
+    { id: "settings" as const, label: "Settings", icon: Settings },
     { id: "account" as const, label: t("profile"), icon: UserRound },
   ];
   const nav = isAdmin
