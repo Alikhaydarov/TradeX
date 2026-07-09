@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import { AppShell } from "@/components/app-shell";
 import { AccountCardMenuBridge } from "@/components/account-card-menu-bridge";
 import { AuthProvider } from "@/components/auth-context";
+import { FloatingAddTradeButton } from "@/components/floating-add-trade-button";
 import { getSupabaseServerClient } from "@/lib/supabase/server";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
 import "./globals.css";
@@ -30,6 +31,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
         <AuthProvider initialUser={data.user} initialConfigured={configured}>
           <AppShell />
           <AccountCardMenuBridge />
+          <FloatingAddTradeButton />
           <div className="hidden">{children}</div>
         </AuthProvider>
       </body>
