@@ -6,22 +6,43 @@ function cleanText(node: Element | undefined) {
   return (node?.textContent || "").replace(/\s+/g, " ").trim();
 }
 
-function isTradeHeader(element: Element) {
-  const value = cleanText(element);
-  return value.includes("Entry date") && value.includes("Symbol") && value.includes("Side") && value.includes("Trade duration") && value.includes("Risk/Reward") && value.includes("P&L");
+function isTradeLikeButton(button: HTMLButtonElement) {
+  if (button.dataset.mobileTradeCard === "true") return false;
+  const text = cleanText(button);
+  if (!text || text.length < 12) return false;
+  if (/add trade|cancel|save|continue|login|register/i.test(text)) return false;
+
+  const hasMoney = /[$€£]|\+\d|\-\d/.test(text);
+  const hasSide = /\b(buy|sell|long|short)\b|↑|↓/i.test(text);
+  const hasSymbolish = /\b[A-Z]{3,8}\b/.test(text);
+  return hasMoney && (hasSide || hasSymbolish);
+}
+
+function parseRow(row: HTMLButtonElement) {
+  const spans = Array.from(row.children).filter((child) => child.tagName.toLowerCase() === "span");
+  const allText = cleanText(row);
+
+  if (spans.length >= 7) {
+    const date = cleanText(spans[1]);
+    const symbol = cleanText(spans[2]).replace(/^[A-Z]{1,4}\s+/, "").trim() || cleanText(spans[2]);
+    const side = cleanText(spans[3]);
+    const meta = cleanText(spans[4]);
+    const rr = cleanText(spans[5]);
+    const pnl = cleanText(spans[6]);
+    return { date, symbol, side, meta, rr, pnl };
+  }
+
+  const symbol = allText.match(/\b(NAS100|XAUUSD|EURUSD|GBPUSD|USDJPY|US30|US100|GER30|BTCUSD|ETHUSD|[A-Z]{5,8})\b/)?.[0] || "TRADE";
+  const pnl = allText.match(/[+-]?\$?\d[\d,]*(?:\.\d{1,2})?/)?.[0] || "$0.00";
+  const rr = allText.match(/[+-]?\d+(?:\.\d+)?R/i)?.[0] || "0.00R";
+  const side = allText.match(/\b(sell|short)\b|↓/i) ? "Sell" : "Buy";
+  const date = allText.match(/\d{4}[-/]\d{1,2}[-/]\d{1,2}|\d{1,2}\s+[A-Za-z]{3}/)?.[0] || "";
+  return { date, symbol, side, meta: "", rr, pnl };
 }
 
 function buildCard(row: HTMLButtonElement) {
-  const spans = Array.from(row.children).filter((child) => child.tagName.toLowerCase() === "span");
-  if (spans.length < 7) return null;
-
-  const date = cleanText(spans[1]);
-  const symbol = cleanText(spans[2]).replace(/^[A-Z]{1,4}\s+/, "").trim() || cleanText(spans[2]);
-  const side = cleanText(spans[3]);
-  const meta = cleanText(spans[4]);
-  const rr = cleanText(spans[5]);
-  const pnl = cleanText(spans[6]);
-  const winning = !pnl.startsWith("-");
+  const { date, symbol, side, meta, rr, pnl } = parseRow(row);
+  const winning = !String(pnl).trim().startsWith("-");
   const isSell = /sell|short|↓/i.test(side);
 
   const card = document.createElement("button");
@@ -32,13 +53,14 @@ function buildCard(row: HTMLButtonElement) {
 
   const sideClass = isSell ? "bg-rose-500/20 text-rose-200" : "bg-emerald-500/15 text-emerald-200";
   const pnlClass = winning ? "bg-emerald-500/15 text-emerald-300" : "bg-rose-500/15 text-rose-300";
+  const cleanSymbol = symbol.replace(/[^A-Z0-9+]/gi, "").toUpperCase() || "TRADE";
 
   card.innerHTML = `
     <div class="flex items-start justify-between gap-3">
       <div class="min-w-0 flex-1">
         <div class="flex min-w-0 items-center gap-2">
-          <span class="grid size-8 shrink-0 place-items-center rounded-xl border border-white/10 bg-[#151515] text-[10px] font-black text-zinc-300">${symbol.slice(0, 2).toUpperCase()}</span>
-          <strong class="min-w-0 truncate text-xl font-black tracking-[-0.03em] text-white">${symbol}</strong>
+          <span class="grid size-8 shrink-0 place-items-center rounded-xl border border-white/10 bg-[#151515] text-[10px] font-black text-zinc-300">${cleanSymbol.slice(0, 2)}</span>
+          <strong class="min-w-0 truncate text-xl font-black tracking-[-0.03em] text-white">${cleanSymbol}</strong>
           <span class="shrink-0 text-lg">🇺🇸</span>
         </div>
         <div class="mt-3 flex min-w-0 items-center gap-2">
@@ -67,46 +89,64 @@ function buildCard(row: HTMLButtonElement) {
   return card;
 }
 
-function syncMobileTradeCards() {
-  const headers = Array.from(document.querySelectorAll("main div")).filter(isTradeHeader);
+function findTradeRows() {
+  const main = document.querySelector("main");
+  if (!main) return [] as HTMLButtonElement[];
 
-  for (const header of headers) {
-    const tableInner = header.parentElement as HTMLElement | null;
-    const desktopWrap = tableInner?.parentElement as HTMLElement | null;
-    const rowsWrap = header.nextElementSibling as HTMLElement | null;
-    if (!tableInner || !desktopWrap || !rowsWrap) continue;
-    if (desktopWrap.dataset.mobileTradesReady === "true") continue;
+  const buttons = Array.from(main.querySelectorAll("button")) as HTMLButtonElement[];
+  return buttons.filter(isTradeLikeButton);
+}
 
-    const rows = Array.from(rowsWrap.querySelectorAll("button")) as HTMLButtonElement[];
-    if (!rows.length) continue;
+function findDesktopContainer(rows: HTMLButtonElement[]) {
+  if (!rows.length) return null;
 
-    desktopWrap.dataset.mobileTradesReady = "true";
-    desktopWrap.classList.add("hidden", "md:block");
-
-    const list = document.createElement("div");
-    list.setAttribute("data-mobile-trades-list", "true");
-    list.className = "grid gap-3 p-3 md:hidden";
-
-    for (const row of rows) {
-      const card = buildCard(row);
-      if (card) list.appendChild(card);
-    }
-
-    desktopWrap.parentElement?.insertBefore(list, desktopWrap);
+  const first = rows[0];
+  let current: HTMLElement | null = first.parentElement;
+  while (current && current !== document.body) {
+    const count = Array.from(current.querySelectorAll("button")).filter(isTradeLikeButton).length;
+    if (count >= Math.min(2, rows.length)) return current;
+    current = current.parentElement;
   }
+  return first.parentElement;
+}
+
+function syncMobileTradeCards() {
+  const rows = findTradeRows();
+  if (!rows.length) return;
+
+  const desktopContainer = findDesktopContainer(rows);
+  if (!desktopContainer) return;
+
+  const existing = desktopContainer.parentElement?.querySelector("[data-mobile-trades-list='true']") as HTMLElement | null;
+  if (existing) existing.remove();
+
+  desktopContainer.classList.add("hidden", "md:block");
+
+  const list = document.createElement("div");
+  list.setAttribute("data-mobile-trades-list", "true");
+  list.className = "grid gap-3 p-3 md:hidden";
+
+  for (const row of rows) {
+    const card = buildCard(row);
+    if (card) list.appendChild(card);
+  }
+
+  desktopContainer.parentElement?.insertBefore(list, desktopContainer);
 }
 
 export function MobileTradesBridge() {
   useEffect(() => {
-    syncMobileTradeCards();
+    const run = () => window.requestAnimationFrame(syncMobileTradeCards);
+    run();
+    const interval = window.setInterval(run, 900);
 
-    const observer = new MutationObserver(() => {
-      window.requestAnimationFrame(syncMobileTradeCards);
-    });
+    const observer = new MutationObserver(run);
+    observer.observe(document.body, { childList: true, subtree: true, characterData: true });
 
-    observer.observe(document.body, { childList: true, subtree: true });
-
-    return () => observer.disconnect();
+    return () => {
+      window.clearInterval(interval);
+      observer.disconnect();
+    };
   }, []);
 
   return null;
