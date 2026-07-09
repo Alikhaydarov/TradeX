@@ -130,18 +130,24 @@ export function Sidebar({
 
   const AccountSwitcher = ({ mobile = false }: { mobile?: boolean }) => (
     <DropdownMenu open={accountSwitcherOpen} onOpenChange={setAccountSwitcherOpen}>
-      <DropdownMenuTrigger asChild>
-        <button type="button" className={`${mobile ? "flex w-full items-center gap-3 rounded-[1.15rem] border border-white/8 bg-[#0b0b0b] px-3 py-3 text-left" : "mt-4 flex w-full items-center gap-3 rounded-[1rem] border border-white/8 bg-[#050505] p-4 text-left transition hover:bg-white/[.03]"}`}>
+      <div className={`${mobile ? "flex w-full items-center gap-3 rounded-[1.15rem] border border-white/8 bg-[#0b0b0b] px-3 py-3" : "mt-4 flex w-full items-center gap-3 rounded-[1rem] border border-white/8 bg-[#050505] p-4 transition hover:bg-white/[.03]"}`}>
+        <button type="button" onClick={openAccountsPage} className="flex min-w-0 flex-1 items-center gap-3 text-left">
           <span className={`size-2 shrink-0 rounded-full ${activeAccount ? "bg-emerald-500" : "bg-zinc-500"}`} />
           <div className="min-w-0 flex-1">
             <p className={`${mobile ? "text-base" : "text-sm"} truncate font-bold text-white`}>{activeAccount?.name || "Accounts"}</p>
             <p className={`${mobile ? "text-xs" : "text-[11px]"} truncate text-zinc-500`}>{activeAccount ? activeBalance : "Select trading account"}</p>
           </div>
-          <span className={`${mobile ? "size-10" : "size-8"} grid shrink-0 place-items-center rounded-xl border border-white/8 bg-white/[.03] text-zinc-400`}>
-            <ChevronDown size={mobile ? 15 : 14} className={`transition-transform ${accountSwitcherOpen ? "rotate-180" : ""}`} />
-          </span>
         </button>
-      </DropdownMenuTrigger>
+        <DropdownMenuTrigger asChild>
+          <button
+            type="button"
+            className={`${mobile ? "size-10" : "size-8"} grid shrink-0 place-items-center rounded-xl border border-white/8 bg-white/[.03] text-zinc-400 transition hover:bg-white/[.07] hover:text-white`}
+            aria-label="Open account switcher"
+          >
+            <ChevronDown size={mobile ? 15 : 14} className={`transition-transform ${accountSwitcherOpen ? "rotate-180" : ""}`} />
+          </button>
+        </DropdownMenuTrigger>
+      </div>
       <DropdownMenuContent
         side={mobile ? "bottom" : "right"}
         align="start"
