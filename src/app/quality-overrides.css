@@ -1,20 +1,30 @@
-/* Quiet, consistent TradeWay UI layer.
-   Goal: modest, readable, dark SaaS feel; no extra architecture changes. */
+/* Minimal dark workspace layer for TradeWay.
+   Direction: calm TradesPad-like UI, fewer colors, less noise, stronger focus. */
 
 :root {
   --tw-bg: #000000;
-  --tw-panel: #0a0a0a;
-  --tw-panel-2: #101010;
-  --tw-border: rgba(255, 255, 255, 0.09);
+  --tw-panel: #090909;
+  --tw-panel-2: #121212;
+  --tw-panel-3: #181818;
+  --tw-border: rgba(255, 255, 255, 0.085);
+  --tw-border-strong: rgba(255, 255, 255, 0.14);
   --tw-muted: rgba(255, 255, 255, 0.48);
   --tw-soft: rgba(255, 255, 255, 0.04);
 }
 
+html,
 body {
   background: var(--tw-bg) !important;
 }
 
-/* Make cards look from the same family. */
+/* App frame: quieter, less card-on-card shine. */
+main,
+main > div,
+aside {
+  background-color: #000000 !important;
+}
+
+/* Make most panels share one calm family. */
 .prop-card-glow,
 .surface,
 .surface-soft,
@@ -22,36 +32,96 @@ body {
 .glass,
 .glass-soft,
 .glass-strong,
+[data-slot="card"],
 main [class*="bg-[#0b0b0b]"],
 main [class*="bg-[#17181b]"],
 main [class*="bg-[#121212]"],
-main [class*="bg-[#141518]"] {
+main [class*="bg-[#141518]"],
+main [class*="bg-[#171717]"],
+main [class*="bg-[#111111]"] {
   background: var(--tw-panel) !important;
   border-color: var(--tw-border) !important;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.035), 0 18px 48px rgba(0, 0, 0, 0.24) !important;
+  box-shadow: none !important;
 }
 
-/* Account dropdown must not be clipped by the card. */
+/* Main content cards: subtle border, not glowing boxes. */
+.prop-card-glow,
+main section[class*="border"],
+main div[class*="border"] {
+  border-color: var(--tw-border) !important;
+}
+
 .prop-card-glow {
   overflow: visible !important;
+  background: #080808 !important;
+  transition: border-color .16s ease, background-color .16s ease, transform .16s ease !important;
 }
 
-/* Keep the inner card sections calm. */
+.prop-card-glow:hover {
+  transform: translateY(-1px) !important;
+  border-color: var(--tw-border-strong) !important;
+  background: #0b0b0b !important;
+}
+
+/* Keep inner card sections flat and readable. */
 .prop-card-glow [class*="bg-[#121212]"],
 .prop-card-glow [class*="bg-black/20"],
-.prop-card-glow [class*="bg-black/15"] {
+.prop-card-glow [class*="bg-black/15"],
+.prop-card-glow [class*="bg-white/[.035]"] {
   background: rgba(255, 255, 255, 0.025) !important;
   border-color: rgba(255, 255, 255, 0.075) !important;
 }
 
-/* Sidebar Settings is intentionally hidden. Account settings opens from card 3-dot menu. */
+/* Sidebar: compact premium workspace. */
+aside[class*="fixed"] {
+  border-right: 1px solid var(--tw-border) !important;
+  border-radius: 0 !important;
+  top: 0 !important;
+  left: 0 !important;
+  height: 100dvh !important;
+  padding: 1rem !important;
+}
+
+aside nav {
+  margin-top: 1.25rem !important;
+}
+
+aside nav button,
+[data-slot="dialog-content"] nav button {
+  border-radius: .75rem !important;
+  padding-top: .62rem !important;
+  padding-bottom: .62rem !important;
+}
+
+aside nav button[class*="bg-white"],
+[data-slot="dialog-content"] nav button[class*="bg-white"] {
+  background: #171717 !important;
+  box-shadow: none !important;
+  ring-color: transparent !important;
+}
+
 aside nav button:nth-child(6),
 [data-slot="dialog-content"] nav button:nth-child(6) {
   display: none !important;
 }
 
-/* Hide the current AI coach card until it becomes useful enough. */
+/* Account switcher in sidebar: simpler, like a small workspace selector. */
+aside button[class*="mt-4"][class*="border"] {
+  background: #090909 !important;
+  border-color: var(--tw-border) !important;
+  border-radius: .9rem !important;
+  box-shadow: none !important;
+}
+
+/* Hide current AI coach block until the output becomes truly useful. */
 section.overflow-hidden[class*="rounded-[24px]"] {
+  display: none !important;
+}
+
+/* Hide noisy premium/upgrade promo surfaces for a cleaner workspace. */
+aside .mt-auto > div:first-child:not(:last-child),
+aside [class*="Join early access"],
+aside div:has(> button[class*="Upgrade"]) {
   display: none !important;
 }
 
@@ -68,48 +138,99 @@ section.overflow-hidden[class*="rounded-[24px]"] {
   border-color: rgba(255, 255, 255, 0.18) !important;
 }
 
-/* PnL colors stay meaningful but less toy-like. */
+/* Meaningful colors only: PnL green/red. */
 .text-emerald-400,
 .text-emerald-300 {
-  color: #34d399 !important;
+  color: #22c55e !important;
 }
 
 .text-rose-400,
 .text-rose-300 {
-  color: #fb7185 !important;
+  color: #ef4444 !important;
 }
 
 .bg-emerald-500,
 .bg-emerald-400 {
-  background-color: #10b981 !important;
+  background-color: #16a34a !important;
 }
 
 .bg-rose-500,
 .bg-rose-400 {
-  background-color: #f43f5e !important;
+  background-color: #dc2626 !important;
 }
 
-/* Dropdowns should feel like the rest of the product. */
+/* Dropdowns: no clipping, no bright menu, clear Settings/Delete order. */
 [data-slot="dropdown-menu-content"] {
   min-width: 178px !important;
   border: 1px solid var(--tw-border) !important;
   background: #080808 !important;
-  box-shadow: 0 18px 55px rgba(0, 0, 0, 0.45) !important;
-  z-index: 80 !important;
+  box-shadow: 0 18px 55px rgba(0, 0, 0, 0.52) !important;
+  z-index: 9999 !important;
+}
+
+.tw-account-settings-item {
+  color: #e5e7eb !important;
+}
+
+.tw-account-settings-item:hover {
+  background: rgba(255, 255, 255, 0.065) !important;
 }
 
 .tw-account-settings-item + [role="menuitem"] {
   margin-top: 2px;
+  border-top: 1px solid rgba(255, 255, 255, 0.07);
+  padding-top: .55rem !important;
 }
 
-/* Small polish for unreadable uppercase labels. */
+/* Buttons: softer, less mixed styling. */
+main [data-slot="button"] {
+  border-radius: .8rem !important;
+  box-shadow: none !important;
+}
+
+main [data-slot="button"][class*="bg-white"] {
+  background: #f4f4f5 !important;
+  color: #050505 !important;
+}
+
+main [data-slot="button"][class*="bg-white"]:hover {
+  background: #e4e4e7 !important;
+}
+
+/* Tables/logs should feel like one quiet panel. */
+table,
+thead,
+tbody,
+tr,
+th,
+td {
+  border-color: rgba(255, 255, 255, 0.07) !important;
+}
+
+tr[class*="bg"],
+main [class*="rounded-xl"][class*="bg-[#121212]"] {
+  background-color: #101010 !important;
+}
+
+/* Small polish for labels. */
 main [class*="uppercase"] {
-  letter-spacing: 0.12em;
+  letter-spacing: 0.11em;
+}
+
+main [class*="text-zinc-500"],
+main [class*="text-[#8a8a8a]"] {
+  color: var(--tw-muted) !important;
+}
+
+@media (max-width: 1023px) {
+  aside[class*="fixed"] {
+    border-radius: 0 !important;
+  }
 }
 
 @media (max-width: 767px) {
   .prop-card-glow {
-    border-radius: 1.25rem !important;
+    border-radius: 1.15rem !important;
   }
 
   [data-slot="dropdown-menu-content"] {
