@@ -7,6 +7,7 @@ import { FloatingAddTradeButton } from "@/components/floating-add-trade-button";
 import { getSupabaseServerClient } from "@/lib/supabase/server";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
 import "./globals.css";
+import "./auth-landing-v2.css";
 import "./onyx-overrides.css";
 import "./responsive-fixes.css";
 import "./quality-overrides.css";
