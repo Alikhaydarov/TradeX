@@ -21,8 +21,7 @@ const LABELS: Partial<Record<Section, string>> = {
 const ACCOUNT_SCOPED_SECTIONS = new Set<Section>(["dashboard", "calendar", "trades", "analytics", "bible", "settings"]);
 
 function openMobileDrawer() {
-  const button = document.querySelector('[aria-label="Open navigation"]') as HTMLButtonElement | null;
-  button?.click();
+  window.dispatchEvent(new Event("tradox:open-mobile-menu"));
 }
 
 function openAddTrade() {
