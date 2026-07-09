@@ -130,21 +130,21 @@ export function Sidebar({
 
   const AccountSwitcher = ({ mobile = false }: { mobile?: boolean }) => (
     <DropdownMenu open={accountSwitcherOpen} onOpenChange={setAccountSwitcherOpen}>
-      <div className={`${mobile ? "flex w-full items-center gap-3 rounded-[1.15rem] border border-white/8 bg-[#0b0b0b] px-3 py-3" : "mt-4 flex w-full items-center gap-3 rounded-[1rem] border border-white/8 bg-[#050505] p-4 transition hover:bg-white/[.03]"}`}>
+      <div className={`${mobile ? "flex w-full items-center gap-2.5 rounded-2xl border border-white/10 bg-[#0b0b0b] p-3" : "mt-4 flex w-full items-center gap-3 rounded-[1rem] border border-white/8 bg-[#050505] p-4 transition hover:bg-white/[.03]"}`}>
         <button type="button" onClick={openAccountsPage} className="flex min-w-0 flex-1 items-center gap-3 text-left">
           <span className={`size-2 shrink-0 rounded-full ${activeAccount ? "bg-emerald-500" : "bg-zinc-500"}`} />
           <div className="min-w-0 flex-1">
-            <p className={`${mobile ? "text-base" : "text-sm"} truncate font-bold text-white`}>{activeAccount?.name || "Accounts"}</p>
+            <p className={`${mobile ? "text-sm" : "text-sm"} truncate font-black text-white`}>{activeAccount?.name || "Accounts"}</p>
             <p className={`${mobile ? "text-xs" : "text-[11px]"} truncate text-zinc-500`}>{activeAccount ? activeBalance : "Select trading account"}</p>
           </div>
         </button>
         <DropdownMenuTrigger asChild>
           <button
             type="button"
-            className={`${mobile ? "size-10" : "size-8"} grid shrink-0 place-items-center rounded-xl border border-white/8 bg-white/[.03] text-zinc-400 transition hover:bg-white/[.07] hover:text-white`}
+            className={`${mobile ? "size-9" : "size-8"} grid shrink-0 place-items-center rounded-xl border border-white/8 bg-white/[.03] text-zinc-400 transition hover:bg-white/[.07] hover:text-white`}
             aria-label="Open account switcher"
           >
-            <ChevronDown size={mobile ? 15 : 14} className={`transition-transform ${accountSwitcherOpen ? "rotate-180" : ""}`} />
+            <ChevronDown size={mobile ? 14 : 14} className={`transition-transform ${accountSwitcherOpen ? "rotate-180" : ""}`} />
           </button>
         </DropdownMenuTrigger>
       </div>
@@ -152,7 +152,7 @@ export function Sidebar({
         side={mobile ? "bottom" : "right"}
         align="start"
         sideOffset={mobile ? 10 : 12}
-        className={`${mobile ? "w-[calc(100vw-2rem)]" : "w-[320px]"} rounded-2xl border-white/10 bg-[#080808] p-0 shadow-[0_28px_80px_rgba(0,0,0,.65)]`}
+        className={`${mobile ? "w-[min(320px,calc(100vw-2rem))]" : "w-[320px]"} rounded-2xl border-white/10 bg-[#080808] p-0 shadow-[0_28px_80px_rgba(0,0,0,.65)]`}
       >
         <div className="border-b border-white/8 px-4 py-3">
           <button
@@ -274,66 +274,60 @@ export function Sidebar({
 
       {!hideMobile && (
         <>
-          <header className="fixed inset-x-0 top-0 z-50 flex h-[72px] items-center border-b border-white/8 bg-black px-4 lg:hidden">
+          <header className="fixed inset-x-0 top-0 z-50 flex h-[64px] items-center border-b border-white/8 bg-black px-3 lg:hidden">
             <button
               type="button"
               onClick={() => setMobileMenuOpen(true)}
-              className="grid size-11 place-items-center rounded-2xl border border-white/10 bg-white/[.03] text-white"
+              className="grid size-10 place-items-center rounded-xl border border-white/10 bg-white/[.035] text-white"
               aria-label="Open navigation"
             >
-              <Menu size={20} />
+              <Menu size={19} />
             </button>
-            <div className="ml-3 min-w-0 flex-1">
-              <p className="truncate text-lg font-black text-white">
-                {active === "accounts" ? "Accounts" : nav.find((item) => item.id === active)?.label || "Tradox"}
-              </p>
-              <p className="truncate text-xs text-zinc-500">
-                {activeAccount?.name || "All Accounts"}
-              </p>
-            </div>
-            <div className="flex items-center gap-2">
-              <button
-                type="button"
-                onClick={onPost}
-                className="grid size-11 place-items-center rounded-2xl border border-white/10 bg-white text-black shadow-[0_10px_24px_rgba(255,255,255,.08)]"
-                aria-label={t("shareTrade")}
-              >
-                <Plus size={18} />
-              </button>
-            </div>
+            <button type="button" onClick={openAccountsPage} className="ml-2 min-w-0 flex-1 rounded-xl border border-white/8 bg-[#0b0b0b] px-3 py-2 text-left">
+              <p className="truncate text-sm font-black text-white">{activeAccount?.name || "All Accounts"}</p>
+              <p className="truncate text-[11px] text-zinc-500">{active === "accounts" ? "Accounts" : nav.find((item) => item.id === active)?.label || "Tradox"}</p>
+            </button>
+            <button
+              type="button"
+              onClick={onPost}
+              className="ml-2 grid size-10 place-items-center rounded-xl border border-white/10 bg-white text-black"
+              aria-label={t("shareTrade")}
+            >
+              <Plus size={18} />
+            </button>
           </header>
 
           <Dialog open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
             <DialogContent
               showCloseButton={false}
-              className="left-0 top-0 h-[100dvh] w-[88vw] max-w-[420px] translate-x-0 translate-y-0 rounded-none border-r border-white/10 bg-black p-0 sm:max-w-[420px] lg:hidden"
+              className="left-0 top-0 h-[100dvh] w-[78vw] max-w-[360px] translate-x-0 translate-y-0 rounded-none border-r border-white/10 bg-black p-0 sm:max-w-[360px] lg:hidden"
             >
               <div className="flex h-full flex-col">
-                <div className="flex items-center justify-between border-b border-white/8 px-5 py-5">
+                <div className="flex items-center justify-between border-b border-white/8 px-4 py-4">
                   <div className="flex items-center gap-3">
-                    <span className="grid h-11 w-11 place-items-center rounded-2xl bg-white text-base font-black text-black">TD</span>
+                    <span className="grid size-10 place-items-center rounded-xl bg-white text-sm font-black text-black">TD</span>
                     <div>
-                      <strong className="block text-base text-white">Tradox</strong>
+                      <strong className="block text-base leading-tight text-white">Tradox</strong>
                       <small className="text-xs text-zinc-500">Trading workspace</small>
                     </div>
                   </div>
                   <button
                     type="button"
                     onClick={() => setMobileMenuOpen(false)}
-                    className="grid size-10 place-items-center rounded-2xl border border-white/10 bg-white/[.03] text-zinc-300"
+                    className="grid size-9 place-items-center rounded-xl border border-white/10 bg-white/[.035] text-zinc-300"
                     aria-label="Close navigation"
                   >
-                    <X size={18} />
+                    <X size={17} />
                   </button>
                 </div>
 
-                <div className="border-b border-white/8 px-5 py-4">
+                <div className="border-b border-white/8 px-4 py-4">
                   <AccountSwitcher mobile />
                 </div>
 
-                <div className="flex-1 overflow-y-auto px-5 py-5">
-                  <p className="mb-2 px-3 text-[10px] font-black uppercase tracking-[0.16em] text-zinc-600">Workspace</p>
-                  <nav className="space-y-2">
+                <div className="flex-1 overflow-y-auto px-3 py-4">
+                  <p className="mb-2 px-2 text-[10px] font-black uppercase tracking-[0.18em] text-zinc-600">Workspace</p>
+                  <nav className="space-y-1.5">
                     {nav.map((item) => {
                       const { id, label, icon: Icon } = item;
                       const selected = active === id;
@@ -345,31 +339,31 @@ export function Sidebar({
                             setMobileMenuOpen(false);
                             onChange(id);
                           }}
-                          className={`flex w-full items-center gap-3 rounded-[1.15rem] px-4 py-3 text-left transition ${
-                            selected ? "bg-white/[.09] text-white ring-1 ring-white/12" : "text-zinc-400 hover:bg-white/[.04] hover:text-white"
+                          className={`flex h-11 w-full items-center gap-3 rounded-xl px-3 text-left text-sm font-bold transition ${
+                            selected ? "bg-white/[.095] text-white ring-1 ring-white/10" : "text-zinc-400 hover:bg-white/[.04] hover:text-white"
                           }`}
                         >
-                          <span className={`grid size-11 place-items-center rounded-2xl ${selected ? "bg-white/[.10] text-white" : "bg-white/[.03] text-zinc-500"}`}>
-                            <Icon size={20} />
+                          <span className={`grid size-8 shrink-0 place-items-center rounded-lg ${selected ? "bg-white/[.10] text-white" : "bg-white/[.035] text-zinc-500"}`}>
+                            <Icon size={17} />
                           </span>
-                          <strong className="block min-w-0 truncate text-base">{label}</strong>
+                          <span className="block min-w-0 truncate">{label}</span>
                         </button>
                       );
                     })}
                   </nav>
                 </div>
 
-                <div className="border-t border-white/8 p-5">
-                  <div className="flex w-full items-center gap-3 rounded-2xl border border-white/10 bg-[#0b0b0b] p-3 text-left">
-                    <TraderAvatar name={name} value={avatar} className="h-11 w-11 text-xs" />
+                <div className="border-t border-white/8 p-3">
+                  <div className="flex w-full items-center gap-3 rounded-2xl border border-white/10 bg-[#0b0b0b] p-2.5 text-left">
+                    <TraderAvatar name={name} value={avatar} className="size-10 text-xs" />
                     <button onClick={openProfile} className="min-w-0 flex-1 text-left">
                       <strong className="block truncate text-sm text-white">{name}</strong>
-                      <small className="block truncate text-xs text-zinc-500">{handle}</small>
+                      <small className="block truncate text-[11px] text-zinc-500">{handle}</small>
                     </button>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        <button type="button" className="grid size-9 place-items-center rounded-xl text-zinc-400 transition hover:bg-white/[.05] hover:text-white">
-                          <MoreHorizontal size={16} />
+                        <button type="button" className="grid size-8 place-items-center rounded-xl text-zinc-400 transition hover:bg-white/[.05] hover:text-white">
+                          <MoreHorizontal size={15} />
                         </button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end" className="w-44 border-white/10 bg-[#090909]">
