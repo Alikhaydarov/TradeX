@@ -16,9 +16,9 @@ const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
 const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "TradeWay",
-  description: "TradeWay: trading feed, private chats, journal and backtesting workspace.",
-  applicationName: "TradeWay",
+  title: "Tradox",
+  description: "Tradox: trading feed, private chats, journal and backtesting workspace.",
+  applicationName: "Tradox",
 };
 
 export default async function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
