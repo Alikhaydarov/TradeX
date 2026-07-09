@@ -1,6 +1,7 @@
 "use client";
 
 import { LockKeyhole, Star } from "lucide-react";
+import { Button } from "./ui/button";
 
 function GoogleIcon() {
   return (
@@ -55,15 +56,15 @@ export function TradeWayLoginLanding({ onLogin }: { onLogin: () => void }) {
             <span>Journal, account progress, proof profile and trade sharing stay in one fast flow.</span>
           </div>
 
-          <button type="button" onClick={onLogin} className="auth2-cta-primary">
+          <Button type="button" onClick={onLogin} className="auth2-cta-primary h-auto w-full rounded-[10px] border-0">
             <GoogleIcon />
             Continue with Google
-          </button>
+          </Button>
 
-          <button type="button" onClick={onLogin} className="auth2-cta-secondary">
+          <Button type="button" variant="outline" onClick={onLogin} className="auth2-cta-secondary h-auto w-full rounded-[10px]">
             <LockKeyhole size={16} />
             Email login / Register
-          </button>
+          </Button>
 
           <div className="auth2-tabs" aria-hidden="true">
             <span className="active">Journal</span>
