@@ -48,6 +48,33 @@ main div[class*="border"] {
   border-color: var(--tw-border) !important;
 }
 
+/* Workspace header: remove the heavy account header + global stats strip. */
+main header[class*="sticky"][class*="top-0"][class*="border-b"] {
+  display: none !important;
+}
+
+main header[class*="sticky"][class*="top-0"][class*="border-b"] + div {
+  padding-top: 1.75rem !important;
+}
+
+main header[class*="sticky"][class*="top-0"][class*="border-b"] + div::before {
+  content: "Workspace";
+  display: flex;
+  align-items: center;
+  height: 3.25rem;
+  margin: -1.75rem -1.25rem 1.5rem;
+  padding: 0 1.25rem;
+  border-bottom: 1px solid var(--tw-border);
+  color: rgba(255, 255, 255, .78);
+  font-size: .92rem;
+  font-weight: 700;
+  background: #000000;
+}
+
+main header[class*="sticky"][class*="top-0"][class*="border-b"] + div > div:first-child[class*="grid"][class*="xl:grid-cols-5"] {
+  display: none !important;
+}
+
 /* Accounts cards: simpler, smaller, more premium. */
 .prop-card-glow {
   overflow: visible !important;
@@ -249,6 +276,11 @@ main [class*="text-[#8a8a8a]"] {
   aside[class*="fixed"] {
     border-radius: 0 !important;
   }
+
+  main header[class*="sticky"][class*="top-0"][class*="border-b"] + div::before {
+    margin-left: -1rem;
+    margin-right: -1rem;
+  }
 }
 
 @media (max-width: 767px) {
@@ -258,6 +290,12 @@ main [class*="text-[#8a8a8a]"] {
 
   .prop-card-glow > div:first-child {
     padding: .9rem !important;
+  }
+
+  main header[class*="sticky"][class*="top-0"][class*="border-b"] + div::before {
+    height: 3rem;
+    margin-bottom: 1rem;
+    font-size: .86rem;
   }
 
   [data-slot="dropdown-menu-content"] {
