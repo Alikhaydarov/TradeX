@@ -10,20 +10,21 @@ import {
   Menu,
   MoreHorizontal,
   Plus,
+  Search,
   ShieldCheck,
   SquareChartGantt,
   TrendingUp,
   UserRound,
   X,
 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { apiRequest } from "@/lib/api-client";
 import { useLanguage } from "@/lib/i18n";
 import { useActiveAccountStore } from "./active-account-context";
 import { Dialog, DialogContent } from "./ui/dialog";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "./ui/dropdown-menu";
 import { TraderAvatar } from "./trader-avatar";
-import type { Section } from "./types";
+import type { PropAccount, Section } from "./types";
 
 function usernameFromUser(user: User | null) {
   const raw = String(
@@ -35,6 +36,13 @@ function usernameFromUser(user: User | null) {
 
   return raw.toLowerCase().replace(/[^a-z0-9_]/g, "").slice(0, 30) || "profile";
 }
+
+function initials(account: PropAccount | null) {
+  if (!account) return "A";
+  return (account.name || account.firm || "A").trim().slice(0, 2).toUpperCase();
+}
+
+const money = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 });
 
 export function Sidebar({
   active,
@@ -53,16 +61,23 @@ export function Sidebar({
   hideMobile?: boolean;
   isAdmin?: boolean;
 }) {
-  const { accounts, activeAccountId } = useActiveAccountStore();
+  const { accounts, activeAccountId, setActiveAccount } = useActiveAccountStore();
   const [profileUsername, setProfileUsername] = useState("");
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [accountSwitcherOpen, setAccountSwitcherOpen] = useState(false);
+  const [accountQuery, setAccountQuery] = useState("");
   const { t, locale, locales, labels, setLocale } = useLanguage();
   const name = String(user?.user_metadata.full_name ?? user?.user_metadata.name ?? "Mehmon trader");
   const username = usernameFromUser(user);
   const handle = user ? `@${profileUsername || username}` : "Sign in with Google";
   const avatar = typeof user?.user_metadata.avatar_url === "string" ? user.user_metadata.avatar_url : null;
   const activeAccount = accounts.find((account) => account.id === activeAccountId) || null;
-  const activeBalance = activeAccount ? new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format(activeAccount.accountSize) : "$0";
+  const activeBalance = activeAccount ? money.format(activeAccount.accountSize) : "$0";
+  const filteredAccounts = useMemo(() => {
+    const query = accountQuery.trim().toLowerCase();
+    if (!query) return accounts;
+    return accounts.filter((account) => `${account.name} ${account.firm} ${account.phase} ${account.marketType}`.toLowerCase().includes(query));
+  }, [accountQuery, accounts]);
 
   useEffect(() => {
     if (!user) return;
@@ -94,9 +109,17 @@ export function Sidebar({
   const nav = isAdmin
     ? [...baseNav, { id: "admin" as const, label: "Admin", icon: ShieldCheck }]
     : baseNav;
+
   const openAccountsPage = () => {
     onChange("accounts");
     setMobileMenuOpen(false);
+    setAccountSwitcherOpen(false);
+  };
+
+  const selectAccount = (id: string) => {
+    setActiveAccount(id);
+    setAccountSwitcherOpen(false);
+    setAccountQuery("");
   };
 
   const openProfile = () => {
@@ -104,6 +127,74 @@ export function Sidebar({
     setMobileMenuOpen(false);
     onChange("account");
   };
+
+  const AccountSwitcher = ({ mobile = false }: { mobile?: boolean }) => (
+    <DropdownMenu open={accountSwitcherOpen} onOpenChange={setAccountSwitcherOpen}>
+      <DropdownMenuTrigger asChild>
+        <button type="button" className={`${mobile ? "flex w-full items-center gap-3 rounded-[1.15rem] border border-white/8 bg-[#0b0b0b] px-3 py-3 text-left" : "mt-4 flex w-full items-center gap-3 rounded-[1rem] border border-white/8 bg-[#050505] p-4 text-left transition hover:bg-white/[.03]"}`}>
+          <span className={`size-2 shrink-0 rounded-full ${activeAccount ? "bg-emerald-500" : "bg-zinc-500"}`} />
+          <div className="min-w-0 flex-1">
+            <p className={`${mobile ? "text-base" : "text-sm"} truncate font-bold text-white`}>{activeAccount?.name || "Accounts"}</p>
+            <p className={`${mobile ? "text-xs" : "text-[11px]"} truncate text-zinc-500`}>{activeAccount ? activeBalance : "Select trading account"}</p>
+          </div>
+          <span className={`${mobile ? "size-10" : "size-8"} grid shrink-0 place-items-center rounded-xl border border-white/8 bg-white/[.03] text-zinc-400`}>
+            <ChevronDown size={mobile ? 15 : 14} className={`transition-transform ${accountSwitcherOpen ? "rotate-180" : ""}`} />
+          </span>
+        </button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent
+        side={mobile ? "bottom" : "right"}
+        align="start"
+        sideOffset={mobile ? 10 : 12}
+        className={`${mobile ? "w-[calc(100vw-2rem)]" : "w-[320px]"} rounded-2xl border-white/10 bg-[#080808] p-0 shadow-[0_28px_80px_rgba(0,0,0,.65)]`}
+      >
+        <div className="border-b border-white/8 px-4 py-3">
+          <button
+            type="button"
+            onClick={openAccountsPage}
+            className="w-full rounded-xl px-2 py-1.5 text-left text-sm font-black text-white transition hover:bg-white/[.04]"
+          >
+            All Accounts
+          </button>
+        </div>
+        <div className="flex items-center gap-2 border-b border-white/8 px-4 py-3 text-zinc-500">
+          <Search size={16} />
+          <input
+            value={accountQuery}
+            onChange={(event) => setAccountQuery(event.target.value)}
+            onClick={(event) => event.stopPropagation()}
+            onKeyDown={(event) => event.stopPropagation()}
+            placeholder="Search account"
+            className="h-8 min-w-0 flex-1 bg-transparent text-sm text-white outline-none placeholder:text-zinc-600"
+          />
+        </div>
+        <div className="max-h-[250px] overflow-y-auto p-2">
+          {filteredAccounts.length ? filteredAccounts.map((account) => {
+            const selected = account.id === activeAccountId;
+            return (
+              <DropdownMenuItem
+                key={account.id}
+                onSelect={(event) => {
+                  event.preventDefault();
+                  selectAccount(account.id);
+                }}
+                className={`flex cursor-pointer items-center gap-3 rounded-xl px-3 py-3 ${selected ? "bg-white/[.07] text-white" : "text-zinc-300"}`}
+              >
+                <span className={`grid size-8 shrink-0 place-items-center rounded-lg text-[10px] font-black ${selected ? "bg-white text-black" : "bg-white/[.08] text-white"}`}>{initials(account)}</span>
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-sm font-bold">{account.name}</p>
+                  <p className="truncate text-[11px] text-zinc-500">{account.phase} / {account.marketType}</p>
+                </div>
+                <span className="shrink-0 font-mono text-xs text-zinc-500">{money.format(account.accountSize)}</span>
+              </DropdownMenuItem>
+            );
+          }) : (
+            <div className="px-4 py-6 text-center text-sm text-zinc-500">No accounts found.</div>
+          )}
+        </div>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
 
   return (
     <>
@@ -116,16 +207,7 @@ export function Sidebar({
           </span>
         </button>
 
-        <button type="button" onClick={openAccountsPage} className="mt-4 flex w-full items-center gap-3 rounded-[1rem] border border-white/8 bg-[#050505] p-4 text-left transition hover:bg-white/[.03]">
-          <span className={`size-2 shrink-0 rounded-full ${activeAccount ? "bg-emerald-500" : "bg-zinc-500"}`} />
-          <div className="min-w-0 flex-1">
-            <p className="truncate text-sm font-bold text-white">{activeAccount?.name || "Accounts"}</p>
-            <p className="truncate text-[11px] text-zinc-500">{activeAccount ? activeBalance : "Select trading account"}</p>
-          </div>
-          <span className="grid size-8 shrink-0 place-items-center rounded-xl border border-white/8 bg-white/[.03] text-zinc-400">
-            <ChevronDown size={14} />
-          </span>
-        </button>
+        <AccountSwitcher />
 
         <p className="mt-6 px-3 text-[10px] font-black uppercase tracking-[0.16em] text-zinc-600">Workspace</p>
         <nav className="mt-2 space-y-1.5">
@@ -240,16 +322,7 @@ export function Sidebar({
                 </div>
 
                 <div className="border-b border-white/8 px-5 py-4">
-                  <button type="button" onClick={openAccountsPage} className="flex w-full items-center gap-3 rounded-[1.15rem] border border-white/8 bg-[#0b0b0b] px-3 py-3 text-left">
-                    <span className={`mt-0.5 size-2 shrink-0 rounded-full ${activeAccount ? "bg-emerald-500" : "bg-zinc-500"}`} />
-                    <div className="min-w-0 flex-1">
-                      <p className="truncate text-base font-bold text-white">{activeAccount?.name || "Accounts"}</p>
-                      <p className="truncate text-xs text-zinc-500">{activeAccount ? activeBalance : "Select trading account"}</p>
-                    </div>
-                    <span className="grid size-10 shrink-0 place-items-center rounded-xl border border-white/8 bg-white/[.03] text-zinc-400">
-                      <ChevronDown size={15} />
-                    </span>
-                  </button>
+                  <AccountSwitcher mobile />
                 </div>
 
                 <div className="flex-1 overflow-y-auto px-5 py-5">
