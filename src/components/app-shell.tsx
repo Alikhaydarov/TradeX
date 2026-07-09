@@ -6,6 +6,7 @@ import { AuthModal } from "./auth-modal";
 import { FeedV3 } from "./feed-v3";
 import { Journal } from "./journal";
 import { Account } from "./account";
+import { AccountSettings } from "./account-settings";
 import { AdminPanel } from "./admin-panel";
 import { ActiveAccountProvider } from "./active-account-context";
 import { Pricing } from "./pricing";
@@ -16,7 +17,7 @@ import { useAuth } from "./auth-context";
 import { apiRequest } from "@/lib/api-client";
 import type { Section } from "./types";
 
-const reservedPaths = new Set(["", "chat", "accounts", "dashboard", "calendar", "trades", "analytics", "strategies", "backtest", "profile", "account", "pricing", "admin"]);
+const reservedPaths = new Set(["", "chat", "accounts", "dashboard", "calendar", "trades", "analytics", "settings", "strategies", "backtest", "profile", "account", "pricing", "admin"]);
 
 function usernameFromPath(pathname: string) {
   const first = pathname.replace(/^\//, "").split("/")[0] ?? "";
@@ -30,6 +31,7 @@ function sectionFromPath(pathname: string): Section {
   if (pathname.startsWith("/calendar")) return "calendar";
   if (pathname.startsWith("/trades")) return "trades";
   if (pathname.startsWith("/analytics")) return "analytics";
+  if (pathname.startsWith("/settings")) return "settings";
   if (pathname.startsWith("/strategies")) return "bible";
   if (pathname.startsWith("/pricing")) return "pricing";
   if (pathname.startsWith("/profile") || pathname.startsWith("/account") || usernameFromPath(pathname)) return "account";
@@ -43,6 +45,7 @@ function pathFromSection(section: Section) {
   if (section === "calendar") return "/calendar";
   if (section === "trades") return "/trades";
   if (section === "analytics") return "/analytics";
+  if (section === "settings") return "/settings";
   if (section === "bible") return "/strategies";
   if (section === "account") return "/profile";
   if (section === "pricing") return "/pricing";
@@ -60,7 +63,7 @@ function getCurrentProfileUsername() {
   return usernameFromPath(window.location.pathname);
 }
 
-const cachedSections: Section[] = ["feed", "accounts", "dashboard", "calendar", "trades", "analytics", "bible", "account", "pricing", "admin"];
+const cachedSections: Section[] = ["feed", "accounts", "dashboard", "calendar", "trades", "analytics", "settings", "bible", "account", "pricing", "admin"];
 
 function AuthGate({ onLogin }: { onLogin: () => void }) {
   return (
@@ -139,6 +142,7 @@ export function AppShell() {
     calendar: section === "calendar",
     trades: section === "trades",
     analytics: section === "analytics",
+    settings: section === "settings",
     bible: section === "bible",
     chat: false,
     backtest: false,
@@ -240,6 +244,7 @@ export function AppShell() {
     if (item === "calendar") return <Journal onLogin={openLogin} mode="workspace" forcedTab="calendar" />;
     if (item === "trades") return <Journal onLogin={openLogin} mode="workspace" forcedTab="trades" />;
     if (item === "analytics") return <Journal onLogin={openLogin} mode="workspace" forcedTab="analytics" />;
+    if (item === "settings") return <AccountSettings onLogin={openLogin} />;
     if (item === "bible") return <Journal onLogin={openLogin} mode="workspace" forcedTab="bible" />;
     if (item === "account") return <Account onLogin={openLogin} profileUsername={profileUsername || undefined} />;
     if (item === "pricing") return <Pricing />;
