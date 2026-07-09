@@ -7,7 +7,6 @@ import {
   Home,
   LayoutDashboard,
   LogIn,
-  Menu,
   MoreHorizontal,
   Plus,
   Search,
@@ -97,6 +96,12 @@ export function Sidebar({
       active = false;
     };
   }, [user]);
+
+  useEffect(() => {
+    const open = () => setMobileMenuOpen(true);
+    window.addEventListener("tradox:open-mobile-menu", open);
+    return () => window.removeEventListener("tradox:open-mobile-menu", open);
+  }, []);
 
   const baseNav = [
     { id: "feed" as const, label: t("home"), icon: Home },
@@ -273,115 +278,90 @@ export function Sidebar({
       </aside>
 
       {!hideMobile && (
-        <>
-          <header className="fixed inset-x-0 top-0 z-50 flex h-[64px] items-center border-b border-white/8 bg-black px-3 lg:hidden">
-            <button
-              type="button"
-              onClick={() => setMobileMenuOpen(true)}
-              className="grid size-10 place-items-center rounded-xl border border-white/10 bg-white/[.035] text-white"
-              aria-label="Open navigation"
-            >
-              <Menu size={19} />
-            </button>
-            <button type="button" onClick={openAccountsPage} className="ml-2 min-w-0 flex-1 rounded-xl border border-white/8 bg-[#0b0b0b] px-3 py-2 text-left">
-              <p className="truncate text-sm font-black text-white">{activeAccount?.name || "All Accounts"}</p>
-              <p className="truncate text-[11px] text-zinc-500">{active === "accounts" ? "Accounts" : nav.find((item) => item.id === active)?.label || "Tradox"}</p>
-            </button>
-            <button
-              type="button"
-              onClick={onPost}
-              className="ml-2 grid size-10 place-items-center rounded-xl border border-white/10 bg-white text-black"
-              aria-label={t("shareTrade")}
-            >
-              <Plus size={18} />
-            </button>
-          </header>
-
-          <Dialog open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
-            <DialogContent
-              showCloseButton={false}
-              className="left-0 top-0 h-[100dvh] w-[78vw] max-w-[360px] translate-x-0 translate-y-0 rounded-none border-r border-white/10 bg-black p-0 sm:max-w-[360px] lg:hidden"
-            >
-              <div className="flex h-full flex-col">
-                <div className="flex items-center justify-between border-b border-white/8 px-4 py-4">
-                  <div className="flex items-center gap-3">
-                    <span className="grid size-10 place-items-center rounded-xl bg-white text-sm font-black text-black">TD</span>
-                    <div>
-                      <strong className="block text-base leading-tight text-white">Tradox</strong>
-                      <small className="text-xs text-zinc-500">Trading workspace</small>
-                    </div>
+        <Dialog open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
+          <DialogContent
+            showCloseButton={false}
+            className="left-0 top-0 h-[100dvh] w-[78vw] max-w-[360px] translate-x-0 translate-y-0 rounded-none border-r border-white/10 bg-black p-0 sm:max-w-[360px] lg:hidden"
+          >
+            <div className="flex h-full flex-col">
+              <div className="flex items-center justify-between border-b border-white/8 px-4 py-4">
+                <div className="flex items-center gap-3">
+                  <span className="grid size-10 place-items-center rounded-xl bg-white text-sm font-black text-black">TD</span>
+                  <div>
+                    <strong className="block text-base leading-tight text-white">Tradox</strong>
+                    <small className="text-xs text-zinc-500">Trading workspace</small>
                   </div>
-                  <button
-                    type="button"
-                    onClick={() => setMobileMenuOpen(false)}
-                    className="grid size-9 place-items-center rounded-xl border border-white/10 bg-white/[.035] text-zinc-300"
-                    aria-label="Close navigation"
-                  >
-                    <X size={17} />
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="grid size-9 place-items-center rounded-xl border border-white/10 bg-white/[.035] text-zinc-300"
+                  aria-label="Close navigation"
+                >
+                  <X size={17} />
+                </button>
+              </div>
+
+              <div className="border-b border-white/8 px-4 py-4">
+                <AccountSwitcher mobile />
+              </div>
+
+              <div className="flex-1 overflow-y-auto px-3 py-4">
+                <p className="mb-2 px-2 text-[10px] font-black uppercase tracking-[0.18em] text-zinc-600">Workspace</p>
+                <nav className="space-y-1.5">
+                  {nav.map((item) => {
+                    const { id, label, icon: Icon } = item;
+                    const selected = active === id;
+                    return (
+                      <button
+                        key={id}
+                        type="button"
+                        onClick={() => {
+                          setMobileMenuOpen(false);
+                          onChange(id);
+                        }}
+                        className={`flex h-11 w-full items-center gap-3 rounded-xl px-3 text-left text-sm font-bold transition ${
+                          selected ? "bg-white/[.095] text-white ring-1 ring-white/10" : "text-zinc-400 hover:bg-white/[.04] hover:text-white"
+                        }`}
+                      >
+                        <span className={`grid size-8 shrink-0 place-items-center rounded-lg ${selected ? "bg-white/[.10] text-white" : "bg-white/[.035] text-zinc-500"}`}>
+                          <Icon size={17} />
+                        </span>
+                        <span className="block min-w-0 truncate">{label}</span>
+                      </button>
+                    );
+                  })}
+                </nav>
+              </div>
+
+              <div className="border-t border-white/8 p-3">
+                <div className="flex w-full items-center gap-3 rounded-2xl border border-white/10 bg-[#0b0b0b] p-2.5 text-left">
+                  <TraderAvatar name={name} value={avatar} className="size-10 text-xs" />
+                  <button onClick={openProfile} className="min-w-0 flex-1 text-left">
+                    <strong className="block truncate text-sm text-white">{name}</strong>
+                    <small className="block truncate text-[11px] text-zinc-500">{handle}</small>
                   </button>
-                </div>
-
-                <div className="border-b border-white/8 px-4 py-4">
-                  <AccountSwitcher mobile />
-                </div>
-
-                <div className="flex-1 overflow-y-auto px-3 py-4">
-                  <p className="mb-2 px-2 text-[10px] font-black uppercase tracking-[0.18em] text-zinc-600">Workspace</p>
-                  <nav className="space-y-1.5">
-                    {nav.map((item) => {
-                      const { id, label, icon: Icon } = item;
-                      const selected = active === id;
-                      return (
-                        <button
-                          key={id}
-                          type="button"
-                          onClick={() => {
-                            setMobileMenuOpen(false);
-                            onChange(id);
-                          }}
-                          className={`flex h-11 w-full items-center gap-3 rounded-xl px-3 text-left text-sm font-bold transition ${
-                            selected ? "bg-white/[.095] text-white ring-1 ring-white/10" : "text-zinc-400 hover:bg-white/[.04] hover:text-white"
-                          }`}
-                        >
-                          <span className={`grid size-8 shrink-0 place-items-center rounded-lg ${selected ? "bg-white/[.10] text-white" : "bg-white/[.035] text-zinc-500"}`}>
-                            <Icon size={17} />
-                          </span>
-                          <span className="block min-w-0 truncate">{label}</span>
-                        </button>
-                      );
-                    })}
-                  </nav>
-                </div>
-
-                <div className="border-t border-white/8 p-3">
-                  <div className="flex w-full items-center gap-3 rounded-2xl border border-white/10 bg-[#0b0b0b] p-2.5 text-left">
-                    <TraderAvatar name={name} value={avatar} className="size-10 text-xs" />
-                    <button onClick={openProfile} className="min-w-0 flex-1 text-left">
-                      <strong className="block truncate text-sm text-white">{name}</strong>
-                      <small className="block truncate text-[11px] text-zinc-500">{handle}</small>
-                    </button>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <button type="button" className="grid size-8 place-items-center rounded-xl text-zinc-400 transition hover:bg-white/[.05] hover:text-white">
-                          <MoreHorizontal size={15} />
-                        </button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end" className="w-44 border-white/10 bg-[#090909]">
-                        {locales.map((item) => (
-                          <DropdownMenuItem key={item} onClick={() => setLocale(item)} className="flex items-center justify-between px-3 py-2.5">
-                            <span>{labels[item]}</span>
-                            {locale === item ? <span className="text-[10px] font-bold text-zinc-400">Active</span> : null}
-                          </DropdownMenuItem>
-                        ))}
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                    {!user ? <LogIn size={16} className="text-zinc-500" /> : null}
-                  </div>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <button type="button" className="grid size-8 place-items-center rounded-xl text-zinc-400 transition hover:bg-white/[.05] hover:text-white">
+                        <MoreHorizontal size={15} />
+                      </button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-44 border-white/10 bg-[#090909]">
+                      {locales.map((item) => (
+                        <DropdownMenuItem key={item} onClick={() => setLocale(item)} className="flex items-center justify-between px-3 py-2.5">
+                          <span>{labels[item]}</span>
+                          {locale === item ? <span className="text-[10px] font-bold text-zinc-400">Active</span> : null}
+                        </DropdownMenuItem>
+                      ))}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                  {!user ? <LogIn size={16} className="text-zinc-500" /> : null}
                 </div>
               </div>
-            </DialogContent>
-          </Dialog>
-        </>
+            </div>
+          </DialogContent>
+        </Dialog>
       )}
     </>
   );
