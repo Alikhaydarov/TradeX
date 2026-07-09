@@ -1,6 +1,5 @@
 /* Global responsive hardening for TradeWay.
-   This file is intentionally defensive: it fixes mobile overflow, clipped dialogs,
-   wide tables/charts and over-sized cards without changing the app architecture. */
+   Safe layer only: prevent overflow and clipped overlays without changing product architecture. */
 
 html,
 body {
@@ -15,8 +14,24 @@ main {
   max-width: 100vw;
 }
 
+main,
+main > div,
+main section,
+main article,
+main header,
+main footer {
+  min-width: 0;
+}
+
 main * {
   min-width: 0;
+}
+
+img,
+video,
+canvas,
+svg {
+  max-width: 100%;
 }
 
 /* Keep large workspace containers inside the viewport on tablets/phones. */
@@ -29,14 +44,13 @@ main [class*="max-w-[1200px]"] {
   max-width: 100%;
 }
 
-/* Tables and data-heavy rows should scroll horizontally instead of breaking the page. */
+/* Tables and data-heavy rows should scroll horizontally instead of breaking the whole page. */
 table {
   width: 100%;
   max-width: 100%;
   border-collapse: collapse;
 }
 
-table,
 [data-slot="table-container"],
 .overflow-x-auto {
   overscroll-behavior-inline: contain;
@@ -46,9 +60,7 @@ table,
 /* Chart libraries can create SVG/canvas widths that push mobile pages sideways. */
 .recharts-responsive-container,
 .recharts-wrapper,
-.recharts-surface,
-svg,
-canvas {
+.recharts-surface {
   max-width: 100% !important;
 }
 
@@ -56,7 +68,7 @@ canvas {
   overflow: hidden;
 }
 
-/* Radix/shadcn overlays: never let dropdowns or dialogs exceed mobile viewport. */
+/* Radix/shadcn overlays: never let dropdowns, selects or popovers exceed mobile viewport. */
 [data-radix-popper-content-wrapper],
 [data-slot="dropdown-menu-content"],
 [data-slot="dropdown-menu-sub-content"],
@@ -90,6 +102,13 @@ h6 {
   overflow-wrap: anywhere;
 }
 
+input,
+textarea,
+select,
+[data-slot="select-trigger"] {
+  max-width: 100%;
+}
+
 /* Better tap targets on touch devices. */
 @media (hover: none) and (pointer: coarse) {
   button,
@@ -103,7 +122,6 @@ h6 {
 }
 
 @media (max-width: 1023px) {
-  /* The fixed mobile header is 72px; pages need breathing room under it. */
   main {
     width: 100vw;
     max-width: 100vw;
@@ -114,7 +132,7 @@ h6 {
     max-width: 100%;
   }
 
-  /* Dense account/journal pages should use smaller horizontal padding on mobile. */
+  /* Dense account/journal pages should use smaller horizontal padding on mobile/tablet. */
   main [class*="p-5"],
   main [class*="p-7"] {
     padding-left: 1rem;
@@ -127,7 +145,6 @@ h6 {
     padding-right: 1rem;
   }
 
-  /* Prevent big desktop cards from feeling oversized on mobile. */
   main [class*="rounded-[28px]"],
   main [class*="rounded-[26px]"],
   main [class*="rounded-[1.75rem]"],
@@ -137,18 +154,11 @@ h6 {
 }
 
 @media (max-width: 767px) {
-  /* Force common desktop grid layouts to collapse when a component forgot sm:/md: guards. */
+  /* Safe grid collapse only: target custom arbitrary desktop grids, not every grid-cols-2/3 utility. */
   main [class*="grid-cols-["],
-  main [class*="grid-cols-2"],
-  main [class*="grid-cols-3"],
-  main [class*="grid-cols-4"],
-  main [class*="grid-cols-5"] {
+  main [class*="xl:grid-cols-"],
+  main [class*="lg:grid-cols-"] {
     grid-template-columns: minmax(0, 1fr) !important;
-  }
-
-  /* But keep intentional tiny stats rows usable when they explicitly become 2 columns. */
-  main .grid.grid-cols-2:not([class*="md:"]):not([class*="lg:"]):not([class*="xl:"]) {
-    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
   }
 
   main [class*="min-h-[255px]"] {
@@ -170,17 +180,9 @@ h6 {
     line-height: 1.18 !important;
   }
 
-  /* Toolbars with many buttons should wrap instead of overflowing. */
   main [class*="items-center"][class*="gap-2"],
   main [class*="items-center"][class*="gap-3"] {
     min-width: 0;
-  }
-
-  input,
-  textarea,
-  select,
-  [data-slot="select-trigger"] {
-    max-width: 100%;
   }
 }
 
