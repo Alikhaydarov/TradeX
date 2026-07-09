@@ -13,6 +13,7 @@ import { Pricing } from "./pricing";
 import { NotificationListener } from "./notification-listener";
 import { PremiumUpsellDialog } from "./premium-upsell-dialog";
 import { Sidebar } from "./sidebar";
+import { WorkspaceTopbar } from "./workspace-topbar";
 import { useAuth } from "./auth-context";
 import { apiRequest } from "@/lib/api-client";
 import type { Section } from "./types";
@@ -288,6 +289,7 @@ export function AppShell() {
         />
         <div className="hidden w-[272px] shrink-0 lg:block" aria-hidden="true" />
         <main className={chatOpen ? "fixed inset-0 z-50 min-w-0 flex-1 overflow-hidden bg-[#000000] pt-[72px] lg:static lg:z-auto lg:min-h-[calc(100dvh-2rem)] lg:rounded-[1rem] lg:border lg:border-white/8 lg:pt-0" : "min-h-[100dvh] min-w-0 flex-1 overflow-x-hidden bg-[#000000] pt-[72px] lg:min-h-[calc(100dvh-2rem)] lg:rounded-[1rem] lg:border lg:border-white/8 lg:pt-0"}>
+          <WorkspaceTopbar section={section} />
           <div className="block min-h-full">
             {cachedSections.map((item) =>
               visitedSections[item] ? (
