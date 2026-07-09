@@ -1,6 +1,6 @@
 "use client";
 
-import { CheckCircle2, LoaderCircle, Settings, ShieldCheck, SlidersHorizontal, WalletCards } from "lucide-react";
+import { CheckCircle2, LoaderCircle, Settings, ShieldCheck, SlidersHorizontal, WalletCards, Wifi } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { apiRequest } from "@/lib/api-client";
 import { useActiveAccountStore } from "./active-account-context";
@@ -32,6 +32,16 @@ function accountFrom(row: Record<string, unknown>): PropAccount {
     startDate: String(row.start_date || new Date().toISOString().slice(0, 10)),
     status: String(row.status || "Active") as PropAccount["status"],
   };
+}
+
+function connectorLabel(account: PropAccount) {
+  const platform = String(account.platform || "manual").toLowerCase();
+  if (platform === "mt5" || account.importSource === "mt5_bridge") return "MT5 Auto Sync";
+  if (platform === "tradovate") return "Tradovate";
+  if (platform === "ninjatrader") return "NinjaTrader";
+  if (platform === "ctrader") return "cTrader";
+  if (platform === "projectx") return "ProjectX";
+  return "Manual journal";
 }
 
 export function AccountSettings({ onLogin }: { onLogin: () => void }) {
@@ -84,16 +94,17 @@ export function AccountSettings({ onLogin }: { onLogin: () => void }) {
   }
 
   const isMt5 = String(account.platform || "").toLowerCase() === "mt5" || account.importSource === "mt5_bridge";
+  const connector = connectorLabel(account);
 
   return (
     <div className="animate-page-in mx-auto max-w-[1500px] space-y-5 p-5 lg:p-7">
       <header className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
         <div>
           <p className="flex items-center gap-2 text-[11px] font-black uppercase tracking-[0.22em] text-zinc-500">
-            <Settings size={15} /> Selected account settings
+            <Settings size={15} /> Selected account / settings
           </p>
           <h1 className="mt-2 text-[2rem] font-black tracking-tight text-white">{account.name}</h1>
-          <p className="mt-1 text-sm text-zinc-500">Change account details, manage connectors and keep MT5 auto-sync healthy.</p>
+          <p className="mt-1 text-sm text-zinc-500">Change account details, manage connector settings and keep auto-sync healthy.</p>
         </div>
         <div className="w-full lg:w-[320px]">
           <Select value={account.id} onValueChange={setActiveAccount}>
@@ -109,7 +120,7 @@ export function AccountSettings({ onLogin }: { onLogin: () => void }) {
             <span className="grid size-11 place-items-center rounded-2xl border border-white/8 bg-white/[.04] text-zinc-300"><SlidersHorizontal size={20} /></span>
             <div>
               <h2 className="font-black text-white">Account profile</h2>
-              <p className="text-xs text-zinc-500">Basic display fields used across cards, dashboard and proof views.</p>
+              <p className="text-xs text-zinc-500">Basic display fields used across cards, Overview, Analytics and proof views.</p>
             </div>
           </div>
 
@@ -136,6 +147,17 @@ export function AccountSettings({ onLogin }: { onLogin: () => void }) {
 
         <aside className="space-y-3 rounded-[1.5rem] border border-white/8 bg-[#0b0b0b] p-4 sm:p-5">
           <p className="flex items-center gap-2 text-xs font-black uppercase tracking-[0.18em] text-zinc-500"><ShieldCheck size={14} /> Connector status</p>
+          <div className="rounded-2xl border border-white/8 bg-white/[.025] p-4">
+            <div className="flex items-center gap-3">
+              <span className={`grid size-10 place-items-center rounded-2xl border ${isMt5 ? "border-emerald-400/20 bg-emerald-400/10 text-emerald-300" : "border-white/10 bg-white/[.04] text-zinc-300"}`}>
+                <Wifi size={18} />
+              </span>
+              <div>
+                <p className="text-sm font-black text-white">{connector}</p>
+                <p className="text-xs text-zinc-500">{isMt5 ? "Auto-sync connector is attached to this account." : "Manual or reserved connector workspace."}</p>
+              </div>
+            </div>
+          </div>
           <Mini label="Platform" value={(account.platform || "manual").toUpperCase()} />
           <Mini label="Import source" value={account.importSource || "manual"} />
           <Mini label="Prop login" value={account.propLogin || "-"} />
@@ -157,7 +179,7 @@ export function AccountSettings({ onLogin }: { onLogin: () => void }) {
         ) : (
           <div className="grid min-h-44 place-items-center rounded-2xl border border-dashed border-white/10 bg-black/20 text-center">
             <div>
-              <h3 className="text-lg font-black text-white">{(account.platform || "Manual").toUpperCase()} connector</h3>
+              <h3 className="text-lg font-black text-white">{connector}</h3>
               <p className="mt-2 max-w-md text-sm leading-6 text-zinc-500">This connector settings panel is reserved here. MT5 auto-sync settings appear automatically for MT5 accounts.</p>
             </div>
           </div>
