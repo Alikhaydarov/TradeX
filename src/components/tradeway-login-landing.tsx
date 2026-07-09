@@ -3,6 +3,15 @@
 import { LockKeyhole, Star } from "lucide-react";
 import { Button } from "./ui/button";
 
+const PLATFORMS = [
+  { name: "Tradovate", mark: "TV" },
+  { name: "cTrader", mark: "cT" },
+  { name: "MT5", mark: "M5" },
+  { name: "NinjaTrader", mark: "NT" },
+  { name: "TradingView", mark: "TV" },
+  { name: "DXtrade", mark: "DX" },
+];
+
 function GoogleIcon() {
   return (
     <svg viewBox="0 0 24 24" fill="none" aria-hidden="true" className="size-4">
@@ -27,6 +36,22 @@ function ChartLine() {
       <path className="auth2-chart-fill" d="M0,260 L60,240 L130,270 L200,210 L280,235 L350,180 L420,205 L500,150 L580,175 L660,130 L740,160 L820,110 L900,140 L980,95 L1060,125 L1140,85 L1220,110 L1300,70 L1400,95 L1400,400 L0,400 Z" />
       <path className="auth2-chart-stroke" d="M0,260 L60,240 L130,270 L200,210 L280,235 L350,180 L420,205 L500,150 L580,175 L660,130 L740,160 L820,110 L900,140 L980,95 L1060,125 L1140,85 L1220,110 L1300,70 L1400,95" />
     </svg>
+  );
+}
+
+function PlatformStrip() {
+  return (
+    <div className="auth2-platforms" aria-label="Supported trading platforms">
+      <p>Connect your workflow</p>
+      <div>
+        {PLATFORMS.map((platform) => (
+          <span key={platform.name} className="auth2-platform-pill">
+            <b>{platform.mark}</b>
+            {platform.name}
+          </span>
+        ))}
+      </div>
+    </div>
   );
 }
 
@@ -99,6 +124,8 @@ export function TradeWayLoginLanding({ onLogin }: { onLogin: () => void }) {
           </p>
         </div>
       </section>
+
+      <PlatformStrip />
     </main>
   );
 }
