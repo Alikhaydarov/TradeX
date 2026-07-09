@@ -19,7 +19,8 @@ function ChartLine() {
     <svg className="auth2-chart-line" viewBox="0 0 1400 400" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
       <defs>
         <linearGradient id="auth2ChartGradient" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="rgba(59,130,246,0.16)" />
+          <stop offset="0%" stopColor="rgba(59,130,246,0.2)" />
+          <stop offset="55%" stopColor="rgba(34,197,94,0.08)" />
           <stop offset="100%" stopColor="rgba(59,130,246,0)" />
         </linearGradient>
       </defs>
@@ -37,13 +38,14 @@ export function TradeWayLoginLanding({ onLogin }: { onLogin: () => void }) {
         <div className="auth2-orb auth2-orb-1" />
         <div className="auth2-orb auth2-orb-2" />
         <div className="auth2-orb auth2-orb-3" />
+        <div className="auth2-vignette" />
         <ChartLine />
       </div>
 
       <nav className="auth2-nav">
         <div className="auth2-brand">
-          <span className="auth2-mark">TW</span>
-          <span>TradeWay</span>
+          <span className="auth2-mark">TD</span>
+          <span>Tradox</span>
         </div>
         <div className="auth2-status"><span />All systems normal</div>
       </nav>
@@ -93,7 +95,7 @@ export function TradeWayLoginLanding({ onLogin }: { onLogin: () => void }) {
           </div>
 
           <p className="auth2-foot">
-            By continuing, you agree to TradeWay&apos;s <a href="#">Terms</a> and <a href="#">Privacy Policy</a>.
+            By continuing, you agree to Tradox&apos;s <a href="#">Terms</a> and <a href="#">Privacy Policy</a>.
           </p>
         </div>
       </section>
