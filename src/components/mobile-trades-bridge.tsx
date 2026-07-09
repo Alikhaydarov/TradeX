@@ -34,54 +34,47 @@ function parseRow(row: HTMLButtonElement) {
 
   const symbol = allText.match(/\b(NAS100|XAUUSD|EURUSD|GBPUSD|USDJPY|US30|US100|GER30|BTCUSD|ETHUSD|[A-Z]{5,8})\b/)?.[0] || "TRADE";
   const pnl = allText.match(/[+-]?\$?\d[\d,]*(?:\.\d{1,2})?/)?.[0] || "$0.00";
-  const rr = allText.match(/[+-]?\d+(?:\.\d+)?R/i)?.[0] || "0.00R";
+  const rr = allText.match(/[+-]?\d+(?:\.\d+)?R/i)?.[0] || "";
   const side = allText.match(/\b(sell|short)\b|↓/i) ? "Sell" : "Buy";
   const date = allText.match(/\d{4}[-/]\d{1,2}[-/]\d{1,2}|\d{1,2}\s+[A-Za-z]{3}/)?.[0] || "";
   return { date, symbol, side, meta: "", rr, pnl };
 }
 
 function buildCard(row: HTMLButtonElement) {
-  const { date, symbol, side, meta, rr, pnl } = parseRow(row);
+  const { symbol, side, pnl } = parseRow(row);
   const winning = !String(pnl).trim().startsWith("-");
   const isSell = /sell|short|↓/i.test(side);
 
   const card = document.createElement("button");
   card.type = "button";
   card.setAttribute("data-mobile-trade-card", "true");
-  card.className = "w-full rounded-2xl border border-white/10 bg-[#101010] p-4 text-left shadow-[inset_0_1px_0_rgba(255,255,255,.035)] transition active:scale-[.99]";
+  card.className = "w-full rounded-2xl border border-white/10 bg-[#101010] px-4 py-3 text-left shadow-[inset_0_1px_0_rgba(255,255,255,.035)] transition active:scale-[.99]";
   card.addEventListener("click", () => row.click());
 
-  const sideClass = isSell ? "bg-rose-500/20 text-rose-200" : "bg-emerald-500/15 text-emerald-200";
+  const sideClass = isSell ? "bg-rose-500/25 text-rose-200" : "bg-emerald-500/18 text-emerald-200";
   const pnlClass = winning ? "bg-emerald-500/15 text-emerald-300" : "bg-rose-500/15 text-rose-300";
   const cleanSymbol = symbol.replace(/[^A-Z0-9+]/gi, "").toUpperCase() || "TRADE";
 
   card.innerHTML = `
-    <div class="flex items-start justify-between gap-3">
-      <div class="min-w-0 flex-1">
-        <div class="flex min-w-0 items-center gap-2">
-          <span class="grid size-8 shrink-0 place-items-center rounded-xl border border-white/10 bg-[#151515] text-[10px] font-black text-zinc-300">${cleanSymbol.slice(0, 2)}</span>
-          <strong class="min-w-0 truncate text-xl font-black tracking-[-0.03em] text-white">${cleanSymbol}</strong>
-          <span class="shrink-0 text-lg">🇺🇸</span>
-        </div>
-        <div class="mt-3 flex min-w-0 items-center gap-2">
-          <span class="rounded-lg px-2.5 py-1 text-xs font-black uppercase ${sideClass}">${isSell ? "SELL" : "BUY"}</span>
-          <span class="truncate text-base font-bold text-zinc-300">1.00 Lots</span>
-        </div>
+    <div class="flex items-center justify-between gap-3">
+      <div class="flex min-w-0 items-center gap-2">
+        <span class="grid size-7 shrink-0 place-items-center rounded-lg border border-white/10 bg-[#151515] text-[9px] font-black text-zinc-300">${cleanSymbol.slice(0, 2)}</span>
+        <strong class="min-w-0 truncate text-lg font-black tracking-[-0.03em] text-white">${cleanSymbol}</strong>
+        <span class="shrink-0 text-base">🇺🇸</span>
       </div>
-      <div class="flex shrink-0 flex-col items-end gap-2">
+      <div class="flex shrink-0 items-center gap-2">
         <span class="rounded-xl px-3 py-1.5 font-mono text-sm font-black ${pnlClass}">${pnl}</span>
-        <span class="text-2xl leading-none text-zinc-500">⌃</span>
+        <span class="text-xl leading-none text-zinc-500">⌃</span>
       </div>
     </div>
-    <div class="mt-4 flex items-center justify-between gap-3">
-      <div class="min-w-0">
-        <p class="truncate text-xs font-semibold text-zinc-500">${meta || date || "Trade"}</p>
-        <p class="mt-1 text-[11px] text-zinc-600">${date}</p>
+    <div class="mt-3 flex items-center justify-between gap-3">
+      <div class="flex min-w-0 items-center gap-2">
+        <span class="rounded-lg px-2.5 py-1 text-xs font-black uppercase ${sideClass}">${isSell ? "SELL" : "BUY"}</span>
+        <span class="truncate text-base font-bold text-zinc-300">1.00 Lots</span>
       </div>
       <div class="flex shrink-0 items-center gap-1.5">
         <span class="rounded-md bg-rose-500/20 px-2 py-1 text-xs font-black text-rose-200">SL</span>
         <span class="rounded-md bg-emerald-500/15 px-2 py-1 text-xs font-black text-emerald-300">TP</span>
-        <span class="rounded-md bg-white/[.055] px-2 py-1 font-mono text-xs font-bold text-zinc-300">${rr || "0.00R"}</span>
       </div>
     </div>
   `;
@@ -124,7 +117,7 @@ function syncMobileTradeCards() {
 
   const list = document.createElement("div");
   list.setAttribute("data-mobile-trades-list", "true");
-  list.className = "grid gap-3 p-3 md:hidden";
+  list.className = "grid gap-2.5 p-3 md:hidden";
 
   for (const row of rows) {
     const card = buildCard(row);
