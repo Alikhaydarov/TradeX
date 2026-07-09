@@ -83,7 +83,7 @@ aside[class*="fixed"] {
 }
 
 aside nav {
-  margin-top: 1.25rem !important;
+  margin-top: .5rem !important;
 }
 
 aside nav button,
@@ -98,11 +98,6 @@ aside nav button[class*="bg-white"],
   background: #171717 !important;
   box-shadow: none !important;
   ring-color: transparent !important;
-}
-
-aside nav button:nth-child(6),
-[data-slot="dialog-content"] nav button:nth-child(6) {
-  display: none !important;
 }
 
 /* Account switcher in sidebar: simpler, like a small workspace selector. */
