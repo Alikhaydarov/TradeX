@@ -1,0 +1,37 @@
+/* Final polish for auth landing: keep the form floating on the background, no large card panel. */
+.auth2-card {
+  background: transparent !important;
+  box-shadow: none !important;
+  border: 0 !important;
+  padding: 0 !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+.auth2-card::before,
+.auth2-card::after {
+  display: none !important;
+  content: none !important;
+}
+
+.auth2-head,
+.auth2-cta-primary,
+.auth2-cta-secondary,
+.auth2-tabs,
+.auth2-note,
+.auth2-features,
+.auth2-foot {
+  position: relative;
+  z-index: 1;
+}
+
+.auth2-tabs,
+.auth2-note {
+  background: rgba(8, 8, 8, 0.76) !important;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.auth2-features {
+  background: linear-gradient(180deg, transparent, rgba(0, 0, 0, 0.22));
+}
