@@ -4,6 +4,7 @@ import json
 import os
 import ssl
 import subprocess
+import threading
 import time
 import urllib.error
 import urllib.request
@@ -55,6 +56,7 @@ MANUAL_FRESH_WAIT_SECONDS = max(1.0, float(os.getenv("MT5_MANUAL_FRESH_WAIT_SECO
 
 app = FastAPI(title="TradeWay MT5 Auto Sync", version="1.2.0")
 scheduler = BackgroundScheduler(timezone="UTC")
+sync_lock = threading.Lock()
 
 
 def https_context() -> ssl.SSLContext:
@@ -549,29 +551,51 @@ def sync_account(
     }
 
 
-def sync_all() -> None:
-    fetch_result = fetch_remote_accounts()
-    if fetch_result.get("error"):
-        print(f"[accounts:error] {fetch_result['error']}", flush=True)
-    else:
-        print(f"[accounts] fetched={fetch_result.get('fetched', 0)}", flush=True)
+def sync_all(*, force_rescan: bool = False) -> None:
+    if not sync_lock.acquire(blocking=False):
+        print("[sync] previous cycle still running, skipping overlapping trigger", flush=True)
+        return
 
-    for account in read_accounts():
-        if not account.get("is_active", True):
-            continue
-        try:
-            result = sync_account(account, auto_sync=True)
-            print(f"[sync] {account.get('login')} {result}", flush=True)
-        except Exception as error:
-            update_account(account["account_id"], last_error=str(error))
-            print(f"[sync:error] {account.get('login')} {error}", flush=True)
+    try:
+        fetch_result = fetch_remote_accounts()
+        if fetch_result.get("error"):
+            print(f"[accounts:error] {fetch_result['error']}", flush=True)
+        else:
+            print(f"[accounts] fetched={fetch_result.get('fetched', 0)}", flush=True)
+
+        for account in read_accounts():
+            if not account.get("is_active", True):
+                continue
+            try:
+                result = sync_account(account, auto_sync=True, force_rescan=force_rescan)
+                print(f"[sync] {account.get('login')} {result}", flush=True)
+            except Exception as error:
+                update_account(account["account_id"], last_error=str(error))
+                print(f"[sync:error] {account.get('login')} {error}", flush=True)
+    finally:
+        sync_lock.release()
 
 
 @app.on_event("startup")
 def start_scheduler() -> None:
     if not scheduler.running:
-        scheduler.add_job(sync_all, "interval", seconds=SYNC_INTERVAL_SECONDS, id="mt5-auto-sync", replace_existing=True)
+        scheduler.add_job(
+            sync_all,
+            "interval",
+            seconds=SYNC_INTERVAL_SECONDS,
+            id="mt5-auto-sync",
+            replace_existing=True,
+            coalesce=True,
+            max_instances=1,
+            misfire_grace_time=max(5, SYNC_INTERVAL_SECONDS),
+        )
         scheduler.start()
+    threading.Thread(
+        target=sync_all,
+        kwargs={"force_rescan": True},
+        name="initial-full-sync",
+        daemon=True,
+    ).start()
 
 
 @app.get("/")

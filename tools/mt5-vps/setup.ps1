@@ -58,19 +58,6 @@ C:\mt5-api\.venv\Scripts\python.exe -m pip install --upgrade pip
 C:\mt5-api\.venv\Scripts\pip.exe install -r C:\mt5-api\requirements.txt
 
 Write-Host "[6/8] Start scripts..."
-@"
-@echo off
-cd /d C:\mt5-api
-call C:\mt5-api\.venv\Scripts\activate.bat
-python C:\mt5-api\main.py >> C:\mt5-api\logs\server.log 2>&1
-"@ | Set-Content -Encoding ASCII "C:\mt5-api\start_server_debug.bat"
-
-@"
-@echo off
-cd /d C:\mt5-api
-call C:\mt5-api\.venv\Scripts\activate.bat
-python C:\mt5-api\main.py >> C:\mt5-api\logs\server.log 2>&1
-"@ | Set-Content -Encoding ASCII "C:\mt5-api\start_server_background.bat"
 
 @"
 $ErrorActionPreference = "Continue"
@@ -88,6 +75,14 @@ if ([string]::IsNullOrWhiteSpace($mt5Terminal)) {
 }
 
 New-Item -ItemType Directory -Force -Path $logDir | Out-Null
+
+if (!(Test-Path $python)) {
+  throw "Python runtime not found: $python"
+}
+
+if (!(Test-Path $main)) {
+  throw "FastAPI file not found: $main"
+}
 
 function Write-WatchdogLog {
   param([string]$Message)
@@ -118,20 +113,47 @@ while ($true) {
 }
 "@ | Set-Content -Encoding UTF8 "C:\mt5-api\run-server.ps1"
 
+@"
+$ErrorActionPreference = "Continue"
+
+$legacyTasks = @(
+  "TradeWay MT5 Auto Sync",
+  "TradeWay MT5 User Sync",
+  "TradeX MT5 FastAPI",
+  "TradeWay MT5 API"
+)
+
+foreach ($task in $legacyTasks) {
+  schtasks /Delete /TN $task /F | Out-Null
+}
+
+Get-CimInstance Win32_Process | Where-Object {
+  $_.CommandLine -match 'C:\\mt5-api\\main\.py|start_server_debug\.bat|start_server_background\.bat'
+} | ForEach-Object {
+  Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue
+}
+
+$startAtBootAction = New-ScheduledTaskAction -Execute "powershell.exe" -Argument "-NoProfile -ExecutionPolicy Bypass -File `"C:\mt5-api\watchdog.ps1`""
+$watchdogAction = New-ScheduledTaskAction -Execute "powershell.exe" -Argument "-NoProfile -ExecutionPolicy Bypass -File `"C:\mt5-api\watchdog.ps1`""
+$bootTrigger = New-ScheduledTaskTrigger -AtStartup
+$repeatTrigger = New-ScheduledTaskTrigger -Once -At (Get-Date).Date
+$repeatTrigger.Repetition = New-ScheduledTaskRepetitionSettingsSet -Interval (New-TimeSpan -Minutes 5) -Duration (New-TimeSpan -Days 3650)
+$settings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -StartWhenAvailable -MultipleInstances IgnoreNew
+
+Register-ScheduledTask -TaskName "TradeWay MT5 StartAtBoot" -Action $startAtBootAction -Trigger $bootTrigger -Settings $settings -RunLevel Highest -Force | Out-Null
+Register-ScheduledTask -TaskName "TradeWay MT5 Watchdog" -Action $watchdogAction -Trigger $repeatTrigger -Settings $settings -RunLevel Highest -Force | Out-Null
+Start-ScheduledTask -TaskName "TradeWay MT5 StartAtBoot"
+"@ | Set-Content -Encoding UTF8 "C:\mt5-api\setup_service.ps1"
+
 Write-Host "[7/8] Firewall, power, scheduled task..."
 New-NetFirewallRule -DisplayName "TradeX MT5 API 8000" -Direction Inbound -Protocol TCP -LocalPort 8000 -Action Allow -ErrorAction SilentlyContinue | Out-Null
 powercfg /change standby-timeout-ac 0
 powercfg /change monitor-timeout-ac 0
 powercfg /hibernate off
 
-$Action = New-ScheduledTaskAction -Execute "powershell.exe" -Argument "-NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -File `"C:\mt5-api\run-server.ps1`""
-$TriggerStartup = New-ScheduledTaskTrigger -AtStartup
-$TriggerLogon = New-ScheduledTaskTrigger -AtLogOn
-$Settings = New-ScheduledTaskSettingsSet -RestartCount 999 -RestartInterval (New-TimeSpan -Minutes 1) -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -StartWhenAvailable -MultipleInstances IgnoreNew
-Register-ScheduledTask -TaskName "TradeX MT5 FastAPI" -Action $Action -Trigger @($TriggerStartup, $TriggerLogon) -Settings $Settings -RunLevel Highest -Force -Description "TradeX MT5 auto-sync watchdog" | Out-Null
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File "C:\mt5-api\setup_service.ps1"
 
 Write-Host "[8/8] Start server and MT5 installer..."
-Start-ScheduledTask -TaskName "TradeX MT5 FastAPI"
 Start-Process "C:\installers\mt5setup.exe"
 Start-Sleep -Seconds 4
 
