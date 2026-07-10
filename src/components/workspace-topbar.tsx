@@ -36,7 +36,7 @@ export function WorkspaceTopbar({ section }: { section: Section }) {
 
   return (
     <div role="banner" className="tw-app-topbar sticky top-0 z-[60] shrink-0 border-b border-white/8 bg-black px-4 py-3 lg:static lg:flex lg:h-[56px] lg:items-center lg:justify-between lg:px-6 lg:py-0">
-      <div className="flex items-center gap-3 lg:hidden">
+      <div className="flex items-center justify-between gap-3 lg:hidden">
         <button
           type="button"
           onClick={openMobileDrawer}
@@ -46,19 +46,19 @@ export function WorkspaceTopbar({ section }: { section: Section }) {
           <Menu size={20} strokeWidth={2.2} />
         </button>
 
-        <div className="min-w-0 flex-1 rounded-[1.2rem] border border-white/10 bg-[#080808] px-4 py-2.5 shadow-[inset_0_1px_0_rgba(255,255,255,.035)]">
+        <div className="min-w-0 flex-1">
           <p className="truncate text-base font-black leading-none tracking-[-0.03em] text-white">
-            {isAccountScoped ? workspace : page}
+            {page}
           </p>
           <p className="mt-1 truncate text-xs font-semibold text-zinc-500">
-            {isAccountScoped ? page : workspace}
+            {isAccountScoped ? workspace : "TradeWay workspace"}
           </p>
         </div>
 
         <button
           type="button"
           onClick={openAddTrade}
-          className="grid size-10 shrink-0 place-items-center rounded-2xl bg-white text-black transition active:scale-95"
+          className="grid size-10 shrink-0 place-items-center rounded-2xl border border-white/10 bg-white/[.04] text-white transition active:scale-95"
           aria-label="Add trade"
         >
           <Plus size={22} strokeWidth={2.15} />

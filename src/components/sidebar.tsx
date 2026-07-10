@@ -4,12 +4,10 @@ import type { User } from "@supabase/supabase-js";
 import {
   CalendarDays,
   ChevronDown,
-  Crown,
   Home,
   LayoutDashboard,
   LogIn,
   MoreHorizontal,
-  Plus,
   Search,
   ShieldCheck,
   SquareChartGantt,
@@ -48,7 +46,6 @@ const money = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD
 export function Sidebar({
   active,
   onChange,
-  onPost,
   onLogin,
   user,
   hideMobile = false,
@@ -56,7 +53,6 @@ export function Sidebar({
 }: {
   active: Section;
   onChange: (section: Section) => void;
-  onPost: () => void;
   onLogin: () => void;
   user: User | null;
   hideMobile?: boolean;
@@ -143,7 +139,7 @@ export function Sidebar({
 
   const renderAccountSwitcher = (mobile = false) => (
     <DropdownMenu open={accountSwitcherOpen} onOpenChange={setAccountSwitcherOpen}>
-      <div className={`${mobile ? "flex w-full items-center gap-2.5 rounded-2xl border border-white/10 bg-[#0b0b0b] p-3" : "mt-4 flex w-full items-center gap-3 rounded-[1rem] border border-white/8 bg-[#050505] p-4 transition hover:bg-white/[.03]"}`}>
+      <div className={`${mobile ? "flex w-full items-center gap-2.5 rounded-2xl border border-white/10 bg-[#060606] p-3" : "mt-4 flex w-full items-center gap-3 rounded-[1rem] border border-white/8 bg-[#050505] p-4 transition hover:bg-[#090909]"}`}>
         <button type="button" onClick={openAccountsPage} className="flex min-w-0 flex-1 items-center gap-3 text-left">
           <span className={`size-2 shrink-0 rounded-full ${activeAccount ? "bg-emerald-500" : "bg-zinc-500"}`} />
           <div className="min-w-0 flex-1">
@@ -233,8 +229,7 @@ export function Sidebar({
 
         {renderAccountSwitcher()}
 
-        <p className="mt-6 px-3 text-[10px] font-black uppercase tracking-[0.16em] text-zinc-600">Workspace</p>
-        <nav className="mt-2 space-y-1.5">
+        <nav className="mt-6 space-y-1">
           {nav.map((item) => {
             const { id, label, icon: Icon } = item;
             const selected = active === id;
@@ -242,13 +237,13 @@ export function Sidebar({
               <button
                 key={id}
                 onClick={() => onChange(id)}
-                className={`group flex w-full items-center gap-3 rounded-2xl px-3 py-2.5 text-left transition-all ${
+                className={`group flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left transition-all ${
                   selected
-                    ? "bg-white/[.095] text-white ring-1 ring-white/15 shadow-[inset_0_1px_0_rgba(255,255,255,.045)]"
-                    : "text-zinc-500 hover:bg-white/[.04] hover:text-zinc-300"
+                    ? "bg-white/[.08] text-white ring-1 ring-white/10"
+                    : "text-zinc-500 hover:bg-[#0a0a0a] hover:text-zinc-300"
                 }`}
               >
-                <span className={`grid h-9 w-9 place-items-center rounded-2xl transition-colors duration-100 ${selected ? "bg-white/14 text-zinc-100" : "bg-white/[.035] text-zinc-500 group-hover:bg-white/[.06] group-hover:text-zinc-300"}`}>
+                <span className={`grid h-9 w-9 place-items-center rounded-xl transition-colors duration-100 ${selected ? "bg-white/10 text-zinc-100" : "bg-[#090909] text-zinc-500 group-hover:bg-[#101010] group-hover:text-zinc-300"}`}>
                   <Icon size={18} strokeWidth={selected ? 2.5 : 2} />
                 </span>
                 <strong className="block min-w-0 truncate text-sm">{label}</strong>
@@ -256,35 +251,6 @@ export function Sidebar({
             );
           })}
         </nav>
-
-        <div className="mt-4 rounded-[1rem] border border-white/8 bg-[#060606] p-3">
-          <div className="flex items-start gap-3">
-            <span className={`grid size-10 shrink-0 place-items-center rounded-2xl border ${premium.isPremium ? "border-emerald-400/20 bg-emerald-400/10 text-emerald-300" : "border-white/10 bg-white/[.04] text-zinc-400"}`}>
-              <Crown size={18} />
-            </span>
-            <div className="min-w-0 flex-1">
-              <p className="text-sm font-black text-white">{premium.isPremium ? "Premium active" : "Unlock Premium"}</p>
-              <p className="mt-1 text-[11px] leading-5 text-zinc-500">
-                {premium.isPremium
-                  ? "Verified badge, AI coaching and MT5 Auto Sync are enabled."
-                  : "Free users keep the basic workspace. AI, badge and auto sync stay locked."}
-              </p>
-            </div>
-          </div>
-          {!premium.isPremium ? (
-            <button
-              type="button"
-              onClick={openPricing}
-              className="mt-3 h-10 w-full rounded-xl border border-white/10 bg-white text-sm font-black text-black transition hover:bg-zinc-200"
-            >
-              Upgrade
-            </button>
-          ) : null}
-        </div>
-
-        <button onClick={onPost} className="mt-4 flex items-center justify-center gap-2 rounded-2xl bg-white py-3 text-sm font-black text-zinc-950 shadow-[0_14px_32px_rgba(255,255,255,.08)] transition-colors hover:bg-zinc-200">
-          <Plus size={18} /> {t("shareTrade")}
-        </button>
 
         <div className="mt-auto">
           <div className="flex w-full items-center gap-3 rounded-2xl border border-white/10 bg-[#0b0b0b] p-2 text-left shadow-[inset_0_1px_0_rgba(255,255,255,.035)] transition-colors hover:bg-[#121212]">
@@ -352,20 +318,7 @@ export function Sidebar({
                 {renderAccountSwitcher(true)}
               </div>
 
-              {!premium.isPremium ? (
-                <div className="border-b border-white/8 px-4 py-4">
-                  <button
-                    type="button"
-                    onClick={openPricing}
-                    className="w-full rounded-2xl border border-white/10 bg-white px-4 py-3 text-left text-sm font-black text-black"
-                  >
-                    Upgrade for AI, badge and auto sync
-                  </button>
-                </div>
-              ) : null}
-
               <div className="flex-1 overflow-y-auto px-3 py-4">
-                <p className="mb-2 px-2 text-[10px] font-black uppercase tracking-[0.18em] text-zinc-600">Workspace</p>
                 <nav className="space-y-1.5">
                   {nav.map((item) => {
                     const { id, label, icon: Icon } = item;
@@ -379,10 +332,10 @@ export function Sidebar({
                           onChange(id);
                         }}
                         className={`flex h-11 w-full items-center gap-3 rounded-xl px-3 text-left text-sm font-bold transition ${
-                          selected ? "bg-white/[.095] text-white ring-1 ring-white/10" : "text-zinc-400 hover:bg-white/[.04] hover:text-white"
+                          selected ? "bg-white/[.08] text-white ring-1 ring-white/10" : "text-zinc-400 hover:bg-[#0a0a0a] hover:text-white"
                         }`}
                       >
-                        <span className={`grid size-8 shrink-0 place-items-center rounded-lg ${selected ? "bg-white/[.10] text-white" : "bg-white/[.035] text-zinc-500"}`}>
+                        <span className={`grid size-8 shrink-0 place-items-center rounded-lg ${selected ? "bg-white/[.10] text-white" : "bg-[#090909] text-zinc-500"}`}>
                           <Icon size={17} />
                         </span>
                         <span className="block min-w-0 truncate">{label}</span>

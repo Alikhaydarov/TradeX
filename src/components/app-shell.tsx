@@ -176,10 +176,6 @@ export function AppShell() {
         <Sidebar
           active={section}
           onChange={changeSection}
-          onPost={() => {
-            changeSection("feed");
-            window.setTimeout(() => window.dispatchEvent(new Event("tradeway:share-trade")), 0);
-          }}
           onLogin={openLogin}
           user={user}
           isAdmin={isAdmin}
