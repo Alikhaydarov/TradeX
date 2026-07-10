@@ -142,6 +142,26 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
   try {
     if (isMt5ApiConfigured()) {
       const result = await syncNowMt5Api({ userId: auth.user.id, accountId: account.id, propAccountId: id });
+      if (supabase) {
+        await supabase
+          .from("trading_accounts")
+          .update({
+            status: "connected",
+            last_error: null,
+            last_synced_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+          })
+          .eq("id", account.id)
+          .eq("user_id", auth.user.id);
+      } else {
+        const pool = getPostgresPool();
+        await pool?.query(
+          `update public.trading_accounts
+           set status = 'connected', last_error = null, last_synced_at = now(), updated_at = now()
+           where id = $1 and user_id = $2`,
+          [account.id, auth.user.id],
+        );
+      }
       return Response.json({
         ...result,
         immediate: true,

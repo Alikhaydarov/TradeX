@@ -105,6 +105,16 @@ export async function PUT(request: Request, context: { params: Promise<{ id: str
         accountId: conn.id,
         propAccountId: id,
       });
+      await auth.supabase
+        .from("trading_accounts")
+        .update({
+          status: "connected",
+          last_error: null,
+          last_synced_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", conn.id)
+        .eq("user_id", auth.user.id);
     } catch (mt5ApiError) {
       const message = mt5ApiError instanceof Error ? mt5ApiError.message : "MT5 API connect failed.";
       await auth.supabase

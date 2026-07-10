@@ -1,7 +1,7 @@
 "use client";
 
 import { CheckCircle2, KeyRound, LoaderCircle, RefreshCw, Server, Unplug, UserRound } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { apiRequest } from "@/lib/api-client";
 import type { PropAccount } from "./types";
 
@@ -25,26 +25,32 @@ export function Mt5Settings({ account, onSynced }: { account: PropAccount; onSyn
   const [message, setMessage] = useState("");
   const [isVerified, setIsVerified] = useState<boolean | null>(null);
 
-  useEffect(() => {
-    apiRequest<{ connection: Connection | null; isVerified: boolean; bridgeConfigured: boolean }>(
+  const loadConnection = useCallback(async () => {
+    const { connection: c, isVerified: v, bridgeConfigured: m } = await apiRequest<{ connection: Connection | null; isVerified: boolean; bridgeConfigured: boolean }>(
       `/api/prop-accounts/${account.id}/mt5`
-    ).then(({ connection: c, isVerified: v, bridgeConfigured: m }) => {
-      setIsVerified(v);
-      setBridgeConfigured(m);
-      if (!c) return;
-      setConnection(c);
-      setLogin(c.login ?? "");
-      setServer(c.server ?? "");
-    }).catch(() => setIsVerified(false));
+    );
+    setIsVerified(v);
+    setBridgeConfigured(m);
+    if (!c) {
+      setConnection(null);
+      return;
+    }
+    setConnection(c);
+    setLogin(c.login ?? "");
+    setServer(c.server ?? "");
   }, [account.id]);
+
+  useEffect(() => {
+    void loadConnection().catch(() => setIsVerified(false));
+  }, [loadConnection]);
 
   useEffect(() => {
     if (!connection) return undefined;
     const id = window.setInterval(() => {
-      void onSynced();
+      void Promise.all([onSynced(), loadConnection()]);
     }, 5_000);
     return () => window.clearInterval(id);
-  }, [connection, onSynced]);
+  }, [connection, onSynced, loadConnection]);
 
   const save = async () => {
     if (!login || !password || !server) {
@@ -60,7 +66,7 @@ export function Mt5Settings({ account, onSynced }: { account: PropAccount; onSyn
       );
       setConnection(c);
       setPassword("");
-      await onSynced();
+      await Promise.all([onSynced(), loadConnection()]);
       setMessage("MT5 ma'lumotlari saqlandi. Auto-sync avtomatik ishlaydi.");
     } catch (e) {
       setMessage(e instanceof Error ? e.message : "Saqlanmadi.");
@@ -99,7 +105,7 @@ export function Mt5Settings({ account, onSynced }: { account: PropAccount; onSyn
         `/api/prop-accounts/${account.id}/mt5/sync`,
         { method: "POST", body: JSON.stringify({ force_rescan: true }) }
       );
-      await onSynced();
+      await Promise.all([onSynced(), loadConnection()]);
       const imported = result.journalImported ?? result.imported ?? 0;
       setMessage(result.message || `Advanced sync completed. ${imported} trades checked.`);
     } catch (e) {
@@ -111,6 +117,7 @@ export function Mt5Settings({ account, onSynced }: { account: PropAccount; onSyn
 
   const statusColor = (s?: string) => {
     if (s === "connected") return "text-emerald-400";
+    if (s === "pending") return "text-sky-400";
     if (s === "error") return "text-rose-400";
     return "text-zinc-500";
   };
@@ -125,6 +132,8 @@ export function Mt5Settings({ account, onSynced }: { account: PropAccount; onSyn
         <div className={`rounded-2xl border px-3 py-3 text-sm sm:px-4 ${
           connection.status === "connected"
             ? "border-emerald-500/20 bg-emerald-500/5"
+            : connection.status === "pending"
+              ? "border-sky-500/20 bg-sky-500/5"
             : connection.status === "error"
               ? "border-rose-500/20 bg-rose-500/5"
               : "border-[#2a2a2a] bg-[#1b1b1b]"
@@ -132,9 +141,9 @@ export function Mt5Settings({ account, onSynced }: { account: PropAccount; onSyn
           <div className="flex items-start gap-2">
             <div className="min-w-0 flex-1 space-y-1">
               <div className="flex min-w-0 flex-wrap items-center gap-2">
-                <span className={`h-2 w-2 rounded-full ${connection.status === "connected" ? "bg-emerald-400" : connection.status === "error" ? "animate-pulse bg-rose-400" : "bg-zinc-600"}`} />
+                <span className={`h-2 w-2 rounded-full ${connection.status === "connected" ? "bg-emerald-400" : connection.status === "pending" ? "animate-pulse bg-sky-400" : connection.status === "error" ? "animate-pulse bg-rose-400" : "bg-zinc-600"}`} />
                 <span className={`text-xs font-semibold ${statusColor(connection.status)}`}>
-                  {connection.status === "connected" ? "Ulangan" : connection.status === "error" ? "Xato" : "Tayyor"}
+                  {connection.status === "connected" ? "Ulangan" : connection.status === "pending" ? "Sync qilinyapti" : connection.status === "error" ? "Xato" : "Tayyor"}
                 </span>
                 <span className="max-w-full truncate font-mono text-[11px] text-zinc-400 sm:text-xs">{connection.login} @ {connection.server}</span>
               </div>

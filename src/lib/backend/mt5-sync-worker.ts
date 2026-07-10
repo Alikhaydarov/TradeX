@@ -75,6 +75,20 @@ async function ensurePremium(userId: string) {
   if (!premiumActive || profile.auto_sync_enabled === false) throw new Error("MT5 Auto Sync requires active Premium.");
 }
 
+async function markAccountConnected(accountId: string) {
+  const pool = getPostgresPool();
+  if (!pool) throw new Error("DATABASE_URL or SUPABASE_DB_URL is required for MT5 queue worker.");
+  await pool.query(
+    `update public.trading_accounts
+     set status = 'connected',
+         last_error = null,
+         last_synced_at = now(),
+         updated_at = now()
+     where id = $1`,
+    [accountId],
+  );
+}
+
 async function syncAccount(account: TradingAccountSyncRow, from: string, to: string) {
   if (isMt5ApiConfigured()) {
     const result = await syncNowMt5Api({
@@ -82,6 +96,7 @@ async function syncAccount(account: TradingAccountSyncRow, from: string, to: str
       accountId: account.id,
       propAccountId: account.prop_account_id || undefined,
     });
+    await markAccountConnected(account.id);
 
     return {
       imported: Number(result.imported || 0),
