@@ -42,6 +42,7 @@ import { InstrumentBadge } from "./instrument-badge";
 import { useAuth } from "./auth-context";
 import { MediaImage } from "./media-image";
 import { TraderAvatar } from "./trader-avatar";
+import { usePremiumStatus } from "./use-premium-status";
 import type { Post, Profile } from "./types";
 
 interface ProfileRecord {
@@ -92,14 +93,6 @@ interface TradingStats {
   winRate: number;
   netPnl: number;
   averageR: number;
-}
-
-interface PremiumStatus {
-  isPremium: boolean;
-  aiEnabled: boolean;
-  traderoxEnabled: boolean;
-  autoSyncEnabled: boolean;
-  isVerified: boolean;
 }
 
 type ProfileTab = "posts" | "media";
@@ -180,7 +173,7 @@ export function Account({ onLogin, profileUsername }: { onLogin: () => void; pro
   const [achievementType, setAchievementType] = useState<"funded" | "payout">("funded");
   const [achievementImage, setAchievementImage] = useState("");
   const [achievementBusy, setAchievementBusy] = useState(false);
-  const [premium, setPremium] = useState<PremiumStatus | null>(null);
+  const { status: premium } = usePremiumStatus(Boolean(user && !profileUsername));
   const [billingLoading, setBillingLoading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
@@ -222,18 +215,6 @@ export function Account({ onLogin, profileUsername }: { onLogin: () => void; pro
       active = false;
       window.clearTimeout(startTimer);
     };
-  }, [user, profileUsername]);
-
-  useEffect(() => {
-    if (!user || profileUsername) {
-      setPremium(null);
-      return;
-    }
-    let active = true;
-    apiRequest<PremiumStatus>("/api/premium/status")
-      .then((status) => { if (active) setPremium(status); })
-      .catch(() => { if (active) setPremium({ isPremium: false, aiEnabled: false, traderoxEnabled: false, autoSyncEnabled: false, isVerified: false }); });
-    return () => { active = false; };
   }, [user, profileUsername]);
 
   if (!user) {
