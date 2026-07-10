@@ -34,6 +34,8 @@ setup_python.ps1
 start-api.bat
 start-ngrok.bat
 setup_tasks.ps1
+setup_service.ps1
+run-server.ps1
 test-api.ps1
 ```
 
@@ -193,6 +195,21 @@ TradeWay MT5 API
 TradeWay ngrok Tunnel
 ```
 
+Recommended for production:
+
+```powershell
+cd C:\mt5-api
+.\setup_service.ps1
+```
+
+This creates a persistent watchdog task:
+
+```text
+TradeWay MT5 Watchdog
+```
+
+Unlike a simple `pythonw main.py` startup, the watchdog keeps restarting the API if Python crashes and will also relaunch MT5 terminal when needed.
+
 ## 9. Keep VPS Awake
 
 ```powershell
@@ -241,4 +258,12 @@ Check scheduled task runs:
 ```powershell
 Get-ScheduledTask -TaskName "TradeWay MT5 API"
 Get-ScheduledTask -TaskName "TradeWay ngrok Tunnel"
+Get-ScheduledTask -TaskName "TradeWay MT5 Watchdog"
+```
+
+Check watchdog logs:
+
+```powershell
+Get-Content C:\mt5-api\logs\watchdog.log -Tail 50
+Get-Content C:\mt5-api\logs\server.log -Tail 100
 ```

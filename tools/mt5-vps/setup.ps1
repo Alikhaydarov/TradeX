@@ -69,8 +69,61 @@ python C:\mt5-api\main.py >> C:\mt5-api\logs\server.log 2>&1
 @echo off
 cd /d C:\mt5-api
 call C:\mt5-api\.venv\Scripts\activate.bat
-pythonw C:\mt5-api\main.py
+python C:\mt5-api\main.py >> C:\mt5-api\logs\server.log 2>&1
 "@ | Set-Content -Encoding ASCII "C:\mt5-api\start_server_background.bat"
+
+@"
+$ErrorActionPreference = "Continue"
+
+$baseDir = "C:\mt5-api"
+$python = Join-Path $baseDir ".venv\Scripts\python.exe"
+$main = Join-Path $baseDir "main.py"
+$logDir = Join-Path $baseDir "logs"
+$stdoutLog = Join-Path $logDir "server.log"
+$watchdogLog = Join-Path $logDir "watchdog.log"
+$mt5Terminal = $env:MT5_TERMINAL_PATH
+
+if ([string]::IsNullOrWhiteSpace($mt5Terminal)) {
+  $mt5Terminal = "C:\Program Files\MetaTrader 5\terminal64.exe"
+}
+
+New-Item -ItemType Directory -Force -Path $logDir | Out-Null
+
+function Write-WatchdogLog {
+  param([string]$Message)
+  $line = "[{0}] {1}" -f (Get-Date).ToString("s"), $Message
+  Add-Content -Path $watchdogLog -Value $line
+}
+
+Set-Location $baseDir
+Write-WatchdogLog "MT5 watchdog started."
+
+while ($true) {
+  try {
+    if ((Test-Path $mt5Terminal) -and -not (Get-Process -Name "terminal64" -ErrorAction SilentlyContinue)) {
+      Write-WatchdogLog "Launching MT5 terminal."
+      Start-Process -FilePath $mt5Terminal -WindowStyle Minimized | Out-Null
+      Start-Sleep -Seconds 8
+    }
+
+    Write-WatchdogLog "Launching FastAPI server."
+    $process = Start-Process -FilePath $python `
+      -ArgumentList $main `
+      -WorkingDirectory $baseDir `
+      -RedirectStandardOutput $stdoutLog `
+      -RedirectStandardError $stdoutLog `
+      -PassThru `
+      -WindowStyle Hidden
+
+    Wait-Process -Id $process.Id
+    Write-WatchdogLog "FastAPI exited with code $($process.ExitCode). Restarting in 5 seconds."
+  } catch {
+    Write-WatchdogLog "Watchdog error: $($_.Exception.Message)"
+  }
+
+  Start-Sleep -Seconds 5
+}
+"@ | Set-Content -Encoding UTF8 "C:\mt5-api\run-server.ps1"
 
 Write-Host "[7/8] Firewall, power, scheduled task..."
 New-NetFirewallRule -DisplayName "TradeX MT5 API 8000" -Direction Inbound -Protocol TCP -LocalPort 8000 -Action Allow -ErrorAction SilentlyContinue | Out-Null
@@ -78,13 +131,14 @@ powercfg /change standby-timeout-ac 0
 powercfg /change monitor-timeout-ac 0
 powercfg /hibernate off
 
-$Action = New-ScheduledTaskAction -Execute "C:\mt5-api\start_server_background.bat" -WorkingDirectory "C:\mt5-api"
-$Trigger = New-ScheduledTaskTrigger -AtStartup
-$Settings = New-ScheduledTaskSettingsSet -RestartCount 999 -RestartInterval (New-TimeSpan -Minutes 1) -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries
-Register-ScheduledTask -TaskName "TradeX MT5 FastAPI" -Action $Action -Trigger $Trigger -Settings $Settings -RunLevel Highest -Force -Description "TradeX MT5 auto-sync FastAPI server" | Out-Null
+$Action = New-ScheduledTaskAction -Execute "powershell.exe" -Argument "-NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -File `"C:\mt5-api\run-server.ps1`""
+$TriggerStartup = New-ScheduledTaskTrigger -AtStartup
+$TriggerLogon = New-ScheduledTaskTrigger -AtLogOn
+$Settings = New-ScheduledTaskSettingsSet -RestartCount 999 -RestartInterval (New-TimeSpan -Minutes 1) -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -StartWhenAvailable -MultipleInstances IgnoreNew
+Register-ScheduledTask -TaskName "TradeX MT5 FastAPI" -Action $Action -Trigger @($TriggerStartup, $TriggerLogon) -Settings $Settings -RunLevel Highest -Force -Description "TradeX MT5 auto-sync watchdog" | Out-Null
 
 Write-Host "[8/8] Start server and MT5 installer..."
-Start-Process "C:\mt5-api\start_server_background.bat"
+Start-ScheduledTask -TaskName "TradeX MT5 FastAPI"
 Start-Process "C:\installers\mt5setup.exe"
 Start-Sleep -Seconds 4
 
