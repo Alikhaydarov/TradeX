@@ -3,9 +3,7 @@
 import { useEffect, useState } from "react";
 import { AuthModal } from "./auth-modal";
 import { FeedV3 } from "./feed-v3";
-import { Journal } from "./journal";
 import { Account } from "./account";
-import { AccountSettings } from "./account-settings";
 import { AdminPanel } from "./admin-panel";
 import { ActiveAccountProvider } from "./active-account-context";
 import { Pricing } from "./pricing";
@@ -14,6 +12,14 @@ import { PremiumUpsellDialog } from "./premium-upsell-dialog";
 import { Sidebar } from "./sidebar";
 import { WorkspaceTopbar } from "./workspace-topbar";
 import { TradeWayLoginLanding } from "./tradeway-login-landing";
+import {
+  AccountsSection,
+  AnalyticsSection,
+  CalendarSection,
+  DashboardSection,
+  TradesSection,
+  WorkspaceSettingsSection,
+} from "./workspace-sections";
 import { useAuth } from "./auth-context";
 import { cachedSections, getCurrentProfileUsername, getCurrentSection, pathFromSection, workspaceSections } from "./section-config";
 import { apiRequest } from "@/lib/api-client";
@@ -130,12 +136,12 @@ export function AppShell() {
   };
 
   const renderSection = (item: Section) => {
-    if (item === "accounts") return <Journal onLogin={openLogin} mode="accounts" />;
-    if (item === "dashboard") return <Journal onLogin={openLogin} mode="workspace" forcedTab="overview" />;
-    if (item === "calendar") return <Journal onLogin={openLogin} mode="workspace" forcedTab="calendar" />;
-    if (item === "trades") return <Journal onLogin={openLogin} mode="workspace" forcedTab="trades" />;
-    if (item === "analytics") return <Journal onLogin={openLogin} mode="workspace" forcedTab="analytics" />;
-    if (item === "settings") return <AccountSettings onLogin={openLogin} />;
+    if (item === "accounts") return <AccountsSection onLogin={openLogin} />;
+    if (item === "dashboard") return <DashboardSection onLogin={openLogin} />;
+    if (item === "calendar") return <CalendarSection onLogin={openLogin} />;
+    if (item === "trades") return <TradesSection onLogin={openLogin} />;
+    if (item === "analytics") return <AnalyticsSection onLogin={openLogin} />;
+    if (item === "settings") return <WorkspaceSettingsSection onLogin={openLogin} />;
     if (item === "account") return <Account onLogin={openLogin} profileUsername={profileUsername || undefined} />;
     if (item === "pricing") return <Pricing />;
     if (item === "admin" && isAdmin) return <AdminPanel onLogin={openLogin} />;

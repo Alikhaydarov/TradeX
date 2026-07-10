@@ -1,6 +1,6 @@
 "use client";
 
-import { Menu, Percent, Plus } from "lucide-react";
+import { Menu, Plus } from "lucide-react";
 import { useActiveAccountStore } from "./active-account-context";
 import type { Section } from "./types";
 
@@ -35,22 +35,22 @@ export function WorkspaceTopbar({ section }: { section: Section }) {
   const workspace = activeAccount?.name || "Workspace";
 
   return (
-    <div role="banner" className="tw-app-topbar sticky top-0 z-[60] shrink-0 border-b border-white/8 bg-black px-4 py-3 lg:static lg:flex lg:h-[64px] lg:items-center lg:justify-between lg:px-8 lg:py-0">
+    <div role="banner" className="tw-app-topbar sticky top-0 z-[60] shrink-0 border-b border-white/8 bg-black px-4 py-3 lg:static lg:flex lg:h-[56px] lg:items-center lg:justify-between lg:px-6 lg:py-0">
       <div className="flex items-center gap-3 lg:hidden">
         <button
           type="button"
           onClick={openMobileDrawer}
-          className="grid size-12 shrink-0 place-items-center rounded-full border border-white/10 bg-white/[.035] text-white transition active:scale-95"
+          className="grid size-10 shrink-0 place-items-center rounded-2xl border border-white/10 bg-white/[.035] text-white transition active:scale-95"
           aria-label="Open mobile menu"
         >
-          <Menu size={24} strokeWidth={2.4} />
+          <Menu size={20} strokeWidth={2.2} />
         </button>
 
-        <div className="min-w-0 flex-1 rounded-[1.55rem] border border-white/10 bg-[#080808] px-4 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,.035)]">
-          <p className="truncate text-xl font-black leading-none tracking-[-0.03em] text-white">
+        <div className="min-w-0 flex-1 rounded-[1.2rem] border border-white/10 bg-[#080808] px-4 py-2.5 shadow-[inset_0_1px_0_rgba(255,255,255,.035)]">
+          <p className="truncate text-base font-black leading-none tracking-[-0.03em] text-white">
             {isAccountScoped ? workspace : page}
           </p>
-          <p className="mt-1.5 truncate text-sm font-semibold text-zinc-500">
+          <p className="mt-1 truncate text-xs font-semibold text-zinc-500">
             {isAccountScoped ? page : workspace}
           </p>
         </div>
@@ -58,33 +58,24 @@ export function WorkspaceTopbar({ section }: { section: Section }) {
         <button
           type="button"
           onClick={openAddTrade}
-          className="grid size-12 shrink-0 place-items-center rounded-full bg-white text-black transition active:scale-95"
+          className="grid size-10 shrink-0 place-items-center rounded-2xl bg-white text-black transition active:scale-95"
           aria-label="Add trade"
         >
-          <Plus size={27} strokeWidth={2.25} />
+          <Plus size={22} strokeWidth={2.15} />
         </button>
       </div>
 
-      <div className="hidden min-w-0 text-sm font-semibold text-zinc-400 lg:block">
+      <div className="hidden min-w-0 items-center gap-2 text-xs font-semibold text-zinc-500 lg:flex">
         {isAccountScoped ? (
           <>
-            <span className="truncate">{workspace}</span>
-            <span className="px-1.5 text-zinc-600">&gt;</span>
-            <span className="font-black text-white">{page}</span>
+            <span className="truncate uppercase tracking-[0.16em]">{workspace}</span>
+            <span className="text-zinc-700">/</span>
+            <span className="font-bold text-zinc-300">{page}</span>
           </>
         ) : (
-          <span className="font-black text-white">{page}</span>
+          <span className="font-bold uppercase tracking-[0.16em] text-zinc-300">{page}</span>
         )}
       </div>
-      {isAccountScoped ? (
-        <button
-          type="button"
-          aria-label="Risk settings"
-          className="hidden size-9 place-items-center rounded-xl border border-white/10 bg-white/[.04] text-sm font-black text-white transition hover:bg-white/[.08] lg:grid"
-        >
-          <Percent size={16} />
-        </button>
-      ) : null}
     </div>
   );
 }

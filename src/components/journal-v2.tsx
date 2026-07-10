@@ -938,28 +938,28 @@ function Workspace(p: {
             <section className="rounded-[1.2rem] border border-white/8 bg-[#0b0b0b] p-3 shadow-[0_18px_46px_rgba(0,0,0,.2)] sm:p-4">
               <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
                 <div>
-                  <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-zinc-500">
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-zinc-500">
                     {account.name} <span className="mx-1 text-zinc-700">&gt;</span> Dashboard
                   </p>
-                  <h3 className="mt-1.5 text-lg font-black tracking-tight text-white sm:text-xl">
-                    Account overview
+                  <h3 className="mt-1 text-base font-black tracking-tight text-white sm:text-lg">
+                    Trading overview
                   </h3>
                   <p className="mt-1 text-xs text-zinc-500">{new Date().toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric", year: "numeric" })}</p>
                 </div>
-                <div className="grid grid-cols-[40px_minmax(0,1fr)_40px] gap-2 sm:flex sm:items-center lg:ml-auto">
-                  <button type="button" className="grid size-10 place-items-center rounded-xl border border-white/8 bg-black/20 text-zinc-300">
+                <div className="grid grid-cols-[36px_minmax(0,1fr)_36px] gap-2 sm:flex sm:items-center lg:ml-auto">
+                  <button type="button" className="grid size-9 place-items-center rounded-xl border border-white/8 bg-black/20 text-zinc-300">
                     <ChevronLeft size={15} />
                   </button>
-                  <div className="grid h-10 place-items-center rounded-xl border border-white/8 bg-black/20 px-3 text-xs font-semibold text-white">Current Week</div>
-                  <button type="button" className="grid size-10 place-items-center rounded-xl border border-white/8 bg-black/20 text-zinc-300">
+                  <div className="grid h-9 place-items-center rounded-xl border border-white/8 bg-black/20 px-3 text-xs font-semibold text-white">Current Week</div>
+                  <button type="button" className="grid size-9 place-items-center rounded-xl border border-white/8 bg-black/20 text-zinc-300">
                     <ChevronRight size={15} />
                   </button>
                 </div>
               </div>
 
-              <div className="mt-4 grid grid-cols-2 gap-2 xl:grid-cols-7">
+              <div className="mt-3 grid grid-cols-2 gap-2 xl:grid-cols-7">
                 {weeklyStrip.map((day) => (
-                  <div key={day.key} className="rounded-[0.95rem] border border-white/8 bg-black/18 px-3 py-2.5 sm:px-3.5 sm:py-3">
+                  <div key={day.key} className="rounded-[0.95rem] border border-white/8 bg-black/18 px-3 py-2.5">
                     <div className="flex items-center justify-between gap-2">
                       <span className="text-xs font-bold text-white sm:text-sm">{day.label}</span>
                       <span className={`text-xs font-black sm:text-sm ${day.percent >= 0 ? "text-emerald-400" : "text-rose-400"}`}>{day.percent >= 0 ? "+" : ""}{day.percent.toFixed(1)}%</span>
@@ -1078,29 +1078,38 @@ function Workspace(p: {
               <section className="rounded-[1.2rem] border border-white/8 bg-[#0b0b0b] p-3 shadow-[0_18px_46px_rgba(0,0,0,.2)] sm:p-4">
                 <div className="flex items-center justify-between gap-3">
                   <div>
-                    <h3 className="text-base font-black text-white">High Impact News</h3>
-                    <p className="mt-1 text-xs text-zinc-500">Today&apos;s upcoming red events in New York time.</p>
+                    <h3 className="text-base font-black text-white">Execution Snapshot</h3>
+                    <p className="mt-1 text-xs text-zinc-500">Compact read on risk, consistency and current focus.</p>
                   </div>
+                  <span className="rounded-full border border-white/8 bg-black/20 px-2.5 py-1 text-[10px] font-black text-zinc-400">
+                    {account.status}
+                  </span>
+                </div>
+                <div className="mt-4 grid grid-cols-2 gap-2">
+                  <MiniStat label="PLAN ALIGNMENT" value={`${planRate}%`} />
+                  <MiniStat label="ACTIVE SETUPS" value={String(setups.length)} />
+                  <MiniStat label="MISTAKE TRADES" value={String(mistakes.reduce((sum, item) => sum + item.trades, 0))} />
+                  <MiniStat label="MONTH TRADES" value={String(monthCount)} />
+                </div>
+                <div className="mt-4 space-y-3">
+                  <ProgressBar label="Profit target" value={targetProgress} color="bg-emerald-500" />
+                  <ProgressBar label="Drawdown used" value={drawdownUsed} color="bg-rose-500" />
                 </div>
                 <div className="mt-4 space-y-2">
-                  {calendarNewsLoading && !calendarNews ? (
-                    <div className="rounded-2xl border border-white/8 bg-black/15 px-3 py-4 text-sm text-zinc-500">Loading news...</div>
-                  ) : null}
-                  {!calendarNewsLoading && calendarNews?.error ? (
-                    <div className="rounded-2xl border border-rose-500/15 bg-rose-500/10 px-3 py-4 text-sm text-rose-200">{calendarNews.error}</div>
-                  ) : null}
-                  {!calendarNewsLoading && calendarNews && !calendarNews.error && calendarNews.events.length === 0 ? (
-                    <div className="rounded-2xl border border-white/8 bg-black/15 px-3 py-4 text-sm text-zinc-500">There are no high impact news events today.</div>
-                  ) : null}
-                  {(calendarNews?.events || []).slice(0, 5).map((event) => (
-                    <div key={event.id} className="rounded-2xl border border-white/8 bg-black/15 px-3 py-3">
-                      <div className="flex items-center gap-2">
-                        <span className="w-14 shrink-0 font-mono text-[11px] font-bold text-zinc-200">{event.time}</span>
-                        <span className="rounded-md bg-rose-400/15 px-1.5 py-0.5 text-[10px] font-black text-rose-200">{event.currency}</span>
-                        <p className="min-w-0 flex-1 truncate text-xs font-semibold text-zinc-300">{event.title}</p>
-                      </div>
-                    </div>
-                  ))}
+                  <div className="rounded-2xl border border-white/8 bg-black/15 px-3 py-3">
+                    <p className="text-[10px] font-black uppercase tracking-[0.16em] text-zinc-500">Best setup</p>
+                    <p className="mt-1 text-sm font-bold text-white">{setups[0]?.name || "No setup data yet"}</p>
+                    <p className="mt-1 text-xs text-zinc-500">
+                      {setups[0] ? `${setups[0].trades} trades / ${setups[0].rate}% win rate` : "Tag setups to unlock setup analytics."}
+                    </p>
+                  </div>
+                  <div className="rounded-2xl border border-white/8 bg-black/15 px-3 py-3">
+                    <p className="text-[10px] font-black uppercase tracking-[0.16em] text-zinc-500">Discipline focus</p>
+                    <p className="mt-1 text-sm font-bold text-white">{mistakes[0]?.name || "Clean execution streak"}</p>
+                    <p className="mt-1 text-xs text-zinc-500">
+                      {mistakes[0] ? `${mistakes[0].trades} repeats / ${cash.format(mistakes[0].pnl)}` : "No repeated mistake patterns this month."}
+                    </p>
+                  </div>
                 </div>
               </section>
             </div>

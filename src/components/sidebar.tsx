@@ -4,6 +4,7 @@ import type { User } from "@supabase/supabase-js";
 import {
   CalendarDays,
   ChevronDown,
+  Crown,
   Home,
   LayoutDashboard,
   LogIn,
@@ -20,6 +21,7 @@ import { useEffect, useMemo, useState } from "react";
 import { apiRequest } from "@/lib/api-client";
 import { useLanguage } from "@/lib/i18n";
 import { useActiveAccountStore } from "./active-account-context";
+import { usePremiumStatus } from "./use-premium-status";
 import { Dialog, DialogContent } from "./ui/dialog";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "./ui/dropdown-menu";
 import { TraderAvatar } from "./trader-avatar";
@@ -66,6 +68,7 @@ export function Sidebar({
   const [accountSwitcherOpen, setAccountSwitcherOpen] = useState(false);
   const [accountQuery, setAccountQuery] = useState("");
   const { t, locale, locales, labels, setLocale } = useLanguage();
+  const { status: premium } = usePremiumStatus(Boolean(user));
   const name = String(user?.user_metadata.full_name ?? user?.user_metadata.name ?? "Mehmon trader");
   const username = usernameFromUser(user);
   const handle = user ? `@${profileUsername || username}` : "Sign in with Google";
@@ -105,7 +108,7 @@ export function Sidebar({
 
   const baseNav = [
     { id: "feed" as const, label: t("home"), icon: Home },
-    { id: "dashboard" as const, label: "Overview", icon: LayoutDashboard },
+    { id: "dashboard" as const, label: "Dashboard", icon: LayoutDashboard },
     { id: "calendar" as const, label: "Calendar", icon: CalendarDays },
     { id: "trades" as const, label: "Trades", icon: SquareChartGantt },
     { id: "analytics" as const, label: "Analytics", icon: TrendingUp },
@@ -131,6 +134,11 @@ export function Sidebar({
     if (!user) return onLogin();
     setMobileMenuOpen(false);
     onChange("account");
+  };
+
+  const openPricing = () => {
+    setMobileMenuOpen(false);
+    onChange("pricing");
   };
 
   const renderAccountSwitcher = (mobile = false) => (
@@ -212,8 +220,13 @@ export function Sidebar({
       <aside className="fixed left-[max(1rem,calc((100vw-1860px)/2+1rem))] top-4 z-40 hidden h-[calc(100dvh-2rem)] w-[272px] shrink-0 flex-col rounded-[1.25rem] border border-white/8 bg-[#000000] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,.04)] lg:flex">
         <button onClick={() => onChange("feed")} className="flex items-center gap-3 rounded-[1.25rem] px-2 py-2.5 text-left transition-colors hover:bg-white/[.05]" aria-label="Tradox home">
           <span className="grid h-11 w-11 place-items-center rounded-2xl bg-[linear-gradient(180deg,rgba(255,255,255,1),rgba(232,232,236,1))] text-lg font-black text-black shadow-[0_12px_28px_rgba(255,255,255,.08)]">TD</span>
-          <span>
-            <strong className="block text-base tracking-tight">Tradox</strong>
+          <span className="min-w-0">
+            <span className="flex items-center gap-2">
+              <strong className="block truncate text-base tracking-tight">TradeWay</strong>
+              <span className={`rounded-full px-2 py-0.5 text-[10px] font-black ${premium.isPremium ? "bg-emerald-400/12 text-emerald-300" : "bg-white/[.06] text-zinc-400"}`}>
+                {premium.isPremium ? "Premium" : "Free"}
+              </span>
+            </span>
             <small className="text-[11px] text-zinc-500">Trading workspace</small>
           </span>
         </button>
@@ -244,7 +257,32 @@ export function Sidebar({
           })}
         </nav>
 
-        <button onClick={onPost} className="mt-5 flex items-center justify-center gap-2 rounded-2xl bg-white py-3 text-sm font-black text-zinc-950 shadow-[0_14px_32px_rgba(255,255,255,.08)] transition-colors hover:bg-zinc-200">
+        <div className="mt-4 rounded-[1rem] border border-white/8 bg-[#060606] p-3">
+          <div className="flex items-start gap-3">
+            <span className={`grid size-10 shrink-0 place-items-center rounded-2xl border ${premium.isPremium ? "border-emerald-400/20 bg-emerald-400/10 text-emerald-300" : "border-white/10 bg-white/[.04] text-zinc-400"}`}>
+              <Crown size={18} />
+            </span>
+            <div className="min-w-0 flex-1">
+              <p className="text-sm font-black text-white">{premium.isPremium ? "Premium active" : "Unlock Premium"}</p>
+              <p className="mt-1 text-[11px] leading-5 text-zinc-500">
+                {premium.isPremium
+                  ? "Verified badge, AI coaching and MT5 Auto Sync are enabled."
+                  : "Free users keep the basic workspace. AI, badge and auto sync stay locked."}
+              </p>
+            </div>
+          </div>
+          {!premium.isPremium ? (
+            <button
+              type="button"
+              onClick={openPricing}
+              className="mt-3 h-10 w-full rounded-xl border border-white/10 bg-white text-sm font-black text-black transition hover:bg-zinc-200"
+            >
+              Upgrade
+            </button>
+          ) : null}
+        </div>
+
+        <button onClick={onPost} className="mt-4 flex items-center justify-center gap-2 rounded-2xl bg-white py-3 text-sm font-black text-zinc-950 shadow-[0_14px_32px_rgba(255,255,255,.08)] transition-colors hover:bg-zinc-200">
           <Plus size={18} /> {t("shareTrade")}
         </button>
 
@@ -264,6 +302,9 @@ export function Sidebar({
                 </button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-44 border-white/10 bg-[#090909]">
+                <DropdownMenuItem onClick={openPricing} className="px-3 py-2.5">
+                  {premium.isPremium ? "Manage Premium" : "Upgrade to Premium"}
+                </DropdownMenuItem>
                 {locales.map((item) => (
                   <DropdownMenuItem key={item} onClick={() => setLocale(item)} className="flex items-center justify-between px-3 py-2.5">
                     <span>{labels[item]}</span>
@@ -288,7 +329,12 @@ export function Sidebar({
                 <div className="flex items-center gap-3">
                   <span className="grid size-10 place-items-center rounded-xl bg-white text-sm font-black text-black">TD</span>
                   <div>
-                    <strong className="block text-base leading-tight text-white">Tradox</strong>
+                    <span className="flex items-center gap-2">
+                      <strong className="block text-base leading-tight text-white">TradeWay</strong>
+                      <span className={`rounded-full px-2 py-0.5 text-[10px] font-black ${premium.isPremium ? "bg-emerald-400/12 text-emerald-300" : "bg-white/[.06] text-zinc-400"}`}>
+                        {premium.isPremium ? "Premium" : "Free"}
+                      </span>
+                    </span>
                     <small className="text-xs text-zinc-500">Trading workspace</small>
                   </div>
                 </div>
@@ -305,6 +351,18 @@ export function Sidebar({
               <div className="border-b border-white/8 px-4 py-4">
                 {renderAccountSwitcher(true)}
               </div>
+
+              {!premium.isPremium ? (
+                <div className="border-b border-white/8 px-4 py-4">
+                  <button
+                    type="button"
+                    onClick={openPricing}
+                    className="w-full rounded-2xl border border-white/10 bg-white px-4 py-3 text-left text-sm font-black text-black"
+                  >
+                    Upgrade for AI, badge and auto sync
+                  </button>
+                </div>
+              ) : null}
 
               <div className="flex-1 overflow-y-auto px-3 py-4">
                 <p className="mb-2 px-2 text-[10px] font-black uppercase tracking-[0.18em] text-zinc-600">Workspace</p>
