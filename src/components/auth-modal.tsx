@@ -33,11 +33,11 @@ export function AuthModal({
   };
 
   return (
-    <div className="fixed inset-0 z-[80] flex items-center justify-center bg-black/70 p-4 backdrop-blur-xl">
-      <section className="w-full max-w-md rounded-3xl border border-white/15 bg-[#171717] p-6 shadow-2xl shadow-black/50 backdrop-blur-2xl">
+    <div className="fixed inset-0 z-[80] flex items-center justify-center bg-black/92 p-4">
+      <section className="w-full max-w-md rounded-3xl border border-white/15 bg-black p-6 shadow-2xl shadow-black/50">
         <div className="flex items-center">
           <span className="text-2xl font-black tracking-tighter">TW</span>
-          <button onClick={onClose} className="ml-auto rounded-full p-2 hover:bg-white/10" aria-label="Close">
+          <button onClick={onClose} className="ml-auto rounded-full p-2 hover:bg-[#111111]" aria-label="Close">
             <X size={20} />
           </button>
         </div>

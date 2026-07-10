@@ -69,18 +69,18 @@ export function PremiumUpsellDialog() {
         if (!next && storageKey) window.localStorage.setItem(storageKey, "1");
       }}
     >
-      <DialogContent className="border-white/10 bg-[#0f1011] p-0 sm:max-w-[560px]">
+      <DialogContent className="border-white/10 bg-black p-0 sm:max-w-[560px]">
         <div className="absolute right-4 top-4">
           <button
             type="button"
             onClick={() => setOpen(false)}
-            className="grid size-9 place-items-center rounded-full border border-white/10 bg-white/[.04] text-zinc-400 transition hover:text-white"
+            className="grid size-9 place-items-center rounded-full border border-white/10 bg-[#080808] text-zinc-400 transition hover:bg-[#101010] hover:text-white"
             aria-label="Close premium dialog"
           >
             <X size={16} />
           </button>
         </div>
-        <div className="rounded-[28px] bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,.09),transparent_45%),linear-gradient(180deg,rgba(255,255,255,.045),rgba(255,255,255,.015))] p-6">
+        <div className="rounded-[28px] bg-black p-6">
           <DialogHeader className="space-y-3 text-left">
             <Badge className="w-fit rounded-full bg-white text-black hover:bg-white">
               <Crown className="size-3.5" /> New account bonus
@@ -95,7 +95,7 @@ export function PremiumUpsellDialog() {
 
           <div className="mt-6 grid gap-3 sm:grid-cols-2">
             {plans.map((plan) => (
-              <div key={plan.id} className="rounded-3xl border border-white/10 bg-black/20 p-4">
+              <div key={plan.id} className="rounded-3xl border border-white/10 bg-[#080808] p-4">
                 <div className="flex items-center justify-between">
                   <h3 className="text-lg font-black text-white">{plan.name}</h3>
                   <span className="text-sm font-bold text-zinc-300">{plan.price}</span>

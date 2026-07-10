@@ -220,11 +220,11 @@ export function Account({ onLogin, profileUsername }: { onLogin: () => void; pro
   if (!user) {
     return (
       <>
-        <header className="sticky top-0 z-10 flex h-14 items-center border-b border-white/8 bg-[#171717]/50 px-4 backdrop-blur-2xl">
+        <header className="sticky top-0 z-10 flex h-14 items-center border-b border-white/8 bg-black px-4">
           <h1 className="text-xl font-extrabold">Profile</h1>
         </header>
         <div className="flex min-h-[70vh] flex-col items-center justify-center px-8 text-center">
-          <div className="flex h-20 w-20 items-center justify-center rounded-3xl border border-white/10 bg-white/[.04] backdrop-blur-2xl">
+          <div className="flex h-20 w-20 items-center justify-center rounded-3xl border border-white/10 bg-[#080808]">
             <UserRound size={36} className="text-xmuted" />
           </div>
           <h2 className="mt-6 text-2xl font-black">Create your profile</h2>
@@ -242,7 +242,7 @@ export function Account({ onLogin, profileUsername }: { onLogin: () => void; pro
         <header className="h-14 border-b border-border bg-card" />
         <div className="mx-auto max-w-3xl animate-pulse px-3 py-4 sm:px-5">
           <div className="overflow-hidden rounded-lg border border-border bg-card">
-            <div className="h-32 bg-white/[.035] sm:h-44" />
+            <div className="h-32 bg-[#080808] sm:h-44" />
             <div className="px-5 pb-6">
               <div className="-mt-10 size-24 rounded-full border-4 border-card bg-zinc-800 sm:-mt-14 sm:size-28" />
               <div className="mt-4 h-6 w-44 rounded bg-zinc-800" />
@@ -489,13 +489,13 @@ export function Account({ onLogin, profileUsername }: { onLogin: () => void; pro
         {isOwnProfile ? (
           <section className="mt-2 rounded-lg border border-border bg-card p-4">
             <div className="flex items-start gap-3">
-              <span className={`grid size-10 shrink-0 place-items-center rounded-lg border ${premium?.isPremium ? "border-sky-300/20 bg-sky-400/10 text-sky-300" : "border-white/10 bg-white/[.04] text-zinc-400"}`}>
+              <span className={`grid size-10 shrink-0 place-items-center rounded-lg border ${premium?.isPremium ? "border-sky-300/20 bg-sky-400/10 text-sky-300" : "border-white/10 bg-[#080808] text-zinc-400"}`}>
                 {premium?.isPremium ? <Sparkles size={18} /> : <LockKeyhole size={18} />}
               </span>
               <div className="min-w-0 flex-1">
                 <div className="flex flex-wrap items-center gap-2">
                   <h3 className="text-sm font-black">TradeWay Premium</h3>
-                  {premium?.isPremium ? <span className="rounded-full bg-sky-400/10 px-2 py-0.5 text-[10px] font-black text-sky-300">Premium active</span> : <span className="rounded-full bg-white/[.06] px-2 py-0.5 text-[10px] font-black text-zinc-400">Free plan</span>}
+                  {premium?.isPremium ? <span className="rounded-full bg-sky-400/10 px-2 py-0.5 text-[10px] font-black text-sky-300">Premium active</span> : <span className="rounded-full bg-[#080808] px-2 py-0.5 text-[10px] font-black text-zinc-400">Free plan</span>}
                 </div>
                 <p className="mt-1 text-xs leading-5 text-zinc-500">
                   Verified badge, AI trade coaching and MT5 Auto Sync live in one clean workspace.
@@ -588,7 +588,7 @@ export function Account({ onLogin, profileUsername }: { onLogin: () => void; pro
                     <h4 className="mt-1 truncate text-xs font-bold">{item.title}</h4>
                   </div>
                   </button>
-                  {isOwnProfile ? <button onClick={() => void removeAchievement(item.id)} className="absolute right-2 top-2 grid size-8 place-items-center rounded-lg bg-black/70 text-zinc-300 opacity-100 backdrop-blur sm:opacity-0 sm:group-hover:opacity-100" aria-label="Remove achievement"><Trash2 size={14} /></button> : null}
+                  {isOwnProfile ? <button onClick={() => void removeAchievement(item.id)} className="absolute right-2 top-2 grid size-8 place-items-center rounded-lg bg-black text-zinc-300 opacity-100 sm:opacity-0 sm:group-hover:opacity-100" aria-label="Remove achievement"><Trash2 size={14} /></button> : null}
                 </article>
               ))}
             </div>
@@ -641,11 +641,11 @@ export function Account({ onLogin, profileUsername }: { onLogin: () => void; pro
       <Dialog open={editOpen && Boolean(draftProfile)} onOpenChange={setEditOpen}>
         {draftProfile ? (
           <DialogContent className="max-h-[calc(100dvh-.5rem)] gap-0 overflow-y-auto p-0 sm:max-w-xl" showCloseButton>
-            <DialogHeader className="sticky top-0 z-20 border-b border-white/8 bg-[#171717]/95 px-5 py-4 text-left backdrop-blur-xl">
+            <DialogHeader className="sticky top-0 z-20 border-b border-white/8 bg-black px-5 py-4 text-left">
               <DialogTitle>Edit profile</DialogTitle>
               <DialogDescription>Profil ma&apos;lumotlari va trading uslubingizni yangilang.</DialogDescription>
             </DialogHeader>
-            <div className="h-36 bg-gradient-to-br from-zinc-800 via-zinc-900 to-black" />
+            <div className="h-36 bg-[#080808]" />
             <div className="px-5 pb-6">
               <div className="-mt-14 flex items-end">
                 <div className="relative">
@@ -665,7 +665,7 @@ export function Account({ onLogin, profileUsername }: { onLogin: () => void; pro
                 <div className="grid gap-2"><Label htmlFor="profile-bio">Bio</Label><Textarea id="profile-bio" value={draftProfile.bio} onChange={(event) => setDraftProfile({ ...draftProfile, bio: event.target.value })} maxLength={160} className="min-h-28" placeholder="Write something about your trading journey..." /><span className="text-right text-[11px] text-slate-600">{draftProfile.bio.length}/160</span></div>
               </div>
             </div>
-            <DialogFooter className="sticky bottom-0 border-t border-white/8 bg-[#171717]/95 px-5 py-4 backdrop-blur-xl">
+            <DialogFooter className="sticky bottom-0 border-t border-white/8 bg-black px-5 py-4">
               <Button type="button" variant="outline" onClick={() => setEditOpen(false)}>Cancel</Button>
               <Button type="button" onClick={() => void save()}>{saved ? <Check size={17} /> : null}{saved ? "Saved" : "Save changes"}</Button>
             </DialogFooter>
@@ -673,7 +673,7 @@ export function Account({ onLogin, profileUsername }: { onLogin: () => void; pro
         ) : null}
       </Dialog>
       {connectionsOpen ? (
-        <div className="fixed inset-0 z-[9999] flex items-start justify-center overflow-y-auto bg-black/70 p-3 pt-[max(1rem,env(safe-area-inset-top))] backdrop-blur-md sm:items-center sm:p-4">
+        <div className="fixed inset-0 z-[9999] flex items-start justify-center overflow-y-auto bg-black/92 p-3 pt-[max(1rem,env(safe-area-inset-top))] sm:items-center sm:p-4">
           <div className="absolute inset-0" onClick={() => setConnectionsOpen(null)} aria-hidden="true" />
           <section className="relative z-10 w-full max-w-xl overflow-hidden rounded-[30px] border border-white/10 bg-[#171717]/98 text-white shadow-2xl shadow-black/80">
             <header className="flex items-center gap-3 border-b border-white/8 px-4 py-4">
@@ -681,7 +681,7 @@ export function Account({ onLogin, profileUsername }: { onLogin: () => void; pro
                 <h2 className="text-xl font-black leading-6">{connectionsOpen === "followers" ? "Followers" : "Following"}</h2>
                 <p className="mt-1 truncate text-xs text-slate-500">@{profile.username}</p>
               </div>
-              <button onClick={() => setConnectionsOpen(null)} className="grid h-10 w-10 place-items-center rounded-2xl bg-white/[.05] text-slate-400 hover:text-white" aria-label="Close">
+              <button onClick={() => setConnectionsOpen(null)} className="grid h-10 w-10 place-items-center rounded-2xl bg-[#080808] text-slate-400 hover:bg-[#111111] hover:text-white" aria-label="Close">
                 <X size={18} />
               </button>
             </header>

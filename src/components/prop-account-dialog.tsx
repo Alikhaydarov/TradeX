@@ -322,7 +322,7 @@ export function PropAccountDialog({
             {step === 2 ? (
               <div className="space-y-5">
                 {!premiumStatus.isPremium ? (
-                  <div className="mx-auto max-w-2xl overflow-hidden rounded-[24px] border border-white/10 bg-[#050505] shadow-[0_22px_50px_rgba(0,0,0,.4)]">
+                  <div className="mx-auto max-w-2xl overflow-hidden rounded-[24px] border border-white/10 bg-black shadow-[0_22px_50px_rgba(0,0,0,.4)]">
                     <div className="flex flex-col gap-4 px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-5">
                       <div className="min-w-0">
                         <p className="text-[10px] font-black uppercase tracking-[0.22em] text-sky-200/75">TradeWay Premium</p>
@@ -346,7 +346,7 @@ export function PropAccountDialog({
                   </div>
                 ) : null}
 
-                <div className="mx-auto max-w-2xl rounded-2xl border border-white/10 bg-[#0b0b0b] p-3">
+                <div className="mx-auto max-w-2xl rounded-2xl border border-white/10 bg-black p-3">
                   <div className="flex items-center gap-2 text-sm text-zinc-400">
                     <Search size={16} />
                     <span className="font-semibold">Premium connectors and CSV imports</span>
@@ -357,7 +357,7 @@ export function PropAccountDialog({
                 </div>
 
                 <div className="mx-auto max-w-md">
-                  <div className="flex h-12 items-center gap-3 rounded-2xl border border-white/10 bg-black px-4">
+                  <div className="flex h-12 items-center gap-3 rounded-2xl border border-white/10 bg-[#050505] px-4">
                     <Search size={16} className="text-zinc-500" />
                     <input
                       value={platformQuery}
@@ -379,10 +379,10 @@ export function PropAccountDialog({
                       className={cn(
                         "group relative min-h-[196px] rounded-[28px] border p-4 text-left shadow-[0_18px_48px_rgba(0,0,0,.22)] transition",
                         locked
-                          ? "border-sky-400/20 bg-[#0b0b0b] hover:border-sky-300/30 hover:bg-[#121212]"
+                          ? "border-sky-400/20 bg-[#050505] hover:border-sky-300/30 hover:bg-[#111111]"
                           : item.mode === "coming"
                             ? "border-white/5 bg-[#080808] opacity-70"
-                            : "border-white/10 bg-[#0b0b0b] hover:border-white/25 hover:bg-[#121212]"
+                            : "border-white/10 bg-[#050505] hover:border-white/25 hover:bg-[#111111]"
                       )}
                     >
                       <div className={cn("transition", locked ? "pointer-events-none blur-[2px] opacity-45" : "")}>
@@ -415,7 +415,7 @@ export function PropAccountDialog({
                           </span>
                           <span className="mt-3 text-sm font-black text-white">Premium connector</span>
                           <span className="mt-1 text-[11px] font-medium leading-5 text-zinc-300">Upgrade to unlock {item.name} and advanced sync.</span>
-                          <span className="mt-4 inline-flex rounded-full border border-white/12 bg-[#111111] px-3 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-white">Upgrade now</span>
+                          <span className="mt-4 inline-flex rounded-full border border-white/12 bg-[#050505] px-3 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-white">Upgrade now</span>
                         </span>
                       ) : null}
                       {locked ? <span className="absolute right-4 top-4 grid size-8 place-items-center rounded-2xl border border-sky-300/15 bg-sky-400/10 text-sky-200"><LockKeyhole size={14} /></span> : null}
@@ -428,9 +428,9 @@ export function PropAccountDialog({
             {step === 3 ? (
               <div className="grid overflow-hidden rounded-2xl border border-white/10 bg-black md:grid-cols-[1.1fr_.9fr]">
                 <div className="space-y-4 p-5 sm:p-6">
-                  <div className="rounded-2xl border border-white/10 bg-[#0b0b0b] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,.03)]">
+                  <div className="rounded-2xl border border-white/10 bg-[#050505] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,.03)]">
                     <div className="flex flex-wrap items-center gap-2">
-                      <span className="rounded-full bg-[#111111] px-2.5 py-1 text-[10px] font-black uppercase tracking-wider text-zinc-300">
+                      <span className="rounded-full bg-[#080808] px-2.5 py-1 text-[10px] font-black uppercase tracking-wider text-zinc-300">
                         {accountType === "prop" ? "Prop account" : "Real account"}
                       </span>
                       {accountKind === "automatic" ? <PlatformLogoBadge platform={selectedPlatform.id} compact /> : null}
@@ -474,7 +474,7 @@ export function PropAccountDialog({
                   ) : null}
 
                   {accountKind === "manual" ? (
-                    <div className="rounded-xl border border-white/10 bg-[#0b0b0b] p-4 text-xs leading-5 text-zinc-400">
+                    <div className="rounded-xl border border-white/10 bg-[#050505] p-4 text-xs leading-5 text-zinc-400">
                       Manual account creates a clean journal without connector setup. You can add trades from the journal after creating it.
                     </div>
                   ) : null}
