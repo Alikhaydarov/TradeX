@@ -11,14 +11,13 @@ const LABELS: Partial<Record<Section, string>> = {
   calendar: "Calendar",
   trades: "Trades",
   analytics: "Analytics",
-  bible: "Strategies",
   settings: "Settings",
   account: "Profile",
   pricing: "Pricing",
   admin: "Admin",
 };
 
-const ACCOUNT_SCOPED_SECTIONS = new Set<Section>(["dashboard", "calendar", "trades", "analytics", "bible", "settings"]);
+const ACCOUNT_SCOPED_SECTIONS = new Set<Section>(["dashboard", "calendar", "trades", "analytics", "settings"]);
 
 function openMobileDrawer() {
   window.dispatchEvent(new Event("tradox:open-mobile-menu"));

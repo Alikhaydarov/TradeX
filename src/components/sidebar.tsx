@@ -133,7 +133,7 @@ export function Sidebar({
     onChange("account");
   };
 
-  const AccountSwitcher = ({ mobile = false }: { mobile?: boolean }) => (
+  const renderAccountSwitcher = (mobile = false) => (
     <DropdownMenu open={accountSwitcherOpen} onOpenChange={setAccountSwitcherOpen}>
       <div className={`${mobile ? "flex w-full items-center gap-2.5 rounded-2xl border border-white/10 bg-[#0b0b0b] p-3" : "mt-4 flex w-full items-center gap-3 rounded-[1rem] border border-white/8 bg-[#050505] p-4 transition hover:bg-white/[.03]"}`}>
         <button type="button" onClick={openAccountsPage} className="flex min-w-0 flex-1 items-center gap-3 text-left">
@@ -218,7 +218,7 @@ export function Sidebar({
           </span>
         </button>
 
-        <AccountSwitcher />
+        {renderAccountSwitcher()}
 
         <p className="mt-6 px-3 text-[10px] font-black uppercase tracking-[0.16em] text-zinc-600">Workspace</p>
         <nav className="mt-2 space-y-1.5">
@@ -303,7 +303,7 @@ export function Sidebar({
               </div>
 
               <div className="border-b border-white/8 px-4 py-4">
-                <AccountSwitcher mobile />
+                {renderAccountSwitcher(true)}
               </div>
 
               <div className="flex-1 overflow-y-auto px-3 py-4">
