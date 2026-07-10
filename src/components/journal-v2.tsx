@@ -407,7 +407,7 @@ export function JournalV2({
           </div>
         )
       ) : (
-        <Accounts summaries={summaries} deleting={deleting} onAdd={() => setAccountOpen(true)} onOpen={(id) => { setActiveAccount(id); window.history.pushState(null, "", "/dashboard"); window.dispatchEvent(new Event("popstate")); }} onDelete={removeAccount} />
+        <Accounts activeAccountId={activeAccountId} summaries={summaries} deleting={deleting} onAdd={() => setAccountOpen(true)} onOpen={(id) => { setActiveAccount(id); window.history.pushState(null, "", "/dashboard"); window.dispatchEvent(new Event("popstate")); }} onDelete={removeAccount} />
       )}
       <PropAccountDialog open={accountOpen} saving={saving} onOpenChange={setAccountOpen} onSave={createAccount} />
       <TradeReviewModal open={tradeOpen} saving={saving} account={account} onOpenChange={setTradeOpen} onSave={addTrade} />
@@ -416,21 +416,14 @@ export function JournalV2({
 }
 
 // Accounts list.
-function Accounts({ summaries, deleting, onAdd, onOpen, onDelete }: { summaries: Summary[]; deleting: string | null; onAdd: () => void; onOpen: (id: string) => void; onDelete: (a: PropAccount) => void }) {
+function Accounts({ activeAccountId, summaries, deleting, onAdd, onOpen, onDelete }: { activeAccountId: string | null; summaries: Summary[]; deleting: string | null; onAdd: () => void; onOpen: (id: string) => void; onDelete: (a: PropAccount) => void }) {
   return (
-    <div className="animate-page-in mx-auto max-w-[1780px] space-y-6 p-5 lg:p-7">
-      <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
+    <div className="animate-page-in mx-auto max-w-[1880px] space-y-5 p-4 lg:p-6">
+      <div className="flex flex-col gap-3 md:flex-row md:items-center">
         <div className="min-w-0">
-          <div className="mb-2 flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.22em] text-zinc-500">
-            <span className="grid size-7 place-items-center rounded-xl border border-white/8 bg-white/[.04]">
-              <ShieldCheck size={14} className="text-zinc-300" />
-            </span>
-            Trading workspace
-          </div>
-          <h1 className="text-[2rem] font-black tracking-tight text-white">Accounts</h1>
-          <p className="mt-1 max-w-2xl text-sm text-zinc-500">
-            Select an account card to open its dashboard workspace.
-          </p>
+          <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-zinc-500">Workspace / Accounts</p>
+          <h1 className="mt-1 text-xl font-black tracking-tight text-white sm:text-2xl">Select account</h1>
+          <p className="mt-1 text-sm text-zinc-500">Choose one card and we load its dashboard, calendar, trades and analytics.</p>
         </div>
         <div className="flex flex-wrap items-center gap-2 lg:ml-auto">
           <Button onClick={onAdd} className="h-11 rounded-2xl bg-white px-4 text-black hover:bg-zinc-200">
@@ -453,21 +446,21 @@ function Accounts({ summaries, deleting, onAdd, onOpen, onDelete }: { summaries:
           </div>
         </div>
       ) : (
-        <section className="grid gap-4 md:grid-cols-2 2xl:grid-cols-3">
+        <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
           {summaries.map((summary) => (
-            <AccountCard key={summary.account.id} s={summary} deleting={deleting} onOpen={onOpen} onDelete={onDelete} />
+            <AccountCard key={summary.account.id} active={activeAccountId === summary.account.id} s={summary} deleting={deleting} onOpen={onOpen} onDelete={onDelete} />
           ))}
           <button
             type="button"
             onClick={onAdd}
-            className="group grid min-h-[255px] place-items-center rounded-[28px] border border-dashed border-white/10 bg-[#17181b] text-center transition hover:border-white/20 hover:bg-white/[.03]"
+            className="group grid min-h-[228px] place-items-center rounded-[24px] border border-dashed border-white/10 bg-[#0b0b0b] text-center transition hover:border-white/20 hover:bg-white/[.03]"
           >
             <div>
               <span className="mx-auto grid size-14 place-items-center rounded-2xl border border-white/10 bg-black/20 text-zinc-400 transition group-hover:text-white">
                 <Plus size={24} />
               </span>
-              <p className="mt-4 text-2xl font-black text-white">Add Account</p>
-              <p className="mt-1 text-sm text-zinc-500">Create a new prop or real account card.</p>
+              <p className="mt-4 text-xl font-black text-white">Add Account</p>
+              <p className="mt-1 text-sm text-zinc-500">Create prop or real account.</p>
             </div>
           </button>
         </section>
@@ -476,7 +469,7 @@ function Accounts({ summaries, deleting, onAdd, onOpen, onDelete }: { summaries:
   );
 }
 
-function AccountCard({ s, deleting, onOpen, onDelete, compact = false }: { s: Summary; deleting: string | null; onOpen: (id: string) => void; onDelete: (a: PropAccount) => void; compact?: boolean }) {
+function AccountCard({ active = false, s, deleting, onOpen, onDelete, compact = false }: { active?: boolean; s: Summary; deleting: string | null; onOpen: (id: string) => void; onDelete: (a: PropAccount) => void; compact?: boolean }) {
   const statusColor: Record<string, string> = { Processing: "text-sky-300 bg-sky-400/10 border-sky-400/20", Active: "text-emerald-400 bg-emerald-400/10 border-emerald-400/20", Passed: "text-zinc-300 bg-white/[.06] border-white/15", Failed: "text-rose-400 bg-rose-400/10 border-rose-400/20", Paused: "text-amber-400 bg-amber-400/10 border-amber-400/20" };
 
   return (
@@ -485,7 +478,7 @@ function AccountCard({ s, deleting, onOpen, onDelete, compact = false }: { s: Su
       tabIndex={0}
       onClick={() => onOpen(s.account.id)}
       onKeyDown={e => { if (e.key === "Enter" || e.key === " ") onOpen(s.account.id); }}
-      className={`prop-card-glow group relative cursor-pointer overflow-hidden border border-white/10 bg-white/[.035] transition-all duration-200 hover:-translate-y-0.5 hover:border-white/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/30 ${compact ? "rounded-[24px]" : "rounded-[28px]"}`}
+      className={`prop-card-glow group relative cursor-pointer overflow-hidden border transition-all duration-200 hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/30 ${active ? "border-white/20 bg-white/[.05] ring-1 ring-white/10" : "border-white/10 bg-white/[.035] hover:border-white/20"} ${compact ? "rounded-[22px]" : "rounded-[24px]"}`}
     >
       {/* Top bar accent */}
       <div className="absolute inset-x-0 top-0 h-[1px] bg-gradient-to-r from-transparent via-white/20 to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
@@ -525,10 +518,10 @@ function AccountCard({ s, deleting, onOpen, onDelete, compact = false }: { s: Su
         </div>
 
         {/* PnL */}
-        <div className={`${compact ? "mt-3" : "mt-4"} flex items-end justify-between`}>
+        <div className={`${compact ? "mt-3" : "mt-3.5"} flex items-end justify-between`}>
           <div>
             <p className="text-[10px] uppercase tracking-wider text-[#8a8a8a]">Result</p>
-            <p className={`font-mono ${compact ? "text-xl" : "text-2xl"} font-black ${s.pnl >= 0 ? "text-emerald-400" : "text-rose-400"}`}>
+            <p className={`font-mono ${compact ? "text-xl" : "text-[1.7rem]"} font-black ${s.pnl >= 0 ? "text-emerald-400" : "text-rose-400"}`}>
               {s.pnl >= 0 ? "+" : ""}{cash.format(s.pnl)}
             </p>
           </div>
@@ -549,14 +542,14 @@ function AccountCard({ s, deleting, onOpen, onDelete, compact = false }: { s: Su
         </div>
 
         {/* Progress bars */}
-        <div className={`${compact ? "mt-3" : "mt-4"} space-y-2.5`}>
+        <div className={`${compact ? "mt-3" : "mt-3.5"} space-y-2.5`}>
           <ProgressBar label="Profit target" value={s.target} color="bg-emerald-500" />
           <ProgressBar label="Drawdown used" value={s.dd} color="bg-rose-500" />
         </div>
       </div>
 
-      <div className="flex items-center justify-between border-t border-[#2a2a2a] px-5 py-3">
-        <span className="text-xs text-[#8a8a8a]">Open dashboard</span>
+      <div className="flex items-center justify-between border-t border-[#2a2a2a] px-4 py-3">
+        <span className="text-xs text-[#8a8a8a]">{active ? "Selected workspace" : "Open workspace"}</span>
         <ChevronRight size={16} className="text-[#8a8a8a] transition-transform group-hover:translate-x-0.5" />
       </div>
     </div>
