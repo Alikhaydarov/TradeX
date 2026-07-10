@@ -1,7 +1,11 @@
 $ErrorActionPreference = 'Stop'
 
+param(
+  [string]$Revision = 'main'
+)
+
 $base = 'C:\mt5-api'
-$repoBase = 'https://raw.githubusercontent.com/Alikhaydarov/TradeX/main/tools/mt5-vps'
+$repoBase = "https://raw.githubusercontent.com/Alikhaydarov/TradeX/$Revision/tools/mt5-vps"
 
 New-Item -ItemType Directory -Force -Path $base | Out-Null
 
