@@ -6,9 +6,6 @@ export type Section =
   | "trades"
   | "analytics"
   | "settings"
-  | "bible"
-  | "chat"
-  | "backtest"
   | "account"
   | "pricing"
   | "admin";

@@ -17,6 +17,7 @@ import {
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { apiRequest } from "@/lib/api-client";
 import { cn } from "@/lib/utils";
+import { workspaceSections } from "./section-config";
 import { Button } from "./ui/button";
 import type { Section } from "./types";
 
@@ -238,8 +239,7 @@ export function JournalAiNudges({ section }: { section: Section }) {
   const dashboard = useMemo(() => buildCoachDashboard(entries), [entries]);
   const warningCount = dashboard.alerts.filter((nudge) => nudge.type === "warning").length;
 
-  const journalSections: Section[] = ["accounts", "dashboard", "calendar", "trades", "analytics", "bible"];
-  const isWorkspaceSection = journalSections.includes(section);
+  const isWorkspaceSection = workspaceSections.includes(section);
 
   const load = useCallback(async () => {
     if (!isWorkspaceSection) return;

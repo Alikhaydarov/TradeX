@@ -15,57 +15,9 @@ import { Sidebar } from "./sidebar";
 import { WorkspaceTopbar } from "./workspace-topbar";
 import { TradeWayLoginLanding } from "./tradeway-login-landing";
 import { useAuth } from "./auth-context";
+import { cachedSections, getCurrentProfileUsername, getCurrentSection, pathFromSection } from "./section-config";
 import { apiRequest } from "@/lib/api-client";
 import type { Section } from "./types";
-
-const reservedPaths = new Set(["", "chat", "accounts", "dashboard", "calendar", "trades", "analytics", "settings", "strategies", "backtest", "profile", "account", "pricing", "admin"]);
-
-function usernameFromPath(pathname: string) {
-  const first = pathname.replace(/^\//, "").split("/")[0] ?? "";
-  if (reservedPaths.has(first)) return "";
-  return first.toLowerCase();
-}
-
-function sectionFromPath(pathname: string): Section {
-  if (pathname.startsWith("/accounts")) return "accounts";
-  if (pathname.startsWith("/dashboard")) return "dashboard";
-  if (pathname.startsWith("/calendar")) return "calendar";
-  if (pathname.startsWith("/trades")) return "trades";
-  if (pathname.startsWith("/analytics")) return "analytics";
-  if (pathname.startsWith("/settings")) return "settings";
-  if (pathname.startsWith("/strategies")) return "bible";
-  if (pathname.startsWith("/pricing")) return "pricing";
-  if (pathname.startsWith("/profile") || pathname.startsWith("/account") || usernameFromPath(pathname)) return "account";
-  if (pathname.startsWith("/admin")) return "admin";
-  return "feed";
-}
-
-function pathFromSection(section: Section) {
-  if (section === "accounts") return "/accounts";
-  if (section === "dashboard") return "/dashboard";
-  if (section === "calendar") return "/calendar";
-  if (section === "trades") return "/trades";
-  if (section === "analytics") return "/analytics";
-  if (section === "settings") return "/settings";
-  if (section === "bible") return "/strategies";
-  if (section === "account") return "/profile";
-  if (section === "pricing") return "/pricing";
-  if (section === "admin") return "/admin";
-  return "/";
-}
-
-function getCurrentSection() {
-  if (typeof window === "undefined") return "feed" as Section;
-  return sectionFromPath(window.location.pathname);
-}
-
-function getCurrentProfileUsername() {
-  if (typeof window === "undefined") return "";
-  return usernameFromPath(window.location.pathname);
-}
-
-const cachedSections: Section[] = ["feed", "accounts", "dashboard", "calendar", "trades", "analytics", "settings", "bible", "account", "pricing", "admin"];
-
 function AuthGate({ onLogin }: { onLogin: () => void }) {
   return <TradeWayLoginLanding onLogin={onLogin} />;
 }
@@ -85,16 +37,12 @@ export function AppShell() {
     trades: section === "trades",
     analytics: section === "analytics",
     settings: section === "settings",
-    bible: section === "bible",
-    chat: false,
-    backtest: false,
     account: section === "account",
     pricing: section === "pricing",
     admin: section === "admin",
   }));
   const { user } = useAuth();
   const openLogin = () => setAuthOpen(true);
-  const chatOpen = false;
 
   useEffect(() => {
     setVisitedSections((current) =>
@@ -187,7 +135,6 @@ export function AppShell() {
     if (item === "trades") return <Journal onLogin={openLogin} mode="workspace" forcedTab="trades" />;
     if (item === "analytics") return <Journal onLogin={openLogin} mode="workspace" forcedTab="analytics" />;
     if (item === "settings") return <AccountSettings onLogin={openLogin} />;
-    if (item === "bible") return <Journal onLogin={openLogin} mode="workspace" forcedTab="bible" />;
     if (item === "account") return <Account onLogin={openLogin} profileUsername={profileUsername || undefined} />;
     if (item === "pricing") return <Pricing />;
     if (item === "admin" && isAdmin) return <AdminPanel onLogin={openLogin} />;
@@ -225,11 +172,10 @@ export function AppShell() {
           }}
           onLogin={openLogin}
           user={user}
-          hideMobile={chatOpen}
           isAdmin={isAdmin}
         />
         <div className="hidden w-[272px] shrink-0 lg:block" aria-hidden="true" />
-        <main className={chatOpen ? "fixed inset-0 z-50 min-w-0 flex-1 overflow-hidden bg-[#000000] lg:static lg:z-auto lg:min-h-[calc(100dvh-2rem)] lg:rounded-[1rem] lg:border lg:border-white/8" : "min-h-[100dvh] min-w-0 flex-1 overflow-x-hidden bg-[#000000] lg:min-h-[calc(100dvh-2rem)] lg:rounded-[1rem] lg:border lg:border-white/8"}>
+        <main className="min-h-[100dvh] min-w-0 flex-1 overflow-x-hidden bg-[#000000] lg:min-h-[calc(100dvh-2rem)] lg:rounded-[1rem] lg:border lg:border-white/8">
           <WorkspaceTopbar section={section} />
           <div className="block min-h-full">
             {cachedSections.map((item) =>
