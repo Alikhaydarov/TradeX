@@ -17,43 +17,10 @@ foreach ($task in $legacyTasks) {
   schtasks /Delete /TN $task /F | Out-Null
 }
 
-$bootAction = New-ScheduledTaskAction `
-  -Execute "powershell.exe" `
-  -Argument "-NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -File `"$watchdog`""
-
-$watchdogAction = New-ScheduledTaskAction `
-  -Execute "powershell.exe" `
-  -Argument "-NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -File `"$watchdog`""
-
-$bootTrigger = New-ScheduledTaskTrigger -AtStartup
-$repeatTrigger = New-ScheduledTaskTrigger -Once -At (Get-Date).Date
-$repeatTrigger.Repetition = New-ScheduledTaskRepetitionSettingsSet -Interval (New-TimeSpan -Minutes 5) -Duration (New-TimeSpan -Days 3650)
-
-$settings = New-ScheduledTaskSettingsSet `
-  -AllowStartIfOnBatteries `
-  -DontStopIfGoingOnBatteries `
-  -StartWhenAvailable `
-  -MultipleInstances IgnoreNew
-
-Register-ScheduledTask `
-  -TaskName "TradeWay MT5 StartAtBoot" `
-  -Action $bootAction `
-  -Trigger $bootTrigger `
-  -Settings $settings `
-  -RunLevel Highest `
-  -Force `
-  -Description "TradeWay MT5 starts the watchdog automatically when Windows boots." | Out-Null
-
-Register-ScheduledTask `
-  -TaskName "TradeWay MT5 Watchdog" `
-  -Action $watchdogAction `
-  -Trigger $repeatTrigger `
-  -Settings $settings `
-  -RunLevel Highest `
-  -Force `
-  -Description "TradeWay MT5 checks every 5 minutes and revives the bridge if needed." | Out-Null
-
-Start-ScheduledTask -TaskName "TradeWay MT5 StartAtBoot"
+$taskCommand = "powershell.exe -NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -File `"$watchdog`""
+schtasks /Create /TN "TradeWay MT5 StartAtBoot" /SC ONSTART /RL HIGHEST /RU SYSTEM /TR $taskCommand /F | Out-Null
+schtasks /Create /TN "TradeWay MT5 Watchdog" /SC MINUTE /MO 5 /RL HIGHEST /RU SYSTEM /TR $taskCommand /F | Out-Null
+schtasks /Run /TN "TradeWay MT5 StartAtBoot" | Out-Null
 
 Write-Host "Scheduled tasks installed:"
 Write-Host "  TradeWay MT5 StartAtBoot"
