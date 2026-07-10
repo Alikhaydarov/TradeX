@@ -15,22 +15,39 @@ type Connection = {
   auto_sync: boolean;
 };
 
+type ConnectorStatus = {
+  configured: boolean;
+  reachable: boolean;
+  mode: "mt5_api" | "mt5_bridge";
+  serviceOk: boolean;
+  syncIntervalSeconds: number | null;
+  accountFetch: unknown;
+  error: string | null;
+};
+
 export function Mt5Settings({ account, onSynced }: { account: PropAccount; onSynced: () => Promise<void> }) {
   const [connection, setConnection] = useState<Connection | null>(null);
   const [login, setLogin] = useState("");
   const [password, setPassword] = useState("");
   const [server, setServer] = useState("");
   const [bridgeConfigured, setBridgeConfigured] = useState(false);
+  const [connectorStatus, setConnectorStatus] = useState<ConnectorStatus | null>(null);
   const [busy, setBusy] = useState<"save" | "disconnect" | "sync" | null>(null);
   const [message, setMessage] = useState("");
   const [isVerified, setIsVerified] = useState<boolean | null>(null);
 
   const loadConnection = useCallback(async () => {
-    const { connection: c, isVerified: v, bridgeConfigured: m } = await apiRequest<{ connection: Connection | null; isVerified: boolean; bridgeConfigured: boolean }>(
+    const { connection: c, isVerified: v, bridgeConfigured: m, connectorStatus: status } = await apiRequest<{
+      connection: Connection | null;
+      isVerified: boolean;
+      bridgeConfigured: boolean;
+      connectorStatus: ConnectorStatus | null;
+    }>(
       `/api/prop-accounts/${account.id}/mt5`
     );
     setIsVerified(v);
     setBridgeConfigured(m);
+    setConnectorStatus(status);
     if (!c) {
       setConnection(null);
       return;
@@ -126,8 +143,39 @@ export function Mt5Settings({ account, onSynced }: { account: PropAccount; onSyn
     ? new Date(connection.last_synced_at).toLocaleString("uz-UZ")
     : null;
 
+  const workerStateLabel = !connectorStatus?.configured
+    ? "Not configured"
+    : connectorStatus.reachable
+      ? "Worker alive"
+      : "Worker offline";
+
+  const workerStateClass = !connectorStatus?.configured
+    ? "text-amber-400"
+    : connectorStatus.reachable
+      ? "text-emerald-400"
+      : "text-rose-400";
+
   return (
     <div className="space-y-3 px-3 pb-4 sm:space-y-4 sm:px-4">
+      <div className="rounded-2xl border border-[#2a2a2a] bg-[#141414] px-3 py-3 sm:px-4">
+        <div className="flex flex-wrap items-center gap-2">
+          <span className={`text-xs font-semibold ${workerStateClass}`}>{workerStateLabel}</span>
+          <span className="rounded-full border border-white/10 bg-white/[.03] px-2 py-0.5 text-[10px] font-semibold text-zinc-500">
+            {connectorStatus?.mode === "mt5_api" ? "VPS API" : "Legacy bridge"}
+          </span>
+          {connectorStatus?.syncIntervalSeconds ? (
+            <span className="rounded-full border border-white/10 bg-white/[.03] px-2 py-0.5 text-[10px] font-semibold text-zinc-500">
+              {connectorStatus.syncIntervalSeconds}s loop
+            </span>
+          ) : null}
+        </div>
+        <p className="mt-2 text-[11px] leading-5 text-zinc-500">
+          {connectorStatus?.reachable
+            ? "TradeWay VPS worker is reachable. Auto sync should continue without manually pressing Start."
+            : (connectorStatus?.error || "Worker status is unavailable right now.")}
+        </p>
+      </div>
+
       {connection && (
         <div className={`rounded-2xl border px-3 py-3 text-sm sm:px-4 ${
           connection.status === "connected"
@@ -218,9 +266,9 @@ export function Mt5Settings({ account, onSynced }: { account: PropAccount; onSyn
 
       {!bridgeConfigured && (
         <div className="rounded-2xl border border-amber-500/15 bg-amber-500/5 px-3 py-3 sm:px-4">
-          <p className="text-xs font-semibold text-amber-400">MT5 bridge is not configured</p>
+          <p className="text-xs font-semibold text-amber-400">MT5 worker is not configured</p>
           <p className="mt-1 break-words text-[11px] leading-5 text-amber-600">
-            Credentials are saved, but live history import needs <code className="rounded bg-black/30 px-1">MT5_BRIDGE_URL</code> and <code className="rounded bg-black/30 px-1">MT5_BRIDGE_TOKEN</code>.
+            Credentials are saved, but live history import needs <code className="rounded bg-black/30 px-1">MT5_API_URL</code> or legacy bridge env values.
           </p>
         </div>
       )}

@@ -2,16 +2,86 @@ import { authenticateRequest, badRequest, serverError, unauthorized } from "@/li
 import { encryptSecret } from "@/lib/backend/crypto";
 import { enqueueMt5SyncJob } from "@/lib/backend/mt5-sync-queue";
 import { getPremiumStatus, requirePremium } from "@/lib/backend/premium";
-import { connectMt5Api, isMt5ApiConfigured } from "@/lib/server/mt5-api";
+import { connectMt5Api, getMt5ApiStatus, isMt5ApiConfigured } from "@/lib/server/mt5-api";
 
 export const runtime = "nodejs";
+
+const legacyBridgeBaseUrl = (process.env.MT5_BRIDGE_BASE_URL || process.env.MT5_BRIDGE_URL || "").replace(/\/$/, "");
+const legacyBridgeToken = process.env.MT5_BRIDGE_TOKEN || "";
+
+async function getConnectorStatus() {
+  if (isMt5ApiConfigured()) {
+    try {
+      const status = await getMt5ApiStatus() as Record<string, unknown> | null;
+      return {
+        configured: true,
+        reachable: true,
+        mode: "mt5_api" as const,
+        serviceOk: true,
+        syncIntervalSeconds: typeof status?.syncIntervalSeconds === "number" ? status.syncIntervalSeconds : null,
+        accountFetch: status?.accountFetch ?? null,
+        error: null,
+      };
+    } catch (error) {
+      return {
+        configured: true,
+        reachable: false,
+        mode: "mt5_api" as const,
+        serviceOk: false,
+        syncIntervalSeconds: null,
+        accountFetch: null,
+        error: error instanceof Error ? error.message : "MT5 API status check failed.",
+      };
+    }
+  }
+
+  if (!legacyBridgeBaseUrl || !legacyBridgeToken) {
+    return {
+      configured: false,
+      reachable: false,
+      mode: "mt5_bridge" as const,
+      serviceOk: false,
+      syncIntervalSeconds: null,
+      accountFetch: null,
+      error: "MT5 bridge is not configured.",
+    };
+  }
+
+  try {
+    const response = await fetch(`${legacyBridgeBaseUrl}/status`, {
+      headers: { Authorization: `Bearer ${legacyBridgeToken}` },
+      cache: "no-store",
+      signal: AbortSignal.timeout(15000),
+    });
+    const payload = await response.json().catch(() => null) as Record<string, unknown> | null;
+    return {
+      configured: true,
+      reachable: response.ok,
+      mode: "mt5_bridge" as const,
+      serviceOk: response.ok && Boolean(payload?.ok),
+      syncIntervalSeconds: null,
+      accountFetch: null,
+      error: response.ok ? null : (typeof payload?.detail === "string" ? payload.detail : "MT5 bridge is unreachable."),
+    };
+  } catch (error) {
+    return {
+      configured: true,
+      reachable: false,
+      mode: "mt5_bridge" as const,
+      serviceOk: false,
+      syncIntervalSeconds: null,
+      accountFetch: null,
+      error: error instanceof Error ? error.message : "MT5 bridge status check failed.",
+    };
+  }
+}
 
 export async function GET(request: Request, context: { params: Promise<{ id: string }> }) {
   const auth = await authenticateRequest(request);
   if (!auth) return unauthorized();
   const { id } = await context.params;
 
-  const [{ data: conn }, premium] = await Promise.all([
+  const [{ data: conn }, premium, connectorStatus] = await Promise.all([
     auth.supabase
       .from("trading_accounts")
       .select("id, account_login, broker_server, platform, status, last_error, last_synced_at, auto_sync_enabled, updated_at")
@@ -20,6 +90,7 @@ export async function GET(request: Request, context: { params: Promise<{ id: str
       .eq("platform", "MT5")
       .maybeSingle(),
     getPremiumStatus(auth),
+    getConnectorStatus(),
   ]);
 
   return Response.json({
@@ -36,8 +107,9 @@ export async function GET(request: Request, context: { params: Promise<{ id: str
     isVerified: premium.isVerified,
     isPremium: premium.isPremium,
     autoSyncEnabled: premium.autoSyncEnabled,
-    bridgeConfigured: isMt5ApiConfigured() || true,
-    connector: isMt5ApiConfigured() ? "mt5_api" : "mt5_bridge",
+    bridgeConfigured: connectorStatus.configured,
+    connector: connectorStatus.mode,
+    connectorStatus,
   });
 }
 
@@ -138,12 +210,12 @@ export async function PUT(request: Request, context: { params: Promise<{ id: str
       login: conn.account_login,
       server: conn.broker_server,
       platform: "mt5",
-      status: conn.status,
-      last_error: conn.last_error,
-      last_synced_at: conn.last_synced_at,
+      status: isMt5ApiConfigured() ? "connected" : conn.status,
+      last_error: null,
+      last_synced_at: isMt5ApiConfigured() ? new Date().toISOString() : conn.last_synced_at,
       auto_sync: Boolean(conn.auto_sync_enabled),
     } : null,
-    bridgeConfigured: true,
+    bridgeConfigured: isMt5ApiConfigured() || Boolean(legacyBridgeBaseUrl && legacyBridgeToken),
     connector: isMt5ApiConfigured() ? "mt5_api" : "mt5_bridge",
   });
 }

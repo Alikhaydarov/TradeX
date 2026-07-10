@@ -15,7 +15,7 @@ import { Sidebar } from "./sidebar";
 import { WorkspaceTopbar } from "./workspace-topbar";
 import { TradeWayLoginLanding } from "./tradeway-login-landing";
 import { useAuth } from "./auth-context";
-import { cachedSections, getCurrentProfileUsername, getCurrentSection, pathFromSection } from "./section-config";
+import { cachedSections, getCurrentProfileUsername, getCurrentSection, pathFromSection, workspaceSections } from "./section-config";
 import { apiRequest } from "@/lib/api-client";
 import type { Section } from "./types";
 function AuthGate({ onLogin }: { onLogin: () => void }) {
@@ -31,12 +31,12 @@ export function AppShell() {
   const [profileOpening, setProfileOpening] = useState(false);
   const [visitedSections, setVisitedSections] = useState<Record<Section, boolean>>(() => ({
     feed: true,
-    accounts: section === "accounts",
-    dashboard: section === "dashboard",
-    calendar: section === "calendar",
-    trades: section === "trades",
-    analytics: section === "analytics",
-    settings: section === "settings",
+    accounts: false,
+    dashboard: false,
+    calendar: false,
+    trades: false,
+    analytics: false,
+    settings: false,
     account: section === "account",
     pricing: section === "pricing",
     admin: section === "admin",
@@ -45,6 +45,7 @@ export function AppShell() {
   const openLogin = () => setAuthOpen(true);
 
   useEffect(() => {
+    if (workspaceSections.includes(section)) return;
     setVisitedSections((current) =>
       current[section]
         ? current
@@ -141,6 +142,9 @@ export function AppShell() {
     return <FeedV3 onLogin={openLogin} />;
   };
 
+  const workspaceSectionActive = workspaceSections.includes(section);
+  const cachedNonWorkspaceSections = cachedSections.filter((item) => !workspaceSections.includes(item));
+
   if (!user && section === "pricing") {
     return (
       <>
@@ -178,7 +182,12 @@ export function AppShell() {
         <main className="min-h-[100dvh] min-w-0 flex-1 overflow-x-hidden bg-[#000000] lg:min-h-[calc(100dvh-2rem)] lg:rounded-[1rem] lg:border lg:border-white/8">
           <WorkspaceTopbar section={section} />
           <div className="block min-h-full">
-            {cachedSections.map((item) =>
+            {workspaceSectionActive ? (
+              <section key={`workspace:${section}`} className="min-h-full">
+                {renderSection(section)}
+              </section>
+            ) : null}
+            {cachedNonWorkspaceSections.map((item) =>
               visitedSections[item] ? (
                 <section
                   key={item}

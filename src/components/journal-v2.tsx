@@ -128,7 +128,7 @@ export function JournalV2({
   forcedTab?: WorkspaceTab;
 }) {
   const { user } = useAuth();
-  const { accounts, activeAccountId, setActiveAccount, addAccount, setAccounts } = useActiveAccountStore();
+  const { accounts, activeAccountId, setActiveAccount, addAccount, refreshAccounts, loading: accountsLoading } = useActiveAccountStore();
   const [entries, setEntries] = useState<JournalEntry[]>([]);
   const [month, setMonth] = useState(() => new Date());
   const [accountOpen, setAccountOpen] = useState(false);
@@ -143,22 +143,48 @@ export function JournalV2({
   const [customEnd, setCustomEnd] = useState(() => new Date().toISOString().slice(0, 10));
 
   useEffect(() => {
-    if (!user) return;
+    if (!user) {
+      setEntries([]);
+      setLoading(false);
+      return;
+    }
+    if (mode === "workspace" && accountsLoading && !accounts.length) {
+      setLoading(true);
+      return;
+    }
+
     let active = true;
-    Promise.all([
-      apiRequest<{ accounts: AccountRow[] }>("/api/prop-accounts"),
-      apiRequest<{ entries: EntryRow[] }>("/api/journal"),
-    ]).then(([a, e]) => {
-      if (active) {
-        setAccounts(a.accounts.map(accountFrom));
-        setEntries(e.entries.map(entryFrom));
+    const load = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        if (!accounts.length) await refreshAccounts();
+        const search = mode === "workspace" && activeAccountId
+          ? `?accountId=${encodeURIComponent(activeAccountId)}`
+          : "";
+        const response = await apiRequest<{ entries: EntryRow[] }>(`/api/journal${search}`);
+        if (!active) return;
+        setEntries(response.entries.map(entryFrom));
+      } catch (nextError) {
+        if (!active) return;
+        const message = nextError instanceof Error ? nextError.message : "Failed to load journal.";
+        setError(message);
+      } finally {
+        if (active) setLoading(false);
       }
-    }).catch((e: Error) => active && setError(e.message)).finally(() => active && setLoading(false));
-    return () => { active = false; };
-  }, [setAccounts, user]);
+    };
+
+    void load();
+    return () => {
+      active = false;
+    };
+  }, [accounts.length, accountsLoading, activeAccountId, mode, refreshAccounts, user]);
 
   const account = accounts.find(a => a.id === activeAccountId) || null;
-  const accountEntries = useMemo(() => activeAccountId ? entries.filter(e => e.propAccountId === activeAccountId) : entries, [entries, activeAccountId]);
+  const accountEntries = useMemo(() => {
+    if (mode === "workspace") return entries;
+    return activeAccountId ? entries.filter(e => e.propAccountId === activeAccountId) : entries;
+  }, [entries, activeAccountId, mode]);
   const bibleEntries = useMemo(() => accountEntries.filter(e => e.toTradingBible).sort((a, b) => reviewScore(b) - reviewScore(a)), [accountEntries]);
   const monthEntries = useMemo(() => accountEntries.filter(e => e.rawDate?.startsWith(monthId(month))), [accountEntries, month]);
   const rangeEntries = useMemo(() => {
@@ -236,7 +262,7 @@ export function JournalV2({
     setDeleting(a.id);
     try {
       await apiRequest(`/api/prop-accounts/${a.id}`, { method: "DELETE" });
-      setAccounts(accounts.filter(x => x.id !== a.id));
+      await refreshAccounts();
       if (activeAccountId === a.id) setActiveAccount(null);
     } catch (e) { setError(e instanceof Error ? e.message : "Account o'chirilmadi"); }
     finally { setDeleting(null); }

@@ -81,7 +81,7 @@ export function ActiveAccountProvider({ children }: { children: React.ReactNode 
         const saved = window.localStorage.getItem(STORAGE_KEY);
         if (saved && nextAccounts.some((account) => account.id === saved)) return saved;
       }
-      return current === null ? null : nextAccounts[0]?.id || null;
+      return nextAccounts[0]?.id || null;
     });
   }, []);
 

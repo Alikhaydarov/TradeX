@@ -5,21 +5,25 @@ import { useEffect, useRef, useState } from "react";
 import { apiRequest } from "@/lib/api-client";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "./auth-context";
-import type { Group } from "./types";
-
-interface MessageRecord {
-  id: string;
-  group_id: string;
-  user_id: string;
-  sender_name: string;
-  sender_avatar: string | null;
-  content: string;
-  created_at: string;
-}
 
 interface ToastState {
   title: string;
   body: string;
+}
+
+interface AppNotification {
+  id: string;
+  type: string;
+  message: string;
+  isRead: boolean;
+  createdAt: string;
+  actor: {
+    id: string;
+    username: string;
+    fullName: string;
+    avatarUrl: string | null;
+    isVerified: boolean;
+  } | null;
 }
 
 type AudioWindow = Window & typeof globalThis & {
@@ -88,9 +92,10 @@ export function NotificationListener() {
 
     let active = true;
 
-    const notify = (chat: Group, message: MessageRecord) => {
-      const body = shortText(message.content);
-      setToast({ title: `${message.sender_name} - ${chat.name}`, body });
+    const notify = (item: AppNotification) => {
+      const actorName = item.actor?.fullName || "TradeWay";
+      const body = shortText(item.message);
+      setToast({ title: actorName, body });
       window.setTimeout(() => setToast(null), 4500);
 
       if (soundEnabled.current) playNotificationSound();
@@ -100,9 +105,9 @@ export function NotificationListener() {
         Notification.permission === "granted" &&
         (document.hidden || !document.hasFocus())
       ) {
-        const notification = new Notification(`${message.sender_name} - ${chat.name}`, {
+        const notification = new Notification(actorName, {
           body,
-          tag: `tradeup-chat-${chat.id}`,
+          tag: `tradeway-notification-${item.id}`,
         });
 
         notification.onclick = () => {
@@ -118,26 +123,15 @@ export function NotificationListener() {
       polling.current = true;
 
       try {
-        const { chats } = await apiRequest<{ chats: Group[] }>("/api/chats");
-        const results = await Promise.allSettled(
-          chats.slice(0, 25).map(async (chat) => {
-            const { messages } = await apiRequest<{ messages: MessageRecord[] }>(`/api/chats/${chat.id}/messages`);
-            return { chat, messages };
-          }),
-        );
+        const { notifications } = await apiRequest<{ notifications: AppNotification[] }>("/api/social/notifications");
 
         if (!active) return;
 
-        for (const result of results) {
-          if (result.status !== "fulfilled") continue;
-          const { chat, messages } = result.value;
-
-          for (const message of messages) {
-            const seen = seenMessageIds.current.has(message.id);
-            if (!seen) {
-              seenMessageIds.current.add(message.id);
-              if (initialized.current && message.user_id !== user.id) notify(chat, message);
-            }
+        for (const item of notifications) {
+          const seen = seenMessageIds.current.has(item.id);
+          if (!seen) {
+            seenMessageIds.current.add(item.id);
+            if (initialized.current && !item.isRead) notify(item);
           }
         }
 
@@ -150,7 +144,7 @@ export function NotificationListener() {
     };
 
     void poll();
-    const timer = window.setInterval(() => void poll(), 30000);
+    const timer = window.setInterval(() => void poll(), 45000);
 
     return () => {
       active = false;

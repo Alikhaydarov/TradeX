@@ -40,16 +40,9 @@ while ($true) {
     }
 
     Write-WatchdogLog "Launching FastAPI server."
-    $process = Start-Process -FilePath $python `
-      -ArgumentList $main `
-      -WorkingDirectory $baseDir `
-      -RedirectStandardOutput $stdoutLog `
-      -RedirectStandardError $stdoutLog `
-      -PassThru `
-      -WindowStyle Hidden
-
-    Wait-Process -Id $process.Id
-    Write-WatchdogLog "FastAPI exited with code $($process.ExitCode). Restarting in 5 seconds."
+    & $python $main *>> $stdoutLog
+    $exitCode = $LASTEXITCODE
+    Write-WatchdogLog "FastAPI exited with code $exitCode. Restarting in 5 seconds."
   } catch {
     Write-WatchdogLog "Watchdog error: $($_.Exception.Message)"
   }
