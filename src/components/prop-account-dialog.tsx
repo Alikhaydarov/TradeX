@@ -269,8 +269,8 @@ export function PropAccountDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[92dvh] overflow-hidden border-[#242424] bg-[#070707] p-0 text-zinc-100 sm:max-w-[900px]">
-        <div className="flex items-center border-b border-white/8 bg-[#0d0d0d] px-5 py-4">
+      <DialogContent className="max-h-[92dvh] overflow-hidden border-[#242424] bg-black p-0 text-zinc-100 sm:max-w-[900px]">
+        <div className="flex items-center border-b border-white/8 bg-black px-5 py-4">
           <DialogHeader className="min-w-[180px]">
             <DialogTitle className="text-lg font-black">Add Account</DialogTitle>
           </DialogHeader>
@@ -322,7 +322,7 @@ export function PropAccountDialog({
             {step === 2 ? (
               <div className="space-y-5">
                 {!premiumStatus.isPremium ? (
-                  <div className="mx-auto max-w-2xl overflow-hidden rounded-[24px] border border-sky-300/12 bg-[linear-gradient(135deg,rgba(18,32,48,.95),rgba(10,10,10,.96))] shadow-[0_22px_50px_rgba(0,0,0,.24)]">
+                  <div className="mx-auto max-w-2xl overflow-hidden rounded-[24px] border border-white/10 bg-[#050505] shadow-[0_22px_50px_rgba(0,0,0,.4)]">
                     <div className="flex flex-col gap-4 px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-5">
                       <div className="min-w-0">
                         <p className="text-[10px] font-black uppercase tracking-[0.22em] text-sky-200/75">TradeWay Premium</p>
@@ -357,7 +357,7 @@ export function PropAccountDialog({
                 </div>
 
                 <div className="mx-auto max-w-md">
-                  <div className="flex h-12 items-center gap-3 rounded-2xl border border-white/10 bg-black/30 px-4">
+                  <div className="flex h-12 items-center gap-3 rounded-2xl border border-white/10 bg-black px-4">
                     <Search size={16} className="text-zinc-500" />
                     <input
                       value={platformQuery}
@@ -426,7 +426,7 @@ export function PropAccountDialog({
             ) : null}
 
             {step === 3 ? (
-              <div className="grid overflow-hidden rounded-2xl border border-white/10 bg-[#0d0d0d] md:grid-cols-[1.1fr_.9fr]">
+              <div className="grid overflow-hidden rounded-2xl border border-white/10 bg-black md:grid-cols-[1.1fr_.9fr]">
                 <div className="space-y-4 p-5 sm:p-6">
                   <div className="rounded-2xl border border-white/10 bg-[#0b0b0b] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,.03)]">
                     <div className="flex flex-wrap items-center gap-2">
@@ -480,7 +480,7 @@ export function PropAccountDialog({
                   ) : null}
                 </div>
 
-                <div className="border-t border-white/10 bg-[#090909] p-5 sm:p-6 md:border-l md:border-t-0">
+                <div className="border-t border-white/10 bg-black p-5 sm:p-6 md:border-l md:border-t-0">
                   <SideGuide accountKind={accountKind} platform={selectedPlatform} />
                 </div>
               </div>
@@ -488,7 +488,7 @@ export function PropAccountDialog({
           </div>
 
           {step === 3 ? (
-            <div className="flex items-center justify-end gap-2 border-t border-white/8 bg-[#0d0d0d] px-5 py-4">
+            <div className="flex items-center justify-end gap-2 border-t border-white/8 bg-black px-5 py-4">
               <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
               <Button disabled={isSubmitting} className="bg-white font-semibold text-black hover:bg-zinc-200">
                 {isSubmitting ? <LoaderCircle className="animate-spin" /> : <Plus size={18} />}
@@ -514,8 +514,8 @@ export function PropAccountDialog({
           <input type="hidden" name="status" value={createsProcessingMt5 ? "Processing" : "Active"} />
         </form>
         {premiumOverlay ? (
-          <div className="absolute inset-0 z-20 flex items-center justify-center bg-black/94 p-4">
-            <div className="w-full max-w-md rounded-[28px] border border-white/10 bg-[#0d0d0d]/95 p-6 text-center shadow-[0_30px_80px_rgba(0,0,0,.55)]">
+          <div className="absolute inset-0 z-20 flex items-center justify-center bg-black p-4">
+            <div className="w-full max-w-md rounded-[28px] border border-white/10 bg-black p-6 text-center shadow-[0_30px_80px_rgba(0,0,0,.7)]">
               <span className="mx-auto grid size-14 place-items-center rounded-2xl border border-sky-300/15 bg-sky-400/10 text-sky-200">
                 <LockKeyhole size={22} />
               </span>

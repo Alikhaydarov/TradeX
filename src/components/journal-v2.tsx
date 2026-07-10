@@ -453,7 +453,7 @@ function Accounts({ activeAccountId, summaries, deleting, onAdd, onOpen, onDelet
           <button
             type="button"
             onClick={onAdd}
-            className="group grid min-h-[228px] place-items-center rounded-[24px] border border-dashed border-white/10 bg-[#0b0b0b] text-center transition hover:border-white/20 hover:bg-white/[.03]"
+            className="group grid min-h-[228px] place-items-center rounded-[24px] border border-dashed border-white/10 bg-[#050505] text-center transition hover:border-white/20 hover:bg-[#090909]"
           >
             <div>
               <span className="mx-auto grid size-14 place-items-center rounded-2xl border border-white/10 bg-black/20 text-zinc-400 transition group-hover:text-white">
@@ -478,7 +478,7 @@ function AccountCard({ active = false, s, deleting, onOpen, onDelete, compact = 
       tabIndex={0}
       onClick={() => onOpen(s.account.id)}
       onKeyDown={e => { if (e.key === "Enter" || e.key === " ") onOpen(s.account.id); }}
-      className={`prop-card-glow group relative cursor-pointer overflow-hidden border transition-all duration-200 hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/30 ${active ? "border-white/20 bg-white/[.05] ring-1 ring-white/10" : "border-white/10 bg-white/[.035] hover:border-white/20"} ${compact ? "rounded-[22px]" : "rounded-[24px]"}`}
+      className={`prop-card-glow group relative cursor-pointer overflow-hidden border transition-all duration-200 hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/30 ${active ? "border-white/20 bg-[#0a0a0a] ring-1 ring-white/10" : "border-white/10 bg-[#040404] hover:border-white/20 hover:bg-[#090909]"} ${compact ? "rounded-[22px]" : "rounded-[24px]"}`}
     >
       {/* Top bar accent */}
       <div className="absolute inset-x-0 top-0 h-[1px] bg-gradient-to-r from-transparent via-white/20 to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
@@ -904,22 +904,26 @@ function Workspace(p: {
                 <section className="rounded-[1.3rem] border border-white/8 bg-[#0b0b0b] p-4 shadow-[0_18px_46px_rgba(0,0,0,.2)] sm:p-5">
                   <div className="flex items-center justify-between gap-3">
                     <div>
-                      <h3 className="text-lg font-black text-white">High Impact News</h3>
-                      <p className="mt-1 text-sm text-zinc-500">Weekly red news in New York time.</p>
+                      <h3 className="text-lg font-black text-white">Sync & Focus</h3>
+                      <p className="mt-1 text-sm text-zinc-500">Compact control panel for the selected account.</p>
                     </div>
                   </div>
-                  <div className="mt-4 space-y-2">
-                    {calendarNewsLoading && !calendarNews ? <div className="rounded-2xl border border-white/8 bg-black/15 px-3 py-4 text-sm text-zinc-500">Loading news...</div> : null}
-                    {!calendarNewsLoading && (calendarNews?.events || []).length === 0 ? <div className="rounded-2xl border border-white/8 bg-black/15 px-3 py-4 text-sm text-zinc-500">No high impact news loaded yet.</div> : null}
-                    {(calendarNews?.events || []).slice(0, 4).map((event) => (
-                      <div key={event.id} className="rounded-2xl border border-white/8 bg-black/15 px-3 py-3">
-                        <div className="flex items-center gap-2">
-                          <span className="w-14 shrink-0 font-mono text-[11px] font-bold text-zinc-200">{event.time}</span>
-                          <span className="rounded-md bg-rose-400/15 px-1.5 py-0.5 text-[10px] font-black text-rose-200">{event.currency}</span>
-                          <p className="min-w-0 flex-1 truncate text-xs font-semibold text-zinc-300">{event.title}</p>
-                        </div>
-                      </div>
-                    ))}
+                  <div className="mt-4 grid gap-2">
+                    <div className="rounded-2xl border border-white/8 bg-black px-3 py-3">
+                      <p className="text-[10px] font-black uppercase tracking-[0.16em] text-zinc-500">Auto sync</p>
+                      <p className="mt-1 text-sm font-bold text-white">{account.platform === "mt5" ? "MT5 bridge connected flow" : "Manual or CSV workflow"}</p>
+                      <p className="mt-1 text-xs text-zinc-500">All dashboard sections below follow this account only.</p>
+                    </div>
+                    <div className="rounded-2xl border border-white/8 bg-black px-3 py-3">
+                      <p className="text-[10px] font-black uppercase tracking-[0.16em] text-zinc-500">Top symbol</p>
+                      <p className="mt-1 text-sm font-bold text-white">{symbolStats[0]?.symbol || "No trade edge yet"}</p>
+                      <p className="mt-1 text-xs text-zinc-500">{symbolStats[0] ? `${symbolStats[0].trades} trades recorded` : "Add trades to unlock symbol edge."}</p>
+                    </div>
+                    <div className="rounded-2xl border border-white/8 bg-black px-3 py-3">
+                      <p className="text-[10px] font-black uppercase tracking-[0.16em] text-zinc-500">Coach mode</p>
+                      <p className="mt-1 text-sm font-bold text-white">{coachReport?.mood === "protect" ? "Protect capital" : coachReport?.mood === "push" ? "Push A+ only" : "Stay consistent"}</p>
+                      <p className="mt-1 text-xs text-zinc-500">{coachReport?.summary || "AI coach summary appears here when the report is ready."}</p>
+                    </div>
                   </div>
                 </section>
               </div>
@@ -1673,7 +1677,7 @@ function Workspace(p: {
                         setSelectedDay(null);
                         setSelectedTrade(trade);
                       }}
-                      className="flex w-full items-center gap-3 rounded-2xl border border-white/10 bg-white/[.035] px-3 py-3 text-left transition hover:bg-white/[.05]"
+                    className="flex w-full items-center gap-3 rounded-2xl border border-white/10 bg-black px-3 py-3 text-left transition hover:bg-[#0b0b0b]"
                     >
                       <InstrumentBadge symbol={trade.symbol} compact className="shrink-0 rounded-xl bg-[#151515]" showFullSymbol={false} />
                       <span className="min-w-0 flex-1">
