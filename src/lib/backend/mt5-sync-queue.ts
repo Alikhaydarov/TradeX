@@ -48,7 +48,16 @@ export async function claimMt5SyncJobs(limit: number) {
   if (!pool) throw new Error("DATABASE_URL or SUPABASE_DB_URL is required for MT5 sync queue.");
 
   const result = await pool.query<Mt5SyncJob>(
-    `with picked as (
+    `with revived as (
+       update public.mt5_sync_jobs
+       set status = 'queued',
+           locked_until = null,
+           updated_at = now()
+       where status = 'running'
+       and locked_until is not null
+       and locked_until <= now()
+       returning id
+     ), picked as (
        select id
        from public.mt5_sync_jobs
        where status = 'queued'

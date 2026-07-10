@@ -9,11 +9,13 @@ import {
   type IncomingMt5Trade,
 } from "@/lib/backend/mt5-import";
 import { getPostgresPool } from "@/lib/backend/postgres";
+import { isMt5ApiConfigured, syncNowMt5Api } from "@/lib/server/mt5-api";
 import { getMt5ClosedTrades } from "@/lib/server/mt5-bridge";
 
 type TradingAccountSyncRow = {
   id: string;
   user_id: string;
+  prop_account_id: string | null;
   broker_server: string | null;
   account_login: string | null;
   encrypted_password: string | null;
@@ -49,7 +51,7 @@ async function getAccount(accountId: string) {
   const pool = getPostgresPool();
   if (!pool) throw new Error("DATABASE_URL or SUPABASE_DB_URL is required for MT5 queue worker.");
   const result = await pool.query<TradingAccountSyncRow>(
-    `select id, user_id, broker_server, account_login, encrypted_password
+    `select id, user_id, prop_account_id, broker_server, account_login, encrypted_password
      from public.trading_accounts
      where id = $1
      limit 1`,
@@ -74,6 +76,21 @@ async function ensurePremium(userId: string) {
 }
 
 async function syncAccount(account: TradingAccountSyncRow, from: string, to: string) {
+  if (isMt5ApiConfigured()) {
+    const result = await syncNowMt5Api({
+      userId: account.user_id,
+      accountId: account.id,
+      propAccountId: account.prop_account_id || undefined,
+    });
+
+    return {
+      imported: Number(result.imported || 0),
+      skipped: 0,
+      journalImported: Number(result.imported || 0),
+      total: Number(result.total || result.imported || 0),
+    };
+  }
+
   if (!account.account_login || !account.broker_server || !account.encrypted_password) {
     throw new Error("MT5 account credentials are incomplete.");
   }

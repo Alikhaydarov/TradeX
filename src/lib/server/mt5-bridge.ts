@@ -1,6 +1,10 @@
 const mt5BridgeBaseUrl = (process.env.MT5_BRIDGE_BASE_URL || process.env.MT5_BRIDGE_URL || "").replace(/\/$/, "");
 const mt5BridgeToken = process.env.MT5_BRIDGE_TOKEN || "";
 
+export function isMt5BridgeConfigured() {
+  return Boolean(mt5BridgeBaseUrl && mt5BridgeToken);
+}
+
 type BridgeHistoryResponse = {
   trades?: Mt5BridgeClosedTrade[];
 };
