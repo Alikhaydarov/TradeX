@@ -344,7 +344,7 @@ export function Sidebar({
         <Dialog open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
           <DialogContent
             showCloseButton={false}
-            className="left-0 top-0 h-[100dvh] w-[78vw] max-w-[360px] translate-x-0 translate-y-0 rounded-none border-r border-white/10 bg-black p-0 sm:max-w-[360px] lg:hidden"
+            className="left-0 top-0 h-[100dvh] w-[74vw] max-w-[320px] translate-x-0 translate-y-0 rounded-none border-r border-white/10 bg-black p-0 sm:max-w-[320px] lg:hidden"
           >
             <div className="flex h-full flex-col">
               <div className="flex items-center justify-between border-b border-white/8 px-4 py-4">
@@ -370,11 +370,11 @@ export function Sidebar({
                 </button>
               </div>
 
-              <div className="border-b border-white/8 px-4 py-4">
+              <div className="border-b border-white/8 px-3.5 py-3.5">
                 {renderAccountSwitcher(true)}
               </div>
 
-              <div className="flex-1 overflow-y-auto px-3 py-4">
+              <div className="flex-1 overflow-y-auto px-2.5 py-3.5">
                 <nav className="space-y-1">
                   {primaryNav.map((item) => renderNavButton(item, true))}
                 </nav>

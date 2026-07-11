@@ -490,38 +490,38 @@ function AccountCard({ active = false, s, deleting, onOpen, onDelete, compact = 
           </div>
         </div>
 
-        {/* PnL */}
         <div className="mt-3 flex items-end justify-between gap-3">
           <div>
+            <p className="text-[10px] uppercase tracking-wider text-[#8a8a8a]">Balance</p>
+            <p className={`font-mono ${compact ? "text-xl" : "text-[1.45rem]"} font-black text-white`}>
+              {cash.format(s.account.accountSize)}
+            </p>
+            <p className="mt-1 text-[11px] text-zinc-500">{s.account.accountType === "real" ? "Real workspace" : "Prop workspace"}</p>
+          </div>
+          <div className="text-right">
             <p className="text-[10px] uppercase tracking-wider text-[#8a8a8a]">Result</p>
             <p className={`font-mono ${compact ? "text-xl" : "text-[1.35rem]"} font-black ${s.pnl >= 0 ? "text-emerald-400" : "text-rose-400"}`}>
               {s.pnl >= 0 ? "+" : ""}{cash.format(s.pnl)}
             </p>
-          </div>
-          <div className="text-right">
-            <p className={`font-mono ${compact ? "text-base" : "text-[15px]"} font-bold`}>{cash.format(s.account.accountSize)}</p>
-            <p className="text-[10px] text-[#8a8a8a]">Account size</p>
+            <p className="mt-1 text-[11px] text-zinc-500">{s.account.phase}</p>
           </div>
         </div>
 
-        {/* Stats row */}
-        <div className="mt-3 flex gap-4 rounded-xl bg-[#0b0b0b] px-3 py-2.5">
-          {[["Trades", s.trades], ["Win rate", `${s.winRate}%`]].map(([l, v]) => (
+        <div className="mt-3 grid grid-cols-3 gap-2 rounded-xl bg-[#0b0b0b] px-3 py-2.5">
+          {[["Trades", s.trades], ["Win rate", `${s.winRate}%`], ["Market", s.account.marketType]].map(([l, v]) => (
             <div key={String(l)}>
               <p className="text-[10px] text-[#8a8a8a]">{l}</p>
               <p className="font-mono text-sm font-bold">{v}</p>
             </div>
           ))}
         </div>
-
-        <div className="mt-3 space-y-2">
-          <ProgressBar label="Profit target" value={s.target} color="bg-emerald-500" />
-          <ProgressBar label="Drawdown used" value={s.dd} color="bg-rose-500" />
-        </div>
       </div>
 
       <div className="flex items-center justify-between border-t border-[#2a2a2a] px-4 py-2.5">
-        <span className="text-[11px] text-[#8a8a8a]">{active ? "Selected workspace" : "Open workspace"}</span>
+        <div className="flex items-center gap-4 text-[11px] text-[#8a8a8a]">
+          <span>Target {Math.round(s.target)}%</span>
+          <span>DD {Math.round(s.dd)}%</span>
+        </div>
         <ChevronRight size={16} className="text-[#8a8a8a] transition-transform group-hover:translate-x-0.5" />
       </div>
     </div>
