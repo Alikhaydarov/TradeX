@@ -6,13 +6,11 @@ import {
   CalendarDays,
   ChevronDown,
   CirclePlus,
-  Crown,
   Globe,
   Home,
   LayoutDashboard,
   LogIn,
   MoreHorizontal,
-  PenLine,
   Settings2,
   Search,
   ShieldCheck,
@@ -53,7 +51,7 @@ function initials(account: PropAccount | null) {
 const money = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 });
 
 function GroupLabel({ children }: { children: string }) {
-  return <p className="px-2 pb-1 pt-4 text-[11px] font-semibold tracking-[0.02em] text-zinc-600">{children}</p>;
+  return <p className="px-2 pb-1 pt-5 text-[11px] font-medium tracking-[0.01em] text-zinc-600">{children}</p>;
 }
 
 export function Sidebar({
@@ -189,21 +187,13 @@ export function Sidebar({
 
   const renderAccountSwitcher = (mobile = false) => (
     <DropdownMenu open={accountSwitcherOpen} onOpenChange={setAccountSwitcherOpen}>
-      <div className={`${mobile ? "flex w-full items-center gap-2 rounded-2xl border border-white/10 bg-[#060606] p-3" : "mt-4 flex w-full items-center gap-2 rounded-[1rem] border border-white/8 bg-[#050505] p-3.5 transition hover:bg-[#090909]"}`}>
+      <div className={`${mobile ? "flex w-full items-center gap-2 rounded-2xl border border-white/10 bg-[#060606] p-3" : "mt-4 flex w-full items-center gap-2 rounded-[0.95rem] border border-white/8 bg-[#040404] p-3 transition hover:bg-[#090909]"}`}>
         <button type="button" onClick={openAccountsPage} className="flex min-w-0 flex-1 items-center gap-3 text-left">
           <span className={`size-2 shrink-0 rounded-full ${activeAccount ? "bg-emerald-500" : "bg-zinc-500"}`} />
           <div className="min-w-0 flex-1">
             <p className={`${mobile ? "text-sm" : "text-sm"} truncate font-black text-white`}>{activeAccount?.name || "Accounts"}</p>
             <p className={`${mobile ? "text-xs" : "text-[11px]"} truncate text-zinc-500`}>{activeAccount ? activeBalance : "Select trading account"}</p>
           </div>
-        </button>
-        <button
-          type="button"
-          onClick={openAccountsPage}
-          className={`${mobile ? "size-9" : "size-9"} grid shrink-0 place-items-center rounded-xl border border-white/8 bg-[#0d0d0d] text-zinc-400 transition hover:bg-[#111111] hover:text-white`}
-          aria-label="Open accounts page"
-        >
-          <PenLine size={15} />
         </button>
         <DropdownMenuTrigger asChild>
           <button
@@ -271,12 +261,12 @@ export function Sidebar({
 
   return (
     <>
-      <aside className="fixed left-[max(1rem,calc((100vw-1860px)/2+1rem))] top-4 z-40 hidden h-[calc(100dvh-2rem)] w-[272px] shrink-0 flex-col rounded-[1.25rem] border border-white/8 bg-[#000000] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,.04)] lg:flex">
-        <button onClick={() => onChange("feed")} className="flex items-center gap-3 rounded-[1.25rem] px-2 py-2.5 text-left transition-colors hover:bg-white/[.04]" aria-label="TradeWay home">
-          <span className="grid h-11 w-11 place-items-center rounded-2xl bg-[linear-gradient(180deg,rgba(255,255,255,1),rgba(232,232,236,1))] text-lg font-black text-black shadow-[0_12px_28px_rgba(255,255,255,.08)]">TD</span>
+      <aside className="fixed left-[max(1rem,calc((100vw-1860px)/2+1rem))] top-4 z-40 hidden h-[calc(100dvh-2rem)] w-[272px] shrink-0 flex-col rounded-[1.1rem] border border-white/8 bg-[#000000] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,.03)] lg:flex">
+        <button onClick={() => onChange("feed")} className="flex items-center gap-3 rounded-2xl px-2 py-2 text-left transition-colors hover:bg-white/[.03]" aria-label="TradeWay home">
+          <span className="grid h-10 w-10 place-items-center rounded-xl bg-[linear-gradient(180deg,rgba(255,255,255,1),rgba(232,232,236,1))] text-sm font-black text-black shadow-[0_10px_24px_rgba(255,255,255,.06)]">TW</span>
           <span className="min-w-0">
             <span className="flex items-center gap-2">
-              <strong className="block truncate text-base tracking-tight">TradeWay</strong>
+              <strong className="block truncate text-[15px] tracking-tight">TradeWay</strong>
               <span className={`rounded-full px-2 py-0.5 text-[10px] font-black ${premium.isPremium ? "bg-emerald-400/12 text-emerald-300" : "bg-white/[.06] text-zinc-400"}`}>
                 {premium.isPremium ? "Premium" : "Free"}
               </span>
@@ -305,27 +295,6 @@ export function Sidebar({
               </nav>
             </>
           ) : null}
-        </div>
-
-        <div className="mt-4 rounded-[1.1rem] border border-white/10 bg-[#070707] p-4">
-          <div className="flex items-start gap-3">
-            <span className="grid size-10 shrink-0 place-items-center rounded-2xl bg-[#111111] text-white">
-              <Crown size={18} />
-            </span>
-            <div className="min-w-0 flex-1">
-              <p className="text-sm font-black text-white">Join early access</p>
-              <p className="mt-1 text-xs leading-5 text-zinc-500">
-                Upgrade to unlock TradeWay&apos;s full connector stack, AI coaching and premium tools.
-              </p>
-            </div>
-          </div>
-          <button
-            type="button"
-            onClick={openPricing}
-            className="mt-4 inline-flex h-10 w-full items-center justify-center rounded-xl bg-white text-sm font-black text-black transition hover:bg-zinc-200"
-          >
-            Upgrade
-          </button>
         </div>
 
         <div className="mt-auto">
@@ -417,26 +386,6 @@ export function Sidebar({
                   {journalingNav.map((item) => renderNavButton(item, true))}
                 </nav>
 
-                <div className="mt-4 rounded-[1.1rem] border border-white/10 bg-[#070707] p-4">
-                  <div className="flex items-start gap-3">
-                    <span className="grid size-10 shrink-0 place-items-center rounded-2xl bg-[#111111] text-white">
-                      <Crown size={18} />
-                    </span>
-                    <div className="min-w-0 flex-1">
-                      <p className="text-sm font-black text-white">Join early access</p>
-                      <p className="mt-1 text-xs leading-5 text-zinc-500">
-                        Upgrade to unlock TradeWay&apos;s full potential.
-                      </p>
-                    </div>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={openPricing}
-                    className="mt-4 inline-flex h-10 w-full items-center justify-center rounded-xl bg-white text-sm font-black text-black transition hover:bg-zinc-200"
-                  >
-                    Upgrade
-                  </button>
-                </div>
               </div>
 
               <div className="border-t border-white/8 p-3">

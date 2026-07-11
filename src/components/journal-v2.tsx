@@ -393,20 +393,20 @@ export function JournalV2({
 // Accounts list.
 function Accounts({ activeAccountId, summaries, deleting, onAdd, onOpen, onDelete }: { activeAccountId: string | null; summaries: Summary[]; deleting: string | null; onAdd: () => void; onOpen: (id: string) => void; onDelete: (a: PropAccount) => void }) {
   return (
-    <div className="animate-page-in mx-auto max-w-[1880px] space-y-4 p-4 lg:p-6">
+    <div className="animate-page-in mx-auto max-w-[1880px] space-y-4 p-4 lg:p-5">
       <div className="flex items-center justify-between gap-3">
         <div className="min-w-0">
-          <p className="text-xs font-semibold text-zinc-500">Accounts workspace</p>
+          <p className="text-[11px] font-medium text-zinc-500">Accounts</p>
         </div>
         <div className="flex shrink-0 items-center gap-2">
-          <Button onClick={onAdd} className="h-11 rounded-2xl bg-white px-4 text-black hover:bg-zinc-200">
-            <Plus size={16} /> Add Account
+          <Button onClick={onAdd} className="h-10 rounded-xl bg-white px-3.5 text-black hover:bg-zinc-200">
+            <Plus size={15} /> Add Account
           </Button>
         </div>
       </div>
 
       {!summaries.length ? (
-        <div className="grid min-h-72 place-items-center rounded-[24px] border border-dashed border-white/10 bg-[#090909] text-center">
+        <div className="grid min-h-72 place-items-center rounded-[20px] border border-dashed border-white/10 bg-[#050505] text-center">
           <div>
             <div className="mx-auto grid size-14 place-items-center rounded-2xl bg-white/[.06]">
               <WalletCards size={24} className="text-zinc-300" />
@@ -419,20 +419,20 @@ function Accounts({ activeAccountId, summaries, deleting, onAdd, onOpen, onDelet
           </div>
         </div>
       ) : (
-        <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
+        <section className="grid gap-3 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
           {summaries.map((summary) => (
             <AccountCard key={summary.account.id} active={activeAccountId === summary.account.id} s={summary} deleting={deleting} onOpen={onOpen} onDelete={onDelete} />
           ))}
           <button
             type="button"
             onClick={onAdd}
-            className="group grid min-h-[228px] place-items-center rounded-[24px] border border-dashed border-white/10 bg-[#090909] text-center transition hover:border-white/20 hover:bg-[#0d0d0d]"
+            className="group grid min-h-[212px] place-items-center rounded-[20px] border border-dashed border-white/10 bg-[#050505] text-center transition hover:border-white/20 hover:bg-[#0d0d0d]"
           >
             <div>
-              <span className="mx-auto grid size-14 place-items-center rounded-2xl border border-white/10 bg-black/20 text-zinc-400 transition group-hover:text-white">
-                <Plus size={24} />
+              <span className="mx-auto grid size-12 place-items-center rounded-xl border border-white/10 bg-black/20 text-zinc-400 transition group-hover:text-white">
+                <Plus size={22} />
               </span>
-              <p className="mt-4 text-xl font-black text-white">Add Account</p>
+              <p className="mt-3 text-lg font-black text-white">Add Account</p>
               <p className="mt-1 text-sm text-zinc-500">Create prop or real account.</p>
             </div>
           </button>
@@ -451,17 +451,17 @@ function AccountCard({ active = false, s, deleting, onOpen, onDelete, compact = 
       tabIndex={0}
       onClick={() => onOpen(s.account.id)}
       onKeyDown={e => { if (e.key === "Enter" || e.key === " ") onOpen(s.account.id); }}
-      className={`prop-card-glow group relative cursor-pointer overflow-hidden border transition-all duration-200 hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/30 ${active ? "border-white/20 bg-[#0a0a0a] ring-1 ring-white/10" : "border-white/10 bg-[#040404] hover:border-white/20 hover:bg-[#090909]"} ${compact ? "rounded-[22px]" : "rounded-[24px]"}`}
+      className={`prop-card-glow group relative cursor-pointer overflow-hidden border transition-all duration-200 hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/30 ${active ? "border-white/20 bg-[#090909] ring-1 ring-white/10" : "border-white/10 bg-[#040404] hover:border-white/20 hover:bg-[#090909]"} ${compact ? "rounded-[18px]" : "rounded-[20px]"}`}
     >
       {/* Top bar accent */}
       <div className="absolute inset-x-0 top-0 h-[1px] bg-gradient-to-r from-transparent via-white/20 to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
 
-      <div className={compact ? "p-4" : "p-5"}>
+      <div className={compact ? "p-4" : "p-4.5"}>
         {/* Header row */}
         <div className="flex items-start gap-3">
           <PropFirmLogo firm={s.account.firm} />
           <div className="min-w-0 flex-1">
-            <p className="truncate font-bold">{s.account.name}</p>
+            <p className="truncate text-[15px] font-bold">{s.account.name}</p>
             <div className="mt-1 flex flex-wrap items-center gap-1.5 text-xs text-[#8a8a8a]">
               <span>{s.account.accountType === "real" ? "Real" : "Prop"}</span>
               <span>/</span>
@@ -491,21 +491,21 @@ function AccountCard({ active = false, s, deleting, onOpen, onDelete, compact = 
         </div>
 
         {/* PnL */}
-        <div className={`${compact ? "mt-3" : "mt-3.5"} flex items-end justify-between`}>
+        <div className={`${compact ? "mt-3" : "mt-3"} flex items-end justify-between`}>
           <div>
             <p className="text-[10px] uppercase tracking-wider text-[#8a8a8a]">Result</p>
-            <p className={`font-mono ${compact ? "text-xl" : "text-[1.7rem]"} font-black ${s.pnl >= 0 ? "text-emerald-400" : "text-rose-400"}`}>
+            <p className={`font-mono ${compact ? "text-xl" : "text-[1.55rem]"} font-black ${s.pnl >= 0 ? "text-emerald-400" : "text-rose-400"}`}>
               {s.pnl >= 0 ? "+" : ""}{cash.format(s.pnl)}
             </p>
           </div>
           <div className="text-right">
-            <p className={`font-mono ${compact ? "text-base" : "text-lg"} font-bold`}>{cash.format(s.account.accountSize)}</p>
+            <p className={`font-mono ${compact ? "text-base" : "text-[17px]"} font-bold`}>{cash.format(s.account.accountSize)}</p>
             <p className="text-[10px] text-[#8a8a8a]">Account size</p>
           </div>
         </div>
 
         {/* Stats row */}
-        <div className={`${compact ? "mt-2.5" : "mt-3"} flex gap-4 rounded-xl bg-[#121212]/60 px-4 py-2.5`}>
+        <div className={`${compact ? "mt-2.5" : "mt-3"} flex gap-4 rounded-xl bg-[#0b0b0b] px-3.5 py-2.5`}>
           {[["Trades", s.trades], ["Win rate", `${s.winRate}%`]].map(([l, v]) => (
             <div key={String(l)}>
               <p className="text-[10px] text-[#8a8a8a]">{l}</p>
@@ -521,7 +521,7 @@ function AccountCard({ active = false, s, deleting, onOpen, onDelete, compact = 
         </div>
       </div>
 
-      <div className="flex items-center justify-between border-t border-[#2a2a2a] px-4 py-3">
+      <div className="flex items-center justify-between border-t border-[#2a2a2a] px-4 py-2.5">
         <span className="text-xs text-[#8a8a8a]">{active ? "Selected workspace" : "Open workspace"}</span>
         <ChevronRight size={16} className="text-[#8a8a8a] transition-transform group-hover:translate-x-0.5" />
       </div>
@@ -892,15 +892,13 @@ function Workspace(p: {
 
           {/* Overview */}
           <TabsContent value="overview" className="space-y-3">
-            <section className="rounded-[1.2rem] border border-white/8 bg-[#090909] p-3 sm:p-4">
+            <section className="rounded-[1rem] border border-white/8 bg-[#090909] p-3 sm:p-4">
               <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
                 <div>
-                  <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-zinc-500">
+                  <p className="text-[10px] font-medium uppercase tracking-[0.12em] text-zinc-500">
                     {account.name} <span className="mx-1 text-zinc-700">&gt;</span> Dashboard
                   </p>
-                  <h3 className="mt-1 text-base font-black tracking-tight text-white sm:text-lg">
-                    Trading overview
-                  </h3>
+                  <h3 className="mt-1 text-[15px] font-black tracking-tight text-white sm:text-base">Overview</h3>
                   <p className="mt-1 text-xs text-zinc-500">{new Date().toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric", year: "numeric" })}</p>
                 </div>
                 <div className="grid grid-cols-[36px_minmax(0,1fr)_36px] gap-2 sm:flex sm:items-center lg:ml-auto">
