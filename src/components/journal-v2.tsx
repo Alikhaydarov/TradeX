@@ -1922,7 +1922,7 @@ function ProgressBar({ label, value, color }: { label: string; value: number; co
 function BalanceMetric({ label, value, tone = "neutral" }: { label: string; value: string; tone?: "neutral" | "good" | "bad" }) {
   const color = tone === "good" ? "text-[#d9f96d]" : tone === "bad" ? "text-rose-300" : "text-[#dfe5f2]";
   return (
-    <div className="rounded-2xl border border-white/8 bg-black/10 px-4 py-3">
+    <div className="rounded-2xl border border-white/8 bg-[#050505] px-4 py-3">
       <p className="text-[10px] font-semibold uppercase tracking-wider text-[#848da3]">{label}</p>
       <b className={`mt-1 block truncate font-mono text-xl font-black ${color}`}>{value}</b>
     </div>
@@ -1932,7 +1932,7 @@ function BalanceMetric({ label, value, tone = "neutral" }: { label: string; valu
 function MetricPanel({ title, value, note, accent = "neutral" }: { title: string; value: string; note: string; accent?: "neutral" | "good" | "bad" }) {
   const color = accent === "good" ? "text-emerald-400" : accent === "bad" ? "text-rose-400" : "text-white";
   return (
-    <section className="rounded-[1.2rem] border border-white/8 bg-[#17181b] p-4 shadow-[0_14px_34px_rgba(0,0,0,.18)]">
+    <section className="rounded-[1.2rem] border border-white/8 bg-[#090909] p-4">
       <p className="text-sm font-bold text-zinc-400">{title}</p>
       <p className={`mt-3 font-mono text-[2rem] font-black tracking-tight ${color}`}>{value}</p>
       <p className="mt-2 text-sm text-zinc-500">{note}</p>
@@ -1943,7 +1943,7 @@ function MetricPanel({ title, value, note, accent = "neutral" }: { title: string
 function QuickMetric({ label, value, note, tone = "neutral" }: { label: string; value: string; note: string; tone?: "neutral" | "good" | "bad" }) {
   const color = tone === "good" ? "text-emerald-300" : tone === "bad" ? "text-rose-300" : "text-white";
   return (
-    <div className="rounded-[1rem] border border-white/8 bg-black/18 px-4 py-3">
+    <div className="rounded-[1rem] border border-white/8 bg-[#050505] px-4 py-3">
       <p className="text-[10px] uppercase tracking-[0.18em] text-zinc-500">{label}</p>
       <p className={`mt-1 truncate font-mono text-lg font-black ${color}`}>{value}</p>
       <p className="mt-1 text-xs text-zinc-500">{note}</p>
@@ -1953,7 +1953,7 @@ function QuickMetric({ label, value, note, tone = "neutral" }: { label: string; 
 
 function MiniStat({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-xl bg-[#121212]/60 p-3 text-center">
+    <div className="rounded-xl border border-white/8 bg-[#050505] p-3 text-center">
       <b className="block truncate font-mono text-sm">{value}</b>
       <small className="text-[9px] font-semibold uppercase tracking-wider text-[#8a8a8a]">{label}</small>
     </div>

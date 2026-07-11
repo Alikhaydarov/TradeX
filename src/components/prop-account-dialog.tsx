@@ -385,7 +385,7 @@ export function PropAccountDialog({
                             : "border-white/10 bg-[#050505] hover:border-white/25 hover:bg-[#111111]"
                       )}
                     >
-                      <div className={cn("transition", locked ? "pointer-events-none blur-[2px] opacity-45" : "")}>
+                      <div className={cn("transition", locked ? "pointer-events-none opacity-35" : "")}>
                         <span className="flex items-start justify-between gap-3">
                           <PlatformLogoBadge platform={item.id} />
                           <span className="flex flex-wrap justify-end gap-1">
