@@ -1135,10 +1135,10 @@ function Workspace(p: {
                 ))}
               </div>
 
-              <div className="overflow-hidden rounded-[1.3rem] border border-white/8 bg-[#17181b]">
-                <div className="flex flex-col gap-3 border-b border-white/8 px-3 py-3 sm:px-5 sm:py-4 lg:flex-row lg:items-center">
+              <div className="overflow-hidden rounded-[1rem] border border-white/8 bg-[#090909]">
+                <div className="flex flex-col gap-3 border-b border-white/8 px-3 py-3 sm:px-4 sm:py-3.5 lg:flex-row lg:items-center">
                   <div>
-                    <h3 className="font-bold capitalize">{month.toLocaleDateString("en-US", { month: "long", year: "numeric" })} performance</h3>
+                    <h3 className="text-[15px] font-black capitalize text-white">{month.toLocaleDateString("en-US", { month: "long", year: "numeric" })} performance</h3>
                     <p className="text-xs text-[#8a8a8a]">Open any day to review the exact trades behind that result.</p>
                   </div>
                   <div className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-1 rounded-[0.95rem] border border-white/8 bg-[#141518] p-1 sm:flex sm:gap-2 lg:ml-auto">
@@ -1166,7 +1166,7 @@ function Workspace(p: {
                           <div className="flex items-start justify-between">
                             <span className={`grid size-6 place-items-center rounded-md text-[11px] font-bold ${c.trades.length ? "bg-black/18 text-[#f1f1f1]" : "text-[#8a8a8a]"}`}>{c.day}</span>
                             {c.trades.length > 0 ? (
-                              <span className="rounded-md bg-black/18 px-1.5 py-0.5 text-[10px] font-medium text-[#8a8a8a]">
+                            <span className="rounded-md bg-black/30 px-1.5 py-0.5 text-[10px] font-medium text-[#8a8a8a]">
                                 {c.trades.length}
                               </span>
                             ) : null}
@@ -1228,11 +1228,11 @@ function Workspace(p: {
           <TabsContent value="trades">
             <div className="space-y-4">
               <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_320px]">
-                <section className="overflow-hidden rounded-[1.3rem] border border-white/8 bg-[#17181b] shadow-[0_18px_46px_rgba(0,0,0,.2)]">
-                  <div className="space-y-4 border-b border-white/8 px-5 py-4">
+                <section className="overflow-hidden rounded-[1rem] border border-white/8 bg-[#090909] shadow-[0_18px_46px_rgba(0,0,0,.2)]">
+                  <div className="space-y-4 border-b border-white/8 px-4 py-3.5">
                     <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
                       <div>
-                        <h3 className="text-lg font-black text-white">Trade Log</h3>
+                        <h3 className="text-[15px] font-black text-white">Trade Log</h3>
                         <p className="text-xs text-zinc-500">Select a trade to review its full story.</p>
                       </div>
                       <div className="relative sm:ml-auto sm:w-72">
@@ -1283,7 +1283,7 @@ function Workspace(p: {
                   {trades.length ? (
                     <div className="overflow-x-auto">
                       <div className="min-w-[820px] px-3 py-3">
-                        <div className="grid grid-cols-[48px_1.3fr_1fr_.9fr_1fr_1fr_.9fr] rounded-2xl bg-black/20 px-4 py-3 text-xs font-semibold text-zinc-500">
+                        <div className="grid grid-cols-[48px_1.3fr_1fr_.9fr_1fr_1fr_.9fr] rounded-xl bg-black px-4 py-3 text-xs font-semibold text-zinc-500">
                           <span />
                           <span>Entry date</span>
                           <span>Symbol</span>
@@ -1300,7 +1300,7 @@ function Workspace(p: {
                                 key={trade.id}
                                 type="button"
                                 onClick={() => openTrade(trade)}
-                                className="grid w-full grid-cols-[48px_1.3fr_1fr_.9fr_1fr_1fr_.9fr] items-center rounded-2xl border border-white/8 bg-black/12 px-4 py-3 text-left transition hover:bg-white/[.04]"
+                                className="grid w-full grid-cols-[48px_1.3fr_1fr_.9fr_1fr_1fr_.9fr] items-center rounded-xl border border-white/8 bg-black px-4 py-3 text-left transition hover:bg-[#0d0d0d]"
                               >
                                 <span className="grid size-5 place-items-center rounded-full border border-white/10" />
                                 <span className="text-sm font-semibold text-white">{new Date(`${trade.rawDate}T00:00:00`).toLocaleString("en-GB", { day: "2-digit", month: "2-digit", year: "numeric" })}</span>
@@ -1321,8 +1321,8 @@ function Workspace(p: {
                   ) : <Empty text="No trades in this range yet." />}
                 </section>
 
-                <section className="rounded-[1.3rem] border border-white/8 bg-[#17181b] p-5 shadow-[0_18px_46px_rgba(0,0,0,.2)]">
-                  <h3 className="text-lg font-black text-white">Trade Snapshot</h3>
+                <section className="rounded-[1rem] border border-white/8 bg-[#090909] p-4 shadow-[0_18px_46px_rgba(0,0,0,.2)]">
+                  <h3 className="text-[15px] font-black text-white">Trade Snapshot</h3>
                   <p className="mt-1 text-sm text-zinc-500">A lighter side panel so the main log stays clean.</p>
                   <div className="mt-4 space-y-3">
                     <MiniStat label="Trades" value={String(trades.length)} />
@@ -1398,18 +1398,18 @@ function Workspace(p: {
                 ["strategy", "Strategy"],
                 ["symbols", "Symbols"],
               ].map(([value, label]) => (
-                <button key={value} type="button" onClick={() => setAnalyticsView(value as "overview" | "strategy" | "symbols")} className={`rounded-xl px-4 py-2 text-sm font-semibold transition ${analyticsView === value ? "bg-white text-black" : "border border-white/8 bg-[#17181b] text-zinc-400"}`}>
+                <button key={value} type="button" onClick={() => setAnalyticsView(value as "overview" | "strategy" | "symbols")} className={`rounded-xl px-4 py-2 text-sm font-semibold transition ${analyticsView === value ? "bg-white text-black" : "border border-white/8 bg-[#090909] text-zinc-400"}`}>
                   {label}
                 </button>
               ))}
-              <div className="ml-auto rounded-xl border border-white/8 bg-[#17181b] px-4 py-2 text-sm font-semibold text-white">All time</div>
+              <div className="ml-auto rounded-xl border border-white/8 bg-[#090909] px-4 py-2 text-sm font-semibold text-white">All time</div>
             </div>
 
             {analyticsView === "overview" ? (
               <div className="grid gap-4 xl:grid-cols-[minmax(0,1.05fr)_minmax(360px,.95fr)]">
-                <section className="overflow-hidden rounded-[1.3rem] border border-white/8 bg-[#17181b] shadow-[0_18px_46px_rgba(0,0,0,.2)]">
-                  <div className="border-b border-white/8 px-5 py-4">
-                    <h3 className="font-bold text-white">Account Balance</h3>
+                <section className="overflow-hidden rounded-[1rem] border border-white/8 bg-[#090909] shadow-[0_18px_46px_rgba(0,0,0,.2)]">
+                  <div className="border-b border-white/8 px-4 py-3.5">
+                    <h3 className="text-[15px] font-black text-white">Account Balance</h3>
                     <p className="mt-1 text-xs text-zinc-500">{month.toLocaleDateString("en-US", { month: "short", day: "numeric" })} - {new Date().toLocaleDateString("en-US", { month: "short", day: "numeric" })}</p>
                   </div>
                   <div className="h-[330px] p-4">
@@ -1433,10 +1433,10 @@ function Workspace(p: {
                   </div>
                 </section>
 
-                <section className="overflow-hidden rounded-[1.3rem] border border-white/8 bg-[#17181b] shadow-[0_18px_46px_rgba(0,0,0,.2)]">
-                  <div className="flex items-center justify-between border-b border-white/8 px-5 py-4">
+                <section className="overflow-hidden rounded-[1rem] border border-white/8 bg-[#090909] shadow-[0_18px_46px_rgba(0,0,0,.2)]">
+                  <div className="flex items-center justify-between border-b border-white/8 px-4 py-3.5">
                     <div>
-                      <h3 className="font-bold text-white">TradeWay Profitability Score</h3>
+                      <h3 className="text-[15px] font-black text-white">TradeWay Profitability Score</h3>
                       <p className="mt-1 text-xs text-zinc-500">{trades.length < 5 ? "Early read, score becomes sharper after 5+ trades." : "Live score based on execution quality."}</p>
                     </div>
                     <span className="rounded-full border border-white/8 bg-black/20 px-3 py-1 text-xs font-black text-white">{profitabilityScore}</span>
@@ -1473,8 +1473,8 @@ function Workspace(p: {
 
             {analyticsView === "strategy" ? (
               <div className="grid gap-4 xl:grid-cols-2">
-                <section className="rounded-[1.3rem] border border-white/8 bg-[#17181b] p-5">
-                  <h3 className="font-bold text-white">Setup Performance</h3>
+                <section className="rounded-[1rem] border border-white/8 bg-[#090909] p-4">
+                  <h3 className="text-[15px] font-black text-white">Setup Performance</h3>
                   <div className="mt-4 space-y-4">
                     {setups.length ? setups.map((setup) => (
                       <div key={setup.name}>
@@ -1489,8 +1489,8 @@ function Workspace(p: {
                     )) : <Empty text="No setup analytics yet." />}
                   </div>
                 </section>
-                <section className="rounded-[1.3rem] border border-white/8 bg-[#17181b] p-5">
-                  <h3 className="font-bold text-white">Discipline & Mistakes</h3>
+                <section className="rounded-[1rem] border border-white/8 bg-[#090909] p-4">
+                  <h3 className="text-[15px] font-black text-white">Discipline & Mistakes</h3>
                   <div className="mt-4">
                     <ProgressBar label={`${monthCount} trades reviewed`} value={planRate} color="bg-emerald-500" />
                   </div>
@@ -1517,8 +1517,8 @@ function Workspace(p: {
 
             {analyticsView === "symbols" ? (
               <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_340px]">
-                <section className="rounded-[1.3rem] border border-white/8 bg-[#17181b] p-5">
-                  <h3 className="font-bold text-white">Most Traded Symbols</h3>
+                <section className="rounded-[1rem] border border-white/8 bg-[#090909] p-4">
+                  <h3 className="text-[15px] font-black text-white">Most Traded Symbols</h3>
                   <div className="mt-4 space-y-2">
                     {symbolStats.length ? symbolStats.map((symbol) => (
                       <div key={symbol.symbol} className="flex items-center justify-between rounded-2xl border border-white/8 bg-black/15 px-3 py-3">
@@ -1534,8 +1534,8 @@ function Workspace(p: {
                     )) : <Empty text="No symbol data yet." />}
                   </div>
                 </section>
-                <section className="rounded-[1.3rem] border border-white/8 bg-[#17181b] p-5">
-                  <h3 className="font-bold text-white">Account Details</h3>
+                <section className="rounded-[1rem] border border-white/8 bg-[#090909] p-4">
+                  <h3 className="text-[15px] font-black text-white">Account Details</h3>
                   <div className="mt-4 grid grid-cols-2 gap-2.5">
                     {[
                       ["FIRM", account.firm || "Independent"],

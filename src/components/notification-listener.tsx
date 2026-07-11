@@ -178,7 +178,7 @@ export function NotificationListener() {
   return (
     <>
       {permission === "default" && !promptDismissed && (
-        <div className="fixed bottom-5 right-3 z-30 hidden max-w-[280px] rounded-2xl border border-white/10 bg-[#171717]/90 p-3 text-xs text-slate-200 shadow-2xl shadow-slate-950/40 backdrop-blur-2xl sm:block">
+        <div className="fixed bottom-5 right-3 z-30 hidden max-w-[280px] rounded-2xl border border-white/10 bg-[#080808] p-3 text-xs text-slate-200 shadow-2xl shadow-slate-950/40 sm:block">
           <div className="flex gap-2 pr-7">
             <Bell size={16} className="mt-0.5 shrink-0 text-zinc-300" />
             <div>
@@ -196,7 +196,7 @@ export function NotificationListener() {
       )}
 
       {toast && (
-        <div className="fixed right-3 top-3 z-[80] w-[min(360px,calc(100vw-24px))] rounded-2xl border border-white/10 bg-[#171717]/95 p-3 text-sm text-white shadow-2xl shadow-slate-950/50 backdrop-blur-2xl">
+        <div className="fixed right-3 top-3 z-[80] w-[min(360px,calc(100vw-24px))] rounded-2xl border border-white/10 bg-[#080808] p-3 text-sm text-white shadow-2xl shadow-slate-950/50">
           <div className="flex items-start gap-3">
             <span className="grid h-9 w-9 shrink-0 place-items-center rounded-2xl bg-white/[.06] text-zinc-300">
               <BellRing size={17} />

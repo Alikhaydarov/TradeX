@@ -6,6 +6,14 @@ function cleanText(node: Element | undefined) {
   return (node?.textContent || "").replace(/\s+/g, " ").trim();
 }
 
+function isTradesPage() {
+  return typeof window !== "undefined" && window.location.pathname.startsWith("/trades");
+}
+
+function isMobileViewport() {
+  return typeof window !== "undefined" && window.innerWidth < 768;
+}
+
 function isTradeLikeButton(button: HTMLButtonElement) {
   if (button.dataset.mobileTradeCard === "true") return false;
   const text = cleanText(button);
@@ -48,34 +56,22 @@ function buildCard(row: HTMLButtonElement) {
   const card = document.createElement("button");
   card.type = "button";
   card.setAttribute("data-mobile-trade-card", "true");
-  card.className = "w-full rounded-2xl border border-white/10 bg-[#101010] px-4 py-3 text-left shadow-[inset_0_1px_0_rgba(255,255,255,.035)] transition active:scale-[.99]";
+  card.className = "w-full rounded-xl border border-white/8 bg-[#080808] px-4 py-3 text-left shadow-[inset_0_1px_0_rgba(255,255,255,.03)] transition active:scale-[.99]";
   card.addEventListener("click", () => row.click());
 
-  const sideClass = isSell ? "bg-rose-500/25 text-rose-200" : "bg-emerald-500/18 text-emerald-200";
-  const pnlClass = winning ? "bg-emerald-500/15 text-emerald-300" : "bg-rose-500/15 text-rose-300";
+  const sideClass = isSell ? "bg-rose-500/18 text-rose-200" : "bg-emerald-500/14 text-emerald-200";
+  const pnlClass = winning ? "text-emerald-300" : "text-rose-300";
   const cleanSymbol = symbol.replace(/[^A-Z0-9+]/gi, "").toUpperCase() || "TRADE";
 
   card.innerHTML = `
-    <div class="flex items-center justify-between gap-3">
-      <div class="flex min-w-0 items-center gap-2">
-        <span class="grid size-7 shrink-0 place-items-center rounded-lg border border-white/10 bg-[#151515] text-[9px] font-black text-zinc-300">${cleanSymbol.slice(0, 2)}</span>
-        <strong class="min-w-0 truncate text-lg font-black tracking-[-0.03em] text-white">${cleanSymbol}</strong>
-        <span class="shrink-0 text-base">🇺🇸</span>
+    <div class="flex items-start justify-between gap-3">
+      <div class="min-w-0">
+        <strong class="block truncate text-sm font-black tracking-[-0.02em] text-white">${cleanSymbol}</strong>
+        <div class="mt-2 flex items-center gap-2">
+          <span class="rounded-lg px-2 py-1 text-[11px] font-black uppercase ${sideClass}">${isSell ? "SELL" : "BUY"}</span>
+        </div>
       </div>
-      <div class="flex shrink-0 items-center gap-2">
-        <span class="rounded-xl px-3 py-1.5 font-mono text-sm font-black ${pnlClass}">${pnl}</span>
-        <span class="text-xl leading-none text-zinc-500">⌃</span>
-      </div>
-    </div>
-    <div class="mt-3 flex items-center justify-between gap-3">
-      <div class="flex min-w-0 items-center gap-2">
-        <span class="rounded-lg px-2.5 py-1 text-xs font-black uppercase ${sideClass}">${isSell ? "SELL" : "BUY"}</span>
-        <span class="truncate text-base font-bold text-zinc-300">1.00 Lots</span>
-      </div>
-      <div class="flex shrink-0 items-center gap-1.5">
-        <span class="rounded-md bg-rose-500/20 px-2 py-1 text-xs font-black text-rose-200">SL</span>
-        <span class="rounded-md bg-emerald-500/15 px-2 py-1 text-xs font-black text-emerald-300">TP</span>
-      </div>
+      <span class="shrink-0 text-sm font-black ${pnlClass}">${pnl}</span>
     </div>
   `;
 
@@ -103,9 +99,28 @@ function findDesktopContainer(rows: HTMLButtonElement[]) {
   return first.parentElement;
 }
 
+function teardownCards() {
+  const list = document.querySelector("[data-mobile-trades-list='true']");
+  list?.remove();
+
+  const hiddenContainers = document.querySelectorAll("[data-mobile-trades-source='true']");
+  hiddenContainers.forEach((element) => {
+    element.classList.remove("hidden");
+    element.removeAttribute("data-mobile-trades-source");
+  });
+}
+
 function syncMobileTradeCards() {
+  if (!isTradesPage() || !isMobileViewport()) {
+    teardownCards();
+    return;
+  }
+
   const rows = findTradeRows();
-  if (!rows.length) return;
+  if (!rows.length) {
+    teardownCards();
+    return;
+  }
 
   const desktopContainer = findDesktopContainer(rows);
   if (!desktopContainer) return;
@@ -114,14 +129,14 @@ function syncMobileTradeCards() {
   if (existing) existing.remove();
 
   desktopContainer.classList.add("hidden", "md:block");
+  desktopContainer.setAttribute("data-mobile-trades-source", "true");
 
   const list = document.createElement("div");
   list.setAttribute("data-mobile-trades-list", "true");
   list.className = "grid gap-2.5 p-3 md:hidden";
 
   for (const row of rows) {
-    const card = buildCard(row);
-    if (card) list.appendChild(card);
+    list.appendChild(buildCard(row));
   }
 
   desktopContainer.parentElement?.insertBefore(list, desktopContainer);
@@ -129,16 +144,31 @@ function syncMobileTradeCards() {
 
 export function MobileTradesBridge() {
   useEffect(() => {
-    const run = () => window.requestAnimationFrame(syncMobileTradeCards);
-    run();
-    const interval = window.setInterval(run, 900);
+    let frame = 0;
+    let timeout: ReturnType<typeof window.setTimeout> | null = null;
 
-    const observer = new MutationObserver(run);
-    observer.observe(document.body, { childList: true, subtree: true, characterData: true });
+    const schedule = () => {
+      if (frame) window.cancelAnimationFrame(frame);
+      if (timeout) window.clearTimeout(timeout);
+      timeout = window.setTimeout(() => {
+        frame = window.requestAnimationFrame(syncMobileTradeCards);
+      }, 90);
+    };
+
+    schedule();
+    window.addEventListener("resize", schedule);
+    window.addEventListener("popstate", schedule);
+
+    const observer = new MutationObserver(schedule);
+    observer.observe(document.body, { childList: true, subtree: true });
 
     return () => {
-      window.clearInterval(interval);
+      if (frame) window.cancelAnimationFrame(frame);
+      if (timeout) window.clearTimeout(timeout);
       observer.disconnect();
+      window.removeEventListener("resize", schedule);
+      window.removeEventListener("popstate", schedule);
+      teardownCards();
     };
   }, []);
 

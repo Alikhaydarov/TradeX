@@ -39,7 +39,7 @@ export function WorkspaceTopbar({ section }: { section: Section }) {
   const pnlLabel = pnlMode === "percentage" ? "Percentage View" : pnlMode === "hidden" ? "Hide P&L" : "Money View";
 
   return (
-    <div role="banner" className="tw-app-topbar sticky top-0 z-[60] shrink-0 border-b border-white/8 bg-black px-4 py-3 lg:static lg:flex lg:h-[52px] lg:items-center lg:justify-between lg:px-5 lg:py-0">
+    <div role="banner" className="tw-app-topbar sticky top-0 z-[60] shrink-0 border-b border-white/8 bg-black px-4 py-3 lg:static lg:flex lg:h-[48px] lg:items-center lg:justify-between lg:px-4 lg:py-0">
       <div className="flex items-center justify-between gap-3 lg:hidden">
         <button
           type="button"
@@ -72,16 +72,16 @@ export function WorkspaceTopbar({ section }: { section: Section }) {
         </div>
       </div>
 
-        <div className="hidden items-center justify-between gap-3 lg:flex lg:w-full">
-        <div className="min-w-0 items-center gap-1.5 text-[11px] font-medium text-zinc-500 lg:flex">
+      <div className="hidden items-center justify-between gap-3 lg:flex lg:w-full">
+        <div className="min-w-0 items-center gap-1 text-[10px] font-medium text-zinc-500 lg:flex">
           {isAccountScoped ? (
             <>
               <span className="truncate text-zinc-500">{workspace}</span>
               <span className="text-zinc-700">&gt;</span>
-              <span className="font-semibold text-zinc-300">{page}</span>
+              <span className="font-semibold tracking-[0.01em] text-zinc-300">{page}</span>
             </>
           ) : (
-            <span className="font-semibold text-zinc-300">{page}</span>
+            <span className="font-semibold tracking-[0.01em] text-zinc-300">{page}</span>
           )}
         </div>
         <PnlModeMenu pnlMode={pnlMode} pnlLabel={pnlLabel} onChange={setPnlMode} />

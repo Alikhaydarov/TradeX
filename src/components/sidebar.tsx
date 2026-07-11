@@ -5,7 +5,6 @@ import {
   CircleHelp,
   CalendarDays,
   ChevronDown,
-  CirclePlus,
   Globe,
   Home,
   LayoutDashboard,
@@ -120,7 +119,6 @@ export function Sidebar({
 
   const primaryNav = [
     { id: "feed" as const, label: t("home"), icon: Home },
-    { id: "accounts" as const, label: "Accounts", icon: CirclePlus },
     { id: "account" as const, label: t("profile"), icon: UserRound },
   ];
   const journalingNav = [
@@ -351,7 +349,7 @@ export function Sidebar({
             <div className="flex h-full flex-col">
               <div className="flex items-center justify-between border-b border-white/8 px-4 py-4">
                 <div className="flex items-center gap-3">
-                  <span className="grid size-10 place-items-center rounded-xl bg-white text-sm font-black text-black">TD</span>
+                  <span className="grid size-10 place-items-center rounded-xl bg-white text-sm font-black text-black">TW</span>
                   <div>
                     <span className="flex items-center gap-2">
                       <strong className="block text-base leading-tight text-white">TradeWay</strong>

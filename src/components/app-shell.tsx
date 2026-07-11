@@ -59,6 +59,12 @@ function AppShellInner() {
   }));
   const { user } = useAuth();
   const { fontFamily } = useWorkspacePreferences();
+  const resolvedFontFamily =
+    fontFamily === "Geist"
+      ? "var(--font-inter), Inter, ui-sans-serif, system-ui, sans-serif"
+      : fontFamily === "System UI"
+        ? "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
+        : "var(--font-inter), Inter, ui-sans-serif, system-ui, sans-serif";
   const openLogin = () => setAuthOpen(true);
 
   useEffect(() => {
@@ -183,7 +189,7 @@ function AppShellInner() {
   return (
     <>
       <ActiveAccountProvider>
-      <div className="mx-auto flex min-h-[100dvh] w-full max-w-[1920px] gap-4 bg-[#000000] p-0 text-foreground lg:p-4" style={{ fontFamily }}>
+      <div className="mx-auto flex min-h-[100dvh] w-full max-w-[1920px] gap-4 bg-[#000000] p-0 text-foreground lg:p-4" style={{ fontFamily: resolvedFontFamily }}>
         <Sidebar
           active={section}
           onChange={changeSection}
