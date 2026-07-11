@@ -594,6 +594,7 @@ function Workspace(p: {
   const [openPositions, setOpenPositions] = useState<OpenPosition[]>([]);
   const [positionsPendingSetup, setPositionsPendingSetup] = useState(false);
   const [analyticsView, setAnalyticsView] = useState<"overview" | "strategy" | "symbols">("overview");
+  const singleTabMode = embedded && Boolean(forcedTab);
   const pnlBase = account.initialBalance || account.accountSize || 1;
   const formatTradePnl = useCallback((amount: number) => formatPnl(amount, pnlBase), [formatPnl, pnlBase]);
   const currentPnl = (equity.at(-1)?.equity ?? account.initialBalance) - account.initialBalance;
@@ -795,6 +796,7 @@ function Workspace(p: {
 
         {/* Section content */}
         <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as WorkspaceTab)} className="gap-4">
+          {!singleTabMode || activeTab === "home" ? (
           <TabsContent value="home" className="space-y-4">
             <section className="rounded-[1.35rem] border border-white/8 bg-[#090909] p-4 sm:p-5">
               <div className="flex flex-col gap-4 xl:flex-row xl:items-start">
@@ -889,8 +891,10 @@ function Workspace(p: {
               </div>
             </div>
           </TabsContent>
+          ) : null}
 
           {/* Overview */}
+          {!singleTabMode || activeTab === "overview" ? (
           <TabsContent value="overview" className="space-y-3">
             <section className="rounded-[1rem] border border-white/8 bg-[#090909] p-3 sm:p-4">
               <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
@@ -1116,8 +1120,10 @@ function Workspace(p: {
 
             <AiCoachCard report={coachReport} loading={coachLoading} error={coachError} onRefresh={() => void loadCoach()} />
           </TabsContent>
+          ) : null}
 
           {/* Calendar */}
+          {!singleTabMode || activeTab === "calendar" ? (
           <TabsContent value="calendar">
             <div className="space-y-4">
               <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
@@ -1223,8 +1229,10 @@ function Workspace(p: {
               </div>
             </div>
           </TabsContent>
+          ) : null}
 
           {/* Trades */}
+          {!singleTabMode || activeTab === "trades" ? (
           <TabsContent value="trades">
             <div className="space-y-4">
               <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_320px]">
@@ -1335,8 +1343,10 @@ function Workspace(p: {
               </div>
             </div>
           </TabsContent>
+          ) : null}
 
           {/* Trading Bible */}
+          {!singleTabMode || activeTab === "bible" ? (
           <TabsContent value="bible">
             <section className="overflow-hidden rounded-2xl border border-[#2a2a2a] bg-[#1b1b1b]/80">
               <div className="flex flex-col gap-3 border-b border-[#2a2a2a] px-5 py-4 sm:flex-row sm:items-center">
@@ -1389,8 +1399,10 @@ function Workspace(p: {
               )}
             </section>
           </TabsContent>
+          ) : null}
 
           {/* Analytics */}
+          {!singleTabMode || activeTab === "analytics" ? (
           <TabsContent value="analytics" className="space-y-4">
             <div className="flex flex-wrap items-center gap-2">
               {[
@@ -1552,7 +1564,8 @@ function Workspace(p: {
               </div>
             ) : null}
           </TabsContent>
-          {!embedded && account.platform === "mt5" ? (
+          ) : null}
+          {!embedded && account.platform === "mt5" && (!singleTabMode || activeTab === "settings") ? (
             <TabsContent value="settings">
               <Mt5Settings account={account} onSynced={p.onMt5Synced} />
             </TabsContent>

@@ -145,7 +145,7 @@ function syncMobileTradeCards() {
 export function MobileTradesBridge() {
   useEffect(() => {
     let frame = 0;
-    let timeout: ReturnType<typeof window.setTimeout> | null = null;
+    let timeout: number | null = null;
 
     const schedule = () => {
       if (frame) window.cancelAnimationFrame(frame);
