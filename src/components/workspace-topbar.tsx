@@ -32,7 +32,7 @@ export function WorkspaceTopbar({ section }: { section: Section }) {
   const activeAccount = accounts.find((account) => account.id === activeAccountId) || null;
   const page = LABELS[section] || "Workspace";
   const isAccountScoped = ACCOUNT_SCOPED_SECTIONS.has(section);
-  const workspace = activeAccount?.name || "Workspace";
+  const workspace = activeAccount?.name || "All Accounts";
 
   return (
     <div role="banner" className="tw-app-topbar sticky top-0 z-[60] shrink-0 border-b border-white/8 bg-black px-4 py-3 lg:static lg:flex lg:h-[56px] lg:items-center lg:justify-between lg:px-6 lg:py-0">
@@ -65,15 +65,15 @@ export function WorkspaceTopbar({ section }: { section: Section }) {
         </button>
       </div>
 
-      <div className="hidden min-w-0 items-center gap-2 text-xs font-semibold text-zinc-500 lg:flex">
+      <div className="hidden min-w-0 items-center gap-2 text-[12px] font-medium text-zinc-500 lg:flex">
         {isAccountScoped ? (
           <>
-            <span className="truncate uppercase tracking-[0.16em]">{workspace}</span>
-            <span className="text-zinc-700">/</span>
-            <span className="font-bold text-zinc-300">{page}</span>
+            <span className="truncate text-zinc-500">{workspace}</span>
+            <span className="text-zinc-700">&gt;</span>
+            <span className="font-semibold text-zinc-200">{page}</span>
           </>
         ) : (
-          <span className="font-bold uppercase tracking-[0.16em] text-zinc-300">{page}</span>
+          <span className="font-semibold text-zinc-200">{page}</span>
         )}
       </div>
     </div>
