@@ -2,12 +2,10 @@
 
 import type { User } from "@supabase/supabase-js";
 import {
-  BadgePercent,
   CalendarDays,
   ChevronDown,
   CirclePlus,
   Crown,
-  FlaskConical,
   Home,
   LayoutDashboard,
   LogIn,
@@ -18,7 +16,6 @@ import {
   SquareChartGantt,
   TrendingUp,
   UserRound,
-  UsersRound,
   X,
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
@@ -26,7 +23,6 @@ import { apiRequest } from "@/lib/api-client";
 import { useLanguage } from "@/lib/i18n";
 import { useActiveAccountStore } from "./active-account-context";
 import { usePremiumStatus } from "./use-premium-status";
-import { Badge } from "./ui/badge";
 import { Dialog, DialogContent } from "./ui/dialog";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "./ui/dropdown-menu";
 import { TraderAvatar } from "./trader-avatar";
@@ -171,27 +167,6 @@ export function Sidebar({
     );
   };
 
-  const renderDisabledButton = (
-    item: { label: string; icon: typeof Home; soon?: string },
-    mobile = false,
-  ) => {
-    const { label, icon: Icon, soon = "Soon" } = item;
-    return (
-      <div
-        key={`${label}-${mobile ? "m" : "d"}`}
-        className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-zinc-500"
-      >
-        <span className="grid h-9 w-9 place-items-center rounded-xl bg-[#090909] text-zinc-600">
-          <Icon size={18} strokeWidth={2} />
-        </span>
-        <span className="min-w-0 flex-1 truncate text-sm font-medium">{label}</span>
-        <Badge variant="outline" className="rounded-full border-white/10 bg-[#080808] px-2 py-0 text-[10px] text-zinc-500">
-          {soon}
-        </Badge>
-      </div>
-    );
-  };
-
   const renderAccountSwitcher = (mobile = false) => (
     <DropdownMenu open={accountSwitcherOpen} onOpenChange={setAccountSwitcherOpen}>
       <div className={`${mobile ? "flex w-full items-center gap-2 rounded-2xl border border-white/10 bg-[#060606] p-3" : "mt-4 flex w-full items-center gap-2 rounded-[1rem] border border-white/8 bg-[#050505] p-3.5 transition hover:bg-[#090909]"}`}>
@@ -301,16 +276,6 @@ export function Sidebar({
           <nav className="space-y-1">
             {journalingNav.map((item) => renderNavButton(item))}
           </nav>
-
-          <GroupLabel>Backtesting</GroupLabel>
-          <div className="space-y-1">
-            {renderDisabledButton({ label: "Backtesting", icon: FlaskConical })}
-          </div>
-
-          <GroupLabel>Social</GroupLabel>
-          <div className="space-y-1">
-            {renderDisabledButton({ label: "Communities", icon: UsersRound })}
-          </div>
 
           {adminNav.length ? (
             <>
@@ -422,20 +387,10 @@ export function Sidebar({
                   {journalingNav.map((item) => renderNavButton(item, true))}
                 </nav>
 
-                <GroupLabel>Backtesting</GroupLabel>
-                <div className="space-y-1">
-                  {renderDisabledButton({ label: "Backtesting", icon: FlaskConical }, true)}
-                </div>
-
-                <GroupLabel>Social</GroupLabel>
-                <div className="space-y-1">
-                  {renderDisabledButton({ label: "Communities", icon: UsersRound }, true)}
-                </div>
-
                 <div className="mt-4 rounded-[1.1rem] border border-white/10 bg-[#070707] p-4">
                   <div className="flex items-start gap-3">
                     <span className="grid size-10 shrink-0 place-items-center rounded-2xl bg-[#111111] text-white">
-                      <BadgePercent size={18} />
+                      <Crown size={18} />
                     </span>
                     <div className="min-w-0 flex-1">
                       <p className="text-sm font-black text-white">Join early access</p>

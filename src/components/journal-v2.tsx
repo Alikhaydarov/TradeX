@@ -1,7 +1,7 @@
 "use client";
 
 import {
-  ArrowLeft, BarChart3, BookOpen, BrainCircuit, CalendarDays, CheckCircle2, ChevronDown, ChevronLeft, ChevronRight,
+  BarChart3, BookOpen, BrainCircuit, CalendarDays, CheckCircle2, ChevronDown, ChevronLeft, ChevronRight,
   Download, ImageIcon, LoaderCircle, MoreHorizontal, Plus, Search, ShieldCheck,
   Target, Trash2, TrendingDown, TrendingUp, WalletCards, X, Zap,
 } from "lucide-react";
@@ -392,14 +392,12 @@ export function JournalV2({
 // Accounts list.
 function Accounts({ activeAccountId, summaries, deleting, onAdd, onOpen, onDelete }: { activeAccountId: string | null; summaries: Summary[]; deleting: string | null; onAdd: () => void; onOpen: (id: string) => void; onDelete: (a: PropAccount) => void }) {
   return (
-    <div className="animate-page-in mx-auto max-w-[1880px] space-y-5 p-4 lg:p-6">
-      <div className="flex flex-col gap-3 md:flex-row md:items-center">
+    <div className="animate-page-in mx-auto max-w-[1880px] space-y-4 p-4 lg:p-6">
+      <div className="flex items-center justify-between gap-3">
         <div className="min-w-0">
-          <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-zinc-500">Workspace / Accounts</p>
-          <h1 className="mt-1 text-xl font-black tracking-tight text-white sm:text-2xl">Select account</h1>
-          <p className="mt-1 text-sm text-zinc-500">Choose one card and we load its dashboard, calendar, trades and analytics.</p>
+          <p className="text-xs font-semibold text-zinc-500">Accounts workspace</p>
         </div>
-        <div className="flex flex-wrap items-center gap-2 lg:ml-auto">
+        <div className="flex shrink-0 items-center gap-2">
           <Button onClick={onAdd} className="h-11 rounded-2xl bg-white px-4 text-black hover:bg-zinc-200">
             <Plus size={16} /> Add Account
           </Button>
@@ -407,7 +405,7 @@ function Accounts({ activeAccountId, summaries, deleting, onAdd, onOpen, onDelet
       </div>
 
       {!summaries.length ? (
-        <div className="grid min-h-72 place-items-center rounded-[26px] border border-dashed border-white/10 bg-[#17181b] text-center">
+        <div className="grid min-h-72 place-items-center rounded-[24px] border border-dashed border-white/10 bg-[#090909] text-center">
           <div>
             <div className="mx-auto grid size-14 place-items-center rounded-2xl bg-white/[.06]">
               <WalletCards size={24} className="text-zinc-300" />
@@ -427,7 +425,7 @@ function Accounts({ activeAccountId, summaries, deleting, onAdd, onOpen, onDelet
           <button
             type="button"
             onClick={onAdd}
-            className="group grid min-h-[228px] place-items-center rounded-[24px] border border-dashed border-white/10 bg-[#050505] text-center transition hover:border-white/20 hover:bg-[#090909]"
+            className="group grid min-h-[228px] place-items-center rounded-[24px] border border-dashed border-white/10 bg-[#090909] text-center transition hover:border-white/20 hover:bg-[#0d0d0d]"
           >
             <div>
               <span className="mx-auto grid size-14 place-items-center rounded-2xl border border-white/10 bg-black/20 text-zinc-400 transition group-hover:text-white">
@@ -693,36 +691,20 @@ function Workspace(p: {
 
   return (
     <div className="animate-page-in mx-auto max-w-[1780px]">
-      {/* Sticky header */}
-      <header className="sticky top-0 z-20 hidden min-w-0 items-center gap-3 border-b border-white/6 bg-[#0b0b0b]/96 px-6 py-3 lg:flex">
-        <Button variant="ghost" size="icon" onClick={p.onBack} className="shrink-0">
-          <ArrowLeft size={18} />
-        </Button>
+      <header className="sticky top-[56px] z-20 hidden min-w-0 items-center gap-3 border-b border-white/8 bg-[#000000] px-5 py-3 lg:flex">
         <PropFirmLogo firm={account.firm} compact />
-        <div className="min-w-0">
-          <h1 className="truncate text-base font-black lg:text-lg">{account.name}</h1>
-          <div className="flex flex-wrap items-center gap-1.5 text-[11px] text-[#8a8a8a]">
+        <div className="min-w-0 flex-1">
+          <p className="truncate text-sm font-black text-white">{account.name}</p>
+          <div className="flex flex-wrap items-center gap-1.5 text-[11px] text-zinc-500">
+            <span>{account.accountType === "real" ? "Real" : "Prop"}</span>
+            <span>/</span>
             <span>{account.phase}</span>
             <span>/</span>
             <span>{cash.format(account.accountSize)}</span>
             <PlatformLogoBadge platform={account.platform} compact className="ml-1" />
           </div>
         </div>
-        <div className="hidden min-w-[220px] xl:block">
-          <Select value={account.id} onValueChange={p.onAccountChange}>
-            <SelectTrigger className="h-10 rounded-xl border-white/10 bg-white/[.04]">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {accounts.map((item) => (
-                <SelectItem key={item.id} value={item.id}>
-                  {item.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-        <span className={`ml-1 hidden rounded-lg border px-2 py-0.5 text-[11px] font-semibold md:block ${account.status === "Active" ? "border-emerald-400/20 bg-emerald-400/10 text-emerald-400" : "border-[#2a2a2a] text-[#8a8a8a]"}`}>
+        <span className={`hidden rounded-lg border px-2 py-0.5 text-[11px] font-semibold md:block ${account.status === "Active" ? "border-emerald-400/20 bg-emerald-400/10 text-emerald-400" : "border-[#2a2a2a] text-[#8a8a8a]"}`}>
           {account.status}
         </span>
         <div className="ml-auto flex shrink-0 items-center gap-1.5 sm:gap-2">
@@ -744,7 +726,7 @@ function Workspace(p: {
           <div className="w-full sm:w-[320px]">
             <span className="mb-1.5 block text-[10px] font-semibold uppercase tracking-widest text-[#8a8a8a]">Account</span>
             <Select value={account.id} onValueChange={p.onAccountChange}>
-              <SelectTrigger className="h-11 rounded-2xl border-white/10 bg-white/[.04]">
+            <SelectTrigger className="h-11 rounded-2xl border-white/10 bg-[#090909]">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -784,7 +766,7 @@ function Workspace(p: {
         {/* Section content */}
         <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as WorkspaceTab)} className="gap-4">
           <TabsContent value="home" className="space-y-4">
-            <section className="rounded-[1.35rem] border border-white/8 bg-[#0b0b0b] p-4 shadow-[0_18px_46px_rgba(0,0,0,.2)] sm:p-5">
+            <section className="rounded-[1.35rem] border border-white/8 bg-[#090909] p-4 sm:p-5">
               <div className="flex flex-col gap-4 xl:flex-row xl:items-start">
                 <div className="min-w-0 flex-1">
                   <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-zinc-500">Selected account</p>
@@ -808,10 +790,10 @@ function Workspace(p: {
                   <button type="button" onClick={p.onTrade} className="rounded-[1.1rem] border border-white/10 bg-white px-4 py-3 text-left text-sm font-black text-black transition hover:bg-zinc-200">
                     Add trade
                   </button>
-                  <button type="button" onClick={() => window.dispatchEvent(new Event("tradeway:share-trade"))} className="rounded-[1.1rem] border border-white/10 bg-white/[.04] px-4 py-3 text-left text-sm font-semibold text-white transition hover:bg-white/[.08]">
+                  <button type="button" onClick={() => window.dispatchEvent(new Event("tradeway:share-trade"))} className="rounded-[1.1rem] border border-white/10 bg-[#050505] px-4 py-3 text-left text-sm font-semibold text-white transition hover:bg-[#0d0d0d]">
                     Share trade from this account
                   </button>
-                  <div className="rounded-[1.1rem] border border-white/8 bg-black/20 p-4">
+                  <div className="rounded-[1.1rem] border border-white/8 bg-[#050505] p-4">
                     <p className="text-[10px] uppercase tracking-[0.18em] text-zinc-500">Flow</p>
                     <p className="mt-2 text-sm leading-6 text-zinc-300">Change the account at the top and Home, Dashboard, Calendar, Trades and Analytics all switch to that account instantly.</p>
                   </div>
@@ -820,19 +802,19 @@ function Workspace(p: {
             </section>
 
             <div className="grid gap-4 xl:grid-cols-[minmax(0,1.2fr)_minmax(320px,.8fr)]">
-              <section className="rounded-[1.3rem] border border-white/8 bg-[#0b0b0b] p-4 shadow-[0_18px_46px_rgba(0,0,0,.2)] sm:p-5">
+              <section className="rounded-[1.3rem] border border-white/8 bg-[#090909] p-4 sm:p-5">
                 <div className="flex items-center justify-between gap-3">
                   <div>
                     <h3 className="text-lg font-black text-white">Share-ready trades</h3>
                     <p className="mt-1 text-sm text-zinc-500">Open a trade or send your best setup to Home from this account.</p>
                   </div>
-                  <Button type="button" variant="outline" size="sm" className="border-white/10 bg-black/15" onClick={() => setActiveTab("trades")}>
+                  <Button type="button" variant="outline" size="sm" className="border-white/10 bg-[#050505]" onClick={() => setActiveTab("trades")}>
                     Open log
                   </Button>
                 </div>
                 <div className="mt-4 space-y-2">
                   {recentTrades.length ? recentTrades.map((trade) => (
-                    <button key={trade.id} type="button" onClick={() => setSelectedTrade(trade)} className="flex w-full items-center gap-3 rounded-2xl border border-white/8 bg-black/15 px-3 py-3 text-left transition hover:bg-white/[.04]">
+                    <button key={trade.id} type="button" onClick={() => setSelectedTrade(trade)} className="flex w-full items-center gap-3 rounded-2xl border border-white/8 bg-[#050505] px-3 py-3 text-left transition hover:bg-[#0d0d0d]">
                       <InstrumentBadge symbol={trade.symbol} compact className="bg-[#121212]" showFullSymbol={false} />
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center gap-2">
@@ -843,13 +825,13 @@ function Workspace(p: {
                       </div>
                       <strong className={`font-mono text-sm font-black ${trade.pnl >= 0 ? "text-emerald-300" : "text-rose-300"}`}>{trade.pnl >= 0 ? "+" : ""}{cash.format(trade.pnl)}</strong>
                     </button>
-                  )) : <div className="grid min-h-40 place-items-center rounded-2xl border border-white/8 bg-black/15 text-center text-sm text-zinc-500">No trades in this account yet.</div>}
+                  )) : <div className="grid min-h-40 place-items-center rounded-2xl border border-white/8 bg-[#050505] text-center text-sm text-zinc-500">No trades in this account yet.</div>}
                 </div>
               </section>
 
               <div className="grid gap-4">
                 <AiCoachCard report={coachReport} loading={coachLoading} error={coachError} onRefresh={loadCoach} />
-                <section className="rounded-[1.3rem] border border-white/8 bg-[#0b0b0b] p-4 shadow-[0_18px_46px_rgba(0,0,0,.2)] sm:p-5">
+                <section className="rounded-[1.3rem] border border-white/8 bg-[#090909] p-4 sm:p-5">
                   <div className="flex items-center justify-between gap-3">
                     <div>
                       <h3 className="text-lg font-black text-white">Sync & Focus</h3>
@@ -880,7 +862,7 @@ function Workspace(p: {
 
           {/* Overview */}
           <TabsContent value="overview" className="space-y-3">
-            <section className="rounded-[1.2rem] border border-white/8 bg-[#0b0b0b] p-3 shadow-[0_18px_46px_rgba(0,0,0,.2)] sm:p-4">
+            <section className="rounded-[1.2rem] border border-white/8 bg-[#090909] p-3 sm:p-4">
               <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
                 <div>
                   <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-zinc-500">
@@ -892,11 +874,11 @@ function Workspace(p: {
                   <p className="mt-1 text-xs text-zinc-500">{new Date().toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric", year: "numeric" })}</p>
                 </div>
                 <div className="grid grid-cols-[36px_minmax(0,1fr)_36px] gap-2 sm:flex sm:items-center lg:ml-auto">
-                  <button type="button" className="grid size-9 place-items-center rounded-xl border border-white/8 bg-black/20 text-zinc-300">
+                  <button type="button" className="grid size-9 place-items-center rounded-xl border border-white/8 bg-[#050505] text-zinc-300">
                     <ChevronLeft size={15} />
                   </button>
-                  <div className="grid h-9 place-items-center rounded-xl border border-white/8 bg-black/20 px-3 text-xs font-semibold text-white">Current Week</div>
-                  <button type="button" className="grid size-9 place-items-center rounded-xl border border-white/8 bg-black/20 text-zinc-300">
+                  <div className="grid h-9 place-items-center rounded-xl border border-white/8 bg-[#050505] px-3 text-xs font-semibold text-white">Current Week</div>
+                  <button type="button" className="grid size-9 place-items-center rounded-xl border border-white/8 bg-[#050505] text-zinc-300">
                     <ChevronRight size={15} />
                   </button>
                 </div>
@@ -1636,7 +1618,7 @@ function TradeEditor({ trade, saving, onClose, onSave, onDelete }: { trade: Jour
   };
 
   return (
-    <div className="fixed inset-0 z-[9999] flex items-center justify-center overflow-hidden bg-black/70 p-2 pt-[max(.5rem,env(safe-area-inset-top))] pb-[max(.5rem,env(safe-area-inset-bottom))] backdrop-blur-md sm:p-4">
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center overflow-hidden bg-black/88 p-2 pt-[max(.5rem,env(safe-area-inset-top))] pb-[max(.5rem,env(safe-area-inset-bottom))] sm:p-4">
       <div className="absolute inset-0" onClick={onClose} aria-hidden="true" />
       <form action={onSave} className="relative z-10 flex h-[calc(100dvh-1rem)] max-h-[920px] w-full max-w-4xl flex-col overflow-hidden rounded-[22px] border border-border bg-card text-foreground shadow-2xl shadow-black/80 sm:h-auto sm:max-h-[92dvh] sm:rounded-2xl">
         <header className="flex shrink-0 items-center gap-3 border-b border-border px-4 py-3.5 sm:px-5 sm:py-4">
