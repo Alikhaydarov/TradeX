@@ -2,15 +2,18 @@
 
 import type { User } from "@supabase/supabase-js";
 import {
+  CircleHelp,
   CalendarDays,
   ChevronDown,
   CirclePlus,
   Crown,
+  Globe,
   Home,
   LayoutDashboard,
   LogIn,
   MoreHorizontal,
   PenLine,
+  Settings2,
   Search,
   ShieldCheck,
   SquareChartGantt,
@@ -21,8 +24,11 @@ import {
 import { useEffect, useMemo, useState } from "react";
 import { apiRequest } from "@/lib/api-client";
 import { useLanguage } from "@/lib/i18n";
+import { useAuth } from "./auth-context";
 import { useActiveAccountStore } from "./active-account-context";
 import { usePremiumStatus } from "./use-premium-status";
+import { useWorkspacePreferences } from "./workspace-preferences-context";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "./ui/alert-dialog";
 import { Dialog, DialogContent } from "./ui/dialog";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "./ui/dropdown-menu";
 import { TraderAvatar } from "./trader-avatar";
@@ -70,14 +76,19 @@ export function Sidebar({
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [accountSwitcherOpen, setAccountSwitcherOpen] = useState(false);
   const [accountQuery, setAccountQuery] = useState("");
-  const { t, locale, locales, labels, setLocale } = useLanguage();
+  const [logoutConfirmOpen, setLogoutConfirmOpen] = useState(false);
+  const { t, locale, setLocale } = useLanguage();
   const { status: premium } = usePremiumStatus(Boolean(user));
+  const { signOut } = useAuth();
+  const { hidePersonalInfo, maskValue, setSettingsOpen } = useWorkspacePreferences();
   const name = String(user?.user_metadata.full_name ?? user?.user_metadata.name ?? "Mehmon trader");
   const username = usernameFromUser(user);
   const handle = user ? `@${profileUsername || username}` : "Sign in with Google";
   const avatar = typeof user?.user_metadata.avatar_url === "string" ? user.user_metadata.avatar_url : null;
   const activeAccount = accounts.find((account) => account.id === activeAccountId) || null;
   const activeBalance = activeAccount ? money.format(activeAccount.accountSize) : "$0";
+  const visibleName = hidePersonalInfo ? maskValue(name) : name;
+  const visibleHandle = hidePersonalInfo ? maskValue(handle) : handle;
   const filteredAccounts = useMemo(() => {
     const query = accountQuery.trim().toLowerCase();
     if (!query) return accounts;
@@ -143,6 +154,15 @@ export function Sidebar({
   const openPricing = () => {
     setMobileMenuOpen(false);
     onChange("pricing");
+  };
+
+  const openSettings = () => {
+    setMobileMenuOpen(false);
+    setSettingsOpen(true);
+  };
+
+  const openHelpCenter = () => {
+    window.open("/pricing", "_blank", "noopener,noreferrer");
   };
 
   const renderNavButton = (item: { id: Section; label: string; icon: typeof Home }, mobile = false) => {
@@ -313,9 +333,9 @@ export function Sidebar({
             <TraderAvatar name={name} value={avatar} className="h-10 w-10 text-xs" />
             <button onClick={openProfile} className="min-w-0 flex-1 text-left">
               <span className="flex min-w-0 items-center gap-1">
-                <strong className="truncate text-xs">{name}</strong>
+                <strong className="truncate text-xs">{visibleName}</strong>
               </span>
-              <small className="block truncate text-[10px] text-zinc-500">{handle}</small>
+              <small className="block truncate text-[10px] text-zinc-500">{visibleHandle}</small>
             </button>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -324,18 +344,28 @@ export function Sidebar({
                 </button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-44 border-white/10 bg-[#090909]">
-                <DropdownMenuItem onClick={openProfile} className="px-3 py-2.5">
-                  Profile
+                <DropdownMenuItem onClick={openSettings} className="px-3 py-2.5">
+                  <Settings2 size={14} className="mr-2" />
+                  Settings
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={openPricing} className="px-3 py-2.5">
                   {premium.isPremium ? "Manage Premium" : "Upgrade to Premium"}
                 </DropdownMenuItem>
-                {locales.map((item) => (
-                  <DropdownMenuItem key={item} onClick={() => setLocale(item)} className="flex items-center justify-between px-3 py-2.5">
-                    <span>{labels[item]}</span>
-                    {locale === item ? <span className="text-[10px] font-bold text-zinc-400">Active</span> : null}
-                  </DropdownMenuItem>
-                ))}
+                <DropdownMenuItem onClick={() => setLocale("en")} className="flex items-center justify-between px-3 py-2.5">
+                  <span className="flex items-center gap-2"><Globe size={14} /> English</span>
+                  {locale === "en" ? <span className="text-[10px] font-bold text-zinc-400">Active</span> : null}
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setLocale("es")} className="flex items-center justify-between px-3 py-2.5">
+                  <span className="flex items-center gap-2 pl-6">Español</span>
+                  {locale === "es" ? <span className="text-[10px] font-bold text-zinc-400">Active</span> : null}
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={openHelpCenter} className="px-3 py-2.5">
+                  <CircleHelp size={14} className="mr-2" />
+                  Help Center
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setLogoutConfirmOpen(true)} className="px-3 py-2.5 text-rose-300 focus:text-rose-200">
+                  Logout
+                </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
             {!user ? <LogIn size={16} className="text-zinc-500" /> : null}
@@ -413,8 +443,8 @@ export function Sidebar({
                 <div className="flex w-full items-center gap-3 rounded-2xl border border-white/10 bg-[#0b0b0b] p-2.5 text-left">
                   <TraderAvatar name={name} value={avatar} className="size-10 text-xs" />
                   <button onClick={openProfile} className="min-w-0 flex-1 text-left">
-                    <strong className="block truncate text-sm text-white">{name}</strong>
-                    <small className="block truncate text-[11px] text-zinc-500">{handle}</small>
+                    <strong className="block truncate text-sm text-white">{visibleName}</strong>
+                    <small className="block truncate text-[11px] text-zinc-500">{visibleHandle}</small>
                   </button>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
@@ -423,12 +453,25 @@ export function Sidebar({
                       </button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className="w-44 border-white/10 bg-[#090909]">
-                      {locales.map((item) => (
-                        <DropdownMenuItem key={item} onClick={() => setLocale(item)} className="flex items-center justify-between px-3 py-2.5">
-                          <span>{labels[item]}</span>
-                          {locale === item ? <span className="text-[10px] font-bold text-zinc-400">Active</span> : null}
-                        </DropdownMenuItem>
-                      ))}
+                      <DropdownMenuItem onClick={openSettings} className="px-3 py-2.5">
+                        <Settings2 size={14} className="mr-2" />
+                        Settings
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => setLocale("en")} className="flex items-center justify-between px-3 py-2.5">
+                        <span className="flex items-center gap-2"><Globe size={14} /> English</span>
+                        {locale === "en" ? <span className="text-[10px] font-bold text-zinc-400">Active</span> : null}
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => setLocale("es")} className="flex items-center justify-between px-3 py-2.5">
+                        <span className="flex items-center gap-2 pl-6">Español</span>
+                        {locale === "es" ? <span className="text-[10px] font-bold text-zinc-400">Active</span> : null}
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={openHelpCenter} className="px-3 py-2.5">
+                        <CircleHelp size={14} className="mr-2" />
+                        Help Center
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => setLogoutConfirmOpen(true)} className="px-3 py-2.5 text-rose-300 focus:text-rose-200">
+                        Logout
+                      </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
                   {!user ? <LogIn size={16} className="text-zinc-500" /> : null}
@@ -438,6 +481,30 @@ export function Sidebar({
           </DialogContent>
         </Dialog>
       )}
+
+      <AlertDialog open={logoutConfirmOpen} onOpenChange={setLogoutConfirmOpen}>
+        <AlertDialogContent className="border-white/10 bg-[#050505]">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-white">Confirm logout</AlertDialogTitle>
+            <AlertDialogDescription className="text-zinc-500">
+              You&apos;ll be signed out from this browser session.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="border-white/10 bg-black text-white hover:bg-[#111111]">Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-white text-black hover:bg-zinc-200"
+              onClick={() => {
+                void signOut();
+                setMobileMenuOpen(false);
+                setLogoutConfirmOpen(false);
+              }}
+            >
+              Logout
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 }

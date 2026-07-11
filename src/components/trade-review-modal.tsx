@@ -1,8 +1,9 @@
 "use client";
 
 import { Check, ChevronDown, CloudUpload, ImagePlus, LoaderCircle, Plus, Trash2, X } from "lucide-react";
-import { useMemo, useRef, useState, type ChangeEvent, type DragEvent, type ReactNode } from "react";
+import { useMemo, useRef, useState, type DragEvent, type ReactNode } from "react";
 import { MediaImage } from "./media-image";
+import { useWorkspacePreferences } from "./workspace-preferences-context";
 import { Button } from "./ui/button";
 import { Dialog, DialogContent } from "./ui/dialog";
 import { Input } from "./ui/input";
@@ -146,8 +147,10 @@ function OptionStack({
   );
 }
 
-export function TradeReviewModal({ open, saving, account, onOpenChange, onSave }: TradeReviewModalProps) {
+export function TradeReviewModal({ open, saving, account: _account, onOpenChange, onSave }: TradeReviewModalProps) {
+  void _account;
   const inputRef = useRef<HTMLInputElement | null>(null);
+  const { customSymbols, addCustomSymbol } = useWorkspacePreferences();
   const [imageUrls, setImageUrls] = useState<string[]>([]);
   const [previewUrl, setPreviewUrl] = useState("");
   const [uploading, setUploading] = useState(false);
@@ -170,6 +173,7 @@ export function TradeReviewModal({ open, saving, account, onOpenChange, onSave }
   const [riskPct, setRiskPct] = useState("");
   const [setup, setSetup] = useState("");
   const [outcome, setOutcome] = useState<"win" | "loss">("win");
+  const symbolOptions = useMemo(() => Array.from(new Set([...SYMBOLS, ...customSymbols])), [customSymbols]);
 
   const tradedDate = useMemo(() => entryDateTime.slice(0, 10) || new Date().toISOString().slice(0, 10), [entryDateTime]);
 
@@ -281,11 +285,11 @@ export function TradeReviewModal({ open, saving, account, onOpenChange, onSave }
                     onChange={(event) => setSymbol(event.target.value)}
                     className={`${inputClass} w-full appearance-none px-4 pr-10`}
                   >
-                    {SYMBOLS.map((item) => <option key={item} value={item}>{item}</option>)}
+                    {symbolOptions.map((item) => <option key={item} value={item}>{item}</option>)}
                   </select>
                   <ChevronDown size={15} className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500" />
                 </div>
-                <p className="text-sm text-zinc-600">Can&apos;t find a symbol? <button type="button" className="font-black text-white underline underline-offset-2">Create it</button></p>
+                <p className="text-sm text-zinc-600">Can&apos;t find a symbol? <button type="button" onClick={() => { const next = window.prompt("Custom symbol"); if (next) { addCustomSymbol(next); setSymbol(next.trim().toUpperCase()); } }} className="font-black text-white underline underline-offset-2">Create it</button></p>
               </div>
 
               <div className="space-y-1.5">

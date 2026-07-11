@@ -32,6 +32,7 @@ import { PropAccountDialog } from "./prop-account-dialog";
 import { PropFirmLogo } from "./prop-firm-logo";
 import { Mt5Settings } from "./mt5-settings";
 import { TradeReviewModal } from "./trade-review-modal";
+import { useWorkspacePreferences } from "./workspace-preferences-context";
 import type { JournalEntry, OpenPosition, PropAccount } from "./types";
 
 type AccountRow = { id: string; name: string; account_type?: "prop" | "real" | null; firm: string; prop_site?: string | null; prop_login?: string | null; import_source?: "manual" | "mt5_bridge" | "ctrader" | "tradovate" | "ninjatrader" | "official_api" | null; platform?: string | null; phase: string; market_type: string; account_size: string; initial_balance: string; profit_target: string; max_drawdown: string; daily_drawdown: string; start_date: string; status: PropAccount["status"] };
@@ -583,6 +584,7 @@ function Workspace(p: {
   onMt5Synced: () => Promise<void>;
 }) {
   const { account, accounts, stats, equity, setups, mistakes, planRate, monthCount, calendar, trades, bibleTrades, month, embedded = false, forcedTab } = p;
+  const { tradeSort, setTradeSort, formatPnl } = useWorkspacePreferences();
   const [selectedTrade, setSelectedTrade] = useState<JournalEntry | null>(null);
   const [selectedDay, setSelectedDay] = useState<{ day: number; trades: JournalEntry[]; pnl: number } | null>(null);
   const [activeTab, setActiveTab] = useState<WorkspaceTab>("home");
@@ -592,13 +594,21 @@ function Workspace(p: {
   const [openPositions, setOpenPositions] = useState<OpenPosition[]>([]);
   const [positionsPendingSetup, setPositionsPendingSetup] = useState(false);
   const [analyticsView, setAnalyticsView] = useState<"overview" | "strategy" | "symbols">("overview");
+  const pnlBase = account.initialBalance || account.accountSize || 1;
+  const formatTradePnl = useCallback((amount: number) => formatPnl(amount, pnlBase), [formatPnl, pnlBase]);
   const currentPnl = (equity.at(-1)?.equity ?? account.initialBalance) - account.initialBalance;
   const currentEquity = account.initialBalance + currentPnl;
   const targetProgress = account.profitTarget ? Math.min(100, Math.max(0, currentPnl / account.profitTarget * 100)) : 0;
   const drawdownUsed = account.maxDrawdown && currentPnl < 0 ? Math.min(100, Math.abs(currentPnl) / account.maxDrawdown * 100) : 0;
   const sortedTrades = useMemo(
-    () => [...trades].sort((left, right) => String(right.rawDate).localeCompare(String(left.rawDate))),
-    [trades]
+    () =>
+      [...trades].sort((left, right) => {
+        const leftValue = String(left.rawDate || "");
+        const rightValue = String(right.rawDate || "");
+        if (tradeSort === "entryDate") return leftValue.localeCompare(rightValue);
+        return rightValue.localeCompare(leftValue);
+      }),
+    [tradeSort, trades]
   );
   const weeklyStrip = useMemo(() => buildWeeklyStrip(account, month, trades), [account, month, trades]);
   const symbolStats = useMemo(
@@ -637,6 +647,18 @@ function Workspace(p: {
     ];
   }, [currentPnl, drawdownUsed, planRate, stats.pf, stats.r, stats.rate]);
   const profitabilityScore = useMemo(() => Math.round(scoreRadar.reduce((sum, item) => sum + item.value, 0) / scoreRadar.length), [scoreRadar]);
+
+  const openTrade = useCallback((trade: JournalEntry) => {
+    setSelectedTrade(trade);
+    window.history.pushState(null, "", `/trades/${trade.id}`);
+  }, []);
+
+  const closeTrade = useCallback(() => {
+    setSelectedTrade(null);
+    if (window.location.pathname.startsWith("/trades/")) {
+      window.history.pushState(null, "", "/trades");
+    }
+  }, []);
 
   const loadCoach = useCallback(async () => {
     setCoachLoading(true);
@@ -688,6 +710,14 @@ function Workspace(p: {
     void loadCoach();
     void loadOpenPositions();
   }, [activeTab, loadCoach, loadOpenPositions, trades.length]);
+
+  useEffect(() => {
+    if (!window.location.pathname.startsWith("/trades/")) return;
+    const tradeId = window.location.pathname.split("/")[2];
+    if (!tradeId) return;
+    const nextTrade = trades.find((trade) => trade.id === tradeId) || null;
+    setSelectedTrade(nextTrade);
+  }, [trades]);
 
   return (
     <div className="animate-page-in mx-auto max-w-[1780px]">
@@ -743,7 +773,7 @@ function Workspace(p: {
         {/* Stats */}
         <div className="grid grid-cols-2 gap-2 sm:gap-3 xl:grid-cols-5">
           {[
-            { title: "Monthly P&L", value: `${stats.pnl >= 0 ? "+" : ""}${cash.format(stats.pnl)}`, icon: stats.pnl >= 0 ? TrendingUp : TrendingDown, color: stats.pnl >= 0 ? "text-emerald-400" : "text-rose-400" },
+            { title: "Monthly P&L", value: formatTradePnl(stats.pnl), icon: stats.pnl >= 0 ? TrendingUp : TrendingDown, color: stats.pnl >= 0 ? "text-emerald-400" : "text-rose-400" },
             { title: "Win rate", value: `${stats.rate}%`, icon: Target, color: "text-zinc-300" },
             { title: "Average R", value: `${stats.r.toFixed(2)}R`, icon: BarChart3, color: "text-zinc-300" },
             { title: "Profit factor", value: stats.pf.toFixed(2), icon: TrendingUp, color: "text-amber-400" },
@@ -783,7 +813,7 @@ function Workspace(p: {
                   <div className="mt-5 grid gap-3 sm:grid-cols-3">
                     <QuickMetric label="Balance" value={cash.format(account.accountSize)} note="Everything below follows this account" />
                     <QuickMetric label="Trades" value={String(trades.length)} note={`${stats.wins} wins / ${stats.losses} losses`} />
-                    <QuickMetric label="Net P&L" value={`${currentPnl >= 0 ? "+" : ""}${cash.format(currentPnl)}`} note={`${stats.rate}% win rate`} tone={currentPnl >= 0 ? "good" : "bad"} />
+                    <QuickMetric label="Net P&L" value={formatTradePnl(currentPnl)} note={`${stats.rate}% win rate`} tone={currentPnl >= 0 ? "good" : "bad"} />
                   </div>
                 </div>
                 <div className="grid w-full gap-3 xl:w-[360px]">
@@ -814,7 +844,7 @@ function Workspace(p: {
                 </div>
                 <div className="mt-4 space-y-2">
                   {recentTrades.length ? recentTrades.map((trade) => (
-                    <button key={trade.id} type="button" onClick={() => setSelectedTrade(trade)} className="flex w-full items-center gap-3 rounded-2xl border border-white/8 bg-[#050505] px-3 py-3 text-left transition hover:bg-[#0d0d0d]">
+                    <button key={trade.id} type="button" onClick={() => openTrade(trade)} className="flex w-full items-center gap-3 rounded-2xl border border-white/8 bg-[#050505] px-3 py-3 text-left transition hover:bg-[#0d0d0d]">
                       <InstrumentBadge symbol={trade.symbol} compact className="bg-[#121212]" showFullSymbol={false} />
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center gap-2">
@@ -823,7 +853,7 @@ function Workspace(p: {
                         </div>
                         <p className="mt-1 truncate text-xs text-zinc-500">{trade.setup || trade.session || trade.rawDate}</p>
                       </div>
-                      <strong className={`font-mono text-sm font-black ${trade.pnl >= 0 ? "text-emerald-300" : "text-rose-300"}`}>{trade.pnl >= 0 ? "+" : ""}{cash.format(trade.pnl)}</strong>
+                      <strong className={`font-mono text-sm font-black ${trade.pnl >= 0 ? "text-emerald-300" : "text-rose-300"}`}>{formatTradePnl(trade.pnl)}</strong>
                     </button>
                   )) : <div className="grid min-h-40 place-items-center rounded-2xl border border-white/8 bg-[#050505] text-center text-sm text-zinc-500">No trades in this account yet.</div>}
                 </div>
@@ -905,7 +935,7 @@ function Workspace(p: {
                     <p className="mt-1 text-xs text-zinc-500">{account.name} equity curve across closed trades.</p>
                   </div>
                   <div className="grid grid-cols-1 gap-2 sm:grid-cols-3 lg:ml-auto lg:min-w-[520px]">
-                    <BalanceMetric label="Current P&L" value={`${currentPnl >= 0 ? "+" : ""}${cash.format(currentPnl)}`} tone={currentPnl >= 0 ? "good" : "bad"} />
+                    <BalanceMetric label="Current P&L" value={formatTradePnl(currentPnl)} tone={currentPnl >= 0 ? "good" : "bad"} />
                     <BalanceMetric label="Equity" value={cash.format(currentEquity)} />
                     <BalanceMetric label="Closed balance" value={cash.format(currentEquity)} />
                   </div>
@@ -939,7 +969,7 @@ function Workspace(p: {
                 </div>
                 <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-1">
                   <MetricPanel title="Trade Winrate" value={`${stats.rate}%`} note={`${planRate}% discipline score`} accent="good" />
-                  <MetricPanel title="Profit Factor" value={stats.pf.toFixed(2)} note={`${stats.pnl >= 0 ? "+" : ""}${cash.format(stats.pnl)} this month`} accent={stats.pf >= 1 ? "good" : "bad"} />
+                  <MetricPanel title="Profit Factor" value={stats.pf.toFixed(2)} note={`${formatTradePnl(stats.pnl)} this month`} accent={stats.pf >= 1 ? "good" : "bad"} />
                 </div>
                 <section className="rounded-[1.05rem] border border-white/8 bg-[#0b0b0b] p-3">
                   <div className="flex items-center justify-between gap-3">
@@ -978,7 +1008,7 @@ function Workspace(p: {
                       <button
                         key={trade.id}
                         type="button"
-                        onClick={() => setSelectedTrade(trade)}
+                        onClick={() => openTrade(trade)}
                         className="flex w-full items-center gap-3 rounded-2xl border border-white/8 bg-black/15 px-3 py-3 text-left transition hover:bg-white/[.04]"
                       >
                         <InstrumentBadge symbol={trade.symbol} compact className="bg-[#121212]" showFullSymbol={false} />
@@ -991,7 +1021,7 @@ function Workspace(p: {
                           </div>
                           <p className="mt-1 truncate text-xs text-zinc-500">{trade.setup || trade.session || trade.rawDate}</p>
                         </div>
-                        <strong className={`font-mono text-sm font-black ${trade.pnl >= 0 ? "text-emerald-300" : "text-rose-300"}`}>{trade.pnl >= 0 ? "+" : ""}{cash.format(trade.pnl)}</strong>
+                      <strong className={`font-mono text-sm font-black ${trade.pnl >= 0 ? "text-emerald-300" : "text-rose-300"}`}>{formatTradePnl(trade.pnl)}</strong>
                       </button>
                     ))}
                   </div>
@@ -1095,7 +1125,7 @@ function Workspace(p: {
               <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
                 {[
                   { label: "Total trades", value: String(monthCount), note: `${calendar.filter((day) => day?.trades.length).length} active days` },
-                  { label: "Month P&L", value: `${stats.pnl >= 0 ? "+" : ""}${cash.format(stats.pnl)}`, note: `${stats.wins} wins / ${stats.losses} losses` },
+                  { label: "Month P&L", value: formatTradePnl(stats.pnl), note: `${stats.wins} wins / ${stats.losses} losses` },
                   { label: "Most traded setup", value: setups[0]?.name || "No setup yet", note: setups[0] ? `${setups[0].trades} trades` : "Add reviewed trades" },
                   { label: "Plan alignment", value: `${planRate}%`, note: "Rules followed this month" },
                 ].map((item) => (
@@ -1238,6 +1268,18 @@ function Workspace(p: {
                           {p.tradeRange === "daily" ? "Today only" : p.tradeRange === "monthly" ? "Current month" : p.tradeRange === "quarter" ? "Last 3 months" : "Current year"}
                         </p>
                       )}
+                      <div className="w-full sm:w-44 lg:ml-3">
+                        <span className="mb-1.5 block text-[10px] font-semibold uppercase tracking-widest text-zinc-500">Sort</span>
+                        <Select value={tradeSort} onValueChange={(value) => setTradeSort(value as "entryDate" | "exitDate")}>
+                          <SelectTrigger className="w-full">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent position="popper" align="start">
+                            <SelectItem value="entryDate">Entry Date</SelectItem>
+                            <SelectItem value="exitDate">Exit Date</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
                     </div>
                   </div>
                   {trades.length ? (
@@ -1259,7 +1301,7 @@ function Workspace(p: {
                               <button
                                 key={trade.id}
                                 type="button"
-                                onClick={() => setSelectedTrade(trade)}
+                                onClick={() => openTrade(trade)}
                                 className="grid w-full grid-cols-[48px_1.3fr_1fr_.9fr_1fr_1fr_.9fr] items-center rounded-2xl border border-white/8 bg-black/12 px-4 py-3 text-left transition hover:bg-white/[.04]"
                               >
                                 <span className="grid size-5 place-items-center rounded-full border border-white/10" />
@@ -1271,7 +1313,7 @@ function Workspace(p: {
                                 <span className={`text-sm font-bold ${trade.side === "Long" ? "text-emerald-300" : "text-rose-300"}`}>{trade.side === "Long" ? "Buy ↑" : "Sell ↓"}</span>
                                 <span className="text-sm text-zinc-400">{trade.session || "-"}</span>
                                 <span className="font-mono text-sm text-zinc-300">{(trade.resultR || 0).toFixed(2)}R</span>
-                                <span className={`text-right font-mono text-base font-black ${winning ? "text-emerald-400" : "text-rose-400"}`}>{trade.pnl >= 0 ? "+" : ""}{cash.format(trade.pnl)}</span>
+                                <span className={`text-right font-mono text-base font-black ${winning ? "text-emerald-400" : "text-rose-400"}`}>{formatTradePnl(trade.pnl)}</span>
                               </button>
                             );
                           })}
@@ -1288,8 +1330,8 @@ function Workspace(p: {
                     <MiniStat label="Trades" value={String(trades.length)} />
                     <MiniStat label="Winning" value={String(stats.wins)} />
                     <MiniStat label="Losing" value={String(stats.losses)} />
-                    <MiniStat label="Avg win" value={averageWin ? cash.format(averageWin) : "-"} />
-                    <MiniStat label="Avg loss" value={averageLoss ? cash.format(averageLoss) : "-"} />
+                    <MiniStat label="Avg win" value={averageWin ? formatTradePnl(averageWin) : "-"} />
+                    <MiniStat label="Avg loss" value={averageLoss ? formatTradePnl(averageLoss) : "-"} />
                   </div>
                 </section>
               </div>
@@ -1312,7 +1354,7 @@ function Workspace(p: {
               {bibleTrades.length ? (
                 <div className="grid gap-3 p-3 lg:grid-cols-2">
                   {bibleTrades.map((trade) => (
-                    <button key={trade.id} type="button" onClick={() => setSelectedTrade(trade)} className="group overflow-hidden rounded-2xl border border-[#2a2a2a] bg-[#121212] text-left transition hover:border-white/20 hover:bg-[#101827]">
+                    <button key={trade.id} type="button" onClick={() => openTrade(trade)} className="group overflow-hidden rounded-2xl border border-[#2a2a2a] bg-[#121212] text-left transition hover:border-white/20 hover:bg-[#101827]">
                       {trade.imageUrl ? (
                         <div className="h-40 overflow-hidden border-b border-[#2a2a2a] bg-black">
                           <MediaImage src={trade.imageUrl} alt={`${trade.symbol} bible chart`} className="h-full w-full object-cover transition group-hover:scale-[1.02]" />
@@ -1423,10 +1465,10 @@ function Workspace(p: {
                 </section>
 
                 <div className="grid gap-4 sm:grid-cols-2 xl:col-span-2 xl:grid-cols-4">
-                  <MetricPanel title="Average Win" value={averageWin ? cash.format(averageWin) : "-"} note={bestTrade ? `Best ${bestTrade.symbol}` : "No winning trade"} accent="good" />
-                  <MetricPanel title="Average Loss" value={averageLoss ? cash.format(averageLoss) : "-"} note={worstTrade ? `Worst ${worstTrade.symbol}` : "No losing trade"} accent="bad" />
-                  <MetricPanel title="Best Trade" value={bestTrade ? `${bestTrade.pnl >= 0 ? "+" : ""}${cash.format(bestTrade.pnl)}` : "-"} note={bestTrade?.symbol || "No data"} accent={bestTrade && bestTrade.pnl >= 0 ? "good" : "neutral"} />
-                  <MetricPanel title="Worst Trade" value={worstTrade ? `${worstTrade.pnl >= 0 ? "+" : ""}${cash.format(worstTrade.pnl)}` : "-"} note={worstTrade?.symbol || "No data"} accent={worstTrade && worstTrade.pnl < 0 ? "bad" : "neutral"} />
+                  <MetricPanel title="Average Win" value={averageWin ? formatTradePnl(averageWin) : "-"} note={bestTrade ? `Best ${bestTrade.symbol}` : "No winning trade"} accent="good" />
+                  <MetricPanel title="Average Loss" value={averageLoss ? formatTradePnl(averageLoss) : "-"} note={worstTrade ? `Worst ${worstTrade.symbol}` : "No losing trade"} accent="bad" />
+                  <MetricPanel title="Best Trade" value={bestTrade ? formatTradePnl(bestTrade.pnl) : "-"} note={bestTrade?.symbol || "No data"} accent={bestTrade && bestTrade.pnl >= 0 ? "good" : "neutral"} />
+                  <MetricPanel title="Worst Trade" value={worstTrade ? formatTradePnl(worstTrade.pnl) : "-"} note={worstTrade?.symbol || "No data"} accent={worstTrade && worstTrade.pnl < 0 ? "bad" : "neutral"} />
                 </div>
               </div>
             ) : null}
@@ -1522,14 +1564,14 @@ function Workspace(p: {
           <TradeEditor
             trade={selectedTrade}
             saving={p.saving}
-            onClose={() => setSelectedTrade(null)}
+            onClose={closeTrade}
             onSave={async (form) => {
               await p.onUpdateTrade(selectedTrade.id, form);
-              setSelectedTrade(null);
+              closeTrade();
             }}
             onDelete={async () => {
               await p.onRemoveTrade(selectedTrade.id);
-              setSelectedTrade(null);
+              closeTrade();
             }}
           />
         ) : null}
@@ -1540,7 +1582,7 @@ function Workspace(p: {
               {selectedDay ? new Date(`${monthId(month)}-${String(selectedDay.day).padStart(2, "0")}T00:00:00`).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" }) : "Day trades"}
             </DialogTitle>
             <DialogDescription>
-              {selectedDay ? `${selectedDay.trades.length} trades / ${selectedDay.pnl >= 0 ? "+" : ""}${cash.format(selectedDay.pnl)}` : "Closed trades for this day"}
+              {selectedDay ? `${selectedDay.trades.length} trades / ${formatTradePnl(selectedDay.pnl)}` : "Closed trades for this day"}
             </DialogDescription>
           </DialogHeader>
           <div className="max-h-[calc(90dvh-84px)] overflow-y-auto p-3 sm:p-4">
@@ -1554,7 +1596,7 @@ function Workspace(p: {
                       type="button"
                       onClick={() => {
                         setSelectedDay(null);
-                        setSelectedTrade(trade);
+                        openTrade(trade);
                       }}
                     className="flex w-full items-center gap-3 rounded-2xl border border-white/10 bg-black px-3 py-3 text-left transition hover:bg-[#0b0b0b]"
                     >
@@ -1570,7 +1612,7 @@ function Workspace(p: {
                       </span>
                       <span className="shrink-0 text-right">
                         <strong className={`block font-mono text-sm font-black ${winning ? "text-emerald-300" : "text-rose-300"}`}>
-                          {trade.pnl >= 0 ? "+" : ""}{cash.format(trade.pnl)}
+                          {formatTradePnl(trade.pnl)}
                         </strong>
                         <span className="mt-1 block text-[10px] text-zinc-500">{(trade.resultR || 0).toFixed(2)}R</span>
                       </span>

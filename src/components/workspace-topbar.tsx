@@ -1,7 +1,9 @@
 "use client";
 
-import { Menu, Plus } from "lucide-react";
+import { EyeOff, Menu, Percent, Plus, Wallet } from "lucide-react";
 import { useActiveAccountStore } from "./active-account-context";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "./ui/dropdown-menu";
+import { useWorkspacePreferences, type PnlViewMode } from "./workspace-preferences-context";
 import type { Section } from "./types";
 
 const LABELS: Partial<Record<Section, string>> = {
@@ -29,10 +31,12 @@ function openAddTrade() {
 
 export function WorkspaceTopbar({ section }: { section: Section }) {
   const { accounts, activeAccountId } = useActiveAccountStore();
+  const { pnlMode, setPnlMode } = useWorkspacePreferences();
   const activeAccount = accounts.find((account) => account.id === activeAccountId) || null;
   const page = LABELS[section] || "Workspace";
   const isAccountScoped = ACCOUNT_SCOPED_SECTIONS.has(section);
   const workspace = activeAccount?.name || "All Accounts";
+  const pnlLabel = pnlMode === "percentage" ? "Percentage View" : pnlMode === "hidden" ? "Hide P&L" : "Money View";
 
   return (
     <div role="banner" className="tw-app-topbar sticky top-0 z-[60] shrink-0 border-b border-white/8 bg-black px-4 py-3 lg:static lg:flex lg:h-[56px] lg:items-center lg:justify-between lg:px-6 lg:py-0">
@@ -55,27 +59,76 @@ export function WorkspaceTopbar({ section }: { section: Section }) {
           </p>
         </div>
 
-        <button
-          type="button"
-          onClick={openAddTrade}
-          className="grid size-10 shrink-0 place-items-center rounded-2xl border border-white/10 bg-white/[.04] text-white transition active:scale-95"
-          aria-label="Add trade"
-        >
-          <Plus size={22} strokeWidth={2.15} />
-        </button>
+        <div className="flex items-center gap-2">
+          <PnlModeMenu pnlMode={pnlMode} pnlLabel={pnlLabel} onChange={setPnlMode} compact />
+          <button
+            type="button"
+            onClick={openAddTrade}
+            className="grid size-10 shrink-0 place-items-center rounded-2xl border border-white/10 bg-white/[.04] text-white transition active:scale-95"
+            aria-label="Add trade"
+          >
+            <Plus size={22} strokeWidth={2.15} />
+          </button>
+        </div>
       </div>
 
-      <div className="hidden min-w-0 items-center gap-2 text-[12px] font-medium text-zinc-500 lg:flex">
-        {isAccountScoped ? (
-          <>
-            <span className="truncate text-zinc-500">{workspace}</span>
-            <span className="text-zinc-700">&gt;</span>
+      <div className="hidden items-center justify-between gap-3 lg:flex lg:w-full">
+        <div className="min-w-0 items-center gap-2 text-[12px] font-medium text-zinc-500 lg:flex">
+          {isAccountScoped ? (
+            <>
+              <span className="truncate text-zinc-500">{workspace}</span>
+              <span className="text-zinc-700">&gt;</span>
+              <span className="font-semibold text-zinc-200">{page}</span>
+            </>
+          ) : (
             <span className="font-semibold text-zinc-200">{page}</span>
-          </>
-        ) : (
-          <span className="font-semibold text-zinc-200">{page}</span>
-        )}
+          )}
+        </div>
+        <PnlModeMenu pnlMode={pnlMode} pnlLabel={pnlLabel} onChange={setPnlMode} />
       </div>
     </div>
+  );
+}
+
+function PnlModeMenu({
+  pnlMode,
+  pnlLabel,
+  onChange,
+  compact = false,
+}: {
+  pnlMode: PnlViewMode;
+  pnlLabel: string;
+  onChange: (value: PnlViewMode) => void;
+  compact?: boolean;
+}) {
+  const items: Array<{ value: PnlViewMode; label: string; icon: typeof Wallet }> = [
+    { value: "money", label: "Money View", icon: Wallet },
+    { value: "percentage", label: "Percentage View", icon: Percent },
+    { value: "hidden", label: "Hide P&L", icon: EyeOff },
+  ];
+
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <button
+          type="button"
+          className={`inline-flex h-10 items-center rounded-2xl border border-white/10 bg-[#090909] text-zinc-200 transition hover:bg-[#101010] ${compact ? "w-10 justify-center px-0" : "gap-2 px-3 text-sm font-semibold"}`}
+        >
+          <Percent size={15} />
+          {compact ? null : pnlLabel}
+        </button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end" className="w-52 border-white/10 bg-[#090909]">
+        {items.map((item) => (
+          <DropdownMenuItem key={item.value} onClick={() => onChange(item.value)} className="flex items-center justify-between px-3 py-2.5">
+            <span className="flex items-center gap-2">
+              <item.icon size={14} />
+              {item.label}
+            </span>
+            {pnlMode === item.value ? <span className="text-[10px] font-black text-zinc-400">Active</span> : null}
+          </DropdownMenuItem>
+        ))}
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }

@@ -44,7 +44,8 @@ function connectorLabel(account: PropAccount) {
   return "Manual journal";
 }
 
-export function AccountSettings({ onLogin }: { onLogin: () => void }) {
+export function AccountSettings({ onLogin: _onLogin }: { onLogin: () => void }) {
+  void _onLogin;
   const { accounts, activeAccountId, setActiveAccount, setAccounts, refreshAccounts } = useActiveAccountStore();
   const account = useMemo(() => accounts.find((item) => item.id === activeAccountId) || null, [accounts, activeAccountId]);
   const [name, setName] = useState(account?.name || "");

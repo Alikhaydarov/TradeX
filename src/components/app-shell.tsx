@@ -10,7 +10,9 @@ import { Pricing } from "./pricing";
 import { NotificationListener } from "./notification-listener";
 import { PremiumUpsellDialog } from "./premium-upsell-dialog";
 import { Sidebar } from "./sidebar";
+import { UserSettingsDialog } from "./user-settings-dialog";
 import { WorkspaceTopbar } from "./workspace-topbar";
+import { WorkspacePreferencesProvider, useWorkspacePreferences } from "./workspace-preferences-context";
 import { TradeWayLoginLanding } from "./tradeway-login-landing";
 import {
   AccountsSection,
@@ -29,6 +31,14 @@ function AuthGate({ onLogin }: { onLogin: () => void }) {
 }
 
 export function AppShell() {
+  return (
+    <WorkspacePreferencesProvider>
+      <AppShellInner />
+    </WorkspacePreferencesProvider>
+  );
+}
+
+function AppShellInner() {
   const [section, setSection] = useState<Section>(getCurrentSection);
   const [profileUsername, setProfileUsername] = useState(getCurrentProfileUsername);
   const [authOpen, setAuthOpen] = useState(false);
@@ -48,6 +58,7 @@ export function AppShell() {
     admin: section === "admin",
   }));
   const { user } = useAuth();
+  const { fontFamily } = useWorkspacePreferences();
   const openLogin = () => setAuthOpen(true);
 
   useEffect(() => {
@@ -172,7 +183,7 @@ export function AppShell() {
   return (
     <>
       <ActiveAccountProvider>
-      <div className="mx-auto flex min-h-[100dvh] w-full max-w-[1920px] gap-4 bg-[#000000] p-0 text-foreground lg:p-4">
+      <div className="mx-auto flex min-h-[100dvh] w-full max-w-[1920px] gap-4 bg-[#000000] p-0 text-foreground lg:p-4" style={{ fontFamily }}>
         <Sidebar
           active={section}
           onChange={changeSection}
@@ -207,6 +218,7 @@ export function AppShell() {
       {profileOpening ? <div className="pointer-events-none fixed inset-0 z-[2147483646] grid place-items-center bg-black/92"><div className="flex items-center gap-3 rounded-full border border-white/8 bg-[#050505] px-4 py-2 text-sm font-semibold text-zinc-200 shadow-[0_18px_48px_rgba(0,0,0,.34)]"><span className="inline-flex size-4 animate-spin rounded-full border-2 border-white/20 border-t-white" /> Opening profile</div></div> : null}
       {notificationsMounted && <NotificationListener />}
       <PremiumUpsellDialog />
+      <UserSettingsDialog />
       <AuthModal open={authOpen} onClose={() => setAuthOpen(false)} />
     </>
   );
