@@ -23,7 +23,7 @@ import {
   WorkspaceSettingsSection,
 } from "./workspace-sections";
 import { useAuth } from "./auth-context";
-import { cachedSections, getCurrentProfileUsername, getCurrentSection, pathFromSection, workspaceSections } from "./section-config";
+import { getCurrentProfileUsername, getCurrentSection, pathFromSection } from "./section-config";
 import { apiRequest } from "@/lib/api-client";
 import type { Section } from "./types";
 function AuthGate({ onLogin }: { onLogin: () => void }) {
@@ -45,18 +45,6 @@ function AppShellInner() {
   const [isAdmin, setIsAdmin] = useState(false);
   const [notificationsMounted, setNotificationsMounted] = useState(false);
   const [profileOpening, setProfileOpening] = useState(false);
-  const [visitedSections, setVisitedSections] = useState<Record<Section, boolean>>(() => ({
-    feed: true,
-    accounts: false,
-    dashboard: false,
-    calendar: false,
-    trades: false,
-    analytics: false,
-    settings: false,
-    account: section === "account",
-    pricing: section === "pricing",
-    admin: section === "admin",
-  }));
   const { user } = useAuth();
   const { fontFamily } = useWorkspacePreferences();
   const resolvedFontFamily =
@@ -66,18 +54,6 @@ function AppShellInner() {
         ? "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
         : "var(--font-inter), Inter, ui-sans-serif, system-ui, sans-serif";
   const openLogin = () => setAuthOpen(true);
-
-  useEffect(() => {
-    if (workspaceSections.includes(section)) return;
-    setVisitedSections((current) =>
-      current[section]
-        ? current
-        : {
-            ...current,
-            [section]: true,
-          },
-    );
-  }, [section]);
 
   useEffect(() => {
     const syncFromPath = () => {
@@ -165,9 +141,6 @@ function AppShellInner() {
     return <FeedV3 onLogin={openLogin} />;
   };
 
-  const workspaceSectionActive = workspaceSections.includes(section);
-  const cachedNonWorkspaceSections = cachedSections.filter((item) => !workspaceSections.includes(item));
-
   if (!user && section === "pricing") {
     return (
       <>
@@ -200,24 +173,9 @@ function AppShellInner() {
         <div className="hidden w-[248px] shrink-0 lg:block" aria-hidden="true" />
         <main className="h-[100dvh] min-w-0 flex-1 overflow-y-auto overflow-x-hidden bg-[#000000] lg:h-[calc(100dvh-2rem)] lg:rounded-[1rem] lg:border lg:border-white/8">
           <WorkspaceTopbar section={section} />
-          <div className="block min-h-full">
-            {workspaceSectionActive ? (
-              <section key={`workspace:${section}`} className="min-h-full">
-                {renderSection(section)}
-              </section>
-            ) : null}
-            {cachedNonWorkspaceSections.map((item) =>
-              visitedSections[item] ? (
-                <section
-                  key={item}
-                  className={item === section ? "min-h-full" : "hidden"}
-                  aria-hidden={item === section ? undefined : true}
-                >
-                  {renderSection(item)}
-                </section>
-              ) : null,
-            )}
-          </div>
+          <section key={section} className="min-h-full">
+            {renderSection(section)}
+          </section>
         </main>
       </div>
       </ActiveAccountProvider>
