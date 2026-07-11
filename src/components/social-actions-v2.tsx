@@ -79,9 +79,9 @@ function Modal({ title, subtitle, onClose, children }: { title: string; subtitle
   if (!mounted || typeof document === "undefined") return null;
 
   return createPortal(
-    <div className="fixed inset-0 isolate z-[2147483647] flex h-[100dvh] w-screen items-start justify-center overflow-y-auto bg-black/75 p-3 pt-[max(1rem,env(safe-area-inset-top))] backdrop-blur-md sm:p-4 sm:pt-[max(1rem,env(safe-area-inset-top))]">
+    <div className="fixed inset-0 isolate z-[2147483647] flex h-[100dvh] w-screen items-start justify-center overflow-y-auto bg-black/82 p-3 pt-[max(1rem,env(safe-area-inset-top))] sm:p-4 sm:pt-[max(1rem,env(safe-area-inset-top))]">
       <div className="absolute inset-0" onClick={onClose} aria-hidden="true" />
-      <section className="relative z-10 flex h-[min(92dvh,760px)] w-full max-w-xl flex-col overflow-hidden rounded-[30px] border border-white/10 bg-[#171717]/98 text-white shadow-2xl shadow-black/80">
+      <section className="relative z-10 flex h-[min(92dvh,760px)] w-full max-w-xl flex-col overflow-hidden rounded-[30px] border border-white/10 bg-[#090909] text-white shadow-2xl shadow-black/80">
         <header className="flex items-center gap-3 border-b border-white/8 px-4 py-4">
           <div className="min-w-0 flex-1">
             <h2 className="text-xl font-black leading-6">{title}</h2>
@@ -299,8 +299,8 @@ export function SocialActions({ className = "" }: { className?: string }) {
     const refresh = () => {
       if (document.visibilityState === "visible") loadUnread();
     };
-    const timer = window.setTimeout(loadUnread, 800);
-    const interval = window.setInterval(refresh, 8000);
+    const timer = window.setTimeout(loadUnread, 400);
+    const interval = window.setInterval(refresh, 20000);
     window.addEventListener("focus", refresh);
     document.addEventListener("visibilitychange", refresh);
     return () => {
@@ -314,8 +314,8 @@ export function SocialActions({ className = "" }: { className?: string }) {
   return (
     <>
       <div className={`flex items-center gap-2 ${className}`}>
-        <button onClick={() => setSearchOpen(true)} className="grid h-10 w-10 place-items-center rounded-2xl border border-white/10 bg-white/[.045] text-zinc-100 shadow-lg shadow-slate-950/20 backdrop-blur-xl hover:bg-white/[.08]" aria-label="Search traders"><Search size={18} /></button>
-        <button onClick={() => setNotificationsOpen(true)} className="relative grid h-10 w-10 place-items-center rounded-2xl border border-white/10 bg-white/[.045] text-zinc-100 shadow-lg shadow-slate-950/20 backdrop-blur-xl hover:bg-white/[.08]" aria-label="Notifications"><Bell size={18} />{unread > 0 ? <span className="absolute -right-1 -top-1 grid min-h-5 min-w-5 place-items-center rounded-full bg-rose-500 px-1 text-[10px] font-black text-white ring-2 ring-[#171717]">{unread > 9 ? "9+" : unread}</span> : null}</button>
+        <button onClick={() => setSearchOpen(true)} className="grid h-10 w-10 place-items-center rounded-2xl border border-white/10 bg-[#090909] text-zinc-100 transition hover:bg-[#111111]" aria-label="Search traders"><Search size={18} /></button>
+        <button onClick={() => setNotificationsOpen(true)} className="relative grid h-10 w-10 place-items-center rounded-2xl border border-white/10 bg-[#090909] text-zinc-100 transition hover:bg-[#111111]" aria-label="Notifications"><Bell size={18} />{unread > 0 ? <span className="absolute -right-1 -top-1 grid min-h-5 min-w-5 place-items-center rounded-full bg-rose-500 px-1 text-[10px] font-black text-white ring-2 ring-[#090909]">{unread > 9 ? "9+" : unread}</span> : null}</button>
       </div>
       {searchOpen ? <SearchDialog onClose={() => setSearchOpen(false)} /> : null}
       {notificationsOpen ? <NotificationsDialog onClose={() => setNotificationsOpen(false)} onRead={() => setUnread(0)} /> : null}

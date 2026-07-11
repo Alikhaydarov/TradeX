@@ -189,7 +189,7 @@ function AppShellInner() {
   return (
     <>
       <ActiveAccountProvider>
-      <div className="mx-auto flex min-h-[100dvh] w-full max-w-[1920px] gap-4 bg-[#000000] p-0 text-foreground lg:p-4" style={{ fontFamily: resolvedFontFamily }}>
+      <div className="mx-auto flex h-[100dvh] w-full max-w-[1920px] gap-4 overflow-hidden bg-[#000000] p-0 text-foreground lg:p-4" style={{ fontFamily: resolvedFontFamily }}>
         <Sidebar
           active={section}
           onChange={changeSection}
@@ -197,8 +197,8 @@ function AppShellInner() {
           user={user}
           isAdmin={isAdmin}
         />
-        <div className="hidden w-[272px] shrink-0 lg:block" aria-hidden="true" />
-        <main className="min-h-[100dvh] min-w-0 flex-1 overflow-x-hidden bg-[#000000] lg:min-h-[calc(100dvh-2rem)] lg:rounded-[1rem] lg:border lg:border-white/8">
+        <div className="hidden w-[248px] shrink-0 lg:block" aria-hidden="true" />
+        <main className="h-[100dvh] min-w-0 flex-1 overflow-y-auto overflow-x-hidden bg-[#000000] lg:h-[calc(100dvh-2rem)] lg:rounded-[1rem] lg:border lg:border-white/8">
           <WorkspaceTopbar section={section} />
           <div className="block min-h-full">
             {workspaceSectionActive ? (

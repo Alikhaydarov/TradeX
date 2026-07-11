@@ -2,6 +2,7 @@
 
 import { EyeOff, Menu, Percent, Plus, Wallet } from "lucide-react";
 import { useActiveAccountStore } from "./active-account-context";
+import { SocialActions } from "./social-actions-v2";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "./ui/dropdown-menu";
 import { useWorkspacePreferences, type PnlViewMode } from "./workspace-preferences-context";
 import type { Section } from "./types";
@@ -39,7 +40,7 @@ export function WorkspaceTopbar({ section }: { section: Section }) {
   const pnlLabel = pnlMode === "percentage" ? "Percentage View" : pnlMode === "hidden" ? "Hide P&L" : "Money View";
 
   return (
-    <div role="banner" className="tw-app-topbar sticky top-0 z-[60] shrink-0 border-b border-white/8 bg-black px-4 py-3 lg:static lg:flex lg:h-[48px] lg:items-center lg:justify-between lg:px-4 lg:py-0">
+    <div role="banner" className="tw-app-topbar sticky top-0 z-[60] shrink-0 border-b border-white/8 bg-black px-4 py-3 lg:static lg:flex lg:h-[46px] lg:items-center lg:justify-between lg:px-4 lg:py-0">
       <div className="flex items-center justify-between gap-3 lg:hidden">
         <button
           type="button"
@@ -60,6 +61,7 @@ export function WorkspaceTopbar({ section }: { section: Section }) {
         </div>
 
         <div className="flex items-center gap-2">
+          <SocialActions className="hidden sm:flex" />
           <PnlModeMenu pnlMode={pnlMode} pnlLabel={pnlLabel} onChange={setPnlMode} compact />
           <button
             type="button"
@@ -78,13 +80,16 @@ export function WorkspaceTopbar({ section }: { section: Section }) {
             <>
               <span className="truncate text-zinc-500">{workspace}</span>
               <span className="text-zinc-700">&gt;</span>
-              <span className="font-semibold tracking-[0.01em] text-zinc-300">{page}</span>
+              <span className="font-medium tracking-[0.01em] text-zinc-300">{page}</span>
             </>
           ) : (
-            <span className="font-semibold tracking-[0.01em] text-zinc-300">{page}</span>
+            <span className="font-medium tracking-[0.01em] text-zinc-300">{page}</span>
           )}
         </div>
-        <PnlModeMenu pnlMode={pnlMode} pnlLabel={pnlLabel} onChange={setPnlMode} />
+        <div className="ml-auto flex items-center gap-2">
+          <SocialActions />
+          <PnlModeMenu pnlMode={pnlMode} pnlLabel={pnlLabel} onChange={setPnlMode} />
+        </div>
       </div>
     </div>
   );
@@ -112,7 +117,7 @@ function PnlModeMenu({
       <DropdownMenuTrigger asChild>
         <button
           type="button"
-          className={`inline-flex h-10 items-center rounded-2xl border border-white/10 bg-[#090909] text-zinc-200 transition hover:bg-[#101010] ${compact ? "w-10 justify-center px-0" : "gap-2 px-3 text-sm font-semibold"}`}
+          className={`inline-flex h-10 items-center rounded-2xl border border-white/10 bg-[#090909] text-zinc-200 transition hover:bg-[#101010] ${compact ? "w-10 justify-center px-0" : "gap-2 px-3 text-sm font-medium"}`}
         >
           <Percent size={15} />
           {compact ? null : pnlLabel}
