@@ -393,7 +393,7 @@ export function JournalV2({
 // Accounts list.
 function Accounts({ activeAccountId, summaries, deleting, onAdd, onOpen, onDelete }: { activeAccountId: string | null; summaries: Summary[]; deleting: string | null; onAdd: () => void; onOpen: (id: string) => void; onDelete: (a: PropAccount) => void }) {
   return (
-    <div className="animate-page-in mx-auto max-w-[1480px] space-y-3 p-3 lg:p-4">
+    <div className="animate-page-in mx-auto max-w-[1480px] space-y-2.5 p-3 lg:p-4">
       <div className="flex items-center justify-end gap-3">
         <div className="flex shrink-0 items-center gap-2">
           <Button onClick={onAdd} className="h-9 rounded-xl bg-white px-3.5 text-black hover:bg-zinc-200">
@@ -423,7 +423,7 @@ function Accounts({ activeAccountId, summaries, deleting, onAdd, onOpen, onDelet
           <button
             type="button"
             onClick={onAdd}
-            className="group grid min-h-[168px] place-items-center rounded-[16px] border border-dashed border-white/10 bg-[#050505] text-center transition hover:border-white/20 hover:bg-[#0a0a0a]"
+            className="group grid min-h-[156px] place-items-center rounded-[16px] border border-dashed border-white/10 bg-[#050505] text-center transition hover:border-white/20 hover:bg-[#0a0a0a]"
           >
             <div>
               <span className="mx-auto grid size-11 place-items-center rounded-xl border border-white/10 bg-[#0a0a0a] text-zinc-400 transition group-hover:text-white">
@@ -453,12 +453,12 @@ function AccountCard({ active = false, s, deleting, onOpen, onDelete, compact = 
       {/* Top bar accent */}
       <div className="absolute inset-x-0 top-0 h-[1px] bg-gradient-to-r from-transparent via-white/20 to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
 
-      <div className="p-3.5">
+      <div className="p-3">
         {/* Header row */}
         <div className="flex items-start gap-3">
           <PropFirmLogo firm={s.account.firm} />
           <div className="min-w-0 flex-1">
-            <p className="truncate text-[14px] font-bold">{s.account.name}</p>
+            <p className="truncate text-[13px] font-bold">{s.account.name}</p>
             <div className="mt-1 flex flex-wrap items-center gap-1.5 text-xs text-[#8a8a8a]">
               <span>{s.account.accountType === "real" ? "Real" : "Prop"}</span>
               <span>/</span>
@@ -469,7 +469,7 @@ function AccountCard({ active = false, s, deleting, onOpen, onDelete, compact = 
             </div>
           </div>
           <div className="flex shrink-0 items-center gap-1.5">
-            <span className={`rounded-lg border px-2 py-0.5 text-[11px] font-semibold ${statusColor[s.account.status] || statusColor.Active}`}>
+            <span className={`rounded-lg border px-2 py-0.5 text-[10px] font-semibold ${statusColor[s.account.status] || statusColor.Active}`}>
               {s.account.status}
             </span>
             <DropdownMenu>
@@ -487,34 +487,34 @@ function AccountCard({ active = false, s, deleting, onOpen, onDelete, compact = 
           </div>
         </div>
 
-        <div className="mt-3 flex items-end justify-between gap-3">
+        <div className="mt-2.5 flex items-end justify-between gap-3">
           <div>
             <p className="text-[10px] uppercase tracking-wider text-[#8a8a8a]">Balance</p>
-            <p className={`font-mono ${compact ? "text-lg" : "text-[1.32rem]"} font-black text-white`}>
+            <p className={`font-mono ${compact ? "text-lg" : "text-[1.2rem]"} font-black text-white`}>
               {cash.format(s.account.accountSize)}
             </p>
             <p className="mt-1 text-[11px] text-zinc-500">{s.account.accountType === "real" ? "Real workspace" : "Prop workspace"}</p>
           </div>
           <div className="text-right">
             <p className="text-[10px] uppercase tracking-wider text-[#8a8a8a]">Result</p>
-            <p className={`font-mono ${compact ? "text-lg" : "text-[1.18rem]"} font-black ${s.pnl >= 0 ? "text-emerald-400" : "text-rose-400"}`}>
+            <p className={`font-mono ${compact ? "text-lg" : "text-[1.05rem]"} font-black ${s.pnl >= 0 ? "text-emerald-400" : "text-rose-400"}`}>
               {s.pnl >= 0 ? "+" : ""}{cash.format(s.pnl)}
             </p>
             <p className="mt-1 text-[11px] text-zinc-500">{s.account.phase}</p>
           </div>
         </div>
 
-        <div className="mt-3 grid grid-cols-3 gap-2 rounded-xl bg-[#090909] px-3 py-2.5">
+        <div className="mt-2.5 grid grid-cols-3 gap-2 rounded-xl bg-[#090909] px-3 py-2">
           {[["Trades", s.trades], ["Win rate", `${s.winRate}%`], ["Market", s.account.marketType]].map(([l, v]) => (
             <div key={String(l)}>
               <p className="text-[10px] text-[#8a8a8a]">{l}</p>
-              <p className="font-mono text-sm font-bold">{v}</p>
+              <p className="font-mono text-[13px] font-bold">{v}</p>
             </div>
           ))}
         </div>
       </div>
 
-      <div className="flex items-center justify-between border-t border-[#171717] px-3.5 py-2.5">
+      <div className="flex items-center justify-between border-t border-[#171717] px-3 py-2.5">
         <div className="flex items-center gap-4 text-[11px] text-[#8a8a8a]">
           <span>Target {Math.round(s.target)}%</span>
           <span>DD {Math.round(s.dd)}%</span>

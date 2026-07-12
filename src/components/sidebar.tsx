@@ -50,7 +50,7 @@ function initials(account: PropAccount | null) {
 const money = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 });
 
 function GroupLabel({ children }: { children: string }) {
-  return <p className="px-1.5 pb-1 pt-4 text-[10px] font-medium tracking-[0.01em] text-zinc-600">{children}</p>;
+  return <p className="px-1.5 pb-1 pt-3 text-[9px] font-medium uppercase tracking-[0.06em] text-zinc-600">{children}</p>;
 }
 
 export function Sidebar({
@@ -171,25 +171,25 @@ export function Sidebar({
           if (mobile) setMobileMenuOpen(false);
           onChange(id);
         }}
-        className={`group flex w-full items-center gap-3 rounded-xl px-2.5 py-2 text-left transition ${
+        className={`group flex w-full items-center gap-2.5 rounded-xl px-2.5 py-1.5 text-left transition ${
           selected ? "bg-white/[.08] text-white ring-1 ring-white/10" : "text-zinc-400 hover:bg-[#0a0a0a] hover:text-white"
         }`}
       >
-        <span className={`grid h-8 w-8 place-items-center rounded-xl transition-colors ${selected ? "bg-white/10 text-white" : "bg-[#090909] text-zinc-500 group-hover:bg-[#111111] group-hover:text-zinc-300"}`}>
-          <Icon size={16} strokeWidth={selected ? 2.4 : 2} />
+        <span className={`grid h-7 w-7 place-items-center rounded-lg transition-colors ${selected ? "bg-white/10 text-white" : "bg-[#090909] text-zinc-500 group-hover:bg-[#111111] group-hover:text-zinc-300"}`}>
+          <Icon size={15} strokeWidth={selected ? 2.3 : 2} />
         </span>
-        <span className="min-w-0 flex-1 truncate text-[15px] font-medium">{label}</span>
+        <span className="min-w-0 flex-1 truncate text-[14px] font-medium">{label}</span>
       </button>
     );
   };
 
   const renderAccountSwitcher = (mobile = false) => (
     <DropdownMenu open={accountSwitcherOpen} onOpenChange={setAccountSwitcherOpen}>
-      <div className={`${mobile ? "flex w-full items-center gap-2 rounded-2xl border border-white/10 bg-[#060606] p-3" : "mt-4 flex w-full items-center gap-2 rounded-[0.95rem] border border-white/8 bg-[#040404] p-2.5 transition hover:bg-[#090909]"}`}>
+      <div className={`${mobile ? "flex w-full items-center gap-2 rounded-2xl border border-white/10 bg-[#060606] p-3" : "mt-4 flex w-full items-center gap-2 rounded-[0.95rem] border border-white/8 bg-[#040404] p-2 transition hover:bg-[#090909]"}`}>
         <button type="button" onClick={openAccountsPage} className="flex min-w-0 flex-1 items-center gap-3 text-left">
           <span className={`size-2 shrink-0 rounded-full ${activeAccount ? "bg-emerald-500" : "bg-zinc-500"}`} />
           <div className="min-w-0 flex-1">
-            <p className={`${mobile ? "text-sm" : "text-[14px]"} truncate font-bold text-white`}>{activeAccount?.name || "Accounts"}</p>
+            <p className={`${mobile ? "text-sm" : "text-[13px]"} truncate font-bold text-white`}>{activeAccount?.name || "Accounts"}</p>
             <p className={`${mobile ? "text-xs" : "text-[11px]"} truncate text-zinc-500`}>{activeAccount ? activeBalance : "Select trading account"}</p>
           </div>
         </button>
@@ -259,8 +259,8 @@ export function Sidebar({
 
   return (
     <>
-      <aside className="fixed left-[max(1rem,calc((100vw-1860px)/2+1rem))] top-4 z-40 hidden h-[calc(100dvh-2rem)] w-[248px] shrink-0 flex-col rounded-[1rem] border border-white/8 bg-[#000000] p-3 shadow-[inset_0_1px_0_rgba(255,255,255,.03)] lg:flex">
-        <button onClick={() => onChange("feed")} className="flex items-center gap-3 rounded-2xl px-2 py-2 text-left transition-colors hover:bg-white/[.03]" aria-label="TradeWay home">
+      <aside className="fixed left-[max(1rem,calc((100vw-1860px)/2+1rem))] top-4 z-40 hidden h-[calc(100dvh-2rem)] w-[228px] shrink-0 flex-col rounded-[1rem] border border-white/8 bg-[#000000] p-3 shadow-[inset_0_1px_0_rgba(255,255,255,.03)] lg:flex">
+        <button onClick={() => onChange("feed")} className="flex items-center gap-3 rounded-2xl px-2 py-1.5 text-left transition-colors hover:bg-white/[.03]" aria-label="TradeWay home">
           <span className="grid h-9 w-9 place-items-center rounded-xl bg-[linear-gradient(180deg,rgba(255,255,255,1),rgba(232,232,236,1))] text-sm font-black text-black shadow-[0_10px_24px_rgba(255,255,255,.06)]">TW</span>
           <span className="min-w-0">
             <span className="flex items-center gap-2">
@@ -269,18 +269,18 @@ export function Sidebar({
                 {premium.isPremium ? "Premium" : "Free"}
               </span>
             </span>
-            <small className="text-[11px] text-zinc-500">Trading workspace</small>
+            <small className="text-[10px] text-zinc-500">Trading workspace</small>
           </span>
         </button>
 
         {renderAccountSwitcher()}
 
-        <div className="mt-5">
+        <div className="mt-4">
           <nav className="space-y-1">
             {primaryNav.map((item) => renderNavButton(item))}
           </nav>
 
-          <GroupLabel>Journaling</GroupLabel>
+          <GroupLabel>Workspace</GroupLabel>
           <nav className="space-y-1">
             {journalingNav.map((item) => renderNavButton(item))}
           </nav>
@@ -344,7 +344,7 @@ export function Sidebar({
         <Dialog open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
           <DialogContent
             showCloseButton={false}
-            className="left-0 top-0 h-[100dvh] w-[74vw] max-w-[320px] translate-x-0 translate-y-0 rounded-none border-r border-white/10 bg-black p-0 sm:max-w-[320px] lg:hidden"
+            className="left-0 top-0 h-[100dvh] w-[76vw] max-w-[312px] translate-x-0 translate-y-0 rounded-none border-r border-white/10 bg-black p-0 sm:max-w-[312px] lg:hidden"
           >
             <div className="flex h-full flex-col">
               <div className="flex items-center justify-between border-b border-white/8 px-4 py-4">
@@ -379,7 +379,7 @@ export function Sidebar({
                   {primaryNav.map((item) => renderNavButton(item, true))}
                 </nav>
 
-                <GroupLabel>Journaling</GroupLabel>
+                <GroupLabel>Workspace</GroupLabel>
                 <nav className="space-y-1">
                   {journalingNav.map((item) => renderNavButton(item, true))}
                 </nav>

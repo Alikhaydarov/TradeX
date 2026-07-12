@@ -4,7 +4,7 @@ import { Plus } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { useAuth } from "./auth-context";
 
-const ACCOUNT_WORKSPACE_PATHS = ["/dashboard", "/calendar", "/trades", "/analytics", "/strategies", "/settings"];
+const ACCOUNT_WORKSPACE_PATHS = ["/dashboard", "/calendar", "/trades", "/analytics", "/settings"];
 
 function isVisibleEnough(element: HTMLElement) {
   const section = element.closest("section[aria-hidden='true']");
