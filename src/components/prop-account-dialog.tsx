@@ -59,9 +59,9 @@ const PLATFORMS: PlatformConfig[] = [
 const CSV_PLATFORMS = new Set<PlatformId>(["tradovate", "ninjatrader", "projectx"]);
 
 function badgeClass(mode: PlatformMode) {
-  if (mode === "auto") return "bg-blue-500/15 text-blue-300";
-  if (mode === "csv") return "bg-amber-400/15 text-amber-300";
-  return "bg-white/10 text-zinc-400";
+  if (mode === "auto") return "bg-[#071017] text-sky-200";
+  if (mode === "csv") return "bg-[#161007] text-amber-200";
+  return "bg-[#0d0d0d] text-zinc-500";
 }
 
 function stepTitle(step: WizardStep, accountKind: AccountKind | null, platform?: PlatformConfig) {
@@ -87,9 +87,9 @@ function StepDots({ step }: { step: WizardStep }) {
         <div key={item} className="flex items-center">
           <span className={cn(
             "grid size-4 place-items-center rounded-full border transition",
-            step >= item ? "border-white bg-white" : "border-white/20 bg-white/20"
+            step >= item ? "border-white bg-white" : "border-white/10 bg-[#111111]"
           )} />
-          {item < 3 ? <span className={cn("h-1 w-28 transition", step > item ? "bg-white" : "bg-white/25")} /> : null}
+          {item < 3 ? <span className={cn("h-1 w-28 transition", step > item ? "bg-white" : "bg-[#1a1a1a]")} /> : null}
         </div>
       ))}
     </div>
@@ -269,7 +269,7 @@ export function PropAccountDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[92dvh] overflow-hidden border-[#242424] bg-black p-0 text-zinc-100 sm:max-w-[900px]">
+      <DialogContent className="max-h-[92dvh] overflow-hidden border-[#1a1a1a] bg-[#030303] p-0 text-zinc-100 sm:max-w-[900px]">
         <div className="flex items-center border-b border-white/8 bg-black px-5 py-4">
           <DialogHeader className="min-w-[180px]">
             <DialogTitle className="text-lg font-black">Add Account</DialogTitle>
@@ -289,7 +289,7 @@ export function PropAccountDialog({
             ) : null}
 
             <div className="mx-auto mb-7 max-w-xl text-center">
-              <span className="mb-3 inline-flex rounded-lg bg-white/8 px-2 py-1 text-xs font-black text-zinc-400">{step}/3</span>
+              <span className="mb-3 inline-flex rounded-lg bg-[#0d0d0d] px-2 py-1 text-xs font-black text-zinc-400">{step}/3</span>
               <h2 className="text-2xl font-black tracking-tight">{stepTitle(step, accountKind, selectedPlatform)}</h2>
               <p className="mx-auto mt-2 max-w-md text-sm font-semibold leading-6 text-zinc-500">
                 {stepDescription(step, accountKind, selectedPlatform)}
@@ -297,7 +297,7 @@ export function PropAccountDialog({
             </div>
 
             {submitError ? (
-              <div className="mx-auto mb-5 max-w-2xl rounded-2xl border border-rose-500/20 bg-rose-500/10 px-4 py-3 text-sm text-rose-200">
+              <div className="mx-auto mb-5 max-w-2xl rounded-2xl border border-rose-500/20 bg-[#1a0d10] px-4 py-3 text-sm text-rose-200">
                 {submitError}
               </div>
             ) : null}
@@ -322,7 +322,7 @@ export function PropAccountDialog({
             {step === 2 ? (
               <div className="space-y-5">
                 {!premiumStatus.isPremium ? (
-                  <div className="mx-auto max-w-2xl overflow-hidden rounded-[24px] border border-white/10 bg-black shadow-[0_22px_50px_rgba(0,0,0,.4)]">
+                  <div className="mx-auto max-w-2xl overflow-hidden rounded-[24px] border border-white/10 bg-[#030303]">
                     <div className="flex flex-col gap-4 px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-5">
                       <div className="min-w-0">
                         <p className="text-[10px] font-black uppercase tracking-[0.22em] text-sky-200/75">TradeWay Premium</p>
@@ -389,7 +389,7 @@ export function PropAccountDialog({
                         <span className="flex items-start justify-between gap-3">
                           <PlatformLogoBadge platform={item.id} />
                           <span className="flex flex-wrap justify-end gap-1">
-                            {item.premium ? <span className="rounded-full border border-sky-300/15 bg-sky-400/10 px-2 py-0.5 text-[9px] font-black uppercase text-sky-200">Premium</span> : null}
+                            {item.premium ? <span className="rounded-full border border-sky-300/15 bg-[#071017] px-2 py-0.5 text-[9px] font-black uppercase text-sky-200">Premium</span> : null}
                             <span className={cn("rounded-full px-2 py-0.5 text-[9px] font-black uppercase", badgeClass(item.mode))}>{item.badge}</span>
                           </span>
                         </span>
@@ -399,7 +399,7 @@ export function PropAccountDialog({
                         <div className="mt-4 flex items-center justify-between">
                           <span className={cn(
                             "rounded-full px-2.5 py-1 text-[10px] font-black uppercase tracking-wider",
-                            item.market === "CFD" ? "bg-blue-500/10 text-blue-200" : "bg-amber-400/10 text-amber-200"
+                            item.market === "CFD" ? "bg-[#071017] text-sky-200" : "bg-[#161007] text-amber-200"
                           )}>
                             {item.market}
                           </span>
@@ -409,16 +409,16 @@ export function PropAccountDialog({
                         </div>
                       </div>
                       {locked ? (
-                        <span className="absolute inset-0 flex flex-col items-center justify-center rounded-[28px] bg-black/92 px-4 text-center">
+                        <span className="absolute inset-0 flex flex-col items-center justify-center rounded-[28px] bg-[#020202]/95 px-4 text-center">
                           <span className="grid size-10 place-items-center rounded-2xl border border-sky-300/20 bg-sky-400/12 text-sky-100">
                             <LockKeyhole size={16} />
                           </span>
                           <span className="mt-3 text-sm font-black text-white">Premium connector</span>
                           <span className="mt-1 text-[11px] font-medium leading-5 text-zinc-300">Upgrade to unlock {item.name} and advanced sync.</span>
-                          <span className="mt-4 inline-flex rounded-full border border-white/12 bg-[#050505] px-3 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-white">Upgrade now</span>
+                          <span className="mt-4 inline-flex rounded-full border border-white/12 bg-[#0d0d0d] px-3 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-white">Upgrade now</span>
                         </span>
                       ) : null}
-                      {locked ? <span className="absolute right-4 top-4 grid size-8 place-items-center rounded-2xl border border-sky-300/15 bg-sky-400/10 text-sky-200"><LockKeyhole size={14} /></span> : null}
+                      {locked ? <span className="absolute right-4 top-4 grid size-8 place-items-center rounded-2xl border border-sky-300/15 bg-[#071017] text-sky-200"><LockKeyhole size={14} /></span> : null}
                     </button>
                   );})}
                 </div>
@@ -488,7 +488,7 @@ export function PropAccountDialog({
           </div>
 
           {step === 3 ? (
-            <div className="flex items-center justify-end gap-2 border-t border-white/8 bg-black px-5 py-4">
+            <div className="flex items-center justify-end gap-2 border-t border-white/8 bg-[#030303] px-5 py-4">
               <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
               <Button disabled={isSubmitting} className="bg-white font-semibold text-black hover:bg-zinc-200">
                 {isSubmitting ? <LoaderCircle className="animate-spin" /> : <Plus size={18} />}
@@ -515,8 +515,8 @@ export function PropAccountDialog({
         </form>
         {premiumOverlay ? (
           <div className="absolute inset-0 z-20 flex items-center justify-center bg-black p-4">
-            <div className="w-full max-w-md rounded-[28px] border border-white/10 bg-black p-6 text-center shadow-[0_30px_80px_rgba(0,0,0,.7)]">
-              <span className="mx-auto grid size-14 place-items-center rounded-2xl border border-sky-300/15 bg-sky-400/10 text-sky-200">
+            <div className="w-full max-w-md rounded-[28px] border border-white/10 bg-[#030303] p-6 text-center">
+              <span className="mx-auto grid size-14 place-items-center rounded-2xl border border-sky-300/15 bg-[#071017] text-sky-200">
                 <LockKeyhole size={22} />
               </span>
               <h3 className="mt-5 text-2xl font-black">Unlock {premiumOverlay.name}</h3>
@@ -553,7 +553,7 @@ function ChoiceCard({ icon, title, text, onClick }: { icon: React.ReactNode; tit
     <button
       type="button"
       onClick={onClick}
-      className="group flex min-h-[280px] flex-col items-center justify-center rounded-[28px] border border-white/10 bg-[#0b0b0b] p-8 text-center shadow-[inset_0_1px_0_rgba(255,255,255,.03)] transition hover:border-white/25 hover:bg-[#121212]"
+      className="group flex min-h-[280px] flex-col items-center justify-center rounded-[28px] border border-white/10 bg-[#050505] p-8 text-center transition hover:border-white/25 hover:bg-[#111111]"
     >
       <span className="grid size-12 place-items-center rounded-2xl bg-[#161616] text-white">{icon}</span>
       <h3 className="mt-6 text-2xl font-black">{title}</h3>
@@ -664,7 +664,7 @@ function CsvFields({ platform, csvFileName, setCsvFileName }: { platform: Platfo
           <p className="mt-1 text-xs leading-5 text-amber-100/70">CSV parser keyingi patchda ulanadi. Hozir bu account CSV import source bilan yaratiladi.</p>
         </div>
       </div>
-      <Label className="flex min-h-[112px] cursor-pointer flex-col items-center justify-center rounded-xl border border-dashed border-amber-200/20 bg-black/20 px-4 text-center transition hover:bg-black/30">
+      <Label className="flex min-h-[112px] cursor-pointer flex-col items-center justify-center rounded-xl border border-dashed border-amber-200/20 bg-[#080808] px-4 text-center transition hover:bg-[#101010]">
         <FileText size={22} className="text-amber-200" />
         <span className="mt-2 text-sm font-bold text-zinc-100">{csvFileName || "Upload trade history CSV"}</span>
         <span className="mt-1 text-xs text-zinc-500">.csv file accepted</span>
@@ -705,7 +705,7 @@ function SideGuide({ accountKind, platform }: { accountKind: AccountKind | null;
       </div>
 
       {platform.id === "mt5" && !isManual ? (
-        <div className="rounded-xl border border-white/10 bg-black/25 p-3 text-[11px] leading-5 text-zinc-400">
+        <div className="rounded-xl border border-white/10 bg-[#080808] p-3 text-[11px] leading-5 text-zinc-400">
           <Sparkles size={13} className="mb-2" />
           Broker yoki prop firmangizning IP restriction qoidalarini tekshiring. Azure VPS IP orqali read-only connection bo&apos;ladi.
         </div>

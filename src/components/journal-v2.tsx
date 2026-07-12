@@ -359,7 +359,7 @@ export function JournalV2({
   if (!user) return (
     <div className="grid min-h-[75dvh] place-items-center text-center">
       <div className="animate-page-in">
-        <div className="mx-auto grid size-16 place-items-center rounded-2xl bg-white/[.06]">
+        <div className="mx-auto grid size-16 place-items-center rounded-2xl bg-[#0d0d0d]">
           <ShieldCheck className="text-zinc-300" size={32} />
         </div>
         <h2 className="mt-5 text-3xl font-black">Professional trading journal</h2>
@@ -410,8 +410,12 @@ export function JournalV2({
 // Accounts list.
 function Accounts({ activeAccountId, summaries, deleting, onAdd, onOpen, onDelete }: { activeAccountId: string | null; summaries: Summary[]; deleting: string | null; onAdd: () => void; onOpen: (id: string) => void; onDelete: (a: PropAccount) => void }) {
   return (
-    <div className="animate-page-in mx-auto max-w-[1480px] space-y-2.5 p-3 lg:p-4">
-      <div className="flex items-center justify-end gap-3">
+    <div className="animate-page-in mx-auto max-w-[1460px] space-y-2 p-3 lg:p-4">
+      <div className="flex items-center justify-between gap-3">
+        <div>
+          <p className="text-[9px] font-semibold uppercase tracking-[0.12em] text-zinc-600">Accounts</p>
+          <p className="mt-1 text-xs text-zinc-500">Open a card to switch the whole workspace to that account.</p>
+        </div>
         <div className="flex shrink-0 items-center gap-2">
           <Button onClick={onAdd} className="h-9 rounded-xl bg-white px-3.5 text-black hover:bg-zinc-200">
             <Plus size={15} /> Add Account
@@ -433,7 +437,7 @@ function Accounts({ activeAccountId, summaries, deleting, onAdd, onOpen, onDelet
           </div>
         </div>
       ) : (
-        <section className="grid gap-2.5 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
+        <section className="grid gap-2 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
           {summaries.map((summary) => (
             <AccountCard key={summary.account.id} active={activeAccountId === summary.account.id} s={summary} deleting={deleting} onOpen={onOpen} onDelete={onDelete} />
           ))}
@@ -452,11 +456,8 @@ function AccountCard({ active = false, s, deleting, onOpen, onDelete, compact = 
       tabIndex={0}
       onClick={() => onOpen(s.account.id)}
       onKeyDown={e => { if (e.key === "Enter" || e.key === " ") onOpen(s.account.id); }}
-      className={`group relative cursor-pointer overflow-hidden border transition-all duration-200 hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/30 ${active ? "border-white/20 bg-[#080808] ring-1 ring-white/10" : "border-white/10 bg-[#030303] hover:border-white/20 hover:bg-[#070707]"} ${compact ? "rounded-[14px]" : "rounded-[16px]"}`}
+      className={`group relative cursor-pointer overflow-hidden border transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/30 ${active ? "border-white/20 bg-[#080808] ring-1 ring-white/10" : "border-white/10 bg-[#030303] hover:border-white/20 hover:bg-[#070707]"} ${compact ? "rounded-[14px]" : "rounded-[16px]"}`}
     >
-      {/* Top bar accent */}
-      <div className="absolute inset-x-0 top-0 h-[1px] bg-gradient-to-r from-transparent via-white/20 to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
-
       <div className="p-3">
         {/* Header row */}
         <div className="flex items-start gap-3">
@@ -491,17 +492,17 @@ function AccountCard({ active = false, s, deleting, onOpen, onDelete, compact = 
           </div>
         </div>
 
-        <div className="mt-3 flex items-end justify-between gap-3">
+        <div className="mt-2.5 flex items-end justify-between gap-3">
           <div>
             <p className="text-[10px] uppercase tracking-wider text-[#8a8a8a]">Balance</p>
-            <p className={`font-mono ${compact ? "text-lg" : "text-[1.12rem]"} font-black text-white`}>
+            <p className={`font-mono ${compact ? "text-lg" : "text-[1.06rem]"} font-black text-white`}>
               {cash.format(s.account.accountSize)}
             </p>
             <p className="mt-1 text-[11px] text-zinc-500">{s.account.accountType === "real" ? "Real workspace" : "Prop workspace"}</p>
           </div>
           <div className="text-right">
             <p className="text-[10px] uppercase tracking-wider text-[#8a8a8a]">Result</p>
-            <p className={`font-mono ${compact ? "text-lg" : "text-[1rem]"} font-black ${s.pnl >= 0 ? "text-emerald-400" : "text-rose-400"}`}>
+            <p className={`font-mono ${compact ? "text-lg" : "text-[0.96rem]"} font-black ${s.pnl >= 0 ? "text-emerald-400" : "text-rose-400"}`}>
               {s.pnl >= 0 ? "+" : ""}{cash.format(s.pnl)}
             </p>
             <p className="mt-1 text-[11px] text-zinc-500">{s.account.phase}</p>
@@ -551,7 +552,7 @@ function AiCoachCard({ report, loading, error, onRefresh }: { report: AiCoachRep
           <div className="rounded-2xl border border-white/8 bg-[#050505] p-4">
             <p className="text-[10px] font-black uppercase tracking-widest text-[#8a8a8a]">Coach score</p>
             <p className="mt-2 font-mono text-4xl font-black text-white">{Math.round(report.score)}</p>
-            <div className="mt-3 h-2 overflow-hidden rounded-full bg-white/10"><div className="h-full rounded-full bg-[#d9f96d]" style={{ width: `${Math.max(0, Math.min(100, report.score))}%` }} /></div>
+            <div className="mt-3 h-2 overflow-hidden rounded-full bg-[#111111]"><div className="h-full rounded-full bg-[#d9f96d]" style={{ width: `${Math.max(0, Math.min(100, report.score))}%` }} /></div>
           </div>
           <div className="rounded-2xl border border-white/8 bg-[#050505] p-4">
             <p className="text-[10px] font-black uppercase tracking-widest text-[#8a8a8a]">Risk warnings</p>
@@ -804,7 +805,7 @@ function Workspace(p: {
               <section className="rounded-[1.05rem] border border-white/8 bg-[#070707] p-4">
                 <div className="flex items-center justify-between gap-3">
                   <div>
-                    <h3 className="text-[15px] font-black text-white">Recent trades</h3>
+                    <h3 className="text-[14px] font-black text-white">Recent trades</h3>
                     <p className="mt-1 text-xs text-zinc-500">Open any trade, review it, then share it to Home from the trade view.</p>
                   </div>
                   <Button type="button" variant="outline" size="sm" className="border-white/10 bg-[#050505] hover:bg-[#101010]" onClick={() => setActiveTab("trades")}>
@@ -818,7 +819,7 @@ function Workspace(p: {
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center gap-2">
                           <strong className="truncate text-sm text-white">{trade.symbol}</strong>
-                          <span className={`rounded px-1.5 py-0.5 text-[9px] font-black uppercase ${trade.side === "Long" ? "bg-emerald-400/15 text-emerald-300" : "bg-rose-400/15 text-rose-300"}`}>{trade.side === "Long" ? "Buy" : "Sell"}</span>
+                          <span className={`rounded px-1.5 py-0.5 text-[9px] font-black uppercase ${trade.side === "Long" ? "bg-[#0b1c12] text-emerald-300" : "bg-[#1a0d10] text-rose-300"}`}>{trade.side === "Long" ? "Buy" : "Sell"}</span>
                         </div>
                         <p className="mt-1 truncate text-xs text-zinc-500">{trade.setup || trade.session || trade.rawDate}</p>
                       </div>
@@ -896,7 +897,7 @@ function Workspace(p: {
             </section>
 
             <div className="grid gap-3 xl:grid-cols-[minmax(0,1.15fr)_minmax(280px,.85fr)_minmax(280px,.85fr)]">
-              <section className="overflow-hidden rounded-[1rem] border border-white/8 bg-[#070707] shadow-[0_18px_46px_rgba(0,0,0,.2)] xl:col-span-2">
+              <section className="overflow-hidden rounded-[1rem] border border-white/8 bg-[#070707] xl:col-span-2">
                 <div className="flex flex-col gap-3 border-b border-white/8 px-3 py-3 sm:px-4 lg:flex-row lg:items-start">
                   <div className="min-w-0">
                     <h3 className="text-[14px] font-black text-white">Account Balance</h3>
@@ -960,7 +961,7 @@ function Workspace(p: {
             </div>
 
             <div className="grid gap-3 xl:grid-cols-[minmax(0,1fr)_320px]">
-              <section className="rounded-[1rem] border border-white/8 bg-[#070707] p-3 shadow-[0_18px_46px_rgba(0,0,0,.2)] sm:p-4">
+              <section className="rounded-[1rem] border border-white/8 bg-[#070707] p-3 sm:p-4">
                 <div className="flex items-center justify-between gap-3">
                   <div>
                     <h3 className="text-[14px] font-black text-white">Recent Trades</h3>
@@ -982,7 +983,7 @@ function Workspace(p: {
                         <div className="min-w-0 flex-1">
                           <div className="flex items-center gap-2">
                             <strong className="truncate text-sm text-white">{trade.symbol}</strong>
-                            <span className={`rounded px-1.5 py-0.5 text-[9px] font-black uppercase ${trade.side === "Long" ? "bg-emerald-400/15 text-emerald-300" : "bg-rose-400/15 text-rose-300"}`}>
+                            <span className={`rounded px-1.5 py-0.5 text-[9px] font-black uppercase ${trade.side === "Long" ? "bg-[#0b1c12] text-emerald-300" : "bg-[#1a0d10] text-rose-300"}`}>
                               {trade.side === "Long" ? "Buy" : "Sell"}
                             </span>
                           </div>
@@ -999,7 +1000,7 @@ function Workspace(p: {
                 )}
               </section>
 
-              <section className="rounded-[1rem] border border-white/8 bg-[#070707] p-3 shadow-[0_18px_46px_rgba(0,0,0,.2)] sm:p-4">
+              <section className="rounded-[1rem] border border-white/8 bg-[#070707] p-3 sm:p-4">
                 <div className="flex items-center justify-between gap-3">
                   <div>
                     <h3 className="text-[14px] font-black text-white">Execution Snapshot</h3>
@@ -1038,7 +1039,7 @@ function Workspace(p: {
               </section>
             </div>
 
-              <section className="rounded-[1.2rem] border border-white/8 bg-[#070707] p-3 shadow-[0_18px_46px_rgba(0,0,0,.2)] sm:p-4">
+              <section className="rounded-[1.2rem] border border-white/8 bg-[#070707] p-3 sm:p-4">
               <div className="flex items-center justify-between gap-3">
                 <div>
                   <h3 className="font-bold text-white">Live Positions</h3>
@@ -1057,7 +1058,7 @@ function Workspace(p: {
                         <div className="min-w-0 flex-1">
                           <div className="flex items-center gap-2">
                             <InstrumentBadge symbol={position.symbol} compact className="bg-[#121212]" />
-                            <span className={`rounded px-1.5 py-0.5 text-[9px] font-black uppercase ${position.side === "long" ? "bg-emerald-400/15 text-emerald-300" : "bg-rose-400/15 text-rose-300"}`}>
+                            <span className={`rounded px-1.5 py-0.5 text-[9px] font-black uppercase ${position.side === "long" ? "bg-[#0b1c12] text-emerald-300" : "bg-[#1a0d10] text-rose-300"}`}>
                               {position.side}
                             </span>
                             <span className="text-[10px] text-zinc-500">{position.volume.toFixed(2)} lots</span>
@@ -1112,14 +1113,14 @@ function Workspace(p: {
                     <p className="text-[9px] font-medium uppercase tracking-[0.12em] text-zinc-600">
                       {account.name} <span className="mx-1 text-zinc-700">&gt;</span> Calendar
                     </p>
-                    <h3 className="text-[15px] font-black capitalize text-white">{month.toLocaleDateString("en-US", { month: "long", year: "numeric" })} performance</h3>
-                    <p className="text-xs text-[#8a8a8a]">Open any day to review the exact trades behind that result.</p>
+                    <h3 className="text-[14px] font-black capitalize text-white">{month.toLocaleDateString("en-US", { month: "long", year: "numeric" })} performance</h3>
+                    <p className="text-[11px] text-[#8a8a8a]">Tap a day to open only the trades from that date.</p>
                   </div>
                   <div className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-1 rounded-[0.95rem] border border-white/8 bg-[#050505] p-1 sm:flex sm:gap-2 lg:ml-auto">
                     <Button variant="ghost" size="icon-sm" onClick={p.onPrev}><ChevronLeft size={16} /></Button>
                     <strong className="min-w-0 text-center text-xs capitalize sm:min-w-32 sm:text-sm">{month.toLocaleDateString("en-US", { month: "short", year: "numeric" })}</strong>
                     <Button variant="ghost" size="icon-sm" onClick={p.onNext}><ChevronRight size={16} /></Button>
-                    <Button variant="outline" size="sm" onClick={p.onToday} className="col-span-3 w-full border-white/8 bg-transparent text-xs sm:w-auto">Current month</Button>
+                    <Button variant="outline" size="sm" onClick={p.onToday} className="col-span-3 w-full border-white/8 bg-transparent text-xs hover:bg-[#101010] sm:w-auto">Current month</Button>
                   </div>
                 </div>
                 <div className="hidden p-4 md:block">
@@ -1135,12 +1136,12 @@ function Workspace(p: {
                           key={`${monthId(month)}-desktop-${i}`}
                           type="button"
                           onClick={() => (c.trades.length ? setSelectedDay(c) : null)}
-                          className={`h-full w-full rounded-[1rem] border p-2.5 text-left transition ${c.trades.length ? c.pnl >= 0 ? "border-emerald-500/14 bg-emerald-500/[.05] hover:bg-emerald-500/[.08]" : "border-rose-500/14 bg-rose-500/[.05] hover:bg-rose-500/[.08]" : "border-white/6 bg-[#050505]"} ${c.trades.length ? "cursor-pointer" : "cursor-default"}`}
+                          className={`h-full w-full rounded-[1rem] border p-2.5 text-left transition ${c.trades.length ? c.pnl >= 0 ? "border-emerald-500/14 bg-[#08120d] hover:bg-[#0b1710]" : "border-rose-500/14 bg-[#14090c] hover:bg-[#180b0f]" : "border-white/6 bg-[#050505]"} ${c.trades.length ? "cursor-pointer" : "cursor-default"}`}
                         >
                           <div className="flex items-start justify-between">
-                            <span className={`grid size-6 place-items-center rounded-md text-[11px] font-bold ${c.trades.length ? "bg-black/18 text-[#f1f1f1]" : "text-[#8a8a8a]"}`}>{c.day}</span>
+                            <span className={`grid size-6 place-items-center rounded-md text-[11px] font-bold ${c.trades.length ? "bg-[#050505] text-[#f1f1f1]" : "text-[#8a8a8a]"}`}>{c.day}</span>
                             {c.trades.length > 0 ? (
-                            <span className="rounded-md bg-black/30 px-1.5 py-0.5 text-[10px] font-medium text-[#8a8a8a]">
+                            <span className="rounded-md bg-[#050505] px-1.5 py-0.5 text-[10px] font-medium text-[#8a8a8a]">
                                 {c.trades.length}
                               </span>
                             ) : null}
@@ -1179,7 +1180,7 @@ function Workspace(p: {
                           key={`${monthId(month)}-mobile-${i}`}
                           type="button"
                           onClick={() => (c.trades.length ? setSelectedDay(c) : null)}
-                          className={`flex min-h-[62px] flex-col items-center justify-center rounded-[0.95rem] border p-1.5 text-center ${c.trades.length ? c.pnl >= 0 ? "border-emerald-500/18 bg-emerald-500/[.07]" : "border-rose-500/18 bg-rose-500/[.07]" : "border-white/6 bg-[#101010]"} ${c.trades.length ? "cursor-pointer" : "cursor-default"}`}
+                          className={`flex min-h-[62px] flex-col items-center justify-center rounded-[0.95rem] border p-1.5 text-center ${c.trades.length ? c.pnl >= 0 ? "border-emerald-500/18 bg-[#08120d]" : "border-rose-500/18 bg-[#14090c]" : "border-white/6 bg-[#101010]"} ${c.trades.length ? "cursor-pointer" : "cursor-default"}`}
                         >
                           <span className={`text-[11px] font-bold ${c.trades.length ? "text-[#f1f1f1]" : "text-[#8a8a8a]"}`}>{c.day}</span>
                           {c.trades.length > 0 ? (
@@ -1204,7 +1205,7 @@ function Workspace(p: {
           <TabsContent value="trades" className="space-y-2.5">
             <div className="space-y-2.5">
               <div className="grid gap-3">
-                <section className="overflow-hidden rounded-[1rem] border border-white/8 bg-[#070707] shadow-[0_18px_46px_rgba(0,0,0,.2)]">
+                <section className="overflow-hidden rounded-[1rem] border border-white/8 bg-[#070707]">
                   <div className="space-y-3 border-b border-white/8 px-4 py-3">
                     <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
                       <div>
@@ -1345,14 +1346,14 @@ function Workspace(p: {
                             <h4 className="truncate text-base font-black text-white">{trade.symbol}</h4>
                             <p className="mt-0.5 truncate text-xs text-[#8a8a8a]">{trade.setup || "No setup"} / {trade.session || "No session"} / {trade.date}</p>
                           </div>
-                          <span className="rounded-xl bg-white/[.06] px-2.5 py-1 text-[10px] font-black text-zinc-300">{reviewScore(trade)}/6</span>
+                          <span className="rounded-xl bg-[#0d0d0d] px-2.5 py-1 text-[10px] font-black text-zinc-300">{reviewScore(trade)}/6</span>
                         </div>
                         <p className="mt-3 line-clamp-3 text-sm leading-6 text-[#d4d4d8]">{trade.note || "Review note yozilmagan."}</p>
                         <div className="mt-3 flex flex-wrap gap-1.5">
-                          {trade.reviewCompleted ? <span className="inline-flex items-center gap-1 rounded-lg bg-white/[.06] px-2 py-1 text-[10px] font-bold text-zinc-300"><CheckCircle2 size={11} /> Reviewed</span> : null}
+                          {trade.reviewCompleted ? <span className="inline-flex items-center gap-1 rounded-lg bg-[#0d0d0d] px-2 py-1 text-[10px] font-bold text-zinc-300"><CheckCircle2 size={11} /> Reviewed</span> : null}
                           {trade.followingPlan ? <span className="rounded-lg bg-emerald-500/10 px-2 py-1 text-[10px] font-bold text-emerald-300">Plan</span> : <span className="rounded-lg bg-amber-500/10 px-2 py-1 text-[10px] font-bold text-amber-300">Off-plan</span>}
                           {trade.riskPercent ? <span className="rounded-lg bg-amber-500/10 px-2 py-1 text-[10px] font-bold text-amber-300">{trade.riskPercent}</span> : null}
-                          {(trade.tags ?? []).slice(0, 3).map(tag => <span key={tag} className="rounded-lg bg-white/[.045] px-2 py-1 text-[10px] text-[#a1a1aa]">{tag}</span>)}
+                          {(trade.tags ?? []).slice(0, 3).map(tag => <span key={tag} className="rounded-lg bg-[#0d0d0d] px-2 py-1 text-[10px] text-[#a1a1aa]">{tag}</span>)}
                         </div>
                       </div>
                     </button>
@@ -1389,7 +1390,7 @@ function Workspace(p: {
 
             {analyticsView === "overview" ? (
               <div className="grid gap-3 xl:grid-cols-[minmax(0,1.15fr)_minmax(320px,.85fr)]">
-                <section className="overflow-hidden rounded-[1rem] border border-white/8 bg-[#070707] shadow-[0_18px_46px_rgba(0,0,0,.2)]">
+                <section className="overflow-hidden rounded-[1rem] border border-white/8 bg-[#070707]">
                   <div className="border-b border-white/8 px-4 py-3">
                     <p className="text-[9px] font-medium uppercase tracking-[0.12em] text-zinc-600">
                       {account.name} <span className="mx-1 text-zinc-700">&gt;</span> Analytics
@@ -1418,7 +1419,7 @@ function Workspace(p: {
                   </div>
                 </section>
 
-                <section className="overflow-hidden rounded-[1rem] border border-white/8 bg-[#070707] shadow-[0_18px_46px_rgba(0,0,0,.2)]">
+                <section className="overflow-hidden rounded-[1rem] border border-white/8 bg-[#070707]">
                   <div className="flex items-center justify-between border-b border-white/8 px-4 py-3">
                     <div>
                       <h3 className="text-[14px] font-black text-white">TradeWay Profitability Score</h3>
@@ -1588,7 +1589,7 @@ function Workspace(p: {
                       <span className="min-w-0 flex-1">
                         <span className="flex min-w-0 items-center gap-2">
                           <strong className="truncate text-sm font-black text-white">{trade.symbol}</strong>
-                          <span className={`rounded px-1.5 py-0.5 text-[9px] font-black uppercase ${trade.side === "Long" ? "bg-emerald-400/15 text-emerald-300" : "bg-rose-400/15 text-rose-300"}`}>
+                          <span className={`rounded px-1.5 py-0.5 text-[9px] font-black uppercase ${trade.side === "Long" ? "bg-[#0b1c12] text-emerald-300" : "bg-[#1a0d10] text-rose-300"}`}>
                             {trade.side === "Long" ? "Buy" : "Sell"}
                           </span>
                         </span>
@@ -1652,7 +1653,7 @@ function TradeEditor({ trade, saving, onClose, onSave, onDelete }: { trade: Jour
             <h3 className="truncate text-lg font-black">{trade.symbol} trade</h3>
             <p className="text-xs text-zinc-500">Trade review, edit and screenshots</p>
           </div>
-          <button type="button" onClick={onClose} className="grid size-9 place-items-center rounded-xl text-[#8a8a8a] hover:bg-white/[.05] hover:text-white" aria-label="Close">
+          <button type="button" onClick={onClose} className="grid size-9 place-items-center rounded-xl text-[#8a8a8a] transition hover:bg-[#111111] hover:text-white" aria-label="Close">
             <X size={17} />
           </button>
         </header>
@@ -1695,8 +1696,8 @@ function TradeEditor({ trade, saving, onClose, onSave, onDelete }: { trade: Jour
             <input ref={imageInputRef} type="file" multiple accept="image/jpeg,image/png,image/webp" className="hidden" onChange={(event) => void uploadTradeImages(event.target.files)} />
             <input type="hidden" name="imageUrls" value={JSON.stringify(imageUrls)} />
             <div className="grid grid-cols-3 gap-2">
-              {imageUrls.map((url, index) => <div key={url} className="group relative aspect-square overflow-hidden rounded-lg border border-white/10 bg-black"><button type="button" onClick={() => { setPreviewUrl(url); setScreenshotOpen(true); }} className="h-full w-full"><MediaImage src={url} alt={`${trade.symbol} screenshot ${index + 1}`} className="h-full w-full object-cover" /></button><button type="button" onClick={() => setImageUrls((current) => current.filter((item) => item !== url))} className="absolute right-1.5 top-1.5 grid size-7 place-items-center rounded-md bg-black/75 text-rose-200"><Trash2 size={12} /></button></div>)}
-              {imageUrls.length < 3 ? <button type="button" onClick={() => imageInputRef.current?.click()} className="grid aspect-square place-items-center rounded-lg border border-dashed border-white/10 text-zinc-500 hover:bg-white/[.04] hover:text-white">{uploadingImages ? <LoaderCircle className="animate-spin" size={20} /> : <Plus size={22} />}</button> : null}
+              {imageUrls.map((url, index) => <div key={url} className="group relative aspect-square overflow-hidden rounded-lg border border-white/10 bg-black"><button type="button" onClick={() => { setPreviewUrl(url); setScreenshotOpen(true); }} className="h-full w-full"><MediaImage src={url} alt={`${trade.symbol} screenshot ${index + 1}`} className="h-full w-full object-cover" /></button><button type="button" onClick={() => setImageUrls((current) => current.filter((item) => item !== url))} className="absolute right-1.5 top-1.5 grid size-7 place-items-center rounded-md bg-[#050505] text-rose-200"><Trash2 size={12} /></button></div>)}
+              {imageUrls.length < 3 ? <button type="button" onClick={() => imageInputRef.current?.click()} className="grid aspect-square place-items-center rounded-lg border border-dashed border-white/10 text-zinc-500 transition hover:bg-[#111111] hover:text-white">{uploadingImages ? <LoaderCircle className="animate-spin" size={20} /> : <Plus size={22} />}</button> : null}
             </div>
           </div>
           <div className="rounded-2xl border border-white/8 bg-[#050505] p-4">
@@ -1711,7 +1712,7 @@ function TradeEditor({ trade, saving, onClose, onSave, onDelete }: { trade: Jour
           </div>
           <label className="block text-xs text-[#8a8a8a]">Review note<Textarea name="note" defaultValue={trade.note} className="mt-1 min-h-28 border-[#2a2a2a] bg-[#121212]" /></label>
           <details className="group overflow-hidden rounded-2xl border border-[#2a2a2a] bg-[#121212]">
-            <summary className="flex cursor-pointer list-none items-center gap-3 px-4 py-3.5 text-sm font-bold text-zinc-200 transition hover:bg-white/[.035]">
+            <summary className="flex cursor-pointer list-none items-center gap-3 px-4 py-3.5 text-sm font-bold text-zinc-200 transition hover:bg-[#171717]">
               <ImageIcon size={17} className="text-zinc-500" />
               Share image
               <span className="ml-auto text-xs font-medium text-zinc-600 group-open:hidden">PNG yaratish</span>
@@ -1915,7 +1916,7 @@ function TradeReviewImage({ trade, chartUrls }: { trade: JournalEntry; chartUrls
           <p className="text-xs text-[#8a8a8a]">1080 x 1080 PNG</p>
         </div>
         <div className="flex gap-2">
-          <Button type="button" disabled={!generatedUrl} onClick={download} size="sm" variant="outline" className="border-white/10 bg-white/[.04]">
+          <Button type="button" disabled={!generatedUrl} onClick={download} size="sm" variant="outline" className="border-white/10 bg-[#0d0d0d] hover:bg-[#151515]">
             <Download size={15} /> PNG
           </Button>
         </div>
