@@ -81,13 +81,13 @@ function Modal({ title, subtitle, onClose, children }: { title: string; subtitle
   return createPortal(
     <div className="fixed inset-0 isolate z-[2147483647] flex h-[100dvh] w-screen items-start justify-center overflow-y-auto bg-black/82 p-3 pt-[max(1rem,env(safe-area-inset-top))] sm:p-4 sm:pt-[max(1rem,env(safe-area-inset-top))]">
       <div className="absolute inset-0" onClick={onClose} aria-hidden="true" />
-      <section className="relative z-10 flex h-[min(92dvh,760px)] w-full max-w-xl flex-col overflow-hidden rounded-[30px] border border-white/10 bg-[#090909] text-white shadow-2xl shadow-black/80">
+      <section className="relative z-10 flex h-[min(92dvh,760px)] w-full max-w-xl flex-col overflow-hidden rounded-[30px] border border-white/10 bg-[#050505] text-white shadow-2xl shadow-black/80">
         <header className="flex items-center gap-3 border-b border-white/8 px-4 py-4">
           <div className="min-w-0 flex-1">
             <h2 className="text-xl font-black leading-6">{title}</h2>
             <p className="mt-1 text-xs text-slate-500">{subtitle}</p>
           </div>
-          <button onClick={onClose} className="grid h-10 w-10 place-items-center rounded-2xl bg-white/[.05] text-slate-400 hover:text-white" aria-label="Close">
+          <button onClick={onClose} className="grid h-10 w-10 place-items-center rounded-2xl bg-[#0d0d0d] text-slate-400 transition hover:bg-[#151515] hover:text-white" aria-label="Close">
             <X size={18} />
           </button>
         </header>
@@ -192,7 +192,7 @@ function SearchDialog({ onClose }: { onClose: () => void }) {
       <div className="min-h-[360px] flex-1 overflow-y-auto overscroll-contain">
           {cleanQuery.length < 2 ? <div className="grid min-h-56 place-items-center px-6 text-center text-sm text-slate-500">Type at least 2 letters.</div> : null}
           {users.map((item) => (
-            <button key={item.id} type="button" onClick={() => goToProfile(item.username)} className="flex min-h-[76px] w-full touch-manipulation items-center gap-3 border-b border-white/6 px-4 py-3.5 text-left transition hover:bg-white/[.045] active:bg-white/[.06]">
+            <button key={item.id} type="button" onClick={() => goToProfile(item.username)} className="flex min-h-[76px] w-full touch-manipulation items-center gap-3 border-b border-white/6 px-4 py-3.5 text-left transition hover:bg-[#0d0d0d] active:bg-[#141414]">
               <TraderAvatar name={item.fullName} value={item.avatarUrl} className="h-12 w-12 text-xs" />
               <span className="min-w-0 flex-1">
                 <span className="flex min-w-0 items-center gap-1.5"><span className="truncate text-[15px] font-black">{item.fullName}</span></span>
@@ -244,7 +244,7 @@ function NotificationsDialog({ onClose, onRead }: { onClose: () => void; onRead:
         {!loading && !items.length ? (
           <div className="grid min-h-72 place-items-center px-6 text-center">
             <div>
-              <span className="mx-auto grid size-14 place-items-center rounded-2xl border border-white/8 bg-white/[.035]">
+              <span className="mx-auto grid size-14 place-items-center rounded-2xl border border-white/8 bg-[#0d0d0d]">
                 <Bell className="text-slate-500" size={26} />
               </span>
               <h3 className="mt-4 text-lg font-black">No notifications yet</h3>

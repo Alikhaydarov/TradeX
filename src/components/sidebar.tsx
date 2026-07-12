@@ -259,13 +259,13 @@ export function Sidebar({
 
   return (
     <>
-      <aside className="fixed left-[max(1rem,calc((100vw-1860px)/2+1rem))] top-4 z-40 hidden h-[calc(100dvh-2rem)] w-[216px] shrink-0 flex-col rounded-[1rem] border border-white/8 bg-[#000000] p-3 shadow-[inset_0_1px_0_rgba(255,255,255,.03)] lg:flex">
-        <button onClick={() => onChange("feed")} className="flex items-center gap-3 rounded-2xl px-2 py-1.5 text-left transition-colors hover:bg-white/[.03]" aria-label="TradeWay home">
+      <aside className="fixed left-[max(1rem,calc((100vw-1860px)/2+1rem))] top-4 z-40 hidden h-[calc(100dvh-2rem)] w-[208px] shrink-0 flex-col rounded-[1rem] border border-white/8 bg-[#000000] p-3 shadow-[inset_0_1px_0_rgba(255,255,255,.03)] lg:flex">
+        <button onClick={() => onChange("feed")} className="flex items-center gap-3 rounded-2xl px-2 py-1.5 text-left transition-colors hover:bg-[#080808]" aria-label="TradeWay home">
           <span className="grid h-9 w-9 place-items-center rounded-xl bg-[linear-gradient(180deg,rgba(255,255,255,1),rgba(232,232,236,1))] text-sm font-black text-black shadow-[0_10px_24px_rgba(255,255,255,.06)]">TW</span>
           <span className="min-w-0">
             <span className="flex items-center gap-2">
               <strong className="block truncate text-[14px] tracking-tight">TradeWay</strong>
-              <span className={`rounded-full px-2 py-0.5 text-[10px] font-black ${premium.isPremium ? "bg-emerald-400/12 text-emerald-300" : "bg-white/[.06] text-zinc-400"}`}>
+              <span className={`rounded-full px-2 py-0.5 text-[10px] font-black ${premium.isPremium ? "bg-[#0b1c12] text-emerald-300" : "bg-[#0a0a0a] text-zinc-400"}`}>
                 {premium.isPremium ? "Premium" : "Free"}
               </span>
             </span>
@@ -306,7 +306,7 @@ export function Sidebar({
             </button>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <button type="button" className="grid size-8 place-items-center rounded-xl text-zinc-400 transition hover:bg-white/[.05] hover:text-white">
+                <button type="button" className="grid size-8 place-items-center rounded-xl text-zinc-400 transition hover:bg-[#111111] hover:text-white">
                   <MoreHorizontal size={16} />
                 </button>
               </DropdownMenuTrigger>
@@ -353,7 +353,7 @@ export function Sidebar({
                   <div>
                     <span className="flex items-center gap-2">
                       <strong className="block text-base leading-tight text-white">TradeWay</strong>
-                      <span className={`rounded-full px-2 py-0.5 text-[10px] font-black ${premium.isPremium ? "bg-emerald-400/12 text-emerald-300" : "bg-white/[.06] text-zinc-400"}`}>
+                      <span className={`rounded-full px-2 py-0.5 text-[10px] font-black ${premium.isPremium ? "bg-[#0b1c12] text-emerald-300" : "bg-[#0a0a0a] text-zinc-400"}`}>
                         {premium.isPremium ? "Premium" : "Free"}
                       </span>
                     </span>
@@ -363,7 +363,7 @@ export function Sidebar({
                 <button
                   type="button"
                   onClick={() => setMobileMenuOpen(false)}
-                  className="grid size-9 place-items-center rounded-xl border border-white/10 bg-white/[.035] text-zinc-300"
+                  className="grid size-9 place-items-center rounded-xl border border-white/10 bg-[#0a0a0a] text-zinc-300"
                   aria-label="Close navigation"
                 >
                   <X size={17} />
@@ -395,7 +395,7 @@ export function Sidebar({
                   </button>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <button type="button" className="grid size-8 place-items-center rounded-xl text-zinc-400 transition hover:bg-white/[.05] hover:text-white">
+                      <button type="button" className="grid size-8 place-items-center rounded-xl text-zinc-400 transition hover:bg-[#111111] hover:text-white">
                         <MoreHorizontal size={15} />
                       </button>
                     </DropdownMenuTrigger>

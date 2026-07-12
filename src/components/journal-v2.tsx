@@ -376,7 +376,7 @@ export function JournalV2({
   return (
     <div className={embedded ? "min-h-0" : "min-h-full"}>
       {error && (
-        <div className={`${embedded ? "mb-4" : "mx-4 mt-4"} flex items-center gap-3 rounded-xl border border-rose-500/20 bg-rose-500/10 p-3 text-sm text-rose-300`}>
+        <div className={`${embedded ? "mb-4" : "mx-4 mt-4"} flex items-center gap-3 rounded-xl border border-rose-500/20 bg-[#1a0d10] p-3 text-sm text-rose-300`}>
           <X size={16} className="shrink-0" />
           {error}
           <button onClick={() => setError(null)} className="ml-auto"><X size={14} /></button>
@@ -752,7 +752,7 @@ function Workspace(p: {
           ].map((s, index) => (
             <Card key={s.title} size="sm" className={`gap-0 py-0 ${index === 4 ? "col-span-2 sm:col-span-1" : ""}`}>
               <CardContent className="flex min-h-18 items-center gap-2 p-3 sm:min-h-18 sm:gap-3 sm:p-3.5">
-                <span className="grid size-9 shrink-0 place-items-center rounded-lg bg-black/18 sm:size-10">
+                <span className="grid size-9 shrink-0 place-items-center rounded-lg bg-[#050505] sm:size-10">
                   <s.icon size={18} className={s.color} />
                 </span>
                 <div className="min-w-0">
@@ -778,7 +778,7 @@ function Workspace(p: {
                       <h2 className="truncate text-xl font-black text-white">{account.name}</h2>
                       <p className="mt-1 text-xs text-zinc-500">{account.accountType === "real" ? "Real account" : "Prop account"} / {account.marketType} / {account.phase}</p>
                     </div>
-                    <span className={`rounded-full border px-3 py-1 text-[11px] font-bold ${account.status === "Active" ? "border-emerald-400/20 bg-emerald-400/10 text-emerald-300" : "border-white/10 bg-white/[.04] text-zinc-300"}`}>
+                    <span className={`rounded-full border px-3 py-1 text-[11px] font-bold ${account.status === "Active" ? "border-emerald-400/20 bg-[#0b1c12] text-emerald-300" : "border-white/10 bg-[#0a0a0a] text-zinc-300"}`}>
                       {account.status}
                     </span>
                   </div>
@@ -807,7 +807,7 @@ function Workspace(p: {
                     <h3 className="text-[15px] font-black text-white">Recent trades</h3>
                     <p className="mt-1 text-xs text-zinc-500">Open any trade, review it, then share it to Home from the trade view.</p>
                   </div>
-                  <Button type="button" variant="outline" size="sm" className="border-white/10 bg-[#050505]" onClick={() => setActiveTab("trades")}>
+                  <Button type="button" variant="outline" size="sm" className="border-white/10 bg-[#050505] hover:bg-[#101010]" onClick={() => setActiveTab("trades")}>
                     Open log
                   </Button>
                 </div>
@@ -966,7 +966,7 @@ function Workspace(p: {
                     <h3 className="text-[14px] font-black text-white">Recent Trades</h3>
                     <p className="mt-1 text-[11px] text-zinc-500">Latest entries from the selected account.</p>
                   </div>
-                  <Button type="button" variant="outline" size="sm" className="border-white/10 bg-black/15" onClick={() => setActiveTab("trades")}>
+                  <Button type="button" variant="outline" size="sm" className="border-white/10 bg-[#050505] hover:bg-[#101010]" onClick={() => setActiveTab("trades")}>
                     See all
                   </Button>
                 </div>
@@ -1374,21 +1374,21 @@ function Workspace(p: {
           {/* Analytics */}
           {!singleTabMode || activeTab === "analytics" ? (
           <TabsContent value="analytics" className="space-y-3">
-            <div className="flex flex-wrap items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2 rounded-[0.95rem] border border-white/8 bg-[#050505] p-1">
               {[
                 ["overview", "Overview"],
                 ["strategy", "Strategy"],
                 ["symbols", "Symbols"],
               ].map(([value, label]) => (
-                <button key={value} type="button" onClick={() => setAnalyticsView(value as "overview" | "strategy" | "symbols")} className={`rounded-xl px-3 py-1.5 text-xs font-semibold transition ${analyticsView === value ? "bg-white text-black" : "border border-white/8 bg-[#070707] text-zinc-400"}`}>
+                <button key={value} type="button" onClick={() => setAnalyticsView(value as "overview" | "strategy" | "symbols")} className={`rounded-[0.8rem] px-3 py-1.5 text-xs font-semibold transition ${analyticsView === value ? "bg-white text-black" : "bg-transparent text-zinc-500 hover:bg-[#0d0d0d] hover:text-white"}`}>
                   {label}
                 </button>
               ))}
-              <div className="ml-auto rounded-xl border border-white/8 bg-[#070707] px-3 py-1.5 text-xs font-semibold text-white">All time</div>
+              <div className="ml-auto rounded-[0.8rem] bg-[#0d0d0d] px-3 py-1.5 text-xs font-semibold text-white">All time</div>
             </div>
 
             {analyticsView === "overview" ? (
-              <div className="grid gap-3 xl:grid-cols-[minmax(0,1.05fr)_minmax(340px,.95fr)]">
+              <div className="grid gap-3 xl:grid-cols-[minmax(0,1.15fr)_minmax(320px,.85fr)]">
                 <section className="overflow-hidden rounded-[1rem] border border-white/8 bg-[#070707] shadow-[0_18px_46px_rgba(0,0,0,.2)]">
                   <div className="border-b border-white/8 px-4 py-3">
                     <p className="text-[9px] font-medium uppercase tracking-[0.12em] text-zinc-600">
@@ -1397,7 +1397,7 @@ function Workspace(p: {
                     <h3 className="text-[14px] font-black text-white">Account Balance</h3>
                     <p className="mt-1 text-xs text-zinc-500">{month.toLocaleDateString("en-US", { month: "short", day: "numeric" })} - {new Date().toLocaleDateString("en-US", { month: "short", day: "numeric" })}</p>
                   </div>
-                  <div className="h-[300px] p-4">
+                  <div className="h-[260px] p-4">
                     {equity.length > 1 ? (
                       <ResponsiveContainer width="100%" height="100%">
                         <AreaChart data={equity} margin={{ left: 8, right: 8, top: 16, bottom: 4 }}>
@@ -1426,8 +1426,8 @@ function Workspace(p: {
                     </div>
                     <span className="rounded-full border border-white/8 bg-[#050505] px-2.5 py-1 text-[11px] font-black text-white">{profitabilityScore}</span>
                   </div>
-                  <div className="grid gap-3 p-4 sm:grid-cols-[1fr_84px]">
-                    <div className="h-[236px]">
+                  <div className="grid gap-3 p-4 sm:grid-cols-[1fr_72px]">
+                    <div className="h-[210px]">
                       <ResponsiveContainer width="100%" height="100%">
                         <RadarChart data={scoreRadar}>
                           <PolarGrid stroke="rgba(255,255,255,.12)" />
@@ -1437,10 +1437,10 @@ function Workspace(p: {
                         </RadarChart>
                       </ResponsiveContainer>
                     </div>
-                    <div className="flex flex-col justify-between rounded-2xl border border-white/8 bg-[#050505] px-3 py-3">
+                    <div className="flex flex-col justify-between rounded-2xl border border-white/8 bg-[#050505] px-2.5 py-3">
                       <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-zinc-500">Score</p>
-                      <p className="text-3xl font-black text-white">{profitabilityScore}</p>
-                      <div className="h-full min-h-28 rounded-full bg-white/5 p-2">
+                      <p className="text-2xl font-black text-white">{profitabilityScore}</p>
+                      <div className="h-full min-h-24 rounded-full bg-[#0d0d0d] p-2">
                         <div className="h-full w-full rounded-full bg-gradient-to-b from-emerald-400 to-emerald-600" style={{ clipPath: `inset(${100 - profitabilityScore}% 0 0 0 round 999px)` }} />
                       </div>
                     </div>
