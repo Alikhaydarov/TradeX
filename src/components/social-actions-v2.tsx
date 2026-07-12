@@ -310,7 +310,7 @@ function NotificationsDialog({ onClose, onRead }: { onClose: () => void; onRead:
   );
 }
 
-export function SocialActions({ className = "" }: { className?: string }) {
+export function SocialActions({ className = "", compact = false }: { className?: string; compact?: boolean }) {
   const [searchOpen, setSearchOpen] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [unread, setUnread] = useState(0);
@@ -338,8 +338,8 @@ export function SocialActions({ className = "" }: { className?: string }) {
   return (
     <>
       <div className={`flex items-center gap-2 ${className}`}>
-        <button onClick={() => setSearchOpen(true)} className="grid h-10 w-10 place-items-center rounded-2xl border border-white/10 bg-[#090909] text-zinc-100 transition hover:bg-[#111111]" aria-label="Search traders"><Search size={18} /></button>
-        <button onClick={() => setNotificationsOpen(true)} className="relative grid h-10 w-10 place-items-center rounded-2xl border border-white/10 bg-[#090909] text-zinc-100 transition hover:bg-[#111111]" aria-label="Notifications"><Bell size={18} />{unread > 0 ? <span className="absolute -right-1 -top-1 grid min-h-5 min-w-5 place-items-center rounded-full bg-rose-500 px-1 text-[10px] font-black text-white ring-2 ring-[#090909]">{unread > 9 ? "9+" : unread}</span> : null}</button>
+        <button onClick={() => setSearchOpen(true)} className={`grid place-items-center rounded-2xl border border-white/10 bg-[#090909] text-zinc-100 transition hover:bg-[#111111] ${compact ? "h-9 w-9" : "h-10 w-10"}`} aria-label="Search traders"><Search size={compact ? 16 : 18} /></button>
+        <button onClick={() => setNotificationsOpen(true)} className={`relative grid place-items-center rounded-2xl border border-white/10 bg-[#090909] text-zinc-100 transition hover:bg-[#111111] ${compact ? "h-9 w-9" : "h-10 w-10"}`} aria-label="Notifications"><Bell size={compact ? 16 : 18} />{unread > 0 ? <span className={`absolute grid place-items-center rounded-full bg-rose-500 px-1 font-black text-white ring-2 ring-[#090909] ${compact ? "-right-1 -top-1 min-h-4 min-w-4 text-[9px]" : "-right-1 -top-1 min-h-5 min-w-5 text-[10px]"}`}>{unread > 9 ? "9+" : unread}</span> : null}</button>
       </div>
       {searchOpen ? <SearchDialog onClose={() => setSearchOpen(false)} /> : null}
       {notificationsOpen ? <NotificationsDialog onClose={() => setNotificationsOpen(false)} onRead={() => setUnread(0)} /> : null}

@@ -131,6 +131,34 @@ function groupTradesByMonth(trades: JournalEntry[]) {
   }));
 }
 
+function currentWeekBounds() {
+  const now = new Date();
+  const mondayOffset = (now.getDay() + 6) % 7;
+  const start = new Date(now);
+  start.setHours(0, 0, 0, 0);
+  start.setDate(now.getDate() - mondayOffset);
+  const end = new Date(start);
+  end.setDate(start.getDate() + 6);
+  end.setHours(23, 59, 59, 999);
+  return { start, end };
+}
+
+function groupTradesByWeekday(trades: JournalEntry[]) {
+  const { start } = currentWeekBounds();
+  const labels = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+  return labels.map((label, index) => {
+    const day = new Date(start);
+    day.setDate(start.getDate() + index);
+    const key = day.toISOString().slice(0, 10);
+    return {
+      key,
+      label,
+      dateLabel: day.toLocaleDateString("en-GB", { day: "2-digit", month: "2-digit" }),
+      trades: trades.filter((trade) => trade.rawDate === key),
+    };
+  }).filter((group) => group.trades.length > 0);
+}
+
 function TradeGalleryCard({
   trade,
   onOpen,
@@ -149,14 +177,14 @@ function TradeGalleryCard({
     <button
       type="button"
       onClick={() => onOpen(trade)}
-      className="group overflow-hidden rounded-[1.05rem] border border-white/8 bg-[#080808] text-left transition hover:border-white/15 hover:bg-[#0c0c0c]"
+      className="group overflow-hidden rounded-[0.95rem] border border-white/8 bg-[#080808] text-left transition hover:border-white/15 hover:bg-[#0c0c0c]"
     >
       {trade.imageUrl ? (
-        <div className="relative aspect-[4/5] overflow-hidden bg-[#121212]">
+        <div className="relative aspect-[11/12] overflow-hidden bg-[#121212]">
           <MediaImage
             src={trade.imageUrl}
             alt={`${trade.symbol} trade screenshot`}
-            className="h-full w-full object-contain p-3 transition duration-200 group-hover:scale-[1.02]"
+            className="h-full w-full object-contain p-2.5 transition duration-200 group-hover:scale-[1.02]"
           />
           {screenshotCount > 1 ? (
             <span className="absolute right-3 top-3 rounded-full border border-white/10 bg-black/80 px-2 py-1 text-[10px] font-bold text-zinc-200">
@@ -165,7 +193,7 @@ function TradeGalleryCard({
           ) : null}
         </div>
       ) : (
-        <div className="flex aspect-[4/5] items-end bg-[#121212] p-4">
+        <div className="flex aspect-[11/12] items-end bg-[#121212] p-4">
           <div>
             <span className={`inline-flex rounded-full px-2.5 py-1 text-[10px] font-black ${trade.side === "Long" ? "bg-emerald-500/12 text-emerald-300" : "bg-rose-500/12 text-rose-300"}`}>
               {trade.side === "Long" ? "Buy" : "Sell"}
@@ -176,10 +204,10 @@ function TradeGalleryCard({
         </div>
       )}
 
-      <div className="space-y-2 border-t border-white/8 px-4 py-3">
+      <div className="space-y-2 border-t border-white/8 px-3.5 py-3">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
-            <p className="truncate text-[15px] font-black text-white">
+            <p className="truncate text-[14px] font-black text-white">
               {trade.symbol}
               {typeof trade.resultR === "number" && Math.abs(trade.resultR) > 0.01 ? ` ${trade.resultR >= 0 ? "+" : ""}${trade.resultR.toFixed(2)}R` : ""}
             </p>
@@ -246,43 +274,54 @@ export function JournalV2({
     setTradeOpen(true);
   }, [activeAccountId, mode]);
 
-  useEffect(() => {
+  const loadEntries = useCallback(async (silent = false) => {
     if (!user) {
       setEntries([]);
       setLoading(false);
       return;
     }
     if (mode === "workspace" && accountsLoading && !accounts.length) {
-      setLoading(true);
+      if (!silent) setLoading(true);
       return;
     }
 
-    let active = true;
-    const load = async () => {
-      setLoading(true);
-      setError(null);
-      try {
-        if (!accounts.length) await refreshAccounts();
-        const search = mode === "workspace" && activeAccountId
-          ? `?accountId=${encodeURIComponent(activeAccountId)}`
-          : "";
-        const response = await apiRequest<{ entries: EntryRow[] }>(`/api/journal${search}`);
-        if (!active) return;
-        setEntries(response.entries.map(entryFrom));
-      } catch (nextError) {
-        if (!active) return;
-        const message = nextError instanceof Error ? nextError.message : "Failed to load journal.";
-        setError(message);
-      } finally {
-        if (active) setLoading(false);
-      }
+    if (!silent) setLoading(true);
+    setError(null);
+    try {
+      if (!accounts.length) await refreshAccounts();
+      const search = mode === "workspace" && activeAccountId
+        ? `?accountId=${encodeURIComponent(activeAccountId)}`
+        : "";
+      const response = await apiRequest<{ entries: EntryRow[] }>(`/api/journal${search}`);
+      setEntries(response.entries.map(entryFrom));
+    } catch (nextError) {
+      const message = nextError instanceof Error ? nextError.message : "Failed to load journal.";
+      setError(message);
+    } finally {
+      if (!silent) setLoading(false);
+    }
+  }, [accounts.length, accountsLoading, activeAccountId, mode, refreshAccounts, user]);
+
+  useEffect(() => {
+    void loadEntries();
+  }, [loadEntries]);
+
+  useEffect(() => {
+    if (!user) return;
+    const refresh = () => {
+      if (document.visibilityState !== "visible") return;
+      void loadEntries(true);
     };
 
-    void load();
+    const interval = window.setInterval(refresh, 8000);
+    window.addEventListener("focus", refresh);
+    document.addEventListener("visibilitychange", refresh);
     return () => {
-      active = false;
+      window.clearInterval(interval);
+      window.removeEventListener("focus", refresh);
+      document.removeEventListener("visibilitychange", refresh);
     };
-  }, [accounts.length, accountsLoading, activeAccountId, mode, refreshAccounts, user]);
+  }, [loadEntries, user]);
 
   useEffect(() => {
     if (!user) return;
@@ -714,6 +753,7 @@ function Workspace(p: {
   const [openPositions, setOpenPositions] = useState<OpenPosition[]>([]);
   const [positionsPendingSetup, setPositionsPendingSetup] = useState(false);
   const [analyticsView, setAnalyticsView] = useState<"overview" | "strategy" | "symbols">("overview");
+  const [tradeView, setTradeView] = useState<"list" | "gallery" | "weekly">("list");
   const singleTabMode = embedded && Boolean(forcedTab);
   const pnlBase = account.initialBalance || account.accountSize || 1;
   const formatTradePnl = useCallback((amount: number) => formatPnl(amount, pnlBase), [formatPnl, pnlBase]);
@@ -746,6 +786,7 @@ function Workspace(p: {
   );
   const recentTrades = sortedTrades.slice(0, 5);
   const groupedTradeGallery = useMemo(() => groupTradesByMonth(sortedTrades), [sortedTrades]);
+  const weeklyTradeGallery = useMemo(() => groupTradesByWeekday(sortedTrades), [sortedTrades]);
   const averageWin = useMemo(() => {
     const wins = trades.filter((trade) => trade.pnl > 0);
     return wins.length ? wins.reduce((sum, trade) => sum + trade.pnl, 0) / wins.length : 0;
@@ -1329,11 +1370,11 @@ function Workspace(p: {
                   <div className="space-y-3 border-b border-white/8 px-4 py-3">
                     <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
                       <div>
-                        <p className="text-[9px] font-medium uppercase tracking-[0.12em] text-zinc-600">
+                        <p className="text-[8px] font-medium uppercase tracking-[0.08em] text-zinc-600">
                           {account.name} <span className="mx-1 text-zinc-700">&gt;</span> Trades
                         </p>
-                        <h3 className="mt-1 text-[14px] font-black text-white">Trade Log</h3>
-                        <p className="text-[11px] text-zinc-500">Open any row to review, edit or inspect screenshots.</p>
+                        <h3 className="mt-1 text-[13px] font-black text-white">Trade archive</h3>
+                        <p className="text-[11px] text-zinc-500">Switch between list, gallery and weekly review.</p>
                       </div>
                       <div className="flex w-full gap-2 sm:ml-auto sm:w-auto sm:items-center">
                         <div className="relative min-w-0 flex-1 sm:w-64">
@@ -1387,33 +1428,152 @@ function Workspace(p: {
                     <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
                       <MiniStat label="TRADES" value={String(trades.length)} />
                       <MiniStat label="WINRATE" value={`${stats.rate}%`} />
-                      <MiniStat label="BEST" value={bestTrade ? formatTradePnl(bestTrade.pnl) : "-"} />
-                      <MiniStat label="AVERAGE R" value={`${stats.r.toFixed(2)}R`} />
+                        <MiniStat label="BEST" value={bestTrade ? formatTradePnl(bestTrade.pnl) : "-"} />
+                        <MiniStat label="AVERAGE R" value={`${stats.r.toFixed(2)}R`} />
+                      </div>
+                      <div className="flex flex-wrap items-center gap-2 rounded-xl border border-white/8 bg-[#050505] p-1">
+                        {[
+                          ["list", "Trades"],
+                          ["gallery", "Gallery"],
+                          ["weekly", "Weekly trades"],
+                        ].map(([value, label]) => (
+                          <button
+                            key={value}
+                            type="button"
+                            onClick={() => setTradeView(value as "list" | "gallery" | "weekly")}
+                            className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition ${
+                              tradeView === value ? "bg-white text-black" : "text-zinc-500 hover:bg-[#0d0d0d] hover:text-white"
+                            }`}
+                          >
+                            {label}
+                          </button>
+                        ))}
+                      </div>
                     </div>
-                  </div>
                   {sortedTrades.length ? (
-                    <div className="space-y-5 px-4 py-4">
-                      {groupedTradeGallery.map((group) => (
-                        <div key={group.key} className="space-y-3">
-                          <div className="flex items-center gap-2">
-                            <span className="text-sm font-black text-white">{group.label}</span>
-                            <span className="rounded-full border border-white/8 bg-[#101010] px-2 py-0.5 text-[10px] font-semibold text-zinc-500">
-                              {group.trades.length}
-                            </span>
+                    <div className="px-4 py-4">
+                      {tradeView === "list" ? (
+                        <>
+                          <div className="hidden overflow-x-auto lg:block">
+                            <div className="min-w-[840px]">
+                              <div className="grid grid-cols-[36px_1.4fr_.95fr_.85fr_.9fr_.8fr_.9fr] rounded-xl border border-white/8 bg-[#050505] px-3 py-2.5 text-[10px] font-semibold uppercase tracking-[0.08em] text-zinc-500">
+                                <span />
+                                <span>Trade date</span>
+                                <span>Symbol</span>
+                                <span>Side</span>
+                                <span>Session</span>
+                                <span>R multiple</span>
+                                <span className="text-right">P&amp;L</span>
+                              </div>
+                              <div className="mt-2 space-y-2">
+                                {sortedTrades.map((trade) => {
+                                  const winning = trade.pnl >= 0;
+                                  return (
+                                    <button
+                                      key={trade.id}
+                                      type="button"
+                                      onClick={() => openTrade(trade)}
+                                      className="grid w-full grid-cols-[36px_1.4fr_.95fr_.85fr_.9fr_.8fr_.9fr] items-center rounded-xl border border-white/8 bg-[#050505] px-3 py-2.5 text-left transition hover:border-white/15 hover:bg-[#0a0a0a]"
+                                    >
+                                      <span className="grid size-4 place-items-center rounded-full border border-white/10" />
+                                      <span>
+                                        <span className="block text-sm font-semibold text-white">{formatTradeDateLabel(trade.rawDate)}</span>
+                                        <span className="mt-1 block truncate text-[11px] text-zinc-600">{trade.note || trade.setup || "Open trade review"}</span>
+                                      </span>
+                                      <span className="font-bold text-white">{trade.symbol}</span>
+                                      <span className={`text-sm font-bold ${trade.side === "Long" ? "text-emerald-300" : "text-rose-300"}`}>{trade.side === "Long" ? "Buy" : "Sell"}</span>
+                                      <span className="text-sm text-zinc-400">{trade.session || "-"}</span>
+                                      <span className="font-mono text-sm text-zinc-300">{(trade.resultR || 0).toFixed(2)}R</span>
+                                      <span className={`text-right font-mono text-base font-black ${winning ? "text-emerald-400" : "text-rose-400"}`}>{formatTradePnl(trade.pnl)}</span>
+                                    </button>
+                                  );
+                                })}
+                              </div>
+                            </div>
                           </div>
 
-                          <div className="grid gap-3 sm:grid-cols-2 2xl:grid-cols-3">
-                            {group.trades.map((trade) => (
-                              <TradeGalleryCard
+                          <div className="space-y-3 lg:hidden">
+                            {sortedTrades.map((trade) => (
+                              <button
                                 key={trade.id}
-                                trade={trade}
-                                onOpen={openTrade}
-                                formatTradePnl={formatTradePnl}
-                              />
+                                type="button"
+                                onClick={() => openTrade(trade)}
+                                className="w-full rounded-[1rem] border border-white/8 bg-[#050505] p-3 text-left transition hover:border-white/15 hover:bg-[#0a0a0a]"
+                              >
+                                <div className="flex items-start justify-between gap-3">
+                                  <div className="min-w-0">
+                                    <p className="truncate text-sm font-black text-white">{trade.symbol}</p>
+                                    <p className="mt-1 text-xs text-zinc-500">{formatTradeDateLabel(trade.rawDate)}</p>
+                                  </div>
+                                  <span className={`rounded-full px-2.5 py-1 text-[10px] font-black ${trade.side === "Long" ? "bg-emerald-500/10 text-emerald-300" : "bg-rose-500/10 text-rose-300"}`}>
+                                    {trade.side === "Long" ? "Buy" : "Sell"}
+                                  </span>
+                                </div>
+                                <div className="mt-3 flex items-center justify-between gap-3">
+                                  <div className="min-w-0">
+                                    <p className="truncate text-xs text-zinc-400">{trade.setup || trade.session || "MT5 Auto Sync"}</p>
+                                    <p className="mt-1 truncate text-[11px] text-zinc-600">{trade.note || "Open trade review"}</p>
+                                  </div>
+                                  <div className="text-right">
+                                    <p className={`font-mono text-sm font-black ${trade.pnl >= 0 ? "text-emerald-400" : "text-rose-400"}`}>{formatTradePnl(trade.pnl)}</p>
+                                    <p className="mt-1 text-[11px] text-zinc-500">{(trade.resultR || 0).toFixed(2)}R</p>
+                                  </div>
+                                </div>
+                              </button>
                             ))}
                           </div>
+                        </>
+                      ) : tradeView === "gallery" ? (
+                        <div className="space-y-5">
+                          {groupedTradeGallery.map((group) => (
+                            <div key={group.key} className="space-y-3">
+                              <div className="flex items-center gap-2">
+                                <span className="text-sm font-black text-white">{group.label}</span>
+                                <span className="rounded-full border border-white/8 bg-[#101010] px-2 py-0.5 text-[10px] font-semibold text-zinc-500">
+                                  {group.trades.length}
+                                </span>
+                              </div>
+
+                              <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
+                                {group.trades.map((trade) => (
+                                  <TradeGalleryCard
+                                    key={trade.id}
+                                    trade={trade}
+                                    onOpen={openTrade}
+                                    formatTradePnl={formatTradePnl}
+                                  />
+                                ))}
+                              </div>
+                            </div>
+                          ))}
                         </div>
-                      ))}
+                      ) : (
+                        <div className="space-y-5">
+                          {weeklyTradeGallery.length ? weeklyTradeGallery.map((group) => (
+                            <div key={group.key} className="space-y-3">
+                              <div className="flex items-center gap-2">
+                                <span className="text-sm font-black text-white">{group.label}</span>
+                                <span className="text-xs text-zinc-500">{group.dateLabel}</span>
+                                <span className="rounded-full border border-white/8 bg-[#101010] px-2 py-0.5 text-[10px] font-semibold text-zinc-500">
+                                  {group.trades.length}
+                                </span>
+                              </div>
+                              <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
+                                {group.trades.map((trade) => (
+                                  <TradeGalleryCard
+                                    key={trade.id}
+                                    trade={trade}
+                                    onOpen={openTrade}
+                                    formatTradePnl={formatTradePnl}
+                                  />
+                                ))}
+                              </div>
+                            </div>
+                          )) : (
+                            <Empty text="No trades recorded in the current week." />
+                          )}
+                        </div>
+                      )}
                     </div>
                   ) : <Empty text="No trades in this range yet." />}
                 </section>

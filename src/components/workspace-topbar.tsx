@@ -41,7 +41,7 @@ export function WorkspaceTopbar({ section }: { section: Section }) {
 
   return (
     <div role="banner" className="tw-app-topbar sticky top-0 z-[60] shrink-0 border-b border-white/8 bg-black px-4 py-3 lg:static lg:flex lg:h-[38px] lg:items-center lg:justify-between lg:px-4 lg:py-0">
-      <div className="flex items-center justify-between gap-3 lg:hidden">
+      <div className="flex items-center justify-between gap-2 lg:hidden">
         <button
           type="button"
           onClick={openMobileDrawer}
@@ -52,16 +52,16 @@ export function WorkspaceTopbar({ section }: { section: Section }) {
         </button>
 
         <div className="min-w-0 flex-1">
-          <p className="truncate text-[15px] font-black leading-none tracking-[-0.03em] text-white">
+          <p className="truncate text-[14px] font-black leading-none tracking-[-0.03em] text-white">
             {page}
           </p>
-          <p className="mt-1 truncate text-xs font-semibold text-zinc-500">
+          <p className="mt-1 truncate text-[11px] font-semibold text-zinc-500">
             {isAccountScoped ? workspace : "TradeWay workspace"}
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
-          <SocialActions className="hidden sm:flex" />
+        <div className="flex shrink-0 items-center gap-1.5">
+          <SocialActions className="flex" compact />
           <PnlModeMenu pnlMode={pnlMode} pnlLabel={pnlLabel} onChange={setPnlMode} compact />
           <button
             type="button"
@@ -130,9 +130,9 @@ function PnlModeMenu({
               <item.icon size={14} />
               {item.label}
             </span>
-            {pnlMode === item.value ? <span className="text-[10px] font-black text-zinc-400">Active</span> : null}
-          </DropdownMenuItem>
-        ))}
+          {pnlMode === item.value ? <span className="text-[10px] font-black text-zinc-400">Active</span> : null}
+        </DropdownMenuItem>
+      ))}
       </DropdownMenuContent>
     </DropdownMenu>
   );
