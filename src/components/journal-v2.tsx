@@ -422,7 +422,7 @@ function Accounts({ activeAccountId, summaries, deleting, onAdd, onOpen, onDelet
       {!summaries.length ? (
         <div className="grid min-h-72 place-items-center rounded-[20px] border border-dashed border-white/10 bg-[#050505] text-center">
           <div>
-            <div className="mx-auto grid size-14 place-items-center rounded-2xl bg-white/[.06]">
+            <div className="mx-auto grid size-14 place-items-center rounded-2xl bg-[#0d0d0d]">
               <WalletCards size={24} className="text-zinc-300" />
             </div>
             <h2 className="mt-4 text-xl font-bold text-white">Add your first trading account</h2>
@@ -444,7 +444,7 @@ function Accounts({ activeAccountId, summaries, deleting, onAdd, onOpen, onDelet
 }
 
 function AccountCard({ active = false, s, deleting, onOpen, onDelete, compact = false }: { active?: boolean; s: Summary; deleting: string | null; onOpen: (id: string) => void; onDelete: (a: PropAccount) => void; compact?: boolean }) {
-  const statusColor: Record<string, string> = { Processing: "text-sky-300 bg-sky-400/10 border-sky-400/20", Active: "text-emerald-400 bg-emerald-400/10 border-emerald-400/20", Passed: "text-zinc-300 bg-white/[.06] border-white/15", Failed: "text-rose-400 bg-rose-400/10 border-rose-400/20", Paused: "text-amber-400 bg-amber-400/10 border-amber-400/20" };
+  const statusColor: Record<string, string> = { Processing: "text-sky-300 bg-[#091119] border-sky-400/20", Active: "text-emerald-400 bg-[#0b1c12] border-emerald-400/20", Passed: "text-zinc-300 bg-[#0a0a0a] border-white/15", Failed: "text-rose-400 bg-[#1a0d10] border-rose-400/20", Paused: "text-amber-400 bg-[#1a1407] border-amber-400/20" };
 
   return (
     <div
@@ -452,7 +452,7 @@ function AccountCard({ active = false, s, deleting, onOpen, onDelete, compact = 
       tabIndex={0}
       onClick={() => onOpen(s.account.id)}
       onKeyDown={e => { if (e.key === "Enter" || e.key === " ") onOpen(s.account.id); }}
-      className={`group relative cursor-pointer overflow-hidden border transition-all duration-200 hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/30 ${active ? "border-white/20 bg-[#080808] ring-1 ring-white/10" : "border-white/10 bg-[#030303] hover:border-white/20 hover:bg-[#080808]"} ${compact ? "rounded-[14px]" : "rounded-[16px]"}`}
+      className={`group relative cursor-pointer overflow-hidden border transition-all duration-200 hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/30 ${active ? "border-white/20 bg-[#080808] ring-1 ring-white/10" : "border-white/10 bg-[#030303] hover:border-white/20 hover:bg-[#070707]"} ${compact ? "rounded-[14px]" : "rounded-[16px]"}`}
     >
       {/* Top bar accent */}
       <div className="absolute inset-x-0 top-0 h-[1px] bg-gradient-to-r from-transparent via-white/20 to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
@@ -462,8 +462,8 @@ function AccountCard({ active = false, s, deleting, onOpen, onDelete, compact = 
         <div className="flex items-start gap-3">
           <PropFirmLogo firm={s.account.firm} />
           <div className="min-w-0 flex-1">
-            <p className="truncate text-[13px] font-bold">{s.account.name}</p>
-            <div className="mt-1 flex flex-wrap items-center gap-1.5 text-xs text-[#8a8a8a]">
+            <p className="truncate text-[13px] font-bold text-white">{s.account.name}</p>
+            <div className="mt-1 flex flex-wrap items-center gap-1.5 text-[11px] text-[#8a8a8a]">
               <span>{s.account.accountType === "real" ? "Real" : "Prop"}</span>
               <span>/</span>
               <span>{s.account.phase}</span>
@@ -491,34 +491,34 @@ function AccountCard({ active = false, s, deleting, onOpen, onDelete, compact = 
           </div>
         </div>
 
-        <div className="mt-2.5 flex items-end justify-between gap-3">
+        <div className="mt-3 flex items-end justify-between gap-3">
           <div>
             <p className="text-[10px] uppercase tracking-wider text-[#8a8a8a]">Balance</p>
-            <p className={`font-mono ${compact ? "text-lg" : "text-[1.2rem]"} font-black text-white`}>
+            <p className={`font-mono ${compact ? "text-lg" : "text-[1.12rem]"} font-black text-white`}>
               {cash.format(s.account.accountSize)}
             </p>
             <p className="mt-1 text-[11px] text-zinc-500">{s.account.accountType === "real" ? "Real workspace" : "Prop workspace"}</p>
           </div>
           <div className="text-right">
             <p className="text-[10px] uppercase tracking-wider text-[#8a8a8a]">Result</p>
-            <p className={`font-mono ${compact ? "text-lg" : "text-[1.05rem]"} font-black ${s.pnl >= 0 ? "text-emerald-400" : "text-rose-400"}`}>
+            <p className={`font-mono ${compact ? "text-lg" : "text-[1rem]"} font-black ${s.pnl >= 0 ? "text-emerald-400" : "text-rose-400"}`}>
               {s.pnl >= 0 ? "+" : ""}{cash.format(s.pnl)}
             </p>
             <p className="mt-1 text-[11px] text-zinc-500">{s.account.phase}</p>
           </div>
         </div>
 
-        <div className="mt-2.5 grid grid-cols-3 gap-2 rounded-xl bg-[#090909] px-3 py-2">
+        <div className="mt-3 grid grid-cols-3 gap-2 rounded-xl border border-white/8 bg-[#050505] px-3 py-2">
           {[["Trades", s.trades], ["Win rate", `${s.winRate}%`], ["Market", s.account.marketType]].map(([l, v]) => (
             <div key={String(l)}>
               <p className="text-[10px] text-[#8a8a8a]">{l}</p>
-              <p className="font-mono text-[13px] font-bold">{v}</p>
+              <p className="font-mono text-[12px] font-bold text-white">{v}</p>
             </div>
           ))}
         </div>
       </div>
 
-      <div className="flex items-center justify-between border-t border-[#171717] px-3 py-2.5">
+      <div className="flex items-center justify-between border-t border-[#171717] bg-[#050505] px-3 py-2.5">
         <div className="flex items-center gap-4 text-[11px] text-[#8a8a8a]">
           <span>Target {Math.round(s.target)}%</span>
           <span>DD {Math.round(s.dd)}%</span>
@@ -530,15 +530,15 @@ function AccountCard({ active = false, s, deleting, onOpen, onDelete, compact = 
 }
 
 function AiCoachCard({ report, loading, error, onRefresh }: { report: AiCoachReport | null; loading: boolean; error: string | null; onRefresh: () => void }) {
-  const tone = report?.mood === "protect" ? "border-rose-400/20 bg-rose-400/[.055]" : report?.mood === "push" ? "border-[#d9f96d]/25 bg-[#d9f96d]/[.055]" : "border-white/10 bg-[#1b1b1b]/80";
+  const tone = report?.mood === "protect" ? "border-rose-400/20 bg-[#130a0d]" : report?.mood === "push" ? "border-[#d9f96d]/25 bg-[#101208]" : "border-white/10 bg-[#070707]";
   return (
     <section className={`overflow-hidden rounded-[24px] border ${tone}`}>
       <div className="flex flex-col gap-3 border-b border-white/8 p-4 sm:flex-row sm:items-start sm:p-5">
-        <span className="grid size-11 shrink-0 place-items-center rounded-2xl border border-white/10 bg-black/20 text-[#d9f96d]"><BrainCircuit size={21} /></span>
+        <span className="grid size-11 shrink-0 place-items-center rounded-2xl border border-white/10 bg-[#050505] text-[#d9f96d]"><BrainCircuit size={21} /></span>
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
             <h3 className="text-base font-black">{report?.title || "AI Trade Coach"}</h3>
-            {report ? <span className="rounded-full border border-white/10 bg-black/20 px-2 py-0.5 text-[10px] font-black uppercase text-[#8a8a8a]">{report.generatedBy}</span> : null}
+            {report ? <span className="rounded-full border border-white/10 bg-[#050505] px-2 py-0.5 text-[10px] font-black uppercase text-[#8a8a8a]">{report.generatedBy}</span> : null}
           </div>
           <p className="mt-1 text-sm leading-6 text-[#a1a1aa]">{loading ? "Analyzing your execution, risk and discipline..." : error || report?.summary || "Premium AI coach reads your journal and turns trades into concrete next actions."}</p>
         </div>
@@ -548,16 +548,16 @@ function AiCoachCard({ report, loading, error, onRefresh }: { report: AiCoachRep
       </div>
       {report ? (
         <div className="grid gap-3 p-4 sm:p-5 lg:grid-cols-[220px_1fr_1fr]">
-          <div className="rounded-2xl border border-white/8 bg-black/15 p-4">
+          <div className="rounded-2xl border border-white/8 bg-[#050505] p-4">
             <p className="text-[10px] font-black uppercase tracking-widest text-[#8a8a8a]">Coach score</p>
             <p className="mt-2 font-mono text-4xl font-black text-white">{Math.round(report.score)}</p>
             <div className="mt-3 h-2 overflow-hidden rounded-full bg-white/10"><div className="h-full rounded-full bg-[#d9f96d]" style={{ width: `${Math.max(0, Math.min(100, report.score))}%` }} /></div>
           </div>
-          <div className="rounded-2xl border border-white/8 bg-black/15 p-4">
+          <div className="rounded-2xl border border-white/8 bg-[#050505] p-4">
             <p className="text-[10px] font-black uppercase tracking-widest text-[#8a8a8a]">Risk warnings</p>
             <ul className="mt-3 space-y-2 text-sm leading-5 text-[#d4d4d8]">{(report.riskWarnings.length ? report.riskWarnings : ["No critical risk warning yet."]).map((item) => <li key={item}>- {item}</li>)}</ul>
           </div>
-          <div className="rounded-2xl border border-white/8 bg-black/15 p-4">
+          <div className="rounded-2xl border border-white/8 bg-[#050505] p-4">
             <p className="text-[10px] font-black uppercase tracking-widest text-[#8a8a8a]">Next actions</p>
             <ul className="mt-3 space-y-2 text-sm leading-5 text-[#d4d4d8]">{report.nextSteps.map((item) => <li key={item}>- {item}</li>)}</ul>
           </div>
