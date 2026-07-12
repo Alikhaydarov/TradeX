@@ -23,8 +23,40 @@ interface ActorProfileRow {
   premium_until: string | null;
 }
 
+type NotificationSelectResult = {
+  data: NotificationRow[] | null;
+  error: { message: string } | null;
+};
+
 function premiumVerified(profile: Pick<ActorProfileRow, "is_verified" | "plan" | "premium_until">) {
   return Boolean(profile.is_verified) && profile.plan === "premium" && (!profile.premium_until || new Date(profile.premium_until).getTime() > Date.now());
+}
+
+function isMissingEntityColumn(message: string) {
+  return /notifications\.(entity_id|entity_type)|column\s+(entity_id|entity_type)\s+does\s+not\s+exist/i.test(message);
+}
+
+async function selectNotifications(auth: NonNullable<Awaited<ReturnType<typeof authenticateRequest>>>) {
+  const query = () => auth.supabase
+    .from("notifications")
+    .select("id, type, message, is_read, created_at, actor_id, entity_id, entity_type")
+    .eq("user_id", auth.user.id)
+    .order("created_at", { ascending: false })
+    .limit(50)
+    .returns<NotificationRow[]>();
+
+  const result = await query() as NotificationSelectResult;
+  if (!result.error || !isMissingEntityColumn(result.error.message)) return result;
+
+  const fallback = await auth.supabase
+    .from("notifications")
+    .select("id, type, message, is_read, created_at, actor_id")
+    .eq("user_id", auth.user.id)
+    .order("created_at", { ascending: false })
+    .limit(50)
+    .returns<NotificationRow[]>();
+
+  return fallback as NotificationSelectResult;
 }
 
 export async function GET(request: Request) {
@@ -43,12 +75,7 @@ export async function GET(request: Request) {
     return Response.json({ unreadCount: count ?? 0 });
   }
 
-  const { data, error } = await auth.supabase
-    .from("notifications")
-    .select("id, type, message, is_read, created_at, actor_id, entity_id, entity_type")
-    .eq("user_id", auth.user.id)
-    .order("created_at", { ascending: false })
-    .limit(50);
+  const { data, error } = await selectNotifications(auth);
 
   if (error) return serverError(error.message);
 
