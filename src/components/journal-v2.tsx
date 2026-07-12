@@ -117,6 +117,16 @@ export function JournalV2({
   const [customStart, setCustomStart] = useState(() => new Date().toISOString().slice(0, 10));
   const [customEnd, setCustomEnd] = useState(() => new Date().toISOString().slice(0, 10));
 
+  const openTradeComposer = useCallback(() => {
+    if (mode === "workspace" && !activeAccountId) {
+      setError("Select an account before adding a trade.");
+      window.history.pushState(null, "", "/accounts");
+      window.dispatchEvent(new Event("popstate"));
+      return;
+    }
+    setTradeOpen(true);
+  }, [activeAccountId, mode]);
+
   useEffect(() => {
     if (!user) {
       setEntries([]);
@@ -154,6 +164,13 @@ export function JournalV2({
       active = false;
     };
   }, [accounts.length, accountsLoading, activeAccountId, mode, refreshAccounts, user]);
+
+  useEffect(() => {
+    if (!user) return;
+    const handleOpenTrade = () => openTradeComposer();
+    window.addEventListener("tradox:add-trade", handleOpenTrade);
+    return () => window.removeEventListener("tradox:add-trade", handleOpenTrade);
+  }, [openTradeComposer, user]);
 
   const account = accounts.find(a => a.id === activeAccountId) || null;
   const accountEntries = useMemo(() => {
@@ -366,7 +383,7 @@ export function JournalV2({
         </div>
       )}
       {mode === "workspace" ? (
-        account ? <Workspace embedded forcedTab={forcedTab} account={account} accounts={accounts} stats={stats} equity={equity} setups={setups} mistakes={mistakes} planRate={planRate} monthCount={monthEntries.length} calendar={calendar} trades={shown} bibleTrades={bibleEntries} query={query} month={month} deleting={deleting === account.id} saving={saving} tradeRange={tradeRange} customStart={customStart} customEnd={customEnd} onRange={setTradeRange} onCustomStart={setCustomStart} onCustomEnd={setCustomEnd} onQuery={setQuery} onBack={() => setActiveAccount(null)} onAccountChange={setActiveAccount} onTrade={() => setTradeOpen(true)} onDelete={() => removeAccount(account)} onCsv={exportCsv} onPrev={() => shiftMonth(-1)} onNext={() => shiftMonth(1)} onToday={() => setMonth(new Date())} onUpdateTrade={updateTrade} onRemoveTrade={removeTrade} onMt5Synced={reloadJournal} />
+        account ? <Workspace embedded forcedTab={forcedTab} account={account} accounts={accounts} stats={stats} equity={equity} setups={setups} mistakes={mistakes} planRate={planRate} monthCount={monthEntries.length} calendar={calendar} trades={shown} bibleTrades={bibleEntries} query={query} month={month} deleting={deleting === account.id} saving={saving} tradeRange={tradeRange} customStart={customStart} customEnd={customEnd} onRange={setTradeRange} onCustomStart={setCustomStart} onCustomEnd={setCustomEnd} onQuery={setQuery} onBack={() => setActiveAccount(null)} onAccountChange={setActiveAccount} onTrade={openTradeComposer} onDelete={() => removeAccount(account)} onCsv={exportCsv} onPrev={() => shiftMonth(-1)} onNext={() => shiftMonth(1)} onToday={() => setMonth(new Date())} onUpdateTrade={updateTrade} onRemoveTrade={removeTrade} onMt5Synced={reloadJournal} />
         : (
           <div className="rounded-[1.5rem] border border-white/8 bg-[#0b0b0b] p-5 shadow-[0_18px_46px_rgba(0,0,0,.22)]">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -928,7 +945,7 @@ function Workspace(p: {
                       <h4 className="text-sm font-black text-white">Challenge Limits</h4>
                       <p className="mt-1 text-xs text-zinc-500">Daily and overall protection.</p>
                     </div>
-                    <span className="rounded-full border border-white/8 bg-black/20 px-2.5 py-1 text-[10px] font-bold text-zinc-400">{account.status}</span>
+                    <span className="rounded-full border border-white/8 bg-[#050505] px-2.5 py-1 text-[10px] font-bold text-zinc-400">{account.status}</span>
                   </div>
                   <div className="mt-3 space-y-3">
                     <ProgressBar label="Profit target" value={targetProgress} color="bg-emerald-500" />
@@ -988,7 +1005,7 @@ function Workspace(p: {
                     <h3 className="text-[14px] font-black text-white">Execution Snapshot</h3>
                     <p className="mt-1 text-[11px] text-zinc-500">Risk, consistency and current focus.</p>
                   </div>
-                  <span className="rounded-full border border-white/8 bg-black/20 px-2.5 py-1 text-[10px] font-black text-zinc-400">
+                    <span className="rounded-full border border-white/8 bg-[#050505] px-2.5 py-1 text-[10px] font-black text-zinc-400">
                     {account.status}
                   </span>
                 </div>
@@ -1036,7 +1053,7 @@ function Workspace(p: {
                   {openPositions.slice(0, 4).map((position) => {
                     const positive = (position.unrealizedPnl || 0) >= 0;
                     return (
-                      <div key={position.id} className="flex items-center gap-3 rounded-xl border border-white/8 bg-black/20 px-3 py-3">
+                      <div key={position.id} className="flex items-center gap-3 rounded-xl border border-white/8 bg-[#050505] px-3 py-3">
                         <div className="min-w-0 flex-1">
                           <div className="flex items-center gap-2">
                             <InstrumentBadge symbol={position.symbol} compact className="bg-[#121212]" />
@@ -1186,7 +1203,7 @@ function Workspace(p: {
           {!singleTabMode || activeTab === "trades" ? (
           <TabsContent value="trades" className="space-y-2.5">
             <div className="space-y-2.5">
-              <div className="grid gap-3 xl:grid-cols-[minmax(0,1fr)_280px]">
+              <div className="grid gap-3">
                 <section className="overflow-hidden rounded-[1rem] border border-white/8 bg-[#070707] shadow-[0_18px_46px_rgba(0,0,0,.2)]">
                   <div className="space-y-3 border-b border-white/8 px-4 py-3">
                     <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
@@ -1197,9 +1214,14 @@ function Workspace(p: {
                         <h3 className="mt-1 text-[14px] font-black text-white">Trade Log</h3>
                         <p className="text-[11px] text-zinc-500">Open any row to review, edit or inspect screenshots.</p>
                       </div>
-                      <div className="relative sm:ml-auto sm:w-64">
-                        <Search className="absolute left-3 top-2.5 text-zinc-500" size={14} />
-                        <Input value={p.query} onChange={e => p.onQuery(e.target.value)} className="h-9 pl-9 text-sm" placeholder="Search symbol or setup" />
+                      <div className="flex w-full gap-2 sm:ml-auto sm:w-auto sm:items-center">
+                        <div className="relative min-w-0 flex-1 sm:w-64">
+                          <Search className="absolute left-3 top-2.5 text-zinc-500" size={14} />
+                          <Input value={p.query} onChange={e => p.onQuery(e.target.value)} className="h-9 pl-9 text-sm" placeholder="Search symbol or setup" />
+                        </div>
+                        <Button type="button" size="sm" className="h-9 shrink-0 rounded-xl bg-white px-3 text-black hover:bg-zinc-200" onClick={p.onTrade}>
+                          <Plus size={14} /> Add Trade
+                        </Button>
                       </div>
                     </div>
                     <div className="flex flex-col gap-2.5 lg:flex-row lg:items-end">
@@ -1287,32 +1309,6 @@ function Workspace(p: {
                       </div>
                     </div>
                   ) : <Empty text="No trades in this range yet." />}
-                </section>
-
-                <section className="rounded-[1rem] border border-white/8 bg-[#070707] p-4 shadow-[0_18px_46px_rgba(0,0,0,.2)]">
-                  <h3 className="text-[14px] font-black text-white">At a glance</h3>
-                  <p className="mt-1 text-[11px] text-zinc-500">Compact read of this trade range.</p>
-                  <div className="mt-4 space-y-2.5">
-                    <MiniStat label="Trades" value={String(trades.length)} />
-                    <MiniStat label="Winning" value={String(stats.wins)} />
-                    <MiniStat label="Losing" value={String(stats.losses)} />
-                    <MiniStat label="Avg win" value={averageWin ? formatTradePnl(averageWin) : "-"} />
-                    <MiniStat label="Avg loss" value={averageLoss ? formatTradePnl(averageLoss) : "-"} />
-                  </div>
-                  <div className="mt-4 rounded-2xl border border-white/8 bg-[#050505] p-3">
-                    <p className="text-[10px] font-black uppercase tracking-[0.16em] text-zinc-500">Most recent</p>
-                    {recentTrades[0] ? (
-                      <button type="button" onClick={() => openTrade(recentTrades[0])} className="mt-3 w-full rounded-xl border border-white/8 bg-[#080808] p-3 text-left transition hover:bg-[#0d0d0d]">
-                        <div className="flex items-center justify-between gap-2">
-                          <span className="text-sm font-bold text-white">{recentTrades[0].symbol}</span>
-                          <span className={`font-mono text-sm font-black ${recentTrades[0].pnl >= 0 ? "text-emerald-300" : "text-rose-300"}`}>{formatTradePnl(recentTrades[0].pnl)}</span>
-                        </div>
-                        <p className="mt-1 text-xs text-zinc-500">{recentTrades[0].setup || recentTrades[0].session || recentTrades[0].rawDate}</p>
-                      </button>
-                    ) : (
-                      <p className="mt-3 text-sm text-zinc-500">No trade selected yet.</p>
-                    )}
-                  </div>
                 </section>
               </div>
             </div>

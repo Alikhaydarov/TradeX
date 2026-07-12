@@ -262,12 +262,12 @@ export function TradeReviewModal({ open, saving, account: _account, onOpenChange
     <Dialog open={open} onOpenChange={close}>
       <DialogContent
         showCloseButton={false}
-        className="w-[calc(100vw-18px)] overflow-hidden rounded-[1.05rem] border border-white/10 bg-[#080808] p-0 shadow-2xl shadow-black/80 sm:max-w-[850px] lg:max-w-[850px]"
+        className="w-[calc(100vw-18px)] overflow-hidden rounded-[1rem] border border-white/10 bg-[#070707] p-0 shadow-2xl shadow-black/85 sm:max-w-[870px]"
       >
         <div className="flex items-start gap-3 border-b border-white/8 px-4 py-3 sm:px-4">
           <div className="min-w-0 flex-1">
             <h2 className="text-lg font-black leading-tight text-white">Add Trade</h2>
-            <p className="mt-0.5 truncate text-sm text-zinc-600">Enter the details of your trade.</p>
+            <p className="mt-0.5 truncate text-sm text-zinc-500">Enter the details of your trade.</p>
           </div>
           <button type="button" onClick={() => close(false)} className="grid size-8 shrink-0 place-items-center rounded-lg text-zinc-400 transition hover:bg-white/[.06] hover:text-white" aria-label="Close">
             <X size={19} />
@@ -347,7 +347,6 @@ export function TradeReviewModal({ open, saving, account: _account, onOpenChange
                     onChange={(event) => setRr(sanitizeDecimal(event.target.value))}
                     placeholder="1:2"
                     inputMode="decimal"
-                    required
                     className={`${inputClass} w-[62px] px-2 text-center font-mono text-xs`}
                   />
                   <div className="flex h-4 flex-1 overflow-hidden rounded-full bg-[#202020]">
@@ -449,7 +448,7 @@ export function TradeReviewModal({ open, saving, account: _account, onOpenChange
 
               <div className="space-y-2">
                 <FieldLabel>Screenshots</FieldLabel>
-                <div onDragOver={(event) => event.preventDefault()} onDrop={drop} className="min-h-[250px] rounded-xl border border-white/8 bg-[#121212] p-3 sm:min-h-[252px]">
+                <div onDragOver={(event) => event.preventDefault()} onDrop={drop} className="min-h-[250px] rounded-xl border border-white/8 bg-[#101010] p-3 sm:min-h-[252px]">
                   {imageUrls.length ? (
                     <div className="grid grid-cols-3 gap-2">
                       {imageUrls.map((url, index) => (
@@ -469,7 +468,7 @@ export function TradeReviewModal({ open, saving, account: _account, onOpenChange
                       ) : null}
                     </div>
                   ) : (
-                    <button type="button" onClick={() => inputRef.current?.click()} className="grid h-full min-h-[224px] w-full place-items-center rounded-lg text-center text-zinc-500 transition hover:bg-white/[.025] hover:text-zinc-300">
+                    <button type="button" onClick={() => inputRef.current?.click()} className="grid h-full min-h-[224px] w-full place-items-center rounded-lg text-center text-zinc-500 transition hover:bg-[#151515] hover:text-zinc-300">
                       <span>
                         {uploading ? <LoaderCircle className="mx-auto animate-spin" size={30} /> : <CloudUpload className="mx-auto text-zinc-700" size={36} />}
                         <b className="mt-4 block text-sm text-white">Upload Screenshot</b>
@@ -483,7 +482,7 @@ export function TradeReviewModal({ open, saving, account: _account, onOpenChange
 
               <div className="space-y-2">
                 <FieldLabel>Notes</FieldLabel>
-                <Textarea name="note" className="min-h-[86px] resize-y rounded-lg border-white/8 bg-[#111111] text-sm placeholder:text-zinc-600 focus:border-white/20" placeholder="Enter your trade notes" />
+                <Textarea name="note" className="min-h-[86px] resize-y rounded-lg border-white/8 bg-[#101010] text-sm placeholder:text-zinc-600 focus:border-white/20" placeholder="Enter your trade notes" />
               </div>
 
               <div className="space-y-2">
