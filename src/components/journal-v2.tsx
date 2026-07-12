@@ -180,11 +180,11 @@ function TradeGalleryCard({
       className="group overflow-hidden rounded-[0.95rem] border border-white/8 bg-[#080808] text-left transition hover:border-white/15 hover:bg-[#0c0c0c]"
     >
       {trade.imageUrl ? (
-        <div className="relative aspect-[11/12] overflow-hidden bg-[#121212]">
+        <div className="relative aspect-[4/5] overflow-hidden bg-[#101010]">
           <MediaImage
             src={trade.imageUrl}
             alt={`${trade.symbol} trade screenshot`}
-            className="h-full w-full object-contain p-2.5 transition duration-200 group-hover:scale-[1.02]"
+            className="h-full w-full object-contain p-2 transition duration-200 group-hover:scale-[1.02]"
           />
           {screenshotCount > 1 ? (
             <span className="absolute right-3 top-3 rounded-full border border-white/10 bg-black/80 px-2 py-1 text-[10px] font-bold text-zinc-200">
@@ -193,27 +193,27 @@ function TradeGalleryCard({
           ) : null}
         </div>
       ) : (
-        <div className="flex aspect-[11/12] items-end bg-[#121212] p-4">
+        <div className="flex aspect-[4/5] items-end bg-[#101010] p-3.5">
           <div>
             <span className={`inline-flex rounded-full px-2.5 py-1 text-[10px] font-black ${trade.side === "Long" ? "bg-emerald-500/12 text-emerald-300" : "bg-rose-500/12 text-rose-300"}`}>
               {trade.side === "Long" ? "Buy" : "Sell"}
             </span>
-            <h4 className="mt-3 text-2xl font-black text-white">{trade.symbol}</h4>
+            <h4 className="mt-3 text-xl font-black text-white">{trade.symbol}</h4>
             <p className="mt-1 text-xs text-zinc-500">{trade.note || "Open trade review"}</p>
           </div>
         </div>
       )}
 
-      <div className="space-y-2 border-t border-white/8 px-3.5 py-3">
+      <div className="space-y-2 border-t border-white/8 px-3 py-2.5">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
-            <p className="truncate text-[14px] font-black text-white">
+            <p className="truncate text-[13px] font-black text-white">
               {trade.symbol}
               {typeof trade.resultR === "number" && Math.abs(trade.resultR) > 0.01 ? ` ${trade.resultR >= 0 ? "+" : ""}${trade.resultR.toFixed(2)}R` : ""}
             </p>
             <p className="mt-1 text-xs text-zinc-500">{secondaryMeta}</p>
           </div>
-          <span className={`shrink-0 rounded-full px-2.5 py-1 text-[11px] font-black ${winning ? "bg-emerald-500/10 text-emerald-300" : "bg-rose-500/10 text-rose-300"}`}>
+          <span className={`shrink-0 rounded-full px-2.5 py-1 text-[10px] font-black ${winning ? "bg-emerald-500/10 text-emerald-300" : "bg-rose-500/10 text-rose-300"}`}>
             {formatTradePnl(trade.pnl)}
           </span>
         </div>
@@ -904,7 +904,7 @@ function Workspace(p: {
 
   return (
     <div className="animate-page-in mx-auto max-w-[1540px]">
-      <div className="space-y-3 p-3 sm:p-4 lg:space-y-3.5 lg:p-5">
+      <div className="space-y-3 p-3 sm:p-4 lg:space-y-3 lg:p-4">
         {!embedded ? (
           <div className="w-full sm:w-[320px]">
             <span className="mb-1.5 block text-[10px] font-semibold uppercase tracking-widest text-[#8a8a8a]">Account</span>
@@ -950,40 +950,40 @@ function Workspace(p: {
         <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as WorkspaceTab)} className="gap-4">
           {!singleTabMode || activeTab === "home" ? (
           <TabsContent value="home" className="space-y-4">
-            <section className="rounded-[1.1rem] border border-white/8 bg-[#070707] p-4">
+            <section className="rounded-[1rem] border border-white/8 bg-[#070707] p-3.5 sm:p-4">
               <div className="flex flex-col gap-4 xl:flex-row xl:items-start">
                 <div className="min-w-0 flex-1">
                   <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-zinc-600">Selected account</p>
                   <div className="mt-2.5 flex flex-wrap items-center gap-3">
                     <PropFirmLogo firm={account.firm} compact />
                     <div className="min-w-0">
-                      <h2 className="truncate text-xl font-black text-white">{account.name}</h2>
+                      <h2 className="truncate text-[1.05rem] font-black text-white">{account.name}</h2>
                       <p className="mt-1 text-xs text-zinc-500">{account.accountType === "real" ? "Real account" : "Prop account"} / {account.marketType} / {account.phase}</p>
                     </div>
                     <span className={`rounded-full border px-3 py-1 text-[11px] font-bold ${account.status === "Active" ? "border-emerald-400/20 bg-[#0b1c12] text-emerald-300" : "border-white/10 bg-[#0a0a0a] text-zinc-300"}`}>
                       {account.status}
                     </span>
                   </div>
-                  <div className="mt-4 grid gap-2.5 sm:grid-cols-3">
+                  <div className="mt-4 grid gap-2 sm:grid-cols-3">
                     <QuickMetric label="Balance" value={cash.format(account.accountSize)} note="Everything below follows this account" />
                     <QuickMetric label="Trades" value={String(trades.length)} note={`${stats.wins} wins / ${stats.losses} losses`} />
                     <QuickMetric label="Net P&L" value={formatTradePnl(currentPnl)} note={`${stats.rate}% win rate`} tone={currentPnl >= 0 ? "good" : "bad"} />
                   </div>
                 </div>
-                <div className="grid w-full gap-3 xl:w-[320px]">
-                  <button type="button" onClick={p.onTrade} className="rounded-[1rem] border border-white/10 bg-white px-4 py-3 text-left text-sm font-black text-black transition hover:bg-zinc-200">
+                <div className="grid w-full gap-2.5 xl:w-[280px]">
+                  <button type="button" onClick={p.onTrade} className="rounded-[1rem] border border-white/10 bg-white px-4 py-2.5 text-left text-sm font-black text-black transition hover:bg-zinc-200">
                     Add trade
                   </button>
-                  <div className="rounded-[1rem] border border-white/8 bg-[#050505] p-4">
+                  <div className="rounded-[1rem] border border-white/8 bg-[#050505] p-3.5">
                     <p className="text-[10px] uppercase tracking-[0.18em] text-zinc-500">Focus</p>
-                    <p className="mt-2 text-sm leading-6 text-zinc-300">Every workspace section below follows this account instantly when you switch it.</p>
+                    <p className="mt-2 text-[13px] leading-5 text-zinc-300">Every workspace section below follows this account instantly when you switch it.</p>
                   </div>
                 </div>
               </div>
             </section>
 
-            <div className="grid gap-4 xl:grid-cols-[minmax(0,1.2fr)_minmax(320px,.8fr)]">
-              <section className="rounded-[1.05rem] border border-white/8 bg-[#070707] p-4">
+            <div className="grid gap-3 xl:grid-cols-[minmax(0,1.2fr)_minmax(300px,.8fr)]">
+              <section className="rounded-[1rem] border border-white/8 bg-[#070707] p-3.5 sm:p-4">
                 <div className="flex items-center justify-between gap-3">
                   <div>
                     <h3 className="text-[14px] font-black text-white">Recent trades</h3>
@@ -993,9 +993,9 @@ function Workspace(p: {
                     Open log
                   </Button>
                 </div>
-                <div className="mt-4 space-y-2">
+                <div className="mt-3 space-y-2">
                   {recentTrades.length ? recentTrades.map((trade) => (
-                    <button key={trade.id} type="button" onClick={() => openTrade(trade)} className="flex w-full items-center gap-3 rounded-2xl border border-white/8 bg-[#050505] px-3 py-3 text-left transition hover:bg-[#0d0d0d]">
+                    <button key={trade.id} type="button" onClick={() => openTrade(trade)} className="flex w-full items-center gap-3 rounded-2xl border border-white/8 bg-[#050505] px-3 py-2.5 text-left transition hover:bg-[#0d0d0d]">
                       <InstrumentBadge symbol={trade.symbol} compact className="bg-[#121212]" showFullSymbol={false} />
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center gap-2">
@@ -1012,25 +1012,25 @@ function Workspace(p: {
 
               <div className="grid gap-4">
                 <AiCoachCard report={coachReport} loading={coachLoading} error={coachError} onRefresh={loadCoach} />
-                <section className="rounded-[1.05rem] border border-white/8 bg-[#070707] p-4">
+                <section className="rounded-[1rem] border border-white/8 bg-[#070707] p-3.5 sm:p-4">
                   <div className="flex items-center justify-between gap-3">
                     <div>
                       <h3 className="text-[15px] font-black text-white">Sync & Focus</h3>
                       <p className="mt-1 text-xs text-zinc-500">Compact control panel for the selected account.</p>
                     </div>
                   </div>
-                  <div className="mt-4 grid gap-2">
-                    <div className="rounded-2xl border border-white/8 bg-black px-3 py-3">
+                  <div className="mt-3 grid gap-2">
+                    <div className="rounded-2xl border border-white/8 bg-black px-3 py-2.5">
                       <p className="text-[10px] font-black uppercase tracking-[0.16em] text-zinc-500">Auto sync</p>
                       <p className="mt-1 text-sm font-bold text-white">{account.platform === "mt5" ? "MT5 bridge connected flow" : "Manual or CSV workflow"}</p>
                       <p className="mt-1 text-xs text-zinc-500">All dashboard sections below follow this account only.</p>
                     </div>
-                    <div className="rounded-2xl border border-white/8 bg-black px-3 py-3">
+                    <div className="rounded-2xl border border-white/8 bg-black px-3 py-2.5">
                       <p className="text-[10px] font-black uppercase tracking-[0.16em] text-zinc-500">Top symbol</p>
                       <p className="mt-1 text-sm font-bold text-white">{symbolStats[0]?.symbol || "No trade edge yet"}</p>
                       <p className="mt-1 text-xs text-zinc-500">{symbolStats[0] ? `${symbolStats[0].trades} trades recorded` : "Add trades to unlock symbol edge."}</p>
                     </div>
-                    <div className="rounded-2xl border border-white/8 bg-black px-3 py-3">
+                    <div className="rounded-2xl border border-white/8 bg-black px-3 py-2.5">
                       <p className="text-[10px] font-black uppercase tracking-[0.16em] text-zinc-500">Coach mode</p>
                       <p className="mt-1 text-sm font-bold text-white">{coachReport?.mood === "protect" ? "Protect capital" : coachReport?.mood === "push" ? "Push A+ only" : "Stay consistent"}</p>
                       <p className="mt-1 text-xs text-zinc-500">{coachReport?.summary || "AI coach summary appears here when the report is ready."}</p>
@@ -2206,7 +2206,7 @@ function TradeReviewImage({ trade, chartUrls }: { trade: JournalEntry; chartUrls
 
     const chartUrl = chartUrls[0] ?? "";
     if (chartUrl) {
-      const chart = new Image();
+      const chart = new window.Image();
       chart.crossOrigin = "anonymous";
       chart.onload = () => render(chart);
       chart.onerror = () => render(null);

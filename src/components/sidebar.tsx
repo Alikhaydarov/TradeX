@@ -50,7 +50,7 @@ function initials(account: PropAccount | null) {
 const money = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 });
 
 function GroupLabel({ children }: { children: string }) {
-  return <p className="px-1.5 pb-1 pt-3 text-[8px] font-medium uppercase tracking-[0.1em] text-zinc-700">{children}</p>;
+  return <p className="px-1.5 pb-1 pt-3 text-[8px] font-medium uppercase tracking-[0.14em] text-zinc-700">{children}</p>;
 }
 
 export function Sidebar({
@@ -171,7 +171,7 @@ export function Sidebar({
           if (mobile) setMobileMenuOpen(false);
           onChange(id);
         }}
-        className={`group flex w-full items-center gap-2 rounded-xl px-2 py-1.5 text-left transition ${
+        className={`group flex w-full items-center gap-2 rounded-xl px-2.5 py-2 text-left transition ${
           selected ? "bg-[#111111] text-white ring-1 ring-white/10" : "text-zinc-400 hover:bg-[#080808] hover:text-white"
         }`}
       >
@@ -259,12 +259,12 @@ export function Sidebar({
 
   return (
     <>
-      <aside className="fixed left-[max(1rem,calc((100vw-1860px)/2+1rem))] top-4 z-40 hidden h-[calc(100dvh-2rem)] w-[214px] shrink-0 flex-col rounded-[1rem] border border-white/8 bg-[#000000] p-3 shadow-[inset_0_1px_0_rgba(255,255,255,.03)] lg:flex">
-        <button onClick={() => onChange("feed")} className="flex items-center gap-3 rounded-2xl px-2 py-1 text-left transition-colors hover:bg-[#080808]" aria-label="TradeWay home">
+      <aside className="fixed left-[max(1rem,calc((100vw-1860px)/2+1rem))] top-3 z-40 hidden h-[calc(100dvh-1.5rem)] w-[224px] shrink-0 flex-col rounded-[1rem] border border-white/8 bg-[#000000] p-3 shadow-[inset_0_1px_0_rgba(255,255,255,.03)] lg:flex">
+        <button onClick={() => onChange("feed")} className="flex items-center gap-3 rounded-2xl px-2 py-1.5 text-left transition-colors hover:bg-[#080808]" aria-label="TradeWay home">
           <span className="grid h-9 w-9 place-items-center rounded-xl bg-[linear-gradient(180deg,rgba(255,255,255,1),rgba(232,232,236,1))] text-sm font-black text-black shadow-[0_10px_24px_rgba(255,255,255,.06)]">TW</span>
           <span className="min-w-0">
             <span className="flex items-center gap-2">
-              <strong className="block truncate text-[14px] tracking-tight">TradeWay</strong>
+              <strong className="block truncate text-[13px] tracking-tight">TradeWay</strong>
               <span className={`rounded-full px-2 py-0.5 text-[10px] font-black ${premium.isPremium ? "bg-[#0b1c12] text-emerald-300" : "bg-[#0a0a0a] text-zinc-400"}`}>
                 {premium.isPremium ? "Premium" : "Free"}
               </span>
@@ -275,7 +275,7 @@ export function Sidebar({
 
         {renderAccountSwitcher()}
 
-        <div className="mt-4">
+        <div className="mt-3">
           <nav className="space-y-1">
             {primaryNav.map((item) => renderNavButton(item))}
           </nav>
