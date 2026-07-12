@@ -121,7 +121,7 @@ export function WorkspacePreferencesProvider({ children }: { children: ReactNode
     };
 
     const formatPnl = (amount: number, baseValue?: number) => {
-      if (pnlMode === "hidden") return "••••••";
+      if (pnlMode === "hidden") return "******";
       if (pnlMode === "percentage") {
         const base = typeof baseValue === "number" && baseValue > 0 ? baseValue : 0;
         const percentage = base ? (amount / base) * 100 : 0;
@@ -132,9 +132,9 @@ export function WorkspacePreferencesProvider({ children }: { children: ReactNode
 
     const maskValue = (input: string) => {
       if (!hidePersonalInfo) return input;
-      if (!input) return "••••";
+      if (!input) return "****";
       const visible = input.slice(0, Math.min(2, input.length));
-      return `${visible}${"•".repeat(Math.max(3, input.length - visible.length))}`;
+      return `${visible}${"*".repeat(Math.max(3, input.length - visible.length))}`;
     };
 
     return {
@@ -164,3 +164,4 @@ export function useWorkspacePreferences() {
   if (!context) throw new Error("useWorkspacePreferences must be used inside WorkspacePreferencesProvider");
   return context;
 }
+

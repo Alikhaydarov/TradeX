@@ -283,7 +283,7 @@ export function PropAccountDialog({
         <form onSubmit={handleSubmit} className="relative max-h-[calc(92dvh-73px)] overflow-y-auto">
           <div className="px-5 py-5 sm:px-8 sm:py-6">
             {step > 1 ? (
-              <Button type="button" variant="outline" onClick={goBack} className="mb-4 border-white/10 bg-white/[.04]">
+              <Button type="button" variant="outline" onClick={goBack} className="mb-4 border-white/10 bg-[#050505] hover:bg-[#111111]">
                 <ArrowLeft size={16} /> Back
               </Button>
             ) : null}

@@ -50,7 +50,7 @@ function initials(account: PropAccount | null) {
 const money = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 });
 
 function GroupLabel({ children }: { children: string }) {
-  return <p className="px-1.5 pb-1 pt-3 text-[9px] font-medium uppercase tracking-[0.06em] text-zinc-600">{children}</p>;
+  return <p className="px-1.5 pb-1 pt-3 text-[9px] font-medium uppercase tracking-[0.08em] text-zinc-700">{children}</p>;
 }
 
 export function Sidebar({
@@ -172,10 +172,10 @@ export function Sidebar({
           onChange(id);
         }}
         className={`group flex w-full items-center gap-2.5 rounded-xl px-2.5 py-1.5 text-left transition ${
-          selected ? "bg-white/[.08] text-white ring-1 ring-white/10" : "text-zinc-400 hover:bg-[#0a0a0a] hover:text-white"
+          selected ? "bg-[#111111] text-white ring-1 ring-white/10" : "text-zinc-400 hover:bg-[#080808] hover:text-white"
         }`}
       >
-        <span className={`grid h-7 w-7 place-items-center rounded-lg transition-colors ${selected ? "bg-white/10 text-white" : "bg-[#090909] text-zinc-500 group-hover:bg-[#111111] group-hover:text-zinc-300"}`}>
+        <span className={`grid h-7 w-7 place-items-center rounded-lg transition-colors ${selected ? "bg-[#1a1a1a] text-white" : "bg-[#050505] text-zinc-500 group-hover:bg-[#0f0f0f] group-hover:text-zinc-300"}`}>
           <Icon size={15} strokeWidth={selected ? 2.3 : 2} />
         </span>
         <span className="min-w-0 flex-1 truncate text-[14px] font-medium">{label}</span>
@@ -185,7 +185,7 @@ export function Sidebar({
 
   const renderAccountSwitcher = (mobile = false) => (
     <DropdownMenu open={accountSwitcherOpen} onOpenChange={setAccountSwitcherOpen}>
-      <div className={`${mobile ? "flex w-full items-center gap-2 rounded-2xl border border-white/10 bg-[#060606] p-3" : "mt-4 flex w-full items-center gap-2 rounded-[0.95rem] border border-white/8 bg-[#040404] p-2 transition hover:bg-[#090909]"}`}>
+      <div className={`${mobile ? "flex w-full items-center gap-2 rounded-2xl border border-white/10 bg-[#030303] p-3" : "mt-4 flex w-full items-center gap-2 rounded-[0.95rem] border border-white/8 bg-[#030303] p-2 transition hover:bg-[#070707]"}`}>
         <button type="button" onClick={openAccountsPage} className="flex min-w-0 flex-1 items-center gap-3 text-left">
           <span className={`size-2 shrink-0 rounded-full ${activeAccount ? "bg-emerald-500" : "bg-zinc-500"}`} />
           <div className="min-w-0 flex-1">
@@ -196,7 +196,7 @@ export function Sidebar({
         <DropdownMenuTrigger asChild>
           <button
             type="button"
-            className={`${mobile ? "size-9" : "size-8"} grid shrink-0 place-items-center rounded-xl border border-white/8 bg-[#0d0d0d] text-zinc-400 transition hover:bg-[#111111] hover:text-white`}
+            className={`${mobile ? "size-9" : "size-8"} grid shrink-0 place-items-center rounded-xl border border-white/8 bg-[#090909] text-zinc-400 transition hover:bg-[#111111] hover:text-white`}
             aria-label="Open account switcher"
           >
             <ChevronDown size={mobile ? 14 : 14} className={`transition-transform ${accountSwitcherOpen ? "rotate-180" : ""}`} />
@@ -213,7 +213,7 @@ export function Sidebar({
           <button
             type="button"
             onClick={openAccountsPage}
-            className="w-full rounded-xl px-2 py-1.5 text-left text-sm font-black text-white transition hover:bg-white/[.04]"
+            className="w-full rounded-xl px-2 py-1.5 text-left text-sm font-black text-white transition hover:bg-[#111111]"
           >
             All Accounts
           </button>
@@ -239,9 +239,9 @@ export function Sidebar({
                   event.preventDefault();
                   selectAccount(account.id);
                 }}
-                className={`flex cursor-pointer items-center gap-3 rounded-xl px-3 py-3 ${selected ? "bg-white/[.07] text-white" : "text-zinc-300"}`}
+                className={`flex cursor-pointer items-center gap-3 rounded-xl px-3 py-3 ${selected ? "bg-[#101010] text-white" : "text-zinc-300"}`}
               >
-                <span className={`grid size-8 shrink-0 place-items-center rounded-lg text-[10px] font-black ${selected ? "bg-white text-black" : "bg-white/[.08] text-white"}`}>{initials(account)}</span>
+                <span className={`grid size-8 shrink-0 place-items-center rounded-lg text-[10px] font-black ${selected ? "bg-white text-black" : "bg-[#141414] text-white"}`}>{initials(account)}</span>
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-sm font-bold">{account.name}</p>
                   <p className="truncate text-[11px] text-zinc-500">{account.phase} / {account.marketType}</p>
@@ -259,7 +259,7 @@ export function Sidebar({
 
   return (
     <>
-      <aside className="fixed left-[max(1rem,calc((100vw-1860px)/2+1rem))] top-4 z-40 hidden h-[calc(100dvh-2rem)] w-[228px] shrink-0 flex-col rounded-[1rem] border border-white/8 bg-[#000000] p-3 shadow-[inset_0_1px_0_rgba(255,255,255,.03)] lg:flex">
+      <aside className="fixed left-[max(1rem,calc((100vw-1860px)/2+1rem))] top-4 z-40 hidden h-[calc(100dvh-2rem)] w-[216px] shrink-0 flex-col rounded-[1rem] border border-white/8 bg-[#000000] p-3 shadow-[inset_0_1px_0_rgba(255,255,255,.03)] lg:flex">
         <button onClick={() => onChange("feed")} className="flex items-center gap-3 rounded-2xl px-2 py-1.5 text-left transition-colors hover:bg-white/[.03]" aria-label="TradeWay home">
           <span className="grid h-9 w-9 place-items-center rounded-xl bg-[linear-gradient(180deg,rgba(255,255,255,1),rgba(232,232,236,1))] text-sm font-black text-black shadow-[0_10px_24px_rgba(255,255,255,.06)]">TW</span>
           <span className="min-w-0">
@@ -323,7 +323,7 @@ export function Sidebar({
                   {locale === "en" ? <span className="text-[10px] font-bold text-zinc-400">Active</span> : null}
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => setLocale("es")} className="flex items-center justify-between px-3 py-2.5">
-                  <span className="flex items-center gap-2 pl-6">Español</span>
+                  <span className="flex items-center gap-2 pl-6">Spanish</span>
                   {locale === "es" ? <span className="text-[10px] font-bold text-zinc-400">Active</span> : null}
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={openHelpCenter} className="px-3 py-2.5">
@@ -409,7 +409,7 @@ export function Sidebar({
                         {locale === "en" ? <span className="text-[10px] font-bold text-zinc-400">Active</span> : null}
                       </DropdownMenuItem>
                       <DropdownMenuItem onClick={() => setLocale("es")} className="flex items-center justify-between px-3 py-2.5">
-                        <span className="flex items-center gap-2 pl-6">Español</span>
+                        <span className="flex items-center gap-2 pl-6">Spanish</span>
                         {locale === "es" ? <span className="text-[10px] font-bold text-zinc-400">Active</span> : null}
                       </DropdownMenuItem>
                       <DropdownMenuItem onClick={openHelpCenter} className="px-3 py-2.5">
@@ -455,3 +455,4 @@ export function Sidebar({
     </>
   );
 }
+

@@ -170,7 +170,7 @@ function AppShellInner() {
           user={user}
           isAdmin={isAdmin}
         />
-        <div className="hidden w-[228px] shrink-0 lg:block" aria-hidden="true" />
+        <div className="hidden w-[216px] shrink-0 lg:block" aria-hidden="true" />
         <main className="h-[100dvh] min-w-0 flex-1 overflow-y-auto overflow-x-hidden bg-[#000000] lg:h-[calc(100dvh-2rem)] lg:rounded-[1rem] lg:border lg:border-white/8">
           <WorkspaceTopbar section={section} />
           <section key={section} className="min-h-full">

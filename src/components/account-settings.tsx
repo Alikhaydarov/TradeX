@@ -109,7 +109,7 @@ export function AccountSettings({ onLogin: _onLogin }: { onLogin: () => void }) 
         </div>
         <div className="w-full lg:w-[320px]">
           <Select value={account.id} onValueChange={setActiveAccount}>
-            <SelectTrigger className="h-11 rounded-2xl border-white/10 bg-white/[.04]"><SelectValue /></SelectTrigger>
+            <SelectTrigger className="h-11 rounded-2xl border-white/10 bg-[#050505]"><SelectValue /></SelectTrigger>
             <SelectContent>{accounts.map((item) => <SelectItem key={item.id} value={item.id}>{item.name}</SelectItem>)}</SelectContent>
           </Select>
         </div>
@@ -118,7 +118,7 @@ export function AccountSettings({ onLogin: _onLogin }: { onLogin: () => void }) 
       <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_420px]">
         <section className="space-y-4 rounded-[1.5rem] border border-white/8 bg-[#0b0b0b] p-4 sm:p-5">
           <div className="flex items-center gap-3">
-            <span className="grid size-11 place-items-center rounded-2xl border border-white/8 bg-white/[.04] text-zinc-300"><SlidersHorizontal size={20} /></span>
+            <span className="grid size-11 place-items-center rounded-2xl border border-white/8 bg-[#050505] text-zinc-300"><SlidersHorizontal size={20} /></span>
             <div>
               <h2 className="font-black text-white">Account profile</h2>
               <p className="text-xs text-zinc-500">Basic display fields used across cards, Overview, Analytics and proof views.</p>
@@ -148,9 +148,9 @@ export function AccountSettings({ onLogin: _onLogin }: { onLogin: () => void }) 
 
         <aside className="space-y-3 rounded-[1.5rem] border border-white/8 bg-[#0b0b0b] p-4 sm:p-5">
           <p className="flex items-center gap-2 text-xs font-black uppercase tracking-[0.18em] text-zinc-500"><ShieldCheck size={14} /> Connector status</p>
-          <div className="rounded-2xl border border-white/8 bg-white/[.025] p-4">
+          <div className="rounded-2xl border border-white/8 bg-[#050505] p-4">
             <div className="flex items-center gap-3">
-              <span className={`grid size-10 place-items-center rounded-2xl border ${isMt5 ? "border-emerald-400/20 bg-emerald-400/10 text-emerald-300" : "border-white/10 bg-white/[.04] text-zinc-300"}`}>
+              <span className={`grid size-10 place-items-center rounded-2xl border ${isMt5 ? "border-emerald-400/20 bg-emerald-400/10 text-emerald-300" : "border-white/10 bg-[#050505] text-zinc-300"}`}>
                 <Wifi size={18} />
               </span>
               <div>
@@ -172,7 +172,7 @@ export function AccountSettings({ onLogin: _onLogin }: { onLogin: () => void }) 
             <h2 className="font-black text-white">Connectors</h2>
             <p className="mt-1 text-sm text-zinc-500">Connector settings change based on the selected account platform.</p>
           </div>
-          <span className="rounded-full border border-white/10 bg-white/[.035] px-3 py-1 text-[11px] font-bold uppercase text-zinc-400">{account.platform || "manual"}</span>
+          <span className="rounded-full border border-white/10 bg-[#050505] px-3 py-1 text-[11px] font-bold uppercase text-zinc-400">{account.platform || "manual"}</span>
         </div>
 
         {isMt5 ? (
@@ -191,5 +191,5 @@ export function AccountSettings({ onLogin: _onLogin }: { onLogin: () => void }) 
 }
 
 function Mini({ label, value }: { label: string; value: string }) {
-  return <div className="rounded-2xl border border-white/8 bg-white/[.025] p-3"><p className="text-[10px] font-black uppercase tracking-wider text-zinc-500">{label}</p><p className="mt-1 truncate text-sm font-bold text-white">{value}</p></div>;
+  return <div className="rounded-2xl border border-white/8 bg-[#050505] p-3"><p className="text-[10px] font-black uppercase tracking-wider text-zinc-500">{label}</p><p className="mt-1 truncate text-sm font-bold text-white">{value}</p></div>;
 }

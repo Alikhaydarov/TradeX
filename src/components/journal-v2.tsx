@@ -420,19 +420,6 @@ function Accounts({ activeAccountId, summaries, deleting, onAdd, onOpen, onDelet
           {summaries.map((summary) => (
             <AccountCard key={summary.account.id} active={activeAccountId === summary.account.id} s={summary} deleting={deleting} onOpen={onOpen} onDelete={onDelete} />
           ))}
-          <button
-            type="button"
-            onClick={onAdd}
-            className="group grid min-h-[156px] place-items-center rounded-[16px] border border-dashed border-white/10 bg-[#050505] text-center transition hover:border-white/20 hover:bg-[#0a0a0a]"
-          >
-            <div>
-              <span className="mx-auto grid size-11 place-items-center rounded-xl border border-white/10 bg-[#0a0a0a] text-zinc-400 transition group-hover:text-white">
-                <Plus size={20} />
-              </span>
-              <p className="mt-3 text-base font-black text-white">Add Account</p>
-              <p className="mt-1 text-xs text-zinc-500">Create prop or real account.</p>
-            </div>
-          </button>
         </section>
       )}
     </div>
@@ -764,47 +751,44 @@ function Workspace(p: {
         <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as WorkspaceTab)} className="gap-4">
           {!singleTabMode || activeTab === "home" ? (
           <TabsContent value="home" className="space-y-4">
-            <section className="rounded-[1.35rem] border border-white/8 bg-[#090909] p-4 sm:p-5">
+            <section className="rounded-[1.1rem] border border-white/8 bg-[#070707] p-4">
               <div className="flex flex-col gap-4 xl:flex-row xl:items-start">
                 <div className="min-w-0 flex-1">
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-zinc-500">Selected account</p>
-                  <div className="mt-3 flex flex-wrap items-center gap-3">
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-zinc-600">Selected account</p>
+                  <div className="mt-2.5 flex flex-wrap items-center gap-3">
                     <PropFirmLogo firm={account.firm} compact />
                     <div className="min-w-0">
-                      <h2 className="truncate text-2xl font-black text-white">{account.name}</h2>
-                      <p className="mt-1 text-sm text-zinc-500">{account.accountType === "real" ? "Real account" : "Prop account"} / {account.marketType} / {account.phase}</p>
+                      <h2 className="truncate text-xl font-black text-white">{account.name}</h2>
+                      <p className="mt-1 text-xs text-zinc-500">{account.accountType === "real" ? "Real account" : "Prop account"} / {account.marketType} / {account.phase}</p>
                     </div>
                     <span className={`rounded-full border px-3 py-1 text-[11px] font-bold ${account.status === "Active" ? "border-emerald-400/20 bg-emerald-400/10 text-emerald-300" : "border-white/10 bg-white/[.04] text-zinc-300"}`}>
                       {account.status}
                     </span>
                   </div>
-                  <div className="mt-5 grid gap-3 sm:grid-cols-3">
+                  <div className="mt-4 grid gap-2.5 sm:grid-cols-3">
                     <QuickMetric label="Balance" value={cash.format(account.accountSize)} note="Everything below follows this account" />
                     <QuickMetric label="Trades" value={String(trades.length)} note={`${stats.wins} wins / ${stats.losses} losses`} />
                     <QuickMetric label="Net P&L" value={formatTradePnl(currentPnl)} note={`${stats.rate}% win rate`} tone={currentPnl >= 0 ? "good" : "bad"} />
                   </div>
                 </div>
-                <div className="grid w-full gap-3 xl:w-[360px]">
-                  <button type="button" onClick={p.onTrade} className="rounded-[1.1rem] border border-white/10 bg-white px-4 py-3 text-left text-sm font-black text-black transition hover:bg-zinc-200">
+                <div className="grid w-full gap-3 xl:w-[320px]">
+                  <button type="button" onClick={p.onTrade} className="rounded-[1rem] border border-white/10 bg-white px-4 py-3 text-left text-sm font-black text-black transition hover:bg-zinc-200">
                     Add trade
                   </button>
-                  <button type="button" onClick={() => window.dispatchEvent(new Event("tradeway:share-trade"))} className="rounded-[1.1rem] border border-white/10 bg-[#050505] px-4 py-3 text-left text-sm font-semibold text-white transition hover:bg-[#0d0d0d]">
-                    Share trade from this account
-                  </button>
-                  <div className="rounded-[1.1rem] border border-white/8 bg-[#050505] p-4">
-                    <p className="text-[10px] uppercase tracking-[0.18em] text-zinc-500">Flow</p>
-                    <p className="mt-2 text-sm leading-6 text-zinc-300">Change the account at the top and Home, Dashboard, Calendar, Trades and Analytics all switch to that account instantly.</p>
+                  <div className="rounded-[1rem] border border-white/8 bg-[#050505] p-4">
+                    <p className="text-[10px] uppercase tracking-[0.18em] text-zinc-500">Focus</p>
+                    <p className="mt-2 text-sm leading-6 text-zinc-300">Every workspace section below follows this account instantly when you switch it.</p>
                   </div>
                 </div>
               </div>
             </section>
 
             <div className="grid gap-4 xl:grid-cols-[minmax(0,1.2fr)_minmax(320px,.8fr)]">
-              <section className="rounded-[1.3rem] border border-white/8 bg-[#090909] p-4 sm:p-5">
+              <section className="rounded-[1.05rem] border border-white/8 bg-[#070707] p-4">
                 <div className="flex items-center justify-between gap-3">
                   <div>
-                    <h3 className="text-lg font-black text-white">Share-ready trades</h3>
-                    <p className="mt-1 text-sm text-zinc-500">Open a trade or send your best setup to Home from this account.</p>
+                    <h3 className="text-[15px] font-black text-white">Recent trades</h3>
+                    <p className="mt-1 text-xs text-zinc-500">Open any trade, review it, then share it to Home from the trade view.</p>
                   </div>
                   <Button type="button" variant="outline" size="sm" className="border-white/10 bg-[#050505]" onClick={() => setActiveTab("trades")}>
                     Open log
@@ -829,11 +813,11 @@ function Workspace(p: {
 
               <div className="grid gap-4">
                 <AiCoachCard report={coachReport} loading={coachLoading} error={coachError} onRefresh={loadCoach} />
-                <section className="rounded-[1.3rem] border border-white/8 bg-[#090909] p-4 sm:p-5">
+                <section className="rounded-[1.05rem] border border-white/8 bg-[#070707] p-4">
                   <div className="flex items-center justify-between gap-3">
                     <div>
-                      <h3 className="text-lg font-black text-white">Sync & Focus</h3>
-                      <p className="mt-1 text-sm text-zinc-500">Compact control panel for the selected account.</p>
+                      <h3 className="text-[15px] font-black text-white">Sync & Focus</h3>
+                      <p className="mt-1 text-xs text-zinc-500">Compact control panel for the selected account.</p>
                     </div>
                   </div>
                   <div className="mt-4 grid gap-2">
@@ -1043,7 +1027,7 @@ function Workspace(p: {
                   <h3 className="font-bold text-white">Live Positions</h3>
                   <p className="mt-1 text-xs text-zinc-500">Open MT5 trades tracked by auto sync.</p>
                 </div>
-                <span className="rounded-full border border-white/10 bg-white/[.03] px-2.5 py-1 text-[10px] font-bold uppercase text-zinc-400">
+                <span className="rounded-full border border-white/10 bg-[#050505] px-2.5 py-1 text-[10px] font-bold uppercase text-zinc-400">
                   {openPositions.length} open
                 </span>
               </div>
