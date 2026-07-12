@@ -1201,25 +1201,25 @@ function Workspace(p: {
 
           {/* Trades */}
           {!singleTabMode || activeTab === "trades" ? (
-          <TabsContent value="trades">
-            <div className="space-y-3">
-              <div className="grid gap-3 xl:grid-cols-[minmax(0,1fr)_300px]">
+          <TabsContent value="trades" className="space-y-2.5">
+            <div className="space-y-2.5">
+              <div className="grid gap-3 xl:grid-cols-[minmax(0,1fr)_280px]">
                 <section className="overflow-hidden rounded-[1rem] border border-white/8 bg-[#070707] shadow-[0_18px_46px_rgba(0,0,0,.2)]">
-                  <div className="space-y-3 border-b border-white/8 px-4 py-3.5">
+                  <div className="space-y-3 border-b border-white/8 px-4 py-3">
                     <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
                       <div>
                         <p className="text-[9px] font-medium uppercase tracking-[0.12em] text-zinc-600">
                           {account.name} <span className="mx-1 text-zinc-700">&gt;</span> Trades
                         </p>
-                        <h3 className="mt-1 text-[15px] font-black text-white">Trade Log</h3>
-                        <p className="text-xs text-zinc-500">Click any row to open the full review.</p>
+                        <h3 className="mt-1 text-[14px] font-black text-white">Trade Log</h3>
+                        <p className="text-[11px] text-zinc-500">Open any row to review, edit or inspect screenshots.</p>
                       </div>
-                      <div className="relative sm:ml-auto sm:w-72">
-                        <Search className="absolute left-3 top-2.5 text-zinc-500" size={15} />
-                        <Input value={p.query} onChange={e => p.onQuery(e.target.value)} className="pl-9 text-sm" placeholder="Search symbol or setup" />
+                      <div className="relative sm:ml-auto sm:w-64">
+                        <Search className="absolute left-3 top-2.5 text-zinc-500" size={14} />
+                        <Input value={p.query} onChange={e => p.onQuery(e.target.value)} className="h-9 pl-9 text-sm" placeholder="Search symbol or setup" />
                       </div>
                     </div>
-                    <div className="flex flex-col gap-2 lg:flex-row lg:items-end">
+                    <div className="flex flex-col gap-2.5 lg:flex-row lg:items-end">
                       <div className="w-full sm:w-56">
                         <span className="mb-1.5 block text-[10px] font-semibold uppercase tracking-widest text-zinc-500">Period</span>
                         <Select value={p.tradeRange} onValueChange={(value) => p.onRange(value as TradeRange)}>
@@ -1241,7 +1241,7 @@ function Workspace(p: {
                           <label className="text-[10px] font-semibold uppercase tracking-widest text-zinc-500">To<Input type="date" value={p.customEnd} onChange={event => p.onCustomEnd(event.target.value)} className="mt-1.5 text-sm" /></label>
                         </div>
                       ) : (
-                        <p className="pb-3 text-xs text-zinc-500 lg:ml-auto">
+                        <p className="pb-2 text-xs text-zinc-500 lg:ml-auto">
                           {p.tradeRange === "daily" ? "Today only" : p.tradeRange === "monthly" ? "Current month" : p.tradeRange === "quarter" ? "Last 3 months" : "Current year"}
                         </p>
                       )}
@@ -1267,8 +1267,8 @@ function Workspace(p: {
                   </div>
                   {sortedTrades.length ? (
                     <div className="overflow-x-auto">
-                      <div className="min-w-[920px] px-3 py-3">
-                        <div className="grid grid-cols-[48px_1.3fr_1fr_.9fr_1fr_1fr_.9fr] rounded-xl border border-white/8 bg-[#050505] px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.08em] text-zinc-500">
+                      <div className="min-w-[840px] px-3 py-3">
+                        <div className="grid grid-cols-[36px_1.4fr_.95fr_.85fr_.9fr_.8fr_.9fr] rounded-xl border border-white/8 bg-[#050505] px-3 py-2.5 text-[10px] font-semibold uppercase tracking-[0.08em] text-zinc-500">
                           <span />
                           <span>Trade date</span>
                           <span>Symbol</span>
@@ -1285,18 +1285,15 @@ function Workspace(p: {
                                 key={trade.id}
                                 type="button"
                                 onClick={() => openTrade(trade)}
-                                className="grid w-full grid-cols-[48px_1.3fr_1fr_.9fr_1fr_1fr_.9fr] items-center rounded-xl border border-white/8 bg-[#050505] px-4 py-3 text-left transition hover:border-white/15 hover:bg-[#0a0a0a]"
+                                className="grid w-full grid-cols-[36px_1.4fr_.95fr_.85fr_.9fr_.8fr_.9fr] items-center rounded-xl border border-white/8 bg-[#050505] px-3 py-2.5 text-left transition hover:border-white/15 hover:bg-[#0a0a0a]"
                               >
-                                <span className="grid size-5 place-items-center rounded-full border border-white/10" />
+                                <span className="grid size-4 place-items-center rounded-full border border-white/10" />
                                 <span>
                                   <span className="block text-sm font-semibold text-white">{new Date(`${trade.rawDate}T00:00:00`).toLocaleString("en-GB", { day: "2-digit", month: "2-digit", year: "numeric" })}</span>
                                   <span className="mt-1 block truncate text-[11px] text-zinc-600">{trade.note || "Open trade review"}</span>
                                 </span>
-                                <span className="flex items-center gap-2">
-                                  <InstrumentBadge symbol={trade.symbol} compact className="bg-[#121212]" showFullSymbol={false} />
-                                  <span className="font-bold text-white">{trade.symbol}</span>
-                                </span>
-                                <span className={`text-sm font-bold ${trade.side === "Long" ? "text-emerald-300" : "text-rose-300"}`}>{trade.side === "Long" ? "Buy ↑" : "Sell ↓"}</span>
+                                <span className="font-bold text-white">{trade.symbol}</span>
+                                <span className={`text-sm font-bold ${trade.side === "Long" ? "text-emerald-300" : "text-rose-300"}`}>{trade.side === "Long" ? "Buy" : "Sell"}</span>
                                 <span className="text-sm text-zinc-400">{trade.session || "-"}</span>
                                 <span className="font-mono text-sm text-zinc-300">{(trade.resultR || 0).toFixed(2)}R</span>
                                 <span className={`text-right font-mono text-base font-black ${winning ? "text-emerald-400" : "text-rose-400"}`}>{formatTradePnl(trade.pnl)}</span>
@@ -1310,9 +1307,9 @@ function Workspace(p: {
                 </section>
 
                 <section className="rounded-[1rem] border border-white/8 bg-[#070707] p-4 shadow-[0_18px_46px_rgba(0,0,0,.2)]">
-                  <h3 className="text-[15px] font-black text-white">Trade Snapshot</h3>
-                  <p className="mt-1 text-sm text-zinc-500">Quick read before you open the full review.</p>
-                  <div className="mt-4 space-y-3">
+                  <h3 className="text-[14px] font-black text-white">At a glance</h3>
+                  <p className="mt-1 text-[11px] text-zinc-500">Compact read of this trade range.</p>
+                  <div className="mt-4 space-y-2.5">
                     <MiniStat label="Trades" value={String(trades.length)} />
                     <MiniStat label="Winning" value={String(stats.wins)} />
                     <MiniStat label="Losing" value={String(stats.losses)} />
@@ -1404,24 +1401,24 @@ function Workspace(p: {
                 ["strategy", "Strategy"],
                 ["symbols", "Symbols"],
               ].map(([value, label]) => (
-                <button key={value} type="button" onClick={() => setAnalyticsView(value as "overview" | "strategy" | "symbols")} className={`rounded-xl px-3.5 py-2 text-sm font-semibold transition ${analyticsView === value ? "bg-white text-black" : "border border-white/8 bg-[#070707] text-zinc-400"}`}>
+                <button key={value} type="button" onClick={() => setAnalyticsView(value as "overview" | "strategy" | "symbols")} className={`rounded-xl px-3 py-1.5 text-xs font-semibold transition ${analyticsView === value ? "bg-white text-black" : "border border-white/8 bg-[#070707] text-zinc-400"}`}>
                   {label}
                 </button>
               ))}
-              <div className="ml-auto rounded-xl border border-white/8 bg-[#070707] px-3.5 py-2 text-sm font-semibold text-white">All time</div>
+              <div className="ml-auto rounded-xl border border-white/8 bg-[#070707] px-3 py-1.5 text-xs font-semibold text-white">All time</div>
             </div>
 
             {analyticsView === "overview" ? (
-              <div className="grid gap-4 xl:grid-cols-[minmax(0,1.05fr)_minmax(360px,.95fr)]">
+              <div className="grid gap-3 xl:grid-cols-[minmax(0,1.05fr)_minmax(340px,.95fr)]">
                 <section className="overflow-hidden rounded-[1rem] border border-white/8 bg-[#070707] shadow-[0_18px_46px_rgba(0,0,0,.2)]">
-                  <div className="border-b border-white/8 px-4 py-3.5">
+                  <div className="border-b border-white/8 px-4 py-3">
                     <p className="text-[9px] font-medium uppercase tracking-[0.12em] text-zinc-600">
                       {account.name} <span className="mx-1 text-zinc-700">&gt;</span> Analytics
                     </p>
-                    <h3 className="text-[15px] font-black text-white">Account Balance</h3>
+                    <h3 className="text-[14px] font-black text-white">Account Balance</h3>
                     <p className="mt-1 text-xs text-zinc-500">{month.toLocaleDateString("en-US", { month: "short", day: "numeric" })} - {new Date().toLocaleDateString("en-US", { month: "short", day: "numeric" })}</p>
                   </div>
-                  <div className="h-[330px] p-4">
+                  <div className="h-[300px] p-4">
                     {equity.length > 1 ? (
                       <ResponsiveContainer width="100%" height="100%">
                         <AreaChart data={equity} margin={{ left: 8, right: 8, top: 16, bottom: 4 }}>
@@ -1443,15 +1440,15 @@ function Workspace(p: {
                 </section>
 
                 <section className="overflow-hidden rounded-[1rem] border border-white/8 bg-[#070707] shadow-[0_18px_46px_rgba(0,0,0,.2)]">
-                  <div className="flex items-center justify-between border-b border-white/8 px-4 py-3.5">
+                  <div className="flex items-center justify-between border-b border-white/8 px-4 py-3">
                     <div>
-                      <h3 className="text-[15px] font-black text-white">TradeWay Profitability Score</h3>
-                      <p className="mt-1 text-xs text-zinc-500">{trades.length < 5 ? "Early read, score becomes sharper after 5+ trades." : "Live score based on execution quality."}</p>
+                      <h3 className="text-[14px] font-black text-white">TradeWay Profitability Score</h3>
+                      <p className="mt-1 text-[11px] text-zinc-500">{trades.length < 5 ? "Early read, score becomes sharper after 5+ trades." : "Live score based on execution quality."}</p>
                     </div>
-                    <span className="rounded-full border border-white/8 bg-[#050505] px-3 py-1 text-xs font-black text-white">{profitabilityScore}</span>
+                    <span className="rounded-full border border-white/8 bg-[#050505] px-2.5 py-1 text-[11px] font-black text-white">{profitabilityScore}</span>
                   </div>
-                  <div className="grid gap-4 p-4 sm:grid-cols-[1fr_96px]">
-                    <div className="h-[260px]">
+                  <div className="grid gap-3 p-4 sm:grid-cols-[1fr_84px]">
+                    <div className="h-[236px]">
                       <ResponsiveContainer width="100%" height="100%">
                         <RadarChart data={scoreRadar}>
                           <PolarGrid stroke="rgba(255,255,255,.12)" />
@@ -1461,8 +1458,8 @@ function Workspace(p: {
                         </RadarChart>
                       </ResponsiveContainer>
                     </div>
-                    <div className="flex flex-col justify-between rounded-2xl border border-white/8 bg-[#050505] px-4 py-3">
-                      <p className="text-xs font-bold uppercase tracking-[0.12em] text-zinc-500">Score</p>
+                    <div className="flex flex-col justify-between rounded-2xl border border-white/8 bg-[#050505] px-3 py-3">
+                      <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-zinc-500">Score</p>
                       <p className="text-3xl font-black text-white">{profitabilityScore}</p>
                       <div className="h-full min-h-28 rounded-full bg-white/5 p-2">
                         <div className="h-full w-full rounded-full bg-gradient-to-b from-emerald-400 to-emerald-600" style={{ clipPath: `inset(${100 - profitabilityScore}% 0 0 0 round 999px)` }} />
@@ -1471,7 +1468,7 @@ function Workspace(p: {
                   </div>
                 </section>
 
-                <div className="grid gap-4 sm:grid-cols-2 xl:col-span-2 xl:grid-cols-4">
+                <div className="grid gap-3 sm:grid-cols-2 xl:col-span-2 xl:grid-cols-4">
                   <MetricPanel title="Average Win" value={averageWin ? formatTradePnl(averageWin) : "-"} note={bestTrade ? `Best ${bestTrade.symbol}` : "No winning trade"} accent="good" />
                   <MetricPanel title="Average Loss" value={averageLoss ? formatTradePnl(averageLoss) : "-"} note={worstTrade ? `Worst ${worstTrade.symbol}` : "No losing trade"} accent="bad" />
                   <MetricPanel title="Best Trade" value={bestTrade ? formatTradePnl(bestTrade.pnl) : "-"} note={bestTrade?.symbol || "No data"} accent={bestTrade && bestTrade.pnl >= 0 ? "good" : "neutral"} />
@@ -1481,9 +1478,9 @@ function Workspace(p: {
             ) : null}
 
             {analyticsView === "strategy" ? (
-              <div className="grid gap-4 xl:grid-cols-2">
+              <div className="grid gap-3 xl:grid-cols-2">
                 <section className="rounded-[1rem] border border-white/8 bg-[#070707] p-4">
-                  <h3 className="text-[15px] font-black text-white">Setup Performance</h3>
+                  <h3 className="text-[14px] font-black text-white">Setup Performance</h3>
                   <div className="mt-4 space-y-4">
                     {setups.length ? setups.map((setup) => (
                       <div key={setup.name}>
@@ -1499,7 +1496,7 @@ function Workspace(p: {
                   </div>
                 </section>
                 <section className="rounded-[1rem] border border-white/8 bg-[#070707] p-4">
-                  <h3 className="text-[15px] font-black text-white">Discipline & Mistakes</h3>
+                  <h3 className="text-[14px] font-black text-white">Discipline & Mistakes</h3>
                   <div className="mt-4">
                     <ProgressBar label={`${monthCount} trades reviewed`} value={planRate} color="bg-emerald-500" />
                   </div>
@@ -1525,9 +1522,9 @@ function Workspace(p: {
             ) : null}
 
             {analyticsView === "symbols" ? (
-              <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_340px]">
+              <div className="grid gap-3 xl:grid-cols-[minmax(0,1fr)_320px]">
                 <section className="rounded-[1rem] border border-white/8 bg-[#070707] p-4">
-                  <h3 className="text-[15px] font-black text-white">Most Traded Symbols</h3>
+                  <h3 className="text-[14px] font-black text-white">Most Traded Symbols</h3>
                   <div className="mt-4 space-y-2">
                     {symbolStats.length ? symbolStats.map((symbol) => (
                       <div key={symbol.symbol} className="flex items-center justify-between rounded-2xl border border-white/8 bg-[#050505] px-3 py-3">
@@ -1544,7 +1541,7 @@ function Workspace(p: {
                   </div>
                 </section>
                 <section className="rounded-[1rem] border border-white/8 bg-[#070707] p-4">
-                  <h3 className="text-[15px] font-black text-white">Account Details</h3>
+                  <h3 className="text-[14px] font-black text-white">Account Details</h3>
                   <div className="mt-4 grid grid-cols-2 gap-2.5">
                     {[
                       ["FIRM", account.firm || "Independent"],
@@ -1982,10 +1979,10 @@ function BalanceMetric({ label, value, tone = "neutral" }: { label: string; valu
 function MetricPanel({ title, value, note, accent = "neutral" }: { title: string; value: string; note: string; accent?: "neutral" | "good" | "bad" }) {
   const color = accent === "good" ? "text-emerald-400" : accent === "bad" ? "text-rose-400" : "text-white";
   return (
-    <section className="rounded-[1rem] border border-white/8 bg-[#070707] p-4">
+    <section className="rounded-[1rem] border border-white/8 bg-[#070707] p-3.5">
       <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-zinc-500">{title}</p>
-      <p className={`mt-2 font-mono text-[1.7rem] font-black tracking-tight ${color}`}>{value}</p>
-      <p className="mt-1.5 text-xs text-zinc-500">{note}</p>
+      <p className={`mt-2 font-mono text-[1.55rem] font-black tracking-tight ${color}`}>{value}</p>
+      <p className="mt-1 text-[11px] text-zinc-500">{note}</p>
     </section>
   );
 }
@@ -2003,7 +2000,7 @@ function QuickMetric({ label, value, note, tone = "neutral" }: { label: string; 
 
 function MiniStat({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-xl border border-white/8 bg-[#050505] p-3 text-center">
+    <div className="rounded-xl border border-white/8 bg-[#050505] px-3 py-2.5 text-center">
       <small className="text-[9px] font-semibold uppercase tracking-wider text-[#8a8a8a]">{label}</small>
       <b className="mt-1 block truncate font-mono text-sm">{value}</b>
     </div>

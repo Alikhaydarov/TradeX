@@ -40,7 +40,7 @@ export function WorkspaceTopbar({ section }: { section: Section }) {
   const pnlLabel = pnlMode === "percentage" ? "Percentage View" : pnlMode === "hidden" ? "Hide P&L" : "Money View";
 
   return (
-    <div role="banner" className="tw-app-topbar sticky top-0 z-[60] shrink-0 border-b border-white/8 bg-black px-4 py-3 lg:static lg:flex lg:h-[46px] lg:items-center lg:justify-between lg:px-4 lg:py-0">
+    <div role="banner" className="tw-app-topbar sticky top-0 z-[60] shrink-0 border-b border-white/8 bg-black px-4 py-3 lg:static lg:flex lg:h-[42px] lg:items-center lg:justify-between lg:px-4 lg:py-0">
       <div className="flex items-center justify-between gap-3 lg:hidden">
         <button
           type="button"
@@ -75,7 +75,7 @@ export function WorkspaceTopbar({ section }: { section: Section }) {
       </div>
 
       <div className="hidden items-center justify-between gap-3 lg:flex lg:w-full">
-        <div className="min-w-0 items-center gap-1 text-[9px] font-medium uppercase tracking-[0.08em] text-zinc-600 lg:flex">
+        <div className="min-w-0 items-center gap-1 text-[8px] font-medium uppercase tracking-[0.06em] text-zinc-600 lg:flex">
           {isAccountScoped ? (
             <>
               <span className="truncate text-zinc-500">{workspace}</span>
