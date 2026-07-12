@@ -1090,7 +1090,7 @@ function Workspace(p: {
           {/* Calendar */}
           {!singleTabMode || activeTab === "calendar" ? (
           <TabsContent value="calendar">
-            <div className="space-y-4">
+            <div className="space-y-3">
               <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
                 {[
                   { label: "Total trades", value: String(monthCount), note: `${calendar.filter((day) => day?.trades.length).length} active days` },
@@ -1098,7 +1098,7 @@ function Workspace(p: {
                   { label: "Most traded setup", value: setups[0]?.name || "No setup yet", note: setups[0] ? `${setups[0].trades} trades` : "Add reviewed trades" },
                   { label: "Plan alignment", value: `${planRate}%`, note: "Rules followed this month" },
                 ].map((item) => (
-                  <div key={item.label} className="rounded-[1rem] border border-white/8 bg-[#17181b] p-4">
+                  <div key={item.label} className="rounded-[1rem] border border-white/8 bg-[#070707] p-4">
                     <p className="text-[11px] uppercase tracking-wider text-zinc-500">{item.label}</p>
                     <p className="mt-1 truncate text-xl font-black text-white">{item.value}</p>
                     <p className="mt-1 text-xs text-zinc-500">{item.note}</p>
@@ -1106,13 +1106,16 @@ function Workspace(p: {
                 ))}
               </div>
 
-              <div className="overflow-hidden rounded-[1rem] border border-white/8 bg-[#090909]">
+              <div className="overflow-hidden rounded-[1rem] border border-white/8 bg-[#070707]">
                 <div className="flex flex-col gap-3 border-b border-white/8 px-3 py-3 sm:px-4 sm:py-3.5 lg:flex-row lg:items-center">
                   <div>
+                    <p className="text-[9px] font-medium uppercase tracking-[0.12em] text-zinc-600">
+                      {account.name} <span className="mx-1 text-zinc-700">&gt;</span> Calendar
+                    </p>
                     <h3 className="text-[15px] font-black capitalize text-white">{month.toLocaleDateString("en-US", { month: "long", year: "numeric" })} performance</h3>
                     <p className="text-xs text-[#8a8a8a]">Open any day to review the exact trades behind that result.</p>
                   </div>
-                  <div className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-1 rounded-[0.95rem] border border-white/8 bg-[#141518] p-1 sm:flex sm:gap-2 lg:ml-auto">
+                  <div className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-1 rounded-[0.95rem] border border-white/8 bg-[#050505] p-1 sm:flex sm:gap-2 lg:ml-auto">
                     <Button variant="ghost" size="icon-sm" onClick={p.onPrev}><ChevronLeft size={16} /></Button>
                     <strong className="min-w-0 text-center text-xs capitalize sm:min-w-32 sm:text-sm">{month.toLocaleDateString("en-US", { month: "short", year: "numeric" })}</strong>
                     <Button variant="ghost" size="icon-sm" onClick={p.onNext}><ChevronRight size={16} /></Button>
@@ -1125,14 +1128,14 @@ function Workspace(p: {
                       <div key={d} className="py-2 text-center text-[11px] font-semibold uppercase tracking-wider text-[#8a8a8a]">{d}</div>
                     ))}
                   </div>
-                  <div className="grid grid-cols-7 content-start gap-1.5 [grid-auto-rows:108px]">
+                  <div className="grid grid-cols-7 content-start gap-1.5 [grid-auto-rows:104px]">
                     {calendar.map((c, i) =>
                       c ? (
                         <button
                           key={`${monthId(month)}-desktop-${i}`}
                           type="button"
                           onClick={() => (c.trades.length ? setSelectedDay(c) : null)}
-                          className={`h-full w-full rounded-[1rem] border p-2.5 text-left transition ${c.trades.length ? c.pnl >= 0 ? "border-emerald-500/18 bg-emerald-500/[.07] hover:bg-emerald-500/[.1]" : "border-rose-500/18 bg-rose-500/[.07] hover:bg-rose-500/[.1]" : "border-white/6 bg-[#141518]"} ${c.trades.length ? "cursor-pointer" : "cursor-default"}`}
+                          className={`h-full w-full rounded-[1rem] border p-2.5 text-left transition ${c.trades.length ? c.pnl >= 0 ? "border-emerald-500/14 bg-emerald-500/[.05] hover:bg-emerald-500/[.08]" : "border-rose-500/14 bg-rose-500/[.05] hover:bg-rose-500/[.08]" : "border-white/6 bg-[#050505]"} ${c.trades.length ? "cursor-pointer" : "cursor-default"}`}
                         >
                           <div className="flex items-start justify-between">
                             <span className={`grid size-6 place-items-center rounded-md text-[11px] font-bold ${c.trades.length ? "bg-black/18 text-[#f1f1f1]" : "text-[#8a8a8a]"}`}>{c.day}</span>
@@ -1394,24 +1397,27 @@ function Workspace(p: {
 
           {/* Analytics */}
           {!singleTabMode || activeTab === "analytics" ? (
-          <TabsContent value="analytics" className="space-y-4">
+          <TabsContent value="analytics" className="space-y-3">
             <div className="flex flex-wrap items-center gap-2">
               {[
                 ["overview", "Overview"],
                 ["strategy", "Strategy"],
                 ["symbols", "Symbols"],
               ].map(([value, label]) => (
-                <button key={value} type="button" onClick={() => setAnalyticsView(value as "overview" | "strategy" | "symbols")} className={`rounded-xl px-4 py-2 text-sm font-semibold transition ${analyticsView === value ? "bg-white text-black" : "border border-white/8 bg-[#090909] text-zinc-400"}`}>
+                <button key={value} type="button" onClick={() => setAnalyticsView(value as "overview" | "strategy" | "symbols")} className={`rounded-xl px-3.5 py-2 text-sm font-semibold transition ${analyticsView === value ? "bg-white text-black" : "border border-white/8 bg-[#070707] text-zinc-400"}`}>
                   {label}
                 </button>
               ))}
-              <div className="ml-auto rounded-xl border border-white/8 bg-[#090909] px-4 py-2 text-sm font-semibold text-white">All time</div>
+              <div className="ml-auto rounded-xl border border-white/8 bg-[#070707] px-3.5 py-2 text-sm font-semibold text-white">All time</div>
             </div>
 
             {analyticsView === "overview" ? (
               <div className="grid gap-4 xl:grid-cols-[minmax(0,1.05fr)_minmax(360px,.95fr)]">
-                <section className="overflow-hidden rounded-[1rem] border border-white/8 bg-[#090909] shadow-[0_18px_46px_rgba(0,0,0,.2)]">
+                <section className="overflow-hidden rounded-[1rem] border border-white/8 bg-[#070707] shadow-[0_18px_46px_rgba(0,0,0,.2)]">
                   <div className="border-b border-white/8 px-4 py-3.5">
+                    <p className="text-[9px] font-medium uppercase tracking-[0.12em] text-zinc-600">
+                      {account.name} <span className="mx-1 text-zinc-700">&gt;</span> Analytics
+                    </p>
                     <h3 className="text-[15px] font-black text-white">Account Balance</h3>
                     <p className="mt-1 text-xs text-zinc-500">{month.toLocaleDateString("en-US", { month: "short", day: "numeric" })} - {new Date().toLocaleDateString("en-US", { month: "short", day: "numeric" })}</p>
                   </div>
@@ -1436,13 +1442,13 @@ function Workspace(p: {
                   </div>
                 </section>
 
-                <section className="overflow-hidden rounded-[1rem] border border-white/8 bg-[#090909] shadow-[0_18px_46px_rgba(0,0,0,.2)]">
+                <section className="overflow-hidden rounded-[1rem] border border-white/8 bg-[#070707] shadow-[0_18px_46px_rgba(0,0,0,.2)]">
                   <div className="flex items-center justify-between border-b border-white/8 px-4 py-3.5">
                     <div>
                       <h3 className="text-[15px] font-black text-white">TradeWay Profitability Score</h3>
                       <p className="mt-1 text-xs text-zinc-500">{trades.length < 5 ? "Early read, score becomes sharper after 5+ trades." : "Live score based on execution quality."}</p>
                     </div>
-                    <span className="rounded-full border border-white/8 bg-black/20 px-3 py-1 text-xs font-black text-white">{profitabilityScore}</span>
+                    <span className="rounded-full border border-white/8 bg-[#050505] px-3 py-1 text-xs font-black text-white">{profitabilityScore}</span>
                   </div>
                   <div className="grid gap-4 p-4 sm:grid-cols-[1fr_96px]">
                     <div className="h-[260px]">
@@ -1455,9 +1461,9 @@ function Workspace(p: {
                         </RadarChart>
                       </ResponsiveContainer>
                     </div>
-                    <div className="flex flex-col justify-between rounded-2xl border border-white/8 bg-black/15 px-4 py-3">
-                      <p className="text-sm font-bold text-white">Score</p>
-                      <p className="text-4xl font-black text-white">{profitabilityScore}</p>
+                    <div className="flex flex-col justify-between rounded-2xl border border-white/8 bg-[#050505] px-4 py-3">
+                      <p className="text-xs font-bold uppercase tracking-[0.12em] text-zinc-500">Score</p>
+                      <p className="text-3xl font-black text-white">{profitabilityScore}</p>
                       <div className="h-full min-h-28 rounded-full bg-white/5 p-2">
                         <div className="h-full w-full rounded-full bg-gradient-to-b from-emerald-400 to-emerald-600" style={{ clipPath: `inset(${100 - profitabilityScore}% 0 0 0 round 999px)` }} />
                       </div>
@@ -1476,7 +1482,7 @@ function Workspace(p: {
 
             {analyticsView === "strategy" ? (
               <div className="grid gap-4 xl:grid-cols-2">
-                <section className="rounded-[1rem] border border-white/8 bg-[#090909] p-4">
+                <section className="rounded-[1rem] border border-white/8 bg-[#070707] p-4">
                   <h3 className="text-[15px] font-black text-white">Setup Performance</h3>
                   <div className="mt-4 space-y-4">
                     {setups.length ? setups.map((setup) => (
@@ -1492,7 +1498,7 @@ function Workspace(p: {
                     )) : <Empty text="No setup analytics yet." />}
                   </div>
                 </section>
-                <section className="rounded-[1rem] border border-white/8 bg-[#090909] p-4">
+                <section className="rounded-[1rem] border border-white/8 bg-[#070707] p-4">
                   <h3 className="text-[15px] font-black text-white">Discipline & Mistakes</h3>
                   <div className="mt-4">
                     <ProgressBar label={`${monthCount} trades reviewed`} value={planRate} color="bg-emerald-500" />
@@ -1503,7 +1509,7 @@ function Workspace(p: {
                   </div>
                   <div className="mt-4 space-y-3">
                     {mistakes.length ? mistakes.map((mistake) => (
-                      <div key={mistake.name} className="flex items-center justify-between rounded-xl bg-black/15 px-4 py-3">
+                      <div key={mistake.name} className="flex items-center justify-between rounded-xl border border-white/8 bg-[#050505] px-4 py-3">
                         <div>
                           <p className="text-sm font-medium text-white">{mistake.name}</p>
                           <p className="text-[11px] text-zinc-500">{mistake.trades} repeats</p>
@@ -1520,11 +1526,11 @@ function Workspace(p: {
 
             {analyticsView === "symbols" ? (
               <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_340px]">
-                <section className="rounded-[1rem] border border-white/8 bg-[#090909] p-4">
+                <section className="rounded-[1rem] border border-white/8 bg-[#070707] p-4">
                   <h3 className="text-[15px] font-black text-white">Most Traded Symbols</h3>
                   <div className="mt-4 space-y-2">
                     {symbolStats.length ? symbolStats.map((symbol) => (
-                      <div key={symbol.symbol} className="flex items-center justify-between rounded-2xl border border-white/8 bg-black/15 px-3 py-3">
+                      <div key={symbol.symbol} className="flex items-center justify-between rounded-2xl border border-white/8 bg-[#050505] px-3 py-3">
                         <div className="flex items-center gap-2">
                           <InstrumentBadge symbol={symbol.symbol} compact className="bg-[#121212]" showFullSymbol={false} />
                           <div>
@@ -1537,7 +1543,7 @@ function Workspace(p: {
                     )) : <Empty text="No symbol data yet." />}
                   </div>
                 </section>
-                <section className="rounded-[1rem] border border-white/8 bg-[#090909] p-4">
+                <section className="rounded-[1rem] border border-white/8 bg-[#070707] p-4">
                   <h3 className="text-[15px] font-black text-white">Account Details</h3>
                   <div className="mt-4 grid grid-cols-2 gap-2.5">
                     {[
@@ -1976,10 +1982,10 @@ function BalanceMetric({ label, value, tone = "neutral" }: { label: string; valu
 function MetricPanel({ title, value, note, accent = "neutral" }: { title: string; value: string; note: string; accent?: "neutral" | "good" | "bad" }) {
   const color = accent === "good" ? "text-emerald-400" : accent === "bad" ? "text-rose-400" : "text-white";
   return (
-    <section className="rounded-[1.2rem] border border-white/8 bg-[#090909] p-4">
-      <p className="text-sm font-bold text-zinc-400">{title}</p>
-      <p className={`mt-3 font-mono text-[2rem] font-black tracking-tight ${color}`}>{value}</p>
-      <p className="mt-2 text-sm text-zinc-500">{note}</p>
+    <section className="rounded-[1rem] border border-white/8 bg-[#070707] p-4">
+      <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-zinc-500">{title}</p>
+      <p className={`mt-2 font-mono text-[1.7rem] font-black tracking-tight ${color}`}>{value}</p>
+      <p className="mt-1.5 text-xs text-zinc-500">{note}</p>
     </section>
   );
 }
@@ -1998,8 +2004,8 @@ function QuickMetric({ label, value, note, tone = "neutral" }: { label: string; 
 function MiniStat({ label, value }: { label: string; value: string }) {
   return (
     <div className="rounded-xl border border-white/8 bg-[#050505] p-3 text-center">
-      <b className="block truncate font-mono text-sm">{value}</b>
       <small className="text-[9px] font-semibold uppercase tracking-wider text-[#8a8a8a]">{label}</small>
+      <b className="mt-1 block truncate font-mono text-sm">{value}</b>
     </div>
   );
 }
