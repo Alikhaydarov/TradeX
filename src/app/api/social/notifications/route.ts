@@ -9,6 +9,8 @@ interface NotificationRow {
   is_read: boolean;
   created_at: string;
   actor_id: string | null;
+  entity_id?: string | null;
+  entity_type?: string | null;
 }
 
 interface ActorProfileRow {
@@ -43,7 +45,7 @@ export async function GET(request: Request) {
 
   const { data, error } = await auth.supabase
     .from("notifications")
-    .select("id, type, message, is_read, created_at, actor_id")
+    .select("id, type, message, is_read, created_at, actor_id, entity_id, entity_type")
     .eq("user_id", auth.user.id)
     .order("created_at", { ascending: false })
     .limit(50);
@@ -68,6 +70,8 @@ export async function GET(request: Request) {
         message: item.message,
         isRead: item.is_read,
         createdAt: item.created_at,
+        entityId: item.entity_id ?? null,
+        entityType: item.entity_type ?? null,
         actor: actor ? {
           id: actor.id,
           username: actor.username,

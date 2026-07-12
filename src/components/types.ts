@@ -13,6 +13,7 @@ export type Section =
 export interface Post {
   id: string;
   userId?: string;
+  timelineType?: "post" | "reply" | "repost";
   name: string;
   handle: string;
   avatar: string;
@@ -38,6 +39,10 @@ export interface Post {
   bookmarked?: boolean;
   reposted?: boolean;
   isVerified?: boolean;
+  parentPostId?: string | null;
+  parentPostAuthor?: string | null;
+  parentPostHandle?: string | null;
+  parentPostText?: string | null;
 }
 
 export interface PostReply {

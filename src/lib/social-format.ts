@@ -3,6 +3,7 @@ import type { Post } from "@/components/types";
 export interface SocialPostRecord {
   id: string;
   user_id: string;
+  timeline_type?: "post" | "reply" | "repost" | null;
   content: string;
   author_name: string;
   author_handle: string;
@@ -21,6 +22,10 @@ export interface SocialPostRecord {
   reposts_count: number;
   views_count?: number | null;
   created_at: string;
+  parent_post_id?: string | null;
+  parent_post_author?: string | null;
+  parent_post_handle?: string | null;
+  parent_post_text?: string | null;
 }
 
 export function formatCount(value: number) {
@@ -63,6 +68,7 @@ export function toSocialPost(record: SocialPostRecord, state?: { liked?: boolean
   return {
     id: record.id,
     userId: record.user_id,
+    timelineType: record.timeline_type ?? "post",
     name: record.author_name,
     handle: record.author_handle.startsWith("@") ? record.author_handle : `@${record.author_handle}`,
     avatar: record.author_avatar || record.author_name.slice(0, 2).toUpperCase(),
@@ -88,5 +94,11 @@ export function toSocialPost(record: SocialPostRecord, state?: { liked?: boolean
     bookmarked: state?.bookmarked,
     reposted: state?.reposted,
     isVerified: Boolean(record.author_is_verified),
+    parentPostId: record.parent_post_id ?? null,
+    parentPostAuthor: record.parent_post_author ?? null,
+    parentPostHandle: record.parent_post_handle
+      ? (record.parent_post_handle.startsWith("@") ? record.parent_post_handle : `@${record.parent_post_handle}`)
+      : null,
+    parentPostText: record.parent_post_text ?? null,
   };
 }

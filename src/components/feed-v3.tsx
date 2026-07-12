@@ -210,6 +210,16 @@ export function FeedV3({ onLogin }: { onLogin: () => void }) {
   }, [user]);
 
   useEffect(() => {
+    if (!posts.length) return;
+    const postId = window.location.hash.startsWith("#post-") ? window.location.hash.slice(6) : "";
+    if (!postId) return;
+    const timer = window.setTimeout(() => {
+      document.getElementById(`post-${postId}`)?.scrollIntoView({ behavior: "smooth", block: "center" });
+    }, 120);
+    return () => window.clearTimeout(timer);
+  }, [posts]);
+
+  useEffect(() => {
     const handler = () => openTradePicker();
     window.addEventListener("tradeway:share-trade", handler);
     return () => window.removeEventListener("tradeway:share-trade", handler);
@@ -554,7 +564,7 @@ export function FeedV3({ onLogin }: { onLogin: () => void }) {
                         ) : (
                           <div className="space-y-3">
                             {(repliesByPost[post.id] ?? []).map((reply) => (
-                              <div key={reply.id} className="flex gap-2.5 rounded-[1rem] bg-black/12 p-3">
+                              <div key={reply.id} className="flex gap-2.5 rounded-[1rem] border border-white/8 bg-black p-3">
                                 <TraderAvatar name={reply.name} value={reply.avatar} className="h-8 w-8 shrink-0 text-[10px]" />
                                 <div className="min-w-0 flex-1">
                                   <div className="flex items-center gap-1.5">
@@ -569,7 +579,7 @@ export function FeedV3({ onLogin }: { onLogin: () => void }) {
                           </div>
                         )}
 
-                        <div className="mt-3 flex items-end gap-2 rounded-[1rem] border border-white/8 bg-black/10 p-2 focus-within:border-white/20">
+                        <div className="mt-3 flex items-end gap-2 rounded-[1rem] border border-white/8 bg-black p-2 focus-within:border-white/20">
                           <Textarea
                             value={replyDrafts[post.id] ?? ""}
                             onChange={(event) => setReplyDrafts((current) => ({ ...current, [post.id]: event.target.value }))}

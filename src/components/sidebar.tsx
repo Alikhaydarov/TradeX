@@ -259,7 +259,7 @@ export function Sidebar({
 
   return (
     <>
-      <aside className="fixed left-[max(1rem,calc((100vw-1860px)/2+1rem))] top-4 z-40 hidden h-[calc(100dvh-2rem)] w-[200px] shrink-0 flex-col rounded-[1rem] border border-white/8 bg-[#000000] p-3 shadow-[inset_0_1px_0_rgba(255,255,255,.03)] lg:flex">
+      <aside className="fixed left-[max(1rem,calc((100vw-1860px)/2+1rem))] top-4 z-40 hidden h-[calc(100dvh-2rem)] w-[214px] shrink-0 flex-col rounded-[1rem] border border-white/8 bg-[#000000] p-3 shadow-[inset_0_1px_0_rgba(255,255,255,.03)] lg:flex">
         <button onClick={() => onChange("feed")} className="flex items-center gap-3 rounded-2xl px-2 py-1 text-left transition-colors hover:bg-[#080808]" aria-label="TradeWay home">
           <span className="grid h-9 w-9 place-items-center rounded-xl bg-[linear-gradient(180deg,rgba(255,255,255,1),rgba(232,232,236,1))] text-sm font-black text-black shadow-[0_10px_24px_rgba(255,255,255,.06)]">TW</span>
           <span className="min-w-0">

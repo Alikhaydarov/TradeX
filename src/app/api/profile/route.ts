@@ -49,6 +49,26 @@ function hydrateAuthors<T extends { id: string; user_id: string; author_avatar?:
   });
 }
 
+interface ReplyRow {
+  id: string;
+  post_id: string;
+  user_id: string;
+  content: string;
+  created_at: string;
+}
+
+interface RepostRow {
+  post_id: string;
+  created_at: string;
+}
+
+interface ParentPostRow {
+  id: string;
+  user_id: string;
+  author_avatar?: string | null;
+  [key: string]: unknown;
+}
+
 /** Fetches the caller's bookmarked posts directly, not limited to whatever happens to be in the capped global feed. */
 async function getBookmarkedPosts(auth: AuthClient) {
   const { data: bookmarks, error: bookmarksError } = await auth.supabase
@@ -87,6 +107,67 @@ async function getBookmarkedPosts(auth: AuthClient) {
   );
 }
 
+function buildTimeline(
+  profile: AuthorRow,
+  posts: Record<string, unknown>[],
+  replies: ReplyRow[],
+  reposts: RepostRow[],
+  parentPosts: Record<string, unknown>[],
+) {
+  const timeline = [...posts];
+  const parentMap = new Map(parentPosts.map((post) => [String(post.id), post]));
+
+  for (const reply of replies) {
+    const parent = parentMap.get(reply.post_id);
+    timeline.push({
+      id: reply.id,
+      user_id: reply.user_id,
+      timeline_type: "reply",
+      content: reply.content,
+      author_name: profile.full_name,
+      author_handle: profile.username,
+      author_avatar: profile.avatar_url,
+      author_is_verified: premiumVerified(profile),
+      image_url: null,
+      symbol: parent?.symbol ?? null,
+      side: parent?.side ?? null,
+      entry_price: null,
+      target_price: null,
+      trade_result: null,
+      pnl: null,
+      result_r: null,
+      likes_count: 0,
+      replies_count: 0,
+      reposts_count: 0,
+      views_count: 0,
+      created_at: reply.created_at,
+      parent_post_id: reply.post_id,
+      parent_post_author: typeof parent?.author_name === "string" ? parent.author_name : null,
+      parent_post_handle: typeof parent?.author_handle === "string" ? parent.author_handle : null,
+      parent_post_text: typeof parent?.content === "string" ? parent.content : null,
+    });
+  }
+
+  for (const repost of reposts) {
+    const parent = parentMap.get(repost.post_id);
+    if (!parent) continue;
+    timeline.push({
+      ...parent,
+      id: `${repost.post_id}:repost:${repost.created_at}`,
+      timeline_type: "repost",
+      created_at: repost.created_at,
+      parent_post_id: repost.post_id,
+      parent_post_author: typeof parent.author_name === "string" ? parent.author_name : null,
+      parent_post_handle: typeof parent.author_handle === "string" ? parent.author_handle : null,
+      parent_post_text: typeof parent.content === "string" ? parent.content : null,
+    });
+  }
+
+  return timeline.sort(
+    (a, b) => new Date(String(b.created_at)).getTime() - new Date(String(a.created_at)).getTime(),
+  );
+}
+
 export async function GET(request: Request) {
   const auth = await authenticateRequest(request);
   if (!auth) return unauthorized();
@@ -100,7 +181,7 @@ export async function GET(request: Request) {
   if (error) return serverError(error.message);
 
   try {
-    const [counts, postsResult, bookmarkedPosts, insights] = await Promise.all([
+    const [counts, postsResult, repliesResult, repostsResult, bookmarkedPosts, insights] = await Promise.all([
       getFollowCounts(auth, auth.user.id),
       auth.supabase
         .from("posts")
@@ -112,19 +193,78 @@ export async function GET(request: Request) {
         .not("trade_result", "is", null)
         .order("created_at", { ascending: false })
         .limit(50),
+      auth.supabase
+        .from("post_replies")
+        .select("id, post_id, user_id, content, created_at")
+        .eq("user_id", auth.user.id)
+        .order("created_at", { ascending: false })
+        .limit(50)
+        .returns<ReplyRow[]>(),
+      auth.supabase
+        .from("post_reposts")
+        .select("post_id, created_at")
+        .eq("user_id", auth.user.id)
+        .order("created_at", { ascending: false })
+        .limit(50)
+        .returns<RepostRow[]>(),
       getBookmarkedPosts(auth),
       getProfileInsights(auth.supabase, auth.user.id),
     ]);
 
     if (postsResult.error) return serverError(postsResult.error.message);
+    if (repliesResult.error) return serverError(repliesResult.error.message);
+    if (repostsResult.error) return serverError(repostsResult.error.message);
 
-    const hydratedPosts = hydrateAuthors(postsResult.data ?? [], [
-      { id: data.id, full_name: data.full_name, username: data.username, avatar_url: data.avatar_url, is_verified: data.is_verified, plan: data.plan, premium_until: data.premium_until },
-    ]);
+    const profileAuthor = {
+      id: data.id,
+      full_name: data.full_name,
+      username: data.username,
+      avatar_url: data.avatar_url,
+      is_verified: data.is_verified,
+      plan: data.plan,
+      premium_until: data.premium_until,
+    } satisfies AuthorRow;
+
+    const basePosts = hydrateAuthors(postsResult.data ?? [], [profileAuthor]);
+    const parentPostIds = Array.from(new Set([
+      ...(repliesResult.data ?? []).map((reply) => reply.post_id),
+      ...(repostsResult.data ?? []).map((repost) => repost.post_id),
+    ]));
+
+    let parentPosts: Record<string, unknown>[] = [];
+    if (parentPostIds.length) {
+      const { data: rawParentPosts, error: parentPostsError } = await auth.supabase
+        .from("posts")
+        .select("*")
+        .in("id", parentPostIds)
+        .returns<ParentPostRow[]>();
+      if (parentPostsError) return serverError(parentPostsError.message);
+
+      const parentAuthorIds = Array.from(
+        new Set((rawParentPosts ?? []).map((post) => String(post.user_id)).filter(Boolean)),
+      );
+      const { data: parentAuthors, error: parentAuthorsError } = parentAuthorIds.length
+        ? await auth.supabase
+            .from("profiles")
+            .select("id, full_name, username, avatar_url, is_verified, plan, premium_until")
+            .in("id", parentAuthorIds)
+            .returns<AuthorRow[]>()
+        : { data: [] as AuthorRow[], error: null };
+      if (parentAuthorsError) return serverError(parentAuthorsError.message);
+      parentPosts = hydrateAuthors(rawParentPosts ?? [], parentAuthors ?? []);
+    }
+
+    const timeline = buildTimeline(
+      profileAuthor,
+      basePosts as Record<string, unknown>[],
+      repliesResult.data ?? [],
+      repostsResult.data ?? [],
+      parentPosts,
+    );
 
     return Response.json({
       profile: { ...data, is_verified: premiumVerified(data), ...counts },
-      posts: hydratedPosts,
+      posts: timeline,
       bookmarkedPosts,
       ...insights,
     });

@@ -28,6 +28,8 @@ type NotificationItem = {
   message: string;
   isRead: boolean;
   createdAt: string;
+  entityId?: string | null;
+  entityType?: string | null;
   actor: { id: string; username: string; fullName: string; avatarUrl: string | null; isVerified?: boolean } | null;
 };
 
@@ -47,6 +49,15 @@ function openProfile(username: string) {
   const clean = username.replace(/^@/, "").toLowerCase();
   window.history.pushState(null, "", `/${clean}`);
   window.dispatchEvent(new Event("tradeup:open-profile"));
+}
+
+function openFeedPost(postId?: string | null) {
+  window.history.pushState(null, "", postId ? `/#post-${postId}` : "/");
+  window.dispatchEvent(new Event("popstate"));
+  if (!postId) return;
+  window.setTimeout(() => {
+    document.getElementById(`post-${postId}`)?.scrollIntoView({ behavior: "smooth", block: "center" });
+  }, 280);
 }
 
 function notificationMeta(type?: string) {
@@ -154,7 +165,7 @@ function SearchDialog({ onClose }: { onClose: () => void }) {
   }, [cleanQuery]);
 
   return (
-    <Modal title="Search" subtitle="Find TradeWay accounts by name or username." onClose={onClose}>
+    <Modal title="Search traders" subtitle="Find accounts, preview profiles and jump in fast." onClose={onClose}>
       <form
         className="border-b border-white/8 p-4"
         onSubmit={(event) => {
@@ -179,7 +190,7 @@ function SearchDialog({ onClose }: { onClose: () => void }) {
                 goToProfile(users[0].username);
               }
             }}
-            placeholder="Search"
+            placeholder="Search by name or username"
             className="h-12 pl-11 pr-20 text-[16px]"
           />
           <div className="absolute right-2 top-1/2 flex -translate-y-1/2 items-center gap-1">
@@ -190,16 +201,21 @@ function SearchDialog({ onClose }: { onClose: () => void }) {
         {error ? <p className="mt-3 rounded-2xl border border-rose-300/15 bg-rose-400/10 px-3 py-2 text-xs text-rose-200">{error}</p> : null}
       </form>
       <div className="min-h-[360px] flex-1 overflow-y-auto overscroll-contain">
-          {cleanQuery.length < 2 ? <div className="grid min-h-56 place-items-center px-6 text-center text-sm text-slate-500">Type at least 2 letters.</div> : null}
+          {cleanQuery.length < 2 ? <div className="grid min-h-56 place-items-center px-6 text-center text-sm text-zinc-500">Type at least 2 letters to search live accounts.</div> : null}
           {users.map((item) => (
-            <button key={item.id} type="button" onClick={() => goToProfile(item.username)} className="flex min-h-[76px] w-full touch-manipulation items-center gap-3 border-b border-white/6 px-4 py-3.5 text-left transition hover:bg-[#0d0d0d] active:bg-[#141414]">
+            <button key={item.id} type="button" onClick={() => goToProfile(item.username)} className="flex min-h-[84px] w-full touch-manipulation items-center gap-3 border-b border-white/6 px-4 py-3.5 text-left transition hover:bg-[#0d0d0d] active:bg-[#141414]">
               <TraderAvatar name={item.fullName} value={item.avatarUrl} className="h-12 w-12 text-xs" />
               <span className="min-w-0 flex-1">
                 <span className="flex min-w-0 items-center gap-1.5"><span className="truncate text-[15px] font-black">{item.fullName}</span></span>
                 <span className="block truncate text-xs text-slate-500">@{item.username}</span>
                 {item.bio ? <span className="mt-1 block truncate text-xs text-slate-400">{item.bio}</span> : <span className="mt-1 block truncate text-xs text-slate-600">{item.tradingStyle || "Trader"}</span>}
+                <span className="mt-1 block truncate text-[11px] text-zinc-600">
+                  {item.followersCount.toLocaleString("en-US")} followers / {item.followingCount.toLocaleString("en-US")} following
+                </span>
               </span>
-              {item.isFollowing ? <span className="rounded-full border border-white/15 px-2 py-1 text-[10px] font-bold text-zinc-300">Following</span> : null}
+              <span className={`rounded-full border px-2 py-1 text-[10px] font-bold ${item.isFollowing ? "border-white/15 text-zinc-300" : "border-white/8 text-zinc-500"}`}>
+                {item.isFollowing ? "Following" : item.tradingStyle || "Trader"}
+              </span>
             </button>
           ))}
           {!loading && cleanQuery.length >= 2 && !users.length ? <div className="grid min-h-56 place-items-center px-6 text-center text-sm text-slate-500">No matching users found.</div> : null}
@@ -230,14 +246,19 @@ function NotificationsDialog({ onClose, onRead }: { onClose: () => void; onRead:
     return () => { active = false; };
   }, [onRead]);
 
-  const goActor = (username: string | undefined) => {
-    if (!username) return;
-    openProfile(username);
+  const goActor = (item: NotificationItem) => {
+    if (item.entityType === "post" && item.entityId) {
+      openFeedPost(item.entityId);
+      onClose();
+      return;
+    }
+    if (!item.actor?.username) return;
+    openProfile(item.actor.username);
     onClose();
   };
 
   return (
-    <Modal title="Notifications" subtitle="Recent account activity." onClose={onClose}>
+    <Modal title="Notifications" subtitle="Replies, reposts, likes and follow activity." onClose={onClose}>
       <div className="max-h-[70dvh] min-h-[320px] overflow-y-auto">
         {loading ? <div className="grid min-h-52 place-items-center"><XSpinner size="lg" /></div> : null}
         {error ? <div className="p-4"><p className="rounded-2xl border border-rose-300/15 bg-rose-400/10 px-3 py-2 text-xs text-rose-200">{error}</p></div> : null}
@@ -248,7 +269,7 @@ function NotificationsDialog({ onClose, onRead }: { onClose: () => void; onRead:
                 <Bell className="text-slate-500" size={26} />
               </span>
               <h3 className="mt-4 text-lg font-black">No notifications yet</h3>
-              <p className="mt-1 max-w-xs text-sm leading-6 text-slate-500">Follows and account activity will show up here.</p>
+              <p className="mt-1 max-w-xs text-sm leading-6 text-slate-500">Likes, replies, reposts and follows will show up here.</p>
             </div>
           </div>
         ) : null}
@@ -259,7 +280,7 @@ function NotificationsDialog({ onClose, onRead }: { onClose: () => void; onRead:
           <button
             key={item.id}
             type="button"
-            onClick={() => goActor(item.actor?.username)}
+            onClick={() => goActor(item)}
             className={`flex w-full gap-3 border-b border-white/6 px-4 py-3.5 text-left transition hover:bg-white/[.04] active:bg-white/[.06] ${item.isRead ? "bg-transparent" : "bg-white/[.04]"}`}
           >
             <div className="relative">
@@ -277,6 +298,9 @@ function NotificationsDialog({ onClose, onRead }: { onClose: () => void; onRead:
                 {item.actor?.username ? `@${item.actor.username}` : "system"} - {meta.label} - {ago(item.createdAt)}
               </span>
               <span className="mt-1 block line-clamp-2 text-sm leading-5 text-slate-300">{item.message}</span>
+              <span className="mt-2 inline-flex rounded-full border border-white/8 px-2 py-1 text-[10px] font-bold text-zinc-500">
+                {item.entityType === "post" && item.entityId ? "Open post" : "Open profile"}
+              </span>
             </span>
           </button>
           );
@@ -324,5 +348,5 @@ export function SocialActions({ className = "" }: { className?: string }) {
 }
 
 export function SocialActionsCard() {
-  return <section className="rounded-[24px] border border-white/9 bg-[#171717]/42 p-4 shadow-xl shadow-slate-950/20 backdrop-blur-2xl"><div className="flex items-center gap-3"><div className="grid h-10 w-10 place-items-center rounded-2xl bg-white/[.06] text-zinc-300"><Users size={18} /></div><div className="min-w-0 flex-1"><h2 className="text-sm font-black">People</h2><p className="text-[10px] text-slate-500">Search and notifications</p></div><SocialActions /></div></section>;
+  return <section className="rounded-[24px] border border-white/9 bg-[#0a0a0a] p-4 shadow-xl shadow-black/30"><div className="flex items-center gap-3"><div className="grid h-10 w-10 place-items-center rounded-2xl bg-[#111111] text-zinc-300"><Users size={18} /></div><div className="min-w-0 flex-1"><h2 className="text-sm font-black">People</h2><p className="text-[10px] text-slate-500">Search and notifications</p></div><SocialActions /></div></section>;
 }

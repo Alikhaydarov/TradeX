@@ -14,6 +14,7 @@ import {
   MessageCircle,
   PenLine,
   Plus,
+  Repeat2,
   Sparkles,
   Trash2,
   TrendingUp,
@@ -404,21 +405,39 @@ export function Account({ onLogin, profileUsername }: { onLogin: () => void; pro
   };
 
   const renderPost = (post: Post) => (
-    <article key={post.id} className="group border-b border-white/8 bg-[#171717] px-4 py-5 last:border-b-0 transition hover:bg-white/[.025] sm:px-6">
+    <article key={post.id} className="group border-b border-white/8 bg-[#111111] px-4 py-5 last:border-b-0 transition hover:bg-[#141414] sm:px-6">
       <div className="grid grid-cols-[40px_minmax(0,1fr)] gap-3 sm:grid-cols-[48px_minmax(0,1fr)] sm:gap-4">
         <TraderAvatar name={post.name} value={post.avatar} className="mt-1 h-10 w-10 shrink-0 rounded-full text-xs ring-2 ring-white/5 transition group-hover:ring-white/15 sm:h-12 sm:w-12" />
         <div className="min-w-0">
+          {post.timelineType === "reply" && post.parentPostHandle ? (
+            <div className="mb-2 inline-flex max-w-full items-center rounded-full border border-sky-400/15 bg-sky-400/10 px-2.5 py-1 text-[10px] font-bold text-sky-200">
+              Replying to {post.parentPostHandle}
+            </div>
+          ) : null}
+          {post.timelineType === "repost" ? (
+            <div className="mb-2 inline-flex max-w-full items-center gap-1 rounded-full border border-emerald-400/15 bg-emerald-400/10 px-2.5 py-1 text-[10px] font-bold text-emerald-200">
+              <Repeat2 size={11} />
+              Reposted
+            </div>
+          ) : null}
           <div className="flex min-w-0 flex-wrap items-center gap-x-1.5 gap-y-0.5 text-[13px] leading-5 sm:text-sm">
             <p className="max-w-full truncate font-black text-white">{post.name}</p>
             <p className="truncate text-xs text-slate-500">{post.handle}</p>
             <span className="text-xs text-slate-700">/</span>
             <p className="text-xs text-slate-500">{post.time}</p>
           </div>
-          {post.symbol ? <div className="mt-3 flex flex-wrap items-center gap-2 rounded-2xl border border-white/8 bg-black/15 px-3 py-2.5 shadow-[inset_0_1px_0_rgba(255,255,255,.04)]"><InstrumentBadge symbol={post.symbol} compact className="mr-auto rounded-xl bg-white/[.03]" /><span className="text-[10px] font-black text-zinc-300">{post.side}</span><span className={post.result === "WIN" ? "text-[10px] font-black text-emerald-300" : post.result === "LOSS" ? "text-[10px] font-black text-rose-300" : "text-[10px] font-black text-zinc-300"}>{post.result}</span>{typeof post.pnl === "number" ? <strong className={post.pnl >= 0 ? "text-sm text-emerald-300" : "text-sm text-rose-300"}>{post.pnl >= 0 ? "+" : ""}${post.pnl.toFixed(2)}</strong> : null}</div> : null}
+          {post.symbol ? <div className="mt-3 flex flex-wrap items-center gap-2 rounded-2xl border border-white/8 bg-black px-3 py-2.5 shadow-[inset_0_1px_0_rgba(255,255,255,.04)]"><InstrumentBadge symbol={post.symbol} compact className="mr-auto rounded-xl bg-[#131313]" /><span className="text-[10px] font-black text-zinc-300">{post.side}</span><span className={post.result === "WIN" ? "text-[10px] font-black text-emerald-300" : post.result === "LOSS" ? "text-[10px] font-black text-rose-300" : "text-[10px] font-black text-zinc-300"}>{post.result}</span>{typeof post.pnl === "number" ? <strong className={post.pnl >= 0 ? "text-sm text-emerald-300" : "text-sm text-rose-300"}>{post.pnl >= 0 ? "+" : ""}${post.pnl.toFixed(2)}</strong> : null}</div> : null}
           {post.text ? <p className="mt-2 whitespace-pre-line break-words text-[15px] leading-6 text-slate-50">{post.text}</p> : null}
+          {post.timelineType === "reply" && post.parentPostText ? (
+            <div className="mt-3 rounded-2xl border border-white/8 bg-black px-3 py-3 text-xs text-zinc-400">
+              <div className="mb-1 text-[10px] font-black uppercase tracking-[0.16em] text-zinc-600">Original post</div>
+              <p className="line-clamp-3 whitespace-pre-line leading-5">{post.parentPostText}</p>
+            </div>
+          ) : null}
           {post.imageUrls?.length ? <div className={`mt-3 grid gap-px overflow-hidden rounded-xl border border-white/10 bg-white/10 ${post.imageUrls.length === 1 ? "grid-cols-1" : post.imageUrls.length === 3 ? "grid-cols-3" : "grid-cols-2"}`}>{post.imageUrls.slice(0, 4).map((url, index) => <a key={url} href={url} target="_blank" rel="noreferrer" className="grid min-h-40 place-items-center overflow-hidden bg-black/90"><MediaImage src={url} alt={`Trade media ${index + 1}`} className="h-full max-h-[520px] w-full object-cover" /></a>)}</div> : post.imageUrl ? <a href={post.imageUrl} target="_blank" rel="noreferrer" className="mt-3 grid min-h-40 place-items-center overflow-hidden rounded-xl border border-white/10 bg-black/90"><MediaImage src={post.imageUrl} alt="Post media" className="max-h-[520px] max-w-full object-contain" /></a> : null}
-          <div className="mt-3 grid max-w-md grid-cols-4 text-slate-500">
+          <div className="mt-3 grid max-w-md grid-cols-5 text-slate-500">
             <span className="flex h-8 items-center gap-1.5 rounded-full text-[12px] transition hover:text-zinc-300"><MessageCircle size={16} />{post.replies}</span>
+            <span className="flex h-8 items-center gap-1.5 rounded-full text-[12px] transition hover:text-emerald-200"><Repeat2 size={16} />{post.reposts}</span>
             <span className="flex h-8 items-center gap-1.5 rounded-full text-[12px] transition hover:text-rose-200"><Heart size={16} />{post.likes}</span>
             <span className="flex h-8 items-center gap-1.5 rounded-full text-[12px] transition hover:text-slate-300"><Eye size={16} />{formatCount(post.views)}</span>
             <span className="flex h-8 items-center gap-1.5 rounded-full text-[12px] transition hover:text-zinc-300"><Bookmark size={16} /></span>
