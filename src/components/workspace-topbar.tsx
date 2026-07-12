@@ -40,7 +40,7 @@ export function WorkspaceTopbar({ section }: { section: Section }) {
   const pnlLabel = pnlMode === "percentage" ? "Percentage View" : pnlMode === "hidden" ? "Hide P&L" : "Money View";
 
   return (
-    <div role="banner" className="tw-app-topbar sticky top-0 z-[60] shrink-0 border-b border-white/8 bg-black px-4 py-3 lg:static lg:flex lg:h-[42px] lg:items-center lg:justify-between lg:px-4 lg:py-0">
+    <div role="banner" className="tw-app-topbar sticky top-0 z-[60] shrink-0 border-b border-white/8 bg-black px-4 py-3 lg:static lg:flex lg:h-[38px] lg:items-center lg:justify-between lg:px-4 lg:py-0">
       <div className="flex items-center justify-between gap-3 lg:hidden">
         <button
           type="button"
@@ -52,7 +52,7 @@ export function WorkspaceTopbar({ section }: { section: Section }) {
         </button>
 
         <div className="min-w-0 flex-1">
-          <p className="truncate text-base font-black leading-none tracking-[-0.03em] text-white">
+          <p className="truncate text-[15px] font-black leading-none tracking-[-0.03em] text-white">
             {page}
           </p>
           <p className="mt-1 truncate text-xs font-semibold text-zinc-500">
@@ -75,7 +75,7 @@ export function WorkspaceTopbar({ section }: { section: Section }) {
       </div>
 
       <div className="hidden items-center justify-between gap-3 lg:flex lg:w-full">
-        <div className="min-w-0 items-center gap-1 text-[8px] font-medium uppercase tracking-[0.06em] text-zinc-600 lg:flex">
+        <div className="min-w-0 items-center gap-1 text-[7px] font-medium uppercase tracking-[0.08em] text-zinc-600 lg:flex">
           {isAccountScoped ? (
             <>
               <span className="truncate text-zinc-500">{workspace}</span>
@@ -117,7 +117,7 @@ function PnlModeMenu({
       <DropdownMenuTrigger asChild>
         <button
           type="button"
-          className={`inline-flex h-10 items-center rounded-2xl border border-white/10 bg-[#050505] text-zinc-200 transition hover:bg-[#101010] ${compact ? "w-10 justify-center px-0" : "gap-2 px-3 text-sm font-medium"}`}
+          className={`inline-flex h-9 items-center rounded-2xl border border-white/10 bg-[#050505] text-zinc-200 transition hover:bg-[#101010] ${compact ? "w-9 justify-center px-0" : "gap-2 px-3 text-xs font-medium"}`}
         >
           <Percent size={15} />
           {compact ? null : pnlLabel}

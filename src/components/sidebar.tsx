@@ -50,7 +50,7 @@ function initials(account: PropAccount | null) {
 const money = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 });
 
 function GroupLabel({ children }: { children: string }) {
-  return <p className="px-1.5 pb-1 pt-3 text-[9px] font-medium uppercase tracking-[0.08em] text-zinc-700">{children}</p>;
+  return <p className="px-1.5 pb-1 pt-3 text-[8px] font-medium uppercase tracking-[0.1em] text-zinc-700">{children}</p>;
 }
 
 export function Sidebar({
@@ -171,14 +171,14 @@ export function Sidebar({
           if (mobile) setMobileMenuOpen(false);
           onChange(id);
         }}
-        className={`group flex w-full items-center gap-2.5 rounded-xl px-2.5 py-1.5 text-left transition ${
+        className={`group flex w-full items-center gap-2 rounded-xl px-2 py-1.5 text-left transition ${
           selected ? "bg-[#111111] text-white ring-1 ring-white/10" : "text-zinc-400 hover:bg-[#080808] hover:text-white"
         }`}
       >
         <span className={`grid h-7 w-7 place-items-center rounded-lg transition-colors ${selected ? "bg-[#1a1a1a] text-white" : "bg-[#050505] text-zinc-500 group-hover:bg-[#0f0f0f] group-hover:text-zinc-300"}`}>
           <Icon size={15} strokeWidth={selected ? 2.3 : 2} />
         </span>
-        <span className="min-w-0 flex-1 truncate text-[14px] font-medium">{label}</span>
+        <span className="min-w-0 flex-1 truncate text-[13px] font-medium">{label}</span>
       </button>
     );
   };
@@ -189,7 +189,7 @@ export function Sidebar({
         <button type="button" onClick={openAccountsPage} className="flex min-w-0 flex-1 items-center gap-3 text-left">
           <span className={`size-2 shrink-0 rounded-full ${activeAccount ? "bg-emerald-500" : "bg-zinc-500"}`} />
           <div className="min-w-0 flex-1">
-            <p className={`${mobile ? "text-sm" : "text-[13px]"} truncate font-bold text-white`}>{activeAccount?.name || "Accounts"}</p>
+            <p className={`${mobile ? "text-sm" : "text-[12px]"} truncate font-bold text-white`}>{activeAccount?.name || "Accounts"}</p>
             <p className={`${mobile ? "text-xs" : "text-[11px]"} truncate text-zinc-500`}>{activeAccount ? activeBalance : "Select trading account"}</p>
           </div>
         </button>
@@ -259,8 +259,8 @@ export function Sidebar({
 
   return (
     <>
-      <aside className="fixed left-[max(1rem,calc((100vw-1860px)/2+1rem))] top-4 z-40 hidden h-[calc(100dvh-2rem)] w-[208px] shrink-0 flex-col rounded-[1rem] border border-white/8 bg-[#000000] p-3 shadow-[inset_0_1px_0_rgba(255,255,255,.03)] lg:flex">
-        <button onClick={() => onChange("feed")} className="flex items-center gap-3 rounded-2xl px-2 py-1.5 text-left transition-colors hover:bg-[#080808]" aria-label="TradeWay home">
+      <aside className="fixed left-[max(1rem,calc((100vw-1860px)/2+1rem))] top-4 z-40 hidden h-[calc(100dvh-2rem)] w-[200px] shrink-0 flex-col rounded-[1rem] border border-white/8 bg-[#000000] p-3 shadow-[inset_0_1px_0_rgba(255,255,255,.03)] lg:flex">
+        <button onClick={() => onChange("feed")} className="flex items-center gap-3 rounded-2xl px-2 py-1 text-left transition-colors hover:bg-[#080808]" aria-label="TradeWay home">
           <span className="grid h-9 w-9 place-items-center rounded-xl bg-[linear-gradient(180deg,rgba(255,255,255,1),rgba(232,232,236,1))] text-sm font-black text-black shadow-[0_10px_24px_rgba(255,255,255,.06)]">TW</span>
           <span className="min-w-0">
             <span className="flex items-center gap-2">
@@ -374,7 +374,7 @@ export function Sidebar({
                 {renderAccountSwitcher(true)}
               </div>
 
-              <div className="flex-1 overflow-y-auto px-2.5 py-3.5">
+              <div className="flex-1 overflow-y-auto px-2 py-3">
                 <nav className="space-y-1">
                   {primaryNav.map((item) => renderNavButton(item, true))}
                 </nav>
