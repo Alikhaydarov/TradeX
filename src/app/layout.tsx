@@ -13,6 +13,7 @@ import "./auth-landing-clean.css";
 import "./onyx-overrides.css";
 import "./responsive-fixes.css";
 import "./quality-overrides.css";
+import "./sidebar-width.css";
 
 const inter = Inter({ variable: "--font-inter", subsets: ["latin"] });
 const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] });
