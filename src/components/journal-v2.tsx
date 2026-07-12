@@ -1199,14 +1199,17 @@ function Workspace(p: {
           {/* Trades */}
           {!singleTabMode || activeTab === "trades" ? (
           <TabsContent value="trades">
-            <div className="space-y-4">
-              <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_320px]">
-                <section className="overflow-hidden rounded-[1rem] border border-white/8 bg-[#090909] shadow-[0_18px_46px_rgba(0,0,0,.2)]">
-                  <div className="space-y-4 border-b border-white/8 px-4 py-3.5">
+            <div className="space-y-3">
+              <div className="grid gap-3 xl:grid-cols-[minmax(0,1fr)_300px]">
+                <section className="overflow-hidden rounded-[1rem] border border-white/8 bg-[#070707] shadow-[0_18px_46px_rgba(0,0,0,.2)]">
+                  <div className="space-y-3 border-b border-white/8 px-4 py-3.5">
                     <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
                       <div>
-                        <h3 className="text-[15px] font-black text-white">Trade Log</h3>
-                        <p className="text-xs text-zinc-500">Select a trade to review its full story.</p>
+                        <p className="text-[9px] font-medium uppercase tracking-[0.12em] text-zinc-600">
+                          {account.name} <span className="mx-1 text-zinc-700">&gt;</span> Trades
+                        </p>
+                        <h3 className="mt-1 text-[15px] font-black text-white">Trade Log</h3>
+                        <p className="text-xs text-zinc-500">Click any row to open the full review.</p>
                       </div>
                       <div className="relative sm:ml-auto sm:w-72">
                         <Search className="absolute left-3 top-2.5 text-zinc-500" size={15} />
@@ -1252,17 +1255,23 @@ function Workspace(p: {
                         </Select>
                       </div>
                     </div>
+                    <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+                      <MiniStat label="TRADES" value={String(trades.length)} />
+                      <MiniStat label="WINRATE" value={`${stats.rate}%`} />
+                      <MiniStat label="BEST" value={bestTrade ? formatTradePnl(bestTrade.pnl) : "-"} />
+                      <MiniStat label="AVERAGE R" value={`${stats.r.toFixed(2)}R`} />
+                    </div>
                   </div>
-                  {trades.length ? (
+                  {sortedTrades.length ? (
                     <div className="overflow-x-auto">
-                      <div className="min-w-[820px] px-3 py-3">
-                        <div className="grid grid-cols-[48px_1.3fr_1fr_.9fr_1fr_1fr_.9fr] rounded-xl bg-black px-4 py-3 text-xs font-semibold text-zinc-500">
+                      <div className="min-w-[920px] px-3 py-3">
+                        <div className="grid grid-cols-[48px_1.3fr_1fr_.9fr_1fr_1fr_.9fr] rounded-xl border border-white/8 bg-[#050505] px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.08em] text-zinc-500">
                           <span />
-                          <span>Entry date</span>
+                          <span>Trade date</span>
                           <span>Symbol</span>
                           <span>Side</span>
-                          <span>Trade duration</span>
-                          <span>Risk/Reward</span>
+                          <span>Session</span>
+                          <span>R multiple</span>
                           <span className="text-right">P&amp;L</span>
                         </div>
                         <div className="mt-2 space-y-2">
@@ -1273,10 +1282,13 @@ function Workspace(p: {
                                 key={trade.id}
                                 type="button"
                                 onClick={() => openTrade(trade)}
-                                className="grid w-full grid-cols-[48px_1.3fr_1fr_.9fr_1fr_1fr_.9fr] items-center rounded-xl border border-white/8 bg-black px-4 py-3 text-left transition hover:bg-[#0d0d0d]"
+                                className="grid w-full grid-cols-[48px_1.3fr_1fr_.9fr_1fr_1fr_.9fr] items-center rounded-xl border border-white/8 bg-[#050505] px-4 py-3 text-left transition hover:border-white/15 hover:bg-[#0a0a0a]"
                               >
                                 <span className="grid size-5 place-items-center rounded-full border border-white/10" />
-                                <span className="text-sm font-semibold text-white">{new Date(`${trade.rawDate}T00:00:00`).toLocaleString("en-GB", { day: "2-digit", month: "2-digit", year: "numeric" })}</span>
+                                <span>
+                                  <span className="block text-sm font-semibold text-white">{new Date(`${trade.rawDate}T00:00:00`).toLocaleString("en-GB", { day: "2-digit", month: "2-digit", year: "numeric" })}</span>
+                                  <span className="mt-1 block truncate text-[11px] text-zinc-600">{trade.note || "Open trade review"}</span>
+                                </span>
                                 <span className="flex items-center gap-2">
                                   <InstrumentBadge symbol={trade.symbol} compact className="bg-[#121212]" showFullSymbol={false} />
                                   <span className="font-bold text-white">{trade.symbol}</span>
@@ -1294,15 +1306,29 @@ function Workspace(p: {
                   ) : <Empty text="No trades in this range yet." />}
                 </section>
 
-                <section className="rounded-[1rem] border border-white/8 bg-[#090909] p-4 shadow-[0_18px_46px_rgba(0,0,0,.2)]">
+                <section className="rounded-[1rem] border border-white/8 bg-[#070707] p-4 shadow-[0_18px_46px_rgba(0,0,0,.2)]">
                   <h3 className="text-[15px] font-black text-white">Trade Snapshot</h3>
-                  <p className="mt-1 text-sm text-zinc-500">A lighter side panel so the main log stays clean.</p>
+                  <p className="mt-1 text-sm text-zinc-500">Quick read before you open the full review.</p>
                   <div className="mt-4 space-y-3">
                     <MiniStat label="Trades" value={String(trades.length)} />
                     <MiniStat label="Winning" value={String(stats.wins)} />
                     <MiniStat label="Losing" value={String(stats.losses)} />
                     <MiniStat label="Avg win" value={averageWin ? formatTradePnl(averageWin) : "-"} />
                     <MiniStat label="Avg loss" value={averageLoss ? formatTradePnl(averageLoss) : "-"} />
+                  </div>
+                  <div className="mt-4 rounded-2xl border border-white/8 bg-[#050505] p-3">
+                    <p className="text-[10px] font-black uppercase tracking-[0.16em] text-zinc-500">Most recent</p>
+                    {recentTrades[0] ? (
+                      <button type="button" onClick={() => openTrade(recentTrades[0])} className="mt-3 w-full rounded-xl border border-white/8 bg-[#080808] p-3 text-left transition hover:bg-[#0d0d0d]">
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="text-sm font-bold text-white">{recentTrades[0].symbol}</span>
+                          <span className={`font-mono text-sm font-black ${recentTrades[0].pnl >= 0 ? "text-emerald-300" : "text-rose-300"}`}>{formatTradePnl(recentTrades[0].pnl)}</span>
+                        </div>
+                        <p className="mt-1 text-xs text-zinc-500">{recentTrades[0].setup || recentTrades[0].session || recentTrades[0].rawDate}</p>
+                      </button>
+                    ) : (
+                      <p className="mt-3 text-sm text-zinc-500">No trade selected yet.</p>
+                    )}
                   </div>
                 </section>
               </div>
@@ -1638,11 +1664,11 @@ function TradeEditor({ trade, saving, onClose, onSave, onDelete }: { trade: Jour
   return (
     <div className="fixed inset-0 z-[9999] flex items-center justify-center overflow-hidden bg-black/88 p-2 pt-[max(.5rem,env(safe-area-inset-top))] pb-[max(.5rem,env(safe-area-inset-bottom))] sm:p-4">
       <div className="absolute inset-0" onClick={onClose} aria-hidden="true" />
-      <form action={onSave} className="relative z-10 flex h-[calc(100dvh-1rem)] max-h-[920px] w-full max-w-4xl flex-col overflow-hidden rounded-[22px] border border-border bg-card text-foreground shadow-2xl shadow-black/80 sm:h-auto sm:max-h-[92dvh] sm:rounded-2xl">
+      <form action={onSave} className="relative z-10 flex h-[calc(100dvh-1rem)] max-h-[920px] w-full max-w-4xl flex-col overflow-hidden rounded-[20px] border border-white/8 bg-[#070707] text-foreground shadow-2xl shadow-black/80 sm:h-auto sm:max-h-[92dvh] sm:rounded-[18px]">
         <header className="flex shrink-0 items-center gap-3 border-b border-border px-4 py-3.5 sm:px-5 sm:py-4">
           <div className="min-w-0 flex-1">
             <h3 className="truncate text-lg font-black">{trade.symbol} trade</h3>
-            <p className="text-xs text-[#8a8a8a]">Trade review va edit</p>
+            <p className="text-xs text-zinc-500">Trade review, edit and screenshots</p>
           </div>
           <button type="button" onClick={onClose} className="grid size-9 place-items-center rounded-xl text-[#8a8a8a] hover:bg-white/[.05] hover:text-white" aria-label="Close">
             <X size={17} />
@@ -1679,7 +1705,7 @@ function TradeEditor({ trade, saving, onClose, onSave, onDelete }: { trade: Jour
             <label className="text-xs text-[#8a8a8a]">Tags<Input name="tags" defaultValue={(trade.tags ?? []).join(", ")} className="mt-1 border-[#2a2a2a] bg-[#121212]" /></label>
           </div>
           <Separator />
-          <div className="rounded-2xl border border-[#2a2a2a] bg-[#121212] p-4">
+          <div className="rounded-2xl border border-white/8 bg-[#050505] p-4">
             <div className="mb-3 flex items-center justify-between gap-3">
               <p className="text-[10px] font-black uppercase tracking-[.16em] text-[#8a8a8a]">Chart screenshot</p>
               <span className="text-xs text-zinc-500">{imageUrls.length}/3</span>
@@ -1691,7 +1717,7 @@ function TradeEditor({ trade, saving, onClose, onSave, onDelete }: { trade: Jour
               {imageUrls.length < 3 ? <button type="button" onClick={() => imageInputRef.current?.click()} className="grid aspect-square place-items-center rounded-lg border border-dashed border-white/10 text-zinc-500 hover:bg-white/[.04] hover:text-white">{uploadingImages ? <LoaderCircle className="animate-spin" size={20} /> : <Plus size={22} />}</button> : null}
             </div>
           </div>
-          <div className="rounded-2xl border border-[#2a2a2a] bg-[#121212] p-4">
+          <div className="rounded-2xl border border-white/8 bg-[#050505] p-4">
             <p className="mb-3 text-[10px] font-black uppercase tracking-[.16em] text-[#8a8a8a]">Notion review checklist</p>
             <div className="grid gap-2 sm:grid-cols-2">
               <label className="flex min-h-10 items-center gap-3 rounded-lg border border-border bg-card px-3 text-sm text-foreground"><Checkbox name="followingPlan" value="true" defaultChecked={trade.followingPlan} /> Following plan?</label>
