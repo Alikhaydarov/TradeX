@@ -93,6 +93,125 @@ function buildWeeklyStrip(account: PropAccount, month: Date, trades: JournalEntr
   });
 }
 
+function formatTradeDateLabel(rawDate?: string) {
+  if (!rawDate) return "";
+  return new Date(`${rawDate}T00:00:00`).toLocaleDateString("en-GB", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  });
+}
+
+function formatTradeMonthLabel(rawDate?: string) {
+  if (!rawDate) return "No Month";
+  return new Date(`${rawDate}T00:00:00`).toLocaleDateString("en-US", {
+    month: "long",
+    year: "numeric",
+  });
+}
+
+function groupTradesByMonth(trades: JournalEntry[]) {
+  const groups = new Map<string, { label: string; trades: JournalEntry[] }>();
+  trades.forEach((trade) => {
+    const key = trade.rawDate ? trade.rawDate.slice(0, 7) : "unknown";
+    const current = groups.get(key);
+    if (current) {
+      current.trades.push(trade);
+      return;
+    }
+    groups.set(key, {
+      label: formatTradeMonthLabel(trade.rawDate),
+      trades: [trade],
+    });
+  });
+  return Array.from(groups.entries()).map(([key, value]) => ({
+    key,
+    label: value.label,
+    trades: value.trades,
+  }));
+}
+
+function TradeGalleryCard({
+  trade,
+  onOpen,
+  formatTradePnl,
+}: {
+  trade: JournalEntry;
+  onOpen: (trade: JournalEntry) => void;
+  formatTradePnl: (amount: number) => string;
+}) {
+  const winning = trade.pnl >= 0;
+  const primaryMeta = trade.setup || trade.session || (trade.side === "Long" ? "Buy" : "Sell");
+  const secondaryMeta = formatTradeDateLabel(trade.rawDate);
+  const screenshotCount = trade.imageUrls?.length ?? (trade.imageUrl ? 1 : 0);
+
+  return (
+    <button
+      type="button"
+      onClick={() => onOpen(trade)}
+      className="group overflow-hidden rounded-[1.05rem] border border-white/8 bg-[#080808] text-left transition hover:border-white/15 hover:bg-[#0c0c0c]"
+    >
+      {trade.imageUrl ? (
+        <div className="relative aspect-[4/5] overflow-hidden bg-[#121212]">
+          <MediaImage
+            src={trade.imageUrl}
+            alt={`${trade.symbol} trade screenshot`}
+            className="h-full w-full object-contain p-3 transition duration-200 group-hover:scale-[1.02]"
+          />
+          {screenshotCount > 1 ? (
+            <span className="absolute right-3 top-3 rounded-full border border-white/10 bg-black/80 px-2 py-1 text-[10px] font-bold text-zinc-200">
+              {screenshotCount} shots
+            </span>
+          ) : null}
+        </div>
+      ) : (
+        <div className="flex aspect-[4/5] items-end bg-[#121212] p-4">
+          <div>
+            <span className={`inline-flex rounded-full px-2.5 py-1 text-[10px] font-black ${trade.side === "Long" ? "bg-emerald-500/12 text-emerald-300" : "bg-rose-500/12 text-rose-300"}`}>
+              {trade.side === "Long" ? "Buy" : "Sell"}
+            </span>
+            <h4 className="mt-3 text-2xl font-black text-white">{trade.symbol}</h4>
+            <p className="mt-1 text-xs text-zinc-500">{trade.note || "Open trade review"}</p>
+          </div>
+        </div>
+      )}
+
+      <div className="space-y-2 border-t border-white/8 px-4 py-3">
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0">
+            <p className="truncate text-[15px] font-black text-white">
+              {trade.symbol}
+              {typeof trade.resultR === "number" && Math.abs(trade.resultR) > 0.01 ? ` ${trade.resultR >= 0 ? "+" : ""}${trade.resultR.toFixed(2)}R` : ""}
+            </p>
+            <p className="mt-1 text-xs text-zinc-500">{secondaryMeta}</p>
+          </div>
+          <span className={`shrink-0 rounded-full px-2.5 py-1 text-[11px] font-black ${winning ? "bg-emerald-500/10 text-emerald-300" : "bg-rose-500/10 text-rose-300"}`}>
+            {formatTradePnl(trade.pnl)}
+          </span>
+        </div>
+
+        <div className="flex flex-wrap gap-1.5">
+          <span className="rounded-full border border-white/8 bg-[#111111] px-2.5 py-1 text-[10px] font-semibold text-zinc-300">
+            {primaryMeta || "No setup"}
+          </span>
+          <span className="rounded-full border border-white/8 bg-[#111111] px-2.5 py-1 text-[10px] font-semibold text-zinc-500">
+            {trade.side === "Long" ? "Buy" : "Sell"}
+          </span>
+          {trade.riskPercent ? (
+            <span className="rounded-full border border-white/8 bg-[#111111] px-2.5 py-1 text-[10px] font-semibold text-zinc-500">
+              {trade.riskPercent}
+            </span>
+          ) : null}
+        </div>
+
+        {trade.note ? (
+          <p className="line-clamp-2 text-xs leading-5 text-zinc-500">{trade.note}</p>
+        ) : null}
+      </div>
+    </button>
+  );
+}
+
 export function JournalV2({
   onLogin,
   mode = "accounts",
@@ -626,6 +745,7 @@ function Workspace(p: {
     [trades]
   );
   const recentTrades = sortedTrades.slice(0, 5);
+  const groupedTradeGallery = useMemo(() => groupTradesByMonth(sortedTrades), [sortedTrades]);
   const averageWin = useMemo(() => {
     const wins = trades.filter((trade) => trade.pnl > 0);
     return wins.length ? wins.reduce((sum, trade) => sum + trade.pnl, 0) / wins.length : 0;
@@ -1272,42 +1392,28 @@ function Workspace(p: {
                     </div>
                   </div>
                   {sortedTrades.length ? (
-                    <div className="overflow-x-auto">
-                      <div className="min-w-[840px] px-3 py-3">
-                        <div className="grid grid-cols-[36px_1.4fr_.95fr_.85fr_.9fr_.8fr_.9fr] rounded-xl border border-white/8 bg-[#050505] px-3 py-2.5 text-[10px] font-semibold uppercase tracking-[0.08em] text-zinc-500">
-                          <span />
-                          <span>Trade date</span>
-                          <span>Symbol</span>
-                          <span>Side</span>
-                          <span>Session</span>
-                          <span>R multiple</span>
-                          <span className="text-right">P&amp;L</span>
-                        </div>
-                        <div className="mt-2 space-y-2">
-                          {sortedTrades.map((trade) => {
-                            const winning = trade.pnl >= 0;
-                            return (
-                              <button
+                    <div className="space-y-5 px-4 py-4">
+                      {groupedTradeGallery.map((group) => (
+                        <div key={group.key} className="space-y-3">
+                          <div className="flex items-center gap-2">
+                            <span className="text-sm font-black text-white">{group.label}</span>
+                            <span className="rounded-full border border-white/8 bg-[#101010] px-2 py-0.5 text-[10px] font-semibold text-zinc-500">
+                              {group.trades.length}
+                            </span>
+                          </div>
+
+                          <div className="grid gap-3 sm:grid-cols-2 2xl:grid-cols-3">
+                            {group.trades.map((trade) => (
+                              <TradeGalleryCard
                                 key={trade.id}
-                                type="button"
-                                onClick={() => openTrade(trade)}
-                                className="grid w-full grid-cols-[36px_1.4fr_.95fr_.85fr_.9fr_.8fr_.9fr] items-center rounded-xl border border-white/8 bg-[#050505] px-3 py-2.5 text-left transition hover:border-white/15 hover:bg-[#0a0a0a]"
-                              >
-                                <span className="grid size-4 place-items-center rounded-full border border-white/10" />
-                                <span>
-                                  <span className="block text-sm font-semibold text-white">{new Date(`${trade.rawDate}T00:00:00`).toLocaleString("en-GB", { day: "2-digit", month: "2-digit", year: "numeric" })}</span>
-                                  <span className="mt-1 block truncate text-[11px] text-zinc-600">{trade.note || "Open trade review"}</span>
-                                </span>
-                                <span className="font-bold text-white">{trade.symbol}</span>
-                                <span className={`text-sm font-bold ${trade.side === "Long" ? "text-emerald-300" : "text-rose-300"}`}>{trade.side === "Long" ? "Buy" : "Sell"}</span>
-                                <span className="text-sm text-zinc-400">{trade.session || "-"}</span>
-                                <span className="font-mono text-sm text-zinc-300">{(trade.resultR || 0).toFixed(2)}R</span>
-                                <span className={`text-right font-mono text-base font-black ${winning ? "text-emerald-400" : "text-rose-400"}`}>{formatTradePnl(trade.pnl)}</span>
-                              </button>
-                            );
-                          })}
+                                trade={trade}
+                                onOpen={openTrade}
+                                formatTradePnl={formatTradePnl}
+                              />
+                            ))}
+                          </div>
                         </div>
-                      </div>
+                      ))}
                     </div>
                   ) : <Empty text="No trades in this range yet." />}
                 </section>
