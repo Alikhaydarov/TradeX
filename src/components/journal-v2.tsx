@@ -718,7 +718,7 @@ function Workspace(p: {
 
   return (
     <div className="animate-page-in mx-auto max-w-[1540px]">
-      <div className="space-y-3 p-3 sm:p-4 lg:space-y-4 lg:p-5">
+      <div className="space-y-3 p-3 sm:p-4 lg:space-y-3.5 lg:p-5">
         {!embedded ? (
           <div className="w-full sm:w-[320px]">
             <span className="mb-1.5 block text-[10px] font-semibold uppercase tracking-widest text-[#8a8a8a]">Account</span>
@@ -747,13 +747,13 @@ function Workspace(p: {
             { title: "Wins / Losses", value: `${stats.wins} / ${stats.losses}`, icon: CalendarDays, color: "text-[#f1f1f1]" },
           ].map((s, index) => (
             <Card key={s.title} size="sm" className={`gap-0 py-0 ${index === 4 ? "col-span-2 sm:col-span-1" : ""}`}>
-              <CardContent className="flex min-h-18 items-center gap-2 p-3 sm:min-h-20 sm:gap-3 sm:p-4">
+              <CardContent className="flex min-h-18 items-center gap-2 p-3 sm:min-h-18 sm:gap-3 sm:p-3.5">
                 <span className="grid size-9 shrink-0 place-items-center rounded-lg bg-black/18 sm:size-10">
                   <s.icon size={18} className={s.color} />
                 </span>
                 <div className="min-w-0">
                 <p className="text-[10px] uppercase tracking-wider text-[#8a8a8a]">{s.title}</p>
-                  <p className={`truncate font-mono text-base font-black sm:text-xl ${s.color}`}>{s.value}</p>
+                  <p className={`truncate font-mono text-[15px] font-black sm:text-[1.05rem] ${s.color}`}>{s.value}</p>
                 </div>
               </CardContent>
             </Card>
@@ -861,7 +861,7 @@ function Workspace(p: {
 
           {/* Overview */}
           {!singleTabMode || activeTab === "overview" ? (
-          <TabsContent value="overview" className="space-y-3">
+          <TabsContent value="overview" className="space-y-2.5">
             <section className="rounded-[0.95rem] border border-white/8 bg-[#070707] p-3 sm:p-4">
               <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
                 <div>
@@ -898,10 +898,10 @@ function Workspace(p: {
               <section className="overflow-hidden rounded-[1rem] border border-white/8 bg-[#070707] shadow-[0_18px_46px_rgba(0,0,0,.2)] xl:col-span-2">
                 <div className="flex flex-col gap-3 border-b border-white/8 px-3 py-3 sm:px-4 lg:flex-row lg:items-start">
                   <div className="min-w-0">
-                    <h3 className="text-sm font-black text-white">Account Balance</h3>
+                    <h3 className="text-[14px] font-black text-white">Account Balance</h3>
                     <p className="mt-1 text-[11px] text-zinc-500">{account.name} equity curve across closed trades.</p>
                   </div>
-                  <div className="grid grid-cols-1 gap-2 sm:grid-cols-3 lg:ml-auto lg:min-w-[500px]">
+                  <div className="grid grid-cols-1 gap-2 sm:grid-cols-3 lg:ml-auto lg:min-w-[480px]">
                     <BalanceMetric label="Current P&L" value={formatTradePnl(currentPnl)} tone={currentPnl >= 0 ? "good" : "bad"} />
                     <BalanceMetric label="Equity" value={cash.format(currentEquity)} />
                     <BalanceMetric label="Closed balance" value={cash.format(currentEquity)} />
@@ -962,8 +962,8 @@ function Workspace(p: {
               <section className="rounded-[1rem] border border-white/8 bg-[#070707] p-3 shadow-[0_18px_46px_rgba(0,0,0,.2)] sm:p-4">
                 <div className="flex items-center justify-between gap-3">
                   <div>
-                    <h3 className="text-base font-black text-white">Recent Trades</h3>
-                    <p className="mt-1 text-xs text-zinc-500">Latest entries registered in this account.</p>
+                    <h3 className="text-[14px] font-black text-white">Recent Trades</h3>
+                    <p className="mt-1 text-[11px] text-zinc-500">Latest entries from the selected account.</p>
                   </div>
                   <Button type="button" variant="outline" size="sm" className="border-white/10 bg-black/15" onClick={() => setActiveTab("trades")}>
                     See all
@@ -976,9 +976,8 @@ function Workspace(p: {
                         key={trade.id}
                         type="button"
                         onClick={() => openTrade(trade)}
-                        className="flex w-full items-center gap-3 rounded-2xl border border-white/8 bg-black/15 px-3 py-3 text-left transition hover:bg-white/[.04]"
+                        className="flex w-full items-center gap-3 rounded-2xl border border-white/8 bg-[#050505] px-3 py-3 text-left transition hover:bg-[#0b0b0b]"
                       >
-                        <InstrumentBadge symbol={trade.symbol} compact className="bg-[#121212]" showFullSymbol={false} />
                         <div className="min-w-0 flex-1">
                           <div className="flex items-center gap-2">
                             <strong className="truncate text-sm text-white">{trade.symbol}</strong>
@@ -988,12 +987,12 @@ function Workspace(p: {
                           </div>
                           <p className="mt-1 truncate text-xs text-zinc-500">{trade.setup || trade.session || trade.rawDate}</p>
                         </div>
-                      <strong className={`font-mono text-sm font-black ${trade.pnl >= 0 ? "text-emerald-300" : "text-rose-300"}`}>{formatTradePnl(trade.pnl)}</strong>
+                        <strong className={`font-mono text-sm font-black ${trade.pnl >= 0 ? "text-emerald-300" : "text-rose-300"}`}>{formatTradePnl(trade.pnl)}</strong>
                       </button>
                     ))}
                   </div>
                 ) : (
-                  <div className="mt-4 grid min-h-44 place-items-center rounded-2xl border border-white/8 bg-black/15 text-center text-sm text-zinc-500">
+                  <div className="mt-4 grid min-h-44 place-items-center rounded-2xl border border-white/8 bg-[#050505] text-center text-sm text-zinc-500">
                     You don&apos;t have any trades yet. Register a trade to get started.
                   </div>
                 )}
@@ -1002,8 +1001,8 @@ function Workspace(p: {
               <section className="rounded-[1rem] border border-white/8 bg-[#070707] p-3 shadow-[0_18px_46px_rgba(0,0,0,.2)] sm:p-4">
                 <div className="flex items-center justify-between gap-3">
                   <div>
-                    <h3 className="text-base font-black text-white">Execution Snapshot</h3>
-                    <p className="mt-1 text-xs text-zinc-500">Compact read on risk, consistency and current focus.</p>
+                    <h3 className="text-[14px] font-black text-white">Execution Snapshot</h3>
+                    <p className="mt-1 text-[11px] text-zinc-500">Risk, consistency and current focus.</p>
                   </div>
                   <span className="rounded-full border border-white/8 bg-black/20 px-2.5 py-1 text-[10px] font-black text-zinc-400">
                     {account.status}
@@ -1019,15 +1018,15 @@ function Workspace(p: {
                   <ProgressBar label="Profit target" value={targetProgress} color="bg-emerald-500" />
                   <ProgressBar label="Drawdown used" value={drawdownUsed} color="bg-rose-500" />
                 </div>
-                <div className="mt-4 space-y-2">
-                  <div className="rounded-2xl border border-white/8 bg-black/15 px-3 py-3">
+                  <div className="mt-4 space-y-2">
+                  <div className="rounded-2xl border border-white/8 bg-[#050505] px-3 py-3">
                     <p className="text-[10px] font-black uppercase tracking-[0.16em] text-zinc-500">Best setup</p>
                     <p className="mt-1 text-sm font-bold text-white">{setups[0]?.name || "No setup data yet"}</p>
                     <p className="mt-1 text-xs text-zinc-500">
                       {setups[0] ? `${setups[0].trades} trades / ${setups[0].rate}% win rate` : "Tag setups to unlock setup analytics."}
                     </p>
                   </div>
-                  <div className="rounded-2xl border border-white/8 bg-black/15 px-3 py-3">
+                  <div className="rounded-2xl border border-white/8 bg-[#050505] px-3 py-3">
                     <p className="text-[10px] font-black uppercase tracking-[0.16em] text-zinc-500">Discipline focus</p>
                     <p className="mt-1 text-sm font-bold text-white">{mistakes[0]?.name || "Clean execution streak"}</p>
                     <p className="mt-1 text-xs text-zinc-500">
@@ -1038,7 +1037,7 @@ function Workspace(p: {
               </section>
             </div>
 
-            <section className="rounded-[1.2rem] border border-white/8 bg-[#0b0b0b] p-3 shadow-[0_18px_46px_rgba(0,0,0,.2)] sm:p-4">
+              <section className="rounded-[1.2rem] border border-white/8 bg-[#070707] p-3 shadow-[0_18px_46px_rgba(0,0,0,.2)] sm:p-4">
               <div className="flex items-center justify-between gap-3">
                 <div>
                   <h3 className="font-bold text-white">Live Positions</h3>

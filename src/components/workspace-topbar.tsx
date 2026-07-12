@@ -45,7 +45,7 @@ export function WorkspaceTopbar({ section }: { section: Section }) {
         <button
           type="button"
           onClick={openMobileDrawer}
-          className="grid size-10 shrink-0 place-items-center rounded-2xl border border-white/10 bg-white/[.035] text-white transition active:scale-95"
+          className="grid size-10 shrink-0 place-items-center rounded-2xl border border-white/10 bg-[#050505] text-white transition active:scale-95"
           aria-label="Open mobile menu"
         >
           <Menu size={20} strokeWidth={2.2} />
@@ -66,7 +66,7 @@ export function WorkspaceTopbar({ section }: { section: Section }) {
           <button
             type="button"
             onClick={openAddTrade}
-            className="grid size-10 shrink-0 place-items-center rounded-2xl border border-white/10 bg-white/[.04] text-white transition active:scale-95"
+            className="grid size-10 shrink-0 place-items-center rounded-2xl border border-white/10 bg-[#050505] text-white transition active:scale-95"
             aria-label="Add trade"
           >
             <Plus size={22} strokeWidth={2.15} />
@@ -117,13 +117,13 @@ function PnlModeMenu({
       <DropdownMenuTrigger asChild>
         <button
           type="button"
-          className={`inline-flex h-10 items-center rounded-2xl border border-white/10 bg-[#090909] text-zinc-200 transition hover:bg-[#101010] ${compact ? "w-10 justify-center px-0" : "gap-2 px-3 text-sm font-medium"}`}
+          className={`inline-flex h-10 items-center rounded-2xl border border-white/10 bg-[#050505] text-zinc-200 transition hover:bg-[#101010] ${compact ? "w-10 justify-center px-0" : "gap-2 px-3 text-sm font-medium"}`}
         >
           <Percent size={15} />
           {compact ? null : pnlLabel}
         </button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-52 border-white/10 bg-[#090909]">
+      <DropdownMenuContent align="end" className="w-52 border-white/10 bg-[#050505]">
         {items.map((item) => (
           <DropdownMenuItem key={item.value} onClick={() => onChange(item.value)} className="flex items-center justify-between px-3 py-2.5">
             <span className="flex items-center gap-2">
