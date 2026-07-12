@@ -16,6 +16,7 @@ const plans = [
   { id: "standard", name: "Standard", price: "$15/mo" },
   { id: "pro", name: "Pro", price: "$25/mo" },
 ] as const;
+const PREMIUM_UPSELL_COOLDOWN_MS = 1000 * 60 * 60 * 48;
 
 export function PremiumUpsellDialog() {
   const { user } = useAuth();
@@ -23,7 +24,7 @@ export function PremiumUpsellDialog() {
   const [loading, setLoading] = useState(true);
 
   const storageKey = useMemo(
-    () => (user ? `tradeway:premium-upsell:dismissed:${user.id}` : ""),
+    () => (user ? `tradeway:premium-upsell:last-seen:${user.id}` : ""),
     [user],
   );
 
@@ -36,7 +37,8 @@ export function PremiumUpsellDialog() {
       return;
     }
 
-    if (window.localStorage.getItem(storageKey) === "1") {
+    const lastSeen = Number(window.localStorage.getItem(storageKey) || "0");
+    if (lastSeen && Date.now() - lastSeen < PREMIUM_UPSELL_COOLDOWN_MS) {
       setLoading(false);
       return;
     }
@@ -66,7 +68,7 @@ export function PremiumUpsellDialog() {
       open={open}
       onOpenChange={(next) => {
         setOpen(next);
-        if (!next && storageKey) window.localStorage.setItem(storageKey, "1");
+        if (!next && storageKey) window.localStorage.setItem(storageKey, String(Date.now()));
       }}
     >
       <DialogContent className="border-white/10 bg-black p-0 sm:max-w-[560px]">
@@ -89,7 +91,7 @@ export function PremiumUpsellDialog() {
               Unlock TradeWay Premium
             </DialogTitle>
             <p className="max-w-md text-sm leading-6 text-zinc-400">
-              Blue badge, AI trade coaching and MT5 Auto Sync are ready when you want the full workflow.
+              Blue badge, AI trade coaching and MT5 Auto Sync unlock when you want the full workflow.
             </p>
           </DialogHeader>
 

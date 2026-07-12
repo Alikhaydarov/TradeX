@@ -8,14 +8,12 @@ import {
   Eye,
   Heart,
   ImageIcon,
-  LockKeyhole,
   LogOut,
   MapPin,
   MessageCircle,
   PenLine,
   Plus,
   Repeat2,
-  Sparkles,
   Trash2,
   TrendingUp,
   UserRound,
@@ -43,7 +41,6 @@ import { InstrumentBadge } from "./instrument-badge";
 import { useAuth } from "./auth-context";
 import { MediaImage } from "./media-image";
 import { TraderAvatar } from "./trader-avatar";
-import { usePremiumStatus } from "./use-premium-status";
 import type { Post, Profile } from "./types";
 
 interface ProfileRecord {
@@ -174,8 +171,6 @@ export function Account({ onLogin, profileUsername }: { onLogin: () => void; pro
   const [achievementType, setAchievementType] = useState<"funded" | "payout">("funded");
   const [achievementImage, setAchievementImage] = useState("");
   const [achievementBusy, setAchievementBusy] = useState(false);
-  const { status: premium } = usePremiumStatus(Boolean(user && !profileUsername));
-  const [billingLoading, setBillingLoading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
@@ -504,88 +499,6 @@ export function Account({ onLogin, profileUsername }: { onLogin: () => void; pro
             </div>
           </div>
         </section>
-
-        {isOwnProfile ? (
-          <section className="mt-2 rounded-lg border border-border bg-card p-4">
-            <div className="flex items-start gap-3">
-              <span className={`grid size-10 shrink-0 place-items-center rounded-lg border ${premium?.isPremium ? "border-sky-300/20 bg-sky-400/10 text-sky-300" : "border-white/10 bg-[#080808] text-zinc-400"}`}>
-                {premium?.isPremium ? <Sparkles size={18} /> : <LockKeyhole size={18} />}
-              </span>
-              <div className="min-w-0 flex-1">
-                <div className="flex flex-wrap items-center gap-2">
-                  <h3 className="text-sm font-black">TradeWay Premium</h3>
-                  {premium?.isPremium ? <span className="rounded-full bg-sky-400/10 px-2 py-0.5 text-[10px] font-black text-sky-300">Premium active</span> : <span className="rounded-full bg-[#080808] px-2 py-0.5 text-[10px] font-black text-zinc-400">Free plan</span>}
-                </div>
-                <p className="mt-1 text-xs leading-5 text-zinc-500">
-                  Verified badge, AI trade coaching and MT5 Auto Sync live in one clean workspace.
-                </p>
-              </div>
-            </div>
-
-            {!premium?.isPremium ? (
-              <div className="mt-4 flex flex-col gap-3 rounded-lg border border-white/8 bg-[#111111] p-3 sm:flex-row sm:items-center">
-                <p className="min-w-0 flex-1 text-xs leading-5 text-zinc-400">
-                  Upgrade when you want AI review, blue verification and account-level sync in one flow.
-                </p>
-                <button
-                  type="button"
-                  onClick={() => { window.history.pushState(null, "", "/pricing"); window.dispatchEvent(new Event("popstate")); }}
-                  className="inline-flex h-9 shrink-0 items-center justify-center rounded-lg bg-white px-3 text-xs font-black text-black transition hover:bg-zinc-200"
-                >
-                  Upgrade
-                </button>
-              </div>
-            ) : (
-              <div className="mt-4 grid gap-3">
-                <div className="grid gap-2 sm:grid-cols-3">
-                  {[
-                    ["AI enabled", premium.aiEnabled ? "Enabled" : "Off"],
-                    ["Auto Sync", premium.autoSyncEnabled ? "Enabled" : "Off"],
-                  ].map(([label, value]) => (
-                    <div key={label} className="rounded-lg border border-white/8 bg-[#111111] px-3 py-3">
-                      <p className="text-[10px] font-black uppercase tracking-wider text-zinc-600">{label}</p>
-                      <p className="mt-1 text-sm font-black text-zinc-100">{value}</p>
-                    </div>
-                  ))}
-                </div>
-                <div className="rounded-lg border border-white/8 bg-[#111111] p-3">
-                  <p className="text-xs font-black uppercase tracking-wider text-zinc-500">Billing & access</p>
-                  <p className="mt-1 text-xs leading-5 text-zinc-500">
-                    MT5 is connected inside each trading account settings, so every imported trade lands in the correct journal and account workspace.
-                  </p>
-                  <div className="mt-3 flex flex-wrap gap-2">
-                    <button
-                      type="button"
-                      onClick={() => { window.history.pushState(null, "", "/accounts"); window.dispatchEvent(new Event("popstate")); }}
-                      className="inline-flex h-9 items-center justify-center rounded-lg border border-white/10 px-3 text-xs font-black text-zinc-200 transition hover:bg-white/[.06]"
-                    >
-                      Open accounts workspace
-                    </button>
-                    <button
-                      type="button"
-                      onClick={async () => {
-                        setBillingLoading(true);
-                        setError(null);
-                        try {
-                          const response = await apiRequest<{ url: string }>("/api/stripe/portal", { method: "POST" });
-                          window.location.assign(response.url);
-                        } catch (nextError) {
-                          setError(nextError instanceof Error ? nextError.message : "Billing portal is not ready yet.");
-                        } finally {
-                          setBillingLoading(false);
-                        }
-                      }}
-                      className="inline-flex h-9 items-center justify-center rounded-lg bg-white px-3 text-xs font-black text-black transition hover:bg-zinc-200"
-                    >
-                      {billingLoading ? <XSpinner size="sm" /> : null}
-                      Manage billing
-                    </button>
-                  </div>
-                </div>
-              </div>
-            )}
-          </section>
-        ) : null}
 
         {(achievements.length > 0 || isOwnProfile) ? <section className="mt-2 border-y border-border bg-card px-4 py-3 sm:rounded-lg sm:border">
           <div className="flex items-center gap-2">

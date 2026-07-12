@@ -47,7 +47,7 @@ type PlatformConfig = {
 };
 
 const PLATFORMS: PlatformConfig[] = [
-  { id: "mt5", name: "MetaTrader 5", mode: "auto", market: "CFD", badge: "Live", logo: "5", method: "Investor password", helper: "Read-only auto sync through the TradeWay VPS bridge." },
+  { id: "mt5", name: "MetaTrader 5", mode: "auto", market: "CFD", badge: "Live", logo: "5", method: "Investor password", helper: "Read-only auto sync through the TradeWay VPS bridge.", premium: true },
   { id: "tradelocker", name: "TradeLocker", mode: "coming", market: "CFD", badge: "Next", logo: "TL", method: "Email + server", helper: "Will exchange credentials for read-only keys and sync account history.", premium: true },
   { id: "ctrader", name: "cTrader", mode: "coming", market: "CFD", badge: "Next", logo: "c", method: "OAuth", helper: "Official cTrader authorization flow with read-only permissions.", premium: true },
   { id: "tradovate", name: "Tradovate", mode: "csv", market: "Futures", badge: "CSV", logo: "T", method: "CSV import", helper: "Export Orders CSV from Tradovate and import closed trades." },
@@ -143,6 +143,7 @@ export function PropAccountDialog({
   const phase = accountType === "real" ? "Live" : "Challenge";
   const createsProcessingMt5 = accountKind === "automatic" && platform === "mt5" && connectNow;
   const isSubmitting = saving || internalSaving;
+  const freeUserPlatformLocked = !premiumStatus.isPremium;
 
   useEffect(() => {
     if (open) return;
@@ -326,9 +327,9 @@ export function PropAccountDialog({
                     <div className="flex flex-col gap-4 px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-5">
                       <div className="min-w-0">
                         <p className="text-[10px] font-black uppercase tracking-[0.22em] text-sky-200/75">TradeWay Premium</p>
-                        <h3 className="mt-1 text-base font-black text-white sm:text-lg">Unlock cTrader, TradeLocker, MatchTrader and AI-powered sync tools</h3>
+                        <h3 className="mt-1 text-base font-black text-white sm:text-lg">Unlock automatic account sync and premium connectors</h3>
                         <p className="mt-1 text-xs leading-5 text-zinc-400 sm:text-sm">
-                          Free accounts can use MT5 and futures import. Premium opens advanced connectors and the full automation stack.
+                          Free users can keep manual journal accounts. Premium unlocks MT5 auto sync, advanced connectors and the full account import stack.
                         </p>
                       </div>
                       <Button
@@ -349,10 +350,10 @@ export function PropAccountDialog({
                 <div className="mx-auto max-w-2xl rounded-2xl border border-white/10 bg-black p-3">
                   <div className="flex items-center gap-2 text-sm text-zinc-400">
                     <Search size={16} />
-                    <span className="font-semibold">Premium connectors and CSV imports</span>
+                    <span className="font-semibold">Automatic account connectors</span>
                   </div>
                   <p className="mt-1 text-xs leading-5 text-zinc-600">
-                    CFD accounts use read-only connectors. Futures accounts start with CSV import until official API access is ready.
+                    Select a platform to preview the workflow. Premium is required before automatic account import can start.
                   </p>
                 </div>
 
@@ -370,7 +371,7 @@ export function PropAccountDialog({
 
                 <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
                   {filteredPlatforms.map((item) => {
-                    const locked = item.premium && !premiumStatus.isPremium;
+                    const locked = freeUserPlatformLocked || (item.premium && !premiumStatus.isPremium);
                     return (
                     <button
                       key={item.id}
@@ -413,8 +414,8 @@ export function PropAccountDialog({
                           <span className="grid size-10 place-items-center rounded-2xl border border-sky-300/20 bg-sky-400/12 text-sky-100">
                             <LockKeyhole size={16} />
                           </span>
-                          <span className="mt-3 text-sm font-black text-white">Premium connector</span>
-                          <span className="mt-1 text-[11px] font-medium leading-5 text-zinc-300">Upgrade to unlock {item.name} and advanced sync.</span>
+                          <span className="mt-3 text-sm font-black text-white">Premium required</span>
+                          <span className="mt-1 text-[11px] font-medium leading-5 text-zinc-300">Upgrade to unlock {item.name} and automatic account import.</span>
                           <span className="mt-4 inline-flex rounded-full border border-white/12 bg-[#0d0d0d] px-3 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-white">Upgrade now</span>
                         </span>
                       ) : null}
@@ -521,7 +522,7 @@ export function PropAccountDialog({
               </span>
               <h3 className="mt-5 text-2xl font-black">Unlock {premiumOverlay.name}</h3>
               <p className="mx-auto mt-2 max-w-sm text-sm leading-6 text-zinc-400">
-                {premiumOverlay.name}, AI trade analysis and advanced connector stack are part of TradeWay Premium.
+                {premiumOverlay.name}, MT5 Auto Sync, AI trade analysis and the advanced connector stack are part of TradeWay Premium.
               </p>
               <div className="mt-6 grid gap-2 sm:grid-cols-2">
                 <Button type="button" variant="outline" className="border-white/10 bg-[#0b0b0b]" onClick={() => setPremiumOverlay(null)}>
