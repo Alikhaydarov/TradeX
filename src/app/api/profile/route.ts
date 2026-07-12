@@ -28,7 +28,12 @@ interface AuthorRow {
 }
 
 function premiumVerified(profile: { is_verified?: boolean | null; plan?: string | null; premium_until?: string | null }) {
-  return Boolean(profile.is_verified) && profile.plan === "premium" && (!profile.premium_until || new Date(profile.premium_until).getTime() > Date.now());
+  if (!profile.is_verified) return false;
+  return !profile.premium_until || new Date(profile.premium_until).getTime() > Date.now();
+}
+
+function premiumPlan(profile: { is_verified?: boolean | null; plan?: string | null; premium_until?: string | null }) {
+  return premiumVerified(profile) ? "premium" : profile.plan || "free";
 }
 
 function hydrateAuthors<T extends { id: string; user_id: string; author_avatar?: string | null }>(
@@ -263,7 +268,7 @@ export async function GET(request: Request) {
     );
 
     return Response.json({
-      profile: { ...data, is_verified: premiumVerified(data), ...counts },
+      profile: { ...data, plan: premiumPlan(data), is_verified: premiumVerified(data), ...counts },
       posts: timeline,
       bookmarkedPosts,
       ...insights,
@@ -332,5 +337,5 @@ export async function PATCH(request: Request) {
   ]);
 
   const counts = await getFollowCounts(auth, auth.user.id);
-  return Response.json({ profile: { ...data, is_verified: premiumVerified(data), ...counts } });
+  return Response.json({ profile: { ...data, plan: premiumPlan(data), is_verified: premiumVerified(data), ...counts } });
 }
