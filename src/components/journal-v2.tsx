@@ -393,13 +393,10 @@ export function JournalV2({
 // Accounts list.
 function Accounts({ activeAccountId, summaries, deleting, onAdd, onOpen, onDelete }: { activeAccountId: string | null; summaries: Summary[]; deleting: string | null; onAdd: () => void; onOpen: (id: string) => void; onDelete: (a: PropAccount) => void }) {
   return (
-    <div className="animate-page-in mx-auto max-w-[1540px] space-y-4 p-4 lg:p-5">
-      <div className="flex items-center justify-between gap-3">
-        <div className="min-w-0">
-          <p className="text-[11px] font-medium text-zinc-500">Accounts</p>
-        </div>
+    <div className="animate-page-in mx-auto max-w-[1480px] space-y-3 p-3 lg:p-4">
+      <div className="flex items-center justify-end gap-3">
         <div className="flex shrink-0 items-center gap-2">
-          <Button onClick={onAdd} className="h-10 rounded-xl bg-white px-3.5 text-black hover:bg-zinc-200">
+          <Button onClick={onAdd} className="h-9 rounded-xl bg-white px-3.5 text-black hover:bg-zinc-200">
             <Plus size={15} /> Add Account
           </Button>
         </div>
@@ -419,21 +416,21 @@ function Accounts({ activeAccountId, summaries, deleting, onAdd, onOpen, onDelet
           </div>
         </div>
       ) : (
-        <section className="grid gap-3 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
+        <section className="grid gap-2.5 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
           {summaries.map((summary) => (
             <AccountCard key={summary.account.id} active={activeAccountId === summary.account.id} s={summary} deleting={deleting} onOpen={onOpen} onDelete={onDelete} />
           ))}
           <button
             type="button"
             onClick={onAdd}
-            className="group grid min-h-[184px] place-items-center rounded-[18px] border border-dashed border-white/10 bg-[#050505] text-center transition hover:border-white/20 hover:bg-[#0d0d0d]"
+            className="group grid min-h-[168px] place-items-center rounded-[16px] border border-dashed border-white/10 bg-[#050505] text-center transition hover:border-white/20 hover:bg-[#0a0a0a]"
           >
             <div>
-              <span className="mx-auto grid size-12 place-items-center rounded-xl border border-white/10 bg-black/20 text-zinc-400 transition group-hover:text-white">
-                <Plus size={22} />
+              <span className="mx-auto grid size-11 place-items-center rounded-xl border border-white/10 bg-[#0a0a0a] text-zinc-400 transition group-hover:text-white">
+                <Plus size={20} />
               </span>
-              <p className="mt-3 text-lg font-black text-white">Add Account</p>
-              <p className="mt-1 text-sm text-zinc-500">Create prop or real account.</p>
+              <p className="mt-3 text-base font-black text-white">Add Account</p>
+              <p className="mt-1 text-xs text-zinc-500">Create prop or real account.</p>
             </div>
           </button>
         </section>
@@ -451,12 +448,12 @@ function AccountCard({ active = false, s, deleting, onOpen, onDelete, compact = 
       tabIndex={0}
       onClick={() => onOpen(s.account.id)}
       onKeyDown={e => { if (e.key === "Enter" || e.key === " ") onOpen(s.account.id); }}
-      className={`group relative cursor-pointer overflow-hidden border transition-all duration-200 hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/30 ${active ? "border-white/20 bg-[#090909] ring-1 ring-white/10" : "border-white/10 bg-[#040404] hover:border-white/20 hover:bg-[#090909]"} ${compact ? "rounded-[16px]" : "rounded-[18px]"}`}
+      className={`group relative cursor-pointer overflow-hidden border transition-all duration-200 hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/30 ${active ? "border-white/20 bg-[#080808] ring-1 ring-white/10" : "border-white/10 bg-[#030303] hover:border-white/20 hover:bg-[#080808]"} ${compact ? "rounded-[14px]" : "rounded-[16px]"}`}
     >
       {/* Top bar accent */}
       <div className="absolute inset-x-0 top-0 h-[1px] bg-gradient-to-r from-transparent via-white/20 to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
 
-      <div className={compact ? "p-4" : "p-4"}>
+      <div className="p-3.5">
         {/* Header row */}
         <div className="flex items-start gap-3">
           <PropFirmLogo firm={s.account.firm} />
@@ -493,21 +490,21 @@ function AccountCard({ active = false, s, deleting, onOpen, onDelete, compact = 
         <div className="mt-3 flex items-end justify-between gap-3">
           <div>
             <p className="text-[10px] uppercase tracking-wider text-[#8a8a8a]">Balance</p>
-            <p className={`font-mono ${compact ? "text-xl" : "text-[1.45rem]"} font-black text-white`}>
+            <p className={`font-mono ${compact ? "text-lg" : "text-[1.32rem]"} font-black text-white`}>
               {cash.format(s.account.accountSize)}
             </p>
             <p className="mt-1 text-[11px] text-zinc-500">{s.account.accountType === "real" ? "Real workspace" : "Prop workspace"}</p>
           </div>
           <div className="text-right">
             <p className="text-[10px] uppercase tracking-wider text-[#8a8a8a]">Result</p>
-            <p className={`font-mono ${compact ? "text-xl" : "text-[1.35rem]"} font-black ${s.pnl >= 0 ? "text-emerald-400" : "text-rose-400"}`}>
+            <p className={`font-mono ${compact ? "text-lg" : "text-[1.18rem]"} font-black ${s.pnl >= 0 ? "text-emerald-400" : "text-rose-400"}`}>
               {s.pnl >= 0 ? "+" : ""}{cash.format(s.pnl)}
             </p>
             <p className="mt-1 text-[11px] text-zinc-500">{s.account.phase}</p>
           </div>
         </div>
 
-        <div className="mt-3 grid grid-cols-3 gap-2 rounded-xl bg-[#0b0b0b] px-3 py-2.5">
+        <div className="mt-3 grid grid-cols-3 gap-2 rounded-xl bg-[#090909] px-3 py-2.5">
           {[["Trades", s.trades], ["Win rate", `${s.winRate}%`], ["Market", s.account.marketType]].map(([l, v]) => (
             <div key={String(l)}>
               <p className="text-[10px] text-[#8a8a8a]">{l}</p>
@@ -517,7 +514,7 @@ function AccountCard({ active = false, s, deleting, onOpen, onDelete, compact = 
         </div>
       </div>
 
-      <div className="flex items-center justify-between border-t border-[#2a2a2a] px-4 py-2.5">
+      <div className="flex items-center justify-between border-t border-[#171717] px-3.5 py-2.5">
         <div className="flex items-center gap-4 text-[11px] text-[#8a8a8a]">
           <span>Target {Math.round(s.target)}%</span>
           <span>DD {Math.round(s.dd)}%</span>
@@ -865,13 +862,12 @@ function Workspace(p: {
           {/* Overview */}
           {!singleTabMode || activeTab === "overview" ? (
           <TabsContent value="overview" className="space-y-3">
-            <section className="rounded-[1rem] border border-white/8 bg-[#090909] p-3 sm:p-4">
+            <section className="rounded-[0.95rem] border border-white/8 bg-[#070707] p-3 sm:p-4">
               <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
                 <div>
-                  <p className="text-[10px] font-medium uppercase tracking-[0.12em] text-zinc-500">
+                  <p className="text-[9px] font-medium uppercase tracking-[0.12em] text-zinc-600">
                     {account.name} <span className="mx-1 text-zinc-700">&gt;</span> Dashboard
                   </p>
-                  <h3 className="mt-1 text-[15px] font-black tracking-tight text-white sm:text-base">Overview</h3>
                   <p className="mt-1 text-xs text-zinc-500">{new Date().toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric", year: "numeric" })}</p>
                 </div>
                 <div className="grid grid-cols-[36px_minmax(0,1fr)_36px] gap-2 sm:flex sm:items-center lg:ml-auto">
@@ -887,7 +883,7 @@ function Workspace(p: {
 
               <div className="mt-3 grid grid-cols-2 gap-2 xl:grid-cols-7">
                 {weeklyStrip.map((day) => (
-                  <div key={day.key} className="rounded-[0.95rem] border border-white/8 bg-black/18 px-3 py-2.5">
+                  <div key={day.key} className="rounded-[0.9rem] border border-white/8 bg-[#050505] px-3 py-2.5">
                     <div className="flex items-center justify-between gap-2">
                       <span className="text-xs font-bold text-white sm:text-sm">{day.label}</span>
                       <span className={`text-xs font-black sm:text-sm ${day.percent >= 0 ? "text-emerald-400" : "text-rose-400"}`}>{day.percent >= 0 ? "+" : ""}{day.percent.toFixed(1)}%</span>
@@ -898,20 +894,20 @@ function Workspace(p: {
               </div>
             </section>
 
-            <div className="grid gap-3 xl:grid-cols-[minmax(0,1.15fr)_minmax(300px,.85fr)_minmax(300px,.85fr)]">
-              <section className="overflow-hidden rounded-[1.2rem] border border-white/8 bg-[#0b0b0b] shadow-[0_18px_46px_rgba(0,0,0,.2)] xl:col-span-2">
+            <div className="grid gap-3 xl:grid-cols-[minmax(0,1.15fr)_minmax(280px,.85fr)_minmax(280px,.85fr)]">
+              <section className="overflow-hidden rounded-[1rem] border border-white/8 bg-[#070707] shadow-[0_18px_46px_rgba(0,0,0,.2)] xl:col-span-2">
                 <div className="flex flex-col gap-3 border-b border-white/8 px-3 py-3 sm:px-4 lg:flex-row lg:items-start">
                   <div className="min-w-0">
-                    <h3 className="text-sm font-black text-white sm:text-base">Account Balance</h3>
-                    <p className="mt-1 text-xs text-zinc-500">{account.name} equity curve across closed trades.</p>
+                    <h3 className="text-sm font-black text-white">Account Balance</h3>
+                    <p className="mt-1 text-[11px] text-zinc-500">{account.name} equity curve across closed trades.</p>
                   </div>
-                  <div className="grid grid-cols-1 gap-2 sm:grid-cols-3 lg:ml-auto lg:min-w-[520px]">
+                  <div className="grid grid-cols-1 gap-2 sm:grid-cols-3 lg:ml-auto lg:min-w-[500px]">
                     <BalanceMetric label="Current P&L" value={formatTradePnl(currentPnl)} tone={currentPnl >= 0 ? "good" : "bad"} />
                     <BalanceMetric label="Equity" value={cash.format(currentEquity)} />
                     <BalanceMetric label="Closed balance" value={cash.format(currentEquity)} />
                   </div>
                 </div>
-                <div className="h-[240px] px-1 pb-3 pt-2 sm:h-[340px] sm:px-3 sm:pb-3 sm:pt-2.5">
+                <div className="h-[230px] px-1 pb-3 pt-2 sm:h-[320px] sm:px-3 sm:pb-3 sm:pt-2.5">
                   {equity.length > 1 ? (
                     <ResponsiveContainer width="100%" height="100%">
                       <AreaChart data={equity} margin={{ left: 8, right: 14, top: 16, bottom: 4 }}>
@@ -942,7 +938,7 @@ function Workspace(p: {
                   <MetricPanel title="Trade Winrate" value={`${stats.rate}%`} note={`${planRate}% discipline score`} accent="good" />
                   <MetricPanel title="Profit Factor" value={stats.pf.toFixed(2)} note={`${formatTradePnl(stats.pnl)} this month`} accent={stats.pf >= 1 ? "good" : "bad"} />
                 </div>
-                <section className="rounded-[1.05rem] border border-white/8 bg-[#0b0b0b] p-3">
+                <section className="rounded-[1rem] border border-white/8 bg-[#070707] p-3">
                   <div className="flex items-center justify-between gap-3">
                     <div>
                       <h4 className="text-sm font-black text-white">Challenge Limits</h4>
@@ -962,8 +958,8 @@ function Workspace(p: {
               </div>
             </div>
 
-            <div className="grid gap-3 xl:grid-cols-[minmax(0,1fr)_340px]">
-              <section className="rounded-[1.2rem] border border-white/8 bg-[#0b0b0b] p-3 shadow-[0_18px_46px_rgba(0,0,0,.2)] sm:p-4">
+            <div className="grid gap-3 xl:grid-cols-[minmax(0,1fr)_320px]">
+              <section className="rounded-[1rem] border border-white/8 bg-[#070707] p-3 shadow-[0_18px_46px_rgba(0,0,0,.2)] sm:p-4">
                 <div className="flex items-center justify-between gap-3">
                   <div>
                     <h3 className="text-base font-black text-white">Recent Trades</h3>
@@ -1003,7 +999,7 @@ function Workspace(p: {
                 )}
               </section>
 
-              <section className="rounded-[1.2rem] border border-white/8 bg-[#0b0b0b] p-3 shadow-[0_18px_46px_rgba(0,0,0,.2)] sm:p-4">
+              <section className="rounded-[1rem] border border-white/8 bg-[#070707] p-3 shadow-[0_18px_46px_rgba(0,0,0,.2)] sm:p-4">
                 <div className="flex items-center justify-between gap-3">
                   <div>
                     <h3 className="text-base font-black text-white">Execution Snapshot</h3>

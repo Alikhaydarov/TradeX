@@ -130,6 +130,8 @@ html {
   color-scheme: dark;
   overflow-x: hidden;
   width: 100%;
+  scrollbar-width: thin;
+  scrollbar-color: #2a2a2a #050505;
 }
 
 body {
@@ -142,6 +144,34 @@ body {
   background: #000000;
   background-attachment: fixed;
   -webkit-text-size-adjust: 100%;
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #2a2a2a #050505;
+}
+
+*::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+*::-webkit-scrollbar-track {
+  background: #050505;
+}
+
+*::-webkit-scrollbar-thumb {
+  border: 2px solid #050505;
+  border-radius: 999px;
+  background: #242424;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background: #303030;
+}
+
+*::-webkit-scrollbar-corner {
+  background: #050505;
 }
 
 button, input, textarea, select { font: inherit; }

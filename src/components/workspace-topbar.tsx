@@ -75,15 +75,15 @@ export function WorkspaceTopbar({ section }: { section: Section }) {
       </div>
 
       <div className="hidden items-center justify-between gap-3 lg:flex lg:w-full">
-        <div className="min-w-0 items-center gap-1 text-[10px] font-medium text-zinc-500 lg:flex">
+        <div className="min-w-0 items-center gap-1 text-[9px] font-medium uppercase tracking-[0.08em] text-zinc-600 lg:flex">
           {isAccountScoped ? (
             <>
               <span className="truncate text-zinc-500">{workspace}</span>
               <span className="text-zinc-700">&gt;</span>
-              <span className="font-medium tracking-[0.01em] text-zinc-300">{page}</span>
+              <span className="font-semibold tracking-[0.02em] text-zinc-300">{page}</span>
             </>
           ) : (
-            <span className="font-medium tracking-[0.01em] text-zinc-300">{page}</span>
+            <span className="font-semibold tracking-[0.02em] text-zinc-300">{page}</span>
           )}
         </div>
         <div className="ml-auto flex items-center gap-2">
