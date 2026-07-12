@@ -13,6 +13,7 @@ import {
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader,
   AlertDialogTitle, AlertDialogTrigger,
 } from "./ui/alert-dialog";
+import Image from "next/image";
 import { Button } from "./ui/button";
 import { Card, CardContent } from "./ui/card";
 import { Checkbox } from "./ui/checkbox";
@@ -20,7 +21,6 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "./ui/dialog";
 import { Input } from "./ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
-import { Separator } from "./ui/separator";
 import { Textarea } from "./ui/textarea";
 import { Tabs, TabsContent } from "./ui/tabs";
 import { useActiveAccountStore } from "./active-account-context";
@@ -568,11 +568,11 @@ export function JournalV2({
 // Accounts list.
 function Accounts({ activeAccountId, summaries, deleting, onAdd, onOpen, onDelete }: { activeAccountId: string | null; summaries: Summary[]; deleting: string | null; onAdd: () => void; onOpen: (id: string) => void; onDelete: (a: PropAccount) => void }) {
   return (
-    <div className="animate-page-in mx-auto max-w-[1460px] space-y-2 p-3 lg:p-4">
+    <div className="animate-page-in mx-auto max-w-[1460px] space-y-3 p-3 lg:p-4">
       <div className="flex items-center justify-between gap-3">
         <div>
-          <p className="text-[9px] font-semibold uppercase tracking-[0.12em] text-zinc-600">Accounts</p>
-          <p className="mt-1 text-xs text-zinc-500">Open a card to switch the whole workspace to that account.</p>
+          <p className="text-[9px] font-semibold uppercase tracking-[0.18em] text-zinc-600">Accounts</p>
+          <p className="mt-1 text-xs text-zinc-500">Pick a workspace and open its dashboard.</p>
         </div>
         <div className="flex shrink-0 items-center gap-2">
           <Button onClick={onAdd} className="h-9 rounded-xl bg-white px-3.5 text-black hover:bg-zinc-200">
@@ -595,7 +595,7 @@ function Accounts({ activeAccountId, summaries, deleting, onAdd, onOpen, onDelet
           </div>
         </div>
       ) : (
-        <section className="grid gap-2 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
+        <section className="grid gap-3 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
           {summaries.map((summary) => (
             <AccountCard key={summary.account.id} active={activeAccountId === summary.account.id} s={summary} deleting={deleting} onOpen={onOpen} onDelete={onDelete} />
           ))}
@@ -605,8 +605,35 @@ function Accounts({ activeAccountId, summaries, deleting, onAdd, onOpen, onDelet
   );
 }
 
+function AccountPlatformMark({ account }: { account: PropAccount }) {
+  const isMt5 = (account.platform || "").toLowerCase().includes("mt5") || account.importSource === "mt5_bridge";
+
+  if (isMt5) {
+    return (
+      <span className="grid size-12 shrink-0 place-items-center rounded-2xl border border-white/10 bg-[#050505]">
+        <Image
+          src="/mt5/mt5-logo.png"
+          alt="MT5"
+          width={32}
+          height={32}
+          className="rounded-xl object-cover"
+        />
+      </span>
+    );
+  }
+
+  return (
+    <span className="grid size-12 shrink-0 place-items-center rounded-2xl border border-white/10 bg-[#050505]">
+      <PlatformLogoBadge platform={account.platform} compact className="scale-110" />
+    </span>
+  );
+}
+
 function AccountCard({ active = false, s, deleting, onOpen, onDelete, compact = false }: { active?: boolean; s: Summary; deleting: string | null; onOpen: (id: string) => void; onDelete: (a: PropAccount) => void; compact?: boolean }) {
   const statusColor: Record<string, string> = { Processing: "text-sky-300 bg-[#091119] border-sky-400/20", Active: "text-emerald-400 bg-[#0b1c12] border-emerald-400/20", Passed: "text-zinc-300 bg-[#0a0a0a] border-white/15", Failed: "text-rose-400 bg-[#1a0d10] border-rose-400/20", Paused: "text-amber-400 bg-[#1a1407] border-amber-400/20" };
+  const pnlTone = s.pnl >= 0 ? "text-emerald-400" : "text-rose-400";
+  const workspaceLabel = s.account.accountType === "real" ? "Real account" : "Prop account";
+  const sourceLabel = s.account.importSource === "mt5_bridge" ? "MT5 Auto Sync" : s.account.platform?.toUpperCase() || "Manual";
 
   return (
     <div
@@ -614,24 +641,26 @@ function AccountCard({ active = false, s, deleting, onOpen, onDelete, compact = 
       tabIndex={0}
       onClick={() => onOpen(s.account.id)}
       onKeyDown={e => { if (e.key === "Enter" || e.key === " ") onOpen(s.account.id); }}
-      className={`group relative cursor-pointer overflow-hidden border transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/30 ${active ? "border-white/20 bg-[#080808] ring-1 ring-white/10" : "border-white/10 bg-[#030303] hover:border-white/20 hover:bg-[#070707]"} ${compact ? "rounded-[14px]" : "rounded-[16px]"}`}
+      className={`group relative cursor-pointer overflow-hidden border transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/30 ${active ? "border-white/20 bg-[#080808] shadow-[0_16px_44px_rgba(0,0,0,.34)]" : "border-white/10 bg-[#050505] hover:border-white/20 hover:bg-[#080808]"} ${compact ? "rounded-[16px]" : "rounded-[18px]"}`}
     >
-      <div className="p-3">
-        {/* Header row */}
+      <div className="p-4">
         <div className="flex items-start gap-3">
-          <PropFirmLogo firm={s.account.firm} />
-          <div className="min-w-0 flex-1">
-            <p className="truncate text-[13px] font-bold text-white">{s.account.name}</p>
-            <div className="mt-1 flex flex-wrap items-center gap-1.5 text-[11px] text-[#8a8a8a]">
-              <span>{s.account.accountType === "real" ? "Real" : "Prop"}</span>
-              <span>/</span>
+          <AccountPlatformMark account={s.account} />
+          <div className="min-w-0 flex-1 space-y-1">
+            <div className="flex min-w-0 items-center gap-2">
+              <p className="truncate text-[15px] font-semibold text-white">{s.account.name}</p>
+              <span className="size-1.5 shrink-0 rounded-full bg-emerald-400" />
+            </div>
+            <p className="truncate text-[11px] text-zinc-500">
+              {workspaceLabel} / {s.account.marketType.toUpperCase()} / {sourceLabel}
+            </p>
+            <div className="flex items-center gap-2 text-[11px] text-zinc-500">
               <span>{s.account.phase}</span>
-              <span>/</span>
-              <span>{s.account.marketType}</span>
-              <PlatformLogoBadge platform={s.account.platform} compact className="ml-1" />
+              <span className="text-zinc-700">•</span>
+              <span>{s.trades} trades</span>
             </div>
           </div>
-          <div className="flex shrink-0 items-center gap-1.5">
+          <div className="flex shrink-0 items-center gap-2">
             <span className={`rounded-lg border px-2 py-0.5 text-[10px] font-semibold ${statusColor[s.account.status] || statusColor.Active}`}>
               {s.account.status}
             </span>
@@ -650,39 +679,30 @@ function AccountCard({ active = false, s, deleting, onOpen, onDelete, compact = 
           </div>
         </div>
 
-        <div className="mt-2.5 flex items-end justify-between gap-3">
-          <div>
-            <p className="text-[10px] uppercase tracking-wider text-[#8a8a8a]">Balance</p>
-            <p className={`font-mono ${compact ? "text-lg" : "text-[1.06rem]"} font-black text-white`}>
+        <div className="mt-5 grid grid-cols-2 gap-3">
+          <div className="rounded-2xl border border-white/8 bg-[#090909] px-3.5 py-3">
+            <p className="text-[10px] uppercase tracking-[0.18em] text-zinc-500">Balance</p>
+            <p className={`mt-2 font-mono ${compact ? "text-lg" : "text-[1.15rem]"} font-semibold text-white`}>
               {cash.format(s.account.accountSize)}
             </p>
-            <p className="mt-1 text-[11px] text-zinc-500">{s.account.accountType === "real" ? "Real workspace" : "Prop workspace"}</p>
+            <p className="mt-1 text-[11px] text-zinc-500">{s.account.firm || "Trading account"}</p>
           </div>
-          <div className="text-right">
-            <p className="text-[10px] uppercase tracking-wider text-[#8a8a8a]">Result</p>
-            <p className={`font-mono ${compact ? "text-lg" : "text-[0.96rem]"} font-black ${s.pnl >= 0 ? "text-emerald-400" : "text-rose-400"}`}>
+          <div className="rounded-2xl border border-white/8 bg-[#090909] px-3.5 py-3 text-right">
+            <p className="text-[10px] uppercase tracking-[0.18em] text-zinc-500">Result</p>
+            <p className={`mt-2 font-mono ${compact ? "text-lg" : "text-[1.15rem]"} font-semibold ${pnlTone}`}>
               {s.pnl >= 0 ? "+" : ""}{cash.format(s.pnl)}
             </p>
-            <p className="mt-1 text-[11px] text-zinc-500">{s.account.phase}</p>
+            <p className="mt-1 text-[11px] text-zinc-500">Win rate {s.winRate}%</p>
           </div>
         </div>
 
-        <div className="mt-3 grid grid-cols-3 gap-2 rounded-xl border border-white/8 bg-[#050505] px-3 py-2">
-          {[["Trades", s.trades], ["Win rate", `${s.winRate}%`], ["Market", s.account.marketType]].map(([l, v]) => (
-            <div key={String(l)}>
-              <p className="text-[10px] text-[#8a8a8a]">{l}</p>
-              <p className="font-mono text-[12px] font-bold text-white">{v}</p>
-            </div>
-          ))}
+        <div className="mt-3 flex items-center justify-between gap-3 rounded-2xl border border-white/8 bg-[#090909] px-3.5 py-2.5">
+          <div className="flex items-center gap-4 text-[11px] text-zinc-500">
+            <span>Target {Math.round(s.target)}%</span>
+            <span>DD {Math.round(s.dd)}%</span>
+          </div>
+          <ChevronRight size={16} className="text-zinc-600 transition-transform group-hover:translate-x-0.5" />
         </div>
-      </div>
-
-      <div className="flex items-center justify-between border-t border-[#171717] bg-[#050505] px-3 py-2.5">
-        <div className="flex items-center gap-4 text-[11px] text-[#8a8a8a]">
-          <span>Target {Math.round(s.target)}%</span>
-          <span>DD {Math.round(s.dd)}%</span>
-        </div>
-        <ChevronRight size={16} className="text-[#8a8a8a] transition-transform group-hover:translate-x-0.5" />
       </div>
     </div>
   );
@@ -1913,7 +1933,7 @@ function TradeEditor({ trade, saving, onClose, onSave, onDelete }: { trade: Jour
   return (
     <div className="fixed inset-0 z-[9999] flex items-center justify-center overflow-hidden bg-black/88 p-2 pt-[max(.5rem,env(safe-area-inset-top))] pb-[max(.5rem,env(safe-area-inset-bottom))] sm:p-4">
       <div className="absolute inset-0" onClick={onClose} aria-hidden="true" />
-      <form action={onSave} className="relative z-10 flex h-[calc(100dvh-1rem)] max-h-[920px] w-full max-w-4xl flex-col overflow-hidden rounded-[20px] border border-white/8 bg-[#070707] text-foreground shadow-2xl shadow-black/80 sm:h-auto sm:max-h-[92dvh] sm:rounded-[18px]">
+      <form action={onSave} className="relative z-10 flex h-[calc(100dvh-1rem)] max-h-[920px] w-full max-w-5xl flex-col overflow-hidden rounded-[20px] border border-white/8 bg-[#070707] text-foreground shadow-2xl shadow-black/80 sm:h-auto sm:max-h-[92dvh] sm:rounded-[18px]">
         <header className="flex shrink-0 items-center gap-3 border-b border-border px-4 py-3.5 sm:px-5 sm:py-4">
           <div className="min-w-0 flex-1">
             <h3 className="truncate text-lg font-black">{trade.symbol} trade</h3>
@@ -1923,61 +1943,93 @@ function TradeEditor({ trade, saving, onClose, onSave, onDelete }: { trade: Jour
             <X size={17} />
           </button>
         </header>
-        <div className="min-h-0 flex-1 space-y-4 overflow-y-auto overscroll-contain p-4 sm:p-5">
-          <div className="grid min-w-0 grid-cols-2 gap-3 sm:grid-cols-[repeat(3,minmax(0,1fr))]">
-            <label className="col-span-2 min-w-0 text-xs text-muted-foreground sm:col-span-1">Symbol<Input name="symbol" defaultValue={trade.symbol} className="mt-1" /></label>
-            <label className="min-w-0 text-xs text-[#8a8a8a]">
-              Side
-              <Select name="side" defaultValue={trade.side}>
-                <SelectTrigger className="mt-1 w-full"><SelectValue /></SelectTrigger>
-                <SelectContent position="popper" align="start">
-                  <SelectItem value="Long">Long</SelectItem>
-                  <SelectItem value="Short">Short</SelectItem>
-                </SelectContent>
-              </Select>
-            </label>
-            <label className="min-w-0 text-xs text-[#8a8a8a]">Date<Input name="tradedAt" type="date" defaultValue={trade.rawDate} className="mt-1" /></label>
-          </div>
-          <div className="grid min-w-0 grid-cols-2 gap-3 sm:grid-cols-[repeat(3,minmax(0,1fr))]">
-            <label className="min-w-0 text-xs text-[#8a8a8a]">PnL<Input name="pnl" inputMode="decimal" defaultValue={String(trade.pnl)} className="mt-1" /></label>
-            <label className="min-w-0 text-xs text-[#8a8a8a]">Quantity<Input name="quantity" inputMode="decimal" defaultValue={String(trade.quantity)} className="mt-1" /></label>
-            <label className="col-span-2 min-w-0 text-xs text-[#8a8a8a] sm:col-span-1">Fees<Input name="fees" inputMode="decimal" defaultValue={String(trade.fees)} className="mt-1" /></label>
-          </div>
-          <div className="grid min-w-0 grid-cols-2 gap-3 sm:grid-cols-[repeat(3,minmax(0,1fr))]">
-            <label className="text-xs text-[#8a8a8a]">Risk $<Input name="riskAmount" inputMode="decimal" defaultValue={String(trade.riskAmount ?? 0)} className="mt-1 border-[#2a2a2a] bg-[#121212]" /></label>
-            <label className="text-xs text-[#8a8a8a]">RR<Input name="resultR" inputMode="decimal" defaultValue={String(trade.resultR ?? 0)} className="mt-1 border-[#2a2a2a] bg-[#121212]" /></label>
-            <label className="col-span-2 text-xs text-[#8a8a8a] sm:col-span-1">Risk %<Input name="riskPercent" defaultValue={trade.riskPercent ?? ""} className="mt-1 border-[#2a2a2a] bg-[#121212]" /></label>
-          </div>
-          <div className="grid min-w-0 grid-cols-2 gap-3 sm:grid-cols-[repeat(3,minmax(0,1fr))]">
-            <label className="col-span-2 text-xs text-[#8a8a8a] sm:col-span-1">Setup<Input name="setup" defaultValue={trade.setup ?? ""} className="mt-1 border-[#2a2a2a] bg-[#121212]" /></label>
-            <label className="text-xs text-[#8a8a8a]">Session<Input name="session" defaultValue={trade.session ?? ""} className="mt-1 border-[#2a2a2a] bg-[#121212]" /></label>
-            <label className="text-xs text-[#8a8a8a]">Tags<Input name="tags" defaultValue={(trade.tags ?? []).join(", ")} className="mt-1 border-[#2a2a2a] bg-[#121212]" /></label>
-          </div>
-          <Separator />
-          <div className="rounded-2xl border border-white/8 bg-[#050505] p-4">
-            <div className="mb-3 flex items-center justify-between gap-3">
-              <p className="text-[10px] font-black uppercase tracking-[.16em] text-[#8a8a8a]">Chart screenshot</p>
-              <span className="text-xs text-zinc-500">{imageUrls.length}/3</span>
+        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain p-4 sm:p-5">
+          <div className="grid gap-4 xl:grid-cols-[minmax(0,1.12fr)_minmax(320px,.88fr)]">
+            <div className="space-y-4">
+              <section className="rounded-2xl border border-white/8 bg-[#050505] p-4">
+                <div className="mb-4">
+                  <p className="text-[10px] font-black uppercase tracking-[.16em] text-[#8a8a8a]">Trade details</p>
+                  <h4 className="mt-1 text-sm font-black text-white">Execution snapshot</h4>
+                </div>
+                <div className="grid min-w-0 grid-cols-2 gap-3 sm:grid-cols-[repeat(3,minmax(0,1fr))]">
+                  <label className="col-span-2 min-w-0 text-xs text-muted-foreground sm:col-span-1">Symbol<Input name="symbol" defaultValue={trade.symbol} className="mt-1" /></label>
+                  <label className="min-w-0 text-xs text-[#8a8a8a]">
+                    Side
+                    <Select name="side" defaultValue={trade.side}>
+                      <SelectTrigger className="mt-1 w-full"><SelectValue /></SelectTrigger>
+                      <SelectContent position="popper" align="start">
+                        <SelectItem value="Long">Long</SelectItem>
+                        <SelectItem value="Short">Short</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </label>
+                  <label className="min-w-0 text-xs text-[#8a8a8a]">Date<Input name="tradedAt" type="date" defaultValue={trade.rawDate} className="mt-1" /></label>
+                </div>
+                <div className="mt-3 grid min-w-0 grid-cols-2 gap-3 sm:grid-cols-[repeat(3,minmax(0,1fr))]">
+                  <label className="min-w-0 text-xs text-[#8a8a8a]">PnL<Input name="pnl" inputMode="decimal" defaultValue={String(trade.pnl)} className="mt-1" /></label>
+                  <label className="min-w-0 text-xs text-[#8a8a8a]">Quantity<Input name="quantity" inputMode="decimal" defaultValue={String(trade.quantity)} className="mt-1" /></label>
+                  <label className="col-span-2 min-w-0 text-xs text-[#8a8a8a] sm:col-span-1">Fees<Input name="fees" inputMode="decimal" defaultValue={String(trade.fees)} className="mt-1" /></label>
+                </div>
+              </section>
+
+              <section className="rounded-2xl border border-white/8 bg-[#050505] p-4">
+                <div className="mb-4">
+                  <p className="text-[10px] font-black uppercase tracking-[.16em] text-[#8a8a8a]">Context</p>
+                  <h4 className="mt-1 text-sm font-black text-white">Risk, setup and tagging</h4>
+                </div>
+                <div className="grid min-w-0 grid-cols-2 gap-3 sm:grid-cols-[repeat(3,minmax(0,1fr))]">
+                  <label className="text-xs text-[#8a8a8a]">Risk $<Input name="riskAmount" inputMode="decimal" defaultValue={String(trade.riskAmount ?? 0)} className="mt-1 border-[#2a2a2a] bg-[#121212]" /></label>
+                  <label className="text-xs text-[#8a8a8a]">RR<Input name="resultR" inputMode="decimal" defaultValue={String(trade.resultR ?? 0)} className="mt-1 border-[#2a2a2a] bg-[#121212]" /></label>
+                  <label className="col-span-2 text-xs text-[#8a8a8a] sm:col-span-1">Risk %<Input name="riskPercent" defaultValue={trade.riskPercent ?? ""} className="mt-1 border-[#2a2a2a] bg-[#121212]" /></label>
+                </div>
+                <div className="mt-3 grid min-w-0 grid-cols-2 gap-3 sm:grid-cols-[repeat(3,minmax(0,1fr))]">
+                  <label className="col-span-2 text-xs text-[#8a8a8a] sm:col-span-1">Setup<Input name="setup" defaultValue={trade.setup ?? ""} className="mt-1 border-[#2a2a2a] bg-[#121212]" /></label>
+                  <label className="text-xs text-[#8a8a8a]">Session<Input name="session" defaultValue={trade.session ?? ""} className="mt-1 border-[#2a2a2a] bg-[#121212]" /></label>
+                  <label className="text-xs text-[#8a8a8a]">Tags<Input name="tags" defaultValue={(trade.tags ?? []).join(", ")} className="mt-1 border-[#2a2a2a] bg-[#121212]" /></label>
+                </div>
+              </section>
+
+              <section className="rounded-2xl border border-white/8 bg-[#050505] p-4">
+                <div className="mb-4">
+                  <p className="text-[10px] font-black uppercase tracking-[.16em] text-[#8a8a8a]">Review note</p>
+                  <h4 className="mt-1 text-sm font-black text-white">What happened in this trade?</h4>
+                </div>
+                <label className="block text-xs text-[#8a8a8a]">
+                  Notes
+                  <Textarea name="note" defaultValue={trade.note} className="mt-1 min-h-36 border-[#2a2a2a] bg-[#121212]" />
+                </label>
+              </section>
             </div>
-            <input ref={imageInputRef} type="file" multiple accept="image/jpeg,image/png,image/webp" className="hidden" onChange={(event) => void uploadTradeImages(event.target.files)} />
-            <input type="hidden" name="imageUrls" value={JSON.stringify(imageUrls)} />
-            <div className="grid grid-cols-3 gap-2">
-              {imageUrls.map((url, index) => <div key={url} className="group relative aspect-square overflow-hidden rounded-lg border border-white/10 bg-black"><button type="button" onClick={() => { setPreviewUrl(url); setScreenshotOpen(true); }} className="h-full w-full"><MediaImage src={url} alt={`${trade.symbol} screenshot ${index + 1}`} className="h-full w-full object-cover" /></button><button type="button" onClick={() => setImageUrls((current) => current.filter((item) => item !== url))} className="absolute right-1.5 top-1.5 grid size-7 place-items-center rounded-md bg-[#050505] text-rose-200"><Trash2 size={12} /></button></div>)}
-              {imageUrls.length < 3 ? <button type="button" onClick={() => imageInputRef.current?.click()} className="grid aspect-square place-items-center rounded-lg border border-dashed border-white/10 text-zinc-500 transition hover:bg-[#111111] hover:text-white">{uploadingImages ? <LoaderCircle className="animate-spin" size={20} /> : <Plus size={22} />}</button> : null}
-            </div>
-          </div>
-          <div className="rounded-2xl border border-white/8 bg-[#050505] p-4">
-            <p className="mb-3 text-[10px] font-black uppercase tracking-[.16em] text-[#8a8a8a]">Notion review checklist</p>
-            <div className="grid gap-2 sm:grid-cols-2">
-              <label className="flex min-h-10 items-center gap-3 rounded-lg border border-border bg-card px-3 text-sm text-foreground"><Checkbox name="followingPlan" value="true" defaultChecked={trade.followingPlan} /> Following plan?</label>
-              <label className="flex min-h-10 items-center gap-3 rounded-lg border border-border bg-card px-3 text-sm text-foreground"><Checkbox name="reviewCompleted" value="true" defaultChecked={trade.reviewCompleted} /> Review completed</label>
-              <label className="flex min-h-10 items-center gap-3 rounded-lg border border-border bg-card px-3 text-sm text-foreground"><Checkbox name="errorMade" value="true" defaultChecked={trade.errorMade} /> Error made?</label>
-              <label className="flex min-h-10 items-center gap-3 rounded-lg border border-border bg-card px-3 text-sm text-foreground"><Checkbox name="toTradingBible" value="true" defaultChecked={trade.toTradingBible} /> Add to Trading Bible</label>
-            </div>
-            <label className="mt-3 block text-xs text-[#8a8a8a]">Mistake type<Input name="mistakeType" defaultValue={trade.mistakeType ?? ""} className="mt-1 border-[#2a2a2a] bg-[#121212]" /></label>
-          </div>
-          <label className="block text-xs text-[#8a8a8a]">Review note<Textarea name="note" defaultValue={trade.note} className="mt-1 min-h-28 border-[#2a2a2a] bg-[#121212]" /></label>
-          <details className="group overflow-hidden rounded-2xl border border-[#2a2a2a] bg-[#121212]">
+
+            <div className="space-y-4">
+              <section className="rounded-2xl border border-white/8 bg-[#050505] p-4">
+                <div className="mb-3 flex items-center justify-between gap-3">
+                  <div>
+                    <p className="text-[10px] font-black uppercase tracking-[.16em] text-[#8a8a8a]">Screenshots</p>
+                    <h4 className="mt-1 text-sm font-black text-white">Chart capture</h4>
+                  </div>
+                  <span className="text-xs text-zinc-500">{imageUrls.length}/3</span>
+                </div>
+                <input ref={imageInputRef} type="file" multiple accept="image/jpeg,image/png,image/webp" className="hidden" onChange={(event) => void uploadTradeImages(event.target.files)} />
+                <input type="hidden" name="imageUrls" value={JSON.stringify(imageUrls)} />
+                <div className="grid grid-cols-3 gap-2">
+                  {imageUrls.map((url, index) => <div key={url} className="group relative aspect-square overflow-hidden rounded-lg border border-white/10 bg-black"><button type="button" onClick={() => { setPreviewUrl(url); setScreenshotOpen(true); }} className="h-full w-full"><MediaImage src={url} alt={`${trade.symbol} screenshot ${index + 1}`} className="h-full w-full object-cover" /></button><button type="button" onClick={() => setImageUrls((current) => current.filter((item) => item !== url))} className="absolute right-1.5 top-1.5 grid size-7 place-items-center rounded-md bg-[#050505] text-rose-200"><Trash2 size={12} /></button></div>)}
+                  {imageUrls.length < 3 ? <button type="button" onClick={() => imageInputRef.current?.click()} className="grid aspect-square place-items-center rounded-lg border border-dashed border-white/10 text-zinc-500 transition hover:bg-[#111111] hover:text-white">{uploadingImages ? <LoaderCircle className="animate-spin" size={20} /> : <Plus size={22} />}</button> : null}
+                </div>
+              </section>
+
+              <section className="rounded-2xl border border-white/8 bg-[#050505] p-4">
+                <p className="mb-3 text-[10px] font-black uppercase tracking-[.16em] text-[#8a8a8a]">Review checklist</p>
+                <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-1">
+                  <label className="flex min-h-10 items-center gap-3 rounded-lg border border-border bg-card px-3 text-sm text-foreground"><Checkbox name="followingPlan" value="true" defaultChecked={trade.followingPlan} /> Following plan?</label>
+                  <label className="flex min-h-10 items-center gap-3 rounded-lg border border-border bg-card px-3 text-sm text-foreground"><Checkbox name="reviewCompleted" value="true" defaultChecked={trade.reviewCompleted} /> Review completed</label>
+                  <label className="flex min-h-10 items-center gap-3 rounded-lg border border-border bg-card px-3 text-sm text-foreground"><Checkbox name="errorMade" value="true" defaultChecked={trade.errorMade} /> Error made?</label>
+                  <label className="flex min-h-10 items-center gap-3 rounded-lg border border-border bg-card px-3 text-sm text-foreground"><Checkbox name="toTradingBible" value="true" defaultChecked={trade.toTradingBible} /> Add to Trading Bible</label>
+                </div>
+                <label className="mt-3 block text-xs text-[#8a8a8a]">Mistake type<Input name="mistakeType" defaultValue={trade.mistakeType ?? ""} className="mt-1 border-[#2a2a2a] bg-[#121212]" /></label>
+              </section>
+
+              <details className="group overflow-hidden rounded-2xl border border-[#2a2a2a] bg-[#121212]">
             <summary className="flex cursor-pointer list-none items-center gap-3 px-4 py-3.5 text-sm font-bold text-zinc-200 transition hover:bg-[#171717]">
               <ImageIcon size={17} className="text-zinc-500" />
               Share image
@@ -1987,7 +2039,9 @@ function TradeEditor({ trade, saving, onClose, onSave, onDelete }: { trade: Jour
             <div className="border-t border-[#2a2a2a] p-3 sm:p-4">
               <TradeReviewImage trade={trade} chartUrls={imageUrls} />
             </div>
-          </details>
+              </details>
+            </div>
+          </div>
         </div>
         <footer className="grid shrink-0 grid-cols-3 gap-2 border-t border-border bg-card p-3 sm:flex sm:p-4">
           <Button type="button" variant="outline" onClick={onClose}>Cancel</Button>
