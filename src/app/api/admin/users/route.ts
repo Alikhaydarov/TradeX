@@ -63,43 +63,30 @@ export async function PATCH(request: Request) {
 
     if (error) return serverError(error.message);
 
-    const premiumPatch = body.isVerified
-      ? {
-          plan: "premium",
-          premium_until: null,
-          ai_enabled: true,
-          traderox_enabled: true,
-          auto_sync_enabled: true,
-          updated_at: new Date().toISOString(),
-        }
-      : {
-          plan: "free",
-          premium_until: null,
-          ai_enabled: false,
-          traderox_enabled: false,
-          auto_sync_enabled: false,
-          updated_at: new Date().toISOString(),
-        };
-
     const { error: premiumError } = await auth.supabase
       .from("profiles")
-      .update(premiumPatch)
+      .update(
+        body.isVerified
+          ? {
+              plan: "premium",
+              premium_until: null,
+              ai_enabled: true,
+              traderox_enabled: true,
+              auto_sync_enabled: true,
+            }
+          : {
+              plan: "free",
+              premium_until: null,
+              ai_enabled: false,
+              traderox_enabled: false,
+              auto_sync_enabled: false,
+            },
+      )
       .eq("id", body.userId);
 
     if (premiumError) return serverError(premiumError.message);
 
-    return Response.json({
-      success: true,
-      user: {
-        id: body.userId,
-        isVerified: body.isVerified,
-        plan: body.isVerified ? "premium" : "free",
-        premiumUntil: null,
-        aiEnabled: body.isVerified,
-        traderoxEnabled: body.isVerified,
-        autoSyncEnabled: body.isVerified,
-      },
-    });
+    return Response.json({ success: true });
   } catch (error) {
     return serverError(error instanceof Error ? error.message : undefined);
   }
