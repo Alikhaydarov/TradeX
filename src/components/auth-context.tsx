@@ -99,7 +99,7 @@ export function AuthProvider({
       loading,
       configured,
       async signInWithGoogle() {
-        if (!configured) return "Backend auth hali sozlanmagan.";
+        if (!configured) return "Backend auth is not configured yet.";
         window.location.assign("/api/auth/google");
         return null;
       },

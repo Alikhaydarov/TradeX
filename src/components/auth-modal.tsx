@@ -1,7 +1,7 @@
 "use client";
 
 import { X } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useAuth } from "./auth-context";
 
 function GoogleMark() {
@@ -24,34 +24,69 @@ export function AuthModal({
 }) {
   const { configured, signInWithGoogle } = useAuth();
   const [error, setError] = useState<string | null>(null);
+  const [pending, setPending] = useState(false);
+  const closeRef = useRef(onClose);
+  closeRef.current = onClose;
+
+  useEffect(() => {
+    if (!open) return;
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") closeRef.current();
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [open]);
+
   if (!open) return null;
 
   const login = async () => {
     setError(null);
+    setPending(true);
     const nextError = await signInWithGoogle();
-    if (nextError) setError(nextError);
+    if (nextError) {
+      setError(nextError);
+      setPending(false);
+    }
   };
 
   return (
-    <div className="fixed inset-0 z-[80] flex items-center justify-center bg-black/92 p-4">
-      <section className="w-full max-w-md rounded-3xl border border-white/15 bg-black p-6 shadow-2xl shadow-black/50">
+    <div
+      className="fixed inset-0 z-[80] flex items-center justify-center bg-black/92 p-4"
+      onClick={onClose}
+      role="presentation"
+    >
+      <section
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="auth-modal-title"
+        onClick={(event) => event.stopPropagation()}
+        className="w-full max-w-md rounded-3xl border border-white/15 bg-black p-6 shadow-2xl shadow-black/50"
+      >
         <div className="flex items-center">
-          <span className="text-2xl font-black tracking-tighter">TW</span>
+          <span className="text-2xl font-black tracking-tighter">TD</span>
           <button onClick={onClose} className="ml-auto rounded-full p-2 hover:bg-[#111111]" aria-label="Close">
             <X size={20} />
           </button>
         </div>
-        <h2 className="mt-7 text-3xl font-black">Join TradeWay</h2>
+        <h2 id="auth-modal-title" className="mt-7 text-3xl font-black">Join Tradox</h2>
         <p className="mt-2 text-sm leading-6 text-xmuted">
           Your profile, posts and trading workspace stay synced across devices.
         </p>
         <button
           onClick={login}
-          className="mt-7 flex w-full items-center justify-center gap-3 rounded-full bg-white py-3 font-bold text-black transition hover:bg-[#e6e6e6]"
+          disabled={pending}
+          className="mt-7 flex w-full items-center justify-center gap-3 rounded-full bg-white py-3 font-bold text-black transition hover:bg-[#e6e6e6] disabled:cursor-not-allowed disabled:opacity-70"
         >
-          <GoogleMark />
-          Continue with Google
+          {pending ? (
+            <span className="inline-flex size-5 animate-spin rounded-full border-2 border-black/20 border-t-black" aria-hidden="true" />
+          ) : (
+            <GoogleMark />
+          )}
+          {pending ? "Redirecting..." : "Continue with Google"}
         </button>
+        <p className="mt-3 text-center text-xs leading-5 text-xmuted">
+          Google is currently the only sign-in method.
+        </p>
         {!configured && (
           <div className="mt-4 rounded-2xl border border-amber-500/30 bg-amber-500/10 p-3 text-sm text-amber-200">
             Backend is not configured yet. Check the server environment and auth settings.

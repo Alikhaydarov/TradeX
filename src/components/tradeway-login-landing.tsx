@@ -1,6 +1,8 @@
 "use client";
 
 import { LockKeyhole, Star } from "lucide-react";
+import { useState } from "react";
+import { useAuth } from "./auth-context";
 import { Button } from "./ui/button";
 
 const PLATFORMS = [
@@ -56,6 +58,20 @@ function PlatformStrip() {
 }
 
 export function TradeWayLoginLanding({ onLogin }: { onLogin: () => void }) {
+  const { signInWithGoogle } = useAuth();
+  const [error, setError] = useState<string | null>(null);
+  const [pending, setPending] = useState(false);
+
+  const loginWithGoogle = async () => {
+    setError(null);
+    setPending(true);
+    const nextError = await signInWithGoogle();
+    if (nextError) {
+      setError(nextError);
+      setPending(false);
+    }
+  };
+
   return (
     <main className="auth2-wrap min-h-[100dvh] overflow-hidden bg-black text-[#f5f5f5]">
       <div className="auth2-bg" aria-hidden="true">
@@ -83,15 +99,30 @@ export function TradeWayLoginLanding({ onLogin }: { onLogin: () => void }) {
             <span>Journal, account progress, proof profile and trade sharing stay in one fast flow.</span>
           </div>
 
-          <Button type="button" onClick={onLogin} className="auth2-cta-primary h-auto w-full rounded-[10px] border-0">
-            <GoogleIcon />
-            Continue with Google
+          <Button
+            type="button"
+            onClick={loginWithGoogle}
+            disabled={pending}
+            className="auth2-cta-primary h-auto w-full rounded-[10px] border-0"
+          >
+            {pending ? (
+              <span className="inline-flex size-4 animate-spin rounded-full border-2 border-black/20 border-t-black" aria-hidden="true" />
+            ) : (
+              <GoogleIcon />
+            )}
+            {pending ? "Redirecting..." : "Continue with Google"}
           </Button>
 
           <Button type="button" variant="outline" onClick={onLogin} className="auth2-cta-secondary h-auto w-full rounded-[10px]">
             <LockKeyhole size={16} />
-            Email login / Register
+            More sign-in options
           </Button>
+
+          {error && (
+            <p className="mt-3 text-sm text-rose-400" role="alert">
+              {error}
+            </p>
+          )}
 
           <div className="auth2-tabs" aria-hidden="true">
             <span className="active">Journal</span>
