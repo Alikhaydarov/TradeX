@@ -274,13 +274,19 @@ export function JournalV2({
     setTradeOpen(true);
   }, [activeAccountId, mode]);
 
+  // Accounts are loaded once by ActiveAccountProvider on mount. Never call
+  // refreshAccounts() from inside loadEntries: doing so toggles accountsLoading,
+  // which recreated this callback and re-ran the effect below in an endless
+  // fetch/spinner loop for users without accounts.
+  const requestAccountId = mode === "workspace" ? activeAccountId : null;
+
   const loadEntries = useCallback(async (silent = false) => {
     if (!user) {
       setEntries([]);
       setLoading(false);
       return;
     }
-    if (mode === "workspace" && accountsLoading && !accounts.length) {
+    if (mode === "workspace" && accountsLoading) {
       if (!silent) setLoading(true);
       return;
     }
@@ -288,9 +294,8 @@ export function JournalV2({
     if (!silent) setLoading(true);
     setError(null);
     try {
-      if (!accounts.length) await refreshAccounts();
-      const search = mode === "workspace" && activeAccountId
-        ? `?accountId=${encodeURIComponent(activeAccountId)}`
+      const search = requestAccountId
+        ? `?accountId=${encodeURIComponent(requestAccountId)}`
         : "";
       const response = await apiRequest<{ entries: EntryRow[] }>(`/api/journal${search}`);
       setEntries(response.entries.map(entryFrom));
@@ -300,7 +305,7 @@ export function JournalV2({
     } finally {
       if (!silent) setLoading(false);
     }
-  }, [accounts.length, accountsLoading, activeAccountId, mode, refreshAccounts, user]);
+  }, [accountsLoading, requestAccountId, mode, user]);
 
   useEffect(() => {
     void loadEntries();
