@@ -53,6 +53,7 @@ type AiCoachReport = {
 type JournalCacheEntry = {
   entries: JournalEntry[];
   fetchedAt: number;
+  etag?: string;
 };
 
 const JOURNAL_CACHE_TTL_MS = 5_000;
@@ -321,10 +322,30 @@ export function JournalV2({
       const search = requestAccountId
         ? `?accountId=${encodeURIComponent(requestAccountId)}`
         : "";
-      const response = await apiRequest<{ entries: EntryRow[] }>(`/api/journal${search}`);
+      const response = await fetch(`/api/journal${search}`, {
+        cache: "no-store",
+        credentials: "same-origin",
+        headers: cached?.etag ? { "If-None-Match": cached.etag } : undefined,
+      });
       if (version !== requestVersion.current) return;
-      const nextEntries = response.entries.map(entryFrom);
-      journalCache.set(journalCacheKey, { entries: nextEntries, fetchedAt: Date.now() });
+
+      if (response.status === 304 && cached) {
+        journalCache.set(journalCacheKey, { ...cached, fetchedAt: Date.now() });
+        return;
+      }
+
+      if (!response.ok) {
+        const payload = (await response.json().catch(() => null)) as { error?: string; message?: string } | null;
+        throw new Error(payload?.error || payload?.message || "Failed to load journal.");
+      }
+
+      const payload = (await response.json()) as { entries: EntryRow[] };
+      const nextEntries = payload.entries.map(entryFrom);
+      journalCache.set(journalCacheKey, {
+        entries: nextEntries,
+        fetchedAt: Date.now(),
+        etag: response.headers.get("etag") ?? undefined,
+      });
       setEntries(nextEntries);
     } catch (nextError) {
       if (version !== requestVersion.current) return;

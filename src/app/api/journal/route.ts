@@ -1,6 +1,7 @@
 import { authenticateRequest, badRequest, serverError, unauthorized } from "@/lib/backend/auth";
 
 export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 
 interface JournalPayload {
   propAccountId?: string;
@@ -32,6 +33,29 @@ export async function GET(request: Request) {
   const auth = await authenticateRequest(request);
   if (!auth) return unauthorized();
   const accountId = new URL(request.url).searchParams.get("accountId");
+
+  let versionQuery = auth.supabase
+    .from("journal_entries")
+    .select("updated_at", { count: "exact" })
+    .eq("user_id", auth.user.id)
+    .order("updated_at", { ascending: false })
+    .limit(1);
+  if (accountId) versionQuery = versionQuery.eq("prop_account_id", accountId);
+
+  const { data: versionRows, count, error: versionError } = await versionQuery;
+  if (versionError) return serverError(versionError.message);
+
+  const latestUpdatedAt = versionRows?.[0]?.updated_at ?? "empty";
+  const etag = `W/\"${accountId ?? "all"}:${count ?? 0}:${latestUpdatedAt}\"`;
+  const headers = {
+    "Cache-Control": "private, no-cache, must-revalidate",
+    ETag: etag,
+  };
+
+  if (request.headers.get("if-none-match") === etag) {
+    return new Response(null, { status: 304, headers });
+  }
+
   let query = auth.supabase
     .from("journal_entries")
     .select("*")
@@ -41,7 +65,7 @@ export async function GET(request: Request) {
   if (accountId) query = query.eq("prop_account_id", accountId);
   const { data, error } = await query;
   if (error) return serverError(error.message);
-  return Response.json({ entries: data });
+  return Response.json({ entries: data }, { headers });
 }
 
 export async function POST(request: Request) {
