@@ -15,6 +15,7 @@ interface PremiumStatus {
   traderoxEnabled: boolean;
   autoSyncEnabled: boolean;
   isVerified: boolean;
+  billingManaged: boolean;
 }
 
 interface StripeConfigStatus {
@@ -267,14 +268,20 @@ export function Pricing({ onLogin }: { onLogin?: () => void } = {}) {
                   >
                     Open account
                   </Button>
-                  <Button
-                    className="h-10 rounded-2xl bg-white text-black hover:bg-zinc-200"
-                    onClick={() => void openPortal()}
-                    disabled={portalLoading}
-                  >
-                    {portalLoading ? <LoaderCircle className="size-4 animate-spin" /> : null}
-                    Manage billing
-                  </Button>
+                  {premium.billingManaged ? (
+                    <Button
+                      className="h-10 rounded-2xl bg-white text-black hover:bg-zinc-200"
+                      onClick={() => void openPortal()}
+                      disabled={portalLoading}
+                    >
+                      {portalLoading ? <LoaderCircle className="size-4 animate-spin" /> : null}
+                      Manage billing
+                    </Button>
+                  ) : (
+                    <Badge variant="secondary" className="h-10 rounded-2xl bg-sky-400/10 px-4 text-sky-200">
+                      Managed by admin
+                    </Badge>
+                  )}
                 </CardFooter>
               ) : null}
             </Card>
@@ -398,7 +405,9 @@ export function Pricing({ onLogin }: { onLogin?: () => void } = {}) {
                   </Button>
                   <p className="text-xs leading-5 text-zinc-500">
                     {premium?.isPremium
-                      ? "Use Manage billing above to update or cancel your current Stripe subscription."
+                      ? premium.billingManaged
+                        ? "Use Manage billing above to update or cancel your current Stripe subscription."
+                        : "Your Premium access is managed directly by the Tradox team."
                       : "Secure Stripe subscription. Premium instantly unlocks blue badge, AI analysis and MT5 Auto Sync after webhook confirmation."}
                   </p>
                 </CardFooter>

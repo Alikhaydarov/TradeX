@@ -8,6 +8,7 @@ export interface PremiumStatus {
   traderoxEnabled: boolean;
   autoSyncEnabled: boolean;
   isVerified: boolean;
+  billingManaged: boolean;
 }
 
 interface PremiumProfileRow {
@@ -31,6 +32,21 @@ export async function getPremiumStatus(auth: ApiAuth): Promise<PremiumStatus> {
   const normalizedPlan = data?.plan?.toLowerCase() ?? "free";
   const plan = normalizedPlan === "standard" ? "standard" : normalizedPlan === "pro" || normalizedPlan === "premium" ? "pro" : "free";
   const isPremium = isPremiumPlan(normalizedPlan) && isPremiumActive(data?.premium_until ?? null);
+  let billingManaged = false;
+
+  if (isPremium) {
+    const { data: subscription, error: subscriptionError } = await auth.supabase
+      .from("subscriptions")
+      .select("provider_customer_id")
+      .eq("user_id", auth.user.id)
+      .not("provider_customer_id", "is", null)
+      .order("updated_at", { ascending: false })
+      .limit(1)
+      .maybeSingle<{ provider_customer_id: string | null }>();
+
+    if (subscriptionError) throw new Error(subscriptionError.message);
+    billingManaged = Boolean(subscription?.provider_customer_id);
+  }
 
   return {
     plan,
@@ -39,6 +55,7 @@ export async function getPremiumStatus(auth: ApiAuth): Promise<PremiumStatus> {
     traderoxEnabled: isPremium && Boolean(data?.traderox_enabled),
     autoSyncEnabled: isPremium && Boolean(data?.auto_sync_enabled),
     isVerified: isPremium && Boolean(data?.is_verified),
+    billingManaged,
   };
 }
 
