@@ -98,6 +98,16 @@ main header[class*="sticky"][class*="top-0"][class*="border-b"]:not(.tw-app-topb
   display: none !important;
 }
 
+main header.tw-app-topbar[class*="sticky"][class*="top-0"][class*="border-b"] {
+  display: block !important;
+}
+
+@media (min-width: 1024px) {
+  main header.tw-app-topbar[class*="sticky"][class*="top-0"][class*="border-b"] {
+    display: flex !important;
+  }
+}
+
 main header[class*="sticky"][class*="top-0"][class*="border-b"]:not(.tw-app-topbar) + div {
   padding-top: 1.5rem !important;
 }
