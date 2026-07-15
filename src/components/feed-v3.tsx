@@ -265,13 +265,14 @@ export function FeedV3({ onLogin }: { onLogin: () => void }) {
   const recordView = (postId: string) => {
     if (!user || viewed.current.has(postId)) return;
     viewed.current.add(postId);
-    void apiRequest<{ success: boolean; counted?: boolean }>("/api/post-actions", {
+    void apiRequest<{ success: boolean; counted?: boolean; views?: number | null }>("/api/post-actions", {
       method: "POST",
       body: JSON.stringify({ action: "view", postId }),
     })
       .then((response) => {
-        if (response.counted === false) return;
-        setPosts((current) => current.map((post) => post.id === postId ? { ...post, views: post.views + 1 } : post));
+        const currentViews = response.views;
+        if (typeof currentViews !== "number") return;
+        setPosts((current) => current.map((post) => post.id === postId ? { ...post, views: currentViews } : post));
       })
       .catch(() => undefined);
   };
