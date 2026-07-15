@@ -37,7 +37,7 @@ function AppShellInner() {
   const [section, setSection] = useState<Section>(getCurrentSection);
   const [profileUsername, setProfileUsername] = useState(getCurrentProfileUsername);
   const [authOpen, setAuthOpen] = useState(false);
-  const [isAdmin, setIsAdmin] = useState(false);
+  const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
   const [notificationsMounted, setNotificationsMounted] = useState(false);
   const [profileOpening, setProfileOpening] = useState(false);
   const { user } = useAuth();
@@ -90,6 +90,7 @@ function AppShellInner() {
       return () => window.clearTimeout(timer);
     }
     let active = true;
+    const pendingTimer = window.setTimeout(() => setIsAdmin(null), 0);
     const timer = window.setTimeout(() => {
       void apiRequest<{ isAdmin: boolean }>("/api/admin/me")
         .then((response) => {
@@ -101,12 +102,13 @@ function AppShellInner() {
     }, 0);
     return () => {
       active = false;
+      window.clearTimeout(pendingTimer);
       window.clearTimeout(timer);
     };
   }, [user]);
 
   useEffect(() => {
-    if (section === "admin" && user && !isAdmin) {
+    if (section === "admin" && user && isAdmin === false) {
       const timer = window.setTimeout(() => {
         window.history.replaceState(null, "", "/");
         setSection("feed");
@@ -116,7 +118,7 @@ function AppShellInner() {
   }, [section, user, isAdmin]);
 
   const changeSection = (nextSection: Section) => {
-    if (nextSection === "admin" && !isAdmin) return;
+    if (nextSection === "admin" && isAdmin !== true) return;
     if (nextSection === section && nextSection !== "account") return;
     setProfileUsername("");
     setSection(nextSection);
@@ -136,6 +138,9 @@ function AppShellInner() {
     if (item === "settings") return <AccountSettings onLogin={openLogin} />;
     if (item === "account") return <Account onLogin={openLogin} profileUsername={profileUsername || undefined} />;
     if (item === "pricing") return <Pricing />;
+    if (item === "admin" && isAdmin === null) {
+      return <div className="grid min-h-[60vh] place-items-center text-sm font-semibold text-zinc-400">Checking admin access...</div>;
+    }
     if (item === "admin" && isAdmin) return <AdminPanel onLogin={openLogin} />;
     return <FeedV3 onLogin={openLogin} />;
   };
