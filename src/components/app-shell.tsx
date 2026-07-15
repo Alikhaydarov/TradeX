@@ -14,14 +14,9 @@ import { UserSettingsDialog } from "./user-settings-dialog";
 import { WorkspaceTopbar } from "./workspace-topbar";
 import { WorkspacePreferencesProvider, useWorkspacePreferences } from "./workspace-preferences-context";
 import { TradeWayLoginLanding } from "./tradeway-login-landing";
-import {
-  AccountsSection,
-  AnalyticsSection,
-  CalendarSection,
-  DashboardSection,
-  TradesSection,
-  WorkspaceSettingsSection,
-} from "./workspace-sections";
+import { AccountSettings } from "./account-settings";
+import { Journal } from "./journal";
+import type { WorkspaceTab } from "./journal-v2";
 import { useAuth } from "./auth-context";
 import { getCurrentProfileUsername, getCurrentSection, pathFromSection } from "./section-config";
 import { apiRequest } from "@/lib/api-client";
@@ -129,12 +124,16 @@ function AppShellInner() {
   };
 
   const renderSection = (item: Section) => {
-    if (item === "accounts") return <AccountsSection onLogin={openLogin} />;
-    if (item === "dashboard") return <DashboardSection onLogin={openLogin} />;
-    if (item === "calendar") return <CalendarSection onLogin={openLogin} />;
-    if (item === "trades") return <TradesSection onLogin={openLogin} />;
-    if (item === "analytics") return <AnalyticsSection onLogin={openLogin} />;
-    if (item === "settings") return <WorkspaceSettingsSection onLogin={openLogin} />;
+    if (item === "accounts") return <Journal onLogin={openLogin} mode="accounts" />;
+    const workspaceTabs: Partial<Record<Section, WorkspaceTab>> = {
+      dashboard: "overview",
+      calendar: "calendar",
+      trades: "trades",
+      analytics: "analytics",
+    };
+    const workspaceTab = workspaceTabs[item];
+    if (workspaceTab) return <Journal onLogin={openLogin} mode="workspace" forcedTab={workspaceTab} />;
+    if (item === "settings") return <AccountSettings onLogin={openLogin} />;
     if (item === "account") return <Account onLogin={openLogin} profileUsername={profileUsername || undefined} />;
     if (item === "pricing") return <Pricing />;
     if (item === "admin" && isAdmin) return <AdminPanel onLogin={openLogin} />;
@@ -172,7 +171,7 @@ function AppShellInner() {
         <div className="hidden w-[272px] shrink-0 lg:block" aria-hidden="true" />
         <main className="h-[100dvh] min-w-0 flex-1 overflow-y-auto overflow-x-hidden bg-[#000000] lg:h-[calc(100dvh-2rem)] lg:rounded-[1rem] lg:border lg:border-white/8">
           <WorkspaceTopbar section={section} />
-          <section key={section} className="min-h-full">
+          <section className="min-h-full">
             {renderSection(section)}
           </section>
         </main>

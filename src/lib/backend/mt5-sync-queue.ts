@@ -54,8 +54,10 @@ export async function claimMt5SyncJobs(limit: number) {
            locked_until = null,
            updated_at = now()
        where status = 'running'
-       and locked_until is not null
-       and locked_until <= now()
+       and (
+         (locked_until is not null and locked_until <= now())
+         or (locked_until is null and updated_at <= now() - interval '5 minutes')
+       )
        returning id
      ), picked as (
        select id

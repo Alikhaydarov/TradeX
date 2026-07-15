@@ -50,11 +50,18 @@ type AiCoachReport = {
   nextSteps: string[];
   generatedBy: "rules" | "openai";
 };
+type JournalCacheEntry = {
+  entries: JournalEntry[];
+  fetchedAt: number;
+};
+
+const JOURNAL_CACHE_TTL_MS = 5_000;
+const journalCache = new Map<string, JournalCacheEntry>();
 const cash = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 2 });
 const WEEKDAYS_SHORT = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 const WEEKDAYS_FULL = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
 const WORKSPACE_TABS = [["home", "Home"], ["overview", "Dashboard"], ["calendar", "Calendar"], ["trades", "Trades"], ["bible", "Bible"], ["analytics", "Analytics"], ["settings", "Settings"]] as const;
-type WorkspaceTab = typeof WORKSPACE_TABS[number][0];
+export type WorkspaceTab = typeof WORKSPACE_TABS[number][0];
 
 const accountFrom = (a: AccountRow): PropAccount => ({ id: a.id, name: a.name, accountType: a.account_type || "prop", firm: a.firm, propSite: a.prop_site || "", propLogin: a.prop_login || "", importSource: a.import_source || "manual", platform: a.platform || "mt5", phase: a.phase, marketType: a.market_type, accountSize: +a.account_size, initialBalance: +a.initial_balance, profitTarget: +a.profit_target, maxDrawdown: +a.max_drawdown, dailyDrawdown: +a.daily_drawdown, startDate: a.start_date, status: a.status });
 const parseTradeImages = (value?: string | null) => {
@@ -263,6 +270,7 @@ export function JournalV2({
   const [tradeRange, setTradeRange] = useState<TradeRange>("monthly");
   const [customStart, setCustomStart] = useState(() => new Date().toISOString().slice(0, 10));
   const [customEnd, setCustomEnd] = useState(() => new Date().toISOString().slice(0, 10));
+  const requestVersion = useRef(0);
 
   const openTradeComposer = useCallback(() => {
     if (mode === "workspace" && !activeAccountId) {
@@ -279,8 +287,9 @@ export function JournalV2({
   // which recreated this callback and re-ran the effect below in an endless
   // fetch/spinner loop for users without accounts.
   const requestAccountId = mode === "workspace" ? activeAccountId : null;
+  const journalCacheKey = user ? `${user.id}:${mode}:${requestAccountId || "all"}` : "";
 
-  const loadEntries = useCallback(async (silent = false) => {
+  const loadEntries = useCallback(async (silent = false, force = false) => {
     if (!user) {
       setEntries([]);
       setLoading(false);
@@ -291,21 +300,40 @@ export function JournalV2({
       return;
     }
 
+    if (mode === "workspace" && !requestAccountId) {
+      setEntries([]);
+      setLoading(false);
+      return;
+    }
+
+    const cached = journalCache.get(journalCacheKey);
+    if (cached) {
+      setEntries(cached.entries);
+      if (!silent) setLoading(false);
+      if (!force && Date.now() - cached.fetchedAt < JOURNAL_CACHE_TTL_MS) return;
+      silent = true;
+    }
+
     if (!silent) setLoading(true);
     setError(null);
+    const version = ++requestVersion.current;
     try {
       const search = requestAccountId
         ? `?accountId=${encodeURIComponent(requestAccountId)}`
         : "";
       const response = await apiRequest<{ entries: EntryRow[] }>(`/api/journal${search}`);
-      setEntries(response.entries.map(entryFrom));
+      if (version !== requestVersion.current) return;
+      const nextEntries = response.entries.map(entryFrom);
+      journalCache.set(journalCacheKey, { entries: nextEntries, fetchedAt: Date.now() });
+      setEntries(nextEntries);
     } catch (nextError) {
+      if (version !== requestVersion.current) return;
       const message = nextError instanceof Error ? nextError.message : "Failed to load journal.";
       setError(message);
     } finally {
-      if (!silent) setLoading(false);
+      if (version === requestVersion.current && !silent) setLoading(false);
     }
-  }, [accountsLoading, requestAccountId, mode, user]);
+  }, [accountsLoading, journalCacheKey, mode, requestAccountId, user]);
 
   useEffect(() => {
     void loadEntries();
@@ -318,7 +346,7 @@ export function JournalV2({
       void loadEntries(true);
     };
 
-    const interval = window.setInterval(refresh, 8000);
+    const interval = window.setInterval(refresh, 5_000);
     window.addEventListener("focus", refresh);
     document.addEventListener("visibilitychange", refresh);
     return () => {
@@ -451,6 +479,7 @@ export function JournalV2({
         imageUrls: JSON.parse(String(form.get("imageUrls") || "[]")),
       }) });
       const next = entryFrom(r.entry);
+      journalCache.delete(journalCacheKey);
       setEntries(v => [next, ...v]);
       setMonth(new Date(`${next.rawDate}T00:00:00`));
       // Modal handles its own close/share lifecycle now
@@ -496,6 +525,7 @@ export function JournalV2({
         imageUrls: JSON.parse(String(form.get("imageUrls") || "[]")),
       }) });
       const next = entryFrom(response.entry);
+      journalCache.delete(journalCacheKey);
       setEntries(current => current.map(entry => entry.id === id ? next : entry));
       setMonth(new Date(`${next.rawDate}T00:00:00`));
     } catch (e) { setError(e instanceof Error ? e.message : "Trade yangilanmadi"); }
@@ -506,15 +536,16 @@ export function JournalV2({
     setSaving(true);
     try {
       await apiRequest(`/api/journal/${id}`, { method: "DELETE" });
+      journalCache.delete(journalCacheKey);
       setEntries(current => current.filter(entry => entry.id !== id));
     } catch (e) { setError(e instanceof Error ? e.message : "Trade o'chirilmadi"); }
     finally { setSaving(false); }
   }
 
   const reloadJournal = useCallback(async () => {
-    const response = await apiRequest<{ entries: EntryRow[] }>("/api/journal");
-    setEntries(response.entries.map(entryFrom));
-  }, []);
+    journalCache.delete(journalCacheKey);
+    await loadEntries(true, true);
+  }, [journalCacheKey, loadEntries]);
 
   const shiftMonth = (n: number) => setMonth(d => new Date(d.getFullYear(), d.getMonth() + n, 1));
   const exportCsv = () => { const rows = [["Date", "Symbol", "Side", "PnL", "R", "Setup"], ...shown.map(e => [e.rawDate, e.symbol, e.side, e.pnl, e.resultR, e.setup])], a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([rows.map(r => r.map(v => `"${v || ""}"`).join(",")).join("\n")], { type: "text/csv" })); a.download = `${account?.name || "journal"}-${monthId(month)}.csv`; a.click(); URL.revokeObjectURL(a.href); };
