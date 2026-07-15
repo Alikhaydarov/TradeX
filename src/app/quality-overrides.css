@@ -94,15 +94,15 @@ button:focus-visible {
 }
 
 /* Hide the old heavy account header and its global stats strip. */
-main header[class*="sticky"][class*="top-0"][class*="border-b"] {
+main header[class*="sticky"][class*="top-0"][class*="border-b"]:not(.tw-app-topbar) {
   display: none !important;
 }
 
-main header[class*="sticky"][class*="top-0"][class*="border-b"] + div {
+main header[class*="sticky"][class*="top-0"][class*="border-b"]:not(.tw-app-topbar) + div {
   padding-top: 1.5rem !important;
 }
 
-main header[class*="sticky"][class*="top-0"][class*="border-b"] + div > div:first-child[class*="grid"][class*="xl:grid-cols-5"] {
+main header[class*="sticky"][class*="top-0"][class*="border-b"]:not(.tw-app-topbar) + div > div:first-child[class*="grid"][class*="xl:grid-cols-5"] {
   display: none !important;
 }
 
