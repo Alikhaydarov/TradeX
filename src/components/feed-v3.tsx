@@ -17,6 +17,8 @@ import { useAuth } from "./auth-context";
 import { InstrumentBadge } from "./instrument-badge";
 import { MediaImage } from "./media-image";
 import { TraderAvatar } from "./trader-avatar";
+import { usePremiumStatus } from "./use-premium-status";
+import { VerifiedBadge } from "./verified-badge";
 import type { JournalEntry, Post, PostReply } from "./types";
 
 type PostRecord = SocialPostRecord;
@@ -125,6 +127,7 @@ function openProfile(username: string) {
 
 export function FeedV3({ onLogin }: { onLogin: () => void }) {
   const { user } = useAuth();
+  const { status: premiumStatus } = usePremiumStatus(Boolean(user));
   const { t } = useLanguage();
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
@@ -389,7 +392,7 @@ export function FeedV3({ onLogin }: { onLogin: () => void }) {
       name: String(user.user_metadata.full_name ?? user.user_metadata.name ?? "You"),
       username: String(user.user_metadata.user_name ?? user.email?.split("@")[0] ?? "you"),
       avatar: typeof user.user_metadata.avatar_url === "string" ? user.user_metadata.avatar_url : null,
-      isVerified: false,
+      isVerified: premiumStatus.isVerified,
       content,
       createdAt: new Date().toISOString(),
     };
@@ -506,6 +509,7 @@ export function FeedV3({ onLogin }: { onLogin: () => void }) {
                       <div className="min-w-0 flex-1">
                         <button type="button" onClick={() => openProfile(post.handle)} className="flex max-w-full items-center gap-1 truncate text-left text-[15px] font-black tracking-tight hover:underline">
                           {post.name}
+                          {post.isVerified ? <VerifiedBadge size={16} /> : null}
                         </button>
                         <p className="truncate text-[11px] text-slate-500">{timeMeta(post.handle, post.time)}</p>
                       </div>
@@ -569,6 +573,7 @@ export function FeedV3({ onLogin }: { onLogin: () => void }) {
                                 <div className="min-w-0 flex-1">
                                   <div className="flex items-center gap-1.5">
                                     <strong className="truncate text-xs">{reply.name}</strong>
+                                    {reply.isVerified ? <VerifiedBadge size={14} /> : null}
                                     <span className="text-[10px] text-slate-600">@{reply.username} <span className="px-1 text-zinc-700">/</span> {replyTime(reply.createdAt)}</span>
                                   </div>
                                   <p className="mt-1 whitespace-pre-line text-sm leading-5 text-slate-300">{reply.content}</p>

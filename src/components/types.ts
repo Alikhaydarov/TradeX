@@ -112,6 +112,7 @@ export interface Profile {
   followersCount?: number;
   followingCount?: number;
   isVerified?: boolean;
+  plan?: "free" | "standard" | "pro";
   isAdmin?: boolean;
 }
 

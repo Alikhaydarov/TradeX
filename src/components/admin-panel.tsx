@@ -11,6 +11,7 @@ import { VerifiedBadge } from "./verified-badge";
 import type { AdminUser } from "./types";
 
 type AdminPlan = AdminUser["plan"];
+type PlanFilter = "all" | AdminPlan;
 
 const PLAN_OPTIONS: Array<{ value: AdminPlan; label: string; description: string }> = [
   { value: "free", label: "Free", description: "Basic app access only" },
@@ -45,6 +46,7 @@ function isPremiumPlan(plan: AdminPlan) {
 export function AdminPanel({ onLogin }: { onLogin: () => void }) {
   const [users, setUsers] = useState<AdminUser[]>([]);
   const [query, setQuery] = useState("");
+  const [planFilter, setPlanFilter] = useState<PlanFilter>("all");
   const [loading, setLoading] = useState(true);
   const [savingId, setSavingId] = useState<string | null>(null);
   const [savedId, setSavedId] = useState<string | null>(null);
@@ -89,11 +91,12 @@ export function AdminPanel({ onLogin }: { onLogin: () => void }) {
 
   const filteredUsers = useMemo(() => {
     const value = query.trim().toLowerCase();
-    if (!value) return users;
-    return users.filter((user) =>
-      `${user.fullName} ${user.username} ${user.email ?? ""} ${user.plan}`.toLowerCase().includes(value),
-    );
-  }, [query, users]);
+    return users.filter((user) => {
+      const matchesPlan = planFilter === "all" || user.plan === planFilter;
+      const matchesQuery = !value || `${user.fullName} ${user.username} ${user.email ?? ""} ${user.plan}`.toLowerCase().includes(value);
+      return matchesPlan && matchesQuery;
+    });
+  }, [planFilter, query, users]);
 
   const summary = useMemo(() => {
     const premiumUsers = users.filter((user) => isPremiumPlan(user.plan)).length;
@@ -184,7 +187,7 @@ export function AdminPanel({ onLogin }: { onLogin: () => void }) {
 
   return (
     <div className="min-h-full">
-      <header className="sticky top-0 z-20 flex items-center border-b border-white/8 bg-[#111111]/95 px-3 py-3 backdrop-blur-xl sm:px-5 sm:py-4">
+      <header className="sticky top-0 z-20 flex items-center border-b border-white/8 bg-[linear-gradient(90deg,rgba(14,165,233,.08),rgba(17,17,17,.96)_35%,rgba(245,158,11,.06))] px-3 py-3 backdrop-blur-xl sm:px-5 sm:py-4">
         <div>
           <p className="text-[10px] font-bold uppercase tracking-[.22em] text-zinc-500">Superadmin</p>
           <h1 className="mt-1 text-xl font-black tracking-tight text-white sm:text-2xl">TradeWay access console</h1>
@@ -205,17 +208,40 @@ export function AdminPanel({ onLogin }: { onLogin: () => void }) {
           <AppLoader label="Loading superadmin directory" />
         ) : (
           <section className="rounded-3xl border border-white/8 bg-[#141414] p-3 shadow-2xl shadow-black/25 sm:p-4">
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+            <div className="flex flex-col gap-3 xl:flex-row xl:items-center">
               <div>
                 <h2 className="text-base font-black text-white">Users, plans and roles</h2>
                 <p className="mt-1 text-xs text-zinc-500">
                   Manage premium access, verified badge and admin rights from one place.
                 </p>
               </div>
-              <div className="relative sm:ml-auto sm:w-80">
+              <div className="relative xl:ml-auto xl:w-80">
                 <Search size={15} className="pointer-events-none absolute left-3.5 top-1/2 z-10 -translate-y-1/2 text-zinc-500" />
                 <Input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search user or email" className="h-11 pl-9" />
               </div>
+            </div>
+
+            <div className="mt-3 flex gap-2 overflow-x-auto pb-1">
+              {([
+                ["all", "All", summary.totalUsers],
+                ["free", "Free", users.filter((user) => user.plan === "free").length],
+                ["standard", "Standard", users.filter((user) => user.plan === "standard").length],
+                ["pro", "Pro", users.filter((user) => user.plan === "pro").length],
+              ] as Array<[PlanFilter, string, number]>).map(([value, label, count]) => {
+                const selected = planFilter === value;
+                return (
+                  <button
+                    key={value}
+                    type="button"
+                    onClick={() => setPlanFilter(value)}
+                    className={`inline-flex h-9 shrink-0 items-center gap-2 rounded-full border px-3 text-xs font-bold transition ${selected ? "border-white/20 bg-white text-black" : "border-white/8 bg-black/25 text-zinc-400 hover:border-white/15 hover:text-white"}`}
+                  >
+                    {selected ? <Check size={13} /> : null}
+                    {label}
+                    <span className={`rounded-full px-1.5 py-0.5 text-[9px] ${selected ? "bg-black/10" : "bg-white/[.06]"}`}>{count}</span>
+                  </button>
+                );
+              })}
             </div>
 
             <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-5">
@@ -252,7 +278,7 @@ export function AdminPanel({ onLogin }: { onLogin: () => void }) {
                 return (
                   <div
                     key={target.id}
-                    className="grid gap-4 rounded-[28px] border border-white/8 bg-[#0d0d0d] p-4 lg:grid-cols-[minmax(0,1.3fr)_minmax(340px,.9fr)_auto]"
+                    className={`grid gap-4 rounded-[28px] border bg-[#0d0d0d] p-4 shadow-[inset_3px_0_0_var(--plan-accent)] lg:grid-cols-[minmax(0,1.3fr)_minmax(340px,.9fr)_auto] ${draft.plan === "pro" ? "border-amber-300/15 [--plan-accent:#facc15]" : draft.plan === "standard" ? "border-sky-300/15 [--plan-accent:#38bdf8]" : "border-white/8 [--plan-accent:#3f3f46]"}`}
                   >
                     <div className="min-w-0">
                       <div className="flex items-start gap-3">

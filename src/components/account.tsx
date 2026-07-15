@@ -24,6 +24,7 @@ import { useEffect, useRef, useState } from "react";
 import { apiRequest } from "@/lib/api-client";
 import { formatCount, toSocialPost, type SocialPostRecord } from "@/lib/social-format";
 import { hasVerifiedPremiumAccess } from "@/lib/premium-plan";
+import { VerifiedBadge } from "./verified-badge";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -102,6 +103,8 @@ const tabs: Array<{ id: ProfileTab; label: string }> = [
 ];
 
 function toProfile(data: ProfileRecord): Profile & { isFollowing?: boolean } {
+  const rawPlan = data.plan?.toLowerCase();
+  const plan = rawPlan === "standard" ? "standard" : rawPlan === "pro" || rawPlan === "premium" ? "pro" : "free";
   return {
     id: data.id,
     username: data.username,
@@ -113,6 +116,7 @@ function toProfile(data: ProfileRecord): Profile & { isFollowing?: boolean } {
     followersCount: data.followersCount ?? 0,
     followingCount: data.followingCount ?? 0,
     isVerified: hasVerifiedPremiumAccess(data),
+    plan,
     isFollowing: Boolean(data.isFollowing),
   };
 }
@@ -418,6 +422,7 @@ export function Account({ onLogin, profileUsername }: { onLogin: () => void; pro
           ) : null}
           <div className="flex min-w-0 flex-wrap items-center gap-x-1.5 gap-y-0.5 text-[13px] leading-5 sm:text-sm">
             <p className="max-w-full truncate font-black text-white">{post.name}</p>
+            {post.isVerified ? <VerifiedBadge size={15} /> : null}
             <p className="truncate text-xs text-slate-500">{post.handle}</p>
             <span className="text-xs text-slate-700">/</span>
             <p className="text-xs text-slate-500">{post.time}</p>
@@ -466,6 +471,12 @@ export function Account({ onLogin, profileUsername }: { onLogin: () => void; pro
             <div className="mt-3">
               <div className="flex min-w-0 items-center gap-2">
                 <h2 className="truncate text-xl font-black leading-7 sm:text-2xl">{profile.fullName}</h2>
+                {profile.isVerified ? <VerifiedBadge size={20} /> : null}
+                {profile.plan && profile.plan !== "free" ? (
+                  <span className={`rounded-full border px-2 py-0.5 text-[9px] font-black uppercase tracking-[.12em] ${profile.plan === "pro" ? "border-amber-300/20 bg-amber-300/10 text-amber-200" : "border-sky-300/20 bg-sky-300/10 text-sky-200"}`}>
+                    {profile.plan}
+                  </span>
+                ) : null}
                 {saved && <span className="rounded-full bg-emerald-400/10 px-2 py-1 text-[10px] font-bold text-emerald-300">Saved</span>}
               </div>
               <p className="text-xs text-zinc-500">@{profile.username}</p>
