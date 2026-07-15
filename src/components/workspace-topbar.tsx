@@ -40,58 +40,57 @@ export function WorkspaceTopbar({ section }: { section: Section }) {
   const pnlLabel = pnlMode === "percentage" ? "Percentage View" : pnlMode === "hidden" ? "Hide P&L" : "Money View";
 
   return (
-    <div role="banner" className="tw-app-topbar sticky top-0 z-[60] shrink-0 border-b border-white/8 bg-black px-4 py-3 lg:static lg:flex lg:h-[46px] lg:items-center lg:justify-between lg:px-5 lg:py-0">
-      <div className="flex items-center justify-between gap-2 lg:hidden">
+    <header role="banner" className="tw-app-topbar sticky top-0 z-[60] shrink-0 border-b border-white/8 bg-black/90 px-3 py-2 backdrop-blur-xl supports-[backdrop-filter]:bg-black/80 lg:static lg:flex lg:min-h-16 lg:items-center lg:gap-4 lg:px-5 lg:py-2">
+      <div className="grid grid-cols-[36px_minmax(0,1fr)_auto] items-center gap-2 lg:flex lg:min-w-0 lg:flex-1 lg:gap-4">
         <button
           type="button"
           onClick={openMobileDrawer}
-          className="grid size-10 shrink-0 place-items-center rounded-2xl border border-white/10 bg-[#050505] text-white transition active:scale-95"
+          className="grid size-9 shrink-0 place-items-center rounded-xl border border-white/10 bg-[#090909] text-white transition active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/30 lg:hidden"
           aria-label="Open mobile menu"
         >
-          <Menu size={20} strokeWidth={2.2} />
+          <Menu size={18} strokeWidth={2.2} />
         </button>
 
-        <div className="min-w-0 flex-1">
-          <p className="truncate text-[14px] font-black leading-none tracking-[-0.03em] text-white">
-            {page}
-          </p>
-          <p className="mt-1 truncate text-[11px] font-semibold text-zinc-500">
-            {isAccountScoped ? workspace : "TradeWay workspace"}
-          </p>
+        <div className="min-w-0 lg:min-w-[180px] lg:flex-1">
+          <div className="flex min-w-0 items-center gap-2">
+            <h1 className="truncate text-[14px] font-semibold leading-tight tracking-[-0.02em] text-white">{page}</h1>
+            {isAccountScoped ? <span className="hidden text-zinc-700 lg:inline">/</span> : null}
+            {isAccountScoped ? <span className="hidden truncate text-xs text-zinc-500 lg:inline">{workspace}</span> : null}
+          </div>
+          <p className="truncate text-[10px] text-zinc-500 lg:mt-0.5 lg:text-zinc-600">{isAccountScoped ? "Trading performance workspace" : "TradeWay workspace"}</p>
         </div>
 
-        <div className="flex shrink-0 items-center gap-1.5">
-          <SocialActions className="flex" compact />
+        <SocialActions compact expandedSearch />
+
+        <div className="ml-auto hidden shrink-0 items-center gap-2 lg:flex">
+          <PnlModeMenu pnlMode={pnlMode} pnlLabel={pnlLabel} onChange={setPnlMode} />
+          {isAccountScoped ? (
+            <button type="button" onClick={openAddTrade} className="inline-flex h-9 items-center justify-center gap-2 rounded-xl bg-white px-3 text-xs font-semibold text-black transition hover:bg-zinc-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40">
+              <Plus size={15} />
+              <span className="hidden xl:inline">Add trade</span>
+            </button>
+          ) : null}
+        </div>
+      </div>
+
+      {isAccountScoped ? (
+        <div className="mt-2 flex items-center gap-2 border-t border-white/6 pt-2 lg:hidden">
+          <div className="min-w-0 flex-1">
+            <p className="truncate text-[9px] uppercase tracking-[0.12em] text-zinc-600">Active account</p>
+            <p className="truncate text-xs font-medium text-zinc-300">{workspace}</p>
+          </div>
           <PnlModeMenu pnlMode={pnlMode} pnlLabel={pnlLabel} onChange={setPnlMode} compact />
           <button
             type="button"
             onClick={openAddTrade}
-            className="grid size-10 shrink-0 place-items-center rounded-2xl border border-white/10 bg-[#050505] text-white transition active:scale-95"
+            className="grid size-9 shrink-0 place-items-center rounded-xl bg-white text-black transition hover:bg-zinc-200 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40"
             aria-label="Add trade"
           >
-            <Plus size={22} strokeWidth={2.15} />
+            <Plus size={17} strokeWidth={2.3} />
           </button>
         </div>
-      </div>
-
-        <div className="hidden items-center justify-between gap-3 lg:flex lg:w-full">
-        <div className="min-w-0 items-center gap-1 text-[10px] font-medium uppercase tracking-[0.08em] text-zinc-600 lg:flex">
-          {isAccountScoped ? (
-            <>
-              <span className="truncate text-zinc-500">{workspace}</span>
-              <span className="text-zinc-700">&gt;</span>
-              <span className="font-semibold tracking-[0.02em] text-zinc-300">{page}</span>
-            </>
-          ) : (
-            <span className="font-semibold tracking-[0.02em] text-zinc-300">{page}</span>
-          )}
-        </div>
-        <div className="ml-auto flex items-center gap-2">
-          <SocialActions />
-          <PnlModeMenu pnlMode={pnlMode} pnlLabel={pnlLabel} onChange={setPnlMode} />
-        </div>
-      </div>
-    </div>
+      ) : null}
+    </header>
   );
 }
 
@@ -117,7 +116,9 @@ function PnlModeMenu({
       <DropdownMenuTrigger asChild>
         <button
           type="button"
-          className={`inline-flex h-8 items-center rounded-2xl border border-white/10 bg-[#050505] text-zinc-200 transition hover:bg-[#101010] ${compact ? "w-9 justify-center px-0" : "gap-2 px-3 text-[11px] font-medium"}`}
+          className={`inline-flex h-9 items-center rounded-xl border border-white/10 bg-[#090909] text-zinc-200 transition hover:border-white/15 hover:bg-[#111111] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/30 ${compact ? "w-9 justify-center px-0" : "gap-2 px-3 text-[11px] font-medium"}`}
+          aria-label={`P&L display: ${pnlLabel}`}
+          title={pnlLabel}
         >
           <Percent size={15} />
           {compact ? null : pnlLabel}

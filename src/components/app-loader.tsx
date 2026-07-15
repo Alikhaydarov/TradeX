@@ -1,12 +1,10 @@
+import { Skeleton } from "./ui/skeleton";
+import { Spinner } from "./ui/spinner";
+
 export function XSpinner({ size = "md" }: { size?: "sm" | "md" | "lg" }) {
   const sizeClass = size === "sm" ? "size-4" : size === "lg" ? "size-8 sm:size-9" : "size-5 sm:size-6";
 
-  return (
-    <span
-      className={`${sizeClass} inline-flex shrink-0 animate-spin rounded-full border-2 border-white/12 border-t-zinc-200 will-change-transform`}
-      aria-label="Loading"
-    />
-  );
+  return <Spinner className={`${sizeClass} shrink-0 text-zinc-300`} />;
 }
 
 export function LoadingDots() {
@@ -20,7 +18,7 @@ export function LoadingDots() {
 }
 
 export function SkeletonBlock({ className = "" }: { className?: string }) {
-  return <div className={`animate-pulse rounded-2xl bg-white/[.065] ${className}`} />;
+  return <Skeleton className={`rounded-2xl bg-white/[.065] ${className}`} />;
 }
 
 export function InlineLoading({ label = "Loading" }: { label?: string }) {

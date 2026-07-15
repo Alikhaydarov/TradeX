@@ -374,9 +374,10 @@ main [class*="text-zinc-400"] {
   }
 
   .tw-app-topbar {
-    height: 54px !important;
-    padding-left: 1rem !important;
-    padding-right: 1rem !important;
+    height: auto !important;
+    min-height: 56px;
+    padding-left: .75rem !important;
+    padding-right: .75rem !important;
   }
 
   .tw-floating-add-trade {

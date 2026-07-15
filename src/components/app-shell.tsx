@@ -21,6 +21,7 @@ import { useAuth } from "./auth-context";
 import { getCurrentProfileUsername, getCurrentSection, pathFromSection } from "./section-config";
 import { apiRequest } from "@/lib/api-client";
 import type { Section } from "./types";
+import { Spinner } from "./ui/spinner";
 function AuthGate({ onLogin }: { onLogin: () => void }) {
   return <TradeWayLoginLanding onLogin={onLogin} />;
 }
@@ -182,7 +183,11 @@ function AppShellInner() {
         </main>
       </div>
       </ActiveAccountProvider>
-      {profileOpening ? <div className="pointer-events-none fixed inset-0 z-[2147483646] grid place-items-center bg-black/92"><div className="flex items-center gap-3 rounded-full border border-white/8 bg-[#050505] px-4 py-2 text-sm font-semibold text-zinc-200 shadow-[0_18px_48px_rgba(0,0,0,.34)]"><span className="inline-flex size-4 animate-spin rounded-full border-2 border-white/20 border-t-white" /> Opening profile</div></div> : null}
+      {profileOpening ? (
+        <div className="pointer-events-none fixed right-3 top-3 z-[2147483646] flex items-center gap-2 rounded-lg border border-white/10 bg-[#111]/95 px-3 py-2 text-xs font-semibold text-zinc-200 shadow-xl" role="status" aria-live="polite">
+          <Spinner className="size-3.5" /> Opening profile
+        </div>
+      ) : null}
       {notificationsMounted && <NotificationListener />}
       <PremiumUpsellDialog />
       <UserSettingsDialog />

@@ -6,8 +6,8 @@ import { createPortal } from "react-dom";
 import { apiRequest } from "@/lib/api-client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { XSpinner } from "./app-loader";
 import { TraderAvatar } from "./trader-avatar";
+import { Spinner } from "./ui/spinner";
 
 type SearchUser = {
   id: string;
@@ -194,7 +194,7 @@ function SearchDialog({ onClose }: { onClose: () => void }) {
             className="h-12 pl-11 pr-20 text-[16px]"
           />
           <div className="absolute right-2 top-1/2 flex -translate-y-1/2 items-center gap-1">
-            {loading ? <XSpinner size="sm" /> : null}
+            {loading ? <Spinner /> : null}
             {query ? <Button type="button" variant="ghost" size="icon-sm" onClick={() => setQuery("")} aria-label="Clear search"><X size={14} /></Button> : null}
           </div>
         </div>
@@ -260,7 +260,7 @@ function NotificationsDialog({ onClose, onRead }: { onClose: () => void; onRead:
   return (
     <Modal title="Notifications" subtitle="Replies, reposts, likes and follow activity." onClose={onClose}>
       <div className="max-h-[70dvh] min-h-[320px] overflow-y-auto">
-        {loading ? <div className="grid min-h-52 place-items-center"><XSpinner size="lg" /></div> : null}
+        {loading ? <div className="grid min-h-52 place-items-center"><Spinner className="size-8 text-zinc-300" /></div> : null}
         {error ? <div className="p-4"><p className="rounded-2xl border border-rose-300/15 bg-rose-400/10 px-3 py-2 text-xs text-rose-200">{error}</p></div> : null}
         {!loading && !items.length ? (
           <div className="grid min-h-72 place-items-center px-6 text-center">
@@ -310,7 +310,7 @@ function NotificationsDialog({ onClose, onRead }: { onClose: () => void; onRead:
   );
 }
 
-export function SocialActions({ className = "", compact = false }: { className?: string; compact?: boolean }) {
+export function SocialActions({ className = "", compact = false, expandedSearch = false }: { className?: string; compact?: boolean; expandedSearch?: boolean }) {
   const [searchOpen, setSearchOpen] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [unread, setUnread] = useState(0);
@@ -335,11 +335,42 @@ export function SocialActions({ className = "", compact = false }: { className?:
     };
   }, []);
 
+  useEffect(() => {
+    const openSearch = (event: KeyboardEvent) => {
+      if (!(event.metaKey || event.ctrlKey) || event.key.toLowerCase() !== "k") return;
+      event.preventDefault();
+      setSearchOpen(true);
+    };
+    window.addEventListener("keydown", openSearch);
+    return () => window.removeEventListener("keydown", openSearch);
+  }, []);
+
   return (
     <>
-      <div className={`flex items-center gap-2 ${className}`}>
-        <button onClick={() => setSearchOpen(true)} className={`grid place-items-center rounded-2xl border border-white/10 bg-[#090909] text-zinc-100 transition hover:bg-[#111111] ${compact ? "h-9 w-9" : "h-10 w-10"}`} aria-label="Search traders"><Search size={compact ? 16 : 18} /></button>
-        <button onClick={() => setNotificationsOpen(true)} className={`relative grid place-items-center rounded-2xl border border-white/10 bg-[#090909] text-zinc-100 transition hover:bg-[#111111] ${compact ? "h-9 w-9" : "h-10 w-10"}`} aria-label="Notifications"><Bell size={compact ? 16 : 18} />{unread > 0 ? <span className={`absolute grid place-items-center rounded-full bg-rose-500 px-1 font-black text-white ring-2 ring-[#090909] ${compact ? "-right-1 -top-1 min-h-4 min-w-4 text-[9px]" : "-right-1 -top-1 min-h-5 min-w-5 text-[10px]"}`}>{unread > 9 ? "9+" : unread}</span> : null}</button>
+      <div className={`flex items-center gap-1.5 sm:gap-2 ${className}`}>
+        <button
+          type="button"
+          onClick={() => setSearchOpen(true)}
+          className={`items-center rounded-xl border border-white/10 bg-[#090909] text-zinc-100 transition hover:border-white/15 hover:bg-[#111111] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/30 ${expandedSearch ? "hidden h-9 w-[clamp(180px,18vw,260px)] justify-start gap-2.5 px-3 text-xs text-zinc-400 xl:flex" : `grid place-items-center ${compact ? "size-9" : "size-10"}`}`}
+          aria-label="Search traders"
+          title="Search traders"
+        >
+          <Search size={compact ? 16 : 17} />
+          {expandedSearch ? <><span className="flex-1 text-left">Search traders</span><kbd className="rounded border border-white/10 bg-black px-1.5 py-0.5 font-sans text-[9px] text-zinc-600">⌘ K</kbd></> : null}
+        </button>
+        {expandedSearch ? (
+          <button type="button" onClick={() => setSearchOpen(true)} className="grid size-9 place-items-center rounded-xl border border-white/10 bg-[#090909] text-zinc-100 transition hover:bg-[#111111] xl:hidden" aria-label="Search traders"><Search size={17} /></button>
+        ) : null}
+        <button
+          type="button"
+          onClick={() => setNotificationsOpen(true)}
+          className={`relative grid place-items-center rounded-xl border border-white/10 bg-[#090909] text-zinc-100 transition hover:border-white/15 hover:bg-[#111111] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/30 ${compact ? "size-9" : "size-10"}`}
+          aria-label={unread ? `Notifications, ${unread} unread` : "Notifications"}
+          title="Notifications"
+        >
+          <Bell size={compact ? 16 : 17} />
+          {unread > 0 ? <span className={`absolute grid place-items-center rounded-full bg-rose-500 px-1 font-black text-white ring-2 ring-[#090909] ${compact ? "-right-1 -top-1 min-h-4 min-w-4 text-[9px]" : "-right-1 -top-1 min-h-5 min-w-5 text-[10px]"}`}>{unread > 9 ? "9+" : unread}</span> : null}
+        </button>
       </div>
       {searchOpen ? <SearchDialog onClose={() => setSearchOpen(false)} /> : null}
       {notificationsOpen ? <NotificationsDialog onClose={() => setNotificationsOpen(false)} onRead={() => setUnread(0)} /> : null}

@@ -2,12 +2,13 @@
 
 import {
   BarChart3, BookOpen, BrainCircuit, CalendarDays, CheckCircle2, ChevronDown, ChevronLeft, ChevronRight,
-  Download, ImageIcon, LoaderCircle, MoreHorizontal, Plus, Search, ShieldCheck,
+  Download, ImageIcon, MoreHorizontal, Plus, Search, ShieldCheck,
   Target, Trash2, TrendingDown, TrendingUp, WalletCards, X, Zap,
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Area, AreaChart, CartesianGrid, PolarAngleAxis, PolarGrid, PolarRadiusAxis, Radar, RadarChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { apiRequest } from "../lib/api-client";
+import { DashboardOverview } from "@/features/trading-dashboard/components/dashboard-overview";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader,
@@ -23,6 +24,8 @@ import { Input } from "./ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
 import { Textarea } from "./ui/textarea";
 import { Tabs, TabsContent } from "./ui/tabs";
+import { Spinner } from "./ui/spinner";
+import { Skeleton } from "./ui/skeleton";
 import { useActiveAccountStore } from "./active-account-context";
 import { useAuth } from "./auth-context";
 import { InstrumentBadge } from "./instrument-badge";
@@ -246,6 +249,20 @@ function TradeGalleryCard({
       </div>
     </button>
   );
+}
+
+function DashboardSkeleton() {
+  return (
+    <div className="space-y-3 p-3 sm:p-4" aria-label="Loading trading dashboard" role="status">
+      <div className="flex items-end justify-between gap-4 px-1 py-1">
+        <div className="space-y-2"><Skeleton className="h-3 w-24 bg-white/[.06]" /><Skeleton className="h-7 w-48 bg-white/[.07]" /></div>
+        <Skeleton className="h-9 w-24 bg-white/[.07]" />
+      </div>
+      <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-4">{Array.from({ length: 4 }, (_, index) => <Skeleton key={index} className="h-28 rounded-xl bg-white/[.055]" />)}</div>
+      <div className="grid gap-3 xl:grid-cols-[minmax(0,1.7fr)_minmax(280px,.7fr)]"><Skeleton className="h-[360px] rounded-xl bg-white/[.055]" /><Skeleton className="h-[360px] rounded-xl bg-white/[.055]" /></div>
+      <Skeleton className="h-32 rounded-xl bg-white/[.055]" />
+    </div>
+  )
 }
 
 export function JournalV2({
@@ -584,7 +601,7 @@ export function JournalV2({
     </div>
   );
 
-  if (loading) return <div className="grid min-h-[70dvh] place-items-center"><LoaderCircle className="animate-spin text-zinc-300" size={28} /></div>;
+  if (loading) return <DashboardSkeleton />;
 
   const embedded = mode === "workspace";
 
@@ -779,7 +796,7 @@ function AiCoachCard({ report, loading, error, onRefresh }: { report: AiCoachRep
           <p className="mt-1 text-sm leading-6 text-[#a1a1aa]">{loading ? "Analyzing your execution, risk and discipline..." : error || report?.summary || "Premium AI coach reads your journal and turns trades into concrete next actions."}</p>
         </div>
         <Button type="button" variant="outline" size="sm" onClick={onRefresh} disabled={loading} className="border-[#2a2a2a] bg-transparent">
-          {loading ? <LoaderCircle className="animate-spin" size={15} /> : <Zap size={15} />} Refresh
+          {loading ? <Spinner className="size-[15px]" /> : <Zap size={15} />} Refresh
         </Button>
       </div>
       {report ? (
@@ -820,7 +837,7 @@ function Workspace(p: {
   onMt5Synced: () => Promise<void>;
 }) {
   const { account, accounts, stats, equity, setups, mistakes, planRate, monthCount, calendar, trades, bibleTrades, month, embedded = false, forcedTab } = p;
-  const { tradeSort, setTradeSort, formatPnl } = useWorkspacePreferences();
+  const { pnlMode, tradeSort, setTradeSort, formatPnl } = useWorkspacePreferences();
   const [selectedTrade, setSelectedTrade] = useState<JournalEntry | null>(null);
   const [selectedDay, setSelectedDay] = useState<{ day: number; trades: JournalEntry[]; pnl: number } | null>(null);
   const [activeTab, setActiveTab] = useState<WorkspaceTab>("home");
@@ -828,7 +845,6 @@ function Workspace(p: {
   const [coachLoading, setCoachLoading] = useState(false);
   const [coachError, setCoachError] = useState<string | null>(null);
   const [openPositions, setOpenPositions] = useState<OpenPosition[]>([]);
-  const [positionsPendingSetup, setPositionsPendingSetup] = useState(false);
   const [analyticsView, setAnalyticsView] = useState<"overview" | "strategy" | "symbols">("overview");
   const [tradeView, setTradeView] = useState<"list" | "gallery" | "weekly">("list");
   const singleTabMode = embedded && Boolean(forcedTab);
@@ -917,10 +933,8 @@ function Workspace(p: {
     try {
       const response = await apiRequest<{ positions: OpenPosition[]; pendingSetup?: boolean }>(`/api/prop-accounts/${account.id}/mt5/positions`);
       setOpenPositions(response.positions || []);
-      setPositionsPendingSetup(Boolean(response.pendingSetup));
     } catch {
       setOpenPositions([]);
-      setPositionsPendingSetup(false);
     }
   }, [account.id]);
 
@@ -1101,228 +1115,28 @@ function Workspace(p: {
 
           {/* Overview */}
           {!singleTabMode || activeTab === "overview" ? (
-          <TabsContent value="overview" className="space-y-2.5">
-            <section className="rounded-[0.95rem] border border-white/8 bg-[#070707] p-3 sm:p-4">
-              <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
-                <div>
-                  <p className="text-[9px] font-medium uppercase tracking-[0.12em] text-zinc-600">
-                    {account.name} <span className="mx-1 text-zinc-700">&gt;</span> Dashboard
-                  </p>
-                  <p className="mt-1 text-xs text-zinc-500">{new Date().toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric", year: "numeric" })}</p>
-                </div>
-                <div className="grid grid-cols-[36px_minmax(0,1fr)_36px] gap-2 sm:flex sm:items-center lg:ml-auto">
-                  <button type="button" className="grid size-9 place-items-center rounded-xl border border-white/8 bg-[#050505] text-zinc-300">
-                    <ChevronLeft size={15} />
-                  </button>
-                  <div className="grid h-9 place-items-center rounded-xl border border-white/8 bg-[#050505] px-3 text-xs font-semibold text-white">Current Week</div>
-                  <button type="button" className="grid size-9 place-items-center rounded-xl border border-white/8 bg-[#050505] text-zinc-300">
-                    <ChevronRight size={15} />
-                  </button>
-                </div>
-              </div>
-
-              <div className="mt-3 grid grid-cols-2 gap-2 xl:grid-cols-7">
-                {weeklyStrip.map((day) => (
-                  <div key={day.key} className="rounded-[0.9rem] border border-white/8 bg-[#050505] px-3 py-2.5">
-                    <div className="flex items-center justify-between gap-2">
-                      <span className="text-xs font-bold text-white sm:text-sm">{day.label}</span>
-                      <span className={`text-xs font-black sm:text-sm ${day.percent >= 0 ? "text-emerald-400" : "text-rose-400"}`}>{day.percent >= 0 ? "+" : ""}{day.percent.toFixed(1)}%</span>
-                    </div>
-                    <p className="mt-1.5 text-[11px] text-zinc-500">{day.trades} trade{day.trades === 1 ? "" : "s"}</p>
-                  </div>
-                ))}
-              </div>
-            </section>
-
-            <div className="grid gap-3 xl:grid-cols-[minmax(0,1.15fr)_minmax(280px,.85fr)_minmax(280px,.85fr)]">
-              <section className="overflow-hidden rounded-[1rem] border border-white/8 bg-[#070707] xl:col-span-2">
-                <div className="flex flex-col gap-3 border-b border-white/8 px-3 py-3 sm:px-4 lg:flex-row lg:items-start">
-                  <div className="min-w-0">
-                    <h3 className="text-[14px] font-black text-white">Account Balance</h3>
-                    <p className="mt-1 text-[11px] text-zinc-500">{account.name} equity curve across closed trades.</p>
-                  </div>
-                  <div className="grid grid-cols-1 gap-2 sm:grid-cols-3 lg:ml-auto lg:min-w-[480px]">
-                    <BalanceMetric label="Current P&L" value={formatTradePnl(currentPnl)} tone={currentPnl >= 0 ? "good" : "bad"} />
-                    <BalanceMetric label="Equity" value={cash.format(currentEquity)} />
-                    <BalanceMetric label="Closed balance" value={cash.format(currentEquity)} />
-                  </div>
-                </div>
-                <div className="h-[230px] px-1 pb-3 pt-2 sm:h-[320px] sm:px-3 sm:pb-3 sm:pt-2.5">
-                  {equity.length > 1 ? (
-                    <ResponsiveContainer width="100%" height="100%">
-                      <AreaChart data={equity} margin={{ left: 8, right: 14, top: 16, bottom: 4 }}>
-                        <defs>
-                          <linearGradient id="balanceFill" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="0%" stopColor="#22c55e" stopOpacity={0.34} />
-                            <stop offset="55%" stopColor="#22c55e" stopOpacity={0.12} />
-                            <stop offset="100%" stopColor="#171717" stopOpacity={0.02} />
-                          </linearGradient>
-                        </defs>
-                        <CartesianGrid stroke="rgba(255,255,255,.07)" vertical={false} />
-                        <XAxis dataKey="trade" axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: "#707b91" }} />
-                        <YAxis width={72} axisLine={false} tickLine={false} tickFormatter={(value) => `$${Number(value / 1000).toFixed(1)}K`} tick={{ fontSize: 11, fill: "#707b91" }} domain={["dataMin - 100", "dataMax + 100"]} />
-                        <Tooltip formatter={v => cash.format(Number(v))} labelFormatter={(_, payload) => payload?.[0]?.payload?.label ?? "Balance"} contentStyle={{ background: "#171717", border: "1px solid #333333", borderRadius: 12, color: "#f1f1f1" }} />
-                        <Area type="monotone" dataKey="equity" stroke="#22c55e" fill="url(#balanceFill)" strokeWidth={3} dot={false} activeDot={{ r: 5, fill: "#22c55e", stroke: "#171717", strokeWidth: 2 }} />
-                      </AreaChart>
-                    </ResponsiveContainer>
-                  ) : <Empty text="Add trades to build the balance chart." />}
-                </div>
-              </section>
-
-              <div className="grid gap-3">
-                <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-1">
-                  <MetricPanel title="Most Traded Asset" value={symbolStats[0]?.symbol || "N/A"} note={symbolStats[0] ? `${symbolStats[0].trades} trades` : "No data yet"} />
-                  <MetricPanel title="Total Trades" value={String(trades.length)} note={`${stats.wins} winning / ${stats.losses} losing`} />
-                </div>
-                <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-1">
-                  <MetricPanel title="Trade Winrate" value={`${stats.rate}%`} note={`${planRate}% discipline score`} accent="good" />
-                  <MetricPanel title="Profit Factor" value={stats.pf.toFixed(2)} note={`${formatTradePnl(stats.pnl)} this month`} accent={stats.pf >= 1 ? "good" : "bad"} />
-                </div>
-                <section className="rounded-[1rem] border border-white/8 bg-[#070707] p-3">
-                  <div className="flex items-center justify-between gap-3">
-                    <div>
-                      <h4 className="text-sm font-black text-white">Challenge Limits</h4>
-                      <p className="mt-1 text-xs text-zinc-500">Daily and overall protection.</p>
-                    </div>
-                    <span className="rounded-full border border-white/8 bg-[#050505] px-2.5 py-1 text-[10px] font-bold text-zinc-400">{account.status}</span>
-                  </div>
-                  <div className="mt-3 space-y-3">
-                    <ProgressBar label="Profit target" value={targetProgress} color="bg-emerald-500" />
-                    <ProgressBar label="Max drawdown used" value={drawdownUsed} color="bg-rose-500" />
-                    <div className="grid grid-cols-2 gap-2">
-                      <MiniStat label="DAILY LIMIT" value={cash.format(account.dailyDrawdown)} />
-                      <MiniStat label="START BALANCE" value={cash.format(account.initialBalance)} />
-                    </div>
-                  </div>
-                </section>
-              </div>
-            </div>
-
-            <div className="grid gap-3 xl:grid-cols-[minmax(0,1fr)_320px]">
-              <section className="rounded-[1rem] border border-white/8 bg-[#070707] p-3 sm:p-4">
-                <div className="flex items-center justify-between gap-3">
-                  <div>
-                    <h3 className="text-[14px] font-black text-white">Recent Trades</h3>
-                    <p className="mt-1 text-[11px] text-zinc-500">Latest entries from the selected account.</p>
-                  </div>
-                  <Button type="button" variant="outline" size="sm" className="border-white/10 bg-[#050505] hover:bg-[#101010]" onClick={() => setActiveTab("trades")}>
-                    See all
-                  </Button>
-                </div>
-                {recentTrades.length ? (
-                  <div className="mt-4 space-y-2">
-                    {recentTrades.map((trade) => (
-                      <button
-                        key={trade.id}
-                        type="button"
-                        onClick={() => openTrade(trade)}
-                        className="flex w-full items-center gap-3 rounded-2xl border border-white/8 bg-[#050505] px-3 py-3 text-left transition hover:bg-[#0b0b0b]"
-                      >
-                        <div className="min-w-0 flex-1">
-                          <div className="flex items-center gap-2">
-                            <strong className="truncate text-sm text-white">{trade.symbol}</strong>
-                            <span className={`rounded px-1.5 py-0.5 text-[9px] font-black uppercase ${trade.side === "Long" ? "bg-[#0b1c12] text-emerald-300" : "bg-[#1a0d10] text-rose-300"}`}>
-                              {trade.side === "Long" ? "Buy" : "Sell"}
-                            </span>
-                          </div>
-                          <p className="mt-1 truncate text-xs text-zinc-500">{trade.setup || trade.session || trade.rawDate}</p>
-                        </div>
-                        <strong className={`font-mono text-sm font-black ${trade.pnl >= 0 ? "text-emerald-300" : "text-rose-300"}`}>{formatTradePnl(trade.pnl)}</strong>
-                      </button>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="mt-4 grid min-h-44 place-items-center rounded-2xl border border-white/8 bg-[#050505] text-center text-sm text-zinc-500">
-                    You don&apos;t have any trades yet. Register a trade to get started.
-                  </div>
-                )}
-              </section>
-
-              <section className="rounded-[1rem] border border-white/8 bg-[#070707] p-3 sm:p-4">
-                <div className="flex items-center justify-between gap-3">
-                  <div>
-                    <h3 className="text-[14px] font-black text-white">Execution Snapshot</h3>
-                    <p className="mt-1 text-[11px] text-zinc-500">Risk, consistency and current focus.</p>
-                  </div>
-                    <span className="rounded-full border border-white/8 bg-[#050505] px-2.5 py-1 text-[10px] font-black text-zinc-400">
-                    {account.status}
-                  </span>
-                </div>
-                <div className="mt-4 grid grid-cols-2 gap-2">
-                  <MiniStat label="PLAN ALIGNMENT" value={`${planRate}%`} />
-                  <MiniStat label="ACTIVE SETUPS" value={String(setups.length)} />
-                  <MiniStat label="MISTAKE TRADES" value={String(mistakes.reduce((sum, item) => sum + item.trades, 0))} />
-                  <MiniStat label="MONTH TRADES" value={String(monthCount)} />
-                </div>
-                <div className="mt-4 space-y-3">
-                  <ProgressBar label="Profit target" value={targetProgress} color="bg-emerald-500" />
-                  <ProgressBar label="Drawdown used" value={drawdownUsed} color="bg-rose-500" />
-                </div>
-                  <div className="mt-4 space-y-2">
-                  <div className="rounded-2xl border border-white/8 bg-[#050505] px-3 py-3">
-                    <p className="text-[10px] font-black uppercase tracking-[0.16em] text-zinc-500">Best setup</p>
-                    <p className="mt-1 text-sm font-bold text-white">{setups[0]?.name || "No setup data yet"}</p>
-                    <p className="mt-1 text-xs text-zinc-500">
-                      {setups[0] ? `${setups[0].trades} trades / ${setups[0].rate}% win rate` : "Tag setups to unlock setup analytics."}
-                    </p>
-                  </div>
-                  <div className="rounded-2xl border border-white/8 bg-[#050505] px-3 py-3">
-                    <p className="text-[10px] font-black uppercase tracking-[0.16em] text-zinc-500">Discipline focus</p>
-                    <p className="mt-1 text-sm font-bold text-white">{mistakes[0]?.name || "Clean execution streak"}</p>
-                    <p className="mt-1 text-xs text-zinc-500">
-                      {mistakes[0] ? `${mistakes[0].trades} repeats / ${cash.format(mistakes[0].pnl)}` : "No repeated mistake patterns this month."}
-                    </p>
-                  </div>
-                </div>
-              </section>
-            </div>
-
-              <section className="rounded-[1.2rem] border border-white/8 bg-[#070707] p-3 sm:p-4">
-              <div className="flex items-center justify-between gap-3">
-                <div>
-                  <h3 className="font-bold text-white">Live Positions</h3>
-                  <p className="mt-1 text-xs text-zinc-500">Open MT5 trades tracked by auto sync.</p>
-                </div>
-                <span className="rounded-full border border-white/10 bg-[#050505] px-2.5 py-1 text-[10px] font-bold uppercase text-zinc-400">
-                  {openPositions.length} open
-                </span>
-              </div>
-              {openPositions.length ? (
-                <div className="mt-4 grid gap-2">
-                  {openPositions.slice(0, 4).map((position) => {
-                    const positive = (position.unrealizedPnl || 0) >= 0;
-                    return (
-                      <div key={position.id} className="flex items-center gap-3 rounded-xl border border-white/8 bg-[#050505] px-3 py-3">
-                        <div className="min-w-0 flex-1">
-                          <div className="flex items-center gap-2">
-                            <InstrumentBadge symbol={position.symbol} compact className="bg-[#121212]" />
-                            <span className={`rounded px-1.5 py-0.5 text-[9px] font-black uppercase ${position.side === "long" ? "bg-[#0b1c12] text-emerald-300" : "bg-[#1a0d10] text-rose-300"}`}>
-                              {position.side}
-                            </span>
-                            <span className="text-[10px] text-zinc-500">{position.volume.toFixed(2)} lots</span>
-                          </div>
-                          <p className="mt-1 text-[11px] text-zinc-500">
-                            Entry {position.entryPrice?.toFixed(2) || "-"} / Now {position.currentPrice?.toFixed(2) || "-"}
-                          </p>
-                        </div>
-                        <div className="text-right">
-                          <strong className={`font-mono text-sm font-black ${positive ? "text-emerald-400" : "text-rose-400"}`}>
-                            {(position.unrealizedPnl || 0) >= 0 ? "+" : ""}{cash.format(position.unrealizedPnl || 0)}
-                          </strong>
-                          <p className="mt-1 text-[10px] text-zinc-600">{position.openedAt ? new Date(position.openedAt).toLocaleString("en-US") : "Live"}</p>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              ) : (
-                <p className="mt-4 text-sm text-zinc-500">
-                  {positionsPendingSetup ? "Open positions table is waiting for DB migration." : "No open MT5 positions right now."}
-                </p>
-              )}
-            </section>
-
-            <AiCoachCard report={coachReport} loading={coachLoading} error={coachError} onRefresh={() => void loadCoach()} />
+          <TabsContent value="overview">
+            <DashboardOverview
+              account={account}
+              stats={stats}
+              equity={equity}
+              weeklyStrip={weeklyStrip}
+              setups={setups}
+              mistakes={mistakes}
+              planRate={planRate}
+              monthCount={monthCount}
+              recentTrades={recentTrades}
+              openPositions={openPositions}
+              currentPnl={currentPnl}
+              currentEquity={currentEquity}
+              targetProgress={targetProgress}
+              drawdownUsed={drawdownUsed}
+              balancesHidden={pnlMode === "hidden"}
+              formatTradePnl={formatTradePnl}
+              onOpenTrade={openTrade}
+              onSeeAll={() => setActiveTab("trades")}
+              onAddTrade={p.onTrade}
+            />
           </TabsContent>
           ) : null}
 
@@ -2071,7 +1885,7 @@ function TradeEditor({ trade, saving, onClose, onSave, onDelete }: { trade: Jour
                 <input type="hidden" name="imageUrls" value={JSON.stringify(imageUrls)} />
                 <div className="grid grid-cols-3 gap-2">
                   {imageUrls.map((url, index) => <div key={url} className="group relative aspect-square overflow-hidden rounded-lg border border-white/10 bg-black"><button type="button" onClick={() => { setPreviewUrl(url); setScreenshotOpen(true); }} className="h-full w-full"><MediaImage src={url} alt={`${trade.symbol} screenshot ${index + 1}`} className="h-full w-full object-cover" /></button><button type="button" onClick={() => setImageUrls((current) => current.filter((item) => item !== url))} className="absolute right-1.5 top-1.5 grid size-7 place-items-center rounded-md bg-[#050505] text-rose-200"><Trash2 size={12} /></button></div>)}
-                  {imageUrls.length < 3 ? <button type="button" onClick={() => imageInputRef.current?.click()} className="grid aspect-square place-items-center rounded-lg border border-dashed border-white/10 text-zinc-500 transition hover:bg-[#111111] hover:text-white">{uploadingImages ? <LoaderCircle className="animate-spin" size={20} /> : <Plus size={22} />}</button> : null}
+                  {imageUrls.length < 3 ? <button type="button" onClick={() => imageInputRef.current?.click()} className="grid aspect-square place-items-center rounded-lg border border-dashed border-white/10 text-zinc-500 transition hover:bg-[#111111] hover:text-white">{uploadingImages ? <Spinner className="size-5" /> : <Plus size={22} />}</button> : null}
                 </div>
               </section>
 
@@ -2123,7 +1937,7 @@ function TradeEditor({ trade, saving, onClose, onSave, onDelete }: { trade: Jour
               </AlertDialogFooter>
             </AlertDialogContent>
           </AlertDialog>
-          <Button disabled={saving} className="bg-white text-black hover:bg-zinc-200 sm:ml-auto">{saving ? <LoaderCircle className="animate-spin" size={15} /> : null}<span className="sm:hidden">Save</span><span className="hidden sm:inline">Save changes</span></Button>
+          <Button disabled={saving} className="bg-white text-black hover:bg-zinc-200 sm:ml-auto">{saving ? <Spinner className="size-[15px]" /> : null}<span className="sm:hidden">Save</span><span className="hidden sm:inline">Save changes</span></Button>
         </footer>
       </form>
       <Dialog open={screenshotOpen} onOpenChange={setScreenshotOpen}>
@@ -2302,7 +2116,7 @@ function TradeReviewImage({ trade, chartUrls }: { trade: JournalEntry; chartUrls
         <MediaImage src={generatedUrl} alt={`${trade.symbol} TradeWay review image`} className="aspect-square w-full bg-[#0b0b0b] object-contain" />
       ) : (
         <div className="grid aspect-square w-full place-items-center text-[#8a8a8a]">
-          <LoaderCircle className="animate-spin" size={24} />
+          <Spinner className="size-6" />
         </div>
       )}
     </section>
@@ -2319,16 +2133,6 @@ function ProgressBar({ label, value, color }: { label: string; value: number; co
       <div className="h-1.5 overflow-hidden rounded-full bg-[#242424]">
         <div className={`h-full rounded-full transition-all ${color}`} style={{ width: `${Math.min(100, value)}%` }} />
       </div>
-    </div>
-  );
-}
-
-function BalanceMetric({ label, value, tone = "neutral" }: { label: string; value: string; tone?: "neutral" | "good" | "bad" }) {
-  const color = tone === "good" ? "text-[#d9f96d]" : tone === "bad" ? "text-rose-300" : "text-[#dfe5f2]";
-  return (
-    <div className="rounded-2xl border border-white/8 bg-[#050505] px-4 py-3">
-      <p className="text-[10px] font-semibold uppercase tracking-wider text-[#848da3]">{label}</p>
-      <b className={`mt-1 block truncate font-mono text-xl font-black ${color}`}>{value}</b>
     </div>
   );
 }
