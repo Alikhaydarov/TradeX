@@ -18,6 +18,17 @@ interface PremiumStatus {
 
 interface StripeConfigStatus {
   configured: boolean;
+  missingEnv?: string[];
+  plans?: Array<{
+    id: "standard" | "pro";
+    name: string;
+    productName: string;
+    amount: number;
+    currency: "USD";
+    interval: "month";
+    linked: boolean;
+    priceId: string | null;
+  }>;
 }
 
 type BillingPlan = {
@@ -64,6 +75,8 @@ export function Pricing({ onLogin }: { onLogin?: () => void } = {}) {
   const [checkoutPlan, setCheckoutPlan] = useState<string | null>(null);
   const [portalLoading, setPortalLoading] = useState(false);
   const [billingConfigured, setBillingConfigured] = useState(false);
+  const [billingPlans, setBillingPlans] = useState<StripeConfigStatus["plans"]>([]);
+  const [missingEnv, setMissingEnv] = useState<string[]>([]);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -91,10 +104,18 @@ export function Pricing({ onLogin }: { onLogin?: () => void } = {}) {
     let active = true;
     apiRequest<StripeConfigStatus>("/api/stripe/config")
       .then((data) => {
-        if (active) setBillingConfigured(Boolean(data.configured));
+        if (active) {
+          setBillingConfigured(Boolean(data.configured));
+          setBillingPlans(data.plans ?? []);
+          setMissingEnv(data.missingEnv ?? []);
+        }
       })
       .catch(() => {
-        if (active) setBillingConfigured(false);
+        if (active) {
+          setBillingConfigured(false);
+          setBillingPlans([]);
+          setMissingEnv([]);
+        }
       });
 
     return () => {
@@ -118,6 +139,11 @@ export function Pricing({ onLogin }: { onLogin?: () => void } = {}) {
       { label: "MT5 Auto Sync", active: Boolean(premium?.autoSyncEnabled) },
     ],
     [premium],
+  );
+
+  const unlinkedPlans = useMemo(
+    () => (billingPlans ?? []).filter((plan) => !plan.linked),
+    [billingPlans],
   );
 
   const startCheckout = async (plan: BillingPlan) => {
@@ -169,7 +195,7 @@ export function Pricing({ onLogin }: { onLogin?: () => void } = {}) {
           <div className="grid gap-4 lg:grid-cols-[1.1fr_.9fr] lg:items-end">
             <div>
               <Badge className="rounded-full bg-white text-black hover:bg-white">
-                <Crown className="size-3.5" /> TradeWay Premium
+                <Crown className="size-3.5" /> Tradox Premium
               </Badge>
               <h1 className="mt-3 max-w-2xl text-2xl font-black tracking-tight text-white sm:text-4xl">
                 Turn your journal into a verified trading workspace.
@@ -247,7 +273,24 @@ export function Pricing({ onLogin }: { onLogin?: () => void } = {}) {
           </div>
         </section>
 
-        {!billingConfigured ? <div className="mt-4 rounded-2xl border border-amber-300/15 bg-amber-400/10 px-4 py-3 text-sm text-amber-100">Stripe pricing UI is ready, but checkout will stay locked until Stripe env keys and monthly price IDs are added.</div> : null}
+        {!billingConfigured ? (
+          <div className="mt-4 rounded-2xl border border-amber-300/15 bg-amber-400/10 px-4 py-3 text-sm text-amber-100">
+            Stripe pricing UI is ready, but checkout stays locked until `STRIPE_SECRET_KEY`,
+            `STRIPE_WEBHOOK_SECRET`, `STRIPE_PRICE_STANDARD_MONTHLY`, and
+            `STRIPE_PRICE_PRO_MONTHLY` are set on the server.
+          </div>
+        ) : null}
+        {!billingConfigured && missingEnv.length > 0 ? (
+          <div className="mt-4 rounded-2xl border border-white/10 bg-[#0b0b0b] px-4 py-3 text-sm text-zinc-300">
+            Missing environment values: {missingEnv.join(", ")}
+          </div>
+        ) : null}
+        {!billingConfigured && unlinkedPlans.length > 0 ? (
+          <div className="mt-4 rounded-2xl border border-white/10 bg-[#0b0b0b] px-4 py-3 text-sm text-zinc-300">
+            Missing Stripe plan links:{" "}
+            {unlinkedPlans.map((plan) => `${plan.productName} (${plan.name})`).join(", ")}
+          </div>
+        ) : null}
         {message ? <div className="mt-4 rounded-2xl border border-emerald-300/15 bg-emerald-400/10 px-4 py-3 text-sm text-emerald-200">{message}</div> : null}
         {error ? <div className="mt-4 rounded-2xl border border-rose-300/15 bg-rose-400/10 px-4 py-3 text-sm text-rose-200">{error}</div> : null}
 

@@ -12,6 +12,10 @@ interface PremiumStatus {
   isPremium: boolean;
 }
 
+interface StripeConfigStatus {
+  configured: boolean;
+}
+
 const plans = [
   { id: "standard", name: "Standard", price: "$15/mo" },
   { id: "pro", name: "Pro", price: "$25/mo" },
@@ -22,11 +26,29 @@ export function PremiumUpsellDialog() {
   const { user } = useAuth();
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [billingConfigured, setBillingConfigured] = useState(false);
+  const [checkoutPlan, setCheckoutPlan] = useState<string | null>(null);
 
   const storageKey = useMemo(
     () => (user ? `tradeway:premium-upsell:last-seen:${user.id}` : ""),
     [user],
   );
+
+  useEffect(() => {
+    let active = true;
+
+    apiRequest<StripeConfigStatus>("/api/stripe/config")
+      .then((status) => {
+        if (active) setBillingConfigured(Boolean(status.configured));
+      })
+      .catch(() => {
+        if (active) setBillingConfigured(false);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, []);
 
   useEffect(() => {
     if (!user || !storageKey) return;
@@ -63,6 +85,34 @@ export function PremiumUpsellDialog() {
 
   if (!user || loading) return null;
 
+  const openPricing = () => {
+    setOpen(false);
+    window.history.pushState(null, "", "/pricing");
+    window.dispatchEvent(new Event("popstate"));
+  };
+
+  const startCheckout = async (planId: "standard" | "pro") => {
+    if (!billingConfigured) {
+      openPricing();
+      return;
+    }
+
+    setCheckoutPlan(planId);
+
+    try {
+      const response = await apiRequest<{ url: string }>("/api/stripe/checkout", {
+        method: "POST",
+        body: JSON.stringify({ plan: planId }),
+      });
+
+      window.location.assign(response.url);
+    } catch {
+      openPricing();
+    } finally {
+      setCheckoutPlan(null);
+    }
+  };
+
   return (
     <Dialog
       open={open}
@@ -88,7 +138,7 @@ export function PremiumUpsellDialog() {
               <Crown className="size-3.5" /> New account bonus
             </Badge>
             <DialogTitle className="text-3xl font-black tracking-tight text-white">
-              Unlock TradeWay Premium
+              Unlock Tradox Premium
             </DialogTitle>
             <p className="max-w-md text-sm leading-6 text-zinc-400">
               Blue badge, AI trade coaching and MT5 Auto Sync unlock when you want the full workflow.
@@ -107,6 +157,13 @@ export function PremiumUpsellDialog() {
                     ? "Best for traders who want verified profile, AI review and MT5 history sync."
                     : "For heavy users who want everything in Standard plus priority sync and future pro tools."}
                 </p>
+                <Button
+                  className="mt-4 h-10 w-full rounded-2xl bg-white text-black hover:bg-zinc-200"
+                  onClick={() => void startCheckout(plan.id)}
+                  disabled={checkoutPlan === plan.id}
+                >
+                  {checkoutPlan === plan.id ? "Opening checkout..." : `Upgrade to ${plan.name}`}
+                </Button>
               </div>
             ))}
           </div>
@@ -114,11 +171,7 @@ export function PremiumUpsellDialog() {
           <div className="mt-6 flex flex-col gap-2 sm:flex-row">
             <Button
               className="h-11 flex-1 rounded-2xl bg-white text-black hover:bg-zinc-200"
-              onClick={() => {
-                setOpen(false);
-                window.history.pushState(null, "", "/pricing");
-                window.dispatchEvent(new Event("popstate"));
-              }}
+              onClick={openPricing}
             >
               <Sparkles className="size-4" /> View Premium plans
             </Button>

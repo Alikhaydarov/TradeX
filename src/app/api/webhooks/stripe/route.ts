@@ -8,8 +8,11 @@ const ACTIVE_PREMIUM_STATUSES = new Set(["active", "trialing", "past_due"]);
 
 type StripeSubscriptionLike = Pick<
   Stripe.Subscription,
-  "id" | "status" | "customer" | "metadata" | "cancel_at"
->;
+  "id" | "status" | "customer" | "metadata"
+> & {
+  cancel_at?: number | null;
+  current_period_end?: number | null;
+};
 
 async function syncSubscription(subscription: StripeSubscriptionLike) {
   const admin = getSupabaseAdminClient();
@@ -31,8 +34,8 @@ async function syncSubscription(subscription: StripeSubscriptionLike) {
   if (!userId) throw new Error(`No userId linked to Stripe subscription ${subscription.id}.`);
 
   const plan = subscription.metadata.plan || "standard";
-  const currentPeriodEnd = subscription.cancel_at
-    ? new Date(subscription.cancel_at * 1000).toISOString()
+  const currentPeriodEnd = subscription.current_period_end
+    ? new Date(subscription.current_period_end * 1000).toISOString()
     : null;
 
   const { data: existing, error: findError } = await admin

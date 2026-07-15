@@ -7,6 +7,9 @@ type PlanConfig = {
   name: string;
   priceId: string;
   amount: number;
+  currency: "USD";
+  interval: "month";
+  productName: string;
 };
 
 let stripeSingleton: Stripe | null = null;
@@ -50,12 +53,18 @@ export function getPremiumPlans(): PlanConfig[] {
       name: "Standard",
       priceId: process.env.STRIPE_PRICE_STANDARD_MONTHLY ?? "",
       amount: 15,
+      currency: "USD",
+      interval: "month",
+      productName: "Tradox Standard USD",
     },
     {
       id: "pro",
       name: "Pro",
       priceId: process.env.STRIPE_PRICE_PRO_MONTHLY ?? "",
       amount: 25,
+      currency: "USD",
+      interval: "month",
+      productName: "Tradox Pro USD",
     },
   ];
 }
