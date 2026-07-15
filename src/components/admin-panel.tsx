@@ -326,15 +326,18 @@ export function AdminPanel({ onLogin }: { onLogin: () => void }) {
                                   plan: option.value,
                                   isVerified: option.value !== "free",
                                 })}
-                                className={`h-10 rounded-xl px-2 text-xs font-bold ${
-                                  selected
+                                variant="ghost"
+                                className="h-10 rounded-xl px-2 text-xs font-bold hover:bg-white/[.08]"
+                                style={{
+                                  backgroundColor: selected
                                     ? option.value === "pro"
-                                      ? "bg-amber-300 text-black hover:bg-amber-200"
+                                      ? "#fde047"
                                       : option.value === "standard"
-                                        ? "bg-sky-300 text-black hover:bg-sky-200"
-                                        : "bg-white text-black hover:bg-zinc-200"
-                                    : "bg-transparent text-zinc-500 hover:bg-white/[.06] hover:text-zinc-200"
-                                }`}
+                                        ? "#7dd3fc"
+                                        : "#ffffff"
+                                    : "transparent",
+                                  color: selected ? "#09090b" : "#71717a",
+                                }}
                               >
                                 {selected ? <Check size={14} /> : null}
                                 {option.label}
@@ -354,11 +357,12 @@ export function AdminPanel({ onLogin }: { onLogin: () => void }) {
                             type="button"
                             onClick={() => updateDraft(target.id, { isVerified: true })}
                             disabled={!premiumEnabled}
-                            className={`h-10 flex-1 rounded-xl text-xs font-bold ${
-                              draft.isVerified && premiumEnabled
-                                ? "bg-white text-black hover:bg-zinc-200"
-                                : "bg-transparent text-zinc-400 hover:bg-white/[.06]"
-                            }`}
+                            variant="ghost"
+                            className="h-10 flex-1 rounded-xl text-xs font-bold hover:bg-white/[.08]"
+                            style={{
+                              backgroundColor: draft.isVerified && premiumEnabled ? "#6ee7b7" : "transparent",
+                              color: draft.isVerified && premiumEnabled ? "#052e24" : "#71717a",
+                            }}
                           >
                             {draft.isVerified && premiumEnabled ? <Check size={14} /> : null}
                             Verified
@@ -366,12 +370,14 @@ export function AdminPanel({ onLogin }: { onLogin: () => void }) {
                           <Button
                             type="button"
                             onClick={() => updateDraft(target.id, { isVerified: false })}
-                            className={`h-10 flex-1 rounded-xl text-xs font-bold ${
-                              !draft.isVerified || !premiumEnabled
-                                ? "bg-white/[.06] text-zinc-200 hover:bg-white/[.09]"
-                                : "bg-transparent text-zinc-400 hover:bg-white/[.06]"
-                            }`}
+                            variant="ghost"
+                            className="h-10 flex-1 rounded-xl text-xs font-bold hover:bg-white/[.08]"
+                            style={{
+                              backgroundColor: !draft.isVerified || !premiumEnabled ? "#27272a" : "transparent",
+                              color: !draft.isVerified || !premiumEnabled ? "#f4f4f5" : "#71717a",
+                            }}
                           >
+                            {!draft.isVerified || !premiumEnabled ? <Check size={14} /> : null}
                             Hidden
                           </Button>
                         </div>
@@ -386,20 +392,27 @@ export function AdminPanel({ onLogin }: { onLogin: () => void }) {
                           <Button
                             type="button"
                             onClick={() => updateDraft(target.id, { isAdmin: false })}
-                            className={`h-10 flex-1 rounded-xl text-xs font-bold ${
-                              !draft.isAdmin ? "bg-white/[.06] text-zinc-200 hover:bg-white/[.09]" : "bg-transparent text-zinc-400 hover:bg-white/[.06]"
-                            }`}
+                            variant="ghost"
+                            className="h-10 flex-1 rounded-xl text-xs font-bold hover:bg-white/[.08]"
+                            style={{
+                              backgroundColor: !draft.isAdmin ? "#e4e4e7" : "transparent",
+                              color: !draft.isAdmin ? "#09090b" : "#71717a",
+                            }}
                           >
+                            {!draft.isAdmin ? <Check size={14} /> : null}
                             Member
                           </Button>
                           <Button
                             type="button"
                             onClick={() => updateDraft(target.id, { isAdmin: true })}
-                            className={`h-10 flex-1 rounded-xl text-xs font-bold ${
-                              draft.isAdmin ? "bg-white text-black hover:bg-zinc-200" : "bg-transparent text-zinc-400 hover:bg-white/[.06]"
-                            }`}
+                            variant="ghost"
+                            className="h-10 flex-1 rounded-xl text-xs font-bold hover:bg-white/[.08]"
+                            style={{
+                              backgroundColor: draft.isAdmin ? "#f4f4f5" : "transparent",
+                              color: draft.isAdmin ? "#09090b" : "#71717a",
+                            }}
                           >
-                            <UserCog size={14} /> Admin
+                            {draft.isAdmin ? <Check size={14} /> : <UserCog size={14} />} Admin
                           </Button>
                         </div>
                       </div>
