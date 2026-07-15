@@ -1,4 +1,5 @@
 import { authenticateRequest, badRequest, serverError, unauthorized } from "@/lib/backend/auth";
+import { hasVerifiedPremiumAccess } from "@/lib/premium-plan";
 import { getProfileInsights } from "@/lib/server/profile-insights";
 
 export const runtime = "nodejs";
@@ -27,9 +28,7 @@ interface AuthorRow {
   premium_until?: string | null;
 }
 
-function premiumVerified(profile: { is_verified?: boolean | null; plan?: string | null; premium_until?: string | null }) {
-  return Boolean(profile.is_verified) && profile.plan === "premium" && (!profile.premium_until || new Date(profile.premium_until).getTime() > Date.now());
-}
+const premiumVerified = hasVerifiedPremiumAccess;
 
 function hydrateAuthors<T extends { id: string; user_id: string; author_avatar?: string | null }>(
   posts: T[],

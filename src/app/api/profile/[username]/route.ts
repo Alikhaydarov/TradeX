@@ -1,4 +1,5 @@
 import { authenticateRequest, serverError } from "@/lib/backend/auth";
+import { hasVerifiedPremiumAccess } from "@/lib/premium-plan";
 import { getSupabaseServerClient } from "@/lib/supabase/server";
 import { getProfileInsights } from "@/lib/server/profile-insights";
 
@@ -33,9 +34,7 @@ async function followCounts(supabase: NonNullable<Awaited<ReturnType<typeof getS
   };
 }
 
-function premiumVerified(profile: { is_verified?: boolean | null; plan?: string | null; premium_until?: string | null }) {
-  return Boolean(profile.is_verified) && profile.plan === "premium" && (!profile.premium_until || new Date(profile.premium_until).getTime() > Date.now());
-}
+const premiumVerified = hasVerifiedPremiumAccess;
 
 function buildTimeline(
   profile: {

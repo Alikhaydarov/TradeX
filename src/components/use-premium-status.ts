@@ -7,6 +7,7 @@ import { useAuth } from "./auth-context";
 export interface PremiumStatus {
   isPremium: boolean;
   aiEnabled: boolean;
+  traderoxEnabled: boolean;
   autoSyncEnabled: boolean;
   isVerified: boolean;
 }
@@ -14,6 +15,7 @@ export interface PremiumStatus {
 const FREE_STATUS: PremiumStatus = {
   isPremium: false,
   aiEnabled: false,
+  traderoxEnabled: false,
   autoSyncEnabled: false,
   isVerified: false,
 };

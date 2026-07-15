@@ -11,6 +11,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 interface PremiumStatus {
   isPremium: boolean;
   aiEnabled: boolean;
+  traderoxEnabled: boolean;
   autoSyncEnabled: boolean;
   isVerified: boolean;
 }
@@ -113,6 +114,7 @@ export function Pricing({ onLogin }: { onLogin?: () => void } = {}) {
     () => [
       { label: "Verified badge", active: Boolean(premium?.isVerified) },
       { label: "AI trade analysis", active: Boolean(premium?.aiEnabled) },
+      { label: "AI coach", active: Boolean(premium?.traderoxEnabled) },
       { label: "MT5 Auto Sync", active: Boolean(premium?.autoSyncEnabled) },
     ],
     [premium],

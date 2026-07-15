@@ -1,4 +1,5 @@
 import { authenticateRequest, badRequest, serverError, unauthorized } from "@/lib/backend/auth";
+import { hasVerifiedPremiumAccess } from "@/lib/premium-plan";
 
 export const runtime = "nodejs";
 
@@ -22,9 +23,7 @@ interface ProfileRecord {
   premium_until: string | null;
 }
 
-function premiumVerified(profile: ProfileRecord) {
-  return Boolean(profile.is_verified) && profile.plan === "premium" && (!profile.premium_until || new Date(profile.premium_until).getTime() > Date.now());
-}
+const premiumVerified = hasVerifiedPremiumAccess;
 
 export async function POST(request: Request) {
   const auth = await authenticateRequest(request);

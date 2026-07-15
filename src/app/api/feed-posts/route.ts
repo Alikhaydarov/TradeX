@@ -1,4 +1,5 @@
 import { authenticateRequest, serverError } from "@/lib/backend/auth";
+import { hasVerifiedPremiumAccess } from "@/lib/premium-plan";
 import { getSupabaseServerClient } from "@/lib/supabase/server";
 
 export const runtime = "nodejs";
@@ -19,9 +20,7 @@ interface ProfileRow {
   premium_until?: string | null;
 }
 
-function premiumVerified(profile: ProfileRow) {
-  return Boolean(profile.is_verified) && profile.plan === "premium" && (!profile.premium_until || new Date(profile.premium_until).getTime() > Date.now());
-}
+const premiumVerified = hasVerifiedPremiumAccess;
 
 export async function GET(request: Request) {
   const supabase = await getSupabaseServerClient();
