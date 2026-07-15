@@ -7,14 +7,21 @@ interface AdminUserRecord {
   username: string;
   full_name: string;
   avatar_url: string | null;
+  email: string | null;
   plan: "free" | "standard" | "pro" | "premium" | null;
   premium_until: string | null;
   ai_enabled: boolean | null;
   traderox_enabled: boolean | null;
   auto_sync_enabled: boolean | null;
+  subscription_status: string | null;
+  subscription_provider: string | null;
+  accounts_count: number | null;
+  journal_entries_count: number | null;
+  posts_count: number | null;
   is_verified: boolean | null;
   is_admin: boolean | null;
   created_at: string | null;
+  last_sign_in_at: string | null;
 }
 
 async function ensureAdmin(auth: NonNullable<Awaited<ReturnType<typeof authenticateRequest>>>) {
@@ -38,14 +45,21 @@ export async function GET(request: Request) {
       username: profile.username,
       fullName: profile.full_name,
       avatarUrl: profile.avatar_url,
+      email: profile.email,
       plan: profile.plan ?? "free",
       premiumUntil: profile.premium_until,
       aiEnabled: Boolean(profile.ai_enabled),
       traderoxEnabled: Boolean(profile.traderox_enabled),
       autoSyncEnabled: Boolean(profile.auto_sync_enabled),
+      subscriptionStatus: profile.subscription_status,
+      subscriptionProvider: profile.subscription_provider,
+      accountsCount: Number(profile.accounts_count ?? 0),
+      journalEntriesCount: Number(profile.journal_entries_count ?? 0),
+      postsCount: Number(profile.posts_count ?? 0),
       isVerified: Boolean(profile.is_verified),
       isAdmin: Boolean(profile.is_admin),
       createdAt: profile.created_at,
+      lastSignInAt: profile.last_sign_in_at,
     }));
 
     return Response.json({ users });
@@ -63,9 +77,10 @@ export async function PATCH(request: Request) {
     plan?: "free" | "standard" | "pro" | "premium";
     isVerified?: boolean;
     premiumUntil?: string | null;
+    isAdmin?: boolean;
   };
-  if (!body.userId || !body.plan || typeof body.isVerified !== "boolean") {
-    return badRequest("User, tarif va verification holatini to'g'ri yuboring.");
+  if (!body.userId || !body.plan || typeof body.isVerified !== "boolean" || typeof body.isAdmin !== "boolean") {
+    return badRequest("User, tarif, verification va admin holatini to'g'ri yuboring.");
   }
 
   try {
@@ -76,6 +91,7 @@ export async function PATCH(request: Request) {
       next_plan: body.plan,
       next_verified: body.isVerified,
       next_premium_until: body.plan === "free" ? null : (body.premiumUntil ?? null),
+      next_is_admin: body.isAdmin,
     });
 
     if (accessError) return serverError(accessError.message);

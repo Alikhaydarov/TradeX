@@ -12,7 +12,6 @@ import {
   MoreHorizontal,
   Settings2,
   Search,
-  ShieldCheck,
   SquareChartGantt,
   TrendingUp,
   UserRound,
@@ -59,14 +58,12 @@ export function Sidebar({
   onLogin,
   user,
   hideMobile = false,
-  isAdmin = false,
 }: {
   active: Section;
   onChange: (section: Section) => void;
   onLogin: () => void;
   user: User | null;
   hideMobile?: boolean;
-  isAdmin?: boolean;
 }) {
   const { accounts, activeAccountId, setActiveAccount } = useActiveAccountStore();
   const [profileUsername, setProfileUsername] = useState("");
@@ -127,8 +124,6 @@ export function Sidebar({
     { id: "trades" as const, label: "Trades", icon: SquareChartGantt },
     { id: "analytics" as const, label: "Analytics", icon: TrendingUp },
   ];
-  const adminNav = isAdmin ? [{ id: "admin" as const, label: "Admin", icon: ShieldCheck }] : [];
-
   const openAccountsPage = () => {
     onChange("accounts");
     setMobileMenuOpen(false);
@@ -284,15 +279,6 @@ export function Sidebar({
           <nav className="space-y-1">
             {journalingNav.map((item) => renderNavButton(item))}
           </nav>
-
-          {adminNav.length ? (
-            <>
-              <GroupLabel>Admin</GroupLabel>
-              <nav className="space-y-1">
-                {adminNav.map((item) => renderNavButton(item))}
-              </nav>
-            </>
-          ) : null}
         </div>
 
         <div className="mt-auto">

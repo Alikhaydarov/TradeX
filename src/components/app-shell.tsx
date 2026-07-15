@@ -168,7 +168,6 @@ function AppShellInner() {
           onChange={changeSection}
           onLogin={openLogin}
           user={user}
-          isAdmin={isAdmin}
         />
         <div className="hidden w-[272px] shrink-0 lg:block" aria-hidden="true" />
         <main className="h-[100dvh] min-w-0 flex-1 overflow-y-auto overflow-x-hidden bg-[#000000] lg:h-[calc(100dvh-2rem)] lg:rounded-[1rem] lg:border lg:border-white/8">

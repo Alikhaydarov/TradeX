@@ -120,6 +120,7 @@ export interface AdminUser {
   username: string;
   fullName: string;
   avatarUrl: string | null;
+  email: string | null;
   plan: "free" | "standard" | "pro" | "premium";
   premiumUntil: string | null;
   aiEnabled: boolean;
@@ -127,7 +128,13 @@ export interface AdminUser {
   autoSyncEnabled: boolean;
   isVerified: boolean;
   isAdmin: boolean;
+  subscriptionStatus: string | null;
+  subscriptionProvider: string | null;
+  accountsCount: number;
+  journalEntriesCount: number;
+  postsCount: number;
   createdAt: string | null;
+  lastSignInAt: string | null;
 }
 
 export interface JournalEntry {
