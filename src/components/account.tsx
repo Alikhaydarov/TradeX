@@ -472,11 +472,6 @@ export function Account({ onLogin, profileUsername }: { onLogin: () => void; pro
               <div className="flex min-w-0 items-center gap-2">
                 <h2 className="truncate text-xl font-black leading-7 sm:text-2xl">{profile.fullName}</h2>
                 {profile.isVerified ? <VerifiedBadge size={20} /> : null}
-                {profile.plan && profile.plan !== "free" ? (
-                  <span className={`rounded-full border px-2 py-0.5 text-[9px] font-black uppercase tracking-[.12em] ${profile.plan === "pro" ? "border-amber-300/20 bg-amber-300/10 text-amber-200" : "border-sky-300/20 bg-sky-300/10 text-sky-200"}`}>
-                    {profile.plan}
-                  </span>
-                ) : null}
                 {saved && <span className="rounded-full bg-emerald-400/10 px-2 py-1 text-[10px] font-bold text-emerald-300">Saved</span>}
               </div>
               <p className="text-xs text-zinc-500">@{profile.username}</p>
