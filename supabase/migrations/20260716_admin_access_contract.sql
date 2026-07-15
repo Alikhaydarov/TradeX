@@ -1,0 +1,65 @@
+-- Keep the admin console and the Stripe plan model on one contract.
+-- `premium` was an early internal name; production plans are Free, Standard and Pro.
+
+update public.profiles
+set plan = 'pro'
+where plan = 'premium';
+
+update public.subscriptions
+set plan = 'pro'
+where plan = 'premium';
+
+alter table public.profiles
+  drop constraint if exists profiles_plan_check;
+
+alter table public.profiles
+  add constraint profiles_plan_check
+  check (plan in ('free', 'standard', 'pro'));
+
+create or replace function public.admin_set_user_access(
+  target_user_id uuid,
+  next_plan text,
+  next_verified boolean default true,
+  next_premium_until timestamptz default null,
+  next_is_admin boolean default null
+)
+returns void
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+  normalized_plan text := lower(coalesce(next_plan, 'free'));
+  premium_enabled boolean;
+begin
+  if not coalesce((select profiles.is_admin from public.profiles where profiles.id = auth.uid()), false) then
+    raise exception 'Ruxsat berilmagan';
+  end if;
+
+  if normalized_plan not in ('free', 'standard', 'pro') then
+    raise exception 'Noto''g''ri tarif rejasi';
+  end if;
+
+  premium_enabled := public.is_premium_plan(normalized_plan);
+
+  update public.profiles
+  set
+    plan = normalized_plan,
+    premium_until = case when premium_enabled then next_premium_until else null end,
+    is_verified = case when premium_enabled then coalesce(next_verified, true) else false end,
+    ai_enabled = premium_enabled,
+    traderox_enabled = premium_enabled,
+    auto_sync_enabled = premium_enabled,
+    is_admin = coalesce(next_is_admin, is_admin)
+  where id = target_user_id;
+end;
+$$;
+
+-- The functions have their own authorization checks; do not expose them to anon users.
+revoke all on function public.admin_list_users() from public;
+revoke all on function public.admin_set_user_access(uuid, text, boolean, timestamptz, boolean) from public;
+grant execute on function public.admin_list_users() to authenticated, service_role;
+grant execute on function public.admin_set_user_access(uuid, text, boolean, timestamptz, boolean) to authenticated, service_role;
+
+comment on function public.admin_set_user_access(uuid, text, boolean, timestamptz, boolean) is
+  'Canonical Superadmin plan and feature update. Valid plans: free, standard, pro.';
