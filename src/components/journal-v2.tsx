@@ -2,7 +2,7 @@
 
 import {
   BarChart3, BookOpen, BrainCircuit, CalendarDays, CheckCircle2, ChevronDown, ChevronLeft, ChevronRight,
-  Download, ImageIcon, MoreHorizontal, Plus, Search, ShieldCheck,
+  Download, ImageIcon, MoreHorizontal, Plus, ShieldCheck,
   Target, Trash2, TrendingDown, TrendingUp, WalletCards, X, Zap,
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -15,6 +15,7 @@ import {
   AlertDialogTitle, AlertDialogTrigger,
 } from "./ui/alert-dialog";
 import Image from "next/image";
+import dynamic from "next/dynamic";
 import { Button } from "./ui/button";
 import { Card, CardContent } from "./ui/card";
 import { Checkbox } from "./ui/checkbox";
@@ -36,12 +37,12 @@ import { PropFirmLogo } from "./prop-firm-logo";
 import { Mt5Settings } from "./mt5-settings";
 import { TradeReviewModal } from "./trade-review-modal";
 import { useWorkspacePreferences } from "./workspace-preferences-context";
+import type { TradeRange } from "@/features/trades/components/trades-archive";
 import type { JournalEntry, OpenPosition, PropAccount } from "./types";
 
 type AccountRow = { id: string; name: string; account_type?: "prop" | "real" | null; firm: string; prop_site?: string | null; prop_login?: string | null; import_source?: "manual" | "mt5_bridge" | "ctrader" | "tradovate" | "ninjatrader" | "official_api" | null; platform?: string | null; phase: string; market_type: string; account_size: string; initial_balance: string; profit_target: string; max_drawdown: string; daily_drawdown: string; start_date: string; status: PropAccount["status"] };
 type EntryRow = { id: string; prop_account_id?: string | null; symbol: string; side: "Long" | "Short"; entry_price: string; exit_price: string; quantity: string; fees: string; pnl: string; note: string; traded_at: string; account_name?: string; market_type?: string; setup?: string; emotion?: string; risk_amount?: string; result_r?: string; risk_percent?: string; session?: string; following_plan?: boolean; error_made?: boolean; mistake_type?: string; review_completed?: boolean; to_trading_bible?: boolean; image_url?: string | null; tags?: string[] };
 type Summary = { account: PropAccount; trades: number; pnl: number; winRate: number; target: number; dd: number };
-type TradeRange = "daily" | "monthly" | "quarter" | "yearly" | "custom";
 type AiCoachReport = {
   title: string;
   summary: string;
@@ -60,7 +61,12 @@ type JournalCacheEntry = {
 };
 
 const JOURNAL_CACHE_TTL_MS = 5_000;
+const JOURNAL_REFRESH_MS = 30_000;
 const journalCache = new Map<string, JournalCacheEntry>();
+const TradesArchive = dynamic(
+  () => import("@/features/trades/components/trades-archive").then((module) => module.TradesArchive),
+  { loading: () => <Skeleton className="h-[520px] w-full rounded-xl bg-white/[.055]" /> },
+);
 const cash = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 2 });
 const WEEKDAYS_SHORT = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 const WEEKDAYS_FULL = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
@@ -80,6 +86,12 @@ const parseTradeImages = (value?: string | null) => {
 const entryFrom = (e: EntryRow): JournalEntry => { const imageUrls = parseTradeImages(e.image_url); return ({ id: e.id, propAccountId: e.prop_account_id, symbol: e.symbol, side: e.side, entry: +e.entry_price, exit: +e.exit_price, quantity: +e.quantity, fees: +e.fees, pnl: +e.pnl, note: e.note, rawDate: e.traded_at, date: new Date(`${e.traded_at}T00:00:00`).toLocaleDateString("uz-UZ"), accountName: e.account_name, marketType: e.market_type, setup: e.setup || "", emotion: e.emotion || "Neutral", riskAmount: +(e.risk_amount || 0), resultR: +(e.result_r || 0), riskPercent: e.risk_percent || "1.0%", session: e.session || "", followingPlan: e.following_plan ?? true, errorMade: e.error_made ?? false, mistakeType: e.mistake_type || "", reviewCompleted: e.review_completed ?? false, toTradingBible: e.to_trading_bible ?? false, imageUrl: imageUrls[0] ?? null, imageUrls, tags: e.tags || [] }); };
 const monthId = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
 const reviewScore = (entry: JournalEntry) => [entry.note, entry.setup, entry.session, entry.imageUrl, entry.reviewCompleted, entry.toTradingBible].filter(Boolean).length;
+const csvCell = (value: unknown) => {
+  if (typeof value === "number" && Number.isFinite(value)) return String(value);
+  const raw = String(value ?? "");
+  const safe = /^[=+\-@\t\r]/.test(raw) ? `'${raw}` : raw;
+  return `"${safe.replace(/"/g, '""')}"`;
+};
 function buildWeeklyStrip(account: PropAccount, month: Date, trades: JournalEntry[]) {
   const now = new Date();
   const isCurrentMonth = now.getFullYear() === month.getFullYear() && now.getMonth() === month.getMonth();
@@ -102,153 +114,6 @@ function buildWeeklyStrip(account: PropAccount, month: Date, trades: JournalEntr
       percent,
     };
   });
-}
-
-function formatTradeDateLabel(rawDate?: string) {
-  if (!rawDate) return "";
-  return new Date(`${rawDate}T00:00:00`).toLocaleDateString("en-GB", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-  });
-}
-
-function formatTradeMonthLabel(rawDate?: string) {
-  if (!rawDate) return "No Month";
-  return new Date(`${rawDate}T00:00:00`).toLocaleDateString("en-US", {
-    month: "long",
-    year: "numeric",
-  });
-}
-
-function groupTradesByMonth(trades: JournalEntry[]) {
-  const groups = new Map<string, { label: string; trades: JournalEntry[] }>();
-  trades.forEach((trade) => {
-    const key = trade.rawDate ? trade.rawDate.slice(0, 7) : "unknown";
-    const current = groups.get(key);
-    if (current) {
-      current.trades.push(trade);
-      return;
-    }
-    groups.set(key, {
-      label: formatTradeMonthLabel(trade.rawDate),
-      trades: [trade],
-    });
-  });
-  return Array.from(groups.entries()).map(([key, value]) => ({
-    key,
-    label: value.label,
-    trades: value.trades,
-  }));
-}
-
-function currentWeekBounds() {
-  const now = new Date();
-  const mondayOffset = (now.getDay() + 6) % 7;
-  const start = new Date(now);
-  start.setHours(0, 0, 0, 0);
-  start.setDate(now.getDate() - mondayOffset);
-  const end = new Date(start);
-  end.setDate(start.getDate() + 6);
-  end.setHours(23, 59, 59, 999);
-  return { start, end };
-}
-
-function groupTradesByWeekday(trades: JournalEntry[]) {
-  const { start } = currentWeekBounds();
-  const labels = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
-  return labels.map((label, index) => {
-    const day = new Date(start);
-    day.setDate(start.getDate() + index);
-    const key = day.toISOString().slice(0, 10);
-    return {
-      key,
-      label,
-      dateLabel: day.toLocaleDateString("en-GB", { day: "2-digit", month: "2-digit" }),
-      trades: trades.filter((trade) => trade.rawDate === key),
-    };
-  }).filter((group) => group.trades.length > 0);
-}
-
-function TradeGalleryCard({
-  trade,
-  onOpen,
-  formatTradePnl,
-}: {
-  trade: JournalEntry;
-  onOpen: (trade: JournalEntry) => void;
-  formatTradePnl: (amount: number) => string;
-}) {
-  const winning = trade.pnl >= 0;
-  const primaryMeta = trade.setup || trade.session || (trade.side === "Long" ? "Buy" : "Sell");
-  const secondaryMeta = formatTradeDateLabel(trade.rawDate);
-  const screenshotCount = trade.imageUrls?.length ?? (trade.imageUrl ? 1 : 0);
-
-  return (
-    <button
-      type="button"
-      onClick={() => onOpen(trade)}
-      className="group overflow-hidden rounded-[0.95rem] border border-white/8 bg-[#080808] text-left transition hover:border-white/15 hover:bg-[#0c0c0c]"
-    >
-      {trade.imageUrl ? (
-        <div className="relative aspect-[4/5] overflow-hidden bg-[#101010]">
-          <MediaImage
-            src={trade.imageUrl}
-            alt={`${trade.symbol} trade screenshot`}
-            className="h-full w-full object-contain p-2 transition duration-200 group-hover:scale-[1.02]"
-          />
-          {screenshotCount > 1 ? (
-            <span className="absolute right-3 top-3 rounded-full border border-white/10 bg-black/80 px-2 py-1 text-[10px] font-bold text-zinc-200">
-              {screenshotCount} shots
-            </span>
-          ) : null}
-        </div>
-      ) : (
-        <div className="flex aspect-[4/5] items-end bg-[#101010] p-3.5">
-          <div>
-            <span className={`inline-flex rounded-full px-2.5 py-1 text-[10px] font-black ${trade.side === "Long" ? "bg-emerald-500/12 text-emerald-300" : "bg-rose-500/12 text-rose-300"}`}>
-              {trade.side === "Long" ? "Buy" : "Sell"}
-            </span>
-            <h4 className="mt-3 text-xl font-black text-white">{trade.symbol}</h4>
-            <p className="mt-1 text-xs text-zinc-500">{trade.note || "Open trade review"}</p>
-          </div>
-        </div>
-      )}
-
-      <div className="space-y-2 border-t border-white/8 px-3 py-2.5">
-        <div className="flex items-start justify-between gap-3">
-          <div className="min-w-0">
-            <p className="truncate text-[13px] font-black text-white">
-              {trade.symbol}
-              {typeof trade.resultR === "number" && Math.abs(trade.resultR) > 0.01 ? ` ${trade.resultR >= 0 ? "+" : ""}${trade.resultR.toFixed(2)}R` : ""}
-            </p>
-            <p className="mt-1 text-xs text-zinc-500">{secondaryMeta}</p>
-          </div>
-          <span className={`shrink-0 rounded-full px-2.5 py-1 text-[10px] font-black ${winning ? "bg-emerald-500/10 text-emerald-300" : "bg-rose-500/10 text-rose-300"}`}>
-            {formatTradePnl(trade.pnl)}
-          </span>
-        </div>
-
-        <div className="flex flex-wrap gap-1.5">
-          <span className="rounded-full border border-white/8 bg-[#111111] px-2.5 py-1 text-[10px] font-semibold text-zinc-300">
-            {primaryMeta || "No setup"}
-          </span>
-          <span className="rounded-full border border-white/8 bg-[#111111] px-2.5 py-1 text-[10px] font-semibold text-zinc-500">
-            {trade.side === "Long" ? "Buy" : "Sell"}
-          </span>
-          {trade.riskPercent ? (
-            <span className="rounded-full border border-white/8 bg-[#111111] px-2.5 py-1 text-[10px] font-semibold text-zinc-500">
-              {trade.riskPercent}
-            </span>
-          ) : null}
-        </div>
-
-        {trade.note ? (
-          <p className="line-clamp-2 text-xs leading-5 text-zinc-500">{trade.note}</p>
-        ) : null}
-      </div>
-    </button>
-  );
 }
 
 function DashboardSkeleton() {
@@ -384,7 +249,7 @@ export function JournalV2({
       void loadEntries(true);
     };
 
-    const interval = window.setInterval(refresh, 5_000);
+    const interval = window.setInterval(refresh, JOURNAL_REFRESH_MS);
     window.addEventListener("focus", refresh);
     document.addEventListener("visibilitychange", refresh);
     return () => {
@@ -586,7 +451,7 @@ export function JournalV2({
   }, [journalCacheKey, loadEntries]);
 
   const shiftMonth = (n: number) => setMonth(d => new Date(d.getFullYear(), d.getMonth() + n, 1));
-  const exportCsv = () => { const rows = [["Date", "Symbol", "Side", "PnL", "R", "Setup"], ...shown.map(e => [e.rawDate, e.symbol, e.side, e.pnl, e.resultR, e.setup])], a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([rows.map(r => r.map(v => `"${v || ""}"`).join(",")).join("\n")], { type: "text/csv" })); a.download = `${account?.name || "journal"}-${monthId(month)}.csv`; a.click(); URL.revokeObjectURL(a.href); };
+  const exportCsv = () => { const rows = [["Date", "Symbol", "Side", "PnL", "R", "Setup"], ...shown.map(e => [e.rawDate, e.symbol, e.side, e.pnl, e.resultR, e.setup])], a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([rows.map(r => r.map(csvCell).join(",")).join("\n")], { type: "text/csv;charset=utf-8" })); a.download = `${account?.name || "journal"}-${monthId(month)}.csv`; a.click(); URL.revokeObjectURL(a.href); };
 
   if (!user) return (
     <div className="grid min-h-[75dvh] place-items-center text-center">
@@ -846,7 +711,6 @@ function Workspace(p: {
   const [coachError, setCoachError] = useState<string | null>(null);
   const [openPositions, setOpenPositions] = useState<OpenPosition[]>([]);
   const [analyticsView, setAnalyticsView] = useState<"overview" | "strategy" | "symbols">("overview");
-  const [tradeView, setTradeView] = useState<"list" | "gallery" | "weekly">("list");
   const singleTabMode = embedded && Boolean(forcedTab);
   const pnlBase = account.initialBalance || account.accountSize || 1;
   const formatTradePnl = useCallback((amount: number) => formatPnl(amount, pnlBase), [formatPnl, pnlBase]);
@@ -878,8 +742,6 @@ function Workspace(p: {
     [trades]
   );
   const recentTrades = sortedTrades.slice(0, 5);
-  const groupedTradeGallery = useMemo(() => groupTradesByMonth(sortedTrades), [sortedTrades]);
-  const weeklyTradeGallery = useMemo(() => groupTradesByWeekday(sortedTrades), [sortedTrades]);
   const averageWin = useMemo(() => {
     const wins = trades.filter((trade) => trade.pnl > 0);
     return wins.length ? wins.reduce((sum, trade) => sum + trade.pnl, 0) / wins.length : 0;
@@ -1254,222 +1116,25 @@ function Workspace(p: {
 
           {/* Trades */}
           {!singleTabMode || activeTab === "trades" ? (
-          <TabsContent value="trades" className="space-y-2.5">
-            <div className="space-y-2.5">
-              <div className="grid gap-3">
-                <section className="overflow-hidden rounded-[1rem] border border-white/8 bg-[#070707]">
-                  <div className="space-y-3 border-b border-white/8 px-4 py-3">
-                    <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-                      <div>
-                        <p className="text-[8px] font-medium uppercase tracking-[0.08em] text-zinc-600">
-                          {account.name} <span className="mx-1 text-zinc-700">&gt;</span> Trades
-                        </p>
-                        <h3 className="mt-1 text-[13px] font-black text-white">Trade archive</h3>
-                        <p className="text-[11px] text-zinc-500">Switch between list, gallery and weekly review.</p>
-                      </div>
-                      <div className="flex w-full gap-2 sm:ml-auto sm:w-auto sm:items-center">
-                        <div className="relative min-w-0 flex-1 sm:w-64">
-                          <Search className="absolute left-3 top-2.5 text-zinc-500" size={14} />
-                          <Input value={p.query} onChange={e => p.onQuery(e.target.value)} className="h-9 pl-9 text-sm" placeholder="Search symbol or setup" />
-                        </div>
-                        <Button type="button" size="sm" className="h-9 shrink-0 rounded-xl bg-white px-3 text-black hover:bg-zinc-200" onClick={p.onTrade}>
-                          <Plus size={14} /> Add Trade
-                        </Button>
-                      </div>
-                    </div>
-                    <div className="flex flex-col gap-2.5 lg:flex-row lg:items-end">
-                      <div className="w-full sm:w-56">
-                        <span className="mb-1.5 block text-[10px] font-semibold uppercase tracking-widest text-zinc-500">Period</span>
-                        <Select value={p.tradeRange} onValueChange={(value) => p.onRange(value as TradeRange)}>
-                          <SelectTrigger className="w-full">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent position="popper" align="start">
-                            <SelectItem value="daily">Today</SelectItem>
-                            <SelectItem value="monthly">This month</SelectItem>
-                            <SelectItem value="quarter">Last 3 months</SelectItem>
-                            <SelectItem value="yearly">This year</SelectItem>
-                            <SelectItem value="custom">Custom range</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      {p.tradeRange === "custom" ? (
-                        <div className="grid gap-2 sm:grid-cols-2 lg:ml-auto lg:w-[420px]">
-                          <label className="text-[10px] font-semibold uppercase tracking-widest text-zinc-500">From<Input type="date" value={p.customStart} onChange={event => p.onCustomStart(event.target.value)} className="mt-1.5 text-sm" /></label>
-                          <label className="text-[10px] font-semibold uppercase tracking-widest text-zinc-500">To<Input type="date" value={p.customEnd} onChange={event => p.onCustomEnd(event.target.value)} className="mt-1.5 text-sm" /></label>
-                        </div>
-                      ) : (
-                        <p className="pb-2 text-xs text-zinc-500 lg:ml-auto">
-                          {p.tradeRange === "daily" ? "Today only" : p.tradeRange === "monthly" ? "Current month" : p.tradeRange === "quarter" ? "Last 3 months" : "Current year"}
-                        </p>
-                      )}
-                      <div className="w-full sm:w-44 lg:ml-3">
-                        <span className="mb-1.5 block text-[10px] font-semibold uppercase tracking-widest text-zinc-500">Sort</span>
-                        <Select value={tradeSort} onValueChange={(value) => setTradeSort(value as "entryDate" | "exitDate")}>
-                          <SelectTrigger className="w-full">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent position="popper" align="start">
-                            <SelectItem value="entryDate">Entry Date</SelectItem>
-                            <SelectItem value="exitDate">Exit Date</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    </div>
-                    <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-                      <MiniStat label="TRADES" value={String(trades.length)} />
-                      <MiniStat label="WINRATE" value={`${stats.rate}%`} />
-                        <MiniStat label="BEST" value={bestTrade ? formatTradePnl(bestTrade.pnl) : "-"} />
-                        <MiniStat label="AVERAGE R" value={`${stats.r.toFixed(2)}R`} />
-                      </div>
-                      <div className="flex flex-wrap items-center gap-2 rounded-xl border border-white/8 bg-[#050505] p-1">
-                        {[
-                          ["list", "Trades"],
-                          ["gallery", "Gallery"],
-                          ["weekly", "Weekly trades"],
-                        ].map(([value, label]) => (
-                          <button
-                            key={value}
-                            type="button"
-                            onClick={() => setTradeView(value as "list" | "gallery" | "weekly")}
-                            className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition ${
-                              tradeView === value ? "bg-white text-black" : "text-zinc-500 hover:bg-[#0d0d0d] hover:text-white"
-                            }`}
-                          >
-                            {label}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  {sortedTrades.length ? (
-                    <div className="px-4 py-4">
-                      {tradeView === "list" ? (
-                        <>
-                          <div className="hidden overflow-x-auto lg:block">
-                            <div className="min-w-[840px]">
-                              <div className="grid grid-cols-[36px_1.4fr_.95fr_.85fr_.9fr_.8fr_.9fr] rounded-xl border border-white/8 bg-[#050505] px-3 py-2.5 text-[10px] font-semibold uppercase tracking-[0.08em] text-zinc-500">
-                                <span />
-                                <span>Trade date</span>
-                                <span>Symbol</span>
-                                <span>Side</span>
-                                <span>Session</span>
-                                <span>R multiple</span>
-                                <span className="text-right">P&amp;L</span>
-                              </div>
-                              <div className="mt-2 space-y-2">
-                                {sortedTrades.map((trade) => {
-                                  const winning = trade.pnl >= 0;
-                                  return (
-                                    <button
-                                      key={trade.id}
-                                      type="button"
-                                      onClick={() => openTrade(trade)}
-                                      className="grid w-full grid-cols-[36px_1.4fr_.95fr_.85fr_.9fr_.8fr_.9fr] items-center rounded-xl border border-white/8 bg-[#050505] px-3 py-2.5 text-left transition hover:border-white/15 hover:bg-[#0a0a0a]"
-                                    >
-                                      <span className="grid size-4 place-items-center rounded-full border border-white/10" />
-                                      <span>
-                                        <span className="block text-sm font-semibold text-white">{formatTradeDateLabel(trade.rawDate)}</span>
-                                        <span className="mt-1 block truncate text-[11px] text-zinc-600">{trade.note || trade.setup || "Open trade review"}</span>
-                                      </span>
-                                      <span className="font-bold text-white">{trade.symbol}</span>
-                                      <span className={`text-sm font-bold ${trade.side === "Long" ? "text-emerald-300" : "text-rose-300"}`}>{trade.side === "Long" ? "Buy" : "Sell"}</span>
-                                      <span className="text-sm text-zinc-400">{trade.session || "-"}</span>
-                                      <span className="font-mono text-sm text-zinc-300">{(trade.resultR || 0).toFixed(2)}R</span>
-                                      <span className={`text-right font-mono text-base font-black ${winning ? "text-emerald-400" : "text-rose-400"}`}>{formatTradePnl(trade.pnl)}</span>
-                                    </button>
-                                  );
-                                })}
-                              </div>
-                            </div>
-                          </div>
-
-                          <div className="space-y-3 lg:hidden">
-                            {sortedTrades.map((trade) => (
-                              <button
-                                key={trade.id}
-                                type="button"
-                                onClick={() => openTrade(trade)}
-                                className="w-full rounded-[1rem] border border-white/8 bg-[#050505] p-3 text-left transition hover:border-white/15 hover:bg-[#0a0a0a]"
-                              >
-                                <div className="flex items-start justify-between gap-3">
-                                  <div className="min-w-0">
-                                    <p className="truncate text-sm font-black text-white">{trade.symbol}</p>
-                                    <p className="mt-1 text-xs text-zinc-500">{formatTradeDateLabel(trade.rawDate)}</p>
-                                  </div>
-                                  <span className={`rounded-full px-2.5 py-1 text-[10px] font-black ${trade.side === "Long" ? "bg-emerald-500/10 text-emerald-300" : "bg-rose-500/10 text-rose-300"}`}>
-                                    {trade.side === "Long" ? "Buy" : "Sell"}
-                                  </span>
-                                </div>
-                                <div className="mt-3 flex items-center justify-between gap-3">
-                                  <div className="min-w-0">
-                                    <p className="truncate text-xs text-zinc-400">{trade.setup || trade.session || "MT5 Auto Sync"}</p>
-                                    <p className="mt-1 truncate text-[11px] text-zinc-600">{trade.note || "Open trade review"}</p>
-                                  </div>
-                                  <div className="text-right">
-                                    <p className={`font-mono text-sm font-black ${trade.pnl >= 0 ? "text-emerald-400" : "text-rose-400"}`}>{formatTradePnl(trade.pnl)}</p>
-                                    <p className="mt-1 text-[11px] text-zinc-500">{(trade.resultR || 0).toFixed(2)}R</p>
-                                  </div>
-                                </div>
-                              </button>
-                            ))}
-                          </div>
-                        </>
-                      ) : tradeView === "gallery" ? (
-                        <div className="space-y-5">
-                          {groupedTradeGallery.map((group) => (
-                            <div key={group.key} className="space-y-3">
-                              <div className="flex items-center gap-2">
-                                <span className="text-sm font-black text-white">{group.label}</span>
-                                <span className="rounded-full border border-white/8 bg-[#101010] px-2 py-0.5 text-[10px] font-semibold text-zinc-500">
-                                  {group.trades.length}
-                                </span>
-                              </div>
-
-                              <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
-                                {group.trades.map((trade) => (
-                                  <TradeGalleryCard
-                                    key={trade.id}
-                                    trade={trade}
-                                    onOpen={openTrade}
-                                    formatTradePnl={formatTradePnl}
-                                  />
-                                ))}
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      ) : (
-                        <div className="space-y-5">
-                          {weeklyTradeGallery.length ? weeklyTradeGallery.map((group) => (
-                            <div key={group.key} className="space-y-3">
-                              <div className="flex items-center gap-2">
-                                <span className="text-sm font-black text-white">{group.label}</span>
-                                <span className="text-xs text-zinc-500">{group.dateLabel}</span>
-                                <span className="rounded-full border border-white/8 bg-[#101010] px-2 py-0.5 text-[10px] font-semibold text-zinc-500">
-                                  {group.trades.length}
-                                </span>
-                              </div>
-                              <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
-                                {group.trades.map((trade) => (
-                                  <TradeGalleryCard
-                                    key={trade.id}
-                                    trade={trade}
-                                    onOpen={openTrade}
-                                    formatTradePnl={formatTradePnl}
-                                  />
-                                ))}
-                              </div>
-                            </div>
-                          )) : (
-                            <Empty text="No trades recorded in the current week." />
-                          )}
-                        </div>
-                      )}
-                    </div>
-                  ) : <Empty text="No trades in this range yet." />}
-                </section>
-              </div>
-            </div>
+          <TabsContent value="trades">
+            <TradesArchive
+              trades={sortedTrades}
+              query={p.query}
+              range={p.tradeRange}
+              customStart={p.customStart}
+              customEnd={p.customEnd}
+              sort={tradeSort}
+              winRate={stats.rate}
+              averageR={stats.r}
+              formatPnl={formatTradePnl}
+              onQueryChange={p.onQuery}
+              onRangeChange={p.onRange}
+              onCustomStartChange={p.onCustomStart}
+              onCustomEndChange={p.onCustomEnd}
+              onSortChange={setTradeSort}
+              onOpenTrade={openTrade}
+              onAddTrade={p.onTrade}
+            />
           </TabsContent>
           ) : null}
 

@@ -10,13 +10,19 @@ export async function apiRequest<T = unknown>(
   url: string,
   options: RequestOptions = {}
 ): Promise<T> {
+  if (!url.startsWith("/") || url.startsWith("//")) {
+    throw new Error("API requests must use a same-origin path.");
+  }
+
   const { method = "GET", body, headers = {} } = options;
 
   const res = await fetch(url, {
     method,
     cache: "no-store",
+    credentials: "same-origin",
     headers: {
       "Content-Type": "application/json",
+      Accept: "application/json",
       ...headers,
     },
     body: body ?? undefined,
