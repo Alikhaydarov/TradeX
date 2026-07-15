@@ -55,7 +55,7 @@ export function getPremiumPlans(): PlanConfig[] {
       amount: 15,
       currency: "USD",
       interval: "month",
-      productName: "Tradox Standard USD",
+      productName: "TradeWay Standard USD",
     },
     {
       id: "pro",
@@ -64,7 +64,7 @@ export function getPremiumPlans(): PlanConfig[] {
       amount: 25,
       currency: "USD",
       interval: "month",
-      productName: "Tradox Pro USD",
+      productName: "TradeWay Pro USD",
     },
   ];
 }

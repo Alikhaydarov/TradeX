@@ -17,7 +17,6 @@ const PLAN_OPTIONS: Array<{ value: AdminPlan; label: string; description: string
   { value: "free", label: "Free", description: "Basic app access only" },
   { value: "standard", label: "Standard", description: "Verified + AI + MT5 sync" },
   { value: "pro", label: "Pro", description: "Premium tools + future pro stack" },
-  { value: "premium", label: "Premium", description: "Full premium unlock" },
 ];
 
 function formatDate(value: string | null) {
@@ -41,7 +40,7 @@ function formatDateTime(value: string | null) {
 }
 
 function isPremiumPlan(plan: AdminPlan) {
-  return plan === "standard" || plan === "pro" || plan === "premium";
+  return plan === "standard" || plan === "pro";
 }
 
 export function AdminPanel({ onLogin }: { onLogin: () => void }) {

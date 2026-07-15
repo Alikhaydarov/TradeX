@@ -2,6 +2,7 @@ import type { ApiAuth } from "./auth";
 import { isPremiumActive, isPremiumPlan } from "@/lib/premium-plan";
 
 export interface PremiumStatus {
+  plan: "free" | "standard" | "pro";
   isPremium: boolean;
   aiEnabled: boolean;
   traderoxEnabled: boolean;
@@ -28,9 +29,11 @@ export async function getPremiumStatus(auth: ApiAuth): Promise<PremiumStatus> {
   if (error) throw new Error(error.message);
 
   const normalizedPlan = data?.plan?.toLowerCase() ?? "free";
+  const plan = normalizedPlan === "standard" ? "standard" : normalizedPlan === "pro" || normalizedPlan === "premium" ? "pro" : "free";
   const isPremium = isPremiumPlan(normalizedPlan) && isPremiumActive(data?.premium_until ?? null);
 
   return {
+    plan,
     isPremium,
     aiEnabled: isPremium && Boolean(data?.ai_enabled),
     traderoxEnabled: isPremium && Boolean(data?.traderox_enabled),

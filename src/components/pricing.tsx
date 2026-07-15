@@ -9,6 +9,7 @@ import { Button } from "./ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "./ui/card";
 
 interface PremiumStatus {
+  plan: "free" | "standard" | "pro";
   isPremium: boolean;
   aiEnabled: boolean;
   traderoxEnabled: boolean;
@@ -67,6 +68,13 @@ const plans: BillingPlan[] = [
     ],
     accent: "from-amber-300/25 to-white/5",
   },
+];
+
+const freeFeatures = [
+  "Feed, profile and trade sharing",
+  "Manual trade journal",
+  "One trading account",
+  "Core dashboard and calendar",
 ];
 
 export function Pricing({ onLogin }: { onLogin?: () => void } = {}) {
@@ -195,13 +203,13 @@ export function Pricing({ onLogin }: { onLogin?: () => void } = {}) {
           <div className="grid gap-4 lg:grid-cols-[1.1fr_.9fr] lg:items-end">
             <div>
               <Badge className="rounded-full bg-white text-black hover:bg-white">
-                <Crown className="size-3.5" /> Tradox Premium
+                <Crown className="size-3.5" /> TradeWay plans
               </Badge>
               <h1 className="mt-3 max-w-2xl text-2xl font-black tracking-tight text-white sm:text-4xl">
-                Turn your journal into a verified trading workspace.
+                Pick the plan that fits your trading workflow.
               </h1>
               <p className="mt-3 max-w-2xl text-sm leading-6 text-zinc-400">
-                Premium unlocks the blue badge, AI trade coaching and MT5 Auto Sync, so your profile, journal and account analytics stay in one fast loop.
+                Free covers the journal basics. Standard unlocks verification, AI analysis and MT5 Auto Sync. Pro adds priority tools for serious trading workflows.
               </p>
 
               <div className="mt-4 flex flex-wrap gap-2">
@@ -214,9 +222,9 @@ export function Pricing({ onLogin }: { onLogin?: () => void } = {}) {
 
               <div className="mt-4 grid grid-cols-3 gap-2">
                 {[
+                  ["$0", "Free"],
                   ["$15", "Standard"],
                   ["$25", "Pro"],
-                  ["24/7", "Sync flow"],
                 ].map(([value, label]) => (
                   <div key={label} className="rounded-2xl border border-white/8 bg-[#0b0b0b] px-3 py-3">
                     <p className="text-base font-black text-white sm:text-lg">{value}</p>
@@ -233,7 +241,7 @@ export function Pricing({ onLogin }: { onLogin?: () => void } = {}) {
                 </CardTitle>
                 <CardDescription className="text-zinc-400">
                   {premium?.isPremium
-                    ? "Your Premium features are active."
+                    ? `Your ${premium.plan === "pro" ? "Pro" : "Standard"} features are active.`
                     : "Free accounts can still use the feed, profile, and journal."}
                 </CardDescription>
               </CardHeader>
@@ -294,9 +302,49 @@ export function Pricing({ onLogin }: { onLogin?: () => void } = {}) {
         {message ? <div className="mt-4 rounded-2xl border border-emerald-300/15 bg-emerald-400/10 px-4 py-3 text-sm text-emerald-200">{message}</div> : null}
         {error ? <div className="mt-4 rounded-2xl border border-rose-300/15 bg-rose-400/10 px-4 py-3 text-sm text-rose-200">{error}</div> : null}
 
-        <section className="mt-4 grid gap-3 lg:grid-cols-2">
+        <section className="mt-4 grid gap-3 lg:grid-cols-3">
+          <Card className="relative overflow-hidden border-white/10 bg-[#0b0b0b] py-0">
+            <CardHeader className="px-4 py-4">
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <CardTitle className="text-white">Free</CardTitle>
+                  <CardDescription className="mt-2 text-zinc-400">A focused trading journal for getting started.</CardDescription>
+                </div>
+                <div className="text-right">
+                  <div className="text-2xl font-black text-white">$0</div>
+                  <div className="text-xs text-zinc-500">forever</div>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-2.5 px-4 pb-4">
+              {freeFeatures.map((feature) => (
+                <div key={feature} className="flex items-start gap-3 rounded-2xl border border-white/8 bg-[#0d0d0d] px-4 py-3">
+                  <span className="mt-0.5 rounded-full bg-white/[.08] p-1 text-zinc-300">
+                    <Check className="size-3.5" />
+                  </span>
+                  <span className="text-sm leading-6 text-zinc-200">{feature}</span>
+                </div>
+              ))}
+            </CardContent>
+            <CardFooter className="border-white/8 bg-[#090909] px-4">
+              <Button
+                variant="outline"
+                className="h-12 w-full rounded-2xl border-white/10 bg-transparent text-zinc-200 hover:bg-white/[.04]"
+                disabled={premium?.plan === "free"}
+                onClick={() => {
+                  window.history.pushState(null, "", "/");
+                  window.dispatchEvent(new Event("popstate"));
+                }}
+              >
+                {premium?.plan === "free" ? "Current plan" : "Continue with Free"}
+              </Button>
+            </CardFooter>
+          </Card>
+
           {plans.map((plan) => {
             const loading = checkoutPlan === plan.id;
+            const currentPlan = premium?.plan === plan.id;
+            const manageExistingPlan = Boolean(premium?.isPremium && !currentPlan);
             return (
               <Card key={plan.id} className="relative overflow-hidden border-white/10 bg-[#0b0b0b] py-0">
                 <div className="pointer-events-none absolute inset-x-0 top-0 h-20 bg-gradient-to-b from-white/6 to-transparent" />
@@ -328,17 +376,25 @@ export function Pricing({ onLogin }: { onLogin?: () => void } = {}) {
                 <CardFooter className="relative flex-col items-stretch gap-2.5 border-white/8 bg-[#090909] px-4">
                   <Button
                     className="h-12 rounded-2xl bg-white text-black hover:bg-zinc-200"
-                    onClick={() => void startCheckout(plan)}
-                    disabled={loading || !billingConfigured || Boolean(premium?.isPremium)}
+                    onClick={() => {
+                      if (premium?.isPremium) {
+                        void openPortal();
+                        return;
+                      }
+                      void startCheckout(plan);
+                    }}
+                    disabled={loading || (!billingConfigured && !premium?.isPremium) || currentPlan}
                   >
                     {loading ? <LoaderCircle className="size-4 animate-spin" /> : <ShieldCheck className="size-4" />}
-                    {!billingConfigured
-                      ? "Stripe setup required"
-                      : premium?.isPremium
-                        ? "Premium already active"
-                        : user
-                          ? `Start ${plan.name}`
-                          : "Sign in to subscribe"}
+                    {currentPlan
+                      ? "Current plan"
+                      : manageExistingPlan
+                        ? "Manage in billing"
+                        : !billingConfigured
+                          ? "Stripe setup required"
+                          : user
+                            ? `Start ${plan.name}`
+                            : "Sign in to subscribe"}
                   </Button>
                   <p className="text-xs leading-5 text-zinc-500">
                     {premium?.isPremium

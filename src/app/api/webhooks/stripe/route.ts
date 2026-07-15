@@ -5,6 +5,7 @@ import { getStripe } from "@/lib/stripe";
 export const runtime = "nodejs";
 
 const ACTIVE_PREMIUM_STATUSES = new Set(["active", "trialing", "past_due"]);
+const TRADEWAY_PAID_PLANS = new Set(["standard", "pro"]);
 
 type StripeSubscriptionLike = Pick<
   Stripe.Subscription,
@@ -13,6 +14,11 @@ type StripeSubscriptionLike = Pick<
   cancel_at?: number | null;
   current_period_end?: number | null;
 };
+
+function normalizePlan(value: string | undefined) {
+  const plan = value?.toLowerCase();
+  return plan && TRADEWAY_PAID_PLANS.has(plan) ? plan : "standard";
+}
 
 async function syncSubscription(subscription: StripeSubscriptionLike) {
   const admin = getSupabaseAdminClient();
@@ -33,7 +39,7 @@ async function syncSubscription(subscription: StripeSubscriptionLike) {
 
   if (!userId) throw new Error(`No userId linked to Stripe subscription ${subscription.id}.`);
 
-  const plan = subscription.metadata.plan || "standard";
+  const plan = normalizePlan(subscription.metadata.plan);
   const currentPeriodEnd = subscription.current_period_end
     ? new Date(subscription.current_period_end * 1000).toISOString()
     : null;
@@ -71,7 +77,7 @@ async function syncSubscription(subscription: StripeSubscriptionLike) {
   const premiumActive = ACTIVE_PREMIUM_STATUSES.has(subscription.status);
   const profilePayload = premiumActive
     ? {
-        plan: "premium",
+        plan,
         premium_until: currentPeriodEnd,
         is_verified: true,
         ai_enabled: true,
@@ -79,9 +85,10 @@ async function syncSubscription(subscription: StripeSubscriptionLike) {
         auto_sync_enabled: true,
       }
     : {
-        plan: "free",
-        premium_until: currentPeriodEnd,
-        ai_enabled: false,
+      plan: "free",
+      premium_until: currentPeriodEnd,
+      is_verified: false,
+      ai_enabled: false,
         traderox_enabled: false,
         auto_sync_enabled: false,
       };

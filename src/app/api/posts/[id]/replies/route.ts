@@ -1,5 +1,6 @@
 import { authenticateRequest, badRequest, serverError, unauthorized } from "@/lib/backend/auth";
 import { sendSocialNotification } from "@/lib/backend/social-notifications";
+import { hasVerifiedPremiumAccess } from "@/lib/premium-plan";
 import { getSupabaseServerClient } from "@/lib/supabase/server";
 
 export const runtime = "nodejs";
@@ -22,9 +23,7 @@ interface ReplyAuthor {
   premium_until?: string | null;
 }
 
-function premiumVerified(profile: Pick<ReplyAuthor, "is_verified" | "plan" | "premium_until">) {
-  return Boolean(profile.is_verified) && profile.plan === "premium" && (!profile.premium_until || new Date(profile.premium_until).getTime() > Date.now());
-}
+const premiumVerified = hasVerifiedPremiumAccess;
 
 function mapReplies(replies: ReplyRecord[], authors: ReplyAuthor[]) {
   const authorsById = new Map(authors.map((author) => [author.id, author]));

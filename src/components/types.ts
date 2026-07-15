@@ -121,7 +121,7 @@ export interface AdminUser {
   fullName: string;
   avatarUrl: string | null;
   email: string | null;
-  plan: "free" | "standard" | "pro" | "premium";
+  plan: "free" | "standard" | "pro";
   premiumUntil: string | null;
   aiEnabled: boolean;
   traderoxEnabled: boolean;

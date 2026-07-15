@@ -1,5 +1,6 @@
 import { authenticateRequest, badRequest, serverError, unauthorized } from "@/lib/backend/auth";
 import { notifyUsers } from "@/lib/server/push";
+import { hasVerifiedPremiumAccess } from "@/lib/premium-plan";
 import { after } from "next/server";
 
 export const runtime = "nodejs";
@@ -28,9 +29,7 @@ interface ProfileRecord {
   premium_until: string | null;
 }
 
-function premiumVerified(profile: Pick<ProfileRecord, "is_verified" | "plan" | "premium_until">) {
-  return Boolean(profile.is_verified) && profile.plan === "premium" && (!profile.premium_until || new Date(profile.premium_until).getTime() > Date.now());
-}
+const premiumVerified = hasVerifiedPremiumAccess;
 
 async function hydrateVerification(
   auth: NonNullable<Awaited<ReturnType<typeof authenticateRequest>>>,

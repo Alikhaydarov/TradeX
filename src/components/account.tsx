@@ -23,6 +23,7 @@ import {
 import { useEffect, useRef, useState } from "react";
 import { apiRequest } from "@/lib/api-client";
 import { formatCount, toSocialPost, type SocialPostRecord } from "@/lib/social-format";
+import { hasVerifiedPremiumAccess } from "@/lib/premium-plan";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -111,7 +112,7 @@ function toProfile(data: ProfileRecord): Profile & { isFollowing?: boolean } {
     location: data.location ?? "",
     followersCount: data.followersCount ?? 0,
     followingCount: data.followingCount ?? 0,
-    isVerified: Boolean(data.is_verified),
+    isVerified: hasVerifiedPremiumAccess(data),
     isFollowing: Boolean(data.isFollowing),
   };
 }

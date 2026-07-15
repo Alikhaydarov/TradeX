@@ -83,6 +83,7 @@ export function Sidebar({
   const activeBalance = activeAccount ? money.format(activeAccount.accountSize) : "$0";
   const visibleName = hidePersonalInfo ? maskValue(name) : name;
   const visibleHandle = hidePersonalInfo ? maskValue(handle) : handle;
+  const planLabel = premium.plan === "pro" ? "Pro" : premium.plan === "standard" ? "Standard" : "Free";
   const filteredAccounts = useMemo(() => {
     const query = accountQuery.trim().toLowerCase();
     if (!query) return accounts;
@@ -261,7 +262,7 @@ export function Sidebar({
             <span className="flex items-center gap-2">
               <strong className="block truncate text-[13px] tracking-tight">TradeWay</strong>
               <span className={`rounded-full px-2 py-0.5 text-[10px] font-black ${premium.isPremium ? "bg-[#0b1c12] text-emerald-300" : "bg-[#0a0a0a] text-zinc-400"}`}>
-                {premium.isPremium ? "Premium" : "Free"}
+                {planLabel}
               </span>
             </span>
             <small className="text-[10px] text-zinc-500">Trading workspace</small>
@@ -302,7 +303,7 @@ export function Sidebar({
                   Settings
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={openPricing} className="px-3 py-2.5">
-                  {premium.isPremium ? "Manage Premium" : "Upgrade to Premium"}
+                  {premium.isPremium ? "Manage subscription" : "View plans"}
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => setLocale("en")} className="flex items-center justify-between px-3 py-2.5">
                   <span className="flex items-center gap-2"><Globe size={14} /> English</span>
@@ -340,7 +341,7 @@ export function Sidebar({
                     <span className="flex items-center gap-2">
                       <strong className="block text-base leading-tight text-white">TradeWay</strong>
                       <span className={`rounded-full px-2 py-0.5 text-[10px] font-black ${premium.isPremium ? "bg-[#0b1c12] text-emerald-300" : "bg-[#0a0a0a] text-zinc-400"}`}>
-                        {premium.isPremium ? "Premium" : "Free"}
+                        {planLabel}
                       </span>
                     </span>
                     <small className="text-xs text-zinc-500">Trading workspace</small>

@@ -9,6 +9,7 @@ import {
   type IncomingMt5Trade,
 } from "@/lib/backend/mt5-import";
 import { getPostgresPool } from "@/lib/backend/postgres";
+import { isPremiumActive, isPremiumPlan } from "@/lib/premium-plan";
 import { isMt5ApiConfigured, syncNowMt5Api } from "@/lib/server/mt5-api";
 import { getMt5ClosedTrades } from "@/lib/server/mt5-bridge";
 
@@ -71,7 +72,7 @@ async function ensurePremium(userId: string) {
     [userId],
   );
   const profile = result.rows[0];
-  const premiumActive = profile?.plan === "premium" && (!profile.premium_until || new Date(profile.premium_until).getTime() > Date.now());
+  const premiumActive = Boolean(profile && isPremiumPlan(profile.plan) && isPremiumActive(profile.premium_until));
   if (!premiumActive || profile.auto_sync_enabled === false) throw new Error("MT5 Auto Sync requires active Premium.");
 }
 

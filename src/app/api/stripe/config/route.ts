@@ -5,7 +5,6 @@ export const runtime = "nodejs";
 export async function GET() {
   const plans = getPremiumPlans();
   const requiredEnv = [
-    "NEXT_PUBLIC_APP_URL",
     "STRIPE_SECRET_KEY",
     "STRIPE_WEBHOOK_SECRET",
     "STRIPE_PRICE_STANDARD_MONTHLY",

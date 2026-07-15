@@ -5,6 +5,7 @@ import { apiRequest } from "@/lib/api-client";
 import { useAuth } from "./auth-context";
 
 export interface PremiumStatus {
+  plan: "free" | "standard" | "pro";
   isPremium: boolean;
   aiEnabled: boolean;
   traderoxEnabled: boolean;
@@ -13,6 +14,7 @@ export interface PremiumStatus {
 }
 
 const FREE_STATUS: PremiumStatus = {
+  plan: "free",
   isPremium: false,
   aiEnabled: false,
   traderoxEnabled: false,

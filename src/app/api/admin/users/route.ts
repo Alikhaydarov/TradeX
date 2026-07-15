@@ -8,7 +8,7 @@ interface AdminUserRecord {
   full_name: string;
   avatar_url: string | null;
   email: string | null;
-  plan: "free" | "standard" | "pro" | "premium" | null;
+  plan: "free" | "standard" | "pro" | null;
   premium_until: string | null;
   ai_enabled: boolean | null;
   traderox_enabled: boolean | null;
@@ -74,7 +74,7 @@ export async function PATCH(request: Request) {
 
   const body = (await request.json()) as {
     userId?: string;
-    plan?: "free" | "standard" | "pro" | "premium";
+    plan?: "free" | "standard" | "pro";
     isVerified?: boolean;
     premiumUntil?: string | null;
     isAdmin?: boolean;

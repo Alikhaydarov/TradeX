@@ -274,15 +274,15 @@ export function UserSettingsDialog() {
 
               {!loading && section === "billing" ? (
                 <div className="space-y-6">
-                  <Panel title="Subscription & Billing" description="Premium unlocks verified badge, AI analysis and auto sync.">
+                  <Panel title="Subscription & Billing" description="Choose the workspace level that matches your trading routine.">
                     <div className="flex items-center justify-between gap-3 rounded-2xl border border-white/8 bg-[#090909] p-1">
                       <button type="button" className="flex-1 rounded-xl bg-white text-sm font-black text-black px-4 py-2">Monthly</button>
                       <button type="button" className="flex-1 rounded-xl px-4 py-2 text-sm font-semibold text-zinc-400">Yearly</button>
                     </div>
                     <div className="grid gap-4 lg:grid-cols-3">
-                      <PlanCard title="Free" price="$0/mo" description="Basic app, profile, feed and journal." buttonLabel="Current plan" disabled={!premium.isPremium} />
-                      <PlanCard title="Basic" price="$19/mo" description="Verified badge, MT5 auto sync and premium workspace unlocks." buttonLabel="Upgrade Basic" onClick={() => void startCheckout("standard")} />
-                      <PlanCard title="Pro" price="$19/mo" description="Everything in Basic plus AI trade analysis and coaching flows." buttonLabel="Upgrade Pro" onClick={() => void startCheckout("pro")} />
+                      <PlanCard title="Free" price="$0/mo" description="Profile, feed, manual journal and one account." buttonLabel={premium.plan === "free" ? "Current plan" : "Free plan"} disabled={premium.plan === "free"} />
+                      <PlanCard title="Standard" price="$15/mo" description="Verified badge, AI trade analysis and MT5 Auto Sync." buttonLabel={premium.plan === "standard" ? "Current plan" : "Upgrade Standard"} disabled={premium.plan === "standard"} onClick={() => void startCheckout("standard")} />
+                      <PlanCard title="Pro" price="$25/mo" description="Everything in Standard plus priority sync and advanced coaching." buttonLabel={premium.plan === "pro" ? "Current plan" : "Upgrade Pro"} disabled={premium.plan === "pro"} onClick={() => void startCheckout("pro")} />
                     </div>
                     <RowAction label="Payment Method" description="Manage your saved card and billing details." action="Manage" onClick={() => void openBillingPortal()} />
                     <RowAction label="Billing History" description="Open Stripe billing portal for invoices and receipts." action="Manage" onClick={() => void openBillingPortal()} />

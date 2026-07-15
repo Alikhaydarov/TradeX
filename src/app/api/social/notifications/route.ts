@@ -1,4 +1,5 @@
 import { authenticateRequest, serverError, unauthorized } from "@/lib/backend/auth";
+import { hasVerifiedPremiumAccess } from "@/lib/premium-plan";
 
 export const runtime = "nodejs";
 
@@ -28,9 +29,7 @@ type NotificationSelectResult = {
   error: { message: string } | null;
 };
 
-function premiumVerified(profile: Pick<ActorProfileRow, "is_verified" | "plan" | "premium_until">) {
-  return Boolean(profile.is_verified) && profile.plan === "premium" && (!profile.premium_until || new Date(profile.premium_until).getTime() > Date.now());
-}
+const premiumVerified = hasVerifiedPremiumAccess;
 
 function isMissingEntityColumn(message: string) {
   return /notifications\.(entity_id|entity_type)|column\s+(entity_id|entity_type)\s+does\s+not\s+exist/i.test(message);

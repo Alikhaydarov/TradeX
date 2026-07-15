@@ -7,6 +7,7 @@ import {
 } from "@/lib/backend/mt5-import";
 import { getPostgresPool } from "@/lib/backend/postgres";
 import { requirePremium } from "@/lib/backend/premium";
+import { isPremiumActive, isPremiumPlan } from "@/lib/premium-plan";
 import { getMt5ClosedTrades } from "@/lib/server/mt5-bridge";
 import { getSupabaseAdminClient } from "@/lib/supabase/admin";
 
@@ -68,9 +69,7 @@ function hasConnectorSecret(request: Request) {
 }
 
 function isPremiumRow(profile: PremiumSyncRow | null) {
-  if (!profile || profile.plan !== "premium" || profile.auto_sync_enabled === false) return false;
-  if (!profile.premium_until) return true;
-  return new Date(profile.premium_until).getTime() > Date.now();
+  return Boolean(profile && profile.auto_sync_enabled !== false && isPremiumPlan(profile.plan) && isPremiumActive(profile.premium_until));
 }
 
 async function getAccountForSync(accountId: string, userId?: string) {

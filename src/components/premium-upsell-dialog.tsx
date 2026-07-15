@@ -138,10 +138,10 @@ export function PremiumUpsellDialog() {
               <Crown className="size-3.5" /> New account bonus
             </Badge>
             <DialogTitle className="text-3xl font-black tracking-tight text-white">
-              Unlock Tradox Premium
+              Upgrade your TradeWay workspace
             </DialogTitle>
             <p className="max-w-md text-sm leading-6 text-zinc-400">
-              Blue badge, AI trade coaching and MT5 Auto Sync unlock when you want the full workflow.
+              Standard unlocks verification, AI coaching and MT5 Auto Sync. Pro adds priority tools for heavier workflows.
             </p>
           </DialogHeader>
 
@@ -173,7 +173,7 @@ export function PremiumUpsellDialog() {
               className="h-11 flex-1 rounded-2xl bg-white text-black hover:bg-zinc-200"
               onClick={openPricing}
             >
-              <Sparkles className="size-4" /> View Premium plans
+              <Sparkles className="size-4" /> Compare plans
             </Button>
             <Button variant="outline" className="h-11 rounded-2xl border-white/10 bg-transparent text-zinc-200 hover:bg-white/[.04]" onClick={() => setOpen(false)}>
               Maybe later
