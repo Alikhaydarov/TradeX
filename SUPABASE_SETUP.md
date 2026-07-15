@@ -1,51 +1,42 @@
-# TradeX Supabase sozlamasi
+# TradeWay Supabase Setup
 
-## 1. Bepul loyiha
+The database workflow, schema groups, health audit, and deployment commands are
+documented in [supabase/README.md](supabase/README.md). Use migrations as the
+only production schema source of truth.
 
-1. [Supabase Dashboard](https://supabase.com/dashboard) orqali bepul loyiha yarating.
-2. Project Connect oynasidan `Project URL` va `Publishable key` ni oling.
-3. `.env.example` nusxasidan `.env.local` yarating va qiymatlarni kiriting.
+## Environment
+
+Copy `.env.example` to `.env.local` and set the required values:
 
 ```env
 SUPABASE_URL=https://YOUR_PROJECT.supabase.co
 SUPABASE_PUBLISHABLE_KEY=sb_publishable_YOUR_KEY
 SUPABASE_SERVICE_ROLE_KEY=sb_secret_YOUR_SERVICE_ROLE_KEY
+DATABASE_URL=postgresql://...
+CONNECTOR_ENCRYPTION_KEY=base64-or-hex-32-byte-key
+MT5_CONNECTOR_SECRET=long-random-server-only-secret
 ```
 
-`SUPABASE_SERVICE_ROLE_KEY`ni Supabase Dashboard → Project Settings → API
-bo'limidan oling (bu maxfiy kalit, `.env.local`dan tashqariga hech qachon
-chiqmasligi kerak). Faqat mobil push notification'larni boshqa userlarga
-yuborish uchun serverda ishlatiladi (`src/lib/server/push.ts`).
+Get the Project URL and API keys from Supabase Dashboard -> Project Settings ->
+API. Server secrets must remain on the server and must never use a
+`NEXT_PUBLIC_` name.
 
-## 2. Database
+## Google OAuth
 
-Supabase SQL Editor ichida migrationlarni tartib bilan ishga tushiring:
-
-1. `supabase/migrations/001_tradex.sql`
-2. `supabase/migrations/002_product_features.sql`
-3. ... qolgan migrationlar tartib raqami bo'yicha
-4. `supabase/migrations/009_push_notifications.sql` — mobil push notification
-   uchun `push_tokens` jadvali.
-
-Bu migrationlar profil, post, guruh chatlari, like/bookmark, trading jurnal,
-backtest natijalari va RLS xavfsizlik siyosatlarini yaratadi.
-
-## 3. Google OAuth
-
-1. Google Cloud Console ichida OAuth Web Client yarating.
-2. Google client redirect URI sifatida Supabase Dashboard ko'rsatgan callback URL'ni kiriting:
+1. Create an OAuth Web Client in Google Cloud Console.
+2. Add the Supabase callback URL:
    `https://YOUR_PROJECT.supabase.co/auth/v1/callback`
-3. Client ID va Client Secret qiymatlarini Supabase:
-   `Authentication > Providers > Google` bo'limiga kiriting.
-4. Supabase `Authentication > URL Configuration` ichida quyidagilarni allow list'ga qo'shing:
+3. Add the Client ID and Client Secret in Supabase:
+   `Authentication -> Providers -> Google`.
+4. In `Authentication -> URL Configuration`, allow:
    - `http://localhost:3000/auth/callback`
-   - production domeningizdagi `/auth/callback`
+   - Your production `/auth/callback` URL.
 
-## 4. Ishga tushirish
+## Run locally
 
-```bash
+```powershell
 npm run dev
 ```
 
-Frontend Supabase bilan bevosita bog'lanmaydi. Google OAuth va barcha database
-amallari bir xil domendagi Node.js `/api/*` route'lari orqali bajariladi.
+Application database work is performed by the same-domain Node.js `/api/*`
+routes. Do not place service keys in browser code.
