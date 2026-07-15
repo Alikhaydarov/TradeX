@@ -8,7 +8,7 @@ interface AdminUserRecord {
   full_name: string;
   avatar_url: string | null;
   email: string | null;
-  plan: "free" | "standard" | "pro" | null;
+  plan: string | null;
   premium_until: string | null;
   ai_enabled: boolean | null;
   traderox_enabled: boolean | null;
@@ -30,6 +30,13 @@ async function ensureAdmin(auth: NonNullable<Awaited<ReturnType<typeof authentic
   return Boolean(data);
 }
 
+function normalizePlan(plan: string | null): "free" | "standard" | "pro" {
+  const value = plan?.toLowerCase();
+  if (value === "standard") return "standard";
+  if (value === "pro" || value === "premium") return "pro";
+  return "free";
+}
+
 export async function GET(request: Request) {
   const auth = await authenticateRequest(request);
   if (!auth) return unauthorized();
@@ -46,7 +53,7 @@ export async function GET(request: Request) {
       fullName: profile.full_name,
       avatarUrl: profile.avatar_url,
       email: profile.email,
-      plan: profile.plan ?? "free",
+      plan: normalizePlan(profile.plan),
       premiumUntil: profile.premium_until,
       aiEnabled: Boolean(profile.ai_enabled),
       traderoxEnabled: Boolean(profile.traderox_enabled),

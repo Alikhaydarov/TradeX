@@ -5,7 +5,6 @@ import { useEffect, useMemo, useState } from "react";
 import { apiRequest } from "@/lib/api-client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { AppLoader } from "./app-loader";
 import { TraderAvatar } from "./trader-avatar";
 import { VerifiedBadge } from "./verified-badge";
@@ -48,6 +47,7 @@ export function AdminPanel({ onLogin }: { onLogin: () => void }) {
   const [query, setQuery] = useState("");
   const [loading, setLoading] = useState(true);
   const [savingId, setSavingId] = useState<string | null>(null);
+  const [savedId, setSavedId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [drafts, setDrafts] = useState<Record<string, { plan: AdminPlan; isVerified: boolean; isAdmin: boolean }>>({});
 
@@ -114,6 +114,7 @@ export function AdminPanel({ onLogin }: { onLogin: () => void }) {
     userId: string,
     patch: Partial<{ plan: AdminPlan; isVerified: boolean; isAdmin: boolean }>,
   ) => {
+    setSavedId((current) => (current === userId ? null : current));
     setDrafts((current) => ({
       ...current,
       [userId]: {
@@ -173,6 +174,7 @@ export function AdminPanel({ onLogin }: { onLogin: () => void }) {
           isAdmin: draft.isAdmin,
         },
       }));
+      setSavedId(target.id);
     } catch (nextError) {
       setError(nextError instanceof Error ? nextError.message : "Access update failed.");
     } finally {
@@ -310,21 +312,36 @@ export function AdminPanel({ onLogin }: { onLogin: () => void }) {
                       </div>
                     </div>
 
-                    <div className="grid gap-3 rounded-[24px] border border-white/8 bg-white/[.02] p-3">
+                    <div className="grid gap-4 rounded-[24px] border border-white/8 bg-white/[.02] p-3">
                       <div className="grid gap-2">
                         <span className="text-[10px] font-bold uppercase tracking-[.2em] text-zinc-500">Plan</span>
-                        <Select value={draft.plan} onValueChange={(value) => updateDraft(target.id, { plan: value as AdminPlan })}>
-                          <SelectTrigger className="h-11">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {PLAN_OPTIONS.map((option) => (
-                              <SelectItem key={option.value} value={option.value}>
+                        <div className="grid grid-cols-3 gap-1.5 rounded-2xl border border-white/8 bg-black/25 p-1.5">
+                          {PLAN_OPTIONS.map((option) => {
+                            const selected = draft.plan === option.value;
+                            return (
+                              <Button
+                                key={option.value}
+                                type="button"
+                                onClick={() => updateDraft(target.id, {
+                                  plan: option.value,
+                                  isVerified: option.value !== "free",
+                                })}
+                                className={`h-10 rounded-xl px-2 text-xs font-bold ${
+                                  selected
+                                    ? option.value === "pro"
+                                      ? "bg-amber-300 text-black hover:bg-amber-200"
+                                      : option.value === "standard"
+                                        ? "bg-sky-300 text-black hover:bg-sky-200"
+                                        : "bg-white text-black hover:bg-zinc-200"
+                                    : "bg-transparent text-zinc-500 hover:bg-white/[.06] hover:text-zinc-200"
+                                }`}
+                              >
+                                {selected ? <Check size={14} /> : null}
                                 {option.label}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
+                              </Button>
+                            );
+                          })}
+                        </div>
                         <p className="text-[11px] text-zinc-500">
                           {PLAN_OPTIONS.find((item) => item.value === draft.plan)?.description}
                         </p>
@@ -343,6 +360,7 @@ export function AdminPanel({ onLogin }: { onLogin: () => void }) {
                                 : "bg-transparent text-zinc-400 hover:bg-white/[.06]"
                             }`}
                           >
+                            {draft.isVerified && premiumEnabled ? <Check size={14} /> : null}
                             Verified
                           </Button>
                           <Button
@@ -394,7 +412,7 @@ export function AdminPanel({ onLogin }: { onLogin: () => void }) {
                         className="h-11 min-w-[136px] rounded-2xl bg-white text-black hover:bg-zinc-200"
                       >
                         {savingId === target.id ? <LoaderCircle className="animate-spin" size={16} /> : <Check size={16} />}
-                        Save access
+                        {savedId === target.id && !hasChanges ? "Saved" : "Save access"}
                       </Button>
                     </div>
                   </div>
