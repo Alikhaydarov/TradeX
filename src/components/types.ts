@@ -120,6 +120,11 @@ export interface AdminUser {
   username: string;
   fullName: string;
   avatarUrl: string | null;
+  plan: "free" | "standard" | "pro" | "premium";
+  premiumUntil: string | null;
+  aiEnabled: boolean;
+  traderoxEnabled: boolean;
+  autoSyncEnabled: boolean;
   isVerified: boolean;
   isAdmin: boolean;
   createdAt: string | null;

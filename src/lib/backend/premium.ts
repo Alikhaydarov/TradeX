@@ -17,6 +17,8 @@ interface PremiumProfileRow {
   is_verified: boolean | null;
 }
 
+const PREMIUM_PLANS = new Set(["standard", "pro", "premium"]);
+
 function isFutureOrNull(value: string | null) {
   if (!value) return true;
   return new Date(value).getTime() > Date.now();
@@ -31,7 +33,8 @@ export async function getPremiumStatus(auth: ApiAuth): Promise<PremiumStatus> {
 
   if (error) throw new Error(error.message);
 
-  const isPremium = data?.plan === "premium" && isFutureOrNull(data.premium_until);
+  const normalizedPlan = data?.plan?.toLowerCase() ?? "free";
+  const isPremium = PREMIUM_PLANS.has(normalizedPlan) && isFutureOrNull(data?.premium_until ?? null);
 
   return {
     isPremium,
