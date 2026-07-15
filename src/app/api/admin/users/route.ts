@@ -94,11 +94,20 @@ export async function PATCH(request: Request) {
     if (!(await ensureAdmin(auth))) return unauthorized();
 
     const premiumEnabled = body.plan === "standard" || body.plan === "pro";
+
+    // Muddati o'tgan yoki noto'g'ri premium_until qiymati userni darhol
+    // "expired" holatga tushirib qo'ymasligi uchun uni null (cheksiz) qilamiz.
+    let premiumUntil: string | null = null;
+    if (premiumEnabled && body.premiumUntil) {
+      const expiry = new Date(body.premiumUntil).getTime();
+      premiumUntil = Number.isFinite(expiry) && expiry > Date.now() ? body.premiumUntil : null;
+    }
+
     const { error: accessError } = await auth.supabase.rpc("admin_set_user_access", {
       target_user_id: body.userId,
       next_plan: body.plan,
       next_verified: premiumEnabled ? body.isVerified : false,
-      next_premium_until: premiumEnabled ? (body.premiumUntil ?? null) : null,
+      next_premium_until: premiumUntil,
       next_is_admin: body.isAdmin,
     });
 

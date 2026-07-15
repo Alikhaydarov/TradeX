@@ -26,6 +26,27 @@ export function usePremiumStatus(enabled = true) {
   const { user } = useAuth();
   const [status, setStatus] = useState<PremiumStatus>(FREE_STATUS);
   const [loading, setLoading] = useState(Boolean(enabled));
+  const [refreshKey, setRefreshKey] = useState(0);
+
+  // Admin tarifni o'zgartirganda user sahifani to'liq yangilamasdan ham
+  // yangi holatni ko'rishi uchun oyna fokusga qaytganda qayta so'raymiz.
+  useEffect(() => {
+    if (!enabled) return;
+
+    const refresh = () => {
+      if (document.visibilityState === "visible") {
+        setRefreshKey((key) => key + 1);
+      }
+    };
+
+    window.addEventListener("focus", refresh);
+    document.addEventListener("visibilitychange", refresh);
+
+    return () => {
+      window.removeEventListener("focus", refresh);
+      document.removeEventListener("visibilitychange", refresh);
+    };
+  }, [enabled]);
 
   useEffect(() => {
     if (!enabled) {
@@ -56,7 +77,7 @@ export function usePremiumStatus(enabled = true) {
     return () => {
       active = false;
     };
-  }, [enabled, user]);
+  }, [enabled, user, refreshKey]);
 
   return { status, loading };
 }

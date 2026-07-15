@@ -137,6 +137,12 @@ export function AdminPanel({ onLogin }: { onLogin: () => void }) {
     };
     const nextPlan = draft.plan;
     const nextVerified = isPremiumPlan(nextPlan) ? draft.isVerified : false;
+    // Faqat kelajakdagi muddatni saqlab qolamiz. Muddati o'tgan yoki bo'sh
+    // premium_until qayta yuborilsa, user premium bo'lsa ham "expired" bo'lib qoladi.
+    const nextPremiumUntil =
+      isPremiumPlan(nextPlan) && target.premiumUntil && new Date(target.premiumUntil).getTime() > Date.now()
+        ? target.premiumUntil
+        : null;
 
     setSavingId(target.id);
     setError(null);
@@ -148,7 +154,7 @@ export function AdminPanel({ onLogin }: { onLogin: () => void }) {
           userId: target.id,
           plan: nextPlan,
           isVerified: nextVerified,
-          premiumUntil: target.premiumUntil,
+          premiumUntil: nextPremiumUntil,
           isAdmin: draft.isAdmin,
         }),
       });
@@ -161,6 +167,7 @@ export function AdminPanel({ onLogin }: { onLogin: () => void }) {
                 plan: nextPlan,
                 isVerified: nextVerified,
                 isAdmin: draft.isAdmin,
+                premiumUntil: nextPremiumUntil,
                 aiEnabled: isPremiumPlan(nextPlan),
                 traderoxEnabled: isPremiumPlan(nextPlan),
                 autoSyncEnabled: isPremiumPlan(nextPlan),
