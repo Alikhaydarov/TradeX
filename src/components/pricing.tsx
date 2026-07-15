@@ -329,13 +329,21 @@ export function Pricing({ onLogin }: { onLogin?: () => void } = {}) {
                   <Button
                     className="h-12 rounded-2xl bg-white text-black hover:bg-zinc-200"
                     onClick={() => void startCheckout(plan)}
-                    disabled={loading || !billingConfigured}
+                    disabled={loading || !billingConfigured || Boolean(premium?.isPremium)}
                   >
                     {loading ? <LoaderCircle className="size-4 animate-spin" /> : <ShieldCheck className="size-4" />}
-                    {!billingConfigured ? "Stripe setup required" : user ? `Start ${plan.name}` : "Sign in to subscribe"}
+                    {!billingConfigured
+                      ? "Stripe setup required"
+                      : premium?.isPremium
+                        ? "Premium already active"
+                        : user
+                          ? `Start ${plan.name}`
+                          : "Sign in to subscribe"}
                   </Button>
                   <p className="text-xs leading-5 text-zinc-500">
-                    Secure Stripe subscription. Premium instantly unlocks blue badge, AI analysis and MT5 Auto Sync after webhook confirmation.
+                    {premium?.isPremium
+                      ? "Use Manage billing above to update or cancel your current Stripe subscription."
+                      : "Secure Stripe subscription. Premium instantly unlocks blue badge, AI analysis and MT5 Auto Sync after webhook confirmation."}
                   </p>
                 </CardFooter>
               </Card>
