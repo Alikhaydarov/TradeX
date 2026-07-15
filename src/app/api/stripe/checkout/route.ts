@@ -9,7 +9,7 @@ export async function POST(request: Request) {
   if (!isTrustedBillingOrigin(request)) return billingSecurityError("Invalid request origin.", 403);
   const auth = await authenticateRequest(request);
   if (!auth) return unauthorized();
-  if (!consumeBillingAttempt(auth.user.id)) return billingSecurityError("Too many billing requests. Try again shortly.", 429);
+  if (!(await consumeBillingAttempt(auth.user.id))) return billingSecurityError("Too many billing requests. Try again shortly.", 429);
 
   const body = (await request.json().catch(() => ({}))) as { plan?: PremiumPlan };
   const plan = getPremiumPlan(body.plan);

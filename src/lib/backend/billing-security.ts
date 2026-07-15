@@ -1,4 +1,5 @@
 import { getAppUrl } from "@/lib/stripe";
+import { getSupabaseAdminClient } from "@/lib/supabase/admin";
 
 const WINDOW_MS = 60_000;
 const MAX_ATTEMPTS = 8;
@@ -15,7 +16,7 @@ export function isTrustedBillingOrigin(request: Request) {
   }
 }
 
-export function consumeBillingAttempt(userId: string) {
+function consumeLocalBillingAttempt(userId: string) {
   const now = Date.now();
   const current = attempts.get(userId);
   if (!current || current.resetAt <= now) {
@@ -30,6 +31,25 @@ export function consumeBillingAttempt(userId: string) {
     }
   }
   return current.count <= MAX_ATTEMPTS;
+}
+
+export async function consumeBillingAttempt(userId: string) {
+  const admin = getSupabaseAdminClient();
+  if (!admin) return false;
+
+  const { data, error } = await admin.rpc("consume_billing_rate_limit", {
+    target_key: `billing:${userId}`,
+    request_limit: MAX_ATTEMPTS,
+    window_seconds: WINDOW_MS / 1_000,
+  });
+
+  if (error) {
+    console.error("Global billing rate-limit failed", error);
+    return false;
+  }
+
+  // Keep a cheap per-instance guard to absorb bursts before another DB round trip.
+  return data === true && consumeLocalBillingAttempt(userId);
 }
 
 export function billingSecurityError(message: string, status: number) {
