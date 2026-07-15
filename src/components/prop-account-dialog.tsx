@@ -198,7 +198,7 @@ export function PropAccountDialog({
   }
 
   function choosePlatform(item: PlatformConfig) {
-    if (item.premium && !premiumStatus.isPremium) {
+    if (!premiumStatus.isPremium) {
       setPremiumOverlay(item);
       return;
     }
@@ -232,7 +232,7 @@ export function PropAccountDialog({
     event.preventDefault();
     setSubmitError(null);
 
-    if (accountKind === "automatic" && selectedPlatform.premium && !premiumStatus.isPremium) {
+    if (accountKind === "automatic" && !premiumStatus.isPremium) {
       setPremiumOverlay(selectedPlatform);
       setSubmitError("Upgrade to Premium to continue with this connector.");
       return;
@@ -262,7 +262,7 @@ export function PropAccountDialog({
 
   useEffect(() => {
     if (!open || step !== 3) return;
-    if (accountKind === "automatic" && selectedPlatform.premium && !premiumStatus.isPremium) {
+    if (accountKind === "automatic" && !premiumStatus.isPremium) {
       setPremiumOverlay(selectedPlatform);
       setStep(2);
     }

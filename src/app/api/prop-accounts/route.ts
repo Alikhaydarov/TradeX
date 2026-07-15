@@ -106,16 +106,15 @@ export async function POST(request: Request) {
     }
   }
 
-  if (PREMIUM_PLATFORMS.has(String(payload.platform || "").toLowerCase())) {
-    if (!premium.isPremium) {
-      return Response.json(
-        {
-          error: "This connector is available only on TradeWay Premium.",
-          upgradeUrl: "/pricing",
-        },
-        { status: 403 },
-      );
-    }
+  const connectorRequested = String(payload.import_source || "manual").toLowerCase() !== "manual";
+  if (!premium.isPremium && (connectorRequested || PREMIUM_PLATFORMS.has(String(payload.platform || "").toLowerCase()))) {
+    return Response.json(
+      {
+        error: "Automatic account connections are available only on TradeWay Premium.",
+        upgradeUrl: "/pricing",
+      },
+      { status: 403 },
+    );
   }
 
   const insertPayload = { ...payload, user_id: auth.user.id };
