@@ -1,12 +1,15 @@
 import { authenticateRequest, badRequest, serverError, unauthorized } from "@/lib/backend/auth";
+import { billingSecurityError, consumeBillingAttempt, isTrustedBillingOrigin } from "@/lib/backend/billing-security";
 import { getPremiumStatus } from "@/lib/backend/premium";
 import { getAppUrl, getPremiumPlan, getStripe, type PremiumPlan } from "@/lib/stripe";
 
 export const runtime = "nodejs";
 
 export async function POST(request: Request) {
+  if (!isTrustedBillingOrigin(request)) return billingSecurityError("Invalid request origin.", 403);
   const auth = await authenticateRequest(request);
   if (!auth) return unauthorized();
+  if (!consumeBillingAttempt(auth.user.id)) return billingSecurityError("Too many billing requests. Try again shortly.", 429);
 
   const body = (await request.json().catch(() => ({}))) as { plan?: PremiumPlan };
   const plan = getPremiumPlan(body.plan);
@@ -50,10 +53,13 @@ export async function POST(request: Request) {
           fullName: profileRes.data?.full_name ?? "",
         },
       },
+    }, {
+      idempotencyKey: `checkout:${auth.user.id}:${plan.id}:${Math.floor(Date.now() / 300_000)}`,
     });
 
     return Response.json({ url: session.url });
   } catch (error) {
-    return serverError(error instanceof Error ? error.message : "Stripe checkout could not start.");
+    console.error("Stripe checkout failed", error);
+    return serverError("Stripe checkout could not start.");
   }
 }

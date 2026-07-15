@@ -73,6 +73,11 @@ export function getPremiumPlan(plan: string | null | undefined) {
   return getPremiumPlans().find((item) => item.id === plan) ?? null;
 }
 
+export function getPremiumPlanByPriceId(priceId: string | null | undefined) {
+  if (!priceId) return null;
+  return getPremiumPlans().find((item) => item.priceId && item.priceId === priceId) ?? null;
+}
+
 export function isStripeBillingConfigured() {
   const plans = getPremiumPlans();
   return Boolean(

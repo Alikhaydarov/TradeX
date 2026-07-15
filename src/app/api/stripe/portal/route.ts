@@ -1,4 +1,5 @@
 import { authenticateRequest, serverError, unauthorized } from "@/lib/backend/auth";
+import { billingSecurityError, consumeBillingAttempt, isTrustedBillingOrigin } from "@/lib/backend/billing-security";
 import { getAppUrl, getStripe } from "@/lib/stripe";
 
 export const runtime = "nodejs";
@@ -9,8 +10,10 @@ interface SubscriptionRow {
 }
 
 export async function POST(request: Request) {
+  if (!isTrustedBillingOrigin(request)) return billingSecurityError("Invalid request origin.", 403);
   const auth = await authenticateRequest(request);
   if (!auth) return unauthorized();
+  if (!consumeBillingAttempt(auth.user.id)) return billingSecurityError("Too many billing requests. Try again shortly.", 429);
 
   try {
     const { data, error } = await auth.supabase
@@ -21,7 +24,10 @@ export async function POST(request: Request) {
       .limit(1)
       .maybeSingle<SubscriptionRow>();
 
-    if (error) return serverError(error.message);
+    if (error) {
+      console.error("Stripe portal customer lookup failed", error);
+      return serverError("Billing account could not be loaded.");
+    }
     if (!data?.provider_customer_id) {
       return Response.json({ error: "No Stripe customer found for this account." }, { status: 404 });
     }
@@ -34,6 +40,7 @@ export async function POST(request: Request) {
 
     return Response.json({ url: session.url });
   } catch (error) {
-    return serverError(error instanceof Error ? error.message : "Stripe portal could not open.");
+    console.error("Stripe portal failed", error);
+    return serverError("Stripe portal could not open.");
   }
 }
