@@ -19,6 +19,7 @@ import {
 import { useEffect, useMemo, useState } from "react";
 import { apiRequest } from "@/lib/api-client";
 import { useLanguage, type Locale } from "@/lib/i18n";
+import { validateUsername } from "@/lib/username";
 import { usePremiumStatus } from "./use-premium-status";
 import { useWorkspacePreferences } from "./workspace-preferences-context";
 import { useAuth } from "./auth-context";
@@ -122,6 +123,11 @@ export function UserSettingsDialog() {
   );
 
   const saveProfile = async () => {
+    const usernameCheck = validateUsername(username);
+    if (!usernameCheck.valid) {
+      setMessage(usernameCheck.error);
+      return;
+    }
     setSaving(true);
     setMessage("");
     try {
@@ -219,7 +225,8 @@ export function UserSettingsDialog() {
 
                     <div className="grid gap-4 md:grid-cols-2">
                       <Field label="Username">
-                        <Input value={username} onChange={(event) => setUsername(event.target.value)} />
+                        <Input value={username} onChange={(event) => setUsername(event.target.value)} aria-invalid={!validateUsername(username).valid} />
+                        <p className={`mt-1 text-xs ${validateUsername(username).valid ? "text-zinc-500" : "text-rose-300"}`}>{validateUsername(username).valid ? "3-24 lowercase letters, numbers, or underscores." : validateUsername(username).error}</p>
                       </Field>
                       <Field label="Email">
                         <Input value={email} readOnly className="text-zinc-500" />
@@ -227,7 +234,7 @@ export function UserSettingsDialog() {
                     </div>
 
                     <div className="flex items-center gap-3">
-                      <Button type="button" className="bg-white text-black hover:bg-zinc-200" disabled={saving} onClick={saveProfile}>
+                      <Button type="button" className="bg-white text-black hover:bg-zinc-200" disabled={saving || !validateUsername(username).valid} onClick={saveProfile}>
                         {saving ? <LoaderCircle className="animate-spin" size={15} /> : <Check size={15} />}
                         Save
                       </Button>

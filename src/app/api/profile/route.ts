@@ -1,6 +1,7 @@
 import { authenticateRequest, badRequest, serverError, unauthorized } from "@/lib/backend/auth";
 import { hasVerifiedPremiumAccess } from "@/lib/premium-plan";
 import { getProfileInsights } from "@/lib/server/profile-insights";
+import { validateUsername } from "@/lib/username";
 
 export const runtime = "nodejs";
 
@@ -285,11 +286,15 @@ export async function PATCH(request: Request) {
     location?: string;
   };
   const fullName = body.fullName?.trim();
-  const username = body.username?.trim().toLowerCase().replace(/[^a-z0-9_]/g, "");
+  const usernameCheck = validateUsername(body.username ?? "");
+  const username = usernameCheck.value;
   const avatarUrl = typeof body.avatarUrl === "string" ? body.avatarUrl.trim().slice(0, 1000) : null;
 
-  if (!fullName || fullName.length > 80 || !username || username.length < 3 || username.length > 30) {
-    return badRequest("Ism va username qiymatlarini tekshiring.");
+  if (!fullName || fullName.length > 80) {
+    return badRequest("Ism qiymatini tekshiring.");
+  }
+  if (!usernameCheck.valid) {
+    return badRequest(usernameCheck.error);
   }
 
   const { data, error } = await auth.supabase

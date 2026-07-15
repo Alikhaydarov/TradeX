@@ -24,6 +24,7 @@ import { useEffect, useRef, useState } from "react";
 import { apiRequest } from "@/lib/api-client";
 import { formatCount, toSocialPost, type SocialPostRecord } from "@/lib/social-format";
 import { hasVerifiedPremiumAccess } from "@/lib/premium-plan";
+import { validateUsername } from "@/lib/username";
 import { VerifiedBadge } from "./verified-badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -317,6 +318,11 @@ export function Account({ onLogin, profileUsername }: { onLogin: () => void; pro
 
   const save = async () => {
     if (!draftProfile || !isOwnProfile) return;
+    const usernameCheck = validateUsername(draftProfile.username);
+    if (!usernameCheck.valid) {
+      setError(usernameCheck.error);
+      return;
+    }
     setError(null);
     try {
       const { profile: data } = await apiRequest<{ profile: ProfileRecord }>("/api/profile", {
@@ -597,7 +603,7 @@ export function Account({ onLogin, profileUsername }: { onLogin: () => void; pro
               {error && <div className="mt-4 rounded-2xl border border-rose-300/15 bg-rose-400/10 px-4 py-3 text-sm text-rose-200">{error}</div>}
               <div className="mt-5 grid gap-4">
                 <div className="grid gap-2"><Label htmlFor="profile-name">Name</Label><Input id="profile-name" value={draftProfile.fullName} onChange={(event) => setDraftProfile({ ...draftProfile, fullName: event.target.value })} /></div>
-                <div className="grid gap-2"><Label htmlFor="profile-username">Username</Label><div className="relative"><span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-sm text-slate-500">@</span><Input id="profile-username" value={draftProfile.username} onChange={(event) => setDraftProfile({ ...draftProfile, username: event.target.value.replace(/\s/g, "") })} className="pl-8" /></div></div>
+                <div className="grid gap-2"><Label htmlFor="profile-username">Username</Label><div className="relative"><span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-sm text-slate-500">@</span><Input id="profile-username" value={draftProfile.username} onChange={(event) => setDraftProfile({ ...draftProfile, username: event.target.value })} className="pl-8" aria-invalid={!validateUsername(draftProfile.username).valid} /></div><p className={`text-xs ${validateUsername(draftProfile.username).valid ? "text-slate-500" : "text-rose-300"}`}>{validateUsername(draftProfile.username).valid ? "3-24 lowercase letters, numbers, or underscores." : validateUsername(draftProfile.username).error}</p></div>
                 <div className="grid gap-2"><Label htmlFor="profile-avatar">Avatar URL</Label><Input id="profile-avatar" value={draftProfile.avatarUrl ?? ""} onChange={(event) => setDraftProfile({ ...draftProfile, avatarUrl: event.target.value })} placeholder="https://..." /></div>
                 <div className="grid gap-2"><Label>Trading style</Label><Select value={draftProfile.tradingStyle} onValueChange={(value) => setDraftProfile({ ...draftProfile, tradingStyle: value })}><SelectTrigger className="w-full"><SelectValue placeholder="Choose your trading style" /></SelectTrigger><SelectContent><SelectItem value="Price Action">Price Action</SelectItem><SelectItem value="Scalping">Scalping</SelectItem><SelectItem value="Swing Trading">Swing Trading</SelectItem><SelectItem value="Algorithmic">Algorithmic</SelectItem></SelectContent></Select></div>
                 <div className="grid gap-2"><Label htmlFor="profile-location">Location</Label><div className="relative"><MapPin className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" size={16} /><Input id="profile-location" value={draftProfile.location} onChange={(event) => setDraftProfile({ ...draftProfile, location: event.target.value })} placeholder="Korea" className="pl-10" /></div></div>
