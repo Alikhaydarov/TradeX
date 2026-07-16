@@ -14,6 +14,7 @@ import {
   Search,
   SquareChartGantt,
   TrendingUp,
+  UsersRound,
   UserRound,
   X,
 } from "lucide-react";
@@ -125,6 +126,7 @@ export function Sidebar({
     { id: "trades" as const, label: "Trades", icon: SquareChartGantt },
     { id: "analytics" as const, label: "Analytics", icon: TrendingUp },
   ];
+  const communityNav = premium.plan === "pro" ? [{ id: "community" as const, label: "Community", icon: UsersRound }] : [];
   const openAccountsPage = () => {
     onChange("accounts");
     setMobileMenuOpen(false);
@@ -280,6 +282,7 @@ export function Sidebar({
           <nav className="space-y-1">
             {journalingNav.map((item) => renderNavButton(item))}
           </nav>
+          {communityNav.length ? <><GroupLabel>Community</GroupLabel><nav className="space-y-1">{communityNav.map((item) => renderNavButton(item))}</nav></> : null}
         </div>
 
         <div className="mt-auto">
@@ -370,6 +373,7 @@ export function Sidebar({
                 <nav className="space-y-1">
                   {journalingNav.map((item) => renderNavButton(item, true))}
                 </nav>
+                {communityNav.length ? <><GroupLabel>Community</GroupLabel><nav className="space-y-1">{communityNav.map((item) => renderNavButton(item, true))}</nav></> : null}
 
               </div>
 

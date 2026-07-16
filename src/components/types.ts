@@ -5,6 +5,7 @@ export type Section =
   | "calendar"
   | "trades"
   | "analytics"
+  | "community"
   | "settings"
   | "account"
   | "pricing"

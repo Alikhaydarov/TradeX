@@ -14,6 +14,7 @@ const LABELS: Partial<Record<Section, string>> = {
   calendar: "Calendar",
   trades: "Trades",
   analytics: "Analytics",
+  community: "Community",
   settings: "Settings",
   account: "Profile",
   pricing: "Pricing",

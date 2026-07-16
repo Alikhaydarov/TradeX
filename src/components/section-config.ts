@@ -9,6 +9,7 @@ const reservedPaths = new Set([
   "calendar",
   "trades",
   "analytics",
+  "community",
   "settings",
   "profile",
   "account",
@@ -24,6 +25,7 @@ const sectionPaths: Record<Section, string> = {
   calendar: "/calendar",
   trades: "/trades",
   analytics: "/analytics",
+  community: "/community",
   settings: "/settings",
   account: "/profile",
   pricing: "/pricing",
@@ -37,6 +39,7 @@ export const cachedSections: Section[] = [
   "calendar",
   "trades",
   "analytics",
+  "community",
   "settings",
   "account",
   "pricing",
@@ -49,6 +52,7 @@ export const workspaceSections: Section[] = [
   "calendar",
   "trades",
   "analytics",
+  "community",
   "settings",
 ];
 
@@ -64,6 +68,7 @@ export function sectionFromPath(pathname: string): Section {
   if (pathname.startsWith("/calendar")) return "calendar";
   if (pathname.startsWith("/trades")) return "trades";
   if (pathname.startsWith("/analytics")) return "analytics";
+  if (pathname.startsWith("/community")) return "community";
   if (pathname.startsWith("/settings")) return "settings";
   if (pathname.startsWith("/pricing")) return "pricing";
   if (pathname.startsWith("/profile") || pathname.startsWith("/account") || usernameFromPath(pathname)) return "account";

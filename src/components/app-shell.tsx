@@ -22,6 +22,7 @@ import { getCurrentProfileUsername, getCurrentSection, pathFromSection } from ".
 import { apiRequest } from "@/lib/api-client";
 import type { Section } from "./types";
 import { Spinner } from "./ui/spinner";
+import { CommunityWorkspace } from "./community-workspace";
 
 const UserSettingsDialog = dynamic(
   () => import("./user-settings-dialog").then((module) => module.UserSettingsDialog),
@@ -142,6 +143,7 @@ function AppShellInner() {
     const workspaceTab = workspaceTabs[item];
     if (workspaceTab) return <Journal onLogin={openLogin} mode="workspace" forcedTab={workspaceTab} />;
     if (item === "settings") return <AccountSettings onLogin={openLogin} />;
+    if (item === "community") return <CommunityWorkspace />;
     if (item === "account") return <Account onLogin={openLogin} profileUsername={profileUsername || undefined} />;
     if (item === "pricing") return <Pricing />;
     if (item === "admin" && isAdmin === null) {
