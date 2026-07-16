@@ -929,10 +929,9 @@ function Workspace(p: {
                 <div className="mt-3 space-y-2">
                   {recentTrades.length ? recentTrades.map((trade) => (
                     <button key={trade.id} type="button" onClick={() => openTrade(trade)} className="flex w-full items-center gap-3 rounded-2xl border border-white/8 bg-[#050505] px-3 py-2.5 text-left transition hover:bg-[#0d0d0d]">
-                      <InstrumentBadge symbol={trade.symbol} compact className="bg-[#121212]" showFullSymbol={false} />
+                      <InstrumentBadge symbol={trade.symbol} compact className="shrink-0 bg-[#121212]" />
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center gap-2">
-                          <strong className="truncate text-sm text-white">{trade.symbol}</strong>
                           <span className={`rounded px-1.5 py-0.5 text-[9px] font-black uppercase ${trade.side === "Long" ? "bg-[#0b1c12] text-emerald-300" : "bg-[#1a0d10] text-rose-300"}`}>{trade.side === "Long" ? "Buy" : "Sell"}</span>
                         </div>
                         <p className="mt-1 truncate text-xs text-zinc-500">{trade.setup || trade.session || trade.rawDate}</p>
@@ -1331,9 +1330,8 @@ function Workspace(p: {
                     {symbolStats.length ? symbolStats.map((symbol) => (
                       <div key={symbol.symbol} className="flex items-center justify-between rounded-2xl border border-white/8 bg-[#050505] px-3 py-3">
                         <div className="flex items-center gap-2">
-                          <InstrumentBadge symbol={symbol.symbol} compact className="bg-[#121212]" showFullSymbol={false} />
+                          <InstrumentBadge symbol={symbol.symbol} compact className="shrink-0 bg-[#121212]" />
                           <div>
-                            <p className="text-sm font-bold text-white">{symbol.symbol}</p>
                             <p className="text-xs text-zinc-500">{symbol.trades} trades / {symbol.wins} wins</p>
                           </div>
                         </div>
@@ -1407,10 +1405,9 @@ function Workspace(p: {
                       }}
                     className="flex w-full items-center gap-3 rounded-2xl border border-white/10 bg-black px-3 py-3 text-left transition hover:bg-[#0b0b0b]"
                     >
-                      <InstrumentBadge symbol={trade.symbol} compact className="shrink-0 rounded-xl bg-[#151515]" showFullSymbol={false} />
+                      <InstrumentBadge symbol={trade.symbol} compact className="shrink-0 rounded-xl bg-[#151515]" />
                       <span className="min-w-0 flex-1">
                         <span className="flex min-w-0 items-center gap-2">
-                          <strong className="truncate text-sm font-black text-white">{trade.symbol}</strong>
                           <span className={`rounded px-1.5 py-0.5 text-[9px] font-black uppercase ${trade.side === "Long" ? "bg-[#0b1c12] text-emerald-300" : "bg-[#1a0d10] text-rose-300"}`}>
                             {trade.side === "Long" ? "Buy" : "Sell"}
                           </span>

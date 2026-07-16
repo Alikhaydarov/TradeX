@@ -90,8 +90,8 @@ function TradeGalleryCard({ trade, formatPnl, onOpen }: { trade: JournalEntry; f
       ) : null}
       <div className="p-3">
         <div className="flex items-center gap-2">
-          <InstrumentBadge symbol={trade.symbol} compact className="bg-[#121212]" />
-          <div className="min-w-0 flex-1"><p className="truncate text-sm font-semibold text-white">{trade.symbol}</p><p className="text-[11px] text-zinc-500">{formatDate(trade.rawDate)}</p></div>
+          <InstrumentBadge symbol={trade.symbol} compact className="shrink-0 bg-[#121212]" />
+          <div className="min-w-0 flex-1"><p className="truncate text-[11px] text-zinc-500">{formatDate(trade.rawDate)}</p></div>
           <p className={`font-mono text-sm font-semibold ${trade.pnl >= 0 ? "text-emerald-300" : "text-rose-300"}`}>{formatPnl(trade.pnl)}</p>
         </div>
         <p className="mt-3 truncate text-xs text-zinc-400">{trade.setup || trade.session || "No setup tagged"}</p>
@@ -179,7 +179,7 @@ export function TradesArchive({
                 <TableBody>{pagedTrades.map((trade) => (
                   <TableRow key={trade.id} tabIndex={0} role="button" onClick={() => onOpenTrade(trade)} onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); onOpenTrade(trade) } }} className="cursor-pointer">
                     <TableCell><p className="font-medium text-zinc-200">{formatDate(trade.rawDate)}</p><p className="mt-0.5 max-w-52 truncate text-[11px] text-zinc-600">{trade.note || "Open review"}</p></TableCell>
-                    <TableCell><div className="flex items-center gap-2"><InstrumentBadge symbol={trade.symbol} compact className="bg-[#121212]" /><span className="font-semibold text-white">{trade.symbol}</span></div></TableCell>
+                    <TableCell><InstrumentBadge symbol={trade.symbol} compact className="bg-[#121212]" /></TableCell>
                     <TableCell><span className={`text-xs font-semibold ${trade.side === "Long" ? "text-emerald-300" : "text-rose-300"}`}>{trade.side === "Long" ? "Buy" : "Sell"}</span></TableCell>
                     <TableCell className="max-w-56 truncate text-zinc-400">{trade.setup || trade.session || "—"}</TableCell>
                     <TableCell className="font-mono text-zinc-400">{(trade.resultR || 0).toFixed(2)}R</TableCell>
@@ -190,8 +190,8 @@ export function TradesArchive({
             </div>
             <div className="divide-y divide-white/8 lg:hidden">{pagedTrades.map((trade) => (
               <button key={trade.id} type="button" onClick={() => onOpenTrade(trade)} className="flex w-full items-center gap-3 px-3 py-3 text-left transition hover:bg-white/[.025] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-white/25">
-                <InstrumentBadge symbol={trade.symbol} compact className="bg-[#121212]" />
-                <div className="min-w-0 flex-1"><div className="flex items-center gap-2"><p className="truncate text-sm font-semibold text-white">{trade.symbol}</p><span className={`text-[10px] font-semibold ${trade.side === "Long" ? "text-emerald-300" : "text-rose-300"}`}>{trade.side === "Long" ? "Buy" : "Sell"}</span></div><p className="mt-1 truncate text-[11px] text-zinc-500">{formatDate(trade.rawDate)} · {trade.setup || trade.session || "No setup"}</p></div>
+                <InstrumentBadge symbol={trade.symbol} compact className="shrink-0 bg-[#121212]" />
+                <div className="min-w-0 flex-1"><span className={`text-[10px] font-semibold ${trade.side === "Long" ? "text-emerald-300" : "text-rose-300"}`}>{trade.side === "Long" ? "Buy" : "Sell"}</span><p className="mt-1 truncate text-[11px] text-zinc-500">{formatDate(trade.rawDate)} · {trade.setup || trade.session || "No setup"}</p></div>
                 <div className="text-right"><p className={`font-mono text-sm font-semibold ${trade.pnl >= 0 ? "text-emerald-300" : "text-rose-300"}`}>{formatPnl(trade.pnl)}</p><p className="mt-1 text-[10px] text-zinc-600">{(trade.resultR || 0).toFixed(2)}R</p></div>
               </button>
             ))}</div>

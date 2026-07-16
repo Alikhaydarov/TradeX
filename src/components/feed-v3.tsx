@@ -683,10 +683,9 @@ export function FeedV3({ onLogin }: { onLogin: () => void }) {
                       }}
                       className="flex w-full items-center gap-3 rounded-lg px-3 py-3 text-left transition-colors hover:bg-white/[.045]"
                     >
-                      <InstrumentBadge symbol={trade.symbol} compact className="shrink-0 rounded-xl bg-black/25" showFullSymbol={false} />
+                      <InstrumentBadge symbol={trade.symbol} compact className="shrink-0 rounded-xl bg-black/25" />
                       <span className="min-w-0 flex-1">
                         <span className="flex min-w-0 items-center gap-2">
-                          <strong className="truncate text-sm">{trade.symbol}</strong>
                           <span className={`rounded px-1.5 py-0.5 text-[9px] font-black uppercase ${trade.side === "Long" ? "bg-emerald-400/15 text-emerald-300" : "bg-rose-400/15 text-rose-300"}`}>
                             {trade.side}
                           </span>

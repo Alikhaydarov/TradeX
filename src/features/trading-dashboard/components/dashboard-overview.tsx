@@ -225,8 +225,8 @@ export function DashboardOverview({
           <CardContent className="py-2">
             {recentTrades.length ? recentTrades.map((trade) => (
               <button key={trade.id} type="button" onClick={() => onOpenTrade(trade)} className="flex w-full items-center gap-3 rounded-lg px-2 py-3 text-left transition-colors hover:bg-white/[.035] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/30">
-                <InstrumentBadge symbol={trade.symbol} compact className="bg-[#121212]" />
-                <div className="min-w-0 flex-1"><p className="truncate text-sm font-semibold text-white">{trade.symbol}</p><p className="mt-0.5 truncate text-[11px] text-zinc-500">{trade.setup || trade.session || trade.rawDate}</p></div>
+                <InstrumentBadge symbol={trade.symbol} compact className="shrink-0 bg-[#121212]" />
+                <div className="min-w-0 flex-1"><p className="truncate text-[11px] text-zinc-500">{trade.setup || trade.session || trade.rawDate}</p></div>
                 <span className={`text-[10px] font-semibold uppercase ${trade.side === "Long" ? "text-emerald-300" : "text-rose-300"}`}>{trade.side}</span>
                 <strong className={`min-w-20 text-right font-mono text-sm ${trade.pnl >= 0 ? "text-emerald-300" : "text-rose-300"}`}>{formatTradePnl(trade.pnl)}</strong>
               </button>
@@ -250,8 +250,8 @@ export function DashboardOverview({
                 const positive = (position.unrealizedPnl || 0) >= 0
                 return (
                   <div key={position.id} className="flex items-center gap-3 border-b border-white/8 px-1 py-3 last:border-0">
-                    <InstrumentBadge symbol={position.symbol} compact className="bg-[#121212]" />
-                    <div className="min-w-0 flex-1"><p className="text-sm font-semibold text-white">{position.symbol}</p><p className="mt-0.5 text-[11px] text-zinc-500">{position.side} · {position.volume.toFixed(2)} lots</p></div>
+                    <InstrumentBadge symbol={position.symbol} compact className="shrink-0 bg-[#121212]" />
+                    <div className="min-w-0 flex-1"><p className="text-[11px] text-zinc-500">{position.side} · {position.volume.toFixed(2)} lots</p></div>
                     <p className={`font-mono text-sm font-semibold ${positive ? "text-emerald-300" : "text-rose-300"}`}>{formatTradePnl(position.unrealizedPnl || 0)}</p>
                   </div>
                 )
