@@ -24,6 +24,17 @@ interface AdminUserRecord {
   last_sign_in_at: string | null;
 }
 
+interface SavedAccessRecord {
+  id: string;
+  plan: string | null;
+  premium_until: string | null;
+  is_verified: boolean | null;
+  ai_enabled: boolean | null;
+  traderox_enabled: boolean | null;
+  auto_sync_enabled: boolean | null;
+  is_admin: boolean | null;
+}
+
 async function ensureAdmin(auth: NonNullable<Awaited<ReturnType<typeof authenticateRequest>>>) {
   const { data, error } = await auth.supabase.rpc("is_admin");
   if (error) throw new Error(error.message);
@@ -112,8 +123,28 @@ export async function PATCH(request: Request) {
     });
 
     if (accessError) return serverError(accessError.message);
+    const { data: savedAccess, error: savedAccessError } = await auth.supabase
+      .from("profiles")
+      .select("id, plan, premium_until, is_verified, ai_enabled, traderox_enabled, auto_sync_enabled, is_admin")
+      .eq("id", body.userId)
+      .single<SavedAccessRecord>();
 
-    return Response.json({ success: true });
+    if (savedAccessError) return serverError(savedAccessError.message);
+    if (!savedAccess) return serverError("Foydalanuvchi access holati saqlanmadi.");
+
+    return Response.json({
+      success: true,
+      user: {
+        id: savedAccess.id,
+        plan: normalizePlan(savedAccess.plan),
+        premiumUntil: savedAccess.premium_until,
+        isVerified: Boolean(savedAccess.is_verified),
+        aiEnabled: Boolean(savedAccess.ai_enabled),
+        traderoxEnabled: Boolean(savedAccess.traderox_enabled),
+        autoSyncEnabled: Boolean(savedAccess.auto_sync_enabled),
+        isAdmin: Boolean(savedAccess.is_admin),
+      },
+    }, { headers: { "Cache-Control": "no-store" } });
   } catch (error) {
     return serverError(error instanceof Error ? error.message : undefined);
   }

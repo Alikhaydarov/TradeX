@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { apiRequest } from "@/lib/api-client";
 import { useAuth } from "./auth-context";
 
@@ -48,36 +48,27 @@ export function usePremiumStatus(enabled = true) {
     };
   }, [enabled]);
 
-  useEffect(() => {
-    if (!enabled) {
-      setLoading(false);
-      return;
-    }
-
-    if (!user) {
+  const refresh = useCallback(async () => {
+    if (!enabled || !user) {
       setStatus(FREE_STATUS);
       setLoading(false);
       return;
     }
 
-    let active = true;
+    try {
+      const response = await apiRequest<PremiumStatus>("/api/premium/status");
+      setStatus(response);
+    } catch {
+      setStatus(FREE_STATUS);
+    } finally {
+      setLoading(false);
+    }
+  }, [enabled, user]);
+
+  useEffect(() => {
     setLoading(true);
+    void refresh();
+  }, [refresh, refreshKey]);
 
-    apiRequest<PremiumStatus>("/api/premium/status")
-      .then((response) => {
-        if (active) setStatus(response);
-      })
-      .catch(() => {
-        if (active) setStatus(FREE_STATUS);
-      })
-      .finally(() => {
-        if (active) setLoading(false);
-      });
-
-    return () => {
-      active = false;
-    };
-  }, [enabled, user, refreshKey]);
-
-  return { status, loading };
+  return { status, loading, refresh };
 }

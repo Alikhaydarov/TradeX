@@ -148,7 +148,10 @@ export function AdminPanel({ onLogin }: { onLogin: () => void }) {
     setError(null);
 
     try {
-      await apiRequest<{ success: boolean }>("/api/admin/users", {
+      const response = await apiRequest<{
+        success: boolean;
+        user: Pick<AdminUser, "id" | "plan" | "premiumUntil" | "isVerified" | "aiEnabled" | "traderoxEnabled" | "autoSyncEnabled" | "isAdmin">;
+      }>("/api/admin/users", {
         method: "PATCH",
         body: JSON.stringify({
           userId: target.id,
@@ -164,13 +167,7 @@ export function AdminPanel({ onLogin }: { onLogin: () => void }) {
           user.id === target.id
             ? {
                 ...user,
-                plan: nextPlan,
-                isVerified: nextVerified,
-                isAdmin: draft.isAdmin,
-                premiumUntil: nextPremiumUntil,
-                aiEnabled: isPremiumPlan(nextPlan),
-                traderoxEnabled: isPremiumPlan(nextPlan),
-                autoSyncEnabled: isPremiumPlan(nextPlan),
+                ...response.user,
               }
             : user,
         ),
@@ -179,9 +176,9 @@ export function AdminPanel({ onLogin }: { onLogin: () => void }) {
       setDrafts((current) => ({
         ...current,
         [target.id]: {
-          plan: nextPlan,
-          isVerified: nextVerified,
-          isAdmin: draft.isAdmin,
+          plan: response.user.plan,
+          isVerified: response.user.isVerified,
+          isAdmin: response.user.isAdmin,
         },
       }));
       setSavedId(target.id);
