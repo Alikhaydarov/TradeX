@@ -1,4 +1,6 @@
-const PREMIUM_PLANS = new Set(["standard", "pro", "premium"]);
+// `basic` and `premium` were used by earlier billing experiments. Keep them
+// readable until the database reconciliation migration has normalized them.
+const PREMIUM_PLANS = new Set(["basic", "standard", "pro", "premium"]);
 
 export function isPremiumPlan(plan?: string | null) {
   return PREMIUM_PLANS.has((plan ?? "free").toLowerCase());

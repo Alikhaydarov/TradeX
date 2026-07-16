@@ -20,6 +20,18 @@ interface PremiumProfileRow {
   is_verified: boolean | null;
 }
 
+interface ActiveSubscriptionRow {
+  plan: string | null;
+  current_period_end: string | null;
+}
+
+function normalizePremiumPlan(plan: string | null | undefined): PremiumStatus["plan"] {
+  const normalized = plan?.toLowerCase();
+  if (normalized === "standard" || normalized === "basic") return "standard";
+  if (normalized === "pro" || normalized === "premium") return "pro";
+  return "free";
+}
+
 export async function getPremiumStatus(auth: ApiAuth): Promise<PremiumStatus> {
   const { data, error } = await auth.supabase
     .from("profiles")
@@ -29,9 +41,34 @@ export async function getPremiumStatus(auth: ApiAuth): Promise<PremiumStatus> {
 
   if (error) throw new Error(error.message);
 
-  const normalizedPlan = data?.plan?.toLowerCase() ?? "free";
-  const plan = normalizedPlan === "standard" ? "standard" : normalizedPlan === "pro" || normalizedPlan === "premium" ? "pro" : "free";
-  const isPremium = isPremiumPlan(normalizedPlan) && isPremiumActive(data?.premium_until ?? null);
+  let plan = normalizePremiumPlan(data?.plan);
+  let premiumUntil = data?.premium_until ?? null;
+  let isPremium = isPremiumPlan(data?.plan) && isPremiumActive(premiumUntil);
+  let accessFromSubscription = false;
+
+  // Older Stripe records can exist before their profile row was synchronized.
+  // Treat an active paid subscription as the source of truth while the
+  // reconciliation migration repairs the corresponding profile access row.
+  if (!isPremium) {
+    const { data: subscription, error: subscriptionError } = await auth.supabase
+      .from("subscriptions")
+      .select("plan, current_period_end")
+      .eq("user_id", auth.user.id)
+      .in("status", ["active", "trialing", "past_due"])
+      .in("plan", ["basic", "standard", "premium", "pro"])
+      .order("current_period_end", { ascending: false, nullsFirst: false })
+      .order("updated_at", { ascending: false })
+      .limit(1)
+      .maybeSingle<ActiveSubscriptionRow>();
+
+    if (subscriptionError) throw new Error(subscriptionError.message);
+    if (subscription && isPremiumActive(subscription.current_period_end)) {
+      plan = normalizePremiumPlan(subscription.plan);
+      premiumUntil = subscription.current_period_end;
+      isPremium = plan !== "free";
+      accessFromSubscription = isPremium;
+    }
+  }
   let billingManaged = false;
 
   if (isPremium) {
@@ -51,10 +88,10 @@ export async function getPremiumStatus(auth: ApiAuth): Promise<PremiumStatus> {
   return {
     plan,
     isPremium,
-    aiEnabled: isPremium && Boolean(data?.ai_enabled),
-    traderoxEnabled: isPremium && Boolean(data?.traderox_enabled),
-    autoSyncEnabled: isPremium && Boolean(data?.auto_sync_enabled),
-    isVerified: isPremium && Boolean(data?.is_verified),
+    aiEnabled: isPremium && (accessFromSubscription || Boolean(data?.ai_enabled)),
+    traderoxEnabled: isPremium && (accessFromSubscription || Boolean(data?.traderox_enabled)),
+    autoSyncEnabled: isPremium && (accessFromSubscription || Boolean(data?.auto_sync_enabled)),
+    isVerified: isPremium && (accessFromSubscription || Boolean(data?.is_verified)),
     billingManaged,
   };
 }

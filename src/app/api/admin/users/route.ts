@@ -43,7 +43,7 @@ async function ensureAdmin(auth: NonNullable<Awaited<ReturnType<typeof authentic
 
 function normalizePlan(plan: string | null): "free" | "standard" | "pro" {
   const value = plan?.toLowerCase();
-  if (value === "standard") return "standard";
+  if (value === "standard" || value === "basic") return "standard";
   if (value === "pro" || value === "premium") return "pro";
   return "free";
 }
