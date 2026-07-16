@@ -1004,12 +1004,11 @@ function Workspace(p: {
           {!singleTabMode || activeTab === "calendar" ? (
           <TabsContent value="calendar">
             <div className="space-y-3">
-              <div className="grid grid-cols-2 gap-2 sm:gap-3 xl:grid-cols-4">
+              <div className="grid gap-2 sm:grid-cols-3 sm:gap-3">
                 {[
-                  { label: "Trades", value: String(monthCount), note: `${calendar.filter((day) => day?.trades.length).length} active days`, icon: <CalendarDays size={15} />, tone: "text-sky-300 bg-sky-400/10" },
-                  { label: "Net P&L", value: formatTradePnl(stats.pnl), note: `${stats.wins} wins / ${stats.losses} losses`, icon: stats.pnl >= 0 ? <TrendingUp size={15} /> : <TrendingDown size={15} />, tone: stats.pnl >= 0 ? "text-emerald-300 bg-emerald-400/10" : "text-rose-300 bg-rose-400/10" },
-                  { label: "Top setup", value: setups[0]?.name || "No setup", note: setups[0] ? `${setups[0].trades} executions` : "Review trades to identify it", icon: <Target size={15} />, tone: "text-violet-300 bg-violet-400/10" },
-                  { label: "Plan score", value: `${planRate}%`, note: "Rules followed this month", icon: <ShieldCheck size={15} />, tone: planRate >= 80 ? "text-emerald-300 bg-emerald-400/10" : "text-amber-300 bg-amber-400/10" },
+                  { label: "Net P&L", value: formatTradePnl(stats.pnl), note: `${monthCount} trades this month`, icon: stats.pnl >= 0 ? <TrendingUp size={15} /> : <TrendingDown size={15} />, tone: stats.pnl >= 0 ? "text-emerald-300 bg-emerald-400/10" : "text-rose-300 bg-rose-400/10" },
+                  { label: "Trading days", value: String(calendar.filter((day) => day?.trades.length).length), note: `${month.toLocaleDateString("en-US", { month: "long" })} activity`, icon: <CalendarDays size={15} />, tone: "text-sky-300 bg-sky-400/10" },
+                  { label: "Win rate", value: `${stats.rate}%`, note: `${stats.wins} wins / ${stats.losses} losses`, icon: <Target size={15} />, tone: stats.rate >= 50 ? "text-emerald-300 bg-emerald-400/10" : "text-amber-300 bg-amber-400/10" },
                 ].map((item) => (
                   <div key={item.label} className="min-w-0 rounded-[1rem] border border-white/8 bg-[#070707] p-3 sm:p-4">
                     <div className="flex items-center justify-between gap-2">
@@ -1027,9 +1026,9 @@ function Workspace(p: {
                   <div className="flex min-w-0 items-center gap-3">
                     <span className="grid size-9 shrink-0 place-items-center rounded-xl border border-white/8 bg-white/[.035] text-zinc-300"><CalendarDays size={17} /></span>
                     <div className="min-w-0">
-                      <p className="truncate text-[9px] font-medium uppercase tracking-[0.14em] text-zinc-600">{account.name} / Performance calendar</p>
+                      <p className="truncate text-[9px] font-medium uppercase tracking-[0.14em] text-zinc-600">Performance calendar</p>
                       <h3 className="truncate text-[15px] font-black capitalize text-white">{month.toLocaleDateString("en-US", { month: "long", year: "numeric" })}</h3>
-                      <p className="hidden text-[11px] text-zinc-500 sm:block">Select a trading day to review its executions.</p>
+                      <p className="hidden text-[11px] text-zinc-500 sm:block">Select a day to review its trades.</p>
                     </div>
                   </div>
                   <div className="grid grid-cols-[auto_minmax(0,1fr)_auto_auto] items-center gap-1 rounded-xl border border-white/8 bg-[#050505] p-1 lg:ml-auto">
@@ -1058,25 +1057,13 @@ function Workspace(p: {
                           {c.trades.length ? <span className={`absolute inset-x-0 top-0 h-0.5 ${c.pnl >= 0 ? "bg-emerald-400/60" : "bg-rose-400/60"}`} /> : null}
                           <div className="flex items-start justify-between">
                             <span className={`grid size-6 place-items-center rounded-md text-[11px] font-bold ${c.trades.length ? "bg-[#050505] text-[#f1f1f1]" : "text-[#8a8a8a]"}`}>{c.day}</span>
-                            {c.trades.length > 0 ? (
-                            <span className="rounded-md bg-[#050505] px-1.5 py-0.5 text-[10px] font-medium text-[#8a8a8a]">
-                                {c.trades.length}
-                              </span>
-                            ) : null}
+                            {c.trades.length > 0 ? <span className="font-mono text-[10px] text-zinc-500">{c.trades.length}T</span> : null}
                           </div>
                           {c.trades.length > 0 ? (
-                            <>
-                              <p className={`mt-4 font-mono text-sm font-black ${c.pnl >= 0 ? "text-emerald-400" : "text-rose-400"}`}>
-                                {c.pnl >= 0 ? "+" : ""}{cash.format(c.pnl)}
-                              </p>
-                              <div className="mt-4 flex items-center justify-between text-[10px]">
-                                <span className="font-semibold uppercase tracking-[0.18em] text-zinc-500">Closed day</span>
-                                <span className="text-zinc-400">{c.trades.length} trade{c.trades.length > 1 ? "s" : ""}</span>
-                              </div>
-                            </>
-                          ) : (
-                            <p className="mt-8 text-center text-[10px] text-zinc-800">—</p>
-                          )}
+                            <p className={`mt-5 truncate font-mono text-sm font-black ${c.pnl >= 0 ? "text-emerald-400" : "text-rose-400"}`}>
+                              {c.pnl >= 0 ? "+" : ""}{cash.format(c.pnl)}
+                            </p>
+                          ) : null}
                         </button>
                       ) : (
                         <div key={`${monthId(month)}-desktop-empty-${i}`} className="h-full rounded-[1rem] border border-transparent" />
@@ -1101,7 +1088,7 @@ function Workspace(p: {
                         <span className={`grid size-10 shrink-0 place-items-center rounded-xl border font-mono text-sm font-black ${day.pnl >= 0 ? "border-emerald-400/15 bg-emerald-400/8 text-emerald-300" : "border-rose-400/15 bg-rose-400/8 text-rose-300"}`}>{day.day}</span>
                         <span className="min-w-0 flex-1">
                           <span className="block text-sm font-semibold text-white">{new Date(month.getFullYear(), month.getMonth(), day.day).toLocaleDateString("en-US", { weekday: "long" })}</span>
-                          <span className="mt-0.5 block text-[11px] text-zinc-500">{day.trades.length} trade{day.trades.length === 1 ? "" : "s"} closed</span>
+                          <span className="mt-0.5 block text-[11px] text-zinc-500">{day.trades.length} trade{day.trades.length === 1 ? "" : "s"}</span>
                         </span>
                         <strong className={`shrink-0 font-mono text-sm ${day.pnl >= 0 ? "text-emerald-300" : "text-rose-300"}`}>{formatTradePnl(day.pnl)}</strong>
                         <ChevronRight size={15} className="shrink-0 text-zinc-700" />
