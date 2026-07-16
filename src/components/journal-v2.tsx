@@ -68,7 +68,6 @@ const TradesArchive = dynamic(
   { loading: () => <Skeleton className="h-[520px] w-full rounded-xl bg-white/[.055]" /> },
 );
 const cash = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 2 });
-const WEEKDAYS_SHORT = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 const WEEKDAYS_FULL = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
 const WORKSPACE_TABS = [["home", "Home"], ["overview", "Dashboard"], ["calendar", "Calendar"], ["trades", "Trades"], ["bible", "Bible"], ["analytics", "Analytics"], ["settings", "Settings"]] as const;
 export type WorkspaceTab = typeof WORKSPACE_TABS[number][0];
@@ -1007,33 +1006,37 @@ function Workspace(p: {
             <div className="space-y-3">
               <div className="grid grid-cols-2 gap-2 sm:gap-3 xl:grid-cols-4">
                 {[
-                  { label: "Total trades", value: String(monthCount), note: `${calendar.filter((day) => day?.trades.length).length} active days` },
-                  { label: "Month P&L", value: formatTradePnl(stats.pnl), note: `${stats.wins} wins / ${stats.losses} losses` },
-                  { label: "Most traded setup", value: setups[0]?.name || "No setup yet", note: setups[0] ? `${setups[0].trades} trades` : "Add reviewed trades" },
-                  { label: "Plan alignment", value: `${planRate}%`, note: "Rules followed this month" },
+                  { label: "Trades", value: String(monthCount), note: `${calendar.filter((day) => day?.trades.length).length} active days`, icon: <CalendarDays size={15} />, tone: "text-sky-300 bg-sky-400/10" },
+                  { label: "Net P&L", value: formatTradePnl(stats.pnl), note: `${stats.wins} wins / ${stats.losses} losses`, icon: stats.pnl >= 0 ? <TrendingUp size={15} /> : <TrendingDown size={15} />, tone: stats.pnl >= 0 ? "text-emerald-300 bg-emerald-400/10" : "text-rose-300 bg-rose-400/10" },
+                  { label: "Top setup", value: setups[0]?.name || "No setup", note: setups[0] ? `${setups[0].trades} executions` : "Review trades to identify it", icon: <Target size={15} />, tone: "text-violet-300 bg-violet-400/10" },
+                  { label: "Plan score", value: `${planRate}%`, note: "Rules followed this month", icon: <ShieldCheck size={15} />, tone: planRate >= 80 ? "text-emerald-300 bg-emerald-400/10" : "text-amber-300 bg-amber-400/10" },
                 ].map((item) => (
                   <div key={item.label} className="min-w-0 rounded-[1rem] border border-white/8 bg-[#070707] p-3 sm:p-4">
-                    <p className="text-[11px] uppercase tracking-wider text-zinc-500">{item.label}</p>
-                    <p className="mt-1 truncate text-base font-black text-white sm:text-xl">{item.value}</p>
-                    <p className="mt-1 text-xs text-zinc-500">{item.note}</p>
+                    <div className="flex items-center justify-between gap-2">
+                      <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-zinc-500">{item.label}</p>
+                      <span className={`grid size-7 shrink-0 place-items-center rounded-lg ${item.tone}`}>{item.icon}</span>
+                    </div>
+                    <p className="mt-2 truncate font-mono text-base font-black text-white sm:text-xl">{item.value}</p>
+                    <p className="mt-1 truncate text-[11px] text-zinc-500 sm:text-xs">{item.note}</p>
                   </div>
                 ))}
               </div>
 
               <div className="overflow-hidden rounded-[1rem] border border-white/8 bg-[#070707]">
-                <div className="flex flex-col gap-3 border-b border-white/8 px-3 py-3 sm:px-4 sm:py-3.5 lg:flex-row lg:items-center">
-                  <div>
-                    <p className="text-[9px] font-medium uppercase tracking-[0.12em] text-zinc-600">
-                      {account.name} <span className="mx-1 text-zinc-700">&gt;</span> Calendar
-                    </p>
-                    <h3 className="text-[14px] font-black capitalize text-white">{month.toLocaleDateString("en-US", { month: "long", year: "numeric" })} performance</h3>
-                    <p className="text-[11px] text-[#8a8a8a]">Tap a day to open only the trades from that date.</p>
+                <div className="flex flex-col gap-3 border-b border-white/8 px-3 py-3 sm:px-4 sm:py-4 lg:flex-row lg:items-center">
+                  <div className="flex min-w-0 items-center gap-3">
+                    <span className="grid size-9 shrink-0 place-items-center rounded-xl border border-white/8 bg-white/[.035] text-zinc-300"><CalendarDays size={17} /></span>
+                    <div className="min-w-0">
+                      <p className="truncate text-[9px] font-medium uppercase tracking-[0.14em] text-zinc-600">{account.name} / Performance calendar</p>
+                      <h3 className="truncate text-[15px] font-black capitalize text-white">{month.toLocaleDateString("en-US", { month: "long", year: "numeric" })}</h3>
+                      <p className="hidden text-[11px] text-zinc-500 sm:block">Select a trading day to review its executions.</p>
+                    </div>
                   </div>
-                  <div className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-1 rounded-[0.95rem] border border-white/8 bg-[#050505] p-1 sm:flex sm:gap-2 lg:ml-auto">
-                    <Button variant="ghost" size="icon-sm" onClick={p.onPrev}><ChevronLeft size={16} /></Button>
-                    <strong className="min-w-0 text-center text-xs capitalize sm:min-w-32 sm:text-sm">{month.toLocaleDateString("en-US", { month: "short", year: "numeric" })}</strong>
-                    <Button variant="ghost" size="icon-sm" onClick={p.onNext}><ChevronRight size={16} /></Button>
-                    <Button variant="outline" size="sm" onClick={p.onToday} className="col-span-3 w-full border-white/8 bg-transparent text-xs hover:bg-[#101010] sm:w-auto">Current month</Button>
+                  <div className="grid grid-cols-[auto_minmax(0,1fr)_auto_auto] items-center gap-1 rounded-xl border border-white/8 bg-[#050505] p-1 lg:ml-auto">
+                    <Button aria-label="Previous month" variant="ghost" size="icon-sm" onClick={p.onPrev}><ChevronLeft size={16} /></Button>
+                    <strong className="min-w-0 px-2 text-center text-xs capitalize sm:min-w-28 sm:text-sm">{month.toLocaleDateString("en-US", { month: "short", year: "numeric" })}</strong>
+                    <Button aria-label="Next month" variant="ghost" size="icon-sm" onClick={p.onNext}><ChevronRight size={16} /></Button>
+                    <Button variant="outline" size="sm" onClick={p.onToday} className="border-white/8 bg-transparent px-2 text-[11px] hover:bg-[#101010] sm:px-3">Today</Button>
                   </div>
                 </div>
                 <div className="hidden p-4 md:block">
@@ -1048,9 +1051,11 @@ function Workspace(p: {
                         <button
                           key={`${monthId(month)}-desktop-${i}`}
                           type="button"
+                          aria-label={`${month.toLocaleDateString("en-US", { month: "long" })} ${c.day}: ${c.trades.length} trades, ${formatTradePnl(c.pnl)}`}
                           onClick={() => (c.trades.length ? setSelectedDay(c) : null)}
-                          className={`h-full w-full rounded-[1rem] border p-2.5 text-left transition ${c.trades.length ? c.pnl >= 0 ? "border-emerald-500/14 bg-[#08120d] hover:bg-[#0b1710]" : "border-rose-500/14 bg-[#14090c] hover:bg-[#180b0f]" : "border-white/6 bg-[#050505]"} ${c.trades.length ? "cursor-pointer" : "cursor-default"}`}
+                          className={`relative h-full w-full overflow-hidden rounded-[0.9rem] border p-2.5 text-left transition ${c.trades.length ? c.pnl >= 0 ? "border-emerald-500/16 bg-[#07110c] hover:border-emerald-400/30 hover:bg-[#0a1710]" : "border-rose-500/16 bg-[#12070a] hover:border-rose-400/30 hover:bg-[#180a0e]" : "border-white/6 bg-[#050505]"} ${c.trades.length ? "cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/25" : "cursor-default"}`}
                         >
+                          {c.trades.length ? <span className={`absolute inset-x-0 top-0 h-0.5 ${c.pnl >= 0 ? "bg-emerald-400/60" : "bg-rose-400/60"}`} /> : null}
                           <div className="flex items-start justify-between">
                             <span className={`grid size-6 place-items-center rounded-md text-[11px] font-bold ${c.trades.length ? "bg-[#050505] text-[#f1f1f1]" : "text-[#8a8a8a]"}`}>{c.day}</span>
                             {c.trades.length > 0 ? (
@@ -1070,7 +1075,7 @@ function Workspace(p: {
                               </div>
                             </>
                           ) : (
-                            <p className="mt-8 text-center text-[10px] text-[#333333]">No trades</p>
+                            <p className="mt-8 text-center text-[10px] text-zinc-800">—</p>
                           )}
                         </button>
                       ) : (
@@ -1081,31 +1086,28 @@ function Workspace(p: {
                 </div>
 
                 <div className="p-2.5 md:hidden">
-                  <div className="grid grid-cols-7 gap-1 mb-1">
-                    {WEEKDAYS_SHORT.map((d) => (
-                      <div key={d} className="py-1 text-center text-[10px] font-semibold text-[#8a8a8a]">{d}</div>
-                    ))}
+                  <div className="mb-2 flex items-center justify-between px-1">
+                    <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-zinc-500">Trading days</p>
+                    <span className="text-[10px] text-zinc-600">{calendar.filter((day) => day?.trades.length).length} active</span>
                   </div>
-                  <div className="grid grid-cols-7 gap-1">
-                    {calendar.map((c, i) =>
-                      c ? (
-                        <button
-                          key={`${monthId(month)}-mobile-${i}`}
-                          type="button"
-                          onClick={() => (c.trades.length ? setSelectedDay(c) : null)}
-                          className={`flex min-h-[62px] flex-col items-center justify-center rounded-[0.95rem] border p-1.5 text-center ${c.trades.length ? c.pnl >= 0 ? "border-emerald-500/18 bg-[#08120d]" : "border-rose-500/18 bg-[#14090c]" : "border-white/6 bg-[#101010]"} ${c.trades.length ? "cursor-pointer" : "cursor-default"}`}
-                        >
-                          <span className={`text-[11px] font-bold ${c.trades.length ? "text-[#f1f1f1]" : "text-[#8a8a8a]"}`}>{c.day}</span>
-                          {c.trades.length > 0 ? (
-                            <span className={`mt-0.5 text-[9px] font-black ${c.pnl >= 0 ? "text-emerald-400" : "text-rose-400"}`}>
-                              {c.pnl >= 0 ? "+" : ""}{Math.abs(c.pnl) >= 1000 ? `${(c.pnl / 1000).toFixed(1)}k` : c.pnl.toFixed(0)}
-                            </span>
-                          ) : null}
-                        </button>
-                      ) : (
-                        <div key={`${monthId(month)}-mobile-empty-${i}`} />
-                      ),
-                    )}
+                  <div className="space-y-1.5">
+                    {calendar.filter((day): day is NonNullable<typeof day> => Boolean(day?.trades.length)).map((day) => (
+                      <button
+                        key={`${monthId(month)}-mobile-${day.day}`}
+                        type="button"
+                        onClick={() => setSelectedDay(day)}
+                        className="flex w-full items-center gap-3 rounded-xl border border-white/8 bg-[#050505] px-3 py-3 text-left transition hover:bg-[#0d0d0d] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/25"
+                      >
+                        <span className={`grid size-10 shrink-0 place-items-center rounded-xl border font-mono text-sm font-black ${day.pnl >= 0 ? "border-emerald-400/15 bg-emerald-400/8 text-emerald-300" : "border-rose-400/15 bg-rose-400/8 text-rose-300"}`}>{day.day}</span>
+                        <span className="min-w-0 flex-1">
+                          <span className="block text-sm font-semibold text-white">{new Date(month.getFullYear(), month.getMonth(), day.day).toLocaleDateString("en-US", { weekday: "long" })}</span>
+                          <span className="mt-0.5 block text-[11px] text-zinc-500">{day.trades.length} trade{day.trades.length === 1 ? "" : "s"} closed</span>
+                        </span>
+                        <strong className={`shrink-0 font-mono text-sm ${day.pnl >= 0 ? "text-emerald-300" : "text-rose-300"}`}>{formatTradePnl(day.pnl)}</strong>
+                        <ChevronRight size={15} className="shrink-0 text-zinc-700" />
+                      </button>
+                    ))}
+                    {!calendar.some((day) => day?.trades.length) ? <div className="grid min-h-32 place-items-center rounded-xl border border-dashed border-white/8 text-center text-sm text-zinc-600">No trading days this month.</div> : null}
                   </div>
                 </div>
               </div>
