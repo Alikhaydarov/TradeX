@@ -54,6 +54,11 @@ where p.id = paid.user_id
 
 -- Admin listings use the current paid subscription as a fallback as well, so
 -- a webhook/profile write race cannot mislabel a paid user as Free.
+-- The earlier function returned only identity fields. PostgreSQL cannot change
+-- a function's TABLE return signature with CREATE OR REPLACE, so remove that
+-- legacy signature before installing the canonical admin contract.
+drop function if exists public.admin_list_users();
+
 create or replace function public.admin_list_users()
 returns table (
   id uuid,
