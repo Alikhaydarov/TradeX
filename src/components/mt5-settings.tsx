@@ -1,8 +1,10 @@
 "use client";
 
-import { CheckCircle2, KeyRound, LoaderCircle, RefreshCw, Server, Unplug, UserRound } from "lucide-react";
+import { CheckCircle2, KeyRound, RefreshCw, Server, Unplug, UserRound } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { apiRequest } from "@/lib/api-client";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "./ui/alert-dialog";
+import { Spinner } from "./ui/spinner";
 import type { PropAccount } from "./types";
 
 type Connection = {
@@ -35,6 +37,7 @@ export function Mt5Settings({ account, onSynced }: { account: PropAccount; onSyn
   const [busy, setBusy] = useState<"save" | "disconnect" | "sync" | null>(null);
   const [message, setMessage] = useState("");
   const [isVerified, setIsVerified] = useState<boolean | null>(null);
+  const [disconnectOpen, setDisconnectOpen] = useState(false);
 
   const loadConnection = useCallback(async () => {
     const { connection: c, isVerified: v, bridgeConfigured: m, connectorStatus: status } = await apiRequest<{
@@ -63,10 +66,15 @@ export function Mt5Settings({ account, onSynced }: { account: PropAccount; onSyn
 
   useEffect(() => {
     if (!connection) return undefined;
-    const id = window.setInterval(() => {
-      void Promise.all([onSynced(), loadConnection()]);
-    }, 5_000);
-    return () => window.clearInterval(id);
+    const refresh = () => {
+      if (document.visibilityState === "visible") void Promise.all([onSynced(), loadConnection()]);
+    };
+    const id = window.setInterval(refresh, 30_000);
+    document.addEventListener("visibilitychange", refresh);
+    return () => {
+      window.clearInterval(id);
+      document.removeEventListener("visibilitychange", refresh);
+    };
   }, [connection, onSynced, loadConnection]);
 
   const save = async () => {
@@ -93,7 +101,6 @@ export function Mt5Settings({ account, onSynced }: { account: PropAccount; onSyn
   };
 
   const disconnect = async () => {
-    if (!window.confirm("MT5 ulanishini o'chirasizmi?")) return;
     setBusy("disconnect");
     setMessage("");
     try {
@@ -102,6 +109,7 @@ export function Mt5Settings({ account, onSynced }: { account: PropAccount; onSyn
       setLogin("");
       setPassword("");
       setServer("");
+      setDisconnectOpen(false);
       setMessage("MT5 ajratildi.");
     } catch (e) {
       setMessage(e instanceof Error ? e.message : "Xato.");
@@ -172,7 +180,7 @@ export function Mt5Settings({ account, onSynced }: { account: PropAccount; onSyn
         <p className="mt-2 text-[11px] leading-5 text-zinc-500">
           {connectorStatus?.reachable
             ? "TradeWay VPS worker is reachable. Auto sync should continue without manually pressing Start."
-            : (connectorStatus?.error || "Worker status is unavailable right now.")}
+            : "Connector service is unavailable right now. Try again later or contact support."}
         </p>
       </div>
 
@@ -200,7 +208,7 @@ export function Mt5Settings({ account, onSynced }: { account: PropAccount; onSyn
                 <span className="inline-flex items-center gap-1 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-2 py-0.5 text-[10px] font-bold text-emerald-300">
                   <CheckCircle2 size={10} /> Auto-sync
                 </span>
-                <span className="rounded-full border border-white/10 bg-white/[.03] px-2 py-0.5 text-[10px] font-semibold text-zinc-500">~5s check</span>
+                <span className="rounded-full border border-white/10 bg-white/[.03] px-2 py-0.5 text-[10px] font-semibold text-zinc-500">30s refresh</span>
                 <span className="rounded-full border border-white/10 bg-white/[.03] px-2 py-0.5 text-[10px] font-semibold text-zinc-500">periodic rescan</span>
                 {lastSync ? <span className="text-[10px] text-zinc-600">{lastSync}</span> : null}
               </div>
@@ -208,9 +216,9 @@ export function Mt5Settings({ account, onSynced }: { account: PropAccount; onSyn
               {connection.last_error && <p className="break-words text-[10px] text-rose-500">{connection.last_error}</p>}
             </div>
 
-            <button type="button" onClick={() => void disconnect()} disabled={!!busy}
+            <button type="button" aria-label="Disconnect MT5" onClick={() => setDisconnectOpen(true)} disabled={!!busy}
               className="grid size-9 shrink-0 place-items-center rounded-xl border border-[#2a2a2a] text-zinc-600 transition hover:border-rose-500/30 hover:text-rose-400 disabled:opacity-50">
-              {busy === "disconnect" ? <LoaderCircle size={13} className="animate-spin" /> : <Unplug size={13} />}
+              {busy === "disconnect" ? <Spinner className="size-3.5" /> : <Unplug size={13} />}
             </button>
           </div>
         </div>
@@ -226,16 +234,16 @@ export function Mt5Settings({ account, onSynced }: { account: PropAccount; onSyn
             <label className="flex items-center gap-1 text-[10px] font-semibold uppercase text-[#8a8a8a]">
               <UserRound size={10} /> Login
             </label>
-            <input value={login} onChange={e => setLogin(e.target.value.replace(/\D/g, ""))}
-              placeholder="12345678" inputMode="numeric"
+            <input value={login} onChange={e => setLogin(e.target.value.replace(/\D/g, "").slice(0, 20))}
+              placeholder="12345678" inputMode="numeric" autoComplete="off" spellCheck={false}
               className="h-10 w-full rounded-xl border border-[#2a2a2a] bg-[#0e0e0e] px-3 font-mono text-sm text-zinc-200 placeholder:text-zinc-700 outline-none focus:border-white/20" />
           </div>
           <div className="space-y-1">
             <label className="flex items-center gap-1 text-[10px] font-semibold uppercase text-[#8a8a8a]">
               <KeyRound size={10} /> Parol
             </label>
-            <input type="password" value={password} onChange={e => setPassword(e.target.value)}
-              placeholder="••••••••" autoComplete="new-password"
+            <input type="password" value={password} onChange={e => setPassword(e.target.value.slice(0, 128))}
+              placeholder="••••••••" autoComplete="new-password" spellCheck={false}
               className="h-10 w-full rounded-xl border border-[#2a2a2a] bg-[#0e0e0e] px-3 text-sm text-zinc-200 placeholder:text-zinc-700 outline-none focus:border-white/20" />
           </div>
         </div>
@@ -244,7 +252,7 @@ export function Mt5Settings({ account, onSynced }: { account: PropAccount; onSyn
           <label className="flex items-center gap-1 text-[10px] font-semibold uppercase text-[#8a8a8a]">
             <Server size={10} /> Broker Server
           </label>
-          <input value={server} onChange={e => setServer(e.target.value)}
+          <input value={server} onChange={e => setServer(e.target.value.slice(0, 120))} autoComplete="off" spellCheck={false}
             placeholder="Exness-MT5Trial, ICMarketsEU-Live04 ..."
             className="h-10 w-full rounded-xl border border-[#2a2a2a] bg-[#0e0e0e] px-3 text-sm text-zinc-200 placeholder:text-zinc-700 outline-none focus:border-white/20" />
           <p className="text-[10px] text-zinc-700">MT5 → Tools → Options → Server</p>
@@ -252,13 +260,13 @@ export function Mt5Settings({ account, onSynced }: { account: PropAccount; onSyn
 
         <button type="button" onClick={() => void save()} disabled={!!busy}
           className="flex h-10 w-full items-center justify-center gap-2 rounded-xl bg-white text-xs font-bold text-black transition hover:bg-zinc-200 disabled:opacity-50">
-            {busy === "save" ? <LoaderCircle size={13} className="animate-spin" /> : <KeyRound size={13} />}
+            {busy === "save" ? <Spinner className="size-3.5" /> : <KeyRound size={13} />}
           {connection ? "Ma'lumotlarni yangilash" : "MT5 ulash va auto-sync yoqish"}
         </button>
         {connection ? (
           <button type="button" onClick={() => void syncMissingTrades()} disabled={!!busy}
             className="flex h-10 w-full items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/[.035] text-xs font-bold text-zinc-100 transition hover:bg-white/[.06] disabled:opacity-50">
-            {busy === "sync" ? <LoaderCircle size={13} className="animate-spin" /> : <RefreshCw size={13} />}
+            {busy === "sync" ? <Spinner className="size-3.5" /> : <RefreshCw size={13} />}
             Sync missing closed trades
           </button>
         ) : null}
@@ -268,7 +276,7 @@ export function Mt5Settings({ account, onSynced }: { account: PropAccount; onSyn
         <div className="rounded-2xl border border-amber-500/15 bg-amber-500/5 px-3 py-3 sm:px-4">
           <p className="text-xs font-semibold text-amber-400">MT5 worker is not configured</p>
           <p className="mt-1 break-words text-[11px] leading-5 text-amber-600">
-            Credentials are saved, but live history import needs <code className="rounded bg-black/30 px-1">MT5_API_URL</code> or legacy bridge env values.
+            Live import is temporarily unavailable. Your credentials stay saved; contact support if the status does not recover.
           </p>
         </div>
       )}
@@ -286,6 +294,19 @@ export function Mt5Settings({ account, onSynced }: { account: PropAccount; onSyn
           Auto-sync verified akaunts uchun mavjud.
         </p>
       )}
+
+      <AlertDialog open={disconnectOpen} onOpenChange={setDisconnectOpen}>
+        <AlertDialogContent className="border-white/10 bg-[#080808]">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-white">Disconnect MT5?</AlertDialogTitle>
+            <AlertDialogDescription>This stops automatic imports for this account. Existing journal trades will not be deleted.</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction className="bg-rose-600 text-white hover:bg-rose-500" onClick={() => void disconnect()}>Disconnect</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

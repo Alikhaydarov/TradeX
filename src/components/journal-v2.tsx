@@ -1006,16 +1006,16 @@ function Workspace(p: {
           {!singleTabMode || activeTab === "calendar" ? (
           <TabsContent value="calendar">
             <div className="space-y-3">
-              <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+              <div className="grid grid-cols-2 gap-2 sm:gap-3 xl:grid-cols-4">
                 {[
                   { label: "Total trades", value: String(monthCount), note: `${calendar.filter((day) => day?.trades.length).length} active days` },
                   { label: "Month P&L", value: formatTradePnl(stats.pnl), note: `${stats.wins} wins / ${stats.losses} losses` },
                   { label: "Most traded setup", value: setups[0]?.name || "No setup yet", note: setups[0] ? `${setups[0].trades} trades` : "Add reviewed trades" },
                   { label: "Plan alignment", value: `${planRate}%`, note: "Rules followed this month" },
                 ].map((item) => (
-                  <div key={item.label} className="rounded-[1rem] border border-white/8 bg-[#070707] p-4">
+                  <div key={item.label} className="min-w-0 rounded-[1rem] border border-white/8 bg-[#070707] p-3 sm:p-4">
                     <p className="text-[11px] uppercase tracking-wider text-zinc-500">{item.label}</p>
-                    <p className="mt-1 truncate text-xl font-black text-white">{item.value}</p>
+                    <p className="mt-1 truncate text-base font-black text-white sm:text-xl">{item.value}</p>
                     <p className="mt-1 text-xs text-zinc-500">{item.note}</p>
                   </div>
                 ))}
@@ -1197,17 +1197,17 @@ function Workspace(p: {
           {/* Analytics */}
           {!singleTabMode || activeTab === "analytics" ? (
           <TabsContent value="analytics" className="space-y-3">
-            <div className="flex flex-wrap items-center gap-2 rounded-[0.95rem] border border-white/8 bg-[#050505] p-1">
+            <div className="grid grid-cols-3 items-center gap-1 rounded-[0.95rem] border border-white/8 bg-[#050505] p-1 sm:flex sm:flex-wrap sm:gap-2">
               {[
                 ["overview", "Overview"],
                 ["strategy", "Strategy"],
                 ["symbols", "Symbols"],
               ].map(([value, label]) => (
-                <button key={value} type="button" onClick={() => setAnalyticsView(value as "overview" | "strategy" | "symbols")} className={`rounded-[0.8rem] px-3 py-1.5 text-xs font-semibold transition ${analyticsView === value ? "bg-white text-black" : "bg-transparent text-zinc-500 hover:bg-[#0d0d0d] hover:text-white"}`}>
+                <button key={value} type="button" onClick={() => setAnalyticsView(value as "overview" | "strategy" | "symbols")} className={`min-w-0 rounded-[0.8rem] px-2 py-2 text-xs font-semibold transition sm:px-3 sm:py-1.5 ${analyticsView === value ? "bg-white text-black" : "bg-transparent text-zinc-500 hover:bg-[#0d0d0d] hover:text-white"}`}>
                   {label}
                 </button>
               ))}
-              <div className="ml-auto rounded-[0.8rem] bg-[#0d0d0d] px-3 py-1.5 text-xs font-semibold text-white">All time</div>
+              <div className="col-span-3 rounded-[0.8rem] bg-[#0d0d0d] px-3 py-1.5 text-center text-xs font-semibold text-white sm:col-span-1 sm:ml-auto">All time</div>
             </div>
 
             {analyticsView === "overview" ? (
@@ -1220,7 +1220,7 @@ function Workspace(p: {
                     <h3 className="text-[14px] font-black text-white">Account Balance</h3>
                     <p className="mt-1 text-xs text-zinc-500">{month.toLocaleDateString("en-US", { month: "short", day: "numeric" })} - {new Date().toLocaleDateString("en-US", { month: "short", day: "numeric" })}</p>
                   </div>
-                  <div className="h-[260px] p-4">
+                  <div className="h-[240px] p-2 sm:h-[260px] sm:p-4">
                     {equity.length > 1 ? (
                       <ResponsiveContainer width="100%" height="100%">
                         <AreaChart data={equity} margin={{ left: 8, right: 8, top: 16, bottom: 4 }}>
@@ -1232,7 +1232,7 @@ function Workspace(p: {
                           </defs>
                           <CartesianGrid stroke="rgba(255,255,255,.07)" vertical={false} />
                           <XAxis dataKey="trade" axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: "#707b91" }} />
-                          <YAxis width={72} axisLine={false} tickLine={false} tickFormatter={(value) => `$${Number(value / 1000).toFixed(1)}K`} tick={{ fontSize: 11, fill: "#707b91" }} />
+                          <YAxis width={54} axisLine={false} tickLine={false} tickFormatter={(value) => `$${Number(value / 1000).toFixed(1)}K`} tick={{ fontSize: 10, fill: "#707b91" }} />
                           <Tooltip formatter={v => cash.format(Number(v))} labelFormatter={(_, payload) => payload?.[0]?.payload?.label ?? "Balance"} contentStyle={{ background: "#171717", border: "1px solid #333333", borderRadius: 12, color: "#f1f1f1" }} />
                           <Area type="monotone" dataKey="equity" stroke="#22c55e" fill="url(#analyticsBalanceFill)" strokeWidth={3} dot={false} />
                         </AreaChart>

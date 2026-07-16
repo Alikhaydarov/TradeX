@@ -1,60 +1,59 @@
 "use client";
 
-import Link from "next/link";
+import Dialog from "@mui/material/Dialog";
+import Switch from "@mui/material/Switch";
+import Tab from "@mui/material/Tab";
+import Tabs from "@mui/material/Tabs";
+import useMediaQuery from "@mui/material/useMediaQuery";
+import { useTheme } from "@mui/material/styles";
 import {
-  AlertTriangle,
   Check,
   CreditCard,
   ExternalLink,
-  Link2,
-  LoaderCircle,
+  LockKeyhole,
   PaintbrushVertical,
-  PencilLine,
   Plus,
-  Shield,
+  ShieldCheck,
   Sparkles,
-  Trash2,
   UserRound,
+  X,
 } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { apiRequest } from "@/lib/api-client";
 import { useLanguage, type Locale } from "@/lib/i18n";
-import { validateUsername } from "@/lib/username";
-import { usePremiumStatus } from "./use-premium-status";
-import { useWorkspacePreferences } from "./workspace-preferences-context";
+import { USERNAME_MAX_LENGTH, validateUsername } from "@/lib/username";
 import { useAuth } from "./auth-context";
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "./ui/alert-dialog";
 import { Button } from "./ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog";
+import { Dialog as SmallDialog, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog";
 import { Input } from "./ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
 import { Separator } from "./ui/separator";
+import { Spinner } from "./ui/spinner";
 import { TraderAvatar } from "./trader-avatar";
+import { usePremiumStatus } from "./use-premium-status";
+import { useWorkspacePreferences } from "./workspace-preferences-context";
+import { MaterialProvider } from "./material-provider";
 
-type SettingsSection = "basic" | "security" | "billing" | "affiliate" | "customization" | "symbols";
+type SettingsSection = "basic" | "security" | "billing" | "customization" | "symbols";
 
 type ProfileResponse = {
   profile: {
     full_name: string;
     username: string;
     avatar_url: string | null;
-    bio?: string | null;
-    trading_style?: string | null;
-    location?: string | null;
   };
 };
 
 const SECTIONS: Array<{ id: SettingsSection; label: string; icon: typeof UserRound }> = [
-  { id: "basic", label: "Basic Info", icon: UserRound },
-  { id: "security", label: "Security", icon: Shield },
-  { id: "billing", label: "Subscription & Billing", icon: CreditCard },
-  { id: "affiliate", label: "Affiliate Program", icon: Link2 },
-  { id: "customization", label: "Customization", icon: PaintbrushVertical },
+  { id: "basic", label: "Profile", icon: UserRound },
+  { id: "security", label: "Security", icon: ShieldCheck },
+  { id: "billing", label: "Billing", icon: CreditCard },
+  { id: "customization", label: "Appearance", icon: PaintbrushVertical },
   { id: "symbols", label: "Symbols", icon: Sparkles },
 ];
 
 async function startCheckout(plan: "standard" | "pro") {
-  const response = await apiRequest<{ url?: string; error?: string }>("/api/stripe/checkout", {
+  const response = await apiRequest<{ url?: string }>("/api/stripe/checkout", {
     method: "POST",
     body: JSON.stringify({ plan }),
   });
@@ -62,13 +61,17 @@ async function startCheckout(plan: "standard" | "pro") {
 }
 
 async function openBillingPortal() {
-  const response = await apiRequest<{ url?: string; error?: string }>("/api/stripe/portal", {
-    method: "POST",
-  });
+  const response = await apiRequest<{ url?: string }>("/api/stripe/portal", { method: "POST" });
   if (response.url) window.location.assign(response.url);
 }
 
 export function UserSettingsDialog() {
+  return <MaterialProvider><SettingsContent /></MaterialProvider>;
+}
+
+function SettingsContent() {
+  const theme = useTheme();
+  const desktop = useMediaQuery(theme.breakpoints.up("md"), { noSsr: true });
   const { user } = useAuth();
   const { locale, setLocale } = useLanguage();
   const { status: premium } = usePremiumStatus(Boolean(user));
@@ -91,11 +94,6 @@ export function UserSettingsDialog() {
   const [email, setEmail] = useState("");
   const [fullName, setFullName] = useState("");
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
-  const [oldPassword, setOldPassword] = useState("");
-  const [newPassword, setNewPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [deletePassword, setDeletePassword] = useState("");
-  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [symbolModalOpen, setSymbolModalOpen] = useState(false);
   const [symbolDraft, setSymbolDraft] = useState("");
 
@@ -114,30 +112,19 @@ export function UserSettingsDialog() {
       .finally(() => setLoading(false));
   }, [settingsOpen, user]);
 
-  const referralLink = useMemo(
-    () => {
-      const origin = typeof window === "undefined" ? "" : window.location.origin;
-      return username ? `${origin}/pricing?ref=${username}` : `${origin}/pricing?ref=tradeway`;
-    },
-    [username],
-  );
-
   const saveProfile = async () => {
     const usernameCheck = validateUsername(username);
     if (!usernameCheck.valid) {
       setMessage(usernameCheck.error);
       return;
     }
+    const cleanUsername = usernameCheck.value;
     setSaving(true);
     setMessage("");
     try {
       await apiRequest<ProfileResponse>("/api/profile", {
         method: "PATCH",
-        body: JSON.stringify({
-          fullName: fullName.trim() || username.trim(),
-          username: username.trim(),
-          avatarUrl,
-        }),
+        body: JSON.stringify({ fullName: fullName.trim() || cleanUsername, username: cleanUsername, avatarUrl }),
       });
       setMessage("Profile updated.");
     } catch (error) {
@@ -147,389 +134,174 @@ export function UserSettingsDialog() {
     }
   };
 
-  const saveSecurity = async () => {
-    if (!newPassword || !confirmPassword) {
-      setMessage("Fill in the new password fields first.");
-      return;
-    }
-    if (newPassword !== confirmPassword) {
-      setMessage("New password and confirmation do not match.");
-      return;
-    }
-    setMessage("Password reset flow is not wired in-app yet. Hook Supabase password update here next.");
-  };
-
-  const languageItems: Array<{ value: Locale; label: string }> = [
-    { value: "en", label: "English" },
-    { value: "es", label: "Español" as never },
-  ];
+  const provider = String(user?.app_metadata?.provider || "email");
+  const customOnly = customSymbols.filter((item) => !["NAS100", "XAUUSD", "EURUSD", "GBPUSD", "US30", "GER30", "BTCUSD"].includes(item));
 
   return (
     <>
-      <Dialog open={settingsOpen} onOpenChange={setSettingsOpen}>
-        <DialogContent className="max-h-[92vh] overflow-hidden border-white/10 bg-[#050505] p-0 sm:max-w-[1040px]">
-          <DialogHeader className="border-b border-white/8 px-6 py-5">
-            <DialogTitle className="text-xl font-black text-white">Settings</DialogTitle>
-            <p className="text-sm text-zinc-500">Manage your profile info, preferences, customization and billing.</p>
-          </DialogHeader>
+      <Dialog
+        open={settingsOpen}
+        onClose={() => setSettingsOpen(false)}
+        fullScreen={!desktop}
+        fullWidth
+        maxWidth="lg"
+        sx={{ zIndex: 2147483000 }}
+        slotProps={{
+          paper: {
+            sx: {
+              height: { xs: "100dvh", md: "min(820px, 92dvh)" },
+              maxHeight: { xs: "100dvh", md: "92dvh" },
+              border: "1px solid rgba(255,255,255,.1)",
+              borderRadius: { xs: 0, md: "24px" },
+              overflow: "hidden",
+              backgroundColor: "#050505",
+            },
+          },
+        }}
+      >
+        <header className="flex shrink-0 items-start justify-between gap-4 border-b border-white/8 px-4 py-4 sm:px-6 sm:py-5">
+          <div>
+            <h2 className="text-lg font-black text-white sm:text-xl">Settings</h2>
+            <p className="mt-1 text-xs text-zinc-500 sm:text-sm">Profile, security and workspace preferences.</p>
+          </div>
+          <button type="button" aria-label="Close settings" onClick={() => setSettingsOpen(false)} className="grid size-10 shrink-0 place-items-center rounded-xl border border-white/10 text-zinc-400 transition hover:bg-white/5 hover:text-white">
+            <X size={18} />
+          </button>
+        </header>
 
-          <div className="grid max-h-[calc(92vh-88px)] min-h-[640px] grid-cols-1 overflow-hidden md:grid-cols-[260px_minmax(0,1fr)]">
-            <aside className="border-b border-white/8 bg-black md:border-b-0 md:border-r">
-              <div className="p-4">
-                {SECTIONS.map((item) => {
-                  const selected = item.id === section;
-                  const Icon = item.icon;
-                  return (
-                    <button
-                      key={item.id}
-                      type="button"
-                      onClick={() => setSection(item.id)}
-                      className={`mb-1 flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm transition ${
-                        selected ? "bg-white/[.08] text-white" : "text-zinc-400 hover:bg-white/[.04] hover:text-white"
-                      }`}
-                    >
-                      <Icon size={16} />
-                      <span className="font-semibold">{item.label}</span>
-                    </button>
-                  );
-                })}
-              </div>
-            </aside>
+        <div className="flex min-h-0 flex-1 flex-col overflow-hidden md:grid md:grid-cols-[230px_minmax(0,1fr)]">
+          <nav aria-label="Settings sections" className="shrink-0 border-b border-white/8 bg-black p-2 md:border-b-0 md:border-r md:p-4">
+            <Tabs
+              value={section}
+              onChange={(_, value: SettingsSection) => { setSection(value); setMessage(""); }}
+              orientation={desktop ? "vertical" : "horizontal"}
+              variant="scrollable"
+              scrollButtons="auto"
+              allowScrollButtonsMobile
+              aria-label="Settings sections"
+              sx={{ minHeight: 44, "& .MuiTabs-flexContainer": { gap: { xs: 0.5, md: 0.75 } }, "& .MuiTab-root": { minWidth: { xs: "auto", md: "100%" }, px: { xs: 1.5, md: 2 } } }}
+            >
+              {SECTIONS.map(({ id, label, icon: Icon }) => (
+                <Tab key={id} value={id} label={<span className="flex items-center gap-2 whitespace-nowrap"><Icon size={16} />{label}</span>} />
+              ))}
+            </Tabs>
+          </nav>
 
-            <div className="overflow-y-auto p-6">
-              {loading ? (
-                <div className="grid min-h-[420px] place-items-center text-zinc-500">
-                  <div className="flex items-center gap-3">
-                    <LoaderCircle className="animate-spin" size={18} />
-                    Loading settings
-                  </div>
+          <main className="min-h-0 overflow-y-auto overscroll-contain p-3 pb-[max(1rem,env(safe-area-inset-bottom))] sm:p-6">
+            {loading ? (
+              <div className="grid min-h-[50dvh] place-items-center text-sm text-zinc-500"><span className="flex items-center gap-2"><Spinner className="size-4" /> Loading settings</span></div>
+            ) : null}
+
+            {!loading && section === "basic" ? (
+              <Panel title="Profile" description="Public identity shown across TradeWay.">
+                <div className="flex flex-col gap-4 rounded-2xl border border-white/8 bg-[#090909] p-4 sm:flex-row sm:items-center">
+                  <TraderAvatar name={fullName || username || "Trader"} value={avatarUrl} className="size-14 text-lg" />
+                  <div className="min-w-0"><p className="truncate font-black text-white">{username || "username"}</p><p className="truncate text-sm text-zinc-500">{email}</p></div>
                 </div>
-              ) : null}
-
-              {!loading && section === "basic" ? (
-                <div className="space-y-6">
-                  <Panel title="Profile" description="Update username and keep your public identity clean.">
-                    <div className="flex flex-col gap-4 rounded-2xl border border-white/8 bg-[#090909] p-4 sm:flex-row sm:items-center sm:justify-between">
-                      <div className="flex items-center gap-4">
-                        <TraderAvatar name={fullName || username || "Trader"} value={avatarUrl} className="size-16 text-lg" />
-                        <div>
-                          <p className="text-lg font-black text-white">{username || "username"}</p>
-                          <p className="text-sm text-zinc-500">{email || "email@example.com"}</p>
-                        </div>
-                      </div>
-                      <Button type="button" variant="outline" className="border-white/10 bg-black text-white hover:bg-[#111111]" onClick={saveProfile}>
-                        <PencilLine size={15} />
-                        Edit Profile
-                      </Button>
-                    </div>
-
-                    <div className="grid gap-4 md:grid-cols-2">
-                      <Field label="Username">
-                        <Input value={username} onChange={(event) => setUsername(event.target.value)} aria-invalid={!validateUsername(username).valid} />
-                        <p className={`mt-1 text-xs ${validateUsername(username).valid ? "text-zinc-500" : "text-rose-300"}`}>{validateUsername(username).valid ? "3-24 lowercase letters, numbers, or underscores." : validateUsername(username).error}</p>
-                      </Field>
-                      <Field label="Email">
-                        <Input value={email} readOnly className="text-zinc-500" />
-                      </Field>
-                    </div>
-
-                    <div className="flex items-center gap-3">
-                      <Button type="button" className="bg-white text-black hover:bg-zinc-200" disabled={saving || !validateUsername(username).valid} onClick={saveProfile}>
-                        {saving ? <LoaderCircle className="animate-spin" size={15} /> : <Check size={15} />}
-                        Save
-                      </Button>
-                      {message ? <p className="text-sm text-zinc-500">{message}</p> : null}
-                    </div>
-                  </Panel>
-
-                  <Panel title="Delete Account" description="This action should require confirmation every single time.">
-                    <Field label="Password">
-                      <Input type="password" value={deletePassword} onChange={(event) => setDeletePassword(event.target.value)} placeholder="Enter your password" />
-                    </Field>
-                    <Button type="button" className="bg-rose-600 text-white hover:bg-rose-500" onClick={() => setDeleteConfirmOpen(true)}>
-                      <Trash2 size={15} />
-                      Delete Account
-                    </Button>
-                  </Panel>
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <Field label="Display name"><Input value={fullName} maxLength={60} onChange={(event) => setFullName(event.target.value)} /></Field>
+                  <Field label="Username">
+                    <Input value={username} maxLength={USERNAME_MAX_LENGTH} autoCapitalize="none" spellCheck={false} aria-invalid={!validateUsername(username).valid} onChange={(event) => setUsername(event.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ""))} />
+                    <p className={`text-xs ${validateUsername(username).valid ? "text-zinc-500" : "text-rose-300"}`}>{validateUsername(username).valid ? "Lowercase letters, numbers and underscores." : validateUsername(username).error}</p>
+                  </Field>
+                  <Field label="Email"><Input value={email} readOnly className="text-zinc-500" /></Field>
                 </div>
-              ) : null}
-
-              {!loading && section === "security" ? (
-                <Panel title="Security" description="Validate password confirmation before anything else.">
-                  <div className="grid gap-4 md:grid-cols-2">
-                    <Field label="Old Password">
-                      <Input type="password" value={oldPassword} onChange={(event) => setOldPassword(event.target.value)} />
-                    </Field>
-                    <Field label="New Password">
-                      <Input type="password" value={newPassword} onChange={(event) => setNewPassword(event.target.value)} />
-                    </Field>
-                    <Field label="Confirm Password">
-                      <Input type="password" value={confirmPassword} onChange={(event) => setConfirmPassword(event.target.value)} />
-                    </Field>
-                  </div>
-                  <button type="button" className="text-sm font-semibold text-zinc-400 underline underline-offset-4">
-                    Reset Password
-                  </button>
-                  <div className="flex items-center gap-3">
-                    <Button type="button" className="bg-white text-black hover:bg-zinc-200" onClick={saveSecurity}>
-                      Save
-                    </Button>
-                    {message ? <p className="text-sm text-zinc-500">{message}</p> : null}
-                  </div>
-                </Panel>
-              ) : null}
-
-              {!loading && section === "billing" ? (
-                <div className="space-y-6">
-                  <Panel title="Subscription & Billing" description="Choose the workspace level that matches your trading routine.">
-                    <div className="flex items-center justify-between gap-3 rounded-2xl border border-white/8 bg-[#090909] p-1">
-                      <button type="button" className="flex-1 rounded-xl bg-white text-sm font-black text-black px-4 py-2">Monthly</button>
-                      <button type="button" className="flex-1 rounded-xl px-4 py-2 text-sm font-semibold text-zinc-400">Yearly</button>
-                    </div>
-                    <div className="grid gap-4 lg:grid-cols-3">
-                      <PlanCard title="Free" price="$0/mo" description="Profile, feed, manual journal and one account." buttonLabel={premium.plan === "free" ? "Current plan" : "Free plan"} disabled={premium.plan === "free"} />
-                      <PlanCard title="Standard" price="$15/mo" description="Verified badge, AI trade analysis and MT5 Auto Sync." buttonLabel={premium.plan === "standard" ? "Current plan" : "Upgrade Standard"} disabled={premium.plan === "standard"} onClick={() => void startCheckout("standard")} />
-                      <PlanCard title="Pro" price="$25/mo" description="Everything in Standard plus priority sync and advanced coaching." buttonLabel={premium.plan === "pro" ? "Current plan" : "Upgrade Pro"} disabled={premium.plan === "pro"} onClick={() => void startCheckout("pro")} />
-                    </div>
-                    <RowAction label="Payment Method" description="Manage your saved card and billing details." action="Manage" onClick={() => void openBillingPortal()} />
-                    <RowAction label="Billing History" description="Open Stripe billing portal for invoices and receipts." action="Manage" onClick={() => void openBillingPortal()} />
-                    <button type="button" className="inline-flex items-center gap-2 text-sm font-semibold text-zinc-400 underline underline-offset-4">
-                      See full comparison
-                      <ExternalLink size={14} />
-                    </button>
-                  </Panel>
-                </div>
-              ) : null}
-
-              {!loading && section === "affiliate" ? (
-                <Panel title="Affiliate Program" description="Share your link and earn 30% of every sale.">
-                  <div className="rounded-2xl border border-white/8 bg-[#090909] p-4">
-                    <p className="text-sm text-zinc-300">Unique referral link</p>
-                    <div className="mt-3 flex flex-col gap-3 sm:flex-row">
-                      <Input value={referralLink} readOnly />
-                      <Button type="button" variant="outline" className="border-white/10 bg-black text-white hover:bg-[#111111]">
-                        Copy
-                      </Button>
-                    </div>
-                  </div>
-                  <ol className="space-y-2 text-sm text-zinc-400">
-                    <li>1. Join the program.</li>
-                    <li>2. Share your unique link.</li>
-                    <li>3. Earn 30% recurring commission on successful premium sales.</li>
-                  </ol>
-                  <Button type="button" variant="outline" className="border-white/10 bg-black text-white hover:bg-[#111111]" disabled>
-                    Join the program
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+                  <Button type="button" className="bg-white text-black hover:bg-zinc-200" disabled={saving || !validateUsername(username).valid} onClick={() => void saveProfile()}>
+                    {saving ? <Spinner className="size-4" /> : <Check size={15} />} Save changes
                   </Button>
-                  <Link href="/pricing" className="inline-flex items-center gap-2 text-sm font-semibold text-zinc-400 underline underline-offset-4">
-                    Terms of Service
-                    <ExternalLink size={14} />
-                  </Link>
-                </Panel>
-              ) : null}
+                  {message ? <StatusMessage>{message}</StatusMessage> : null}
+                </div>
+              </Panel>
+            ) : null}
 
-              {!loading && section === "customization" ? (
-                <Panel title="Customization" description="Keep the workspace clean for streams, screenshots and focus.">
-                  <div className="flex items-center justify-between rounded-2xl border border-white/8 bg-[#090909] p-4">
-                    <div>
-                      <p className="font-semibold text-white">Hide Personal Info</p>
-                      <p className="text-sm text-zinc-500">Mask username and email inside the sidebar.</p>
-                    </div>
-                    <button
-                      type="button"
-                      aria-pressed={hidePersonalInfo}
-                      onClick={() => setHidePersonalInfo(!hidePersonalInfo)}
-                      className={`relative h-7 w-12 rounded-full transition ${hidePersonalInfo ? "bg-white" : "bg-zinc-800"}`}
-                    >
-                      <span className={`absolute top-1 size-5 rounded-full bg-black transition ${hidePersonalInfo ? "left-6" : "left-1"}`} />
-                    </button>
-                  </div>
+            {!loading && section === "security" ? (
+              <Panel title="Security & privacy" description="Review sign-in identity and hide sensitive workspace data.">
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <InfoCard icon={LockKeyhole} label="Sign-in method" value={provider === "google" ? "Google" : provider} />
+                  <InfoCard icon={ShieldCheck} label="Account email" value={email || "Not available"} />
+                </div>
+                <SettingRow title="Hide personal info" description="Masks your username, email and account identifiers during streams or screenshots.">
+                  <Switch checked={hidePersonalInfo} onChange={(_, checked) => setHidePersonalInfo(checked)} slotProps={{ input: { "aria-label": "Hide personal information" } }} />
+                </SettingRow>
+                <p className="rounded-2xl border border-sky-500/15 bg-sky-500/5 px-4 py-3 text-xs leading-5 text-sky-200/70">
+                  Password and provider security are managed by your verified sign-in provider. Unsupported in-app password and account deletion controls were removed to prevent misleading actions.
+                </p>
+              </Panel>
+            ) : null}
 
+            {!loading && section === "billing" ? (
+              <Panel title="Subscription & billing" description="Choose a plan or manage invoices through Stripe.">
+                <div className="grid gap-3 lg:grid-cols-3">
+                  <PlanCard title="Free" price="$0/mo" description="Profile, feed, manual journal and one account." buttonLabel={premium.plan === "free" ? "Current plan" : "Free plan"} disabled />
+                  <PlanCard title="Standard" price="$15/mo" description="Verified badge, AI analysis and MT5 Auto Sync." buttonLabel={premium.plan === "standard" ? "Current plan" : "Upgrade"} disabled={premium.plan === "standard"} onClick={() => void startCheckout("standard")} />
+                  <PlanCard title="Pro" price="$25/mo" description="Advanced coaching, priority sync and complete analytics." buttonLabel={premium.plan === "pro" ? "Current plan" : "Upgrade"} disabled={premium.plan === "pro"} onClick={() => void startCheckout("pro")} />
+                </div>
+                <RowAction label="Billing portal" description="Manage payment method, invoices and receipts." onClick={() => void openBillingPortal()} />
+              </Panel>
+            ) : null}
+
+            {!loading && section === "customization" ? (
+              <Panel title="Appearance" description="Tune the workspace for focus, screenshots and streaming.">
+                <SettingRow title="Hide personal info" description="Mask personal values throughout the workspace.">
+                  <Switch checked={hidePersonalInfo} onChange={(_, checked) => setHidePersonalInfo(checked)} slotProps={{ input: { "aria-label": "Hide personal information" } }} />
+                </SettingRow>
+                <div className="grid gap-4 sm:grid-cols-2">
                   <Field label="Language">
-                    <Select value={locale} onValueChange={(value) => setLocale(value as Locale)}>
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {languageItems.map((item) => (
-                          <SelectItem key={item.label} value={item.value}>
-                            {item.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                    <Select value={locale} onValueChange={(value) => setLocale(value as Locale)}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="en">English</SelectItem><SelectItem value="es">Español</SelectItem></SelectContent></Select>
                   </Field>
-
                   <Field label="Font">
-                    <Select value={fontFamily} onValueChange={setFontFamily}>
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="Inter">Inter</SelectItem>
-                        <SelectItem value="Geist">Geist</SelectItem>
-                        <SelectItem value="System UI">System UI</SelectItem>
-                      </SelectContent>
-                    </Select>
+                    <Select value={fontFamily} onValueChange={setFontFamily}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="Inter">Inter</SelectItem><SelectItem value="Geist">Geist</SelectItem><SelectItem value="System UI">System UI</SelectItem></SelectContent></Select>
                   </Field>
-                </Panel>
-              ) : null}
+                </div>
+              </Panel>
+            ) : null}
 
-              {!loading && section === "symbols" ? (
-                <Panel title="Custom Symbols" description="Create instruments that appear in your manual trade form.">
-                  {!customSymbols.filter((item) => !["NAS100", "XAUUSD", "EURUSD", "GBPUSD", "US30", "GER30", "BTCUSD"].includes(item)).length ? (
-                    <div className="rounded-2xl border border-dashed border-white/10 bg-[#090909] px-4 py-8 text-center text-sm text-zinc-500">
-                      No custom symbols added yet.
-                    </div>
-                  ) : (
-                    <div className="space-y-2">
-                      {customSymbols
-                        .filter((item) => !["NAS100", "XAUUSD", "EURUSD", "GBPUSD", "US30", "GER30", "BTCUSD"].includes(item))
-                        .map((item) => (
-                          <div key={item} className="flex items-center justify-between rounded-2xl border border-white/8 bg-[#090909] px-4 py-3">
-                            <span className="font-semibold text-white">{item}</span>
-                            <Button type="button" variant="outline" className="border-white/10 bg-black text-white hover:bg-[#111111]" onClick={() => removeCustomSymbol(item)}>
-                              Remove
-                            </Button>
-                          </div>
-                        ))}
-                    </div>
-                  )}
-                  <Button type="button" className="bg-white text-black hover:bg-zinc-200" onClick={() => setSymbolModalOpen(true)}>
-                    <Plus size={15} />
-                    Add Custom Symbol
-                  </Button>
-                </Panel>
-              ) : null}
-            </div>
-          </div>
-        </DialogContent>
+            {!loading && section === "symbols" ? (
+              <Panel title="Custom symbols" description="Add instruments used in manual trade entry.">
+                {customOnly.length ? <div className="space-y-2">{customOnly.map((item) => <div key={item} className="flex items-center justify-between rounded-2xl border border-white/8 bg-[#090909] px-4 py-3"><span className="font-semibold text-white">{item}</span><Button type="button" variant="outline" onClick={() => removeCustomSymbol(item)}>Remove</Button></div>)}</div> : <div className="rounded-2xl border border-dashed border-white/10 bg-[#090909] px-4 py-8 text-center text-sm text-zinc-500">No custom symbols yet.</div>}
+                <Button type="button" className="bg-white text-black hover:bg-zinc-200" onClick={() => setSymbolModalOpen(true)}><Plus size={15} /> Add symbol</Button>
+              </Panel>
+            ) : null}
+          </main>
+        </div>
       </Dialog>
 
-      <Dialog open={symbolModalOpen} onOpenChange={setSymbolModalOpen}>
+      <SmallDialog open={symbolModalOpen} onOpenChange={setSymbolModalOpen}>
         <DialogContent className="border-white/10 bg-[#050505] sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle className="text-white">Add Custom Symbol</DialogTitle>
-          </DialogHeader>
-          <Field label="Symbol name">
-            <Input value={symbolDraft} onChange={(event) => setSymbolDraft(event.target.value.toUpperCase())} placeholder="Example: MNQ" />
-          </Field>
-          <div className="flex justify-end gap-3">
-            <Button type="button" variant="outline" className="border-white/10 bg-black text-white hover:bg-[#111111]" onClick={() => setSymbolModalOpen(false)}>
-              Cancel
-            </Button>
-            <Button
-              type="button"
-              className="bg-white text-black hover:bg-zinc-200"
-              onClick={() => {
-                addCustomSymbol(symbolDraft);
-                setSymbolDraft("");
-                setSymbolModalOpen(false);
-              }}
-            >
-              Save
-            </Button>
-          </div>
+          <DialogHeader><DialogTitle className="text-white">Add custom symbol</DialogTitle></DialogHeader>
+          <Field label="Symbol name"><Input value={symbolDraft} maxLength={16} autoCapitalize="characters" spellCheck={false} onChange={(event) => setSymbolDraft(event.target.value.toUpperCase().replace(/[^A-Z0-9._-]/g, ""))} placeholder="Example: MNQ" /></Field>
+          <div className="flex justify-end gap-3"><Button type="button" variant="outline" onClick={() => setSymbolModalOpen(false)}>Cancel</Button><Button type="button" disabled={!symbolDraft.trim()} className="bg-white text-black hover:bg-zinc-200" onClick={() => { addCustomSymbol(symbolDraft); setSymbolDraft(""); setSymbolModalOpen(false); }}>Save</Button></div>
         </DialogContent>
-      </Dialog>
-
-      <AlertDialog open={deleteConfirmOpen} onOpenChange={setDeleteConfirmOpen}>
-        <AlertDialogContent className="border-white/10 bg-[#050505]">
-          <AlertDialogHeader>
-            <AlertDialogTitle className="flex items-center gap-2 text-white">
-              <AlertTriangle size={18} className="text-rose-400" />
-              Confirm account deletion
-            </AlertDialogTitle>
-            <AlertDialogDescription className="text-zinc-500">
-              In-app delete is not wired yet. We kept the confirmation so this cannot happen accidentally.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel className="border-white/10 bg-black text-white hover:bg-[#111111]">Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              className="bg-rose-600 text-white hover:bg-rose-500"
-              onClick={() => setMessage("Delete Account is blocked until the backend deletion flow is implemented safely.")}
-            >
-              Confirm
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      </SmallDialog>
     </>
   );
 }
 
 function Panel({ title, description, children }: { title: string; description: string; children: React.ReactNode }) {
-  return (
-    <section className="space-y-4 rounded-[1.5rem] border border-white/8 bg-[#070707] p-5">
-      <div>
-        <h3 className="text-lg font-black text-white">{title}</h3>
-        <p className="mt-1 text-sm text-zinc-500">{description}</p>
-      </div>
-      <Separator className="bg-white/8" />
-      {children}
-    </section>
-  );
+  return <section className="space-y-4 rounded-[1.4rem] border border-white/8 bg-[#070707] p-4 sm:p-5"><div><h3 className="text-lg font-black text-white">{title}</h3><p className="mt-1 text-sm leading-6 text-zinc-500">{description}</p></div><Separator className="bg-white/8" />{children}</section>;
 }
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
-  return (
-    <label className="space-y-2">
-      <span className="text-sm font-semibold text-zinc-300">{label}</span>
-      {children}
-    </label>
-  );
+  return <label className="block space-y-2"><span className="text-sm font-semibold text-zinc-300">{label}</span>{children}</label>;
 }
 
-function PlanCard({
-  title,
-  price,
-  description,
-  buttonLabel,
-  onClick,
-  disabled = false,
-}: {
-  title: string;
-  price: string;
-  description: string;
-  buttonLabel: string;
-  onClick?: () => void;
-  disabled?: boolean;
-}) {
-  return (
-    <div className="rounded-[1.35rem] border border-white/8 bg-[#090909] p-4">
-      <p className="text-sm font-black text-white">{title}</p>
-      <p className="mt-3 text-3xl font-black text-white">{price}</p>
-      <p className="mt-2 min-h-12 text-sm leading-6 text-zinc-500">{description}</p>
-      <Button
-        type="button"
-        className={disabled ? "bg-white/6 text-zinc-500 hover:bg-white/6" : "bg-white text-black hover:bg-zinc-200"}
-        disabled={disabled}
-        onClick={onClick}
-      >
-        {buttonLabel}
-      </Button>
-    </div>
-  );
+function SettingRow({ title, description, children }: { title: string; description: string; children: React.ReactNode }) {
+  return <div className="flex items-center justify-between gap-4 rounded-2xl border border-white/8 bg-[#090909] p-4"><div><p className="font-semibold text-white">{title}</p><p className="mt-1 text-sm leading-5 text-zinc-500">{description}</p></div><div className="shrink-0">{children}</div></div>;
 }
 
-function RowAction({
-  label,
-  description,
-  action,
-  onClick,
-}: {
-  label: string;
-  description: string;
-  action: string;
-  onClick: () => void;
-}) {
-  return (
-    <button type="button" onClick={onClick} className="flex w-full items-center justify-between rounded-2xl border border-white/8 bg-[#090909] px-4 py-3 text-left">
-      <div>
-        <p className="font-semibold text-white">{label}</p>
-        <p className="text-sm text-zinc-500">{description}</p>
-      </div>
-      <span className="text-sm font-semibold text-zinc-300">{action}</span>
-    </button>
-  );
+function InfoCard({ icon: Icon, label, value }: { icon: typeof LockKeyhole; label: string; value: string }) {
+  return <div className="min-w-0 rounded-2xl border border-white/8 bg-[#090909] p-4"><Icon size={17} className="text-zinc-400" /><p className="mt-3 text-[10px] font-black uppercase tracking-wider text-zinc-500">{label}</p><p className="mt-1 truncate text-sm font-bold capitalize text-white">{value}</p></div>;
+}
+
+function StatusMessage({ children }: { children: React.ReactNode }) {
+  return <p role="status" aria-live="polite" className="text-sm text-zinc-400">{children}</p>;
+}
+
+function PlanCard({ title, price, description, buttonLabel, onClick, disabled = false }: { title: string; price: string; description: string; buttonLabel: string; onClick?: () => void; disabled?: boolean }) {
+  return <div className="flex min-h-56 flex-col rounded-[1.25rem] border border-white/8 bg-[#090909] p-4"><p className="text-sm font-black text-white">{title}</p><p className="mt-3 text-2xl font-black text-white">{price}</p><p className="mt-2 flex-1 text-sm leading-6 text-zinc-500">{description}</p><Button type="button" className={disabled ? "bg-white/6 text-zinc-500 hover:bg-white/6" : "bg-white text-black hover:bg-zinc-200"} disabled={disabled} onClick={onClick}>{buttonLabel}</Button></div>;
+}
+
+function RowAction({ label, description, onClick }: { label: string; description: string; onClick: () => void }) {
+  return <button type="button" onClick={onClick} className="flex w-full items-center justify-between gap-4 rounded-2xl border border-white/8 bg-[#090909] px-4 py-3 text-left transition hover:border-white/15 hover:bg-white/[.04]"><div><p className="font-semibold text-white">{label}</p><p className="mt-1 text-sm text-zinc-500">{description}</p></div><ExternalLink size={16} className="shrink-0 text-zinc-400" /></button>;
 }

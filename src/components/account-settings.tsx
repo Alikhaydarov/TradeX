@@ -1,14 +1,16 @@
 "use client";
 
-import { CheckCircle2, LoaderCircle, Settings, ShieldCheck, SlidersHorizontal, WalletCards, Wifi } from "lucide-react";
+import { CheckCircle2, Settings, ShieldCheck, SlidersHorizontal, WalletCards, Wifi } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { apiRequest } from "@/lib/api-client";
 import { useActiveAccountStore } from "./active-account-context";
 import { Mt5Settings } from "./mt5-settings";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
+import { Spinner } from "./ui/spinner";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
 import type { PropAccount } from "./types";
+import { useWorkspacePreferences } from "./workspace-preferences-context";
 
 const cash = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 });
 
@@ -47,6 +49,7 @@ function connectorLabel(account: PropAccount) {
 export function AccountSettings({ onLogin: _onLogin }: { onLogin: () => void }) {
   void _onLogin;
   const { accounts, activeAccountId, setActiveAccount, setAccounts, refreshAccounts } = useActiveAccountStore();
+  const { hidePersonalInfo } = useWorkspacePreferences();
   const account = useMemo(() => accounts.find((item) => item.id === activeAccountId) || null, [accounts, activeAccountId]);
   const [name, setName] = useState(account?.name || "");
   const [firm, setFirm] = useState(account?.firm || "");
@@ -62,12 +65,17 @@ export function AccountSettings({ onLogin: _onLogin }: { onLogin: () => void }) 
 
   const saveProfile = async () => {
     if (!account) return;
+    const cleanName = name.trim();
+    if (cleanName.length < 2 || cleanName.length > 60) {
+      setMessage("Account name must be between 2 and 60 characters.");
+      return;
+    }
     setSaving(true);
     setMessage("");
     try {
       const response = await apiRequest<{ account: Record<string, unknown> }>(`/api/prop-accounts/${account.id}`, {
         method: "PATCH",
-        body: JSON.stringify({ name, firm, phase }),
+        body: JSON.stringify({ name: cleanName, firm: firm.trim().slice(0, 80), phase: phase.trim().slice(0, 40) }),
       });
       const updated = accountFrom(response.account);
       setAccounts(accounts.map((item) => item.id === updated.id ? updated : item));
@@ -126,9 +134,9 @@ export function AccountSettings({ onLogin: _onLogin }: { onLogin: () => void }) 
           </div>
 
           <div className="grid gap-3 sm:grid-cols-3">
-            <label className="text-xs font-semibold uppercase tracking-wider text-zinc-500">Account name<Input value={name} onChange={(event) => setName(event.target.value)} className="mt-1.5" /></label>
-            <label className="text-xs font-semibold uppercase tracking-wider text-zinc-500">Firm / broker<Input value={firm} onChange={(event) => setFirm(event.target.value)} className="mt-1.5" /></label>
-            <label className="text-xs font-semibold uppercase tracking-wider text-zinc-500">Phase<Input value={phase} onChange={(event) => setPhase(event.target.value)} className="mt-1.5" /></label>
+            <label className="text-xs font-semibold uppercase tracking-wider text-zinc-500">Account name<Input value={name} maxLength={60} onChange={(event) => setName(event.target.value)} className="mt-1.5" /></label>
+            <label className="text-xs font-semibold uppercase tracking-wider text-zinc-500">Firm / broker<Input value={firm} maxLength={80} onChange={(event) => setFirm(event.target.value)} className="mt-1.5" /></label>
+            <label className="text-xs font-semibold uppercase tracking-wider text-zinc-500">Phase<Input value={phase} maxLength={40} onChange={(event) => setPhase(event.target.value)} className="mt-1.5" /></label>
           </div>
 
           <div className="grid gap-3 sm:grid-cols-4">
@@ -140,7 +148,7 @@ export function AccountSettings({ onLogin: _onLogin }: { onLogin: () => void }) 
 
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
             <Button onClick={() => void saveProfile()} disabled={saving} className="bg-white text-black hover:bg-zinc-200">
-              {saving ? <LoaderCircle className="animate-spin" size={15} /> : <CheckCircle2 size={15} />} Save changes
+              {saving ? <Spinner className="size-4" /> : <CheckCircle2 size={15} />} Save changes
             </Button>
             {message ? <p className="text-sm text-zinc-400">{message}</p> : null}
           </div>
@@ -161,7 +169,7 @@ export function AccountSettings({ onLogin: _onLogin }: { onLogin: () => void }) 
           </div>
           <Mini label="Platform" value={(account.platform || "manual").toUpperCase()} />
           <Mini label="Import source" value={account.importSource || "manual"} />
-          <Mini label="Prop login" value={account.propLogin || "-"} />
+          <Mini label="Prop login" value={hidePersonalInfo && account.propLogin ? `••••${account.propLogin.slice(-3)}` : account.propLogin || "-"} />
           <Button variant="outline" className="w-full" onClick={() => void refreshAccounts()}>Refresh account data</Button>
         </aside>
       </div>

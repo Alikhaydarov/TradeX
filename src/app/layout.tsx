@@ -5,6 +5,7 @@ import { AccountCardMenuBridge } from "@/components/account-card-menu-bridge";
 import { AuthProvider } from "@/components/auth-context";
 import { FloatingAddTradeButton } from "@/components/floating-add-trade-button";
 import { MobileTradesBridge } from "@/components/mobile-trades-bridge";
+import { AppRouterCacheProvider } from "@mui/material-nextjs/v16-appRouter";
 import { getSupabaseServerClient } from "@/lib/supabase/server";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
 import "./globals.css";
@@ -32,13 +33,15 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
   return (
     <html lang="en" className={`dark ${inter.variable} ${geistMono.variable}`}>
       <body className="font-sans antialiased">
-        <AuthProvider initialUser={data.user} initialConfigured={configured}>
-          <AppShell />
-          <AccountCardMenuBridge />
-          <FloatingAddTradeButton />
-          <MobileTradesBridge />
-          <div className="hidden">{children}</div>
-        </AuthProvider>
+        <AppRouterCacheProvider options={{ enableCssLayer: true }}>
+          <AuthProvider initialUser={data.user} initialConfigured={configured}>
+            <AppShell />
+            <AccountCardMenuBridge />
+            <FloatingAddTradeButton />
+            <MobileTradesBridge />
+            <div className="hidden">{children}</div>
+          </AuthProvider>
+        </AppRouterCacheProvider>
       </body>
     </html>
   );

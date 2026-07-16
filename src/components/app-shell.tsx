@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import dynamic from "next/dynamic";
 import { AuthModal } from "./auth-modal";
 import { FeedV3 } from "./feed-v3";
 import { Account } from "./account";
@@ -10,7 +11,6 @@ import { Pricing } from "./pricing";
 import { NotificationListener } from "./notification-listener";
 import { PremiumUpsellDialog } from "./premium-upsell-dialog";
 import { Sidebar } from "./sidebar";
-import { UserSettingsDialog } from "./user-settings-dialog";
 import { WorkspaceTopbar } from "./workspace-topbar";
 import { WorkspacePreferencesProvider, useWorkspacePreferences } from "./workspace-preferences-context";
 import { TradeWayLoginLanding } from "./tradeway-login-landing";
@@ -22,6 +22,11 @@ import { getCurrentProfileUsername, getCurrentSection, pathFromSection } from ".
 import { apiRequest } from "@/lib/api-client";
 import type { Section } from "./types";
 import { Spinner } from "./ui/spinner";
+
+const UserSettingsDialog = dynamic(
+  () => import("./user-settings-dialog").then((module) => module.UserSettingsDialog),
+  { ssr: false },
+);
 function AuthGate({ onLogin }: { onLogin: () => void }) {
   return <TradeWayLoginLanding onLogin={onLogin} />;
 }
