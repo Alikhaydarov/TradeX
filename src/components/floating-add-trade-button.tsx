@@ -55,8 +55,8 @@ export function FloatingAddTradeButton() {
 
   if (!user) return null;
 
-  const hiddenOnProfile = pathname.startsWith("/profile") || pathname.startsWith("/account") || pathname.startsWith("/admin") || pathname.startsWith("/pricing");
-  if (hiddenOnProfile) return null;
+  const hiddenOutsideTrading = pathname.startsWith("/profile") || pathname.startsWith("/account") || pathname.startsWith("/admin") || pathname.startsWith("/pricing") || pathname.startsWith("/community");
+  if (hiddenOutsideTrading) return null;
 
   return (
     <button
