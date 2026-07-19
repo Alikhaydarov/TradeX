@@ -1,6 +1,6 @@
 "use client";
 
-import { EyeOff, Menu, Percent, Plus, Wallet } from "lucide-react";
+import { EyeOff, Menu, Percent, Wallet } from "lucide-react";
 import { useActiveAccountStore } from "./active-account-context";
 import { SocialActions } from "./social-actions-v2";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "./ui/dropdown-menu";
@@ -25,10 +25,6 @@ const ACCOUNT_SCOPED_SECTIONS = new Set<Section>(["dashboard", "calendar", "trad
 
 function openMobileDrawer() {
   window.dispatchEvent(new Event("tradox:open-mobile-menu"));
-}
-
-function openAddTrade() {
-  window.dispatchEvent(new Event("tradox:add-trade"));
 }
 
 export function WorkspaceTopbar({ section }: { section: Section }) {
@@ -65,12 +61,6 @@ export function WorkspaceTopbar({ section }: { section: Section }) {
 
         <div className="ml-auto hidden shrink-0 items-center gap-2 lg:flex">
           <PnlModeMenu pnlMode={pnlMode} pnlLabel={pnlLabel} onChange={setPnlMode} />
-          {isAccountScoped ? (
-            <button type="button" onClick={openAddTrade} className="inline-flex h-9 items-center justify-center gap-2 rounded-xl bg-white px-3 text-xs font-semibold text-black transition hover:bg-zinc-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40">
-              <Plus size={15} />
-              <span className="hidden xl:inline">Add trade</span>
-            </button>
-          ) : null}
         </div>
       </div>
 
@@ -81,14 +71,6 @@ export function WorkspaceTopbar({ section }: { section: Section }) {
             <p className="truncate text-xs font-medium text-zinc-300">{workspace}</p>
           </div>
           <PnlModeMenu pnlMode={pnlMode} pnlLabel={pnlLabel} onChange={setPnlMode} compact />
-          <button
-            type="button"
-            onClick={openAddTrade}
-            className="grid size-9 shrink-0 place-items-center rounded-xl bg-white text-black transition hover:bg-zinc-200 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40"
-            aria-label="Add trade"
-          >
-            <Plus size={17} strokeWidth={2.3} />
-          </button>
         </div>
       ) : null}
     </header>
