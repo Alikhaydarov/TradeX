@@ -165,7 +165,7 @@ export function Mt5Settings({ account, onSynced }: { account: PropAccount; onSyn
 
   return (
     <div className="space-y-3 px-3 pb-4 sm:space-y-4 sm:px-4">
-      <div className="rounded-2xl border border-[#2a2a2a] bg-[#141414] px-3 py-3 sm:px-4">
+      <div className="rounded-2xl border border-white/8 bg-[#070707] px-3 py-3 sm:px-4">
         <div className="flex flex-wrap items-center gap-2">
           <span className={`text-xs font-semibold ${workerStateClass}`}>{workerStateLabel}</span>
           <span className="rounded-full border border-white/10 bg-white/[.03] px-2 py-0.5 text-[10px] font-semibold text-zinc-500">
@@ -192,7 +192,7 @@ export function Mt5Settings({ account, onSynced }: { account: PropAccount; onSyn
               ? "border-sky-500/20 bg-sky-500/5"
             : connection.status === "error"
               ? "border-rose-500/20 bg-rose-500/5"
-              : "border-[#2a2a2a] bg-[#1b1b1b]"
+              : "border-white/8 bg-[#0a0a0a]"
         }`}>
           <div className="flex items-start gap-2">
             <div className="min-w-0 flex-1 space-y-1">
@@ -217,44 +217,44 @@ export function Mt5Settings({ account, onSynced }: { account: PropAccount; onSyn
             </div>
 
             <button type="button" aria-label="Disconnect MT5" onClick={() => setDisconnectOpen(true)} disabled={!!busy}
-              className="grid size-9 shrink-0 place-items-center rounded-xl border border-[#2a2a2a] text-zinc-600 transition hover:border-rose-500/30 hover:text-rose-400 disabled:opacity-50">
+              className="grid size-9 shrink-0 place-items-center rounded-xl border border-white/10 text-zinc-600 transition hover:border-rose-500/30 hover:text-rose-400 disabled:opacity-50">
               {busy === "disconnect" ? <Spinner className="size-3.5" /> : <Unplug size={13} />}
             </button>
           </div>
         </div>
       )}
 
-      <div className="space-y-3 rounded-2xl border border-[#2a2a2a] bg-[#141414] p-3 sm:p-4">
-        <p className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-[#8a8a8a]">
+      <div className="space-y-3 rounded-2xl border border-white/8 bg-[#070707] p-3 sm:p-4">
+        <p className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-zinc-500">
           <KeyRound size={12} /> MT5 Credentials
         </p>
 
         <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
           <div className="space-y-1">
-            <label className="flex items-center gap-1 text-[10px] font-semibold uppercase text-[#8a8a8a]">
+            <label className="flex items-center gap-1 text-[10px] font-semibold uppercase text-zinc-500">
               <UserRound size={10} /> Login
             </label>
             <input value={login} onChange={e => setLogin(e.target.value.replace(/\D/g, "").slice(0, 20))}
               placeholder="12345678" inputMode="numeric" autoComplete="off" spellCheck={false}
-              className="h-10 w-full rounded-xl border border-[#2a2a2a] bg-[#0e0e0e] px-3 font-mono text-sm text-zinc-200 placeholder:text-zinc-700 outline-none focus:border-white/20" />
+              className="h-10 w-full rounded-xl border border-white/10 bg-[#080808] px-3 font-mono text-sm text-zinc-200 placeholder:text-zinc-700 outline-none focus:border-white/20" />
           </div>
           <div className="space-y-1">
-            <label className="flex items-center gap-1 text-[10px] font-semibold uppercase text-[#8a8a8a]">
+            <label className="flex items-center gap-1 text-[10px] font-semibold uppercase text-zinc-500">
               <KeyRound size={10} /> Parol
             </label>
             <input type="password" value={password} onChange={e => setPassword(e.target.value.slice(0, 128))}
               placeholder="••••••••" autoComplete="new-password" spellCheck={false}
-              className="h-10 w-full rounded-xl border border-[#2a2a2a] bg-[#0e0e0e] px-3 text-sm text-zinc-200 placeholder:text-zinc-700 outline-none focus:border-white/20" />
+              className="h-10 w-full rounded-xl border border-white/10 bg-[#080808] px-3 text-sm text-zinc-200 placeholder:text-zinc-700 outline-none focus:border-white/20" />
           </div>
         </div>
 
         <div className="space-y-1">
-          <label className="flex items-center gap-1 text-[10px] font-semibold uppercase text-[#8a8a8a]">
+          <label className="flex items-center gap-1 text-[10px] font-semibold uppercase text-zinc-500">
             <Server size={10} /> Broker Server
           </label>
           <input value={server} onChange={e => setServer(e.target.value.slice(0, 120))} autoComplete="off" spellCheck={false}
             placeholder="Exness-MT5Trial, ICMarketsEU-Live04 ..."
-            className="h-10 w-full rounded-xl border border-[#2a2a2a] bg-[#0e0e0e] px-3 text-sm text-zinc-200 placeholder:text-zinc-700 outline-none focus:border-white/20" />
+            className="h-10 w-full rounded-xl border border-white/10 bg-[#080808] px-3 text-sm text-zinc-200 placeholder:text-zinc-700 outline-none focus:border-white/20" />
           <p className="text-[10px] text-zinc-700">MT5 → Tools → Options → Server</p>
         </div>
 
