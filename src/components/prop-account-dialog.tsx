@@ -6,11 +6,9 @@ import {
   ChevronRight,
   FileText,
   KeyRound,
-  LockKeyhole,
   LoaderCircle,
   Pencil,
   Plus,
-  Search,
   ShieldCheck,
   Sparkles,
   UploadCloud,
@@ -19,6 +17,13 @@ import {
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import { apiRequest } from "@/lib/api-client";
 import { cn } from "@/lib/utils";
+import {
+  ACCOUNT_PLATFORMS,
+  AccountPlatformSelector,
+  type AccountPlan,
+  type PlatformConfig,
+  type PlatformId,
+} from "./account-platform-selector";
 import { AccountPlanGate } from "./account-plan-gate";
 import { PlatformLogoBadge } from "./platform-logo-badge";
 import { PropFirmLogo } from "./prop-firm-logo";
@@ -33,38 +38,8 @@ const SIZES = [10000, 25000, 50000, 100000, 200000];
 
 type WizardStep = 1 | 2 | 3;
 type AccountKind = "manual" | "automatic";
-type PlatformId = "mt5" | "tradovate" | "ninjatrader" | "projectx" | "ctrader" | "tradelocker" | "matchtrader";
-type PlatformMode = "auto" | "csv" | "coming";
-
-type PlatformConfig = {
-  id: PlatformId;
-  name: string;
-  mode: PlatformMode;
-  market: "CFD" | "Futures";
-  badge: string;
-  logo: string;
-  helper: string;
-  premium?: boolean;
-  method: string;
-};
-
-const PLATFORMS: PlatformConfig[] = [
-  { id: "mt5", name: "MetaTrader 5", mode: "auto", market: "CFD", badge: "Live", logo: "5", method: "Investor password", helper: "Read-only auto sync through the TradeWay VPS bridge.", premium: true },
-  { id: "tradelocker", name: "TradeLocker", mode: "coming", market: "CFD", badge: "Next", logo: "TL", method: "Email + server", helper: "Will exchange credentials for read-only keys and sync account history.", premium: true },
-  { id: "ctrader", name: "cTrader", mode: "coming", market: "CFD", badge: "Next", logo: "c", method: "OAuth", helper: "Official cTrader authorization flow with read-only permissions.", premium: true },
-  { id: "tradovate", name: "Tradovate", mode: "csv", market: "Futures", badge: "CSV", logo: "T", method: "CSV import", helper: "Export Orders CSV from Tradovate and import closed trades." },
-  { id: "ninjatrader", name: "NinjaTrader", mode: "csv", market: "Futures", badge: "CSV", logo: "N", method: "CSV import", helper: "Export Trade Performance CSV in English and import it here." },
-  { id: "projectx", name: "Project X", mode: "csv", market: "Futures", badge: "CSV", logo: "X", method: "CSV import", helper: "Futures CSV workflow prepared for Project X statements." },
-  { id: "matchtrader", name: "MatchTrader", mode: "coming", market: "CFD", badge: "Later", logo: "M", method: "Web login", helper: "Connector research planned after MT5, TradeLocker and cTrader.", premium: true },
-];
 
 const CSV_PLATFORMS = new Set<PlatformId>(["tradovate", "ninjatrader", "projectx"]);
-
-function badgeClass(mode: PlatformMode) {
-  if (mode === "auto") return "bg-[#071017] text-sky-200";
-  if (mode === "csv") return "bg-[#161007] text-amber-200";
-  return "bg-[#0d0d0d] text-zinc-500";
-}
 
 function stepTitle(step: WizardStep, accountKind: AccountKind | null, platform?: PlatformConfig) {
   if (step === 1) return "Select the Account Type";
@@ -84,14 +59,14 @@ function stepDescription(step: WizardStep, accountKind: AccountKind | null, plat
 
 function StepDots({ step }: { step: WizardStep }) {
   return (
-    <div className="flex w-full max-w-[280px] items-center justify-center gap-0">
+    <div className="flex items-center justify-center gap-0" aria-label={`Step ${step} of 3`}>
       {[1, 2, 3].map((item) => (
         <div key={item} className="flex items-center">
           <span className={cn(
-            "grid size-4 place-items-center rounded-full border transition",
+            "grid size-2.5 place-items-center rounded-full border transition",
             step >= item ? "border-white bg-white" : "border-white/10 bg-[#111111]"
           )} />
-          {item < 3 ? <span className={cn("h-1 w-28 transition", step > item ? "bg-white" : "bg-[#1a1a1a]")} /> : null}
+          {item < 3 ? <span className={cn("h-px w-10 transition sm:w-16", step > item ? "bg-white" : "bg-[#262626]")} /> : null}
         </div>
       ))}
     </div>
@@ -99,7 +74,9 @@ function StepDots({ step }: { step: WizardStep }) {
 }
 
 type PremiumStatus = {
+  plan: AccountPlan;
   isPremium: boolean;
+  autoSyncEnabled: boolean;
 };
 
 type FreeAccountView = "choose" | "manual" | "plans";
@@ -122,20 +99,12 @@ export function PropAccountDialog({
   const [internalSaving, setInternalSaving] = useState(false);
   const [csvFileName, setCsvFileName] = useState("");
   const [submitError, setSubmitError] = useState<string | null>(null);
-  const [platformQuery, setPlatformQuery] = useState("");
-  const [premiumStatus, setPremiumStatus] = useState<PremiumStatus>({ isPremium: false });
+  const [premiumStatus, setPremiumStatus] = useState<PremiumStatus>({ plan: "free", isPremium: false, autoSyncEnabled: false });
   const [premiumLoaded, setPremiumLoaded] = useState(false);
   const [freeView, setFreeView] = useState<FreeAccountView>("choose");
   const [advancedOpen, setAdvancedOpen] = useState(false);
 
-  const selectedPlatform = useMemo(() => PLATFORMS.find((item) => item.id === platform) ?? PLATFORMS[0], [platform]);
-  const filteredPlatforms = useMemo(() => {
-    const query = platformQuery.trim().toLowerCase();
-    if (!query) return PLATFORMS;
-    return PLATFORMS.filter((item) =>
-      `${item.name} ${item.market} ${item.method}`.toLowerCase().includes(query)
-    );
-  }, [platformQuery]);
+  const selectedPlatform = useMemo(() => ACCOUNT_PLATFORMS.find((item) => item.id === platform) ?? ACCOUNT_PLATFORMS[0], [platform]);
   const sources = accountType === "prop" ? PROP_FIRMS : BROKERS;
   const activePlatform = accountKind === "manual" ? "manual" : platform;
   const market = accountKind === "manual" ? "CFD" : selectedPlatform.market;
@@ -149,7 +118,6 @@ export function PropAccountDialog({
   const phase = accountType === "real" ? "Live" : "Challenge";
   const createsProcessingMt5 = accountKind === "automatic" && platform === "mt5" && connectNow;
   const isSubmitting = saving || internalSaving;
-  const freeUserPlatformLocked = !premiumStatus.isPremium;
 
   useEffect(() => {
     if (open) return;
@@ -163,7 +131,6 @@ export function PropAccountDialog({
       setConnectNow(true);
       setCsvFileName("");
       setSubmitError(null);
-      setPlatformQuery("");
       setFreeView("choose");
       setAdvancedOpen(false);
     }, 160);
@@ -179,7 +146,7 @@ export function PropAccountDialog({
         if (active) setPremiumStatus(response);
       })
       .catch(() => {
-        if (active) setPremiumStatus({ isPremium: false });
+        if (active) setPremiumStatus({ plan: "free", isPremium: false, autoSyncEnabled: false });
       })
       .finally(() => {
         if (active) setPremiumLoaded(true);
@@ -211,10 +178,6 @@ export function PropAccountDialog({
   function choosePlatform(item: PlatformConfig) {
     if (!premiumStatus.isPremium) {
       setFreeView("plans");
-      return;
-    }
-    if (item.mode === "coming") {
-      setSubmitError(`${item.name} connector is reserved for the next release.`);
       return;
     }
     setPlatform(item.id);
@@ -438,29 +401,28 @@ export function PropAccountDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[92dvh] overflow-hidden border-[#1a1a1a] bg-[#030303] p-0 text-zinc-100 sm:max-w-[900px]">
-        <div className="flex items-center border-b border-white/8 bg-black px-5 py-4">
-          <DialogHeader className="min-w-[180px]">
-            <DialogTitle className="text-lg font-black">Add Account</DialogTitle>
+      <DialogContent className="max-h-[calc(100dvh-1rem)] gap-0 overflow-hidden border-[#1a1a1a] bg-[#030303] p-0 text-zinc-100 sm:max-h-[88dvh] sm:max-w-[780px]">
+        <div className="flex items-center gap-3 border-b border-white/8 bg-black px-4 py-3.5 sm:px-5">
+          <DialogHeader className="min-w-0 sm:w-36">
+            <DialogTitle className="truncate text-base font-black sm:text-lg">Add account</DialogTitle>
           </DialogHeader>
           <div className="flex flex-1 justify-center">
             <StepDots step={step} />
           </div>
-          <div className="w-[180px]" />
+          <span className="mr-8 w-10 shrink-0 text-right text-[10px] font-black text-zinc-600 sm:mr-7 sm:w-20">{step} / 3</span>
         </div>
 
-        <form onSubmit={handleSubmit} className="relative max-h-[calc(92dvh-73px)] overflow-y-auto">
-          <div className="px-5 py-5 sm:px-8 sm:py-6">
+        <form onSubmit={handleSubmit} className="relative max-h-[calc(100dvh-4.75rem)] overflow-y-auto sm:max-h-[calc(88dvh-61px)]">
+          <div className="px-4 py-4 sm:px-6 sm:py-5">
             {step > 1 ? (
-              <Button type="button" variant="outline" onClick={goBack} className="mb-4 border-white/10 bg-[#050505] hover:bg-[#111111]">
+              <Button type="button" variant="outline" size="sm" onClick={goBack} className="mb-4 h-9 rounded-xl border-white/10 bg-[#050505] hover:bg-[#111111]">
                 <ArrowLeft size={16} /> Back
               </Button>
             ) : null}
 
-            <div className="mx-auto mb-7 max-w-xl text-center">
-              <span className="mb-3 inline-flex rounded-lg bg-[#0d0d0d] px-2 py-1 text-xs font-black text-zinc-400">{step}/3</span>
-              <h2 className="text-2xl font-black tracking-tight">{stepTitle(step, accountKind, selectedPlatform)}</h2>
-              <p className="mx-auto mt-2 max-w-md text-sm font-semibold leading-6 text-zinc-500">
+            <div className="mx-auto mb-5 max-w-xl text-left sm:text-center">
+              <h2 className="text-xl font-black tracking-tight sm:text-2xl">{stepTitle(step, accountKind, selectedPlatform)}</h2>
+              <p className="mt-1.5 text-xs font-medium leading-5 text-zinc-500 sm:mx-auto sm:max-w-md sm:text-sm">
                 {stepDescription(step, accountKind, selectedPlatform)}
               </p>
             </div>
@@ -489,109 +451,7 @@ export function PropAccountDialog({
             ) : null}
 
             {step === 2 ? (
-              <div className="space-y-5">
-                {!premiumStatus.isPremium ? (
-                  <div className="mx-auto max-w-2xl overflow-hidden rounded-[24px] border border-white/10 bg-[#030303]">
-                    <div className="flex flex-col gap-4 px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-5">
-                      <div className="min-w-0">
-                        <p className="text-[10px] font-black uppercase tracking-[0.22em] text-sky-200/75">TradeWay Premium</p>
-                        <h3 className="mt-1 text-base font-black text-white sm:text-lg">Unlock automatic account sync and premium connectors</h3>
-                        <p className="mt-1 text-xs leading-5 text-zinc-400 sm:text-sm">
-                          Free users can keep manual journal accounts. Premium unlocks MT5 auto sync, advanced connectors and the full account import stack.
-                        </p>
-                      </div>
-                      <Button
-                        type="button"
-                        className="shrink-0 bg-white text-black hover:bg-zinc-200"
-                        onClick={() => {
-                          onOpenChange(false);
-                          window.history.pushState(null, "", "/pricing");
-                          window.dispatchEvent(new Event("popstate"));
-                        }}
-                      >
-                        Upgrade
-                      </Button>
-                    </div>
-                  </div>
-                ) : null}
-
-                <div className="mx-auto max-w-2xl rounded-2xl border border-white/10 bg-black p-3">
-                  <div className="flex items-center gap-2 text-sm text-zinc-400">
-                    <Search size={16} />
-                    <span className="font-semibold">Automatic account connectors</span>
-                  </div>
-                  <p className="mt-1 text-xs leading-5 text-zinc-600">
-                    Select a platform to preview the workflow. Premium is required before automatic account import can start.
-                  </p>
-                </div>
-
-                <div className="mx-auto max-w-md">
-                  <div className="flex h-12 items-center gap-3 rounded-2xl border border-white/10 bg-[#050505] px-4">
-                    <Search size={16} className="text-zinc-500" />
-                    <input
-                      value={platformQuery}
-                      onChange={(event) => setPlatformQuery(event.target.value)}
-                      placeholder="Search platform..."
-                      className="h-full w-full bg-transparent text-sm text-zinc-100 outline-none placeholder:text-zinc-600"
-                    />
-                  </div>
-                </div>
-
-                <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-                  {filteredPlatforms.map((item) => {
-                    const locked = freeUserPlatformLocked || (item.premium && !premiumStatus.isPremium);
-                    return (
-                    <button
-                      key={item.id}
-                      type="button"
-                      onClick={() => choosePlatform(item)}
-                      className={cn(
-                        "group relative min-h-[196px] rounded-[28px] border p-4 text-left shadow-[0_18px_48px_rgba(0,0,0,.22)] transition",
-                        locked
-                          ? "border-sky-400/20 bg-[#050505] hover:border-sky-300/30 hover:bg-[#111111]"
-                          : item.mode === "coming"
-                            ? "border-white/5 bg-[#080808] opacity-70"
-                            : "border-white/10 bg-[#050505] hover:border-white/25 hover:bg-[#111111]"
-                      )}
-                    >
-                      <div className={cn("transition", locked ? "pointer-events-none opacity-35" : "")}>
-                        <span className="flex items-start justify-between gap-3">
-                          <PlatformLogoBadge platform={item.id} />
-                          <span className="flex flex-wrap justify-end gap-1">
-                            {item.premium ? <span className="rounded-full border border-sky-300/15 bg-[#071017] px-2 py-0.5 text-[9px] font-black uppercase text-sky-200">Premium</span> : null}
-                            <span className={cn("rounded-full px-2 py-0.5 text-[9px] font-black uppercase", badgeClass(item.mode))}>{item.badge}</span>
-                          </span>
-                        </span>
-                        <span className="mt-4 block text-base font-black text-zinc-100">{item.name}</span>
-                        <span className="mt-1 block text-xs font-bold text-zinc-400">{item.method}</span>
-                        <span className="mt-3 block text-xs leading-5 text-zinc-600">{item.helper}</span>
-                        <div className="mt-4 flex items-center justify-between">
-                          <span className={cn(
-                            "rounded-full px-2.5 py-1 text-[10px] font-black uppercase tracking-wider",
-                            item.market === "CFD" ? "bg-[#071017] text-sky-200" : "bg-[#161007] text-amber-200"
-                          )}>
-                            {item.market}
-                          </span>
-                          <span className="text-[10px] font-black uppercase tracking-wider text-zinc-500">
-                            {locked ? "Upgrade required" : item.mode === "auto" ? "Ready now" : item.mode === "csv" ? "Import ready" : "Connector queued"}
-                          </span>
-                        </div>
-                      </div>
-                      {locked ? (
-                        <span className="absolute inset-0 flex flex-col items-center justify-center rounded-[28px] bg-[#020202]/95 px-4 text-center">
-                          <span className="grid size-10 place-items-center rounded-2xl border border-sky-300/20 bg-sky-400/12 text-sky-100">
-                            <LockKeyhole size={16} />
-                          </span>
-                          <span className="mt-3 text-sm font-black text-white">Premium required</span>
-                          <span className="mt-1 text-[11px] font-medium leading-5 text-zinc-300">Upgrade to unlock {item.name} and automatic account import.</span>
-                          <span className="mt-4 inline-flex rounded-full border border-white/12 bg-[#0d0d0d] px-3 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-white">Upgrade now</span>
-                        </span>
-                      ) : null}
-                      {locked ? <span className="absolute right-4 top-4 grid size-8 place-items-center rounded-2xl border border-sky-300/15 bg-[#071017] text-sky-200"><LockKeyhole size={14} /></span> : null}
-                    </button>
-                  );})}
-                </div>
-              </div>
+              <AccountPlatformSelector plan={premiumStatus.plan === "pro" ? "pro" : "standard"} onSelect={choosePlatform} />
             ) : null}
 
             {step === 3 ? (
@@ -692,12 +552,12 @@ function ChoiceCard({ icon, title, text, onClick }: { icon: React.ReactNode; tit
     <button
       type="button"
       onClick={onClick}
-      className="group flex min-h-[280px] flex-col items-center justify-center rounded-[28px] border border-white/10 bg-[#050505] p-8 text-center transition hover:border-white/25 hover:bg-[#111111]"
+      className="group flex min-h-[180px] flex-col items-center justify-center rounded-2xl border border-white/10 bg-[#050505] p-5 text-center transition hover:border-white/25 hover:bg-[#111111] sm:min-h-[210px]"
     >
       <span className="grid size-12 place-items-center rounded-2xl bg-[#161616] text-white">{icon}</span>
-      <h3 className="mt-6 text-2xl font-black">{title}</h3>
-      <p className="mt-4 max-w-xs text-sm font-semibold leading-6 text-zinc-500">{text}</p>
-      <ChevronRight className="mt-8 transition group-hover:translate-x-1" size={28} />
+      <h3 className="mt-4 text-lg font-black sm:text-xl">{title}</h3>
+      <p className="mt-2 max-w-xs text-xs font-semibold leading-5 text-zinc-500 sm:text-sm">{text}</p>
+      <ChevronRight className="mt-4 transition group-hover:translate-x-1" size={20} />
     </button>
   );
 }
