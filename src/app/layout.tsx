@@ -15,6 +15,7 @@ import "./onyx-overrides.css";
 import "./responsive-fixes.css";
 import "./quality-overrides.css";
 import "./sidebar-width.css";
+import "./dashboard-cleanups.css";
 
 const inter = Inter({ variable: "--font-inter", subsets: ["latin"] });
 const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] });
