@@ -458,7 +458,7 @@ export function JournalV2({
           <ShieldCheck className="text-zinc-300" size={32} />
         </div>
         <h2 className="mt-5 text-3xl font-black">Professional trading journal</h2>
-        <p className="mt-2 text-[#8a8a8a]">Track real and prop accounts in one focused workspace.</p>
+        <p className="mt-2 text-zinc-500">Track real and prop accounts in one focused workspace.</p>
         <Button className="mt-6 h-11 bg-white px-8 text-black hover:bg-zinc-200" onClick={onLogin}>Sign in with Google</Button>
       </div>
     </div>
@@ -604,7 +604,7 @@ function AccountCard({ active = false, s, deleting, onOpen, onDelete, compact = 
                   <MoreHorizontal size={15} />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="border-[#2a2a2a] bg-[#181818]" onClick={e => e.stopPropagation()}>
+              <DropdownMenuContent align="end" className="border-white/10 bg-[#0a0a0a]" onClick={e => e.stopPropagation()}>
                 <DropdownMenuItem variant="destructive" disabled={deleting === s.account.id} onClick={() => onDelete(s.account)}>
                   <Trash2 size={14} /> Delete account
                 </DropdownMenuItem>
@@ -643,27 +643,27 @@ function AiCoachCard({ report, loading, error, onRefresh }: { report: AiCoachRep
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
             <h3 className="text-base font-black">{report?.title || "AI Trade Coach"}</h3>
-            {report ? <span className="rounded-full border border-white/10 bg-[#050505] px-2 py-0.5 text-[10px] font-black uppercase text-[#8a8a8a]">{report.generatedBy}</span> : null}
+            {report ? <span className="rounded-full border border-white/10 bg-[#050505] px-2 py-0.5 text-[10px] font-black uppercase text-zinc-500">{report.generatedBy}</span> : null}
           </div>
           <p className="mt-1 text-sm leading-6 text-[#a1a1aa]">{loading ? "Analyzing your execution, risk and discipline..." : error || report?.summary || "Premium AI coach reads your journal and turns trades into concrete next actions."}</p>
         </div>
-        <Button type="button" variant="outline" size="sm" onClick={onRefresh} disabled={loading} className="border-[#2a2a2a] bg-transparent">
+        <Button type="button" variant="outline" size="sm" onClick={onRefresh} disabled={loading} className="border-white/10 bg-transparent">
           {loading ? <Spinner className="size-[15px]" /> : <Zap size={15} />} Refresh
         </Button>
       </div>
       {report ? (
         <div className="grid gap-3 p-4 sm:p-5 lg:grid-cols-[220px_1fr_1fr]">
           <div className="rounded-2xl border border-white/8 bg-[#050505] p-4">
-            <p className="text-[10px] font-black uppercase tracking-widest text-[#8a8a8a]">Coach score</p>
+            <p className="text-[10px] font-black uppercase tracking-widest text-zinc-500">Coach score</p>
             <p className="mt-2 font-mono text-4xl font-black text-white">{Math.round(report.score)}</p>
             <div className="mt-3 h-2 overflow-hidden rounded-full bg-[#111111]"><div className="h-full rounded-full bg-[#d9f96d]" style={{ width: `${Math.max(0, Math.min(100, report.score))}%` }} /></div>
           </div>
           <div className="rounded-2xl border border-white/8 bg-[#050505] p-4">
-            <p className="text-[10px] font-black uppercase tracking-widest text-[#8a8a8a]">Risk warnings</p>
+            <p className="text-[10px] font-black uppercase tracking-widest text-zinc-500">Risk warnings</p>
             <ul className="mt-3 space-y-2 text-sm leading-5 text-[#d4d4d8]">{(report.riskWarnings.length ? report.riskWarnings : ["No critical risk warning yet."]).map((item) => <li key={item}>- {item}</li>)}</ul>
           </div>
           <div className="rounded-2xl border border-white/8 bg-[#050505] p-4">
-            <p className="text-[10px] font-black uppercase tracking-widest text-[#8a8a8a]">Next actions</p>
+            <p className="text-[10px] font-black uppercase tracking-widest text-zinc-500">Next actions</p>
             <ul className="mt-3 space-y-2 text-sm leading-5 text-[#d4d4d8]">{report.nextSteps.map((item) => <li key={item}>- {item}</li>)}</ul>
           </div>
         </div>
@@ -827,7 +827,7 @@ function Workspace(p: {
       <div className="space-y-3 p-3 sm:p-4 lg:space-y-3 lg:p-4">
         {!embedded ? (
           <div className="w-full sm:w-[320px]">
-            <span className="mb-1.5 block text-[10px] font-semibold uppercase tracking-widest text-[#8a8a8a]">Account</span>
+            <span className="mb-1.5 block text-[10px] font-semibold uppercase tracking-widest text-zinc-500">Account</span>
             <Select value={account.id} onValueChange={p.onAccountChange}>
             <SelectTrigger className="h-11 rounded-2xl border-white/10 bg-[#090909]">
                 <SelectValue />
@@ -858,7 +858,7 @@ function Workspace(p: {
                   <s.icon size={18} className={s.color} />
                 </span>
                 <div className="min-w-0">
-                <p className="text-[10px] uppercase tracking-wider text-[#8a8a8a]">{s.title}</p>
+                <p className="text-[10px] uppercase tracking-wider text-zinc-500">{s.title}</p>
                   <p className={`truncate font-mono text-[15px] font-black sm:text-[1.05rem] ${s.color}`}>{s.value}</p>
                 </div>
               </CardContent>
@@ -1029,7 +1029,7 @@ function Workspace(p: {
                 <div className="p-2 sm:p-3 md:p-4">
                   <div className="mb-1 grid grid-cols-7 gap-1 sm:mb-1.5 sm:gap-1.5">
                     {WEEKDAYS_FULL.map((d) => (
-                      <div key={d} className="py-1.5 text-center text-[9px] font-semibold uppercase tracking-wider text-[#8a8a8a] sm:py-2 sm:text-[11px]">
+                      <div key={d} className="py-1.5 text-center text-[9px] font-semibold uppercase tracking-wider text-zinc-500 sm:py-2 sm:text-[11px]">
                         <span className="sm:hidden">{d.slice(0, 2)}</span>
                         <span className="hidden sm:inline">{d}</span>
                       </div>
@@ -1047,7 +1047,7 @@ function Workspace(p: {
                         >
                           {c.trades.length ? <span className={`absolute inset-x-0 top-0 h-0.5 ${c.pnl >= 0 ? "bg-emerald-400/60" : "bg-rose-400/60"}`} /> : null}
                           <div className="flex items-start justify-between">
-                            <span className={`grid size-4 place-items-center rounded text-[9px] font-bold sm:size-6 sm:rounded-md sm:text-[11px] ${c.trades.length ? "bg-[#050505] text-[#f1f1f1]" : "text-[#8a8a8a]"}`}>{c.day}</span>
+                            <span className={`grid size-4 place-items-center rounded text-[9px] font-bold sm:size-6 sm:rounded-md sm:text-[11px] ${c.trades.length ? "bg-[#050505] text-[#f1f1f1]" : "text-zinc-500"}`}>{c.day}</span>
                             {c.trades.length > 0 ? <span className="hidden font-mono text-[10px] text-zinc-500 sm:inline">{c.trades.length}T</span> : null}
                           </div>
                           {c.trades.length > 0 ? (
@@ -1095,11 +1095,11 @@ function Workspace(p: {
           {/* Trading Bible */}
           {!singleTabMode || activeTab === "bible" ? (
           <TabsContent value="bible">
-            <section className="overflow-hidden rounded-2xl border border-[#2a2a2a] bg-[#1b1b1b]/80">
-              <div className="flex flex-col gap-3 border-b border-[#2a2a2a] px-5 py-4 sm:flex-row sm:items-center">
+            <section className="overflow-hidden rounded-[1rem] border border-white/8 bg-[#070707]">
+              <div className="flex flex-col gap-3 border-b border-white/8 px-5 py-4 sm:flex-row sm:items-center">
                 <div>
                   <h3 className="flex items-center gap-2 font-bold"><BookOpen size={17} className="text-zinc-300" /> Trading Bible</h3>
-                  <p className="text-xs text-[#8a8a8a]">Eng yaxshi setup va reviewlar playbook sifatida saqlanadi.</p>
+                  <p className="text-xs text-zinc-500">Eng yaxshi setup va reviewlar playbook sifatida saqlanadi.</p>
                 </div>
                 <div className="grid grid-cols-2 gap-2 sm:ml-auto sm:flex">
                   <MiniStat label="BIBLE TRADES" value={String(bibleTrades.length)} />
@@ -1109,9 +1109,9 @@ function Workspace(p: {
               {bibleTrades.length ? (
                 <div className="grid gap-3 p-3 lg:grid-cols-2">
                   {bibleTrades.map((trade) => (
-                    <button key={trade.id} type="button" onClick={() => openTrade(trade)} className="group overflow-hidden rounded-2xl border border-[#2a2a2a] bg-[#121212] text-left transition hover:border-white/20 hover:bg-[#101827]">
+                    <button key={trade.id} type="button" onClick={() => openTrade(trade)} className="group overflow-hidden rounded-[1rem] border border-white/8 bg-[#050505] text-left transition hover:border-white/20 hover:bg-[#0d0d0d]">
                       {trade.imageUrl ? (
-                        <div className="h-40 overflow-hidden border-b border-[#2a2a2a] bg-black">
+                        <div className="h-40 overflow-hidden border-b border-white/8 bg-black">
                           <MediaImage src={trade.imageUrl} alt={`${trade.symbol} bible chart`} className="h-full w-full object-cover transition group-hover:scale-[1.02]" />
                         </div>
                       ) : null}
@@ -1120,16 +1120,16 @@ function Workspace(p: {
                           <span className={`rounded-xl px-2.5 py-1 text-[10px] font-black ${trade.side === "Long" ? "bg-emerald-500/10 text-emerald-300" : "bg-rose-500/10 text-rose-300"}`}>{trade.side}</span>
                           <div className="min-w-0 flex-1">
                             <h4 className="truncate text-base font-black text-white">{trade.symbol}</h4>
-                            <p className="mt-0.5 truncate text-xs text-[#8a8a8a]">{trade.setup || "No setup"} / {trade.session || "No session"} / {trade.date}</p>
+                            <p className="mt-0.5 truncate text-xs text-zinc-500">{trade.setup || "No setup"} / {trade.session || "No session"} / {trade.date}</p>
                           </div>
                           <span className="rounded-xl bg-[#0d0d0d] px-2.5 py-1 text-[10px] font-black text-zinc-300">{reviewScore(trade)}/6</span>
                         </div>
-                        <p className="mt-3 line-clamp-3 text-sm leading-6 text-[#d4d4d8]">{trade.note || "Review note yozilmagan."}</p>
+                        <p className="mt-3 line-clamp-3 text-sm leading-6 text-zinc-300">{trade.note || "Review note yozilmagan."}</p>
                         <div className="mt-3 flex flex-wrap gap-1.5">
                           {trade.reviewCompleted ? <span className="inline-flex items-center gap-1 rounded-lg bg-[#0d0d0d] px-2 py-1 text-[10px] font-bold text-zinc-300"><CheckCircle2 size={11} /> Reviewed</span> : null}
                           {trade.followingPlan ? <span className="rounded-lg bg-emerald-500/10 px-2 py-1 text-[10px] font-bold text-emerald-300">Plan</span> : <span className="rounded-lg bg-amber-500/10 px-2 py-1 text-[10px] font-bold text-amber-300">Off-plan</span>}
                           {trade.riskPercent ? <span className="rounded-lg bg-amber-500/10 px-2 py-1 text-[10px] font-bold text-amber-300">{trade.riskPercent}</span> : null}
-                          {(trade.tags ?? []).slice(0, 3).map(tag => <span key={tag} className="rounded-lg bg-[#0d0d0d] px-2 py-1 text-[10px] text-[#a1a1aa]">{tag}</span>)}
+                          {(trade.tags ?? []).slice(0, 3).map(tag => <span key={tag} className="rounded-lg bg-[#0d0d0d] px-2 py-1 text-[10px] text-zinc-400">{tag}</span>)}
                         </div>
                       </div>
                     </button>
@@ -1138,9 +1138,9 @@ function Workspace(p: {
               ) : (
                 <div className="grid min-h-72 place-items-center px-6 text-center">
                   <div>
-                    <BookOpen className="mx-auto text-[#454545]" size={38} />
+                    <BookOpen className="mx-auto text-zinc-700" size={38} />
                     <h3 className="mt-4 text-lg font-black">Trading Bible bo'sh</h3>
-                    <p className="mt-1 max-w-md text-sm leading-6 text-[#8a8a8a]">Trade review ochib "+ to Trading Bible" ni belgilang. Eng yaxshi setup va saboqlar shu yerda playbook bo'lib yig'iladi.</p>
+                    <p className="mt-1 max-w-md text-sm leading-6 text-zinc-500">Trade review ochib "+ to Trading Bible" ni belgilang. Eng yaxshi setup va saboqlar shu yerda playbook bo'lib yig'iladi.</p>
                   </div>
                 </div>
               )}
@@ -1427,7 +1427,7 @@ function TradeEditor({ trade, saving, onClose, onSave, onDelete }: { trade: Jour
             <h3 className="truncate text-lg font-black">{trade.symbol} trade</h3>
             <p className="text-xs text-zinc-500">Trade review, edit and screenshots</p>
           </div>
-          <button type="button" onClick={onClose} className="grid size-9 place-items-center rounded-xl text-[#8a8a8a] transition hover:bg-[#111111] hover:text-white" aria-label="Close">
+          <button type="button" onClick={onClose} className="grid size-9 place-items-center rounded-xl text-zinc-500 transition hover:bg-[#111111] hover:text-white" aria-label="Close">
             <X size={17} />
           </button>
         </header>
@@ -1436,12 +1436,12 @@ function TradeEditor({ trade, saving, onClose, onSave, onDelete }: { trade: Jour
             <div className="space-y-4">
               <section className="rounded-2xl border border-white/8 bg-[#050505] p-4">
                 <div className="mb-4">
-                  <p className="text-[10px] font-black uppercase tracking-[.16em] text-[#8a8a8a]">Trade details</p>
+                  <p className="text-[10px] font-black uppercase tracking-[.16em] text-zinc-500">Trade details</p>
                   <h4 className="mt-1 text-sm font-black text-white">Execution snapshot</h4>
                 </div>
                 <div className="grid min-w-0 grid-cols-2 gap-3 sm:grid-cols-[repeat(3,minmax(0,1fr))]">
                   <label className="col-span-2 min-w-0 text-xs text-muted-foreground sm:col-span-1">Symbol<Input name="symbol" defaultValue={trade.symbol} className="mt-1" /></label>
-                  <label className="min-w-0 text-xs text-[#8a8a8a]">
+                  <label className="min-w-0 text-xs text-zinc-500">
                     Side
                     <Select name="side" defaultValue={trade.side}>
                       <SelectTrigger className="mt-1 w-full"><SelectValue /></SelectTrigger>
@@ -1451,40 +1451,40 @@ function TradeEditor({ trade, saving, onClose, onSave, onDelete }: { trade: Jour
                       </SelectContent>
                     </Select>
                   </label>
-                  <label className="min-w-0 text-xs text-[#8a8a8a]">Date<Input name="tradedAt" type="date" defaultValue={trade.rawDate} className="mt-1" /></label>
+                  <label className="min-w-0 text-xs text-zinc-500">Date<Input name="tradedAt" type="date" defaultValue={trade.rawDate} className="mt-1" /></label>
                 </div>
                 <div className="mt-3 grid min-w-0 grid-cols-2 gap-3 sm:grid-cols-[repeat(3,minmax(0,1fr))]">
-                  <label className="min-w-0 text-xs text-[#8a8a8a]">PnL<Input name="pnl" inputMode="decimal" defaultValue={String(trade.pnl)} className="mt-1" /></label>
-                  <label className="min-w-0 text-xs text-[#8a8a8a]">Quantity<Input name="quantity" inputMode="decimal" defaultValue={String(trade.quantity)} className="mt-1" /></label>
-                  <label className="col-span-2 min-w-0 text-xs text-[#8a8a8a] sm:col-span-1">Fees<Input name="fees" inputMode="decimal" defaultValue={String(trade.fees)} className="mt-1" /></label>
+                  <label className="min-w-0 text-xs text-zinc-500">PnL<Input name="pnl" inputMode="decimal" defaultValue={String(trade.pnl)} className="mt-1" /></label>
+                  <label className="min-w-0 text-xs text-zinc-500">Quantity<Input name="quantity" inputMode="decimal" defaultValue={String(trade.quantity)} className="mt-1" /></label>
+                  <label className="col-span-2 min-w-0 text-xs text-zinc-500 sm:col-span-1">Fees<Input name="fees" inputMode="decimal" defaultValue={String(trade.fees)} className="mt-1" /></label>
                 </div>
               </section>
 
               <section className="rounded-2xl border border-white/8 bg-[#050505] p-4">
                 <div className="mb-4">
-                  <p className="text-[10px] font-black uppercase tracking-[.16em] text-[#8a8a8a]">Context</p>
+                  <p className="text-[10px] font-black uppercase tracking-[.16em] text-zinc-500">Context</p>
                   <h4 className="mt-1 text-sm font-black text-white">Risk, setup and tagging</h4>
                 </div>
                 <div className="grid min-w-0 grid-cols-2 gap-3 sm:grid-cols-[repeat(3,minmax(0,1fr))]">
-                  <label className="text-xs text-[#8a8a8a]">Risk $<Input name="riskAmount" inputMode="decimal" defaultValue={String(trade.riskAmount ?? 0)} className="mt-1 border-[#2a2a2a] bg-[#121212]" /></label>
-                  <label className="text-xs text-[#8a8a8a]">RR<Input name="resultR" inputMode="decimal" defaultValue={String(trade.resultR ?? 0)} className="mt-1 border-[#2a2a2a] bg-[#121212]" /></label>
-                  <label className="col-span-2 text-xs text-[#8a8a8a] sm:col-span-1">Risk %<Input name="riskPercent" defaultValue={trade.riskPercent ?? ""} className="mt-1 border-[#2a2a2a] bg-[#121212]" /></label>
+                  <label className="text-xs text-zinc-500">Risk $<Input name="riskAmount" inputMode="decimal" defaultValue={String(trade.riskAmount ?? 0)} className="mt-1" /></label>
+                  <label className="text-xs text-zinc-500">RR<Input name="resultR" inputMode="decimal" defaultValue={String(trade.resultR ?? 0)} className="mt-1" /></label>
+                  <label className="col-span-2 text-xs text-zinc-500 sm:col-span-1">Risk %<Input name="riskPercent" defaultValue={trade.riskPercent ?? ""} className="mt-1" /></label>
                 </div>
                 <div className="mt-3 grid min-w-0 grid-cols-2 gap-3 sm:grid-cols-[repeat(3,minmax(0,1fr))]">
-                  <label className="col-span-2 text-xs text-[#8a8a8a] sm:col-span-1">Setup<Input name="setup" defaultValue={trade.setup ?? ""} className="mt-1 border-[#2a2a2a] bg-[#121212]" /></label>
-                  <label className="text-xs text-[#8a8a8a]">Session<Input name="session" defaultValue={trade.session ?? ""} className="mt-1 border-[#2a2a2a] bg-[#121212]" /></label>
-                  <label className="text-xs text-[#8a8a8a]">Tags<Input name="tags" defaultValue={(trade.tags ?? []).join(", ")} className="mt-1 border-[#2a2a2a] bg-[#121212]" /></label>
+                  <label className="col-span-2 text-xs text-zinc-500 sm:col-span-1">Setup<Input name="setup" defaultValue={trade.setup ?? ""} className="mt-1" /></label>
+                  <label className="text-xs text-zinc-500">Session<Input name="session" defaultValue={trade.session ?? ""} className="mt-1" /></label>
+                  <label className="text-xs text-zinc-500">Tags<Input name="tags" defaultValue={(trade.tags ?? []).join(", ")} className="mt-1" /></label>
                 </div>
               </section>
 
               <section className="rounded-2xl border border-white/8 bg-[#050505] p-4">
                 <div className="mb-4">
-                  <p className="text-[10px] font-black uppercase tracking-[.16em] text-[#8a8a8a]">Review note</p>
+                  <p className="text-[10px] font-black uppercase tracking-[.16em] text-zinc-500">Review note</p>
                   <h4 className="mt-1 text-sm font-black text-white">What happened in this trade?</h4>
                 </div>
-                <label className="block text-xs text-[#8a8a8a]">
+                <label className="block text-xs text-zinc-500">
                   Notes
-                  <Textarea name="note" defaultValue={trade.note} className="mt-1 min-h-36 border-[#2a2a2a] bg-[#121212]" />
+                  <Textarea name="note" defaultValue={trade.note} className="mt-1 min-h-36" />
                 </label>
               </section>
             </div>
@@ -1493,7 +1493,7 @@ function TradeEditor({ trade, saving, onClose, onSave, onDelete }: { trade: Jour
               <section className="rounded-2xl border border-white/8 bg-[#050505] p-4">
                 <div className="mb-3 flex items-center justify-between gap-3">
                   <div>
-                    <p className="text-[10px] font-black uppercase tracking-[.16em] text-[#8a8a8a]">Screenshots</p>
+                    <p className="text-[10px] font-black uppercase tracking-[.16em] text-zinc-500">Screenshots</p>
                     <h4 className="mt-1 text-sm font-black text-white">Chart capture</h4>
                   </div>
                   <span className="text-xs text-zinc-500">{imageUrls.length}/3</span>
@@ -1507,24 +1507,24 @@ function TradeEditor({ trade, saving, onClose, onSave, onDelete }: { trade: Jour
               </section>
 
               <section className="rounded-2xl border border-white/8 bg-[#050505] p-4">
-                <p className="mb-3 text-[10px] font-black uppercase tracking-[.16em] text-[#8a8a8a]">Review checklist</p>
+                <p className="mb-3 text-[10px] font-black uppercase tracking-[.16em] text-zinc-500">Review checklist</p>
                 <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-1">
                   <label className="flex min-h-10 items-center gap-3 rounded-lg border border-border bg-card px-3 text-sm text-foreground"><Checkbox name="followingPlan" value="true" defaultChecked={trade.followingPlan} /> Following plan?</label>
                   <label className="flex min-h-10 items-center gap-3 rounded-lg border border-border bg-card px-3 text-sm text-foreground"><Checkbox name="reviewCompleted" value="true" defaultChecked={trade.reviewCompleted} /> Review completed</label>
                   <label className="flex min-h-10 items-center gap-3 rounded-lg border border-border bg-card px-3 text-sm text-foreground"><Checkbox name="errorMade" value="true" defaultChecked={trade.errorMade} /> Error made?</label>
                   <label className="flex min-h-10 items-center gap-3 rounded-lg border border-border bg-card px-3 text-sm text-foreground"><Checkbox name="toTradingBible" value="true" defaultChecked={trade.toTradingBible} /> Add to Trading Bible</label>
                 </div>
-                <label className="mt-3 block text-xs text-[#8a8a8a]">Mistake type<Input name="mistakeType" defaultValue={trade.mistakeType ?? ""} className="mt-1 border-[#2a2a2a] bg-[#121212]" /></label>
+                <label className="mt-3 block text-xs text-zinc-500">Mistake type<Input name="mistakeType" defaultValue={trade.mistakeType ?? ""} className="mt-1" /></label>
               </section>
 
-              <details className="group overflow-hidden rounded-2xl border border-[#2a2a2a] bg-[#121212]">
+              <details className="group overflow-hidden rounded-2xl border">
             <summary className="flex cursor-pointer list-none items-center gap-3 px-4 py-3.5 text-sm font-bold text-zinc-200 transition hover:bg-[#171717]">
               <ImageIcon size={17} className="text-zinc-500" />
               Share image
               <span className="ml-auto text-xs font-medium text-zinc-600 group-open:hidden">PNG yaratish</span>
               <ChevronDown className="ml-auto hidden text-zinc-500 group-open:block" size={16} />
             </summary>
-            <div className="border-t border-[#2a2a2a] p-3 sm:p-4">
+            <div className="border-t border-white/8 p-3 sm:p-4">
               <TradeReviewImage trade={trade} chartUrls={imageUrls} />
             </div>
               </details>
@@ -1721,7 +1721,7 @@ function TradeReviewImage({ trade, chartUrls }: { trade: JournalEntry; chartUrls
       <div className="flex items-center justify-between border-b border-white/8 px-4 py-3">
         <div>
           <p className="text-sm font-black text-white">Trade review image</p>
-          <p className="text-xs text-[#8a8a8a]">1080 x 1080 PNG</p>
+          <p className="text-xs text-zinc-500">1080 x 1080 PNG</p>
         </div>
         <div className="flex gap-2">
           <Button type="button" disabled={!generatedUrl} onClick={download} size="sm" variant="outline" className="border-white/10 bg-[#0d0d0d] hover:bg-[#151515]">
@@ -1732,7 +1732,7 @@ function TradeReviewImage({ trade, chartUrls }: { trade: JournalEntry; chartUrls
       {generatedUrl ? (
         <MediaImage src={generatedUrl} alt={`${trade.symbol} TradeWay review image`} className="aspect-square w-full bg-[#0b0b0b] object-contain" />
       ) : (
-        <div className="grid aspect-square w-full place-items-center text-[#8a8a8a]">
+        <div className="grid aspect-square w-full place-items-center text-zinc-500">
           <Spinner className="size-6" />
         </div>
       )}
@@ -1744,7 +1744,7 @@ function ProgressBar({ label, value, color }: { label: string; value: number; co
   return (
     <div>
       <div className="mb-1.5 flex text-xs">
-        <span className="text-[#8a8a8a]">{label}</span>
+        <span className="text-zinc-500">{label}</span>
         <b className="ml-auto text-[#f1f1f1]">{value.toFixed(0)}%</b>
       </div>
       <div className="h-1.5 overflow-hidden rounded-full bg-[#242424]">
@@ -1779,12 +1779,12 @@ function QuickMetric({ label, value, note, tone = "neutral" }: { label: string; 
 function MiniStat({ label, value }: { label: string; value: string }) {
   return (
     <div className="rounded-xl border border-white/8 bg-[#050505] px-3 py-2.5 text-center">
-      <small className="text-[9px] font-semibold uppercase tracking-wider text-[#8a8a8a]">{label}</small>
+      <small className="text-[9px] font-semibold uppercase tracking-wider text-zinc-500">{label}</small>
       <b className="mt-1 block truncate font-mono text-sm">{value}</b>
     </div>
   );
 }
 
 function Empty({ text }: { text: string }) {
-  return <div className="grid min-h-40 place-items-center p-6 text-center text-sm text-[#8a8a8a]">{text}</div>;
+  return <div className="grid min-h-40 place-items-center p-6 text-center text-sm text-zinc-500">{text}</div>;
 }
