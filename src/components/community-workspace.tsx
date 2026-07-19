@@ -1,16 +1,19 @@
 "use client";
 
 import {
+  Activity,
   BarChart3,
   ChevronRight,
   Crown,
   Eye,
   EyeOff,
   LayoutDashboard,
+  Medal,
   MessageSquareText,
   Settings2,
   ShieldCheck,
   Sparkles,
+  Trophy,
   TrendingUp,
   UserPlus,
   UsersRound,
@@ -76,7 +79,8 @@ const communityTone = {
   glow: "shadow-black/50",
 };
 
-type CommunityTab = "overview" | "members" | "settings";
+type CommunityTab =
+  "overview" | "leaderboard" | "members" | "insights" | "settings";
 
 export function CommunityWorkspace() {
   const [data, setData] = useState<CommunityData | null>(null);
@@ -227,7 +231,9 @@ export function CommunityWorkspace() {
     icon: typeof LayoutDashboard;
   }> = [
     { id: "overview", label: "Overview", icon: LayoutDashboard },
+    { id: "leaderboard", label: "Leaderboard", icon: Trophy },
     { id: "members", label: "Members", icon: UsersRound },
+    { id: "insights", label: "Insights", icon: Activity },
     { id: "settings", label: "Sharing", icon: Settings2 },
   ];
 
@@ -320,6 +326,9 @@ export function CommunityWorkspace() {
               colors={colors}
             />
           ) : null}
+          {activeTab === "leaderboard" ? (
+            <Leaderboard results={data.results ?? []} />
+          ) : null}
           {activeTab === "members" ? (
             <Members
               members={data.members ?? []}
@@ -335,6 +344,13 @@ export function CommunityWorkspace() {
                 )
               }
               onInvite={invite}
+            />
+          ) : null}
+          {activeTab === "insights" ? (
+            <CommunityInsights
+              results={data.results ?? []}
+              members={activeMembers.length}
+              sharedAccounts={sharedAccounts}
             />
           ) : null}
           {activeTab === "settings" ? (
@@ -378,14 +394,14 @@ export function CommunityWorkspace() {
         </aside>
       </div>
       <nav
-        className="fixed inset-x-3 bottom-[calc(.75rem+env(safe-area-inset-bottom))] z-[80] grid grid-cols-3 rounded-2xl border border-white/10 bg-black/92 p-1.5 shadow-[0_20px_70px_rgba(0,0,0,.75)] backdrop-blur-2xl md:hidden"
+        className="fixed inset-x-2 bottom-[calc(.5rem+env(safe-area-inset-bottom))] z-[80] grid grid-cols-5 rounded-2xl border border-white/10 bg-black/92 p-1 shadow-[0_20px_70px_rgba(0,0,0,.75)] backdrop-blur-2xl md:hidden"
         aria-label="Community navigation"
       >
         {nav.map((item) => (
           <button
             key={item.id}
             onClick={() => setActiveTab(item.id)}
-            className={`flex min-w-0 flex-col items-center justify-center gap-1 rounded-xl px-2 py-2 text-[10px] font-bold transition ${activeTab === item.id ? "bg-white text-black" : "text-zinc-500 active:bg-white/[.06]"}`}
+            className={`flex min-w-0 flex-col items-center justify-center gap-1 rounded-xl px-1 py-2 text-[9px] font-bold transition ${activeTab === item.id ? "bg-white text-black" : "text-zinc-500 active:bg-white/[.06]"}`}
             aria-current={activeTab === item.id ? "page" : undefined}
           >
             <item.icon size={16} />
@@ -611,6 +627,263 @@ function Overview({
           title="Shared performance"
           text="Privacy-first member result cards and fair percentage metrics."
         />
+      </div>
+    </div>
+  );
+}
+
+function Leaderboard({
+  results,
+}: {
+  results: NonNullable<CommunityData["results"]>;
+}) {
+  const ranked = [...results].sort((a, b) => b.pnlPercent - a.pnlPercent);
+
+  return (
+    <div>
+      <section className="overflow-hidden rounded-[28px] border border-white/10 bg-[radial-gradient(circle_at_85%_0%,rgba(255,255,255,.08),transparent_32%),#090909] p-5 sm:p-7">
+        <div className="flex items-start justify-between gap-5">
+          <div>
+            <p className="text-[10px] font-black uppercase tracking-[.22em] text-zinc-600">
+              Desk ranking
+            </p>
+            <h2 className="mt-2 text-2xl font-black tracking-tight sm:text-3xl">
+              Community leaderboard
+            </h2>
+            <p className="mt-2 max-w-xl text-sm leading-6 text-zinc-500">
+              A transparent performance board based on percentage return.
+              Account size and private dollar P&amp;L never affect placement.
+            </p>
+          </div>
+          <span className="grid size-12 shrink-0 place-items-center rounded-2xl border border-white/10 bg-white/[.06]">
+            <Trophy size={20} />
+          </span>
+        </div>
+      </section>
+
+      {ranked.length ? (
+        <div className="mt-4 space-y-2">
+          {ranked.map((result, index) => (
+            <article
+              key={result.accountId}
+              className="group grid grid-cols-[36px_minmax(0,1fr)_auto] items-center gap-3 rounded-2xl border border-white/8 bg-[#080808] p-3 transition hover:border-white/15 hover:bg-white/[.035] sm:grid-cols-[48px_minmax(0,1fr)_100px_100px_110px] sm:p-4"
+            >
+              <span
+                className={`grid size-9 place-items-center rounded-xl border text-xs font-black ${index === 0 ? "border-white/20 bg-white text-black" : "border-white/8 bg-white/[.035] text-zinc-500"}`}
+              >
+                {index + 1}
+              </span>
+              <div className="flex min-w-0 items-center gap-3">
+                <TraderAvatar
+                  name={result.member?.full_name ?? result.accountName}
+                  value={result.member?.avatar_url ?? null}
+                  className="size-10 text-xs"
+                />
+                <div className="min-w-0">
+                  <p className="truncate text-sm font-black">
+                    {result.member?.full_name ?? "Community trader"}
+                  </p>
+                  <p className="truncate text-[10px] text-zinc-600">
+                    {result.accountName} · {result.firm}
+                  </p>
+                </div>
+              </div>
+              <div className="hidden sm:block">
+                <MiniMetric label="Win rate" value={`${result.winRate}%`} />
+              </div>
+              <div className="hidden sm:block">
+                <MiniMetric label="Trades" value={String(result.trades)} />
+              </div>
+              <div className="text-right">
+                <p className="font-mono text-base font-black">
+                  {result.pnlPercent >= 0 ? "+" : ""}
+                  {result.pnlPercent}%
+                </p>
+                <p className="mt-1 text-[9px] uppercase tracking-wider text-zinc-700">
+                  Return
+                </p>
+              </div>
+            </article>
+          ))}
+        </div>
+      ) : (
+        <EmptyDesk
+          icon={Medal}
+          title="The board is waiting"
+          text="Members appear here after they opt in to sharing an account result."
+        />
+      )}
+    </div>
+  );
+}
+
+function CommunityInsights({
+  results,
+  members,
+  sharedAccounts,
+}: {
+  results: NonNullable<CommunityData["results"]>;
+  members: number;
+  sharedAccounts: number;
+}) {
+  const totalTrades = results.reduce((sum, result) => sum + result.trades, 0);
+  const averageWinRate = results.length
+    ? Math.round(
+        results.reduce((sum, result) => sum + result.winRate, 0) /
+          results.length,
+      )
+    : 0;
+  const averageReturn = results.length
+    ? results.reduce((sum, result) => sum + result.pnlPercent, 0) /
+      results.length
+    : 0;
+  const profitable = results.filter((result) => result.pnlPercent > 0).length;
+  const participation = members
+    ? Math.round((sharedAccounts / members) * 100)
+    : 0;
+
+  return (
+    <div>
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <p className="text-[10px] font-black uppercase tracking-[.22em] text-zinc-600">
+            Collective intelligence
+          </p>
+          <h2 className="mt-2 text-2xl font-black">Desk insights</h2>
+          <p className="mt-2 max-w-xl text-sm leading-6 text-zinc-500">
+            A high-level health view built only from results members explicitly
+            share.
+          </p>
+        </div>
+        <span className="grid size-11 shrink-0 place-items-center rounded-2xl border border-white/10 bg-white/[.05]">
+          <Activity size={18} />
+        </span>
+      </div>
+
+      <div className="mt-6 grid grid-cols-2 gap-3 lg:grid-cols-4">
+        <InsightMetric
+          label="Average return"
+          value={`${averageReturn >= 0 ? "+" : ""}${averageReturn.toFixed(1)}%`}
+          detail="Across shared accounts"
+        />
+        <InsightMetric
+          label="Average win rate"
+          value={`${averageWinRate}%`}
+          detail={`${totalTrades} recorded trades`}
+        />
+        <InsightMetric
+          label="Profitable desks"
+          value={`${profitable}/${results.length}`}
+          detail="Positive shared return"
+        />
+        <InsightMetric
+          label="Participation"
+          value={`${participation}%`}
+          detail={`${sharedAccounts} of ${members} members`}
+        />
+      </div>
+
+      <div className="mt-4 grid gap-3 lg:grid-cols-[1.25fr_.75fr]">
+        <section className="rounded-3xl border border-white/8 bg-[#080808] p-5 sm:p-6">
+          <p className="text-[10px] font-black uppercase tracking-[.18em] text-zinc-600">
+            Performance distribution
+          </p>
+          <div className="mt-5 space-y-4">
+            <ProgressRow
+              label="Profitable accounts"
+              value={
+                results.length
+                  ? Math.round((profitable / results.length) * 100)
+                  : 0
+              }
+            />
+            <ProgressRow
+              label="Member participation"
+              value={Math.min(100, participation)}
+            />
+            <ProgressRow
+              label="Win-rate quality"
+              value={Math.min(100, averageWinRate)}
+            />
+          </div>
+        </section>
+        <section className="rounded-3xl border border-white/8 bg-[linear-gradient(145deg,#111,#070707)] p-5 sm:p-6">
+          <p className="text-[10px] font-black uppercase tracking-[.18em] text-zinc-600">
+            Desk standard
+          </p>
+          <h3 className="mt-3 text-lg font-black">Process over noise.</h3>
+          <p className="mt-2 text-xs leading-5 text-zinc-500">
+            The strongest community signal is consistent participation, not one
+            oversized result. Rankings use percentage returns to keep comparison
+            fair.
+          </p>
+          <div className="mt-5 flex items-center gap-2 text-[10px] font-bold text-zinc-400">
+            <ShieldCheck size={14} /> Privacy-first aggregation
+          </div>
+        </section>
+      </div>
+    </div>
+  );
+}
+
+function InsightMetric({
+  label,
+  value,
+  detail,
+}: {
+  label: string;
+  value: string;
+  detail: string;
+}) {
+  return (
+    <div className="rounded-2xl border border-white/8 bg-[#080808] p-4 sm:p-5">
+      <p className="text-[9px] font-black uppercase tracking-[.16em] text-zinc-600">
+        {label}
+      </p>
+      <p className="mt-3 text-2xl font-black tracking-tight sm:text-3xl">
+        {value}
+      </p>
+      <p className="mt-2 text-[10px] text-zinc-600">{detail}</p>
+    </div>
+  );
+}
+
+function ProgressRow({ label, value }: { label: string; value: number }) {
+  return (
+    <div>
+      <div className="flex items-center justify-between text-xs">
+        <span className="font-bold text-zinc-400">{label}</span>
+        <span className="font-mono font-black text-white">{value}%</span>
+      </div>
+      <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-white/[.06]">
+        <div
+          className="h-full rounded-full bg-white transition-all"
+          style={{ width: `${value}%` }}
+        />
+      </div>
+    </div>
+  );
+}
+
+function EmptyDesk({
+  icon: Icon,
+  title,
+  text,
+}: {
+  icon: typeof Medal;
+  title: string;
+  text: string;
+}) {
+  return (
+    <div className="mt-4 grid min-h-64 place-items-center rounded-3xl border border-dashed border-white/10 bg-white/[.015] px-6 text-center">
+      <div>
+        <span className="mx-auto grid size-12 place-items-center rounded-2xl border border-white/10 bg-white/[.04] text-zinc-400">
+          <Icon size={19} />
+        </span>
+        <h3 className="mt-4 text-base font-black">{title}</h3>
+        <p className="mx-auto mt-2 max-w-sm text-xs leading-5 text-zinc-600">
+          {text}
+        </p>
       </div>
     </div>
   );
