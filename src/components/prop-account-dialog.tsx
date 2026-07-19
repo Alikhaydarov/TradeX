@@ -2,6 +2,7 @@
 
 import {
   ArrowLeft,
+  ChevronDown,
   ChevronRight,
   FileText,
   KeyRound,
@@ -120,7 +121,9 @@ export function PropAccountDialog({
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [platformQuery, setPlatformQuery] = useState("");
   const [premiumStatus, setPremiumStatus] = useState<PremiumStatus>({ isPremium: false });
+  const [premiumLoaded, setPremiumLoaded] = useState(false);
   const [premiumOverlay, setPremiumOverlay] = useState<PlatformConfig | null>(null);
+  const [advancedOpen, setAdvancedOpen] = useState(false);
 
   const selectedPlatform = useMemo(() => PLATFORMS.find((item) => item.id === platform) ?? PLATFORMS[0], [platform]);
   const filteredPlatforms = useMemo(() => {
@@ -159,6 +162,7 @@ export function PropAccountDialog({
       setSubmitError(null);
       setPlatformQuery("");
       setPremiumOverlay(null);
+      setAdvancedOpen(false);
     }, 160);
     return () => window.clearTimeout(timer);
   }, [open]);
@@ -166,12 +170,16 @@ export function PropAccountDialog({
   useEffect(() => {
     if (!open) return;
     let active = true;
+    setPremiumLoaded(false);
     apiRequest<PremiumStatus>("/api/premium/status")
       .then((response) => {
         if (active) setPremiumStatus(response);
       })
       .catch(() => {
         if (active) setPremiumStatus({ isPremium: false });
+      })
+      .finally(() => {
+        if (active) setPremiumLoaded(true);
       });
     return () => {
       active = false;
@@ -267,6 +275,135 @@ export function PropAccountDialog({
       setStep(2);
     }
   }, [accountKind, open, premiumStatus.isPremium, selectedPlatform, step]);
+
+  if (open && !premiumLoaded) {
+    return (
+      <Dialog open={open} onOpenChange={onOpenChange}>
+        <DialogContent className="overflow-hidden border-[#1a1a1a] bg-[#050505] p-0 text-zinc-100 sm:max-w-[520px]">
+          <div className="border-b border-white/8 px-5 py-4">
+            <div className="h-5 w-36 animate-pulse rounded bg-white/10" />
+            <div className="mt-2 h-3 w-64 animate-pulse rounded bg-white/[.06]" />
+          </div>
+          <div className="space-y-4 p-5">
+            <div className="h-20 animate-pulse rounded-2xl bg-white/[.055]" />
+            <div className="h-20 animate-pulse rounded-2xl bg-white/[.055]" />
+            <div className="h-11 animate-pulse rounded-xl bg-white/[.055]" />
+          </div>
+        </DialogContent>
+      </Dialog>
+    );
+  }
+
+  if (open && !premiumStatus.isPremium) {
+    return (
+      <Dialog open={open} onOpenChange={onOpenChange}>
+        <DialogContent className="max-h-[92dvh] overflow-y-auto border-[#222222] bg-[#070707] p-0 text-zinc-100 sm:max-w-[520px]">
+          <div className="border-b border-white/8 px-5 py-4 sm:px-6">
+            <DialogHeader>
+              <DialogTitle className="text-lg font-black">Add manual account</DialogTitle>
+              <p className="mt-1 text-sm text-zinc-500">Create a clean free journal workspace. You can add trades after setup.</p>
+            </DialogHeader>
+          </div>
+
+          <form onSubmit={handleSubmit}>
+            <div className="space-y-5 px-5 py-5 sm:px-6">
+              {submitError ? (
+                <div className="rounded-2xl border border-rose-500/20 bg-[#1a0d10] px-4 py-3 text-sm text-rose-200">{submitError}</div>
+              ) : null}
+
+              <div className="grid grid-cols-2 gap-1 rounded-xl border border-white/10 bg-black p-1">
+                {(["prop", "real"] as const).map((type) => (
+                  <button
+                    key={type}
+                    type="button"
+                    onClick={() => changeAccountType(type)}
+                    className={cn(
+                      "h-10 rounded-lg text-sm font-bold capitalize transition",
+                      accountType === type ? "bg-white text-black" : "text-zinc-500 hover:text-white"
+                    )}
+                  >
+                    {type === "prop" ? "Prop account" : "Personal account"}
+                  </button>
+                ))}
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="free-account-name" className="text-sm font-semibold text-zinc-200">Account name</Label>
+                <Input id="free-account-name" name="name" required maxLength={60} placeholder={accountType === "prop" ? "FTMO Challenge" : "My trading account"} className="h-12 rounded-xl border-white/10 bg-[#111111]" />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="free-account-balance" className="text-sm font-semibold text-zinc-200">Initial balance</Label>
+                <div className="relative">
+                  <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-sm font-bold text-zinc-500">$</span>
+                  <Input
+                    id="free-account-balance"
+                    type="number"
+                    inputMode="decimal"
+                    min={100}
+                    max={100000000}
+                    step={100}
+                    value={size}
+                    onChange={(event) => setSize(Math.max(0, Number(event.target.value)))}
+                    className="h-12 rounded-xl border-white/10 bg-[#111111] pl-8 font-mono text-base font-bold"
+                  />
+                </div>
+                <p className="text-xs leading-5 text-zinc-600">Used as the starting point for P&amp;L, drawdown and growth.</p>
+              </div>
+
+              <div className="overflow-hidden rounded-2xl border border-white/10 bg-black">
+                <button type="button" onClick={() => setAdvancedOpen((value) => !value)} className="flex h-12 w-full items-center justify-between px-4 text-left text-sm font-semibold text-zinc-300">
+                  Advanced options
+                  <ChevronDown size={16} className={cn("text-zinc-600 transition", advancedOpen && "rotate-180")} />
+                </button>
+                {advancedOpen ? (
+                  <div className="space-y-2 border-t border-white/8 p-4">
+                    <Label htmlFor="free-account-firm" className="text-xs font-bold uppercase tracking-[0.14em] text-zinc-500">{accountType === "prop" ? "Prop firm" : "Broker"}</Label>
+                    <select
+                      id="free-account-firm"
+                      value={firm}
+                      onChange={(event) => setFirm(event.target.value)}
+                      className="h-11 w-full rounded-xl border border-white/10 bg-[#111111] px-3 text-sm font-semibold text-zinc-100 outline-none focus:border-white/25"
+                    >
+                      {sources.map((item) => <option key={item} value={item}>{item}</option>)}
+                    </select>
+                  </div>
+                ) : null}
+              </div>
+
+              <div className="rounded-2xl border border-white/8 bg-[#0b0b0b] px-4 py-3 text-xs leading-5 text-zinc-500">
+                Free accounts use manual journaling. MT5 auto sync and imports remain available from the Pro account flow.
+              </div>
+            </div>
+
+            <div className="flex items-center justify-end gap-2 border-t border-white/8 px-5 py-4 sm:px-6">
+              <Button type="button" variant="outline" onClick={() => onOpenChange(false)} className="border-white/10 bg-transparent">Cancel</Button>
+              <Button disabled={isSubmitting || size < 100} className="bg-white font-semibold text-black hover:bg-zinc-200">
+                {isSubmitting ? <LoaderCircle className="animate-spin" /> : <Plus size={17} />}
+                Create account
+              </Button>
+            </div>
+
+            <input type="hidden" name="accountType" value={accountType} />
+            <input type="hidden" name="firm" value={firm} />
+            <input type="hidden" name="propSite" value={accountType === "prop" ? firm : ""} />
+            <input type="hidden" name="propLogin" value="" />
+            <input type="hidden" name="phase" value={accountType === "real" ? "Live" : "Challenge"} />
+            <input type="hidden" name="marketType" value="CFD" />
+            <input type="hidden" name="platform" value="manual" />
+            <input type="hidden" name="importSource" value="manual" />
+            <input type="hidden" name="accountSize" value={size} />
+            <input type="hidden" name="initialBalance" value={size} />
+            <input type="hidden" name="profitTarget" value={Math.round(size * 0.08)} />
+            <input type="hidden" name="maxDrawdown" value={Math.round(size * 0.1)} />
+            <input type="hidden" name="dailyDrawdown" value={Math.round(size * 0.05)} />
+            <input type="hidden" name="startDate" value={new Date().toISOString().slice(0, 10)} />
+            <input type="hidden" name="status" value="Active" />
+          </form>
+        </DialogContent>
+      </Dialog>
+    );
+  }
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
