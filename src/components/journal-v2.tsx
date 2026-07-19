@@ -508,36 +508,30 @@ function Accounts({ activeAccountId, summaries, deleting, onAdd, onOpen, onDelet
   const portfolioValue = startingCapital + netPnl;
 
   return (
-    <div className="animate-page-in mx-auto max-w-[1460px] space-y-4 p-3 sm:p-4 lg:p-5">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+    <div className="animate-page-in mx-auto max-w-[1320px] space-y-3 p-3 sm:p-4 lg:p-5">
+      <div className="flex items-center justify-between gap-3">
         <div>
-          <p className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-600">Trading accounts</p>
-          <h1 className="mt-1 text-xl font-black text-white sm:text-2xl">Account manager</h1>
-          <p className="mt-1 text-sm text-zinc-500">Open a journal workspace or create a manual account.</p>
+          <h1 className="text-xl font-black text-white sm:text-2xl">Accounts</h1>
+          <p className="mt-0.5 text-xs text-zinc-600">Your trading journals in one place.</p>
         </div>
-        <Button onClick={onAdd} className="h-10 w-full rounded-xl bg-white px-4 text-black hover:bg-zinc-200 sm:w-auto">
-          <Plus size={16} /> Add account
+        <Button onClick={onAdd} className="h-9 shrink-0 rounded-xl bg-white px-3 text-xs font-bold text-black hover:bg-zinc-200 sm:px-4 sm:text-sm">
+          <Plus size={15} /> <span className="hidden sm:inline">Add account</span><span className="sm:hidden">Add</span>
         </Button>
       </div>
 
       {summaries.length ? (
-        <section className="grid gap-3 lg:grid-cols-[minmax(0,460px)_minmax(0,1fr)]">
-          <div className="rounded-[20px] border border-white/10 bg-[#070707] p-4 sm:p-5">
-            <p className="text-xs font-semibold text-zinc-500">Total portfolio value</p>
-            <div className="mt-2 flex flex-wrap items-end gap-x-3 gap-y-1">
-              <p className="font-mono text-3xl font-black tracking-tight text-white sm:text-4xl">{cash.format(portfolioValue)}</p>
-              <span className={`mb-1 rounded-lg px-2 py-1 font-mono text-xs font-bold ${netPnl >= 0 ? "bg-emerald-400/10 text-emerald-300" : "bg-rose-400/10 text-rose-300"}`}>
+        <section>
+          <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-white/10 bg-[#060606] px-4 py-3">
+            <div>
+              <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-zinc-600">Portfolio value</p>
+              <p className="mt-1 font-mono text-xl font-black tracking-tight text-white sm:text-2xl">{cash.format(portfolioValue)}</p>
+            </div>
+            <div className="text-right">
+              <span className={`rounded-lg px-2 py-1 font-mono text-xs font-bold ${netPnl >= 0 ? "bg-emerald-400/10 text-emerald-300" : "bg-rose-400/10 text-rose-300"}`}>
                 {netPnl >= 0 ? "+" : ""}{cash.format(netPnl)}
               </span>
+              <p className="mt-1.5 text-[10px] text-zinc-600">{summaries.length} {summaries.length === 1 ? "account" : "accounts"} · {cash.format(startingCapital)} capital</p>
             </div>
-            <p className="mt-3 text-xs text-zinc-600">Across {summaries.length} {summaries.length === 1 ? "account" : "accounts"} · {cash.format(startingCapital)} starting capital</p>
-          </div>
-          <div className="hidden rounded-[20px] border border-white/8 bg-[#050505] p-5 lg:flex lg:items-center lg:justify-between">
-            <div>
-              <p className="text-sm font-bold text-zinc-200">Keep every journal separate</p>
-              <p className="mt-1 max-w-xl text-xs leading-5 text-zinc-600">Each account keeps its own trades, analytics and risk history. Switch accounts without mixing performance data.</p>
-            </div>
-            <span className="rounded-full border border-white/10 bg-black px-3 py-1 text-[10px] font-black uppercase tracking-[0.16em] text-zinc-500">All accounts</span>
           </div>
         </section>
       ) : null}
@@ -556,19 +550,18 @@ function Accounts({ activeAccountId, summaries, deleting, onAdd, onOpen, onDelet
           </div>
         </div>
       ) : (
-        <section className="grid gap-3 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
+        <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
           {summaries.map((summary) => (
             <AccountCard key={summary.account.id} active={activeAccountId === summary.account.id} s={summary} deleting={deleting} onOpen={onOpen} onDelete={onDelete} />
           ))}
           <button
             type="button"
             onClick={onAdd}
-            className="group grid min-h-[236px] place-items-center rounded-[20px] border border-dashed border-white/12 bg-[#030303] p-5 text-center transition hover:border-white/25 hover:bg-[#070707]"
+            className="group grid min-h-[172px] place-items-center rounded-2xl border border-dashed border-white/12 bg-[#030303] p-4 text-center transition hover:border-white/25 hover:bg-[#070707]"
           >
             <span>
-              <span className="mx-auto grid size-11 place-items-center rounded-2xl border border-white/10 bg-[#0d0d0d] text-zinc-500 transition group-hover:text-white"><Plus size={20} /></span>
-              <span className="mt-3 block text-sm font-bold text-zinc-500 transition group-hover:text-zinc-200">Add account</span>
-              <span className="mt-1 block text-xs text-zinc-700">Manual journal setup</span>
+              <span className="mx-auto grid size-9 place-items-center rounded-xl border border-white/10 bg-[#0d0d0d] text-zinc-500 transition group-hover:text-white"><Plus size={17} /></span>
+              <span className="mt-2.5 block text-sm font-bold text-zinc-500 transition group-hover:text-zinc-200">Add account</span>
             </span>
           </button>
         </section>
@@ -589,9 +582,9 @@ function AccountCard({ active = false, s, deleting, onOpen, onDelete, compact = 
       tabIndex={0}
       onClick={() => onOpen(s.account.id)}
       onKeyDown={e => { if (e.key === "Enter" || e.key === " ") onOpen(s.account.id); }}
-      className={`group relative min-h-[236px] cursor-pointer overflow-hidden border transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/30 ${active ? "border-white/20 bg-[#080808] shadow-[0_16px_44px_rgba(0,0,0,.34)]" : "border-white/10 bg-[#050505] hover:border-white/20 hover:bg-[#080808]"} ${compact ? "rounded-[16px]" : "rounded-[20px]"}`}
+      className={`group relative cursor-pointer overflow-hidden rounded-2xl border transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/30 ${compact ? "min-h-[150px]" : "min-h-[172px]"} ${active ? "border-white/20 bg-[#080808] shadow-[0_12px_32px_rgba(0,0,0,.3)]" : "border-white/10 bg-[#050505] hover:border-white/20 hover:bg-[#080808]"}`}
     >
-      <div className="p-4">
+      <div className="p-3.5">
         <div className="flex items-start gap-3">
           <div className="min-w-0 flex-1 space-y-1">
             <div className="flex min-w-0 items-center gap-2">
@@ -601,7 +594,7 @@ function AccountCard({ active = false, s, deleting, onOpen, onDelete, compact = 
             <p className="truncate text-[11px] text-zinc-600">{sourceLabel} · {s.account.accountType === "real" ? "Personal" : s.account.firm || "Prop account"}</p>
           </div>
           <div className="flex shrink-0 items-center gap-2">
-            <span className={`rounded-lg border px-2 py-0.5 text-[10px] font-semibold ${statusColor[s.account.status] || statusColor.Active}`}>
+            <span className={`rounded-md border px-1.5 py-0.5 text-[9px] font-semibold ${statusColor[s.account.status] || statusColor.Active}`}>
               {s.account.status}
             </span>
             <DropdownMenu>
@@ -619,15 +612,15 @@ function AccountCard({ active = false, s, deleting, onOpen, onDelete, compact = 
           </div>
         </div>
 
-        <div className="mt-5">
+        <div className="mt-3.5">
           <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-zinc-600">Current balance</p>
-          <div className="mt-1.5 flex flex-wrap items-end justify-between gap-2">
-            <p className={`font-mono ${compact ? "text-xl" : "text-2xl"} font-black text-white`}>{cash.format(currentBalance)}</p>
-            <p className={`font-mono text-sm font-bold ${pnlTone}`}>{s.pnl >= 0 ? "+" : ""}{cash.format(s.pnl)}</p>
+          <div className="mt-1 flex items-end justify-between gap-2">
+            <p className="font-mono text-xl font-black text-white">{cash.format(currentBalance)}</p>
+            <p className={`font-mono text-xs font-bold ${pnlTone}`}>{s.pnl >= 0 ? "+" : ""}{cash.format(s.pnl)}</p>
           </div>
         </div>
 
-        <div className="mt-5 flex items-center justify-between gap-3 border-t border-white/8 pt-3">
+        <div className="mt-3.5 flex items-center justify-between gap-3 border-t border-white/8 pt-2.5">
           <div className="flex min-w-0 items-center gap-3 text-[11px] text-zinc-500">
             <span>{s.trades} trades</span>
             <span className="text-zinc-800">/</span>

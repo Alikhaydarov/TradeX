@@ -19,6 +19,7 @@ import {
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import { apiRequest } from "@/lib/api-client";
 import { cn } from "@/lib/utils";
+import { AccountPlanGate } from "./account-plan-gate";
 import { PlatformLogoBadge } from "./platform-logo-badge";
 import { PropFirmLogo } from "./prop-firm-logo";
 import { Button } from "./ui/button";
@@ -101,6 +102,8 @@ type PremiumStatus = {
   isPremium: boolean;
 };
 
+type FreeAccountView = "choose" | "manual" | "plans";
+
 export function PropAccountDialog({
   open, saving, onOpenChange, onSave,
 }: {
@@ -122,7 +125,7 @@ export function PropAccountDialog({
   const [platformQuery, setPlatformQuery] = useState("");
   const [premiumStatus, setPremiumStatus] = useState<PremiumStatus>({ isPremium: false });
   const [premiumLoaded, setPremiumLoaded] = useState(false);
-  const [premiumOverlay, setPremiumOverlay] = useState<PlatformConfig | null>(null);
+  const [freeView, setFreeView] = useState<FreeAccountView>("choose");
   const [advancedOpen, setAdvancedOpen] = useState(false);
 
   const selectedPlatform = useMemo(() => PLATFORMS.find((item) => item.id === platform) ?? PLATFORMS[0], [platform]);
@@ -161,7 +164,7 @@ export function PropAccountDialog({
       setCsvFileName("");
       setSubmitError(null);
       setPlatformQuery("");
-      setPremiumOverlay(null);
+      setFreeView("choose");
       setAdvancedOpen(false);
     }, 160);
     return () => window.clearTimeout(timer);
@@ -207,7 +210,7 @@ export function PropAccountDialog({
 
   function choosePlatform(item: PlatformConfig) {
     if (!premiumStatus.isPremium) {
-      setPremiumOverlay(item);
+      setFreeView("plans");
       return;
     }
     if (item.mode === "coming") {
@@ -241,7 +244,7 @@ export function PropAccountDialog({
     setSubmitError(null);
 
     if (accountKind === "automatic" && !premiumStatus.isPremium) {
-      setPremiumOverlay(selectedPlatform);
+      setFreeView("plans");
       setSubmitError("Upgrade to Premium to continue with this connector.");
       return;
     }
@@ -268,14 +271,6 @@ export function PropAccountDialog({
     }
   }
 
-  useEffect(() => {
-    if (!open || step !== 3) return;
-    if (accountKind === "automatic" && !premiumStatus.isPremium) {
-      setPremiumOverlay(selectedPlatform);
-      setStep(2);
-    }
-  }, [accountKind, open, premiumStatus.isPremium, selectedPlatform, step]);
-
   if (open && !premiumLoaded) {
     return (
       <Dialog open={open} onOpenChange={onOpenChange}>
@@ -298,14 +293,52 @@ export function PropAccountDialog({
     return (
       <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent className="max-h-[92dvh] overflow-y-auto border-[#222222] bg-[#070707] p-0 text-zinc-100 sm:max-w-[520px]">
-          <div className="border-b border-white/8 px-5 py-4 sm:px-6">
-            <DialogHeader>
-              <DialogTitle className="text-lg font-black">Add manual account</DialogTitle>
-              <p className="mt-1 text-sm text-zinc-500">Create a clean free journal workspace. You can add trades after setup.</p>
-            </DialogHeader>
-          </div>
-
+          {freeView === "plans" ? (
+            <AccountPlanGate
+              onBack={() => setFreeView("choose")}
+              onChoose={() => {
+                onOpenChange(false);
+                window.history.pushState(null, "", "/pricing");
+                window.dispatchEvent(new Event("popstate"));
+              }}
+            />
+          ) : freeView === "choose" ? (
+            <div>
+              <div className="border-b border-white/8 px-5 py-4 sm:px-6">
+                <DialogHeader>
+                  <DialogTitle className="text-lg font-black">Add account</DialogTitle>
+                  <p className="mt-1 text-xs leading-5 text-zinc-500">Start manually or connect your trading account with a paid plan.</p>
+                </DialogHeader>
+              </div>
+              <div className="grid gap-3 p-5 sm:grid-cols-2 sm:p-6">
+                <button type="button" onClick={() => { setAccountKind("manual"); setConnectNow(false); setFreeView("manual"); }} className="group rounded-2xl border border-white/10 bg-[#050505] p-4 text-left transition hover:border-white/25 hover:bg-[#0b0b0b]">
+                  <span className="grid size-9 place-items-center rounded-xl bg-white text-black"><Pencil size={16} /></span>
+                  <span className="mt-4 block text-sm font-black text-white">Manual account</span>
+                  <span className="mt-1 block text-xs leading-5 text-zinc-500">Free journal. Add trades yourself.</span>
+                  <span className="mt-4 flex items-center gap-1 text-[11px] font-bold text-zinc-300">Continue <ChevronRight size={13} /></span>
+                </button>
+                <button type="button" onClick={() => setFreeView("plans")} className="group rounded-2xl border border-sky-300/15 bg-[#071017] p-4 text-left transition hover:border-sky-300/30 hover:bg-[#0a151f]">
+                  <span className="flex items-start justify-between gap-2">
+                    <span className="grid size-9 place-items-center rounded-xl bg-sky-300 text-black"><Zap size={16} /></span>
+                    <span className="rounded-full border border-sky-200/15 px-2 py-0.5 text-[9px] font-black uppercase tracking-wider text-sky-200">Premium</span>
+                  </span>
+                  <span className="mt-4 block text-sm font-black text-white">Automatic account</span>
+                  <span className="mt-1 block text-xs leading-5 text-zinc-400">MT5 sync, analytics and AI review.</span>
+                  <span className="mt-4 flex items-center gap-1 text-[11px] font-bold text-sky-200">Compare plans <ChevronRight size={13} /></span>
+                </button>
+              </div>
+            </div>
+          ) : (
           <form onSubmit={handleSubmit}>
+            <div className="border-b border-white/8 px-5 py-4 sm:px-6">
+              <DialogHeader>
+                <div className="flex items-center gap-2">
+                  <button type="button" onClick={() => setFreeView("choose")} className="grid size-8 place-items-center rounded-lg text-zinc-500 transition hover:bg-white/5 hover:text-white" aria-label="Back"><ArrowLeft size={16} /></button>
+                  <DialogTitle className="text-lg font-black">Manual account</DialogTitle>
+                </div>
+                <p className="mt-1 pl-10 text-xs text-zinc-500">Create a journal workspace in one step.</p>
+              </DialogHeader>
+            </div>
             <div className="space-y-5 px-5 py-5 sm:px-6">
               {submitError ? (
                 <div className="rounded-2xl border border-rose-500/20 bg-[#1a0d10] px-4 py-3 text-sm text-rose-200">{submitError}</div>
@@ -371,9 +404,6 @@ export function PropAccountDialog({
                 ) : null}
               </div>
 
-              <div className="rounded-2xl border border-white/8 bg-[#0b0b0b] px-4 py-3 text-xs leading-5 text-zinc-500">
-                Free accounts use manual journaling. MT5 auto sync and imports remain available from the Pro account flow.
-              </div>
             </div>
 
             <div className="flex items-center justify-end gap-2 border-t border-white/8 px-5 py-4 sm:px-6">
@@ -400,6 +430,7 @@ export function PropAccountDialog({
             <input type="hidden" name="startDate" value={new Date().toISOString().slice(0, 10)} />
             <input type="hidden" name="status" value="Active" />
           </form>
+          )}
         </DialogContent>
       </Dialog>
     );
@@ -651,36 +682,6 @@ export function PropAccountDialog({
           <input type="hidden" name="startDate" value={new Date().toISOString().slice(0, 10)} />
           <input type="hidden" name="status" value={createsProcessingMt5 ? "Processing" : "Active"} />
         </form>
-        {premiumOverlay ? (
-          <div className="absolute inset-0 z-20 flex items-center justify-center bg-black p-4">
-            <div className="w-full max-w-md rounded-[28px] border border-white/10 bg-[#030303] p-6 text-center">
-              <span className="mx-auto grid size-14 place-items-center rounded-2xl border border-sky-300/15 bg-[#071017] text-sky-200">
-                <LockKeyhole size={22} />
-              </span>
-              <h3 className="mt-5 text-2xl font-black">Unlock {premiumOverlay.name}</h3>
-              <p className="mx-auto mt-2 max-w-sm text-sm leading-6 text-zinc-400">
-                {premiumOverlay.name}, MT5 Auto Sync, AI trade analysis and the advanced connector stack are part of TradeWay Premium.
-              </p>
-              <div className="mt-6 grid gap-2 sm:grid-cols-2">
-                <Button type="button" variant="outline" className="border-white/10 bg-[#0b0b0b]" onClick={() => setPremiumOverlay(null)}>
-                  <ArrowLeft size={15} /> Back
-                </Button>
-                <Button
-                  type="button"
-                  className="bg-white text-black hover:bg-zinc-200"
-                  onClick={() => {
-                    setPremiumOverlay(null);
-                    onOpenChange(false);
-                    window.history.pushState(null, "", "/pricing");
-                    window.dispatchEvent(new Event("popstate"));
-                  }}
-                >
-                  Upgrade now
-                </Button>
-              </div>
-            </div>
-          </div>
-        ) : null}
       </DialogContent>
     </Dialog>
   );
