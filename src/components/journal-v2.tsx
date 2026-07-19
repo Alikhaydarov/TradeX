@@ -66,6 +66,7 @@ const TradesArchive = dynamic(
   { loading: () => <Skeleton className="h-[520px] w-full rounded-xl bg-white/[.055]" /> },
 );
 const cash = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 2 });
+const cashCompact = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", notation: "compact", maximumFractionDigits: 1 });
 const WEEKDAYS_FULL = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
 const WORKSPACE_TABS = [["home", "Home"], ["overview", "Dashboard"], ["calendar", "Calendar"], ["trades", "Trades"], ["bible", "Bible"], ["analytics", "Analytics"], ["settings", "Settings"]] as const;
 export type WorkspaceTab = typeof WORKSPACE_TABS[number][0];
@@ -1025,63 +1026,41 @@ function Workspace(p: {
                     <Button variant="outline" size="sm" onClick={p.onToday} className="border-white/8 bg-transparent px-2 text-[11px] hover:bg-[#101010] sm:px-3">Today</Button>
                   </div>
                 </div>
-                <div className="hidden p-4 md:block">
-                  <div className="grid grid-cols-7 gap-1.5 mb-1.5">
+                <div className="p-2 sm:p-3 md:p-4">
+                  <div className="mb-1 grid grid-cols-7 gap-1 sm:mb-1.5 sm:gap-1.5">
                     {WEEKDAYS_FULL.map((d) => (
-                      <div key={d} className="py-2 text-center text-[11px] font-semibold uppercase tracking-wider text-[#8a8a8a]">{d}</div>
+                      <div key={d} className="py-1.5 text-center text-[9px] font-semibold uppercase tracking-wider text-[#8a8a8a] sm:py-2 sm:text-[11px]">
+                        <span className="sm:hidden">{d.slice(0, 2)}</span>
+                        <span className="hidden sm:inline">{d}</span>
+                      </div>
                     ))}
                   </div>
-                  <div className="grid grid-cols-7 content-start gap-1.5 [grid-auto-rows:104px]">
+                  <div className="grid grid-cols-7 content-start gap-1 [grid-auto-rows:58px] sm:gap-1.5 sm:[grid-auto-rows:80px] md:[grid-auto-rows:92px] lg:[grid-auto-rows:104px]">
                     {calendar.map((c, i) =>
                       c ? (
                         <button
-                          key={`${monthId(month)}-desktop-${i}`}
+                          key={`${monthId(month)}-${i}`}
                           type="button"
                           aria-label={`${month.toLocaleDateString("en-US", { month: "long" })} ${c.day}: ${c.trades.length} trades, ${formatTradePnl(c.pnl)}`}
                           onClick={() => (c.trades.length ? setSelectedDay(c) : null)}
-                          className={`relative h-full w-full overflow-hidden rounded-[0.9rem] border p-2.5 text-left transition ${c.trades.length ? c.pnl >= 0 ? "border-emerald-500/16 bg-[#07110c] hover:border-emerald-400/30 hover:bg-[#0a1710]" : "border-rose-500/16 bg-[#12070a] hover:border-rose-400/30 hover:bg-[#180a0e]" : "border-white/6 bg-[#050505]"} ${c.trades.length ? "cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/25" : "cursor-default"}`}
+                          className={`relative h-full w-full overflow-hidden rounded-md border p-1 text-left transition sm:rounded-[0.9rem] sm:p-2.5 ${c.trades.length ? c.pnl >= 0 ? "border-emerald-500/16 bg-[#07110c] hover:border-emerald-400/30 hover:bg-[#0a1710]" : "border-rose-500/16 bg-[#12070a] hover:border-rose-400/30 hover:bg-[#180a0e]" : "border-white/6 bg-[#050505]"} ${c.trades.length ? "cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/25" : "cursor-default"}`}
                         >
                           {c.trades.length ? <span className={`absolute inset-x-0 top-0 h-0.5 ${c.pnl >= 0 ? "bg-emerald-400/60" : "bg-rose-400/60"}`} /> : null}
                           <div className="flex items-start justify-between">
-                            <span className={`grid size-6 place-items-center rounded-md text-[11px] font-bold ${c.trades.length ? "bg-[#050505] text-[#f1f1f1]" : "text-[#8a8a8a]"}`}>{c.day}</span>
-                            {c.trades.length > 0 ? <span className="font-mono text-[10px] text-zinc-500">{c.trades.length}T</span> : null}
+                            <span className={`grid size-4 place-items-center rounded text-[9px] font-bold sm:size-6 sm:rounded-md sm:text-[11px] ${c.trades.length ? "bg-[#050505] text-[#f1f1f1]" : "text-[#8a8a8a]"}`}>{c.day}</span>
+                            {c.trades.length > 0 ? <span className="hidden font-mono text-[10px] text-zinc-500 sm:inline">{c.trades.length}T</span> : null}
                           </div>
                           {c.trades.length > 0 ? (
-                            <p className={`mt-5 truncate font-mono text-sm font-black ${c.pnl >= 0 ? "text-emerald-400" : "text-rose-400"}`}>
-                              {c.pnl >= 0 ? "+" : ""}{cash.format(c.pnl)}
+                            <p className={`mt-1 truncate font-mono text-[9px] font-black leading-tight sm:mt-5 sm:text-sm ${c.pnl >= 0 ? "text-emerald-400" : "text-rose-400"}`}>
+                              <span className="sm:hidden">{c.pnl >= 0 ? "+" : ""}{cashCompact.format(c.pnl)}</span>
+                              <span className="hidden sm:inline">{c.pnl >= 0 ? "+" : ""}{cash.format(c.pnl)}</span>
                             </p>
                           ) : null}
                         </button>
                       ) : (
-                        <div key={`${monthId(month)}-desktop-empty-${i}`} className="h-full rounded-[1rem] border border-transparent" />
+                        <div key={`${monthId(month)}-empty-${i}`} className="h-full rounded-md border border-transparent sm:rounded-[1rem]" />
                       ),
                     )}
-                  </div>
-                </div>
-
-                <div className="p-2.5 md:hidden">
-                  <div className="mb-2 flex items-center justify-between px-1">
-                    <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-zinc-500">Trading days</p>
-                    <span className="text-[10px] text-zinc-600">{calendar.filter((day) => day?.trades.length).length} active</span>
-                  </div>
-                  <div className="space-y-1.5">
-                    {calendar.filter((day): day is NonNullable<typeof day> => Boolean(day?.trades.length)).map((day) => (
-                      <button
-                        key={`${monthId(month)}-mobile-${day.day}`}
-                        type="button"
-                        onClick={() => setSelectedDay(day)}
-                        className="flex w-full items-center gap-3 rounded-xl border border-white/8 bg-[#050505] px-3 py-3 text-left transition hover:bg-[#0d0d0d] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/25"
-                      >
-                        <span className={`grid size-10 shrink-0 place-items-center rounded-xl border font-mono text-sm font-black ${day.pnl >= 0 ? "border-emerald-400/15 bg-emerald-400/8 text-emerald-300" : "border-rose-400/15 bg-rose-400/8 text-rose-300"}`}>{day.day}</span>
-                        <span className="min-w-0 flex-1">
-                          <span className="block text-sm font-semibold text-white">{new Date(month.getFullYear(), month.getMonth(), day.day).toLocaleDateString("en-US", { weekday: "long" })}</span>
-                          <span className="mt-0.5 block text-[11px] text-zinc-500">{day.trades.length} trade{day.trades.length === 1 ? "" : "s"}</span>
-                        </span>
-                        <strong className={`shrink-0 font-mono text-sm ${day.pnl >= 0 ? "text-emerald-300" : "text-rose-300"}`}>{formatTradePnl(day.pnl)}</strong>
-                        <ChevronRight size={15} className="shrink-0 text-zinc-700" />
-                      </button>
-                    ))}
-                    {!calendar.some((day) => day?.trades.length) ? <div className="grid min-h-32 place-items-center rounded-xl border border-dashed border-white/8 text-center text-sm text-zinc-600">No trading days this month.</div> : null}
                   </div>
                 </div>
               </div>

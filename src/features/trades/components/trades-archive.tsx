@@ -139,8 +139,8 @@ export function TradesArchive({
           <Button type="button" size="sm" onClick={onAddTrade} className="w-full bg-white text-black hover:bg-zinc-200 sm:w-auto"><Plus className="size-4" /> Add trade</Button>
         </div>
 
-        <div className="grid gap-2 lg:grid-cols-[minmax(220px,1fr)_170px_160px]">
-          <div className="relative">
+        <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-[minmax(220px,1fr)_170px_160px]">
+          <div className="relative sm:col-span-2 lg:col-span-1">
             <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-zinc-500" />
             <Input type="search" value={query} onChange={(event) => onQueryChange(event.target.value)} className="h-10 pl-9" placeholder="Search symbol, setup or note" autoCapitalize="none" autoCorrect="off" />
           </div>
@@ -155,7 +155,7 @@ export function TradesArchive({
           </div>
         ) : <p className="text-[11px] text-zinc-600">{rangeNote}</p>}
 
-        <div className="grid grid-cols-2 gap-2 lg:grid-cols-4">
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
           {[{ label: "Trades", value: String(trades.length) }, { label: "Win rate", value: `${winRate}%` }, { label: "Best trade", value: bestTrade ? formatPnl(bestTrade.pnl) : "—" }, { label: "Average R", value: `${averageR.toFixed(2)}R` }].map((item) => (
             <div key={item.label} className="rounded-lg border border-white/8 bg-white/[.02] px-3 py-2"><p className="text-[9px] uppercase tracking-[0.12em] text-zinc-600">{item.label}</p><p className="mt-1 truncate font-mono text-sm font-semibold text-zinc-200">{item.value}</p></div>
           ))}
@@ -188,8 +188,15 @@ export function TradesArchive({
                 ))}</TableBody>
               </Table>
             </div>
-            <div className="divide-y divide-white/8 lg:hidden">{pagedTrades.map((trade) => (
+            <div className="divide-y divide-white/8 sm:hidden">{pagedTrades.map((trade) => (
               <button key={trade.id} type="button" onClick={() => onOpenTrade(trade)} className="flex w-full items-center gap-3 px-3 py-3 text-left transition hover:bg-white/[.025] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-white/25">
+                <InstrumentBadge symbol={trade.symbol} compact className="shrink-0 bg-[#121212]" />
+                <div className="min-w-0 flex-1"><span className={`text-[10px] font-semibold ${trade.side === "Long" ? "text-emerald-300" : "text-rose-300"}`}>{trade.side === "Long" ? "Buy" : "Sell"}</span><p className="mt-1 truncate text-[11px] text-zinc-500">{formatDate(trade.rawDate)} · {trade.setup || trade.session || "No setup"}</p></div>
+                <div className="text-right"><p className={`font-mono text-sm font-semibold ${trade.pnl >= 0 ? "text-emerald-300" : "text-rose-300"}`}>{formatPnl(trade.pnl)}</p><p className="mt-1 text-[10px] text-zinc-600">{(trade.resultR || 0).toFixed(2)}R</p></div>
+              </button>
+            ))}</div>
+            <div className="hidden gap-2 p-3 sm:grid sm:grid-cols-2 lg:hidden">{pagedTrades.map((trade) => (
+              <button key={trade.id} type="button" onClick={() => onOpenTrade(trade)} className="flex w-full items-center gap-3 rounded-xl border border-white/8 bg-[#0a0a0a] px-3 py-3 text-left transition hover:border-white/15 hover:bg-white/[.025] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/25">
                 <InstrumentBadge symbol={trade.symbol} compact className="shrink-0 bg-[#121212]" />
                 <div className="min-w-0 flex-1"><span className={`text-[10px] font-semibold ${trade.side === "Long" ? "text-emerald-300" : "text-rose-300"}`}>{trade.side === "Long" ? "Buy" : "Sell"}</span><p className="mt-1 truncate text-[11px] text-zinc-500">{formatDate(trade.rawDate)} · {trade.setup || trade.session || "No setup"}</p></div>
                 <div className="text-right"><p className={`font-mono text-sm font-semibold ${trade.pnl >= 0 ? "text-emerald-300" : "text-rose-300"}`}>{formatPnl(trade.pnl)}</p><p className="mt-1 text-[10px] text-zinc-600">{(trade.resultR || 0).toFixed(2)}R</p></div>
@@ -198,9 +205,9 @@ export function TradesArchive({
             <Pagination page={page} pages={pages} total={trades.length} onPage={setPage} />
           </>
         ) : view === "gallery" ? (
-          <><div className="space-y-5 p-3 sm:p-4">{galleryGroups.map((group) => <section key={group.key}><div className="mb-3 flex items-center gap-2"><h3 className="text-sm font-semibold text-white">{group.label}</h3><span className="text-xs text-zinc-600">{group.trades.length}</span></div><div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">{group.trades.map((trade) => <TradeGalleryCard key={trade.id} trade={trade} formatPnl={formatPnl} onOpen={() => onOpenTrade(trade)} />)}</div></section>)}</div><Pagination page={page} pages={pages} total={trades.length} onPage={setPage} /></>
+          <><div className="space-y-5 p-3 sm:p-4">{galleryGroups.map((group) => <section key={group.key}><div className="mb-3 flex items-center gap-2"><h3 className="text-sm font-semibold text-white">{group.label}</h3><span className="text-xs text-zinc-600">{group.trades.length}</span></div><div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">{group.trades.map((trade) => <TradeGalleryCard key={trade.id} trade={trade} formatPnl={formatPnl} onOpen={() => onOpenTrade(trade)} />)}</div></section>)}</div><Pagination page={page} pages={pages} total={trades.length} onPage={setPage} /></>
         ) : weekGroups.length ? (
-          <div className="space-y-5 p-3 sm:p-4">{weekGroups.map((group) => <section key={group.key}><div className="mb-3 flex items-baseline gap-2"><h3 className="text-sm font-semibold text-white">{group.label}</h3><span className="text-xs text-zinc-600">{group.dateLabel} · {group.trades.length} trades</span></div><div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">{group.trades.map((trade) => <TradeGalleryCard key={trade.id} trade={trade} formatPnl={formatPnl} onOpen={() => onOpenTrade(trade)} />)}</div></section>)}</div>
+          <div className="space-y-5 p-3 sm:p-4">{weekGroups.map((group) => <section key={group.key}><div className="mb-3 flex items-baseline gap-2"><h3 className="text-sm font-semibold text-white">{group.label}</h3><span className="text-xs text-zinc-600">{group.dateLabel} · {group.trades.length} trades</span></div><div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">{group.trades.map((trade) => <TradeGalleryCard key={trade.id} trade={trade} formatPnl={formatPnl} onOpen={() => onOpenTrade(trade)} />)}</div></section>)}</div>
         ) : (
           <Empty className="m-3 min-h-64"><EmptyMedia><CalendarRange className="size-4" /></EmptyMedia><EmptyHeader><EmptyTitle>No trades this week</EmptyTitle><EmptyDescription>Weekly review will appear after the first closed trade.</EmptyDescription></EmptyHeader></Empty>
         )}
