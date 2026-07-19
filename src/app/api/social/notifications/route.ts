@@ -1,4 +1,8 @@
-import { authenticateRequest, serverError, unauthorized } from "@/lib/backend/auth";
+import {
+  authenticateRequest,
+  serverError,
+  unauthorized,
+} from "@/lib/backend/auth";
 import { hasVerifiedPremiumAccess } from "@/lib/premium-plan";
 
 export const runtime = "nodejs";
@@ -12,6 +16,7 @@ interface NotificationRow {
   actor_id: string | null;
   entity_id?: string | null;
   entity_type?: string | null;
+  metadata?: Record<string, unknown> | null;
 }
 
 interface ActorProfileRow {
@@ -32,20 +37,28 @@ type NotificationSelectResult = {
 const premiumVerified = hasVerifiedPremiumAccess;
 
 function isMissingEntityColumn(message: string) {
-  return /notifications\.(entity_id|entity_type)|column\s+(entity_id|entity_type)\s+does\s+not\s+exist/i.test(message);
+  return /notifications\.(entity_id|entity_type)|column\s+(entity_id|entity_type)\s+does\s+not\s+exist/i.test(
+    message,
+  );
 }
 
-async function selectNotifications(auth: NonNullable<Awaited<ReturnType<typeof authenticateRequest>>>) {
-  const query = () => auth.supabase
-    .from("notifications")
-    .select("id, type, message, is_read, created_at, actor_id, entity_id, entity_type")
-    .eq("user_id", auth.user.id)
-    .order("created_at", { ascending: false })
-    .limit(50)
-    .returns<NotificationRow[]>();
+async function selectNotifications(
+  auth: NonNullable<Awaited<ReturnType<typeof authenticateRequest>>>,
+) {
+  const query = () =>
+    auth.supabase
+      .from("notifications")
+      .select(
+        "id, type, message, is_read, created_at, actor_id, entity_id, entity_type, metadata",
+      )
+      .eq("user_id", auth.user.id)
+      .order("created_at", { ascending: false })
+      .limit(50)
+      .returns<NotificationRow[]>();
 
-  const result = await query() as NotificationSelectResult;
-  if (!result.error || !isMissingEntityColumn(result.error.message)) return result;
+  const result = (await query()) as NotificationSelectResult;
+  if (!result.error || !isMissingEntityColumn(result.error.message))
+    return result;
 
   const fallback = await auth.supabase
     .from("notifications")
@@ -78,14 +91,28 @@ export async function GET(request: Request) {
 
   if (error) return serverError(error.message);
 
-  const actorIds = Array.from(new Set((data ?? []).map((item: NotificationRow) => item.actor_id).filter(Boolean))) as string[];
+  const actorIds = Array.from(
+    new Set(
+      (data ?? [])
+        .map((item: NotificationRow) => item.actor_id)
+        .filter(Boolean),
+    ),
+  ) as string[];
   const profiles = actorIds.length
-    ? await auth.supabase.from("profiles").select("id, username, full_name, avatar_url, is_verified, plan, premium_until").in("id", actorIds).returns<ActorProfileRow[]>()
+    ? await auth.supabase
+        .from("profiles")
+        .select(
+          "id, username, full_name, avatar_url, is_verified, plan, premium_until",
+        )
+        .in("id", actorIds)
+        .returns<ActorProfileRow[]>()
     : { data: [], error: null };
 
   if (profiles.error) return serverError(profiles.error.message);
 
-  const actorMap = new Map((profiles.data ?? []).map((profile) => [profile.id, profile]));
+  const actorMap = new Map(
+    (profiles.data ?? []).map((profile) => [profile.id, profile]),
+  );
 
   return Response.json({
     notifications: (data ?? []).map((item: NotificationRow) => {
@@ -98,13 +125,16 @@ export async function GET(request: Request) {
         createdAt: item.created_at,
         entityId: item.entity_id ?? null,
         entityType: item.entity_type ?? null,
-        actor: actor ? {
-          id: actor.id,
-          username: actor.username,
-          fullName: actor.full_name,
-          avatarUrl: actor.avatar_url,
-          isVerified: premiumVerified(actor),
-        } : null,
+        metadata: item.metadata ?? {},
+        actor: actor
+          ? {
+              id: actor.id,
+              username: actor.username,
+              fullName: actor.full_name,
+              avatarUrl: actor.avatar_url,
+              isVerified: premiumVerified(actor),
+            }
+          : null,
       };
     }),
   });
