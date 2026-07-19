@@ -6,6 +6,8 @@ interface RequestOptions {
   headers?: Record<string, string>;
 }
 
+const inFlightGets = new Map<string, Promise<unknown>>();
+
 export async function apiRequest<T = unknown>(
   url: string,
   options: RequestOptions = {}
@@ -16,15 +18,40 @@ export async function apiRequest<T = unknown>(
 
   const { method = "GET", body, headers = {} } = options;
 
+  const requestHeaders = {
+    "Content-Type": "application/json",
+    Accept: "application/json",
+    ...headers,
+  };
+  const key = `${url}:${JSON.stringify(requestHeaders)}`;
+
+  if (method === "GET") {
+    const pending = inFlightGets.get(key);
+    if (pending) return pending as Promise<T>;
+
+    const request = performRequest<T>(url, method, body, requestHeaders);
+    inFlightGets.set(key, request);
+    try {
+      return await request;
+    } finally {
+      inFlightGets.delete(key);
+    }
+  }
+
+  return performRequest<T>(url, method, body, requestHeaders);
+}
+
+async function performRequest<T>(
+  url: string,
+  method: HttpMethod,
+  body: string | undefined,
+  headers: Record<string, string>,
+): Promise<T> {
   const res = await fetch(url, {
     method,
     cache: "no-store",
     credentials: "same-origin",
-    headers: {
-      "Content-Type": "application/json",
-      Accept: "application/json",
-      ...headers,
-    },
+    headers,
     body: body ?? undefined,
   });
 

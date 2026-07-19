@@ -1,32 +1,54 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import dynamic from "next/dynamic";
 import { AuthModal } from "./auth-modal";
-import { FeedV3 } from "./feed-v3";
-import { Account } from "./account";
-import { AdminPanel } from "./admin-panel";
 import { ActiveAccountProvider } from "./active-account-context";
-import { Pricing } from "./pricing";
 import { NotificationListener } from "./notification-listener";
 import { PremiumUpsellDialog } from "./premium-upsell-dialog";
 import { Sidebar } from "./sidebar";
 import { WorkspaceTopbar } from "./workspace-topbar";
 import { WorkspacePreferencesProvider, useWorkspacePreferences } from "./workspace-preferences-context";
 import { TradeWayLoginLanding } from "./tradeway-login-landing";
-import { AccountSettings } from "./account-settings";
-import { Journal } from "./journal";
 import type { WorkspaceTab } from "./journal-v2";
 import { useAuth } from "./auth-context";
 import { getCurrentProfileUsername, getCurrentSection, pathFromSection } from "./section-config";
 import { apiRequest } from "@/lib/api-client";
 import type { Section } from "./types";
 import { Spinner } from "./ui/spinner";
-import { CommunityWorkspace } from "./community-workspace";
+import { WorkspaceSectionSkeleton } from "./workspace-section-skeleton";
 
 const UserSettingsDialog = dynamic(
   () => import("./user-settings-dialog").then((module) => module.UserSettingsDialog),
   { ssr: false },
+);
+const FeedV3 = dynamic(
+  () => import("./feed-v3").then((module) => module.FeedV3),
+  { ssr: false, loading: () => <WorkspaceSectionSkeleton /> },
+);
+const Account = dynamic(
+  () => import("./account").then((module) => module.Account),
+  { ssr: false, loading: () => <WorkspaceSectionSkeleton /> },
+);
+const AdminPanel = dynamic(
+  () => import("./admin-panel").then((module) => module.AdminPanel),
+  { ssr: false, loading: () => <WorkspaceSectionSkeleton /> },
+);
+const Pricing = dynamic(
+  () => import("./pricing").then((module) => module.Pricing),
+  { ssr: false, loading: () => <WorkspaceSectionSkeleton /> },
+);
+const AccountSettings = dynamic(
+  () => import("./account-settings").then((module) => module.AccountSettings),
+  { ssr: false, loading: () => <WorkspaceSectionSkeleton /> },
+);
+const Journal = dynamic(
+  () => import("./journal").then((module) => module.Journal),
+  { ssr: false, loading: () => <WorkspaceSectionSkeleton /> },
+);
+const CommunityWorkspace = dynamic(
+  () => import("./community-workspace").then((module) => module.CommunityWorkspace),
+  { ssr: false, loading: () => <WorkspaceSectionSkeleton /> },
 );
 function AuthGate({ onLogin }: { onLogin: () => void }) {
   return <TradeWayLoginLanding onLogin={onLogin} />;
@@ -47,6 +69,7 @@ function AppShellInner() {
   const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
   const [notificationsMounted, setNotificationsMounted] = useState(false);
   const [profileOpening, setProfileOpening] = useState(false);
+  const workspaceMainRef = useRef<HTMLElement>(null);
   const { user } = useAuth();
   const { fontFamily } = useWorkspacePreferences();
   const resolvedFontFamily =
@@ -130,6 +153,7 @@ function AppShellInner() {
     setProfileUsername("");
     setSection(nextSection);
     window.history.pushState(null, "", pathFromSection(nextSection));
+    workspaceMainRef.current?.scrollTo({ top: 0, behavior: "instant" });
   };
 
   const renderSection = (item: Section) => {
@@ -174,7 +198,7 @@ function AppShellInner() {
   return (
     <>
       <ActiveAccountProvider>
-      <div className="mx-auto flex h-[100dvh] w-full max-w-[1920px] gap-3 overflow-hidden bg-[#000000] p-0 text-foreground lg:p-3" style={{ fontFamily: resolvedFontFamily }}>
+      <div className="workspace-shell mx-auto flex h-[100dvh] w-full max-w-[1920px] gap-0 overflow-hidden bg-[#000000] p-0 text-foreground lg:gap-3 lg:p-3" style={{ fontFamily: resolvedFontFamily }}>
         <Sidebar
           active={section}
           onChange={changeSection}
@@ -182,7 +206,7 @@ function AppShellInner() {
           user={user}
         />
         <div className="hidden w-[272px] shrink-0 lg:block" aria-hidden="true" />
-        <main className="h-[100dvh] min-w-0 flex-1 overflow-y-auto overflow-x-hidden bg-[#000000] lg:h-[calc(100dvh-2rem)] lg:rounded-[1rem] lg:border lg:border-white/8">
+        <main ref={workspaceMainRef} data-workspace-main className="workspace-main h-[100dvh] min-w-0 flex-1 overscroll-contain overflow-y-auto overflow-x-hidden bg-[#000000] pb-[max(env(safe-area-inset-bottom),0.5rem)] lg:h-[calc(100dvh-2rem)] lg:rounded-[1rem] lg:border lg:border-white/8 lg:pb-0">
           <WorkspaceTopbar section={section} />
           <section className="min-h-full">
             {renderSection(section)}

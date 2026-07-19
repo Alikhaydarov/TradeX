@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { apiRequest } from "@/lib/api-client";
 import { useAuth } from "./auth-context";
 import type { PropAccount } from "./types";
@@ -64,6 +64,7 @@ export function ActiveAccountProvider({ children }: { children: React.ReactNode 
   const [accounts, setAccountsState] = useState<PropAccount[]>([]);
   const [activeAccountId, setActiveAccountId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const hasLoadedAccounts = useRef(false);
 
   const setActiveAccount = useCallback((id: string | null) => {
     setActiveAccountId(id);
@@ -90,12 +91,14 @@ export function ActiveAccountProvider({ children }: { children: React.ReactNode 
       setAccountsState([]);
       setActiveAccountId(null);
       setLoading(false);
+      hasLoadedAccounts.current = false;
       return;
     }
-    setLoading(true);
+    if (!hasLoadedAccounts.current) setLoading(true);
     try {
       const response = await apiRequest<{ accounts: AccountRow[] }>("/api/prop-accounts");
       setAccounts(response.accounts.map(accountFrom));
+      hasLoadedAccounts.current = true;
     } finally {
       setLoading(false);
     }
