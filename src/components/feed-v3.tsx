@@ -1,6 +1,6 @@
 "use client";
 
-import { Bookmark, Check, Eye, Heart, Link2, MessageCircle, MoreHorizontal, Pencil, Plus, Repeat2, Search, Send, Share2, Trash2, X } from "lucide-react";
+import { Bookmark, Check, Eye, Heart, Link2, MessageCircle, MoreHorizontal, Pencil, Repeat2, Search, Send, Share2, Trash2, X } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { apiRequest } from "@/lib/api-client";
 import { useLanguage } from "@/lib/i18n";
@@ -475,18 +475,6 @@ export function FeedV3({ onLogin }: { onLogin: () => void }) {
       {error ? <div className="mx-auto mt-4 max-w-4xl rounded-[1rem] border border-rose-300/15 bg-rose-400/10 px-4 py-3 text-sm text-rose-200">{error}</div> : null}
 
       <div className="mx-auto max-w-4xl px-3 py-4 sm:px-5 sm:py-5">
-        <button
-          type="button"
-          onClick={openTradePicker}
-          className="mb-3 flex w-full items-center justify-between rounded-lg border border-border bg-card px-4 py-3 text-left transition-colors hover:bg-white/[.035] sm:hidden"
-        >
-          <span>
-            <span className="block text-sm font-black text-white">{t("shareJournalTrade")}</span>
-            <span className="mt-0.5 block text-xs text-zinc-500">{t("reviewedOnly")}</span>
-          </span>
-          <span className="grid size-9 place-items-center rounded-lg bg-white text-black"><Plus size={17} /></span>
-        </button>
-
         <div className="flex items-center px-1">
           <h2 className="text-xs font-black uppercase tracking-[.18em] text-zinc-500">Community tape</h2>
           <span className="ml-auto text-[10px] text-zinc-600">{stats.posts} posts</span>

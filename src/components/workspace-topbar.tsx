@@ -1,6 +1,6 @@
 "use client";
 
-import { EyeOff, Menu, Percent, Wallet } from "lucide-react";
+import { EyeOff, Menu, Percent, Plus, Wallet } from "lucide-react";
 import { useActiveAccountStore } from "./active-account-context";
 import { SocialActions } from "./social-actions-v2";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "./ui/dropdown-menu";
@@ -27,18 +27,38 @@ function openMobileDrawer() {
   window.dispatchEvent(new Event("tradox:open-mobile-menu"));
 }
 
+function dispatchPostTrade() {
+  window.dispatchEvent(new Event("tradeway:share-trade"));
+}
+
+function PostTradeButton({ compact = false }: { compact?: boolean }) {
+  return (
+    <button
+      type="button"
+      onClick={dispatchPostTrade}
+      className={`inline-flex h-9 shrink-0 items-center justify-center rounded-xl bg-white font-semibold text-black transition active:scale-95 hover:bg-zinc-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40 ${compact ? "w-9 px-0" : "gap-1.5 px-3 text-[12px]"}`}
+      aria-label="Post trade"
+      title="Post trade"
+    >
+      <Plus size={15} strokeWidth={2.4} />
+      {compact ? null : "Post trade"}
+    </button>
+  );
+}
+
 export function WorkspaceTopbar({ section }: { section: Section }) {
   const { accounts, activeAccountId } = useActiveAccountStore();
   const { pnlMode, setPnlMode } = useWorkspacePreferences();
   const activeAccount = accounts.find((account) => account.id === activeAccountId) || null;
   const page = LABELS[section] || "Workspace";
   const isAccountScoped = ACCOUNT_SCOPED_SECTIONS.has(section);
+  const isHome = section === "feed";
   const workspace = activeAccount?.name || "All Accounts";
   const pnlLabel = pnlMode === "percentage" ? "Percentage View" : pnlMode === "hidden" ? "Hide P&L" : "Money View";
 
   return (
     <header role="banner" className="tw-app-topbar sticky top-0 z-[70] shrink-0 border-b border-white/8 bg-black/95 px-3 py-2 shadow-[0_10px_30px_rgba(0,0,0,.28)] backdrop-blur-xl supports-[backdrop-filter]:bg-black/85 lg:flex lg:min-h-16 lg:items-center lg:gap-4 lg:px-5 lg:py-2">
-      <div className="grid items-center gap-2 lg:flex lg:min-w-0 lg:flex-1 lg:gap-4" style={{ gridTemplateColumns: "36px minmax(0, 1fr) auto" }}>
+      <div className="grid items-center gap-2 lg:flex lg:min-w-0 lg:flex-1 lg:gap-4" style={{ gridTemplateColumns: isHome ? "36px minmax(0, 1fr) auto auto" : "36px minmax(0, 1fr) auto" }}>
         <button
           type="button"
           onClick={openMobileDrawer}
@@ -59,7 +79,14 @@ export function WorkspaceTopbar({ section }: { section: Section }) {
 
         <SocialActions compact expandedSearch />
 
+        {isHome ? (
+          <div className="shrink-0 lg:hidden">
+            <PostTradeButton compact />
+          </div>
+        ) : null}
+
         <div className="ml-auto hidden shrink-0 items-center gap-2 lg:flex">
+          {isHome ? <PostTradeButton /> : null}
           <PnlModeMenu pnlMode={pnlMode} pnlLabel={pnlLabel} onChange={setPnlMode} />
         </div>
       </div>
