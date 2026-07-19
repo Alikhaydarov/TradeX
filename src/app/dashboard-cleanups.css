@@ -1,0 +1,5 @@
+/* Dashboard cleanup: the account dashboard already has KPI cards inside DashboardOverview.
+   Hide the duplicate monthly KPI strip that sits above the actual dashboard content. */
+main .animate-page-in > div[class*="space-y-3"] > div[class*="grid"][class*="grid-cols-2"][class*="xl:grid-cols-5"] {
+  display: none !important;
+}
