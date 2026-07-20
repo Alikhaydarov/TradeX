@@ -38,6 +38,51 @@ function rRect(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h
   ctx.closePath();
 }
 
+/** Small deterministic PRNG so the same trade always gets the same decorative candle pattern. */
+function seededRandom(seedStr: string) {
+  let h = 1779033703 ^ seedStr.length;
+  for (let i = 0; i < seedStr.length; i++) {
+    h = Math.imul(h ^ seedStr.charCodeAt(i), 3432918353);
+    h = (h << 13) | (h >>> 19);
+  }
+  return function next() {
+    h = Math.imul(h ^ (h >>> 16), 2246822507);
+    h = Math.imul(h ^ (h >>> 13), 3266489909);
+    h ^= h >>> 16;
+    return (h >>> 0) / 4294967296;
+  };
+}
+
+/** Faint procedural candlestick strip drawn when a trade has no attached chart screenshot, so the card never looks empty. */
+function drawGhostCandles(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, accent: string, win: boolean, seedStr: string) {
+  const rnd = seededRandom(seedStr);
+  const count = Math.max(8, Math.round(w / 46));
+  const colW = w / count;
+  let level = h * (win ? 0.72 : 0.28);
+  const bias = win ? -1 : 1;
+  ctx.save();
+  for (let i = 0; i < count; i++) {
+    const drift = (rnd() - 0.42) * h * 0.12 + bias * h * 0.018;
+    const open = level;
+    const close = Math.min(h * 0.94, Math.max(h * 0.06, level + drift));
+    const wick = rnd() * h * 0.05;
+    const top = Math.min(open, close) - wick;
+    const bottom = Math.max(open, close) + wick;
+    const cx = x + i * colW + colW * 0.5;
+    const bodyTop = y + Math.min(open, close);
+    const bodyH = Math.max(4, Math.abs(close - open));
+    const up = close < open;
+    ctx.strokeStyle = "rgba(255,255,255,0.08)";
+    ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.moveTo(cx, y + top); ctx.lineTo(cx, y + bottom); ctx.stroke();
+    ctx.fillStyle = up ? `${accent}26` : "rgba(255,255,255,0.07)";
+    rRect(ctx, cx - colW * 0.24, bodyTop, colW * 0.48, bodyH, 2);
+    ctx.fill();
+    level = close;
+  }
+  ctx.restore();
+}
+
 /* ── FEED CARD  1080 × 1080 ────────────────────────────────────────────────── */
 async function makeFeedCard(trade: JournalEntry): Promise<string> {
   const S = 1080;
@@ -139,7 +184,8 @@ async function makeFeedCard(trade: JournalEntry): Promise<string> {
     ctx.fillStyle = "rgba(255,255,255,0.1)";
     ctx.fillRect(X, nextY + 10, 560, 1.5);
 
-    /* optional tags (setup / session) */
+    /* optional tags (setup / session) — internal auto-sync labels are never shown publicly */
+    const isInternalLabel = (val: string) => /auto\s*sync/i.test(val);
     let tagX = X;
     const drawTag = (val: string, x: number, y: number) => {
       ctx.font = "600 25px Arial, sans-serif";
@@ -149,16 +195,29 @@ async function makeFeedCard(trade: JournalEntry): Promise<string> {
       return tw + 44;
     };
     const tagY = nextY + 36;
-    if (trade.setup?.trim())   tagX += drawTag(trade.setup.trim(), tagX, tagY);
-    if (trade.session?.trim()) drawTag(trade.session.trim(), tagX, tagY);
+    const setupTag = trade.setup?.trim();
+    const sessionTag = trade.session?.trim();
+    if (setupTag && !isInternalLabel(setupTag))     tagX += drawTag(setupTag, tagX, tagY);
+    if (sessionTag && !isInternalLabel(sessionTag)) drawTag(sessionTag, tagX, tagY);
 
-    /* decorative arrow (top-right) */
-    ctx.strokeStyle = accent; ctx.lineWidth = 7; ctx.lineCap = "round";
-    ctx.globalAlpha = 0.55;
-    ctx.beginPath(); ctx.moveTo(660, 520); ctx.bezierCurveTo(760, 440, 840, 360, 950, 270); ctx.stroke();
-    ctx.fillStyle = accent;
-    ctx.beginPath(); ctx.moveTo(950, 270); ctx.lineTo(900, 295); ctx.lineTo(936, 335); ctx.closePath(); ctx.fill();
-    ctx.globalAlpha = 1;
+    /* trend arrow (top-right) — direction and color always match the actual outcome */
+    if (chart) {
+      ctx.strokeStyle = accent; ctx.lineWidth = 7; ctx.lineCap = "round";
+      ctx.globalAlpha = 0.55;
+      ctx.beginPath();
+      if (win) { ctx.moveTo(660, 520); ctx.bezierCurveTo(760, 440, 840, 360, 950, 270); }
+      else { ctx.moveTo(660, 270); ctx.bezierCurveTo(760, 350, 840, 430, 950, 520); }
+      ctx.stroke();
+      ctx.fillStyle = accent;
+      ctx.beginPath();
+      if (win) { ctx.moveTo(950, 270); ctx.lineTo(900, 295); ctx.lineTo(936, 335); }
+      else { ctx.moveTo(950, 520); ctx.lineTo(936, 465); ctx.lineTo(900, 495); }
+      ctx.closePath(); ctx.fill();
+      ctx.globalAlpha = 1;
+    } else {
+      /* no chart image — fill the empty right side with a subtle procedural candle backdrop instead of blank space */
+      drawGhostCandles(ctx, 640, 150, S - 640 - 56, 460, accent, win, `${trade.id}-feed`);
+    }
 
     /* bottom: tiny tradeway.app */
     ctx.fillStyle = "rgba(255,255,255,0.15)";
@@ -274,7 +333,8 @@ async function makeStoryCard(trade: JournalEntry): Promise<string> {
     ctx.fillStyle = "rgba(255,255,255,0.09)";
     ctx.fillRect(X, statsY + 6, W - X * 2, 1.5);
 
-    /* optional tags */
+    /* optional tags — internal auto-sync labels are never shown publicly */
+    const isInternalLabel = (val: string) => /auto\s*sync/i.test(val);
     let tagX = X;
     const tag = (val: string, x: number, y: number) => {
       ctx.font = "600 27px Arial, sans-serif";
@@ -284,8 +344,10 @@ async function makeStoryCard(trade: JournalEntry): Promise<string> {
       return tw + 16;
     };
     const tagY2 = statsY + 36;
-    if (trade.setup?.trim())   tagX += tag(trade.setup.trim(), tagX, tagY2);
-    if (trade.session?.trim()) tag(trade.session.trim(), tagX, tagY2);
+    const setupTag2 = trade.setup?.trim();
+    const sessionTag2 = trade.session?.trim();
+    if (setupTag2 && !isInternalLabel(setupTag2))     tagX += tag(setupTag2, tagX, tagY2);
+    if (sessionTag2 && !isInternalLabel(sessionTag2)) tag(sessionTag2, tagX, tagY2);
 
     /* ── Clear chart image (lower section) ── */
     const chartZoneTop = 920, chartZoneH = 760;
@@ -301,14 +363,10 @@ async function makeStoryCard(trade: JournalEntry): Promise<string> {
       ctx.strokeStyle = "rgba(255,255,255,0.07)"; ctx.lineWidth = 2;
       rRect(ctx, cx3 - 18, cy3 - 18, cw3 + 36, ch3 + 36, 20); ctx.stroke();
     } else {
-      /* decorative mini candles when no chart */
-      [120, 195, 145, 270, 200, 340, 255, 175, 310].forEach((h, i) => {
-        const bx = 150 + i * 90, by = chartZoneTop + 380 - h;
-        ctx.strokeStyle = "rgba(212,212,216,0.15)"; ctx.lineWidth = 4;
-        ctx.beginPath(); ctx.moveTo(bx + 18, by - 50); ctx.lineTo(bx + 18, by + h + 50); ctx.stroke();
-        ctx.fillStyle = i % 3 === 0 ? "rgba(52,211,153,.22)" : "rgba(212,212,216,.18)";
-        ctx.fillRect(bx, by, 36, h);
-      });
+      /* no chart image — subtle procedural candle backdrop, colored to match the actual outcome */
+      ctx.fillStyle = "rgba(255,255,255,0.02)";
+      rRect(ctx, X, chartZoneTop, W - X * 2, chartZoneH, 20); ctx.fill();
+      drawGhostCandles(ctx, X + 40, chartZoneTop + 40, W - X * 2 - 80, chartZoneH - 80, accent, win, `${trade.id}-story`);
     }
 
     /* bottom gradient overlay */
