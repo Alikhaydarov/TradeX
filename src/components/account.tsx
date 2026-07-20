@@ -178,10 +178,16 @@ export function Account({ onLogin, profileUsername }: { onLogin: () => void; pro
   const [achievementOpen, setAchievementOpen] = useState(false);
   const [achievementTitle, setAchievementTitle] = useState("");
   const [achievementIssuer, setAchievementIssuer] = useState("");
+  const viewedPosts = useRef<Set<string>>(new Set());
+  const viewObserver = useRef<IntersectionObserver | null>(null);
   const [achievementType, setAchievementType] = useState<"funded" | "payout">("funded");
   const [achievementImage, setAchievementImage] = useState("");
   const [achievementBusy, setAchievementBusy] = useState(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+
+  useEffect(() => {
+    return () => viewObserver.current?.disconnect();
+  }, []);
 
   useEffect(() => {
     if (!user) {
@@ -414,8 +420,38 @@ export function Account({ onLogin, profileUsername }: { onLogin: () => void; pro
     }
   };
 
+  const recordPostView = (postId: string) => {
+    if (!user || viewedPosts.current.has(postId)) return;
+    viewedPosts.current.add(postId);
+    void apiRequest<{ success: boolean; views?: number | null }>("/api/post-actions", {
+      method: "POST",
+      body: JSON.stringify({ action: "view", postId }),
+    })
+      .then((response) => {
+        if (typeof response.views !== "number") return;
+        setPosts((current) => current.map((item) => item.id === postId ? { ...item, views: response.views as number } : item));
+      })
+      .catch(() => undefined);
+  };
+
+  const observePostView = (node: HTMLElement | null, postId: string) => {
+    if (!node || !user) return;
+    if (!viewObserver.current) {
+      viewObserver.current = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting && entry.intersectionRatio >= 0.55) {
+            const id = entry.target.getAttribute("data-post-id");
+            if (id) recordPostView(id);
+          }
+        });
+      }, { threshold: [0.55] });
+    }
+    node.setAttribute("data-post-id", postId);
+    viewObserver.current.observe(node);
+  };
+
   const renderPost = (post: Post) => (
-    <article key={post.id} className="group border-b border-white/8 bg-[#111111] px-4 py-5 last:border-b-0 transition hover:bg-[#141414] sm:px-6">
+    <article ref={(node) => observePostView(node, post.id)} key={post.id} className="group border-b border-white/8 bg-[#111111] px-4 py-5 last:border-b-0 transition hover:bg-[#141414] sm:px-6">
       <div className="grid grid-cols-[40px_minmax(0,1fr)] gap-3 sm:grid-cols-[48px_minmax(0,1fr)] sm:gap-4">
         <TraderAvatar name={post.name} value={post.avatar} className="mt-1 h-10 w-10 shrink-0 rounded-full text-xs ring-2 ring-white/5 transition group-hover:ring-white/15 sm:h-12 sm:w-12" />
         <div className="min-w-0">
