@@ -65,7 +65,7 @@ export function WorkspaceTopbar({ section }: { section: Section }) {
           className="grid size-9 shrink-0 place-items-center rounded-xl border border-white/10 bg-[#090909] text-white transition active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/30 lg:hidden"
           aria-label="Open mobile menu"
         >
-          <Menu size={18} strokeWidth={2.2} />
+          <Menu size={17} strokeWidth={1.9} />
         </button>
 
         <div className="min-w-0 lg:min-w-[180px] lg:flex-1">

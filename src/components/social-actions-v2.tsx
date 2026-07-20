@@ -607,7 +607,7 @@ export function SocialActions({
           aria-label="Search traders"
           title="Search traders"
         >
-          <Search size={compact ? 16 : 17} />
+          <Search size={compact ? 16 : 17} strokeWidth={1.9} />
           {expandedSearch ? (
             <>
               <span className="flex-1 text-left">Search traders</span>
@@ -621,10 +621,10 @@ export function SocialActions({
           <button
             type="button"
             onClick={() => setSearchOpen(true)}
-            className="grid size-9 place-items-center rounded-xl border border-white/10 bg-[#090909] text-zinc-100 transition hover:bg-[#111111] xl:hidden"
+            className={`grid place-items-center rounded-xl border border-white/10 bg-[#090909] text-zinc-100 transition hover:bg-[#111111] xl:hidden ${compact ? "size-9" : "size-10"}`}
             aria-label="Search traders"
           >
-            <Search size={17} />
+            <Search size={compact ? 16 : 17} strokeWidth={1.9} />
           </button>
         ) : null}
         <button
@@ -636,7 +636,7 @@ export function SocialActions({
           }
           title="Notifications"
         >
-          <Bell size={compact ? 16 : 17} />
+          <Bell size={compact ? 16 : 17} strokeWidth={1.9} />
           {unread > 0 ? (
             <span
               className={`absolute grid place-items-center rounded-full bg-rose-500 px-1 font-black text-white ring-2 ring-[#090909] ${compact ? "-right-1 -top-1 min-h-4 min-w-4 text-[9px]" : "-right-1 -top-1 min-h-5 min-w-5 text-[10px]"}`}
