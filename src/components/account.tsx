@@ -6,6 +6,7 @@ import {
   Camera,
   Check,
   Eye,
+  EyeOff,
   Heart,
   ImageIcon,
   LogOut,
@@ -38,6 +39,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { XSpinner } from "./app-loader";
 import { InstrumentBadge } from "./instrument-badge";
@@ -62,6 +64,7 @@ interface ProfileRecord {
   premium_until?: string | null;
   ai_enabled?: boolean | null;
   auto_sync_enabled?: boolean | null;
+  stats_visible?: boolean | null;
 }
 
 interface ConnectionUser {
@@ -119,6 +122,7 @@ function toProfile(data: ProfileRecord): Profile & { isFollowing?: boolean } {
     isVerified: hasVerifiedPremiumAccess(data),
     plan,
     isFollowing: Boolean(data.isFollowing),
+    statsVisible: data.stats_visible !== false,
   };
 }
 
@@ -497,19 +501,26 @@ export function Account({ onLogin, profileUsername }: { onLogin: () => void; pro
               </div>
             </div>
 
-            <div className="mt-4 grid grid-cols-4 divide-x divide-border overflow-hidden rounded-lg border border-border bg-[#111111]">
-              {[
-                ["Trades", String(stats.trades)],
-                ["Win", `${stats.winRate}%`],
-                ["P&L", formatMoneyCompact(stats.netPnl)],
-                ["Avg R", `${stats.averageR.toFixed(2)}R`],
-              ].map(([label, value]) => (
-                <div key={label} className="min-w-0 px-2 py-2.5 text-center">
-                  <strong className="block truncate font-mono text-xs text-zinc-100">{value}</strong>
-                  <span className="mt-0.5 block text-[8px] font-bold uppercase text-zinc-600">{label}</span>
+            {profile.statsVisible !== false || isOwnProfile ? (
+              <div className="mt-4">
+                {isOwnProfile && profile.statsVisible === false ? (
+                  <p className="mb-1.5 flex items-center gap-1 text-[10px] font-semibold text-zinc-600"><EyeOff size={11} /> Boshqalarga yashirilgan &mdash; faqat siz ko&apos;rasiz</p>
+                ) : null}
+                <div className="grid grid-cols-4 divide-x divide-border overflow-hidden rounded-lg border border-border bg-[#111111]">
+                  {[
+                    ["Trades", String(stats.trades)],
+                    ["Win", `${stats.winRate}%`],
+                    ["P&L", formatMoneyCompact(stats.netPnl)],
+                    ["Avg R", `${stats.averageR.toFixed(2)}R`],
+                  ].map(([label, value]) => (
+                    <div key={label} className="min-w-0 px-2 py-2.5 text-center">
+                      <strong className="block truncate font-mono text-xs text-zinc-100">{value}</strong>
+                      <span className="mt-0.5 block text-[8px] font-bold uppercase text-zinc-600">{label}</span>
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
+              </div>
+            ) : null}
           </div>
         </section>
 
@@ -608,6 +619,16 @@ export function Account({ onLogin, profileUsername }: { onLogin: () => void; pro
                 <div className="grid gap-2"><Label>Trading style</Label><Select value={draftProfile.tradingStyle} onValueChange={(value) => setDraftProfile({ ...draftProfile, tradingStyle: value })}><SelectTrigger className="w-full"><SelectValue placeholder="Choose your trading style" /></SelectTrigger><SelectContent><SelectItem value="Price Action">Price Action</SelectItem><SelectItem value="Scalping">Scalping</SelectItem><SelectItem value="Swing Trading">Swing Trading</SelectItem><SelectItem value="Algorithmic">Algorithmic</SelectItem></SelectContent></Select></div>
                 <div className="grid gap-2"><Label htmlFor="profile-location">Location</Label><div className="relative"><MapPin className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" size={16} /><Input id="profile-location" value={draftProfile.location} onChange={(event) => setDraftProfile({ ...draftProfile, location: event.target.value })} placeholder="Korea" className="pl-10" /></div></div>
                 <div className="grid gap-2"><Label htmlFor="profile-bio">Bio</Label><Textarea id="profile-bio" value={draftProfile.bio} onChange={(event) => setDraftProfile({ ...draftProfile, bio: event.target.value })} maxLength={160} className="min-h-28" placeholder="Write something about your trading journey..." /><span className="text-right text-[11px] text-slate-600">{draftProfile.bio.length}/160</span></div>
+                <div className="flex items-center justify-between gap-3 rounded-xl border border-white/8 bg-[#080808] px-4 py-3">
+                  <div className="flex items-center gap-2.5">
+                    {draftProfile.statsVisible === false ? <EyeOff size={16} className="shrink-0 text-zinc-500" /> : <Eye size={16} className="shrink-0 text-zinc-400" />}
+                    <div>
+                      <p className="text-sm font-semibold text-white">Show trading stats</p>
+                      <p className="text-xs text-zinc-500">Win rate, P&amp;L, trades va Avg R profilingizda ko&apos;rinsin.</p>
+                    </div>
+                  </div>
+                  <Switch checked={draftProfile.statsVisible !== false} onCheckedChange={(checked) => setDraftProfile({ ...draftProfile, statsVisible: checked })} aria-label="Show trading stats on profile" />
+                </div>
               </div>
             </div>
             <DialogFooter className="sticky bottom-0 border-t border-white/8 bg-black px-5 py-4">

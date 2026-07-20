@@ -115,6 +115,7 @@ export interface Profile {
   isVerified?: boolean;
   plan?: "free" | "standard" | "pro";
   isAdmin?: boolean;
+  statsVisible?: boolean;
 }
 
 export interface AdminUser {

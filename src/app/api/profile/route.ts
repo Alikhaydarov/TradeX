@@ -174,7 +174,7 @@ export async function GET(request: Request) {
 
   const { data, error } = await auth.supabase
     .from("profiles")
-    .select("id, username, full_name, avatar_url, bio, trading_style, location, is_verified, plan, premium_until, ai_enabled, auto_sync_enabled")
+    .select("id, username, full_name, avatar_url, bio, trading_style, location, is_verified, plan, premium_until, ai_enabled, auto_sync_enabled, stats_visible")
     .eq("id", auth.user.id)
     .single();
 
@@ -284,6 +284,7 @@ export async function PATCH(request: Request) {
     bio?: string;
     tradingStyle?: string;
     location?: string;
+    statsVisible?: boolean;
   };
   const fullName = body.fullName?.trim();
   const usernameCheck = validateUsername(body.username ?? "");
@@ -306,10 +307,11 @@ export async function PATCH(request: Request) {
       bio: body.bio?.trim().slice(0, 160) ?? "",
       trading_style: body.tradingStyle?.trim().slice(0, 50) || "Price Action",
       location: body.location?.trim().slice(0, 80) ?? "",
+      stats_visible: body.statsVisible !== false,
       updated_at: new Date().toISOString(),
     })
     .eq("id", auth.user.id)
-    .select("id, username, full_name, avatar_url, bio, trading_style, location, is_verified, plan, premium_until, ai_enabled, auto_sync_enabled")
+    .select("id, username, full_name, avatar_url, bio, trading_style, location, is_verified, plan, premium_until, ai_enabled, auto_sync_enabled, stats_visible")
     .single();
 
   if (error) {

@@ -114,7 +114,7 @@ export async function GET(request: Request, context: Params) {
 
   const { data: profile, error } = await supabase
     .from("profiles")
-    .select("id, username, full_name, avatar_url, bio, trading_style, location, is_verified, plan, premium_until, ai_enabled, auto_sync_enabled")
+    .select("id, username, full_name, avatar_url, bio, trading_style, location, is_verified, plan, premium_until, ai_enabled, auto_sync_enabled, stats_visible")
     .eq("username", username)
     .maybeSingle();
 
@@ -222,6 +222,11 @@ export async function GET(request: Request, context: Params) {
     parentPosts,
   );
 
+  const isOwner = Boolean(auth && auth.user.id === profile.id);
+  const visibleInsights = profile.stats_visible === false && !isOwner
+    ? { ...insights, stats: { trades: 0, winRate: 0, netPnl: 0, averageR: 0 } }
+    : insights;
+
   return Response.json({
     profile: {
       ...profile,
@@ -230,6 +235,6 @@ export async function GET(request: Request, context: Params) {
       isFollowing,
     },
     posts: timeline,
-    ...insights,
+    ...visibleInsights,
   });
 }
