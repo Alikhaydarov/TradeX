@@ -542,12 +542,12 @@ export function FeedV3({ onLogin }: { onLogin: () => void }) {
                       </button>
                     ) : null}
 
-                    <div className="mt-3 grid grid-cols-5 items-center rounded-[1rem] border border-white/8 bg-black/10 p-1 text-zinc-500">
-                      <button onClick={() => void toggleReplies(post)} className={`flex h-11 items-center justify-center gap-1.5 rounded-xl text-[11px] transition-colors hover:bg-white/[.04] hover:text-zinc-200 ${openReplies === post.id ? "bg-white/[.05] text-zinc-100" : ""}`} aria-label="Replies"><MessageCircle size={17} />{post.replies}</button>
-                      <button onClick={() => void toggleRepost(post)} className={`flex h-11 items-center justify-center gap-1.5 rounded-xl text-[11px] transition-colors hover:bg-emerald-400/[.06] hover:text-emerald-300 ${post.reposted ? "bg-emerald-400/[.08] text-emerald-300" : ""}`} aria-label="Repost"><Repeat2 size={17} />{post.reposts}</button>
-                      <button onClick={() => void toggleLike(post)} className={`flex h-11 items-center justify-center gap-1.5 rounded-xl text-[11px] transition-colors hover:bg-rose-400/[.06] hover:text-rose-300 ${post.liked ? "bg-rose-400/[.08] text-rose-300" : ""}`} aria-label="Like"><Heart size={17} fill={post.liked ? "currentColor" : "none"} />{post.likes}</button>
-                      <span className="flex h-11 items-center justify-center gap-1.5 rounded-xl text-[11px]" aria-label={`${post.views} views`}><Eye size={17} />{formatCount(post.views)}</span>
-                      <button onClick={() => void sharePost(post)} className="grid h-11 place-items-center rounded-xl transition-colors hover:bg-white/[.04] hover:text-zinc-200" aria-label="Share"><Share2 size={17} /></button>
+                    <div className="mt-3 grid grid-cols-5 items-center rounded-xl border border-white/8 bg-black/10 p-0.5 text-zinc-500">
+                      <button onClick={() => void toggleReplies(post)} className={`flex h-9 items-center justify-center gap-1.5 rounded-lg text-[11px] transition-colors hover:bg-white/[.04] hover:text-zinc-200 ${openReplies === post.id ? "bg-white/[.05] text-zinc-100" : ""}`} aria-label="Replies"><MessageCircle size={15} strokeWidth={1.75} />{post.replies}</button>
+                      <button onClick={() => void toggleRepost(post)} className={`flex h-9 items-center justify-center gap-1.5 rounded-lg text-[11px] transition-colors hover:bg-emerald-400/[.06] hover:text-emerald-300 ${post.reposted ? "bg-emerald-400/[.08] text-emerald-300" : ""}`} aria-label="Repost"><Repeat2 size={15} strokeWidth={1.75} />{post.reposts}</button>
+                      <button onClick={() => void toggleLike(post)} className={`flex h-9 items-center justify-center gap-1.5 rounded-lg text-[11px] transition-colors hover:bg-rose-400/[.06] hover:text-rose-300 ${post.liked ? "bg-rose-400/[.08] text-rose-300" : ""}`} aria-label="Like"><Heart size={15} strokeWidth={1.75} fill={post.liked ? "currentColor" : "none"} />{post.likes}</button>
+                      <span className="flex h-9 items-center justify-center gap-1.5 rounded-lg text-[11px]" aria-label={`${post.views} views`}><Eye size={15} strokeWidth={1.75} />{formatCount(post.views)}</span>
+                      <button onClick={() => void sharePost(post)} className="grid h-9 place-items-center rounded-lg transition-colors hover:bg-white/[.04] hover:text-zinc-200" aria-label="Share"><Share2 size={15} strokeWidth={1.75} /></button>
                     </div>
 
                     {openReplies === post.id ? (
