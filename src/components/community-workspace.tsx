@@ -260,9 +260,9 @@ export function CommunityWorkspace() {
           {data.isOwner ? (
             <Button
               onClick={() => setActiveTab("members")}
-              className="hidden rounded-xl sm:inline-flex"
+              className="rounded-xl px-2.5 sm:px-4"
             >
-              <UserPlus size={15} /> Invite
+              <UserPlus size={15} /> <span className="hidden sm:inline">Invite</span>
             </Button>
           ) : null}
         </div>
