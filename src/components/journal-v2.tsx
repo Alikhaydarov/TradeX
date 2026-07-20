@@ -1422,29 +1422,29 @@ function TradeEditor({ trade, saving, onClose, onSave, onDelete }: { trade: Jour
   return (
     <div className="fixed inset-0 z-[9999] flex items-center justify-center overflow-hidden bg-black/88 p-2 pt-[max(.5rem,env(safe-area-inset-top))] pb-[max(.5rem,env(safe-area-inset-bottom))] sm:p-4">
       <div className="absolute inset-0" onClick={onClose} aria-hidden="true" />
-      <form action={onSave} className="relative z-10 flex h-[calc(100dvh-1rem)] max-h-[920px] w-full max-w-5xl flex-col overflow-hidden rounded-[20px] border border-white/8 bg-[#070707] text-foreground shadow-2xl shadow-black/80 sm:h-auto sm:max-h-[92dvh] sm:rounded-[18px]">
-        <header className="flex shrink-0 items-center gap-3 border-b border-border px-4 py-3.5 sm:px-5 sm:py-4">
-          <div className="min-w-0 flex-1">
-            <div className="flex min-w-0 items-center gap-2">
-              <h3 className="truncate text-lg font-black">{trade.symbol}</h3>
+      <form action={onSave} className="relative z-10 flex h-[calc(100dvh-1rem)] max-h-[920px] w-full max-w-5xl flex-col overflow-hidden rounded-[20px] border border-white/8 bg-[#070707] text-foreground shadow-2xl shadow-black/80 sm:h-auto sm:max-h-[92dvh] sm:rounded-[18px] lg:max-w-6xl">
+        <header className="flex shrink-0 items-start justify-between gap-3 border-b border-border px-4 py-3 sm:items-center sm:px-5 sm:py-4">
+          <div className="min-w-0 flex-1 py-0.5 sm:py-0">
+            <h3 className="truncate text-base font-black sm:text-lg">{trade.symbol}</h3>
+            <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
               <span className={`shrink-0 rounded-lg px-2 py-0.5 text-[10px] font-black ${trade.side === "Long" ? "bg-emerald-500/10 text-emerald-300" : "bg-rose-500/10 text-rose-300"}`}>{trade.side}</span>
               <span className={`shrink-0 rounded-lg px-2 py-0.5 font-mono text-[10px] font-black ${trade.pnl >= 0 ? "bg-emerald-500/10 text-emerald-300" : "bg-rose-500/10 text-rose-300"}`}>{trade.pnl >= 0 ? "+" : ""}{cash.format(trade.pnl)}</span>
+              <p className="hidden text-xs text-zinc-500 sm:block">Trade review, edit and screenshots</p>
             </div>
-            <p className="mt-0.5 text-xs text-zinc-500">Trade review, edit and screenshots</p>
           </div>
           <button type="button" onClick={onClose} className="grid size-9 shrink-0 place-items-center rounded-xl text-zinc-500 transition hover:bg-[#111111] hover:text-white" aria-label="Close">
             <X size={17} />
           </button>
         </header>
-        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain p-4 sm:p-5">
+        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain p-3 sm:p-5">
           <section className="mb-4 overflow-hidden rounded-2xl border border-white/8">
-            <div className="flex items-center justify-between border-b border-white/8 bg-[#050505] px-4 py-2.5">
+            <div className="flex items-center justify-between border-b border-white/8 bg-[#050505] px-3 py-2 sm:px-4 sm:py-2.5">
               <p className="text-[10px] font-black uppercase tracking-[.16em] text-zinc-500">Chart · TradingView</p>
               <span className="text-[10px] text-zinc-600">{trade.symbol}</span>
             </div>
-            <TradingViewChart symbol={trade.symbol} className="h-[280px] sm:h-[380px] lg:h-[440px]" />
+            <TradingViewChart symbol={trade.symbol} className="h-[240px] sm:h-[380px] lg:h-[440px]" />
           </section>
-          <div className="grid gap-4 xl:grid-cols-[minmax(0,1.12fr)_minmax(320px,.88fr)]">
+          <div className="grid gap-4 lg:grid-cols-[minmax(0,1.12fr)_minmax(300px,.88fr)]">
             <div className="space-y-4">
               <section className="rounded-2xl border border-white/8 bg-[#050505] p-4">
                 <div className="mb-4">
