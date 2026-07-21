@@ -283,6 +283,15 @@ const entryFrom = (e: EntryRow): JournalEntry => {
 };
 const monthId = (d: Date) =>
   `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+function calendarMonthFromPath() {
+  if (typeof window === "undefined") return null;
+  const match = window.location.pathname.match(/^\/calendar\/(\d{4})\/(1[0-2]|[1-9])$/);
+  if (!match) return null;
+  const year = Number(match[1]);
+  const month = Number(match[2]) - 1;
+  const date = new Date(year, month, 1);
+  return date.getFullYear() === year && date.getMonth() === month ? date : null;
+}
 const reviewScore = (entry: JournalEntry) =>
   [
     entry.note,
@@ -380,7 +389,8 @@ export function JournalV2({
     loading: accountsLoading,
   } = useActiveAccountStore();
   const [entries, setEntries] = useState<JournalEntry[]>([]);
-  const [month, setMonth] = useState(() => new Date());
+  const [month, setMonth] = useState(() => calendarMonthFromPath() || new Date());
+  const [calendarView, setCalendarView] = useState<"year" | "month">(() => calendarMonthFromPath() ? "month" : "year");
   const [accountOpen, setAccountOpen] = useState(false);
   const [tradeOpen, setTradeOpen] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -525,6 +535,22 @@ export function JournalV2({
       document.removeEventListener("visibilitychange", refresh);
     };
   }, [loadEntries, user]);
+
+  useEffect(() => {
+    const syncCalendarRoute = () => {
+      const routeMonth = calendarMonthFromPath();
+      if (routeMonth) {
+        setMonth(routeMonth);
+        setCalendarView("month");
+      } else if (window.location.pathname === "/calendar") {
+        setCalendarView("year");
+      }
+    };
+
+    syncCalendarRoute();
+    window.addEventListener("popstate", syncCalendarRoute);
+    return () => window.removeEventListener("popstate", syncCalendarRoute);
+  }, [forcedTab]);
 
   useEffect(() => {
     if (!user) return;
@@ -717,6 +743,21 @@ export function JournalV2({
       };
     });
   }, [month, accountEntries]);
+  const yearlyCalendar = useMemo(() => {
+    const year = month.getFullYear();
+    const months = Array.from({ length: 12 }, (_, monthIndex) => ({ monthIndex, trades: [] as JournalEntry[] }));
+    for (const entry of accountEntries) {
+      if (!entry.rawDate?.startsWith(`${year}-`)) continue;
+      const entryMonth = Number(entry.rawDate.slice(5, 7)) - 1;
+      if (entryMonth >= 0 && entryMonth < 12) months[entryMonth].trades.push(entry);
+    }
+    return months.map(({ monthIndex, trades }) => ({
+      monthIndex,
+      trades: trades.length,
+      pnl: trades.reduce((sum, trade) => sum + trade.pnl, 0),
+      wins: trades.filter((trade) => trade.pnl > 0).length,
+    }));
+  }, [accountEntries, month]);
 
   async function createAccount(form: FormData) {
     setSaving(true);
@@ -905,8 +946,22 @@ export function JournalV2({
     await loadEntries(true, true);
   }, [journalCacheKey, loadEntries]);
 
-  const shiftMonth = (n: number) =>
-    setMonth((d) => new Date(d.getFullYear(), d.getMonth() + n, 1));
+  const openCalendarMonth = (monthIndex: number) => {
+    const next = new Date(month.getFullYear(), monthIndex, 1);
+    setMonth(next);
+    setCalendarView("month");
+    window.history.pushState(null, "", `/calendar/${next.getFullYear()}/${next.getMonth() + 1}`);
+  };
+  const openCalendarOverview = () => {
+    setCalendarView("year");
+    window.history.pushState(null, "", "/calendar");
+  };
+  const shiftCalendarYear = (delta: number) => setMonth((current) => new Date(current.getFullYear() + delta, current.getMonth(), 1));
+  const shiftMonth = (delta: number) => setMonth((current) => {
+    const next = new Date(current.getFullYear(), current.getMonth() + delta, 1);
+    if (calendarView === "month") window.history.pushState(null, "", `/calendar/${next.getFullYear()}/${next.getMonth() + 1}`);
+    return next;
+  });
   const exportCsv = () => {
     const rows = [
         ["Date", "Symbol", "Side", "PnL", "R", "Setup"],
@@ -984,6 +1039,8 @@ export function JournalV2({
             planRate={planRate}
             monthCount={monthEntries.length}
             calendar={calendar}
+            yearlyCalendar={yearlyCalendar}
+            calendarView={calendarView}
             trades={shown}
             bibleTrades={bibleEntries}
             query={query}
@@ -1004,7 +1061,14 @@ export function JournalV2({
             onCsv={exportCsv}
             onPrev={() => shiftMonth(-1)}
             onNext={() => shiftMonth(1)}
-            onToday={() => setMonth(new Date())}
+            onToday={() => {
+              const today = new Date();
+              setMonth(today);
+              if (calendarView === "month") window.history.pushState(null, "", `/calendar/${today.getFullYear()}/${today.getMonth() + 1}`);
+            }}
+            onCalendarMonthSelect={openCalendarMonth}
+            onCalendarOverview={openCalendarOverview}
+            onCalendarYearShift={shiftCalendarYear}
             onUpdateTrade={updateTrade}
             onRemoveTrade={removeTrade}
             onMt5Synced={reloadJournal}
@@ -1439,6 +1503,8 @@ function Workspace(p: {
   planRate: number;
   monthCount: number;
   calendar: Array<{ day: number; trades: JournalEntry[]; pnl: number } | null>;
+  yearlyCalendar: Array<{ monthIndex: number; trades: number; pnl: number; wins: number }>;
+  calendarView: "year" | "month";
   trades: JournalEntry[];
   bibleTrades: JournalEntry[];
   query: string;
@@ -1460,6 +1526,9 @@ function Workspace(p: {
   onPrev: () => void;
   onNext: () => void;
   onToday: () => void;
+  onCalendarMonthSelect: (monthIndex: number) => void;
+  onCalendarOverview: () => void;
+  onCalendarYearShift: (delta: number) => void;
   onUpdateTrade: (id: string, form: FormData) => Promise<void>;
   onRemoveTrade: (id: string) => Promise<void>;
   onMt5Synced: () => Promise<void>;
@@ -1474,6 +1543,8 @@ function Workspace(p: {
     planRate,
     monthCount,
     calendar,
+    yearlyCalendar,
+    calendarView,
     trades,
     bibleTrades,
     month,
@@ -1512,6 +1583,13 @@ function Workspace(p: {
     account.maxDrawdown && currentPnl < 0
       ? Math.min(100, (Math.abs(currentPnl) / account.maxDrawdown) * 100)
       : 0;
+  const yearlyPnl = yearlyCalendar.reduce((sum, item) => sum + item.pnl, 0);
+  const yearlyTrades = yearlyCalendar.reduce((sum, item) => sum + item.trades, 0);
+  const activeMonths = yearlyCalendar.filter((item) => item.trades > 0).length;
+  const bestMonth = yearlyCalendar.reduce(
+    (best, item) => (item.pnl > best.pnl ? item : best),
+    yearlyCalendar[0] || { monthIndex: 0, trades: 0, pnl: 0, wins: 0 },
+  );
   const sortedTrades = useMemo(
     () =>
       [...trades].sort((left, right) => {
@@ -2002,6 +2080,60 @@ function Workspace(p: {
           {/* Calendar */}
           {!singleTabMode || activeTab === "calendar" ? (
             <TabsContent value="calendar">
+              {calendarView === "year" ? (
+                <div className="calendar-workspace space-y-3">
+                  <section className="calendar-surface overflow-hidden rounded-[1rem] border border-white/8 bg-[#070707]">
+                    <div className="flex flex-col gap-3 border-b border-white/8 px-3 py-3 sm:px-4 sm:py-4 lg:flex-row lg:items-center">
+                      <div className="flex min-w-0 items-center gap-3">
+                        <span className="grid size-9 shrink-0 place-items-center rounded-xl border border-white/8 bg-white/[.035] text-zinc-300"><CalendarDays size={17} /></span>
+                        <div className="min-w-0">
+                          <p className="text-[9px] font-medium uppercase tracking-[0.14em] text-zinc-600">Calendar overview</p>
+                          <h3 className="truncate text-[15px] font-black text-white">Yearly performance</h3>
+                          <p className="hidden text-[11px] text-zinc-500 sm:block">Choose a month to inspect the trades behind its result.</p>
+                        </div>
+                      </div>
+                      <div className="grid w-full grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-1 rounded-xl border border-white/8 bg-[#050505] p-1 lg:ml-auto lg:w-auto">
+                        <Button aria-label="Previous year" variant="ghost" size="icon-sm" onClick={() => p.onCalendarYearShift(-1)}><ChevronLeft size={16} /></Button>
+                        <strong className="px-3 text-center text-sm">{month.getFullYear()}</strong>
+                        <Button aria-label="Next year" variant="ghost" size="icon-sm" onClick={() => p.onCalendarYearShift(1)}><ChevronRight size={16} /></Button>
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-2 border-b border-white/8 p-2.5 sm:grid-cols-4 sm:gap-3 sm:p-4">
+                      {[
+                        { label: "Net P&L", value: formatTradePnl(yearlyPnl), tone: yearlyPnl >= 0 ? "text-emerald-400" : "text-rose-400" },
+                        { label: "Total trades", value: String(yearlyTrades), tone: "text-white" },
+                        { label: "Active months", value: String(activeMonths), tone: "text-white" },
+                        { label: "Best month", value: bestMonth.trades ? new Date(month.getFullYear(), bestMonth.monthIndex, 1).toLocaleDateString("en-US", { month: "short" }) : "-", tone: bestMonth.pnl >= 0 ? "text-emerald-400" : "text-zinc-300" },
+                      ].map((item) => (
+                        <div key={item.label} className="rounded-xl border border-white/7 bg-[#050505] px-3 py-2.5 sm:px-3.5">
+                          <p className="text-[9px] font-semibold uppercase tracking-[0.12em] text-zinc-600">{item.label}</p>
+                          <p className={`mt-1 truncate font-mono text-base font-black sm:text-lg ${item.tone}`}>{item.value}</p>
+                        </div>
+                      ))}
+                    </div>
+                    <div className="grid grid-cols-3 gap-2 p-2.5 sm:grid-cols-4 sm:gap-3 sm:p-4 lg:grid-cols-6 xl:grid-cols-12">
+                      {yearlyCalendar.map((item) => {
+                        const label = new Date(month.getFullYear(), item.monthIndex, 1).toLocaleDateString("en-US", { month: "short" });
+                        const isCurrent = new Date().getFullYear() === month.getFullYear() && new Date().getMonth() === item.monthIndex;
+                        return <button key={item.monthIndex} type="button" onClick={() => p.onCalendarMonthSelect(item.monthIndex)} className={`min-h-[94px] rounded-xl border p-3 text-left transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/25 sm:min-h-[112px] ${item.trades ? item.pnl >= 0 ? "border-emerald-500/18 bg-[#07110c] hover:border-emerald-400/40 hover:bg-[#0a1710]" : "border-rose-500/18 bg-[#12070a] hover:border-rose-400/40 hover:bg-[#180a0e]" : "border-white/7 bg-[#050505] hover:border-white/15 hover:bg-[#0a0a0a]"} ${isCurrent ? "ring-1 ring-white/20" : ""}`}>
+                          <div className="flex items-center justify-between gap-2"><span className="text-xs font-bold text-white">{label}</span>{item.trades ? <span className="rounded-md bg-black/30 px-1.5 py-0.5 text-[9px] font-bold text-zinc-400">{item.trades}T</span> : null}</div>
+                          {item.trades ? <><p className={`mt-5 truncate font-mono text-sm font-black ${item.pnl >= 0 ? "text-emerald-400" : "text-rose-400"}`}>{item.pnl >= 0 ? "+" : ""}{cashCompact.format(item.pnl)}</p><p className="mt-1 text-[10px] text-zinc-500">{item.wins} win{item.wins === 1 ? "" : "s"}</p></> : <p className="mt-6 text-[10px] text-zinc-600">No trades</p>}
+                        </button>;
+                      })}
+                    </div>
+                  </section>
+                  <section className="calendar-surface overflow-hidden rounded-[1rem] border border-white/8 bg-[#070707] p-3 sm:p-4">
+                    <div className="flex items-center justify-between gap-3"><div><p className="text-[9px] font-medium uppercase tracking-[0.14em] text-zinc-600">Year rhythm</p><h3 className="mt-1 text-sm font-black text-white">Monthly net performance</h3></div><span className="rounded-lg border border-white/8 bg-[#050505] px-2.5 py-1 text-[10px] font-semibold text-zinc-500">{activeMonths} active months</span></div>
+                    <div className="mt-4 grid h-28 grid-cols-12 items-end gap-1.5 sm:h-36 sm:gap-2">
+                      {yearlyCalendar.map((item) => {
+                        const maxPnl = Math.max(...yearlyCalendar.map((value) => Math.abs(value.pnl)), 1);
+                        const height = item.trades ? Math.max(10, Math.round(Math.abs(item.pnl) / maxPnl * 100)) : 3;
+                        return <button key={`bar-${item.monthIndex}`} type="button" onClick={() => p.onCalendarMonthSelect(item.monthIndex)} title={`${new Date(month.getFullYear(), item.monthIndex, 1).toLocaleDateString("en-US", { month: "long" })}: ${formatTradePnl(item.pnl)}`} className="group flex h-full min-w-0 flex-col justify-end rounded-md px-0.5 text-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/25"><span style={{ height: `${height}%` }} className={`min-h-[3px] rounded-sm transition group-hover:opacity-80 ${item.pnl > 0 ? "bg-emerald-400" : item.pnl < 0 ? "bg-rose-400" : "bg-white/10"}`} /><span className="mt-1.5 text-[8px] font-semibold text-zinc-600 sm:text-[9px]">{new Date(month.getFullYear(), item.monthIndex, 1).toLocaleDateString("en-US", { month: "short" }).slice(0, 1)}</span></button>;
+                      })}
+                    </div>
+                  </section>
+                </div>
+              ) : (
               <div className="calendar-workspace space-y-3">
                 <div className="calendar-summary-grid grid grid-cols-3 gap-2 sm:gap-3">
                   {[
@@ -2085,7 +2217,8 @@ function Workspace(p: {
                         </p>
                       </div>
                     </div>
-                    <div className="calendar-month-switcher grid grid-cols-[auto_minmax(0,1fr)_auto_auto] items-center gap-1 rounded-xl border border-white/8 bg-[#050505] p-1 lg:ml-auto">
+                    <div className="calendar-month-switcher grid grid-cols-[auto_auto_minmax(0,1fr)_auto_auto] items-center gap-1 rounded-xl border border-white/8 bg-[#050505] p-1 lg:ml-auto">
+                      <Button variant="ghost" size="sm" onClick={p.onCalendarOverview} className="px-2 text-[11px] text-zinc-400 hover:text-white"><ChevronLeft size={14} /><span className="hidden sm:inline">Year</span></Button>
                       <Button
                         aria-label="Previous month"
                         variant="ghost"
@@ -2192,6 +2325,7 @@ function Workspace(p: {
                   </div>
                 </div>
               </div>
+              )}
             </TabsContent>
           ) : null}
 
