@@ -1,12 +1,12 @@
 "use client";
 
-import { Check, ChevronRight, FileSpreadsheet, RefreshCw } from "lucide-react";
+import { Check, ChevronRight, RefreshCw } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { PlatformLogoBadge } from "./platform-logo-badge";
 
 export type AccountPlan = "free" | "standard" | "pro";
-export type PlatformId = "mt5" | "tradovate" | "ninjatrader" | "projectx";
-export type PlatformMode = "auto" | "csv";
+export type PlatformId = "mt5";
+export type PlatformMode = "auto";
 
 export type PlatformConfig = {
   id: PlatformId;
@@ -26,30 +26,6 @@ export const ACCOUNT_PLATFORMS: PlatformConfig[] = [
     method: "Automatic sync",
     helper: "Connect with read-only investor access. Trade history stays synced automatically.",
   },
-  {
-    id: "tradovate",
-    name: "Tradovate",
-    mode: "csv",
-    market: "Futures",
-    method: "CSV import",
-    helper: "Import a Tradovate Orders export.",
-  },
-  {
-    id: "ninjatrader",
-    name: "NinjaTrader",
-    mode: "csv",
-    market: "Futures",
-    method: "CSV import",
-    helper: "Import a Trade Performance export.",
-  },
-  {
-    id: "projectx",
-    name: "Project X",
-    mode: "csv",
-    market: "Futures",
-    method: "CSV import",
-    helper: "Import a Project X trade statement.",
-  },
 ];
 
 function PlanSummary({ plan }: { plan: Exclude<AccountPlan, "free"> }) {
@@ -67,11 +43,11 @@ function PlanSummary({ plan }: { plan: Exclude<AccountPlan, "free"> }) {
             <span className="rounded-full border border-emerald-400/15 bg-emerald-400/8 px-2 py-0.5 text-[9px] font-black uppercase tracking-[0.14em] text-emerald-300">Active</span>
           </div>
           <p className="mt-0.5 text-[11px] leading-4 text-zinc-500">
-            {pro ? "All available connectors and unlimited account workspaces." : "MT5 sync and CSV imports for up to 3 accounts."}
+            {pro ? "MT5 automatic sync with unlimited account workspaces." : "MT5 automatic sync for up to 3 accounts."}
           </p>
         </div>
       </div>
-      <p className="shrink-0 text-[10px] font-bold uppercase tracking-[0.14em] text-zinc-600">4 available</p>
+      <p className="shrink-0 text-[10px] font-bold uppercase tracking-[0.14em] text-zinc-600">MT5 included</p>
     </div>
   );
 }
@@ -92,9 +68,9 @@ function PlatformCard({ item, featured = false, onSelect }: { item: PlatformConf
           <span className={cn("truncate font-black text-white", featured ? "text-base" : "text-sm")}>{item.name}</span>
           <span className={cn(
             "rounded-full px-2 py-0.5 text-[9px] font-black uppercase tracking-[0.12em]",
-            item.mode === "auto" ? "bg-emerald-400/10 text-emerald-300" : "bg-amber-400/10 text-amber-300",
+            "bg-emerald-400/10 text-emerald-300",
           )}>
-            {item.mode === "auto" ? "Live" : "CSV"}
+            Live
           </span>
         </span>
         <span className="mt-0.5 block text-[11px] font-semibold text-zinc-400">{item.method}</span>
@@ -107,28 +83,17 @@ function PlatformCard({ item, featured = false, onSelect }: { item: PlatformConf
 
 export function AccountPlatformSelector({ plan, onSelect }: { plan: Exclude<AccountPlan, "free">; onSelect: (item: PlatformConfig) => void }) {
   const mt5 = ACCOUNT_PLATFORMS[0];
-  const csvPlatforms = ACCOUNT_PLATFORMS.slice(1);
 
   return (
     <div className="mx-auto w-full max-w-[680px] space-y-4">
       <PlanSummary plan={plan} />
 
-      <section>
+      <section className="mx-auto max-w-[560px]">
         <div className="mb-2 flex items-center gap-2">
           <RefreshCw size={13} className="text-zinc-500" />
           <h3 className="text-[10px] font-black uppercase tracking-[0.16em] text-zinc-500">Automatic sync</h3>
         </div>
         <PlatformCard item={mt5} featured onSelect={onSelect} />
-      </section>
-
-      <section>
-        <div className="mb-2 flex items-center gap-2">
-          <FileSpreadsheet size={13} className="text-zinc-500" />
-          <h3 className="text-[10px] font-black uppercase tracking-[0.16em] text-zinc-500">Import from file</h3>
-        </div>
-        <div className="grid gap-2 sm:grid-cols-3">
-          {csvPlatforms.map((item) => <PlatformCard key={item.id} item={item} onSelect={onSelect} />)}
-        </div>
       </section>
 
       <p className="text-center text-[10px] leading-4 text-zinc-700">Connections use read-only access. TradeWay never places or manages trades.</p>

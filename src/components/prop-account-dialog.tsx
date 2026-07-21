@@ -4,14 +4,11 @@ import {
   ArrowLeft,
   ChevronDown,
   ChevronRight,
-  FileText,
   KeyRound,
   LoaderCircle,
   Pencil,
   Plus,
   ShieldCheck,
-  Sparkles,
-  UploadCloud,
   Zap,
 } from "lucide-react";
 import { FormEvent, useEffect, useMemo, useState } from "react";
@@ -39,21 +36,17 @@ const SIZES = [10000, 25000, 50000, 100000, 200000];
 type WizardStep = 1 | 2 | 3;
 type AccountKind = "manual" | "automatic";
 
-const CSV_PLATFORMS = new Set<PlatformId>(["tradovate", "ninjatrader", "projectx"]);
-
-function stepTitle(step: WizardStep, accountKind: AccountKind | null, platform?: PlatformConfig) {
+function stepTitle(step: WizardStep, accountKind: AccountKind | null) {
   if (step === 1) return "Select the Account Type";
   if (step === 2) return "Select your Trading Platform";
   if (accountKind === "manual") return "Create Manual Account";
-  if (platform?.mode === "csv") return `${platform.name} CSV Import`;
   return "Connect MetaTrader 5";
 }
 
-function stepDescription(step: WizardStep, accountKind: AccountKind | null, platform?: PlatformConfig) {
+function stepDescription(step: WizardStep, accountKind: AccountKind | null) {
   if (step === 1) return "Select if you want to add trades manually or import them from your trading account.";
-  if (step === 2) return "MT5 works with auto sync. Futures platforms are prepared for CSV import.";
+  if (step === 2) return "Connect the platform that is available for your current plan.";
   if (accountKind === "manual") return "Create a clean journal account and add trades manually.";
-  if (platform?.mode === "csv") return "Create the account now. CSV parser/import will be connected to this flow next.";
   return "Use your MT5 login, investor password and broker server. Existing MT5 flow is unchanged.";
 }
 
@@ -72,7 +65,6 @@ function StepDots({ step }: { step: WizardStep }) {
     </div>
   );
 }
-
 type PremiumStatus = {
   plan: AccountPlan;
   isPremium: boolean;
@@ -97,7 +89,6 @@ export function PropAccountDialog({
   const [size, setSize] = useState(100000);
   const [connectNow, setConnectNow] = useState(true);
   const [internalSaving, setInternalSaving] = useState(false);
-  const [csvFileName, setCsvFileName] = useState("");
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [premiumStatus, setPremiumStatus] = useState<PremiumStatus>({ plan: "free", isPremium: false, autoSyncEnabled: false });
   const [premiumLoaded, setPremiumLoaded] = useState(false);
@@ -110,11 +101,7 @@ export function PropAccountDialog({
   const market = accountKind === "manual" ? "CFD" : selectedPlatform.market;
   const importSource = accountKind === "manual"
     ? "manual"
-    : selectedPlatform.id === "mt5"
-      ? "mt5_bridge"
-      : CSV_PLATFORMS.has(selectedPlatform.id)
-        ? selectedPlatform.id
-        : "manual";
+    : "mt5_bridge";
   const phase = accountType === "real" ? "Live" : "Challenge";
   const createsProcessingMt5 = accountKind === "automatic" && platform === "mt5" && connectNow;
   const isSubmitting = saving || internalSaving;
@@ -129,7 +116,6 @@ export function PropAccountDialog({
       setPlatform("mt5");
       setSize(100000);
       setConnectNow(true);
-      setCsvFileName("");
       setSubmitError(null);
       setFreeView("choose");
       setAdvancedOpen(false);
@@ -421,9 +407,9 @@ export function PropAccountDialog({
             ) : null}
 
             <div className="mx-auto mb-5 max-w-xl text-left sm:text-center">
-              <h2 className="text-xl font-black tracking-tight sm:text-2xl">{stepTitle(step, accountKind, selectedPlatform)}</h2>
+              <h2 className="text-xl font-black tracking-tight sm:text-2xl">{stepTitle(step, accountKind)}</h2>
               <p className="mt-1.5 text-xs font-medium leading-5 text-zinc-500 sm:mx-auto sm:max-w-md sm:text-sm">
-                {stepDescription(step, accountKind, selectedPlatform)}
+                {stepDescription(step, accountKind)}
               </p>
             </div>
 
@@ -444,7 +430,7 @@ export function PropAccountDialog({
                 <ChoiceCard
                   icon={<Zap size={22} />}
                   title="Automatic Account"
-                  text="Connect MT5 with auto sync or prepare a futures account for CSV import."
+                  text="Connect MetaTrader 5 with secure, read-only automatic sync."
                   onClick={chooseAutomatic}
                 />
               </div>
@@ -455,8 +441,8 @@ export function PropAccountDialog({
             ) : null}
 
             {step === 3 ? (
-              <div className="grid overflow-hidden rounded-2xl border border-white/10 bg-black md:grid-cols-[1.1fr_.9fr]">
-                <div className="space-y-4 p-5 sm:p-6">
+              <div className="mx-auto max-w-[640px] overflow-hidden rounded-2xl border border-white/10 bg-black">
+                <div className="space-y-4 p-4 sm:p-5">
                   <div className="rounded-2xl border border-white/10 bg-[#050505] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,.03)]">
                     <div className="flex flex-wrap items-center gap-2">
                       <span className="rounded-full bg-[#080808] px-2.5 py-1 text-[10px] font-black uppercase tracking-wider text-zinc-300">
@@ -491,15 +477,11 @@ export function PropAccountDialog({
                     sources={sources}
                     size={size}
                     setSize={setSize}
-                    placeholder={accountKind === "manual" ? "Manual account" : selectedPlatform.id === "mt5" ? "FTMO MT5 100K" : `${selectedPlatform.name} CSV`}
+                    placeholder={accountKind === "manual" ? "Manual account" : "FTMO MT5 100K"}
                   />
 
                   {accountKind === "automatic" && selectedPlatform.id === "mt5" ? (
                     <Mt5Fields connectNow={connectNow} setConnectNow={setConnectNow} />
-                  ) : null}
-
-                  {accountKind === "automatic" && selectedPlatform.mode === "csv" ? (
-                    <CsvFields platform={selectedPlatform} csvFileName={csvFileName} setCsvFileName={setCsvFileName} />
                   ) : null}
 
                   {accountKind === "manual" ? (
@@ -508,20 +490,16 @@ export function PropAccountDialog({
                     </div>
                   ) : null}
                 </div>
-
-                <div className="border-t border-white/10 bg-black p-5 sm:p-6 md:border-l md:border-t-0">
-                  <SideGuide accountKind={accountKind} platform={selectedPlatform} />
-                </div>
               </div>
             ) : null}
           </div>
 
           {step === 3 ? (
-            <div className="flex items-center justify-end gap-2 border-t border-white/8 bg-[#030303] px-5 py-4">
-              <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
-              <Button disabled={isSubmitting} className="bg-white font-semibold text-black hover:bg-zinc-200">
+            <div className="sticky bottom-0 flex items-center gap-2 border-t border-white/8 bg-[#030303]/95 px-4 py-3 backdrop-blur sm:justify-end sm:px-5 sm:py-4">
+              <Button type="button" variant="outline" onClick={() => onOpenChange(false)} className="flex-1 sm:flex-none">Cancel</Button>
+              <Button disabled={isSubmitting} className="flex-1 bg-white font-semibold text-black hover:bg-zinc-200 sm:flex-none">
                 {isSubmitting ? <LoaderCircle className="animate-spin" /> : <Plus size={18} />}
-                {createsProcessingMt5 ? "Create and import history" : selectedPlatform.mode === "csv" && accountKind === "automatic" ? "Create CSV account" : "Add Account"}
+                {createsProcessingMt5 ? "Create and sync" : "Add account"}
               </Button>
             </div>
           ) : null}
@@ -653,71 +631,3 @@ function Mt5Fields({ connectNow, setConnectNow }: { connectNow: boolean; setConn
   );
 }
 
-function CsvFields({ platform, csvFileName, setCsvFileName }: { platform: PlatformConfig; csvFileName: string; setCsvFileName: (v: string) => void }) {
-  return (
-    <div className="space-y-3 rounded-xl border border-amber-300/15 bg-amber-300/[.055] p-4">
-      <div className="flex items-start gap-3">
-        <UploadCloud size={18} className="mt-0.5 text-amber-200" />
-        <div>
-          <p className="text-sm font-black text-amber-100">{platform.name} CSV Import</p>
-          <p className="mt-1 text-xs leading-5 text-amber-100/70">CSV parser keyingi patchda ulanadi. Hozir bu account CSV import source bilan yaratiladi.</p>
-        </div>
-      </div>
-      <Label className="flex min-h-[112px] cursor-pointer flex-col items-center justify-center rounded-xl border border-dashed border-amber-200/20 bg-[#080808] px-4 text-center transition hover:bg-[#101010]">
-        <FileText size={22} className="text-amber-200" />
-        <span className="mt-2 text-sm font-bold text-zinc-100">{csvFileName || "Upload trade history CSV"}</span>
-        <span className="mt-1 text-xs text-zinc-500">.csv file accepted</span>
-        <Input
-          type="file"
-          accept=".csv,text/csv"
-          className="hidden"
-          onChange={(event) => setCsvFileName(event.target.files?.[0]?.name || "")}
-        />
-      </Label>
-    </div>
-  );
-}
-
-function SideGuide({ accountKind, platform }: { accountKind: AccountKind | null; platform: PlatformConfig }) {
-  const isManual = accountKind === "manual";
-  const isCsv = accountKind === "automatic" && platform.mode === "csv";
-  return (
-    <div className="space-y-6">
-      <div className="flex items-center gap-3">
-        {isManual ? (
-            <span className="grid size-10 place-items-center rounded-xl bg-[#161616] text-zinc-200">
-            <Pencil size={18} />
-          </span>
-        ) : (
-          <PlatformLogoBadge platform={platform.id} compact />
-        )}
-        <div>
-          <h3 className="text-xl font-black">{isManual ? "Manual" : isCsv ? platform.name : "MetaTrader 5"}</h3>
-          <p className="text-xs font-semibold text-zinc-500">{isManual ? "Add trades manually" : isCsv ? "CSV import" : "Auto sync"}</p>
-        </div>
-      </div>
-
-      <div className="space-y-5 text-sm">
-        <GuideItem number="1" title={isManual ? "Enter a Name" : "Create the Account"} text={isManual ? "Select a name for this account to easily identify it later." : "Fill the basic account details and select prop firm or broker."} />
-        <GuideItem number="2" title={isCsv ? "Upload CSV" : isManual ? "Enter Initial Balance" : "Enter MT5 Credentials"} text={isCsv ? "Upload your platform statement CSV. Parser will attach trades to this account." : isManual ? "Initial balance is used to calculate progress and account statistics." : "Use investor password when available for read-only history access."} />
-        <GuideItem number="3" title={isCsv ? "Import Trades" : isManual ? "Create Account" : "Initial Sync"} text={isCsv ? "Tradovate, NinjaTrader and Project X will use this CSV import flow." : isManual ? "After creation, add trades from the journal manually." : "Account starts as Processing and becomes Active after MT5 history is imported."} />
-      </div>
-
-      {platform.id === "mt5" && !isManual ? (
-        <div className="rounded-xl border border-white/10 bg-[#080808] p-3 text-[11px] leading-5 text-zinc-400">
-          <Sparkles size={13} className="mb-2" />
-          Broker yoki prop firmangizning IP restriction qoidalarini tekshiring. Azure VPS IP orqali read-only connection bo&apos;ladi.
-        </div>
-      ) : null}
-    </div>
-  );
-}
-
-function GuideItem({ number, title, text }: { number: string; title: string; text: string }) {
-  return (
-    <div>
-      <p className="flex items-center gap-2 font-black text-zinc-100"><span className="grid size-5 place-items-center rounded-full bg-zinc-100 text-[11px] text-black">{number}</span>{title}</p>
-      <p className="mt-1 pl-7 text-xs leading-5 text-zinc-500">{text}</p>
-    </div>
-  );
-}
