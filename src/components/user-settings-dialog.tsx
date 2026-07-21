@@ -80,8 +80,6 @@ function SettingsContent() {
     setSettingsOpen,
     hidePersonalInfo,
     setHidePersonalInfo,
-    fontFamily,
-    setFontFamily,
     customSymbols,
     addCustomSymbol,
     removeCustomSymbol,
@@ -250,8 +248,8 @@ function SettingsContent() {
                   <Field label="Language">
                     <Select value={locale} onValueChange={(value) => setLocale(value as Locale)}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="en">English</SelectItem><SelectItem value="es">Español</SelectItem></SelectContent></Select>
                   </Field>
-                  <Field label="Font">
-                    <Select value={fontFamily} onValueChange={setFontFamily}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="Inter">Inter</SelectItem><SelectItem value="Geist">Geist</SelectItem><SelectItem value="System UI">System UI</SelectItem></SelectContent></Select>
+                  <Field label="Typography">
+                    <div className="flex h-10 items-center rounded-xl border border-white/8 bg-[#080808] px-3 text-sm font-medium text-zinc-300">Inter <span className="ml-auto text-[10px] text-zinc-600">Tradox default</span></div>
                   </Field>
                 </div>
               </Panel>

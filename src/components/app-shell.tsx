@@ -8,10 +8,7 @@ import { NotificationListener } from "./notification-listener";
 import { PremiumUpsellDialog } from "./premium-upsell-dialog";
 import { Sidebar } from "./sidebar";
 import { WorkspaceTopbar } from "./workspace-topbar";
-import {
-  WorkspacePreferencesProvider,
-  useWorkspacePreferences,
-} from "./workspace-preferences-context";
+import { WorkspacePreferencesProvider } from "./workspace-preferences-context";
 import { TradeWayLoginLanding } from "./tradeway-login-landing";
 import type { WorkspaceTab } from "./journal-v2";
 import { useAuth } from "./auth-context";
@@ -85,13 +82,6 @@ function AppShellInner() {
   const [profileOpening, setProfileOpening] = useState(false);
   const workspaceMainRef = useRef<HTMLElement>(null);
   const { user } = useAuth();
-  const { fontFamily } = useWorkspacePreferences();
-  const resolvedFontFamily =
-    fontFamily === "Geist"
-      ? "var(--font-inter), Inter, ui-sans-serif, system-ui, sans-serif"
-      : fontFamily === "System UI"
-        ? "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
-        : "var(--font-inter), Inter, ui-sans-serif, system-ui, sans-serif";
   const openLogin = () => setAuthOpen(true);
 
   useEffect(() => {
@@ -236,7 +226,6 @@ function AppShellInner() {
       <ActiveAccountProvider>
         <div
           className="workspace-shell mx-auto flex h-[100dvh] w-full max-w-[1920px] gap-0 overflow-hidden bg-[#000000] p-0 text-foreground lg:gap-3 lg:p-3"
-          style={{ fontFamily: resolvedFontFamily }}
         >
           <Sidebar
             active={section}

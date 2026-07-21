@@ -1,0 +1,192 @@
+/* Final workspace contract. Keep this import last so every section shares one UI language. */
+:root {
+  --tw-canvas: #000;
+  --tw-surface: #080808;
+  --tw-surface-raised: #0d0d0d;
+  --tw-surface-hover: #141414;
+  --tw-line: rgba(255, 255, 255, 0.08);
+  --tw-line-strong: rgba(255, 255, 255, 0.14);
+  --tw-copy: #f4f4f5;
+  --tw-copy-muted: #a1a1aa;
+  --tw-copy-dim: #71717a;
+  --tw-positive: #22c55e;
+  --tw-negative: #ef4444;
+  --tw-page-width: 1180px;
+  --tw-page-gutter: clamp(1rem, 2.4vw, 2rem);
+}
+
+.workspace-shell,
+[data-workspace-main],
+[data-workspace-main] > section {
+  color: var(--tw-copy);
+  background: var(--tw-canvas);
+  font-family: var(--font-inter), Inter, ui-sans-serif, system-ui, sans-serif !important;
+  font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+}
+
+[data-workspace-main] :is(h1, h2, h3, h4, h5, h6, button, input, textarea, select) {
+  font-family: inherit;
+}
+
+[data-workspace-main] :is(.font-mono, code, kbd, pre) {
+  font-family: var(--font-geist-mono), "Geist Mono", ui-monospace, monospace !important;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Normalize legacy colored decorations. Profit/loss colors stay semantic. */
+.workspace-shell [class*="text-blue-"],
+.workspace-shell [class*="text-sky-"],
+.workspace-shell [class*="text-cyan-"],
+.workspace-shell [class*="text-indigo-"],
+.workspace-shell [class*="text-violet-"],
+.workspace-shell [class*="text-purple-"],
+.workspace-shell [class*="text-fuchsia-"],
+.workspace-shell [class*="text-amber-"],
+.workspace-shell [class*="text-yellow-"] {
+  color: #d4d4d8 !important;
+}
+
+.workspace-shell [class*="bg-blue-"],
+.workspace-shell [class*="bg-sky-"],
+.workspace-shell [class*="bg-cyan-"],
+.workspace-shell [class*="bg-indigo-"],
+.workspace-shell [class*="bg-violet-"],
+.workspace-shell [class*="bg-purple-"],
+.workspace-shell [class*="bg-fuchsia-"],
+.workspace-shell [class*="bg-amber-"],
+.workspace-shell [class*="bg-yellow-"] {
+  background-color: rgba(255, 255, 255, 0.055) !important;
+}
+
+.workspace-shell [class*="border-blue-"],
+.workspace-shell [class*="border-sky-"],
+.workspace-shell [class*="border-cyan-"],
+.workspace-shell [class*="border-indigo-"],
+.workspace-shell [class*="border-violet-"],
+.workspace-shell [class*="border-purple-"],
+.workspace-shell [class*="border-fuchsia-"],
+.workspace-shell [class*="border-amber-"],
+.workspace-shell [class*="border-yellow-"] {
+  border-color: var(--tw-line-strong) !important;
+}
+
+/* Colored state surfaces stay readable without turning each section into a different theme. */
+.workspace-shell [class*="bg-emerald-"][class*="/"],
+.workspace-shell [class*="bg-green-"][class*="/"],
+.workspace-shell [class*="bg-rose-"][class*="/"],
+.workspace-shell [class*="bg-red-"][class*="/"] {
+  background-color: rgba(255, 255, 255, 0.045) !important;
+}
+
+.workspace-shell [class*="border-emerald-"][class*="/"],
+.workspace-shell [class*="border-green-"][class*="/"],
+.workspace-shell [class*="border-rose-"][class*="/"],
+.workspace-shell [class*="border-red-"][class*="/"] {
+  border-color: var(--tw-line-strong) !important;
+}
+
+.workspace-shell :is(.text-emerald-300, .text-emerald-400, .text-green-300, .text-green-400) {
+  color: var(--tw-positive) !important;
+}
+
+.workspace-shell :is(.text-rose-300, .text-rose-400, .text-red-300, .text-red-400) {
+  color: var(--tw-negative) !important;
+}
+
+/* Shared shadcn surfaces and controls. */
+.workspace-shell [data-slot="card"],
+.workspace-shell [data-slot="dialog-content"],
+.workspace-shell [data-slot="alert-dialog-content"],
+.workspace-shell [data-slot="popover-content"],
+.workspace-shell [data-slot="dropdown-menu-content"],
+.workspace-shell [data-slot="select-content"] {
+  color: var(--tw-copy);
+  border-color: var(--tw-line) !important;
+  background: var(--tw-surface) !important;
+  box-shadow: 0 20px 65px rgba(0, 0, 0, 0.5) !important;
+}
+
+.workspace-shell :is(input, textarea, [data-slot="select-trigger"]) {
+  border-color: var(--tw-line) !important;
+  background: var(--tw-surface) !important;
+  color: var(--tw-copy) !important;
+}
+
+.workspace-shell :is(input, textarea, [data-slot="select-trigger"]):focus-visible {
+  border-color: var(--tw-line-strong) !important;
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.1) !important;
+}
+
+.workspace-shell [data-slot="button"] {
+  border-radius: 0.75rem !important;
+  font-weight: 650;
+}
+
+.workspace-shell [data-slot="button"][data-variant="outline"],
+.workspace-shell [data-slot="button"][data-variant="secondary"] {
+  border-color: var(--tw-line) !important;
+  background: var(--tw-surface) !important;
+  color: #e4e4e7 !important;
+}
+
+.workspace-shell [data-slot="button"]:hover {
+  border-color: var(--tw-line-strong) !important;
+}
+
+.tw-app-topbar {
+  min-height: 3.75rem;
+  border-color: var(--tw-line) !important;
+  background: rgba(0, 0, 0, 0.96) !important;
+  box-shadow: none !important;
+}
+
+@media (max-width: 1023px) {
+  [data-workspace-main] {
+    width: 100%;
+    border-radius: 0 !important;
+  }
+
+  [data-workspace-main] > section {
+    min-height: calc(100dvh - 3.75rem);
+  }
+
+  .workspace-shell [class*="max-w-"] {
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 767px) {
+  :root { --tw-page-gutter: 1rem; }
+
+  .tw-app-topbar {
+    min-height: 3.5rem;
+    padding-inline: 0.75rem !important;
+  }
+
+  [data-workspace-main] :is(h1, h2, h3) {
+    text-wrap: balance;
+  }
+
+  [data-workspace-main] table {
+    font-size: 0.75rem;
+  }
+
+  .workspace-shell [data-slot="dialog-content"],
+  .workspace-shell [data-slot="alert-dialog-content"] {
+    width: calc(100vw - 0.75rem) !important;
+    max-width: calc(100vw - 0.75rem) !important;
+    max-height: calc(100dvh - 0.75rem) !important;
+    border-radius: 1rem !important;
+  }
+}
+
+@media (max-width: 420px) {
+  .workspace-shell [data-slot="button"] {
+    min-height: 2.625rem;
+  }
+
+  [data-workspace-main] [class*="rounded-3xl"],
+  [data-workspace-main] [class*="rounded-[28px]"] {
+    border-radius: 1rem !important;
+  }
+}
