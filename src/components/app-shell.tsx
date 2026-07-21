@@ -8,18 +8,29 @@ import { NotificationListener } from "./notification-listener";
 import { PremiumUpsellDialog } from "./premium-upsell-dialog";
 import { Sidebar } from "./sidebar";
 import { WorkspaceTopbar } from "./workspace-topbar";
-import { WorkspacePreferencesProvider, useWorkspacePreferences } from "./workspace-preferences-context";
+import {
+  WorkspacePreferencesProvider,
+  useWorkspacePreferences,
+} from "./workspace-preferences-context";
 import { TradeWayLoginLanding } from "./tradeway-login-landing";
 import type { WorkspaceTab } from "./journal-v2";
 import { useAuth } from "./auth-context";
-import { getCurrentProfileUsername, getCurrentSection, pathFromSection } from "./section-config";
+import {
+  getCurrentProfileUsername,
+  getCurrentSection,
+  pathFromSection,
+} from "./section-config";
 import { apiRequest } from "@/lib/api-client";
 import type { Section } from "./types";
 import { Spinner } from "./ui/spinner";
 import { WorkspaceSectionSkeleton } from "./workspace-section-skeleton";
+import { FreeUserStart } from "./free-user-start";
 
 const UserSettingsDialog = dynamic(
-  () => import("./user-settings-dialog").then((module) => module.UserSettingsDialog),
+  () =>
+    import("./user-settings-dialog").then(
+      (module) => module.UserSettingsDialog,
+    ),
   { ssr: false },
 );
 const FeedV3 = dynamic(
@@ -47,7 +58,8 @@ const Journal = dynamic(
   { ssr: false, loading: () => <WorkspaceSectionSkeleton /> },
 );
 const CommunityWorkspace = dynamic(
-  () => import("./community-workspace").then((module) => module.CommunityWorkspace),
+  () =>
+    import("./community-workspace").then((module) => module.CommunityWorkspace),
   { ssr: false, loading: () => <WorkspaceSectionSkeleton /> },
 );
 function AuthGate({ onLogin }: { onLogin: () => void }) {
@@ -64,7 +76,9 @@ export function AppShell() {
 
 function AppShellInner() {
   const [section, setSection] = useState<Section>(getCurrentSection);
-  const [profileUsername, setProfileUsername] = useState(getCurrentProfileUsername);
+  const [profileUsername, setProfileUsername] = useState(
+    getCurrentProfileUsername,
+  );
   const [authOpen, setAuthOpen] = useState(false);
   const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
   const [notificationsMounted, setNotificationsMounted] = useState(false);
@@ -157,7 +171,8 @@ function AppShellInner() {
   };
 
   const renderSection = (item: Section) => {
-    if (item === "accounts") return <Journal onLogin={openLogin} mode="accounts" />;
+    if (item === "accounts")
+      return <Journal onLogin={openLogin} mode="accounts" />;
     const workspaceTabs: Partial<Record<Section, WorkspaceTab>> = {
       dashboard: "overview",
       calendar: "calendar",
@@ -165,16 +180,37 @@ function AppShellInner() {
       analytics: "analytics",
     };
     const workspaceTab = workspaceTabs[item];
-    if (workspaceTab) return <Journal onLogin={openLogin} mode="workspace" forcedTab={workspaceTab} />;
+    if (workspaceTab)
+      return (
+        <Journal
+          onLogin={openLogin}
+          mode="workspace"
+          forcedTab={workspaceTab}
+        />
+      );
     if (item === "settings") return <AccountSettings onLogin={openLogin} />;
     if (item === "community") return <CommunityWorkspace />;
-    if (item === "account") return <Account onLogin={openLogin} profileUsername={profileUsername || undefined} />;
+    if (item === "account")
+      return (
+        <Account
+          onLogin={openLogin}
+          profileUsername={profileUsername || undefined}
+        />
+      );
     if (item === "pricing") return <Pricing />;
     if (item === "admin" && isAdmin === null) {
-      return <div className="grid min-h-[60vh] place-items-center text-sm font-semibold text-zinc-400">Checking admin access...</div>;
+      return (
+        <div className="grid min-h-[60vh] place-items-center text-sm font-semibold text-zinc-400">
+          Checking admin access...
+        </div>
+      );
     }
     if (item === "admin" && isAdmin) return <AdminPanel onLogin={openLogin} />;
-    return <FeedV3 onLogin={openLogin} />;
+    return (
+      <FreeUserStart>
+        <FeedV3 onLogin={openLogin} />
+      </FreeUserStart>
+    );
   };
 
   if (!user && section === "pricing") {
@@ -198,24 +234,36 @@ function AppShellInner() {
   return (
     <>
       <ActiveAccountProvider>
-      <div className="workspace-shell mx-auto flex h-[100dvh] w-full max-w-[1920px] gap-0 overflow-hidden bg-[#000000] p-0 text-foreground lg:gap-3 lg:p-3" style={{ fontFamily: resolvedFontFamily }}>
-        <Sidebar
-          active={section}
-          onChange={changeSection}
-          onLogin={openLogin}
-          user={user}
-        />
-        <div className="hidden w-[286px] shrink-0 lg:block" aria-hidden="true" />
-        <main ref={workspaceMainRef} data-workspace-main className="workspace-main h-[100dvh] min-w-0 flex-1 overscroll-contain overflow-y-auto overflow-x-hidden bg-[#000000] pb-[max(env(safe-area-inset-bottom),0.5rem)] lg:h-[calc(100dvh-2rem)] lg:rounded-[1rem] lg:border lg:border-white/8 lg:pb-0">
-          <WorkspaceTopbar section={section} />
-          <section className="min-h-full">
-            {renderSection(section)}
-          </section>
-        </main>
-      </div>
+        <div
+          className="workspace-shell mx-auto flex h-[100dvh] w-full max-w-[1920px] gap-0 overflow-hidden bg-[#000000] p-0 text-foreground lg:gap-3 lg:p-3"
+          style={{ fontFamily: resolvedFontFamily }}
+        >
+          <Sidebar
+            active={section}
+            onChange={changeSection}
+            onLogin={openLogin}
+            user={user}
+          />
+          <div
+            className="hidden w-[286px] shrink-0 lg:block"
+            aria-hidden="true"
+          />
+          <main
+            ref={workspaceMainRef}
+            data-workspace-main
+            className="workspace-main h-[100dvh] min-w-0 flex-1 overscroll-contain overflow-y-auto overflow-x-hidden bg-[#000000] pb-[max(env(safe-area-inset-bottom),0.5rem)] lg:h-[calc(100dvh-2rem)] lg:rounded-[1rem] lg:border lg:border-white/8 lg:pb-0"
+          >
+            <WorkspaceTopbar section={section} />
+            <section className="min-h-full">{renderSection(section)}</section>
+          </main>
+        </div>
       </ActiveAccountProvider>
       {profileOpening ? (
-        <div className="pointer-events-none fixed right-3 top-3 z-[2147483646] flex items-center gap-2 rounded-lg border border-white/10 bg-[#111]/95 px-3 py-2 text-xs font-semibold text-zinc-200 shadow-xl" role="status" aria-live="polite">
+        <div
+          className="pointer-events-none fixed right-3 top-3 z-[2147483646] flex items-center gap-2 rounded-lg border border-white/10 bg-[#111]/95 px-3 py-2 text-xs font-semibold text-zinc-200 shadow-xl"
+          role="status"
+          aria-live="polite"
+        >
           <Spinner className="size-3.5" /> Opening profile
         </div>
       ) : null}
