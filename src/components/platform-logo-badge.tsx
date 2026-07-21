@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { cn } from "@/lib/utils";
 
 const PLATFORM_META: Record<string, { mark: string; tone: string; label: string }> = {
@@ -43,7 +44,9 @@ export function PlatformLogoBadge({
         className,
       )}
     >
-      {meta.mark}
+      {key === "mt5" || key === "metatrader5" ? (
+        <Image src="/mt5/mt5-logo.png" alt="" width={compact ? 28 : 36} height={compact ? 28 : 36} className="rounded-lg object-cover" />
+      ) : meta.mark}
     </span>
   );
 
