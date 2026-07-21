@@ -244,6 +244,11 @@ select,
     grid-template-columns: minmax(0, 1fr) !important;
   }
 
+  /* Platform cards remain compact and scannable in the account setup sheet. */
+  [data-slot="dialog-content"] [data-platform-grid] {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
   main [class*="sm:flex-row"] {
     flex-direction: column !important;
     align-items: stretch !important;

@@ -101,7 +101,7 @@ export function AccountPlatformSelector({
             <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search platform..." className="h-full min-w-0 flex-1 bg-transparent text-xs text-white outline-none placeholder:text-zinc-600" />
           </label>
 
-          <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-4">
+          <div data-platform-grid className="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-4">
             {filtered.map((item) => <PlatformCard key={item.id} item={item} onSelect={onSelect} />)}
           </div>
         </div>
