@@ -3,13 +3,11 @@
 import {
   Activity,
   BarChart3,
-  ChevronRight,
   Crown,
   Eye,
   EyeOff,
   LayoutDashboard,
   Medal,
-  MessageSquareText,
   Settings2,
   ShieldCheck,
   Sparkles,
@@ -79,8 +77,7 @@ const communityTone = {
   glow: "shadow-black/50",
 };
 
-type CommunityTab =
-  "overview" | "leaderboard" | "members" | "insights" | "settings";
+type CommunityTab = "overview" | "members" | "settings";
 
 export function CommunityWorkspace() {
   const [data, setData] = useState<CommunityData | null>(null);
@@ -231,24 +228,22 @@ export function CommunityWorkspace() {
     icon: typeof LayoutDashboard;
   }> = [
     { id: "overview", label: "Overview", icon: LayoutDashboard },
-    { id: "leaderboard", label: "Leaderboard", icon: Trophy },
     { id: "members", label: "Members", icon: UsersRound },
-    { id: "insights", label: "Insights", icon: Activity },
     { id: "settings", label: "Sharing", icon: Settings2 },
   ];
 
   return (
-    <div className="min-h-[calc(100dvh-4rem)] bg-[#030303] pb-[calc(5.5rem+env(safe-area-inset-bottom))] lg:pb-0">
-      <div className="border-b border-white/8 bg-[radial-gradient(circle_at_75%_0%,rgba(255,255,255,.07),transparent_34%),linear-gradient(180deg,#090909,#030303)] px-4 py-4 sm:px-6 sm:py-5 lg:px-8">
-        <div className="mx-auto flex max-w-7xl items-center gap-4">
+    <div className="min-h-[calc(100dvh-4rem)] bg-[#030303] pb-8">
+      <div className="border-b border-white/8 bg-[#050505] px-4 py-4 sm:px-6">
+        <div className="mx-auto flex max-w-5xl items-center gap-3">
           <div
-            className={`grid size-11 shrink-0 place-items-center rounded-2xl border border-white/10 sm:size-12 ${colors.soft} shadow-xl ${colors.glow}`}
+            className={`grid size-10 shrink-0 place-items-center rounded-xl border ${colors.soft}`}
           >
             <UsersRound size={21} />
           </div>
           <div className="min-w-0 flex-1">
             <div className="flex min-w-0 items-center gap-2">
-              <h1 className="truncate text-lg font-black tracking-tight sm:text-2xl">
+              <h1 className="truncate text-lg font-black tracking-tight sm:text-xl">
                 {community.name}
               </h1>
               <ShieldCheck size={16} className="shrink-0 text-white" />
@@ -262,56 +257,30 @@ export function CommunityWorkspace() {
               onClick={() => setActiveTab("members")}
               className="rounded-xl px-2.5 sm:px-4"
             >
-              <UserPlus size={15} /> <span className="hidden sm:inline">Invite</span>
+              <UserPlus size={15} />{" "}
+              <span className="hidden sm:inline">Invite</span>
             </Button>
           ) : null}
         </div>
       </div>
 
-      <div className="mx-auto grid max-w-7xl lg:grid-cols-[200px_minmax(0,1fr)] xl:grid-cols-[210px_minmax(0,1fr)_260px]">
-        <aside className="hidden border-r border-white/8 p-4 lg:block">
-          <p className="mb-3 px-2 text-[9px] font-black uppercase tracking-[.2em] text-zinc-600">
-            Community desk
-          </p>
-          <nav className="space-y-1">
-            {nav.map((item) => (
-              <button
-                key={item.id}
-                onClick={() => setActiveTab(item.id)}
-                className={`flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-bold transition ${activeTab === item.id ? "bg-white text-black" : "text-zinc-500 hover:bg-white/[.04] hover:text-white"}`}
-              >
-                <item.icon size={16} />
-                {item.label}
-                <ChevronRight size={13} className="ml-auto" />
-              </button>
-            ))}
-          </nav>
-          <div className="mt-5 rounded-2xl border border-white/8 bg-white/[.025] p-3">
-            <p className="text-[10px] font-black uppercase tracking-wider text-zinc-500">
-              Coming next
-            </p>
-            <p className="mt-2 text-xs font-bold text-zinc-300">
-              Live Desk & Trade Ideas
-            </p>
-            <p className="mt-1 text-[10px] leading-4 text-zinc-600">
-              Structured setups, bias and community sessions.
-            </p>
-          </div>
-        </aside>
-
-        <main className="min-w-0 p-3 sm:p-5 lg:p-6">
-          <div className="mb-4 hidden gap-1 overflow-x-auto rounded-xl border border-white/8 bg-[#080808] p-1 md:flex lg:hidden">
-            {nav.map((item) => (
-              <button
-                key={item.id}
-                onClick={() => setActiveTab(item.id)}
-                className={`inline-flex min-w-max flex-1 items-center justify-center gap-2 rounded-lg px-3 py-2 text-xs font-bold ${activeTab === item.id ? "bg-white text-black" : "text-zinc-500"}`}
-              >
-                <item.icon size={14} />
-                {item.label}
-              </button>
-            ))}
-          </div>
+      <div className="mx-auto max-w-5xl px-3 py-4 sm:px-6 sm:py-6">
+        <nav
+          className="mb-5 grid grid-cols-3 gap-1 rounded-xl border border-white/8 bg-[#080808] p-1"
+          aria-label="Community navigation"
+        >
+          {nav.map((item) => (
+            <button
+              key={item.id}
+              onClick={() => setActiveTab(item.id)}
+              className={`inline-flex min-w-0 items-center justify-center gap-2 rounded-lg px-2 py-2.5 text-xs font-bold transition ${activeTab === item.id ? "bg-white text-black" : "text-zinc-500 hover:text-white"}`}
+            >
+              <item.icon size={14} />
+              {item.label}
+            </button>
+          ))}
+        </nav>
+        <main className="min-w-0">
           {error ? (
             <div className="mb-4 rounded-xl border border-white/10 bg-white/[.04] px-4 py-3 text-sm text-zinc-200">
               {error}
@@ -325,9 +294,6 @@ export function CommunityWorkspace() {
               results={data.results ?? []}
               colors={colors}
             />
-          ) : null}
-          {activeTab === "leaderboard" ? (
-            <Leaderboard results={data.results ?? []} />
           ) : null}
           {activeTab === "members" ? (
             <Members
@@ -346,13 +312,6 @@ export function CommunityWorkspace() {
               onInvite={invite}
             />
           ) : null}
-          {activeTab === "insights" ? (
-            <CommunityInsights
-              results={data.results ?? []}
-              members={activeMembers.length}
-              sharedAccounts={sharedAccounts}
-            />
-          ) : null}
           {activeTab === "settings" ? (
             <Sharing
               accounts={data.accounts ?? []}
@@ -363,52 +322,7 @@ export function CommunityWorkspace() {
             />
           ) : null}
         </main>
-
-        <aside className="hidden border-l border-white/8 p-5 xl:block">
-          <p className="text-[9px] font-black uppercase tracking-[.2em] text-zinc-600">
-            Trading room
-          </p>
-          <div className="mt-4 space-y-3">
-            <ContextStat
-              icon={UsersRound}
-              label="Active members"
-              value={String(activeMembers.length)}
-            />
-            <ContextStat
-              icon={TrendingUp}
-              label="Shared accounts"
-              value={String(sharedAccounts)}
-            />
-            <ContextStat
-              icon={MessageSquareText}
-              label="Desk status"
-              value="Building"
-            />
-          </div>
-          <div className="mt-6 border-t border-white/8 pt-5">
-            <p className="text-xs font-black">Community principles</p>
-            <p className="mt-2 text-[11px] leading-5 text-zinc-600">
-              Share process, protect privacy and measure consistency before P&L.
-            </p>
-          </div>
-        </aside>
       </div>
-      <nav
-        className="fixed inset-x-2 bottom-[calc(.5rem+env(safe-area-inset-bottom))] z-[80] grid grid-cols-5 rounded-2xl border border-white/10 bg-black/92 p-1 shadow-[0_20px_70px_rgba(0,0,0,.75)] backdrop-blur-2xl md:hidden"
-        aria-label="Community navigation"
-      >
-        {nav.map((item) => (
-          <button
-            key={item.id}
-            onClick={() => setActiveTab(item.id)}
-            className={`flex min-w-0 flex-col items-center justify-center gap-1 rounded-xl px-1 py-2 text-[9px] font-bold transition ${activeTab === item.id ? "bg-white text-black" : "text-zinc-500 active:bg-white/[.06]"}`}
-            aria-current={activeTab === item.id ? "page" : undefined}
-          >
-            <item.icon size={16} />
-            <span className="truncate">{item.label}</span>
-          </button>
-        ))}
-      </nav>
     </div>
   );
 }
@@ -519,120 +433,90 @@ function Overview({
   results: NonNullable<CommunityData["results"]>;
   colors: typeof communityTone;
 }) {
+  const ranked = [...results].sort((a, b) => b.pnlPercent - a.pnlPercent);
+  const totalTrades = results.reduce((sum, result) => sum + result.trades, 0);
+
   return (
-    <div>
-      <div
-        className={`rounded-3xl border border-white/10 bg-[linear-gradient(145deg,#111,#080808)] p-4 shadow-2xl ${colors.glow} sm:p-7`}
-      >
-        <div className="flex items-start gap-3 sm:gap-4">
+    <div className="space-y-5">
+      <section className="rounded-2xl border border-white/8 bg-[#090909] p-4 sm:p-6">
+        <div className="flex items-start gap-3">
           <div
-            className={`grid size-10 shrink-0 place-items-center rounded-2xl border sm:size-11 ${colors.soft}`}
+            className={`grid size-9 shrink-0 place-items-center rounded-xl border ${colors.soft}`}
           >
-            <BarChart3 size={18} />
+            <BarChart3 size={16} />
           </div>
           <div className="min-w-0">
-            <p className="text-[9px] font-black uppercase tracking-[.2em] text-zinc-600 sm:text-[10px]">
+            <h2 className="text-base font-black sm:text-lg">
               Community overview
-            </p>
-            <h2 className="mt-2 text-lg font-black sm:text-2xl">
-              A private desk for disciplined traders.
             </h2>
-            <p className="mt-2 max-w-xl text-xs leading-5 text-zinc-500 sm:text-sm sm:leading-6">
+            <p className="mt-1 max-w-2xl text-xs leading-5 text-zinc-500 sm:text-sm">
               {community.description ||
-                "Set your community direction, invite followers and choose which trading results the desk can see."}
+                "A private space to compare shared results and stay accountable together."}
             </p>
           </div>
         </div>
-      </div>
-      <div className="mt-3 grid grid-cols-2 gap-2 sm:mt-4 sm:grid-cols-3 sm:gap-3">
-        <Metric label="Members" value={String(members)} hint="Active traders" />
-        <Metric
-          label="Shared accounts"
-          value={String(sharedAccounts)}
-          hint="Opt-in only"
-        />
-        <Metric
-          label="Desk health"
-          value={members > 1 ? "Active" : "Starting"}
-          hint="Community status"
-        />
-      </div>
-      {results.length ? (
-        <section className="mt-5">
-          <div className="flex items-center justify-between gap-3">
-            <div>
-              <p className="text-[10px] font-black uppercase tracking-[.2em] text-zinc-600">
-                Member results
-              </p>
-              <h3 className="mt-1 text-sm font-black">Shared performance</h3>
-            </div>
-            <span className="shrink-0 text-[9px] text-zinc-600 sm:text-[10px]">
-              By PnL %
-            </span>
-          </div>
-          <div className="mt-3 grid gap-3 md:grid-cols-2">
-            {[...results]
-              .sort((a, b) => b.pnlPercent - a.pnlPercent)
-              .map((result) => (
-                <article
-                  key={result.accountId}
-                  className="rounded-2xl border border-white/8 bg-[#080808] p-4"
-                >
-                  <div className="flex items-center gap-3">
-                    <TraderAvatar
-                      name={result.member?.full_name ?? result.accountName}
-                      value={result.member?.avatar_url ?? null}
-                      className="size-9 text-[10px]"
-                    />
-                    <div className="min-w-0 flex-1">
-                      <p className="truncate text-xs font-black">
-                        {result.member?.full_name ?? "Community trader"}
-                      </p>
-                      <p className="truncate text-[10px] text-zinc-600">
-                        {result.accountName} · {result.firm}
-                      </p>
-                    </div>
-                    <span
-                      className={`font-mono text-sm font-black ${result.pnlPercent >= 0 ? "text-white" : "text-zinc-400"}`}
-                    >
-                      {result.pnlPercent >= 0 ? "+" : ""}
-                      {result.pnlPercent}%
-                    </span>
+      </section>
+
+      <section className="grid grid-cols-3 gap-2 sm:gap-3">
+        <Metric label="Members" value={String(members)} hint="Active" />
+        <Metric label="Accounts" value={String(sharedAccounts)} hint="Shared" />
+        <Metric label="Trades" value={String(totalTrades)} hint="Recorded" />
+      </section>
+
+      <section>
+        <div className="flex items-center justify-between gap-3">
+          <h3 className="text-sm font-black">Performance</h3>
+          <span className="text-[10px] text-zinc-600">Ranked by return</span>
+        </div>
+        {ranked.length ? (
+          <div className="mt-3 overflow-hidden rounded-2xl border border-white/8 bg-[#080808]">
+            {ranked.map((result, index) => (
+              <article
+                key={result.accountId}
+                className="grid grid-cols-[28px_minmax(0,1fr)_auto] items-center gap-3 border-b border-white/6 p-3 last:border-b-0 sm:grid-cols-[32px_minmax(0,1fr)_72px_72px_90px] sm:p-4"
+              >
+                <span className="text-center text-xs font-black text-zinc-600">
+                  {index + 1}
+                </span>
+                <div className="flex min-w-0 items-center gap-3">
+                  <TraderAvatar
+                    name={result.member?.full_name ?? result.accountName}
+                    value={result.member?.avatar_url ?? null}
+                    className="size-8 text-[9px] sm:size-9"
+                  />
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-xs font-black">
+                      {result.member?.full_name ?? "Community trader"}
+                    </p>
+                    <p className="truncate text-[10px] text-zinc-600">
+                      {result.accountName} · {result.firm}
+                    </p>
                   </div>
-                  <div className="mt-4 grid grid-cols-3 gap-2 border-t border-white/8 pt-3">
-                    <MiniMetric label="Win rate" value={`${result.winRate}%`} />
-                    <MiniMetric label="Trades" value={String(result.trades)} />
-                    <MiniMetric
-                      label="P&L"
-                      value={
-                        result.dollarPnl === null
-                          ? "Private"
-                          : `${result.dollarPnl >= 0 ? "+" : ""}$${result.dollarPnl.toLocaleString()}`
-                      }
-                    />
-                  </div>
-                </article>
-              ))}
+                </div>
+                <div className="hidden sm:block">
+                  <MiniMetric label="Win rate" value={`${result.winRate}%`} />
+                </div>
+                <div className="hidden sm:block">
+                  <MiniMetric label="Trades" value={String(result.trades)} />
+                </div>
+                <span className="text-right font-mono text-sm font-black">
+                  {result.pnlPercent >= 0 ? "+" : ""}
+                  {result.pnlPercent}%
+                </span>
+              </article>
+            ))}
           </div>
-        </section>
-      ) : null}
-      <div className="mt-4 grid gap-3 md:grid-cols-2">
-        <RoadmapCard
-          icon={MessageSquareText}
-          title="Community chat"
-          text="Focused channels for setups, reviews and accountability."
-        />
-        <RoadmapCard
-          icon={TrendingUp}
-          title="Shared performance"
-          text="Privacy-first member result cards and fair percentage metrics."
-        />
-      </div>
+        ) : (
+          <div className="mt-3 rounded-2xl border border-dashed border-white/10 px-4 py-10 text-center text-sm text-zinc-600">
+            Shared results will appear here.
+          </div>
+        )}
+      </section>
     </div>
   );
 }
 
-function Leaderboard({
+export function CommunityLeaderboard({
   results,
 }: {
   results: NonNullable<CommunityData["results"]>;
@@ -717,7 +601,7 @@ function Leaderboard({
   );
 }
 
-function CommunityInsights({
+export function CommunityInsights({
   results,
   members,
   sharedAccounts,
@@ -1123,7 +1007,7 @@ function MiniMetric({ label, value }: { label: string; value: string }) {
     </div>
   );
 }
-function RoadmapCard({
+export function CommunityRoadmapCard({
   icon: Icon,
   title,
   text,
@@ -1144,7 +1028,7 @@ function RoadmapCard({
     </div>
   );
 }
-function ContextStat({
+export function CommunityContextStat({
   icon: Icon,
   label,
   value,
