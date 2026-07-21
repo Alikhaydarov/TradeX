@@ -3,15 +3,23 @@
 import Image from "next/image";
 import { cn } from "@/lib/utils";
 
-const PLATFORM_META: Record<string, { mark: string; tone: string; label: string }> = {
-  mt5: { mark: "MT5", tone: "bg-gradient-to-br from-emerald-400/20 via-sky-400/18 to-blue-500/20 text-emerald-100", label: "MetaTrader 5" },
-  metatrader5: { mark: "MT5", tone: "bg-gradient-to-br from-emerald-400/20 via-sky-400/18 to-blue-500/20 text-emerald-100", label: "MetaTrader 5" },
-  ctrader: { mark: "cT", tone: "bg-rose-500/14 text-rose-100", label: "cTrader" },
-  tradelocker: { mark: "TL", tone: "bg-sky-500/14 text-sky-100", label: "TradeLocker" },
-  tradovate: { mark: "TV", tone: "bg-amber-400/14 text-amber-100", label: "Tradovate" },
-  ninjatrader: { mark: "NT", tone: "bg-orange-500/14 text-orange-100", label: "NinjaTrader" },
-  projectx: { mark: "PX", tone: "bg-fuchsia-500/14 text-fuchsia-100", label: "Project X" },
-  matchtrader: { mark: "MT", tone: "bg-cyan-500/14 text-cyan-100", label: "MatchTrader" },
+type PlatformMeta = {
+  label: string;
+  mark: string;
+  asset?: string;
+  tone: string;
+  imageClass?: string;
+};
+
+const PLATFORM_META: Record<string, PlatformMeta> = {
+  mt5: { mark: "MT5", asset: "/platforms/metatrader5.png", tone: "bg-[#1199e2]", label: "MetaTrader 5" },
+  metatrader5: { mark: "MT5", asset: "/platforms/metatrader5.png", tone: "bg-[#1199e2]", label: "MetaTrader 5" },
+  ctrader: { mark: "cT", asset: "/platforms/ctrader.svg", tone: "bg-white", label: "cTrader" },
+  tradelocker: { mark: "TL", asset: "/platforms/tradelocker.png", tone: "bg-black", label: "TradeLocker" },
+  tradovate: { mark: "TV", asset: "/platforms/tradovate.png", tone: "bg-white", label: "Tradovate" },
+  ninjatrader: { mark: "NT", asset: "/platforms/ninjatrader.png", tone: "bg-black", label: "NinjaTrader" },
+  projectx: { mark: "PX", asset: "/platforms/projectx.png", tone: "bg-black", label: "Project X", imageClass: "scale-110" },
+  matchtrader: { mark: "MT", asset: "/platforms/matchtrader.png", tone: "bg-black", label: "MatchTrader" },
   manual: { mark: "MN", tone: "bg-white/[.08] text-zinc-200", label: "Manual account" },
 };
 
@@ -38,14 +46,20 @@ export function PlatformLogoBadge({
       title={meta.label}
       aria-label={meta.label}
       className={cn(
-        "grid shrink-0 place-items-center rounded-2xl border border-white/10 font-black tracking-[0.12em] shadow-[inset_0_1px_0_rgba(255,255,255,.05)]",
-        compact ? "h-9 min-w-9 px-2 text-[10px]" : "h-11 min-w-11 px-2.5 text-[11px]",
+        "grid shrink-0 place-items-center overflow-hidden rounded-xl border border-white/10 font-black tracking-[0.12em] shadow-[inset_0_1px_0_rgba(255,255,255,.05)]",
+        compact ? "size-9 text-[10px]" : "size-12 text-[11px]",
         meta.tone,
         className,
       )}
     >
-      {key === "mt5" || key === "metatrader5" ? (
-        <Image src="/mt5/mt5-logo.png" alt="" width={compact ? 28 : 36} height={compact ? 28 : 36} className="rounded-lg object-cover" />
+      {meta.asset ? (
+        <Image
+          src={meta.asset}
+          alt=""
+          width={compact ? 32 : 44}
+          height={compact ? 32 : 44}
+          className={cn("size-full object-contain p-1", meta.imageClass)}
+        />
       ) : meta.mark}
     </span>
   );
