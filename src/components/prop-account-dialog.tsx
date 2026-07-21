@@ -2,7 +2,6 @@
 
 import {
   ArrowLeft,
-  ChevronDown,
   ChevronRight,
   KeyRound,
   LoaderCircle,
@@ -21,7 +20,6 @@ import {
   type PlatformConfig,
   type PlatformId,
 } from "./account-platform-selector";
-import { AccountPlanGate } from "./account-plan-gate";
 import { PlatformLogoBadge } from "./platform-logo-badge";
 import { PropFirmLogo } from "./prop-firm-logo";
 import { Button } from "./ui/button";
@@ -71,8 +69,6 @@ type PremiumStatus = {
   autoSyncEnabled: boolean;
 };
 
-type FreeAccountView = "choose" | "manual" | "plans";
-
 export function PropAccountDialog({
   open, saving, onOpenChange, onSave,
 }: {
@@ -92,8 +88,6 @@ export function PropAccountDialog({
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [premiumStatus, setPremiumStatus] = useState<PremiumStatus>({ plan: "free", isPremium: false, autoSyncEnabled: false });
   const [premiumLoaded, setPremiumLoaded] = useState(false);
-  const [freeView, setFreeView] = useState<FreeAccountView>("choose");
-  const [advancedOpen, setAdvancedOpen] = useState(false);
 
   const selectedPlatform = useMemo(() => ACCOUNT_PLATFORMS.find((item) => item.id === platform) ?? ACCOUNT_PLATFORMS[0], [platform]);
   const sources = accountType === "prop" ? PROP_FIRMS : BROKERS;
@@ -117,8 +111,6 @@ export function PropAccountDialog({
       setSize(100000);
       setConnectNow(true);
       setSubmitError(null);
-      setFreeView("choose");
-      setAdvancedOpen(false);
     }, 160);
     return () => window.clearTimeout(timer);
   }, [open]);
@@ -162,8 +154,11 @@ export function PropAccountDialog({
   }
 
   function choosePlatform(item: PlatformConfig) {
-    if (!premiumStatus.isPremium) {
-      setFreeView("plans");
+    if (premiumStatus.plan === "free") {
+      return;
+    }
+    if (item.status !== "live") {
+      setSubmitError(`${item.name} connector is coming soon.`);
       return;
     }
     setPlatform(item.id);
@@ -192,9 +187,9 @@ export function PropAccountDialog({
     event.preventDefault();
     setSubmitError(null);
 
-    if (accountKind === "automatic" && !premiumStatus.isPremium) {
-      setFreeView("plans");
-      setSubmitError("Upgrade to Premium to continue with this connector.");
+    if (accountKind === "automatic" && premiumStatus.plan === "free") {
+      setSubmitError("Standard or Pro is required for automatic account sync.");
+      setStep(2);
       return;
     }
 
@@ -233,153 +228,6 @@ export function PropAccountDialog({
             <div className="h-20 animate-pulse rounded-2xl bg-white/[.055]" />
             <div className="h-11 animate-pulse rounded-xl bg-white/[.055]" />
           </div>
-        </DialogContent>
-      </Dialog>
-    );
-  }
-
-  if (open && !premiumStatus.isPremium) {
-    return (
-      <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="max-h-[92dvh] overflow-y-auto border-[#222222] bg-[#070707] p-0 text-zinc-100 sm:max-w-[520px]">
-          {freeView === "plans" ? (
-            <AccountPlanGate
-              onBack={() => setFreeView("choose")}
-              onChoose={() => {
-                onOpenChange(false);
-                window.history.pushState(null, "", "/pricing");
-                window.dispatchEvent(new Event("popstate"));
-              }}
-            />
-          ) : freeView === "choose" ? (
-            <div>
-              <div className="border-b border-white/8 px-5 py-4 sm:px-6">
-                <DialogHeader>
-                  <DialogTitle className="text-lg font-black">Add account</DialogTitle>
-                  <p className="mt-1 text-xs leading-5 text-zinc-500">Start manually or connect your trading account with a paid plan.</p>
-                </DialogHeader>
-              </div>
-              <div className="grid gap-3 p-5 sm:grid-cols-2 sm:p-6">
-                <button type="button" onClick={() => { setAccountKind("manual"); setConnectNow(false); setFreeView("manual"); }} className="group rounded-2xl border border-white/10 bg-[#050505] p-4 text-left transition hover:border-white/25 hover:bg-[#0b0b0b]">
-                  <span className="grid size-9 place-items-center rounded-xl bg-white text-black"><Pencil size={16} /></span>
-                  <span className="mt-4 block text-sm font-black text-white">Manual account</span>
-                  <span className="mt-1 block text-xs leading-5 text-zinc-500">Free journal. Add trades yourself.</span>
-                  <span className="mt-4 flex items-center gap-1 text-[11px] font-bold text-zinc-300">Continue <ChevronRight size={13} /></span>
-                </button>
-                <button type="button" onClick={() => setFreeView("plans")} className="group rounded-2xl border border-sky-300/15 bg-[#071017] p-4 text-left transition hover:border-sky-300/30 hover:bg-[#0a151f]">
-                  <span className="flex items-start justify-between gap-2">
-                    <span className="grid size-9 place-items-center rounded-xl bg-sky-300 text-black"><Zap size={16} /></span>
-                    <span className="rounded-full border border-sky-200/15 px-2 py-0.5 text-[9px] font-black uppercase tracking-wider text-sky-200">Premium</span>
-                  </span>
-                  <span className="mt-4 block text-sm font-black text-white">Automatic account</span>
-                  <span className="mt-1 block text-xs leading-5 text-zinc-400">MT5 sync, analytics and AI review.</span>
-                  <span className="mt-4 flex items-center gap-1 text-[11px] font-bold text-sky-200">Compare plans <ChevronRight size={13} /></span>
-                </button>
-              </div>
-            </div>
-          ) : (
-          <form onSubmit={handleSubmit}>
-            <div className="border-b border-white/8 px-5 py-4 sm:px-6">
-              <DialogHeader>
-                <div className="flex items-center gap-2">
-                  <button type="button" onClick={() => setFreeView("choose")} className="grid size-8 place-items-center rounded-lg text-zinc-500 transition hover:bg-white/5 hover:text-white" aria-label="Back"><ArrowLeft size={16} /></button>
-                  <DialogTitle className="text-lg font-black">Manual account</DialogTitle>
-                </div>
-                <p className="mt-1 pl-10 text-xs text-zinc-500">Create a journal workspace in one step.</p>
-              </DialogHeader>
-            </div>
-            <div className="space-y-5 px-5 py-5 sm:px-6">
-              {submitError ? (
-                <div className="rounded-2xl border border-rose-500/20 bg-[#1a0d10] px-4 py-3 text-sm text-rose-200">{submitError}</div>
-              ) : null}
-
-              <div className="grid grid-cols-2 gap-1 rounded-xl border border-white/10 bg-black p-1">
-                {(["prop", "real"] as const).map((type) => (
-                  <button
-                    key={type}
-                    type="button"
-                    onClick={() => changeAccountType(type)}
-                    className={cn(
-                      "h-10 rounded-lg text-sm font-bold capitalize transition",
-                      accountType === type ? "bg-white text-black" : "text-zinc-500 hover:text-white"
-                    )}
-                  >
-                    {type === "prop" ? "Prop account" : "Personal account"}
-                  </button>
-                ))}
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="free-account-name" className="text-sm font-semibold text-zinc-200">Account name</Label>
-                <Input id="free-account-name" name="name" required maxLength={60} placeholder={accountType === "prop" ? "FTMO Challenge" : "My trading account"} className="h-12 rounded-xl border-white/10 bg-[#111111]" />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="free-account-balance" className="text-sm font-semibold text-zinc-200">Initial balance</Label>
-                <div className="relative">
-                  <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-sm font-bold text-zinc-500">$</span>
-                  <Input
-                    id="free-account-balance"
-                    type="number"
-                    inputMode="decimal"
-                    min={100}
-                    max={100000000}
-                    step={100}
-                    value={size}
-                    onChange={(event) => setSize(Math.max(0, Number(event.target.value)))}
-                    className="h-12 rounded-xl border-white/10 bg-[#111111] pl-8 font-mono text-base font-bold"
-                  />
-                </div>
-                <p className="text-xs leading-5 text-zinc-600">Used as the starting point for P&amp;L, drawdown and growth.</p>
-              </div>
-
-              <div className="overflow-hidden rounded-2xl border border-white/10 bg-black">
-                <button type="button" onClick={() => setAdvancedOpen((value) => !value)} className="flex h-12 w-full items-center justify-between px-4 text-left text-sm font-semibold text-zinc-300">
-                  Advanced options
-                  <ChevronDown size={16} className={cn("text-zinc-600 transition", advancedOpen && "rotate-180")} />
-                </button>
-                {advancedOpen ? (
-                  <div className="space-y-2 border-t border-white/8 p-4">
-                    <Label htmlFor="free-account-firm" className="text-xs font-bold uppercase tracking-[0.14em] text-zinc-500">{accountType === "prop" ? "Prop firm" : "Broker"}</Label>
-                    <select
-                      id="free-account-firm"
-                      value={firm}
-                      onChange={(event) => setFirm(event.target.value)}
-                      className="h-11 w-full rounded-xl border border-white/10 bg-[#111111] px-3 text-sm font-semibold text-zinc-100 outline-none focus:border-white/25"
-                    >
-                      {sources.map((item) => <option key={item} value={item}>{item}</option>)}
-                    </select>
-                  </div>
-                ) : null}
-              </div>
-
-            </div>
-
-            <div className="flex items-center justify-end gap-2 border-t border-white/8 px-5 py-4 sm:px-6">
-              <Button type="button" variant="outline" onClick={() => onOpenChange(false)} className="border-white/10 bg-transparent">Cancel</Button>
-              <Button disabled={isSubmitting || size < 100} className="bg-white font-semibold text-black hover:bg-zinc-200">
-                {isSubmitting ? <LoaderCircle className="animate-spin" /> : <Plus size={17} />}
-                Create account
-              </Button>
-            </div>
-
-            <input type="hidden" name="accountType" value={accountType} />
-            <input type="hidden" name="firm" value={firm} />
-            <input type="hidden" name="propSite" value={accountType === "prop" ? firm : ""} />
-            <input type="hidden" name="propLogin" value="" />
-            <input type="hidden" name="phase" value={accountType === "real" ? "Live" : "Challenge"} />
-            <input type="hidden" name="marketType" value="CFD" />
-            <input type="hidden" name="platform" value="manual" />
-            <input type="hidden" name="importSource" value="manual" />
-            <input type="hidden" name="accountSize" value={size} />
-            <input type="hidden" name="initialBalance" value={size} />
-            <input type="hidden" name="profitTarget" value={Math.round(size * 0.08)} />
-            <input type="hidden" name="maxDrawdown" value={Math.round(size * 0.1)} />
-            <input type="hidden" name="dailyDrawdown" value={Math.round(size * 0.05)} />
-            <input type="hidden" name="startDate" value={new Date().toISOString().slice(0, 10)} />
-            <input type="hidden" name="status" value="Active" />
-          </form>
-          )}
         </DialogContent>
       </Dialog>
     );
@@ -437,7 +285,16 @@ export function PropAccountDialog({
             ) : null}
 
             {step === 2 ? (
-              <AccountPlatformSelector plan={premiumStatus.plan === "pro" ? "pro" : "standard"} onSelect={choosePlatform} />
+              <AccountPlatformSelector
+                plan={premiumStatus.plan}
+                onSelect={choosePlatform}
+                onBack={goBack}
+                onUpgrade={() => {
+                  onOpenChange(false);
+                  window.history.pushState(null, "", "/pricing");
+                  window.dispatchEvent(new Event("popstate"));
+                }}
+              />
             ) : null}
 
             {step === 3 ? (
@@ -452,7 +309,7 @@ export function PropAccountDialog({
                     </div>
                     <div className="mt-3 flex items-center gap-3">
                       <PropFirmLogo firm={firm} compact />
-                      <div className="min-w-0">
+                      <div className="min-w-0 flex-1">
                         <p className="text-sm font-black text-zinc-100">{firm}</p>
                         <p className="text-xs text-zinc-500">
                           {accountKind === "manual"
@@ -462,7 +319,7 @@ export function PropAccountDialog({
                               : `${selectedPlatform.name} import flow`}
                         </p>
                       </div>
-                      <div className="ml-auto text-right">
+                      <div className="ml-auto shrink-0 whitespace-nowrap text-right">
                         <p className="text-[10px] uppercase tracking-widest text-zinc-500">Size</p>
                         <p className="font-mono text-sm font-black text-zinc-100">${size.toLocaleString()}</p>
                       </div>
