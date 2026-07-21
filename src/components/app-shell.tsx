@@ -205,7 +205,7 @@ function AppShellInner() {
           onLogin={openLogin}
           user={user}
         />
-        <div className="hidden w-[272px] shrink-0 lg:block" aria-hidden="true" />
+        <div className="hidden w-[286px] shrink-0 lg:block" aria-hidden="true" />
         <main ref={workspaceMainRef} data-workspace-main className="workspace-main h-[100dvh] min-w-0 flex-1 overscroll-contain overflow-y-auto overflow-x-hidden bg-[#000000] pb-[max(env(safe-area-inset-bottom),0.5rem)] lg:h-[calc(100dvh-2rem)] lg:rounded-[1rem] lg:border lg:border-white/8 lg:pb-0">
           <WorkspaceTopbar section={section} />
           <section className="min-h-full">

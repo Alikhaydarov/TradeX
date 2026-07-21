@@ -57,7 +57,7 @@ export function WorkspaceTopbar({ section }: { section: Section }) {
   const pnlLabel = pnlMode === "percentage" ? "Percentage View" : pnlMode === "hidden" ? "Hide P&L" : "Money View";
 
   return (
-    <header role="banner" className="tw-app-topbar sticky top-0 z-[70] shrink-0 border-b border-white/8 bg-black/95 px-3 py-2 shadow-[0_10px_30px_rgba(0,0,0,.28)] backdrop-blur-xl supports-[backdrop-filter]:bg-black/85 lg:flex lg:min-h-16 lg:items-center lg:gap-4 lg:px-5 lg:py-2">
+    <header role="banner" className="tw-app-topbar sticky top-0 z-[70] min-h-[58px] shrink-0 border-b border-white/8 bg-black/95 px-3 py-2 shadow-[0_10px_30px_rgba(0,0,0,.28)] backdrop-blur-xl supports-[backdrop-filter]:bg-black/85 lg:flex lg:min-h-16 lg:items-center lg:gap-4 lg:px-5 lg:py-2">
       <div className="grid items-center gap-2 lg:flex lg:min-w-0 lg:flex-1 lg:gap-4" style={{ gridTemplateColumns: isHome ? "36px minmax(0, 1fr) auto auto" : "36px minmax(0, 1fr) auto" }}>
         <button
           type="button"
