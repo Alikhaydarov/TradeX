@@ -310,7 +310,27 @@ export function JournalV2({
   const setups = useMemo(() => { const m = new Map<string, { pnl: number; trades: number; wins: number }>(); monthEntries.forEach(e => { const k = e.setup || "Uncategorized", v = m.get(k) || { pnl: 0, trades: 0, wins: 0 }; m.set(k, { pnl: v.pnl + e.pnl, trades: v.trades + 1, wins: v.wins + (e.pnl > 0 ? 1 : 0) }); }); return [...m].map(([name, v]) => ({ name, ...v, rate: Math.round(v.wins / v.trades * 100) })).sort((a, b) => b.pnl - a.pnl); }, [monthEntries]);
   const mistakes = useMemo(() => { const m = new Map<string, { pnl: number; trades: number }>(); monthEntries.filter(e => e.errorMade && e.mistakeType).forEach(e => { const k = e.mistakeType as string, v = m.get(k) || { pnl: 0, trades: 0 }; m.set(k, { pnl: v.pnl + e.pnl, trades: v.trades + 1 }); }); return [...m].map(([name, v]) => ({ name, ...v })).sort((a, b) => a.pnl - b.pnl); }, [monthEntries]);
   const planRate = useMemo(() => monthEntries.length ? Math.round(monthEntries.filter(e => e.followingPlan).length / monthEntries.length * 100) : 0, [monthEntries]);
-  const calendar = useMemo(() => { const y = month.getFullYear(), m = month.getMonth(), offset = (new Date(y, m, 1).getDay() + 6) % 7, count = new Date(y, m + 1, 0).getDate(), cells = 42; return Array.from({ length: cells }, (_, i) => { const day = i - offset + 1; if (day < 1 || day > count) return null; const key = `${monthId(month)}-${String(day).padStart(2, "0")}`, trades = accountEntries.filter(e => e.rawDate === key); return { day, trades, pnl: trades.reduce((s, e) => s + e.pnl, 0) }; }); }, [month, accountEntries]);
+  const calendar = useMemo(() => {
+    const year = month.getFullYear();
+    const monthIndex = month.getMonth();
+    const offset = (new Date(year, monthIndex, 1).getDay() + 6) % 7;
+    const dayCount = new Date(year, monthIndex + 1, 0).getDate();
+    const tradesByDay = new Map<string, JournalEntry[]>();
+
+    for (const entry of accountEntries) {
+      if (!entry.rawDate?.startsWith(monthId(month))) continue;
+      const entries = tradesByDay.get(entry.rawDate) ?? [];
+      entries.push(entry);
+      tradesByDay.set(entry.rawDate, entries);
+    }
+
+    return Array.from({ length: 42 }, (_, index) => {
+      const day = index - offset + 1;
+      if (day < 1 || day > dayCount) return null;
+      const trades = tradesByDay.get(`${monthId(month)}-${String(day).padStart(2, "0")}`) ?? [];
+      return { day, trades, pnl: trades.reduce((sum, entry) => sum + entry.pnl, 0) };
+    });
+  }, [month, accountEntries]);
 
   async function createAccount(form: FormData) {
     setSaving(true);
@@ -992,26 +1012,26 @@ function Workspace(p: {
           {/* Calendar */}
           {!singleTabMode || activeTab === "calendar" ? (
           <TabsContent value="calendar">
-            <div className="space-y-3">
-              <div className="grid gap-2 sm:grid-cols-3 sm:gap-3">
+            <div className="calendar-workspace space-y-3">
+              <div className="calendar-summary-grid grid grid-cols-3 gap-2 sm:gap-3">
                 {[
                   { label: "Net P&L", value: formatTradePnl(stats.pnl), note: `${monthCount} trades this month`, icon: stats.pnl >= 0 ? <TrendingUp size={15} /> : <TrendingDown size={15} />, tone: stats.pnl >= 0 ? "text-emerald-300 bg-emerald-400/10" : "text-rose-300 bg-rose-400/10" },
                   { label: "Trading days", value: String(calendar.filter((day) => day?.trades.length).length), note: `${month.toLocaleDateString("en-US", { month: "long" })} activity`, icon: <CalendarDays size={15} />, tone: "text-sky-300 bg-sky-400/10" },
                   { label: "Win rate", value: `${stats.rate}%`, note: `${stats.wins} wins / ${stats.losses} losses`, icon: <Target size={15} />, tone: stats.rate >= 50 ? "text-emerald-300 bg-emerald-400/10" : "text-amber-300 bg-amber-400/10" },
                 ].map((item) => (
-                  <div key={item.label} className="min-w-0 rounded-[1rem] border border-white/8 bg-[#070707] p-3 sm:p-4">
+                  <div key={item.label} className="calendar-summary-card min-w-0 rounded-[1rem] border border-white/8 bg-[#070707] p-2.5 sm:p-4">
                     <div className="flex items-center justify-between gap-2">
-                      <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-zinc-500">{item.label}</p>
-                      <span className={`grid size-7 shrink-0 place-items-center rounded-lg ${item.tone}`}>{item.icon}</span>
+                      <p className="truncate text-[9px] font-semibold uppercase tracking-[0.12em] text-zinc-500 sm:text-[10px]">{item.label}</p>
+                      <span className={`grid size-6 shrink-0 place-items-center rounded-lg sm:size-7 ${item.tone}`}>{item.icon}</span>
                     </div>
-                    <p className="mt-2 truncate font-mono text-base font-black text-white sm:text-xl">{item.value}</p>
-                    <p className="mt-1 truncate text-[11px] text-zinc-500 sm:text-xs">{item.note}</p>
+                    <p className="mt-2 truncate font-mono text-[13px] font-black text-white sm:text-xl">{item.value}</p>
+                    <p className="mt-1 hidden truncate text-[11px] text-zinc-500 sm:block">{item.note}</p>
                   </div>
                 ))}
               </div>
 
-              <div className="overflow-hidden rounded-[1rem] border border-white/8 bg-[#070707]">
-                <div className="flex flex-col gap-3 border-b border-white/8 px-3 py-3 sm:px-4 sm:py-4 lg:flex-row lg:items-center">
+              <div className="calendar-surface overflow-hidden rounded-[1rem] border border-white/8 bg-[#070707]">
+                <div className="calendar-toolbar flex flex-col gap-3 border-b border-white/8 px-3 py-3 sm:px-4 sm:py-4 lg:flex-row lg:items-center">
                   <div className="flex min-w-0 items-center gap-3">
                     <span className="grid size-9 shrink-0 place-items-center rounded-xl border border-white/8 bg-white/[.035] text-zinc-300"><CalendarDays size={17} /></span>
                     <div className="min-w-0">
@@ -1020,7 +1040,7 @@ function Workspace(p: {
                       <p className="hidden text-[11px] text-zinc-500 sm:block">Select a day to review its trades.</p>
                     </div>
                   </div>
-                  <div className="grid grid-cols-[auto_minmax(0,1fr)_auto_auto] items-center gap-1 rounded-xl border border-white/8 bg-[#050505] p-1 lg:ml-auto">
+                  <div className="calendar-month-switcher grid grid-cols-[auto_minmax(0,1fr)_auto_auto] items-center gap-1 rounded-xl border border-white/8 bg-[#050505] p-1 lg:ml-auto">
                     <Button aria-label="Previous month" variant="ghost" size="icon-sm" onClick={p.onPrev}><ChevronLeft size={16} /></Button>
                     <strong className="min-w-0 px-2 text-center text-xs capitalize sm:min-w-28 sm:text-sm">{month.toLocaleDateString("en-US", { month: "short", year: "numeric" })}</strong>
                     <Button aria-label="Next month" variant="ghost" size="icon-sm" onClick={p.onNext}><ChevronRight size={16} /></Button>
@@ -1036,7 +1056,7 @@ function Workspace(p: {
                       </div>
                     ))}
                   </div>
-                  <div className="grid grid-cols-7 content-start gap-1 [grid-auto-rows:58px] sm:gap-1.5 sm:[grid-auto-rows:80px] md:[grid-auto-rows:92px] lg:[grid-auto-rows:104px]">
+                  <div className="calendar-grid grid grid-cols-7 content-start gap-1 [grid-auto-rows:58px] sm:gap-1.5 sm:[grid-auto-rows:80px] md:[grid-auto-rows:92px] lg:[grid-auto-rows:100px]">
                     {calendar.map((c, i) =>
                       c ? (
                         <button
@@ -1044,7 +1064,7 @@ function Workspace(p: {
                           type="button"
                           aria-label={`${month.toLocaleDateString("en-US", { month: "long" })} ${c.day}: ${c.trades.length} trades, ${formatTradePnl(c.pnl)}`}
                           onClick={() => (c.trades.length ? setSelectedDay(c) : null)}
-                          className={`relative h-full w-full overflow-hidden rounded-md border p-1 text-left transition sm:rounded-[0.9rem] sm:p-2.5 ${c.trades.length ? c.pnl >= 0 ? "border-emerald-500/16 bg-[#07110c] hover:border-emerald-400/30 hover:bg-[#0a1710]" : "border-rose-500/16 bg-[#12070a] hover:border-rose-400/30 hover:bg-[#180a0e]" : "border-white/6 bg-[#050505]"} ${c.trades.length ? "cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/25" : "cursor-default"}`}
+                          className={`calendar-day relative h-full w-full overflow-hidden rounded-md border p-1 text-left transition-colors sm:rounded-[0.9rem] sm:p-2.5 ${c.trades.length ? c.pnl >= 0 ? "border-emerald-500/16 bg-[#07110c] hover:border-emerald-400/30 hover:bg-[#0a1710]" : "border-rose-500/16 bg-[#12070a] hover:border-rose-400/30 hover:bg-[#180a0e]" : "border-white/6 bg-[#050505]"} ${c.trades.length ? "cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/25" : "cursor-default"}`}
                         >
                           {c.trades.length ? <span className={`absolute inset-x-0 top-0 h-0.5 ${c.pnl >= 0 ? "bg-emerald-400/60" : "bg-rose-400/60"}`} /> : null}
                           <div className="flex items-start justify-between">
@@ -1052,10 +1072,13 @@ function Workspace(p: {
                             {c.trades.length > 0 ? <span className="hidden font-mono text-[10px] text-zinc-500 sm:inline">{c.trades.length}T</span> : null}
                           </div>
                           {c.trades.length > 0 ? (
-                            <p className={`mt-1 truncate font-mono text-[9px] font-black leading-tight sm:mt-5 sm:text-sm ${c.pnl >= 0 ? "text-emerald-400" : "text-rose-400"}`}>
-                              <span className="sm:hidden">{c.pnl >= 0 ? "+" : ""}{cashCompact.format(c.pnl)}</span>
-                              <span className="hidden sm:inline">{c.pnl >= 0 ? "+" : ""}{cash.format(c.pnl)}</span>
-                            </p>
+                            <>
+                              <p className={`mt-1 truncate font-mono text-[9px] font-black leading-tight sm:mt-5 sm:text-sm ${c.pnl >= 0 ? "text-emerald-400" : "text-rose-400"}`}>
+                                <span className="sm:hidden">{c.pnl >= 0 ? "+" : ""}{cashCompact.format(c.pnl)}</span>
+                                <span className="hidden sm:inline">{c.pnl >= 0 ? "+" : ""}{cash.format(c.pnl)}</span>
+                              </p>
+                              <p className="mt-1 hidden text-[10px] font-medium text-zinc-500 lg:block">{c.trades.length === 1 ? "1 closed trade" : `${c.trades.length} closed trades`}</p>
+                            </>
                           ) : null}
                         </button>
                       ) : (
