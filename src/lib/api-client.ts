@@ -2,7 +2,7 @@ type HttpMethod = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
 
 interface RequestOptions {
   method?: HttpMethod;
-  body?: string;
+  body?: BodyInit | null;
   headers?: Record<string, string>;
 }
 
@@ -17,9 +17,10 @@ export async function apiRequest<T = unknown>(
   }
 
   const { method = "GET", body, headers = {} } = options;
+  const isFormData = typeof FormData !== "undefined" && body instanceof FormData;
 
   const requestHeaders = {
-    "Content-Type": "application/json",
+    ...(!isFormData ? { "Content-Type": "application/json" } : {}),
     Accept: "application/json",
     ...headers,
   };
@@ -44,7 +45,7 @@ export async function apiRequest<T = unknown>(
 async function performRequest<T>(
   url: string,
   method: HttpMethod,
-  body: string | undefined,
+  body: BodyInit | null | undefined,
   headers: Record<string, string>,
 ): Promise<T> {
   const res = await fetch(url, {
