@@ -7,6 +7,7 @@ const reservedPaths = new Set([
   "accounts",
   "dashboard",
   "calendar",
+  "economic-calendar",
   "trades",
   "analytics",
   "community",
@@ -65,7 +66,7 @@ export function usernameFromPath(pathname: string) {
 export function sectionFromPath(pathname: string): Section {
   if (pathname.startsWith("/accounts")) return "accounts";
   if (pathname.startsWith("/dashboard")) return "dashboard";
-  if (pathname.startsWith("/calendar")) return "calendar";
+  if (pathname.startsWith("/calendar") || pathname.startsWith("/economic-calendar")) return "calendar";
   if (pathname.startsWith("/trades")) return "trades";
   if (pathname.startsWith("/analytics")) return "analytics";
   if (pathname.startsWith("/community")) return "community";
