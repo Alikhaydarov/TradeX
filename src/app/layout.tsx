@@ -17,6 +17,7 @@ import "./quality-overrides.css";
 import "./sidebar-width.css";
 import "./dashboard-cleanups.css";
 import "./workspace-design-system.css";
+import "./typography.css";
 
 const dmSans = DM_Sans({
   variable: "--font-dm-sans",
