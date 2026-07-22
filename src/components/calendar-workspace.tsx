@@ -139,9 +139,10 @@ function dateKey(year: number, month: number, day: number) {
 }
 
 function monthBounds(year: number, month: number) {
-  const start = dateKey(year, month, 1)
-  const end = dateKey(year, month, new Date(year, month + 1, 0).getDate())
-  return { start, end }
+  return {
+    start: dateKey(year, month, 1),
+    end: dateKey(year, month, new Date(year, month + 1, 0).getDate()),
+  }
 }
 
 function monthCells(year: number, month: number) {
@@ -152,6 +153,10 @@ function monthCells(year: number, month: number) {
     const day = index - offset + 1
     return day >= 1 && day <= days ? day : null
   })
+}
+
+function parsedEntryDate(value: string) {
+  return new Date(value.length <= 10 ? `${value}T00:00:00` : value)
 }
 
 function eventLocalDate(event: MarketNewsEvent) {
@@ -175,9 +180,9 @@ function tone(value: number) {
 
 function StatCard({ label, value, valueClass = "text-white" }: { label: string; value: string; valueClass?: string }) {
   return (
-    <div className="rounded-xl border border-white/8 bg-[#101010] px-3 py-3 sm:px-4">
-      <p className="text-[10px] font-semibold text-zinc-500">{label}</p>
-      <p className={`mt-2 truncate text-lg font-bold tabular-nums sm:text-xl ${valueClass}`}>{value}</p>
+    <div className="min-h-[68px] rounded-xl border border-white/8 bg-[#101010] px-3 py-2.5">
+      <p className="truncate text-[10px] font-semibold text-zinc-500">{label}</p>
+      <p className={`mt-1.5 truncate text-base font-bold tabular-nums lg:text-lg ${valueClass}`}>{value}</p>
     </div>
   )
 }
@@ -257,7 +262,7 @@ export function CalendarWorkspace() {
 
   const monthEntries = useMemo(
     () => entries.filter((entry) => {
-      const date = new Date(`${entry.date}T00:00:00`)
+      const date = parsedEntryDate(entry.date)
       return date.getFullYear() === route.year && date.getMonth() === route.month
     }),
     [entries, route.month, route.year],
@@ -266,7 +271,7 @@ export function CalendarWorkspace() {
   const entriesByDay = useMemo(() => {
     const map = new Map<number, CalendarEntry[]>()
     for (const entry of monthEntries) {
-      const day = new Date(`${entry.date}T00:00:00`).getDate()
+      const day = parsedEntryDate(entry.date).getDate()
       map.set(day, [...(map.get(day) || []), entry])
     }
     return map
@@ -283,7 +288,10 @@ export function CalendarWorkspace() {
   }, [news, route.month, route.year])
 
   const cells = useMemo(() => monthCells(route.year, route.month), [route.month, route.year])
-  const weeks = useMemo(() => Array.from({ length: cells.length / 7 }, (_, index) => cells.slice(index * 7, index * 7 + 7)), [cells])
+  const weeks = useMemo(
+    () => Array.from({ length: cells.length / 7 }, (_, index) => cells.slice(index * 7, index * 7 + 7)),
+    [cells],
+  )
 
   useEffect(() => {
     const now = new Date()
@@ -296,7 +304,7 @@ export function CalendarWorkspace() {
   const wins = monthEntries.filter((entry) => entry.pnl > 0).length
   const losses = monthEntries.filter((entry) => entry.pnl < 0).length
   const winRate = wins + losses ? Math.round((wins / (wins + losses)) * 100) : 0
-  const tradingDays = new Set(monthEntries.map((entry) => entry.date)).size
+  const tradingDays = new Set(monthEntries.map((entry) => entry.date.slice(0, 10))).size
   const realizedR = monthEntries.reduce((sum, entry) => sum + entry.resultR, 0)
   const mostTraded = [...monthEntries.reduce((map, entry) => map.set(entry.symbol, (map.get(entry.symbol) || 0) + 1), new Map<string, number>()).entries()]
     .sort((left, right) => right[1] - left[1])[0]?.[0] || "—"
@@ -304,7 +312,7 @@ export function CalendarWorkspace() {
 
   const yearlyStats = useMemo(() => Array.from({ length: 12 }, (_, month) => {
     const selected = entries.filter((entry) => {
-      const date = new Date(`${entry.date}T00:00:00`)
+      const date = parsedEntryDate(entry.date)
       return date.getFullYear() === route.year && date.getMonth() === month
     })
     const pnl = selected.reduce((sum, entry) => sum + entry.pnl, 0)
@@ -333,8 +341,8 @@ export function CalendarWorkspace() {
   if (accountsLoading || entriesLoading) {
     return (
       <div className="mx-auto max-w-[1420px] space-y-3 p-3 sm:p-4 lg:p-5">
-        <Skeleton className="mx-auto h-10 w-60 rounded-xl bg-white/[.05]" />
-        <Skeleton className="h-[620px] rounded-2xl bg-white/[.05]" />
+        <Skeleton className="mx-auto h-9 w-60 rounded-xl bg-white/[.05]" />
+        <Skeleton className="h-[560px] rounded-2xl bg-white/[.05]" />
       </div>
     )
   }
@@ -353,11 +361,11 @@ export function CalendarWorkspace() {
   }
 
   return (
-    <div className="mx-auto max-w-[1420px] space-y-3 p-3 sm:p-4 lg:p-5">
+    <div className="mx-auto max-w-[1420px] space-y-2.5 p-3 sm:p-4 lg:p-4">
       <div className="flex justify-center">
         <div className="inline-flex rounded-xl border border-white/8 bg-[#080808] p-1">
-          <button type="button" onClick={() => switchMode("journal")} className={`rounded-lg px-4 py-2 text-xs font-semibold transition ${route.mode === "journal" ? "bg-white/[.10] text-white" : "text-zinc-500 hover:text-zinc-300"}`}>Journal</button>
-          <button type="button" onClick={() => switchMode("economic")} className={`rounded-lg px-4 py-2 text-xs font-semibold transition ${route.mode === "economic" ? "bg-white/[.10] text-white" : "text-zinc-500 hover:text-zinc-300"}`}>Economic Calendar</button>
+          <button type="button" onClick={() => switchMode("journal")} className={`rounded-lg px-4 py-1.5 text-xs font-semibold transition ${route.mode === "journal" ? "bg-white/[.10] text-white" : "text-zinc-500 hover:text-zinc-300"}`}>Journal</button>
+          <button type="button" onClick={() => switchMode("economic")} className={`rounded-lg px-4 py-1.5 text-xs font-semibold transition ${route.mode === "economic" ? "bg-white/[.10] text-white" : "text-zinc-500 hover:text-zinc-300"}`}>Economic Calendar</button>
         </div>
       </div>
 
@@ -371,28 +379,28 @@ export function CalendarWorkspace() {
         />
       ) : (
         <Card className="gap-0 overflow-hidden border-white/8 bg-[#070707] py-0 shadow-none">
-          <CardHeader className="border-b border-white/8 px-3 py-3.5 sm:px-4">
-            <div className="grid items-center gap-3 md:grid-cols-[1fr_auto_1fr]">
-              <div className="flex items-center gap-3">
+          <CardHeader className="border-b border-white/8 px-3 py-3 sm:px-4">
+            <div className="grid items-center gap-2 md:grid-cols-[1fr_auto_1fr]">
+              <div className="flex min-w-0 items-center gap-2.5">
                 {route.mode === "journal" ? (
                   <Button variant="ghost" size="icon-sm" onClick={() => navigate("/calendar")} aria-label="Back to yearly calendar"><ArrowLeft className="size-4" /></Button>
                 ) : null}
-                <div>
-                  <h1 className="text-base font-bold text-white">{route.mode === "journal" ? "Monthly Performance" : "Economic Calendar"}</h1>
-                  <p className="mt-0.5 text-[11px] text-zinc-500">{route.mode === "journal" ? "Select a day to view its trades" : newsLimited ? "High-impact releases · limited live feed" : "High-impact releases for major markets"}</p>
+                <div className="min-w-0">
+                  <h1 className="truncate text-sm font-bold text-white sm:text-base">{route.mode === "journal" ? "Monthly Performance" : "Economic Calendar"}</h1>
+                  <p className="mt-0.5 truncate text-[10px] text-zinc-500 sm:text-[11px]">{route.mode === "journal" ? "Select a day to view its trades" : newsLimited ? "High-impact releases · limited live feed" : "High-impact releases for major markets"}</p>
                 </div>
               </div>
 
-              <div className="flex items-center justify-center gap-2">
+              <div className="flex items-center justify-center gap-1.5">
                 <Button variant="ghost" size="icon-sm" onClick={() => shiftMonth(-1)} aria-label="Previous month"><ChevronLeft className="size-4" /></Button>
-                <strong className="min-w-32 text-center text-sm text-white sm:text-base">{monthName(route.year, route.month)}</strong>
+                <strong className="min-w-28 text-center text-sm text-white sm:min-w-32 sm:text-base">{monthName(route.year, route.month)}</strong>
                 <Button variant="ghost" size="icon-sm" onClick={() => shiftMonth(1)} aria-label="Next month"><ChevronRight className="size-4" /></Button>
               </div>
 
-              <div className="flex justify-start md:justify-end">
+              <div className="hidden justify-end md:flex">
                 {route.mode === "economic" ? (
                   <Button variant="ghost" size="icon-sm" onClick={() => void loadNews()} disabled={newsLoading} aria-label="Refresh economic calendar"><RefreshCw className={`size-4 ${newsLoading ? "animate-spin" : ""}`} /></Button>
-                ) : <span className="text-[11px] text-zinc-600">{activeAccount.name}</span>}
+                ) : <span className="truncate text-[10px] text-zinc-600">{activeAccount.name}</span>}
               </div>
             </div>
           </CardHeader>
@@ -440,27 +448,28 @@ function YearOverview({
   const totalPnl = stats.reduce((sum, item) => sum + item.pnl, 0)
   const totalTrades = stats.reduce((sum, item) => sum + item.trades, 0)
   const activeMonths = stats.filter((item) => item.trades).length
+  const best = stats.filter((item) => item.trades).sort((a, b) => b.pnl - a.pnl)[0]
 
   return (
     <Card className="gap-0 border-white/8 bg-[#070707] shadow-none">
-      <CardHeader className="border-b border-white/8 px-4 py-4">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <div><h1 className="text-base font-bold text-white">Yearly Performance</h1><p className="mt-1 text-xs text-zinc-500">{accountName} · choose a month to open its journal</p></div>
-          <div className="flex items-center gap-2"><Button variant="ghost" size="icon-sm" onClick={() => onShift(-1)}><ChevronLeft className="size-4" /></Button><strong className="min-w-16 text-center text-sm">{year}</strong><Button variant="ghost" size="icon-sm" onClick={() => onShift(1)}><ChevronRight className="size-4" /></Button></div>
+      <CardHeader className="border-b border-white/8 px-4 py-3">
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+          <div><h1 className="text-base font-bold text-white">Yearly Performance</h1><p className="mt-0.5 text-xs text-zinc-500">{accountName} · choose a month to open its journal</p></div>
+          <div className="flex items-center gap-1.5"><Button variant="ghost" size="icon-sm" onClick={() => onShift(-1)}><ChevronLeft className="size-4" /></Button><strong className="min-w-16 text-center text-sm">{year}</strong><Button variant="ghost" size="icon-sm" onClick={() => onShift(1)}><ChevronRight className="size-4" /></Button></div>
         </div>
       </CardHeader>
-      <CardContent className="p-3 sm:p-4">
+      <CardContent className="p-3">
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
           <StatCard label="Net P&L" value={cash.format(totalPnl)} valueClass={tone(totalPnl)} />
           <StatCard label="Total trades" value={String(totalTrades)} />
           <StatCard label="Active months" value={String(activeMonths)} />
-          <StatCard label="Best month" value={stats.filter((item) => item.trades).sort((a, b) => b.pnl - a.pnl)[0] ? new Date(year, stats.filter((item) => item.trades).sort((a, b) => b.pnl - a.pnl)[0].month, 1).toLocaleDateString("en-US", { month: "short" }) : "—"} />
+          <StatCard label="Best month" value={best ? new Date(year, best.month, 1).toLocaleDateString("en-US", { month: "short" }) : "—"} />
         </div>
-        <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6">
+        <div className="mt-2.5 grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6">
           {stats.map((item) => (
-            <button key={item.month} type="button" onClick={() => onOpen(item.month)} className={`min-h-32 rounded-xl border p-3 text-left transition hover:border-white/20 hover:bg-white/[.035] ${item.trades ? item.pnl >= 0 ? "border-emerald-400/15 bg-emerald-400/[.035]" : "border-rose-400/15 bg-rose-400/[.035]" : "border-white/8 bg-[#0b0b0b]"}`}>
+            <button key={item.month} type="button" onClick={() => onOpen(item.month)} className={`min-h-24 rounded-xl border p-3 text-left transition hover:border-white/20 hover:bg-white/[.035] ${item.trades ? item.pnl >= 0 ? "border-emerald-400/15 bg-emerald-400/[.035]" : "border-rose-400/15 bg-rose-400/[.035]" : "border-white/8 bg-[#0b0b0b]"}`}>
               <div className="flex items-center justify-between"><strong className="text-sm text-white">{new Date(year, item.month, 1).toLocaleDateString("en-US", { month: "short" })}</strong><span className="text-[10px] text-zinc-600">{item.trades}T</span></div>
-              <p className={`mt-8 text-base font-bold tabular-nums ${tone(item.pnl)}`}>{item.trades ? cash.format(item.pnl) : "—"}</p>
+              <p className={`mt-5 text-sm font-bold tabular-nums ${tone(item.pnl)}`}>{item.trades ? cash.format(item.pnl) : "—"}</p>
               <p className="mt-1 text-[10px] text-zinc-600">{item.trades ? `${item.winRate}% win rate` : "No trades"}</p>
             </button>
           ))}
@@ -490,8 +499,8 @@ function JournalMonth({
   const selected = selectedDay ? entriesByDay.get(selectedDay) || [] : []
 
   return (
-    <CardContent className="p-3 sm:p-4">
-      <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 xl:grid-cols-6">
+    <CardContent className="p-2.5 sm:p-3">
+      <div className="grid grid-cols-2 gap-1.5 sm:grid-cols-3 xl:grid-cols-6">
         <StatCard label="Total trades" value={String(stats.total)} />
         <StatCard label="Trading days" value={String(stats.tradingDays)} />
         <StatCard label="Realized RR" value={stats.total ? `${stats.realizedR.toFixed(2)}R` : "—"} />
@@ -500,16 +509,25 @@ function JournalMonth({
         <StatCard label="Month P&L" value={`${stats.monthReturn >= 0 ? "+" : ""}${stats.monthReturn.toFixed(2)}%`} valueClass={tone(stats.pnl)} />
       </div>
 
-      <div className="mt-3 hidden md:block">
-        <div className="grid grid-cols-[repeat(7,minmax(0,1fr))_120px] gap-2">
-          {WEEKDAYS.map((day, index) => <div key={day} className={`rounded-lg border border-white/8 bg-black px-3 py-2 text-center text-xs font-semibold ${index >= 5 ? "text-zinc-600" : "text-zinc-300"}`}>{day}</div>)}
-          <div className="rounded-lg border border-white/8 bg-black px-3 py-2 text-center text-xs font-semibold text-zinc-300">Week</div>
+      <div className="mt-2.5 hidden md:block">
+        <div className="grid grid-cols-[repeat(7,minmax(0,1fr))_96px] gap-1.5">
+          {WEEKDAYS.map((day, index) => <div key={day} className={`rounded-lg border border-white/8 bg-black px-2 py-1.5 text-center text-[11px] font-semibold ${index >= 5 ? "text-zinc-600" : "text-zinc-300"}`}>{day}</div>)}
+          <div className="rounded-lg border border-white/8 bg-black px-2 py-1.5 text-center text-[11px] font-semibold text-zinc-300">Week</div>
           {weeks.map((week, weekIndex) => {
             const weekTrades = week.flatMap((day) => day ? entriesByDay.get(day) || [] : [])
             const weekPnl = weekTrades.reduce((sum, entry) => sum + entry.pnl, 0)
             return [
-              ...week.map((day, dayIndex) => <JournalDayCell key={`${weekIndex}-${dayIndex}`} day={day} weekend={dayIndex >= 5} entries={day ? entriesByDay.get(day) || [] : []} />),
-              <div key={`summary-${weekIndex}`} className="grid min-h-28 place-items-center rounded-xl border border-white/8 bg-black p-2 text-center"><div><p className={`text-sm font-bold tabular-nums ${tone(weekPnl)}`}>{weekTrades.length ? cash.format(weekPnl) : "0%"}</p><p className="mt-1 text-[10px] text-zinc-600">{weekTrades.length} trades</p></div></div>,
+              ...week.map((day, dayIndex) => (
+                <JournalDayCell
+                  key={`${weekIndex}-${dayIndex}`}
+                  day={day}
+                  weekend={dayIndex >= 5}
+                  entries={day ? entriesByDay.get(day) || [] : []}
+                  active={day === selectedDay}
+                  onSelect={onSelectDay}
+                />
+              )),
+              <div key={`summary-${weekIndex}`} className="grid h-[78px] place-items-center rounded-xl border border-white/8 bg-black p-1.5 text-center xl:h-[82px]"><div><p className={`text-xs font-bold tabular-nums ${tone(weekPnl)}`}>{weekTrades.length ? cash.format(weekPnl) : "0%"}</p><p className="mt-0.5 text-[9px] text-zinc-600">{weekTrades.length} trades</p></div></div>,
             ]
           })}
         </div>
@@ -532,14 +550,26 @@ function JournalMonth({
   )
 }
 
-function JournalDayCell({ day, entries, weekend }: { day: number | null; entries: CalendarEntry[]; weekend: boolean }) {
-  if (!day) return <div className="min-h-28 rounded-xl border border-transparent" />
+function JournalDayCell({
+  day,
+  entries,
+  weekend,
+  active,
+  onSelect,
+}: {
+  day: number | null
+  entries: CalendarEntry[]
+  weekend: boolean
+  active: boolean
+  onSelect: (day: number) => void
+}) {
+  if (!day) return <div className="h-[78px] rounded-xl border border-transparent xl:h-[82px]" />
   const pnl = entries.reduce((sum, entry) => sum + entry.pnl, 0)
   return (
-    <div className={`min-h-28 rounded-xl border p-2.5 ${entries.length ? pnl >= 0 ? "border-emerald-400/15 bg-emerald-400/[.025]" : "border-rose-400/15 bg-rose-400/[.025]" : "border-white/8 bg-[#0a0a0a]"}`}>
-      <div className="flex items-center justify-between"><span className={`text-xs font-semibold ${weekend ? "text-zinc-600" : "text-zinc-300"}`}>{day}</span>{entries.length ? <span className="text-[9px] text-zinc-600">{entries.length}T</span> : null}</div>
-      {entries.length ? <><p className={`mt-5 truncate text-sm font-bold tabular-nums ${tone(pnl)}`}>{cash.format(pnl)}</p><p className="mt-1 truncate text-[10px] text-zinc-600">{[...new Set(entries.map((entry) => entry.symbol))].slice(0, 2).join(" · ")}</p></> : null}
-    </div>
+    <button type="button" onClick={() => onSelect(day)} className={`h-[78px] overflow-hidden rounded-xl border p-2 text-left transition xl:h-[82px] ${active ? "ring-1 ring-white/20" : ""} ${entries.length ? pnl >= 0 ? "border-emerald-400/15 bg-emerald-400/[.025]" : "border-rose-400/15 bg-rose-400/[.025]" : "border-white/8 bg-[#0a0a0a] hover:border-white/14"}`}>
+      <div className="flex items-center justify-between"><span className={`text-[11px] font-semibold ${weekend ? "text-zinc-600" : "text-zinc-300"}`}>{day}</span>{entries.length ? <span className="text-[8px] text-zinc-600">{entries.length}T</span> : null}</div>
+      {entries.length ? <><p className={`mt-3 truncate text-xs font-bold tabular-nums ${tone(pnl)}`}>{cash.format(pnl)}</p><p className="mt-0.5 truncate text-[9px] text-zinc-600">{[...new Set(entries.map((entry) => entry.symbol))].slice(0, 2).join(" · ")}</p></> : null}
+    </button>
   )
 }
 
@@ -562,13 +592,22 @@ function EconomicMonth({
 }) {
   const selected = selectedDay ? newsByDay.get(selectedDay) || [] : []
   return (
-    <CardContent className="p-3 sm:p-4">
-      {loading ? <Skeleton className="h-[540px] rounded-xl bg-white/[.04]" /> : (
+    <CardContent className="p-2.5 sm:p-3">
+      {loading ? <Skeleton className="h-[500px] rounded-xl bg-white/[.04]" /> : (
         <>
           <div className="hidden md:block">
-            <div className="grid grid-cols-7 gap-2">
-              {WEEKDAYS.map((day, index) => <div key={day} className={`rounded-lg border border-white/8 bg-black px-3 py-2 text-center text-xs font-semibold ${index >= 5 ? "text-zinc-600" : "text-zinc-300"}`}>{day}</div>)}
-              {weeks.flatMap((week, weekIndex) => week.map((day, dayIndex) => <EconomicDayCell key={`${weekIndex}-${dayIndex}`} day={day} weekend={dayIndex >= 5} events={day ? newsByDay.get(day) || [] : []} />))}
+            <div className="grid grid-cols-7 gap-1.5">
+              {WEEKDAYS.map((day, index) => <div key={day} className={`rounded-lg border border-white/8 bg-black px-2 py-1.5 text-center text-[11px] font-semibold ${index >= 5 ? "text-zinc-600" : "text-zinc-300"}`}>{day}</div>)}
+              {weeks.flatMap((week, weekIndex) => week.map((day, dayIndex) => (
+                <EconomicDayCell
+                  key={`${weekIndex}-${dayIndex}`}
+                  day={day}
+                  weekend={dayIndex >= 5}
+                  events={day ? newsByDay.get(day) || [] : []}
+                  active={day === selectedDay}
+                  onSelect={onSelectDay}
+                />
+              )))}
             </div>
           </div>
 
@@ -591,19 +630,31 @@ function EconomicMonth({
   )
 }
 
-function EconomicDayCell({ day, events, weekend }: { day: number | null; events: MarketNewsEvent[]; weekend: boolean }) {
-  if (!day) return <div className="min-h-36 rounded-xl border border-transparent" />
+function EconomicDayCell({
+  day,
+  events,
+  weekend,
+  active,
+  onSelect,
+}: {
+  day: number | null
+  events: MarketNewsEvent[]
+  weekend: boolean
+  active: boolean
+  onSelect: (day: number) => void
+}) {
+  if (!day) return <div className="h-[94px] rounded-xl border border-transparent xl:h-[100px]" />
   return (
-    <div className="min-h-36 rounded-xl border border-white/8 bg-[#0a0a0a] p-2">
-      <div className="flex items-center justify-end"><span className={`text-xs font-semibold ${weekend ? "text-zinc-600" : "text-zinc-300"}`}>{day}</span></div>
-      <div className="mt-2 space-y-1.5">
-        {events.slice(0, 3).map((event) => {
+    <button type="button" onClick={() => onSelect(day)} className={`h-[94px] overflow-hidden rounded-xl border bg-[#0a0a0a] p-1.5 text-left transition xl:h-[100px] ${active ? "border-white/18 ring-1 ring-white/15" : "border-white/8 hover:border-white/14"}`}>
+      <div className="flex items-center justify-end"><span className={`text-[10px] font-semibold ${weekend ? "text-zinc-600" : "text-zinc-300"}`}>{day}</span></div>
+      <div className="mt-1 space-y-1">
+        {events.slice(0, 2).map((event) => {
           const date = eventLocalDate(event)
-          return <div key={event.id} className="rounded-lg border border-white/8 bg-[#101010] px-2 py-1.5"><p className="truncate text-[10px] font-semibold text-white">{event.event}</p><div className="mt-1 flex items-center justify-between gap-2 text-[9px]"><span className="text-zinc-500">{eventFlag(event)} {eventCurrency(event)} ★★★</span><span className="tabular-nums text-zinc-300">{Number.isNaN(date.getTime()) ? "TBD" : date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</span></div></div>
+          return <div key={event.id} className="rounded-md border border-white/8 bg-[#101010] px-1.5 py-1"><p className="truncate text-[9px] font-semibold text-white">{event.event}</p><div className="mt-0.5 flex items-center justify-between gap-1 text-[8px]"><span className="truncate text-zinc-500">{eventFlag(event)} {eventCurrency(event)}</span><span className="shrink-0 tabular-nums text-zinc-300">{Number.isNaN(date.getTime()) ? "TBD" : date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</span></div></div>
         })}
-        {events.length > 3 ? <p className="px-1 text-[9px] text-zinc-600">+{events.length - 3} more</p> : null}
+        {events.length > 2 ? <p className="px-1 text-[8px] text-zinc-600">+{events.length - 2} more</p> : null}
       </div>
-    </div>
+    </button>
   )
 }
 
