@@ -1,0 +1,61 @@
+:root {
+  --font-app: var(--font-dm-sans), "DM Sans", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-inter: var(--font-app);
+  --font-geist-mono: var(--font-app);
+}
+
+html,
+body {
+  font-family: var(--font-app);
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body,
+button,
+input,
+textarea,
+select,
+option,
+[data-slot="button"],
+[data-slot="input"],
+[data-slot="textarea"],
+[data-slot="select-trigger"],
+[data-slot="select-item"],
+[data-slot="dropdown-menu-item"],
+[data-slot="dialog-content"] {
+  font-family: var(--font-app);
+}
+
+.font-sans,
+.font-heading,
+.font-mono {
+  font-family: var(--font-app) !important;
+}
+
+.font-mono {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1, "zero" 0;
+  letter-spacing: -0.015em;
+}
+
+.MuiTypography-root,
+.MuiButton-root,
+.MuiInputBase-root,
+.MuiFormLabel-root,
+.MuiChip-root,
+.MuiTooltip-tooltip,
+.MuiMenuItem-root,
+.MuiTab-root,
+.MuiTableCell-root,
+.MuiCircularProgress-root + * {
+  font-family: var(--font-app) !important;
+}
+
+.recharts-text,
+.recharts-cartesian-axis-tick-value,
+.recharts-tooltip-wrapper {
+  font-family: var(--font-app) !important;
+}
