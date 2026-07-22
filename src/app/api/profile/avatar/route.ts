@@ -76,7 +76,7 @@ export async function POST(request: Request) {
 
   await auth.supabase
     .from("group_messages")
-    .update({ avatar: avatarUrl })
+    .update({ sender_avatar: avatarUrl })
     .eq("user_id", auth.user.id);
 
   if (previousPath && previousPath !== filePath) {
