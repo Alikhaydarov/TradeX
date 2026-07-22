@@ -96,6 +96,8 @@ export function Sidebar({
   const { accounts, activeAccountId, setActiveAccount } =
     useActiveAccountStore();
   const [profileUsername, setProfileUsername] = useState("");
+  const [profileAvatar, setProfileAvatar] = useState("");
+  const [profileFullName, setProfileFullName] = useState("");
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [accountSwitcherOpen, setAccountSwitcherOpen] = useState(false);
   const [accountQuery, setAccountQuery] = useState("");
@@ -107,8 +109,9 @@ export function Sidebar({
   const { hidePersonalInfo, maskValue, setSettingsOpen } =
     useWorkspacePreferences();
   const name = String(
-    user?.user_metadata.full_name ??
-      user?.user_metadata.name ??
+    profileFullName ||
+      user?.user_metadata.full_name ||
+      user?.user_metadata.name ||
       "Mehmon trader",
   );
   const username = usernameFromUser(user);
@@ -116,9 +119,10 @@ export function Sidebar({
     ? `@${profileUsername || username}`
     : "Sign in with Google";
   const avatar =
-    typeof user?.user_metadata.avatar_url === "string"
+    profileAvatar ||
+    (typeof user?.user_metadata.avatar_url === "string"
       ? user.user_metadata.avatar_url
-      : null;
+      : null);
   const activeAccount =
     accounts.find((account) => account.id === activeAccountId) || null;
   const activeBalance = activeAccount
@@ -147,15 +151,19 @@ export function Sidebar({
 
     let active = true;
     apiRequest<{
-      profile: { username?: string | null; is_verified?: boolean | null };
+      profile: { username?: string | null; is_verified?: boolean | null; avatar_url?: string | null; full_name?: string | null };
     }>("/api/profile")
       .then(({ profile }) => {
         if (!active) return;
         setProfileUsername(profile.username || "");
+        setProfileAvatar(profile.avatar_url || "");
+        setProfileFullName(profile.full_name || "");
       })
       .catch(() => {
         if (!active) return;
         setProfileUsername("");
+        setProfileAvatar("");
+        setProfileFullName("");
       });
 
     return () => {
