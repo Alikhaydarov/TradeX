@@ -141,9 +141,9 @@ export function Mt5Settings({ account, onSynced }: { account: PropAccount; onSyn
   };
 
   const statusColor = (s?: string) => {
-    if (s === "connected") return "text-emerald-400";
+    if (s === "connected") return "text-emerald-300";
     if (s === "pending") return "text-sky-400";
-    if (s === "error") return "text-rose-400";
+    if (s === "error") return "text-rose-300";
     return "text-zinc-500";
   };
 
@@ -160,8 +160,8 @@ export function Mt5Settings({ account, onSynced }: { account: PropAccount; onSyn
   const workerStateClass = !connectorStatus?.configured
     ? "text-amber-400"
     : connectorStatus.reachable
-      ? "text-emerald-400"
-      : "text-rose-400";
+      ? "text-emerald-300"
+      : "text-rose-300";
 
   return (
     <div className="space-y-3 px-3 pb-4 sm:space-y-4 sm:px-4">
@@ -205,7 +205,7 @@ export function Mt5Settings({ account, onSynced }: { account: PropAccount; onSyn
               </div>
 
               <div className="flex flex-wrap items-center gap-1.5">
-                <span className="inline-flex items-center gap-1 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-2 py-0.5 text-[10px] font-bold text-emerald-300">
+                <span className="inline-flex items-center gap-1 rounded-full border border-emerald-500/20 bg-emerald-400/10 px-2 py-0.5 text-[10px] font-bold text-emerald-300">
                   <CheckCircle2 size={10} /> Auto-sync
                 </span>
                 <span className="rounded-full border border-white/10 bg-white/[.03] px-2 py-0.5 text-[10px] font-semibold text-zinc-500">30s refresh</span>
@@ -217,7 +217,7 @@ export function Mt5Settings({ account, onSynced }: { account: PropAccount; onSyn
             </div>
 
             <button type="button" aria-label="Disconnect MT5" onClick={() => setDisconnectOpen(true)} disabled={!!busy}
-              className="grid size-9 shrink-0 place-items-center rounded-xl border border-white/10 text-zinc-600 transition hover:border-rose-500/30 hover:text-rose-400 disabled:opacity-50">
+              className="grid size-9 shrink-0 place-items-center rounded-xl border border-white/10 text-zinc-600 transition hover:border-rose-500/30 hover:text-rose-300 disabled:opacity-50">
               {busy === "disconnect" ? <Spinner className="size-3.5" /> : <Unplug size={13} />}
             </button>
           </div>
@@ -284,8 +284,8 @@ export function Mt5Settings({ account, onSynced }: { account: PropAccount; onSyn
       {message && (
         <p className={`break-words rounded-2xl border px-3 py-2 text-xs leading-5 ${
           message.includes("xato") || message.includes("Saqlanmadi")
-            ? "border-rose-500/20 text-rose-400"
-            : "border-emerald-500/20 text-emerald-400"
+            ? "border-rose-500/20 text-rose-300"
+            : "border-emerald-500/20 text-emerald-300"
         }`}>{message}</p>
       )}
 

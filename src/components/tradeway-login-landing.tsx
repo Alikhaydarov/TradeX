@@ -119,7 +119,7 @@ export function TradeWayLoginLanding({ onLogin }: { onLogin: () => void }) {
           </Button>
 
           {error && (
-            <p className="mt-3 text-sm text-rose-400" role="alert">
+            <p className="mt-3 text-sm text-rose-300" role="alert">
               {error}
             </p>
           )}

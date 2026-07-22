@@ -83,14 +83,14 @@ export function AccountPlanGate({ onBack, onChoose }: { onBack: () => void; onCh
           </div>
           <div className="shrink-0 text-right">
             <p className="font-mono text-2xl font-black text-white">${price}<span className="text-xs font-semibold text-zinc-500">{suffix}</span></p>
-            {monthlyEquivalent ? <p className="mt-1 text-[10px] text-emerald-400">${monthlyEquivalent}/mo equivalent</p> : null}
+            {monthlyEquivalent ? <p className="mt-1 text-[10px] text-emerald-300">${monthlyEquivalent}/mo equivalent</p> : null}
           </div>
         </div>
 
         <div className="mt-5 grid grid-cols-2 gap-x-4 gap-y-3">
           {selected.features.map((feature) => (
             <div key={feature.label} className={cn("flex min-w-0 items-center gap-2 text-[11px]", feature.included ? "text-zinc-300" : "text-zinc-600")}>
-              <span className={cn("grid size-4 shrink-0 place-items-center rounded-full", feature.included ? "bg-emerald-400/10 text-emerald-400" : "bg-white/5 text-zinc-600")}>
+              <span className={cn("grid size-4 shrink-0 place-items-center rounded-full", feature.included ? "bg-emerald-400/10 text-emerald-300" : "bg-white/5 text-zinc-600")}>
                 {feature.included ? <Check size={10} strokeWidth={3} /> : <X size={10} strokeWidth={3} />}
               </span>
               <span className="truncate">{feature.label}</span>

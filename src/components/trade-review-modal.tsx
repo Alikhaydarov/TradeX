@@ -112,7 +112,7 @@ function OptionStack({
                         event.stopPropagation();
                         onRemove(option);
                       }}
-                      className="grid size-7 shrink-0 place-items-center rounded-md text-zinc-500 hover:bg-rose-500/10 hover:text-rose-300 sm:opacity-0 sm:group-hover:opacity-100"
+                      className="grid size-7 shrink-0 place-items-center rounded-md text-zinc-500 hover:bg-rose-400/10 hover:text-rose-300 sm:opacity-0 sm:group-hover:opacity-100"
                       aria-label={`${option} optionni o'chirish`}
                     >
                       <X size={12} />
@@ -350,8 +350,8 @@ export function TradeReviewModal({ open, saving, account: _account, onOpenChange
                     className={`${inputClass} w-[62px] px-2 text-center font-mono text-xs`}
                   />
                   <div className="flex h-4 flex-1 overflow-hidden rounded-full bg-[#202020]">
-                    <div className="w-1/2 bg-red-500" />
-                    <div className="flex-1 bg-green-500" />
+                    <div className="w-1/2 bg-rose-500" />
+                    <div className="flex-1 bg-emerald-500" />
                   </div>
                 </div>
               </div>
@@ -477,7 +477,7 @@ export function TradeReviewModal({ open, saving, account: _account, onOpenChange
                     </button>
                   )}
                 </div>
-                {uploadError ? <p className="text-xs text-rose-400">{uploadError}</p> : null}
+                {uploadError ? <p className="text-xs text-rose-300">{uploadError}</p> : null}
               </div>
 
               <div className="space-y-2">

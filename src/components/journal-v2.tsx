@@ -1275,12 +1275,12 @@ function AccountCard({
 }) {
   const statusColor: Record<string, string> = {
     Processing: "text-sky-300 bg-[#091119] border-sky-400/20",
-    Active: "text-emerald-400 bg-[#0b1c12] border-emerald-400/20",
+    Active: "text-emerald-300 bg-[#0b1c12] border-emerald-400/20",
     Passed: "text-zinc-300 bg-[#0a0a0a] border-white/15",
-    Failed: "text-rose-400 bg-[#1a0d10] border-rose-400/20",
+    Failed: "text-rose-300 bg-[#1a0d10] border-rose-400/20",
     Paused: "text-amber-400 bg-[#1a1407] border-amber-400/20",
   };
-  const pnlTone = s.pnl >= 0 ? "text-emerald-400" : "text-rose-400";
+  const pnlTone = s.pnl >= 0 ? "text-emerald-300" : "text-rose-300";
   const sourceLabel =
     s.account.importSource === "mt5_bridge" ? "MT5 sync" : "Manual";
   const currentBalance = s.account.accountSize + s.pnl;
@@ -1795,7 +1795,7 @@ function Workspace(p: {
               title: "Monthly P&L",
               value: formatTradePnl(stats.pnl),
               icon: stats.pnl >= 0 ? TrendingUp : TrendingDown,
-              color: stats.pnl >= 0 ? "text-emerald-400" : "text-rose-400",
+              color: stats.pnl >= 0 ? "text-emerald-300" : "text-rose-300",
             },
             {
               title: "Win rate",
@@ -2100,10 +2100,10 @@ function Workspace(p: {
                     </div>
                     <div className="grid grid-cols-2 gap-2 border-b border-white/8 p-2.5 sm:grid-cols-4 sm:gap-3 sm:p-4">
                       {[
-                        { label: "Net P&L", value: formatTradePnl(yearlyPnl), tone: yearlyPnl >= 0 ? "text-emerald-400" : "text-rose-400" },
+                        { label: "Net P&L", value: formatTradePnl(yearlyPnl), tone: yearlyPnl >= 0 ? "text-emerald-300" : "text-rose-300" },
                         { label: "Total trades", value: String(yearlyTrades), tone: "text-white" },
                         { label: "Active months", value: String(activeMonths), tone: "text-white" },
-                        { label: "Best month", value: bestMonth.trades ? new Date(month.getFullYear(), bestMonth.monthIndex, 1).toLocaleDateString("en-US", { month: "short" }) : "-", tone: bestMonth.pnl >= 0 ? "text-emerald-400" : "text-zinc-300" },
+                        { label: "Best month", value: bestMonth.trades ? new Date(month.getFullYear(), bestMonth.monthIndex, 1).toLocaleDateString("en-US", { month: "short" }) : "-", tone: bestMonth.pnl >= 0 ? "text-emerald-300" : "text-zinc-300" },
                       ].map((item) => (
                         <div key={item.label} className="rounded-xl border border-white/7 bg-[#050505] px-3 py-2.5 sm:px-3.5">
                           <p className="text-[9px] font-semibold uppercase tracking-[0.12em] text-zinc-600">{item.label}</p>
@@ -2117,7 +2117,7 @@ function Workspace(p: {
                         const isCurrent = new Date().getFullYear() === month.getFullYear() && new Date().getMonth() === item.monthIndex;
                         return <button key={item.monthIndex} type="button" onClick={() => p.onCalendarMonthSelect(item.monthIndex)} className={`min-h-[94px] rounded-xl border p-3 text-left transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/25 sm:min-h-[112px] ${item.trades ? item.pnl >= 0 ? "border-emerald-500/18 bg-[#07110c] hover:border-emerald-400/40 hover:bg-[#0a1710]" : "border-rose-500/18 bg-[#12070a] hover:border-rose-400/40 hover:bg-[#180a0e]" : "border-white/7 bg-[#050505] hover:border-white/15 hover:bg-[#0a0a0a]"} ${isCurrent ? "ring-1 ring-white/20" : ""}`}>
                           <div className="flex items-center justify-between gap-2"><span className="text-xs font-bold text-white">{label}</span>{item.trades ? <span className="rounded-md bg-black/30 px-1.5 py-0.5 text-[9px] font-bold text-zinc-400">{item.trades}T</span> : null}</div>
-                          {item.trades ? <><p className={`mt-5 truncate font-mono text-sm font-black ${item.pnl >= 0 ? "text-emerald-400" : "text-rose-400"}`}>{item.pnl >= 0 ? "+" : ""}{cashCompact.format(item.pnl)}</p><p className="mt-1 text-[10px] text-zinc-500">{item.wins} win{item.wins === 1 ? "" : "s"}</p></> : <p className="mt-6 text-[10px] text-zinc-600">No trades</p>}
+                          {item.trades ? <><p className={`mt-5 truncate font-mono text-sm font-black ${item.pnl >= 0 ? "text-emerald-300" : "text-rose-300"}`}>{item.pnl >= 0 ? "+" : ""}{cashCompact.format(item.pnl)}</p><p className="mt-1 text-[10px] text-zinc-500">{item.wins} win{item.wins === 1 ? "" : "s"}</p></> : <p className="mt-6 text-[10px] text-zinc-600">No trades</p>}
                         </button>;
                       })}
                     </div>
@@ -2295,7 +2295,7 @@ function Workspace(p: {
                             {c.trades.length > 0 ? (
                               <>
                                 <p
-                                  className={`mt-1 truncate font-mono text-[9px] font-black leading-tight sm:mt-5 sm:text-sm ${c.pnl >= 0 ? "text-emerald-400" : "text-rose-400"}`}
+                                  className={`mt-1 truncate font-mono text-[9px] font-black leading-tight sm:mt-5 sm:text-sm ${c.pnl >= 0 ? "text-emerald-300" : "text-rose-300"}`}
                                 >
                                   <span className="sm:hidden">
                                     {c.pnl >= 0 ? "+" : ""}
@@ -2401,7 +2401,7 @@ function Workspace(p: {
                         <div className="p-4">
                           <div className="flex items-start gap-3">
                             <span
-                              className={`rounded-xl px-2.5 py-1 text-[10px] font-black ${trade.side === "Long" ? "bg-emerald-500/10 text-emerald-300" : "bg-rose-500/10 text-rose-300"}`}
+                              className={`rounded-xl px-2.5 py-1 text-[10px] font-black ${trade.side === "Long" ? "bg-emerald-400/10 text-emerald-300" : "bg-rose-400/10 text-rose-300"}`}
                             >
                               {trade.side}
                             </span>
@@ -2428,7 +2428,7 @@ function Workspace(p: {
                               </span>
                             ) : null}
                             {trade.followingPlan ? (
-                              <span className="rounded-lg bg-emerald-500/10 px-2 py-1 text-[10px] font-bold text-emerald-300">
+                              <span className="rounded-lg bg-emerald-400/10 px-2 py-1 text-[10px] font-bold text-emerald-300">
                                 Plan
                               </span>
                             ) : (
@@ -2711,7 +2711,7 @@ function Workspace(p: {
                             <div className="flex text-sm">
                               <span className="text-white">{setup.name}</span>
                               <span
-                                className={`ml-auto font-mono font-bold ${setup.pnl >= 0 ? "text-emerald-400" : "text-rose-400"}`}
+                                className={`ml-auto font-mono font-bold ${setup.pnl >= 0 ? "text-emerald-300" : "text-rose-300"}`}
                               >
                                 {setup.rate}% / {setup.pnl >= 0 ? "+" : ""}
                                 {cash.format(setup.pnl)}
@@ -2765,7 +2765,7 @@ function Workspace(p: {
                               </p>
                             </div>
                             <b
-                              className={`font-mono font-bold ${mistake.pnl >= 0 ? "text-emerald-400" : "text-rose-400"}`}
+                              className={`font-mono font-bold ${mistake.pnl >= 0 ? "text-emerald-300" : "text-rose-300"}`}
                             >
                               {mistake.pnl >= 0 ? "+" : ""}
                               {cash.format(mistake.pnl)}
@@ -3020,12 +3020,12 @@ function TradeEditor({
             </h3>
             <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
               <span
-                className={`shrink-0 rounded-lg px-2 py-0.5 text-[10px] font-black ${trade.side === "Long" ? "bg-emerald-500/10 text-emerald-300" : "bg-rose-500/10 text-rose-300"}`}
+                className={`shrink-0 rounded-lg px-2 py-0.5 text-[10px] font-black ${trade.side === "Long" ? "bg-emerald-400/10 text-emerald-300" : "bg-rose-400/10 text-rose-300"}`}
               >
                 {trade.side}
               </span>
               <span
-                className={`shrink-0 rounded-lg px-2 py-0.5 font-mono text-[10px] font-black ${trade.pnl >= 0 ? "bg-emerald-500/10 text-emerald-300" : "bg-rose-500/10 text-rose-300"}`}
+                className={`shrink-0 rounded-lg px-2 py-0.5 font-mono text-[10px] font-black ${trade.pnl >= 0 ? "bg-emerald-400/10 text-emerald-300" : "bg-rose-400/10 text-rose-300"}`}
               >
                 {trade.pnl >= 0 ? "+" : ""}
                 {cash.format(trade.pnl)}
@@ -3674,9 +3674,9 @@ function MetricPanel({
 }) {
   const color =
     accent === "good"
-      ? "text-emerald-400"
+      ? "text-emerald-300"
       : accent === "bad"
-        ? "text-rose-400"
+        ? "text-rose-300"
         : "text-white";
   return (
     <section className="rounded-[1rem] border border-white/8 bg-[#070707] p-3.5">

@@ -564,7 +564,7 @@ export function TradeShareComposer({ trade, onClose }: TradeShareComposerProps) 
                       </span>
                       {trade.setup?.trim() ? <span className="truncate text-[11px] text-[#8a8a8a]">{trade.setup}</span> : null}
                     </div>
-                    <span className={`ml-3 shrink-0 font-mono text-base font-black ${win ? "text-emerald-400" : "text-rose-400"}`}>
+                    <span className={`ml-3 shrink-0 font-mono text-base font-black ${win ? "text-emerald-300" : "text-rose-300"}`}>
                       {win ? "+" : ""}${cash.format(Math.abs(trade.pnl))}
                     </span>
                   </div>
@@ -574,7 +574,7 @@ export function TradeShareComposer({ trade, onClose }: TradeShareComposerProps) 
                       : null}
                     {trade.session?.trim() ? <span className="text-[11px] text-[#8a8a8a]">{trade.session}</span> : null}
                     <span className="text-[11px] text-[#8a8a8a]">{trade.date}</span>
-                    <span className={`ml-auto rounded px-1.5 py-0.5 text-[9px] font-black ${win ? "bg-emerald-500/15 text-emerald-400" : "bg-rose-500/15 text-rose-400"}`}>
+                    <span className={`ml-auto rounded px-1.5 py-0.5 text-[9px] font-black ${win ? "bg-emerald-500/15 text-emerald-300" : "bg-rose-500/15 text-rose-300"}`}>
                       {trade.pnl > 0 ? "WIN" : trade.pnl < 0 ? "LOSS" : "BE"}
                     </span>
                   </div>
@@ -629,7 +629,7 @@ export function TradeShareComposer({ trade, onClose }: TradeShareComposerProps) 
               <span className={`text-[11px] ${caption.length > 250 ? "text-amber-400" : "text-[#8a8a8a]"}`}>
                 {caption.length} / 280
               </span>
-              {error ? <span className="text-xs text-rose-400">{error}</span> : null}
+              {error ? <span className="text-xs text-rose-300">{error}</span> : null}
             </div>
           </div>
         )}

@@ -95,7 +95,7 @@ export function AuthModal({
             Backend is not configured yet. Check the server environment and auth settings.
           </div>
         )}
-        {error && <p className="mt-3 text-sm text-rose-400">{error}</p>}
+        {error && <p className="mt-3 text-sm text-rose-300">{error}</p>}
         <p className="mt-5 text-center text-xs leading-5 text-xmuted">
           By continuing, you agree to the platform terms and privacy policy.
         </p>
