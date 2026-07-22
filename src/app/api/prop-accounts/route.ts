@@ -7,12 +7,15 @@ export const runtime = "nodejs";
 const ACCOUNT_STATUSES = new Set(["Processing", "Active", "Passed", "Failed", "Paused"]);
 const DUPLICATE_NAME_PATTERN = /prop_accounts_user_id_name_key|duplicate key value/i;
 const PREMIUM_PLATFORMS = new Set(["tradelocker", "ctrader", "matchtrader"]);
+const IMPORT_SOURCES = new Set(["manual", "mt5_bridge", "ctrader", "tradovate", "ninjatrader", "projectx", "official_api"]);
 
 function values(body: Record<string, unknown>) {
   const name = String(body.name || "").trim().slice(0, 80);
   const accountType = String(body.accountType || "prop").trim() === "real" ? "real" : "prop";
-  const importSourceRaw = String(body.importSource || "manual").trim();
-  const importSource = ["manual", "mt5_bridge", "ctrader", "tradovate", "ninjatrader", "projectx", "official_api"].includes(importSourceRaw) ? importSourceRaw : "manual";
+  const platform = String(body.platform || "mt5").trim().toLowerCase().slice(0, 30);
+  const importSourceRaw = String(body.importSource || "manual").trim().toLowerCase();
+  const requestedImportSource = IMPORT_SOURCES.has(importSourceRaw) ? importSourceRaw : "manual";
+  const importSource = platform === "ctrader" ? "ctrader" : requestedImportSource;
   const accountSize = Number(body.accountSize);
   const initialBalance = Number(body.initialBalance || accountSize);
   const profitTarget = Number(body.profitTarget || 0);
@@ -26,7 +29,7 @@ function values(body: Record<string, unknown>) {
     prop_site: String(body.propSite || "").trim().slice(0, 120),
     prop_login: String(body.propLogin || "").trim().slice(0, 120),
     import_source: importSource,
-    platform: String(body.platform || "mt5").trim().slice(0, 30),
+    platform,
     phase: String(body.phase || (accountType === "real" ? "Live" : "Challenge")).slice(0,40),
     market_type: String(body.marketType || "CFD").slice(0,30),
     account_size: accountSize,
