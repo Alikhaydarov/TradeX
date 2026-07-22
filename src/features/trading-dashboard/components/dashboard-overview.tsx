@@ -5,7 +5,6 @@ import {
   BookOpen,
   CalendarDays,
   RefreshCw,
-  Sparkles,
   TrendingUp,
 } from "lucide-react"
 import CircularProgress from "@mui/material/CircularProgress"
@@ -122,12 +121,12 @@ function SectionHeader({
   action?: React.ReactNode
 }) {
   return (
-    <div className="flex items-start justify-between gap-3">
+    <div className="flex min-w-0 items-start justify-between gap-3">
       <div className="min-w-0">
         <h2 className="truncate text-sm font-bold tracking-tight text-white sm:text-base">{title}</h2>
         <p className="mt-0.5 text-[11px] text-zinc-600 sm:text-xs">{description}</p>
       </div>
-      {action}
+      <div className="shrink-0">{action}</div>
     </div>
   )
 }
@@ -135,7 +134,7 @@ function SectionHeader({
 function MetricRing({ value }: { value: number }) {
   const bounded = clamp(value)
   return (
-    <div className="relative grid size-[88px] shrink-0 place-items-center sm:size-[98px]">
+    <div className="relative grid size-[70px] shrink-0 place-items-center min-[390px]:size-[78px] sm:size-[98px]">
       <CircularProgress
         variant="determinate"
         value={100}
@@ -156,10 +155,52 @@ function MetricRing({ value }: { value: number }) {
         }}
       />
       <div className="text-center">
-        <p className="text-xl font-bold tabular-nums text-white">{Math.round(bounded)}%</p>
-        <p className="mt-0.5 text-[9px] font-bold uppercase tracking-wider text-zinc-600">Win rate</p>
+        <p className="text-base font-bold tabular-nums text-white sm:text-xl">{Math.round(bounded)}%</p>
+        <p className="mt-0.5 hidden text-[8px] font-bold uppercase tracking-wider text-zinc-600 min-[390px]:block sm:text-[9px]">Win rate</p>
       </div>
     </div>
+  )
+}
+
+function WeeklyPerformanceCard({
+  weeklyStrip,
+  formatTradePnl,
+}: {
+  weeklyStrip: WeeklyDay[]
+  formatTradePnl: (amount: number) => string
+}) {
+  return (
+    <Card className="gap-0 overflow-hidden border-white/8 bg-[#070707] py-0 shadow-none">
+      <CardHeader className="border-b border-white/8 px-3 py-3 sm:px-4">
+        <SectionHeader
+          title="Current week"
+          description={`${weeklyStrip.reduce((sum, day) => sum + day.trades, 0)} closed trades`}
+          action={<span className="rounded-lg border border-white/8 bg-black px-2.5 py-1 text-[10px] font-bold text-zinc-500">7 days</span>}
+        />
+      </CardHeader>
+      <CardContent className="overflow-x-auto p-2.5 sm:p-3">
+        <div className="grid auto-cols-[minmax(116px,1fr)] grid-flow-col gap-2 lg:grid-flow-row lg:grid-cols-7">
+          {weeklyStrip.map((day) => {
+            const positive = day.pnl > 0
+            const negative = day.pnl < 0
+            return (
+              <article key={day.key} className="min-h-[76px] rounded-xl border border-white/8 bg-[#0b0b0b] p-3">
+                <div className="flex items-center justify-between gap-2">
+                  <p className="text-xs font-semibold text-zinc-300">{day.label}</p>
+                  <span className={`text-[10px] font-semibold tabular-nums ${positive ? "text-emerald-300" : negative ? "text-rose-300" : "text-zinc-600"}`}>
+                    {day.percent > 0 ? "+" : ""}{day.percent.toFixed(2)}%
+                  </span>
+                </div>
+                <p className={`mt-3 text-sm font-bold tabular-nums ${positive ? "text-emerald-300" : negative ? "text-rose-300" : "text-zinc-600"}`}>
+                  {day.trades ? formatTradePnl(day.pnl) : "—"}
+                </p>
+                <p className="mt-1 text-[10px] text-zinc-600">{day.trades} trade{day.trades === 1 ? "" : "s"}</p>
+              </article>
+            )
+          })}
+        </div>
+      </CardContent>
+    </Card>
   )
 }
 
@@ -230,7 +271,7 @@ export function DashboardOverview({
         ? `Keep prioritizing ${topSetup.name}; current win rate is ${topSetup.rate}%.`
         : "Complete trade reviews to unlock a reliable execution insight."
 
-  const profitSegments = 22
+  const profitSegments = 16
   const positiveSegments = stats.pf > 0
     ? Math.min(profitSegments, Math.max(1, Math.round((stats.pf / (stats.pf + 1)) * profitSegments)))
     : 0
@@ -245,12 +286,13 @@ export function DashboardOverview({
   return (
     <div className="space-y-3 sm:space-y-4">
       <section className="flex flex-col gap-3 px-0.5 sm:flex-row sm:items-end sm:justify-between">
-        <div>
+        <div className="min-w-0">
           <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-zinc-600">{account.name} / dashboard</p>
-          <h1 className="mt-1 text-xl font-bold tracking-[-0.025em] text-white sm:text-2xl">Welcome back</h1>
-          <p className="mt-1 text-xs text-zinc-500">{todayLabel} · {aiFocus}</p>
+          <h1 className="mt-1 truncate text-[1.7rem] font-semibold tracking-[-0.035em] text-white sm:text-2xl">Welcome back</h1>
+          <p className="mt-1 text-sm font-medium text-zinc-600 sm:text-xs">{todayLabel}</p>
+          <p className="mt-1 line-clamp-1 text-[10px] text-zinc-700 sm:text-[11px]">AI focus: {aiFocus}</p>
         </div>
-        <div className="flex items-center gap-2 self-start rounded-xl border border-white/8 bg-[#080808] px-3 py-2 sm:self-auto">
+        <div className="hidden items-center gap-2 self-start rounded-xl border border-white/8 bg-[#080808] px-3 py-2 sm:flex sm:self-auto">
           <span className={`size-2 rounded-full ${account.status === "Active" ? "bg-emerald-400" : "bg-amber-400"}`} />
           <span className="text-[11px] font-semibold text-zinc-300">{account.status}</span>
           <span className="text-zinc-700">/</span>
@@ -258,101 +300,80 @@ export function DashboardOverview({
         </div>
       </section>
 
-      <Card className="gap-0 overflow-hidden border-white/8 bg-[#070707] py-0 shadow-none">
-        <CardHeader className="border-b border-white/8 px-3 py-3 sm:px-4">
-          <SectionHeader
-            title="Current week"
-            description={`${weeklyStrip.reduce((sum, day) => sum + day.trades, 0)} closed trades`}
-            action={<span className="rounded-lg border border-white/8 bg-black px-2.5 py-1 text-[10px] font-bold text-zinc-500">7 days</span>}
-          />
-        </CardHeader>
-        <CardContent className="overflow-x-auto p-2.5 sm:p-3">
-          <div className="grid auto-cols-[minmax(118px,1fr)] grid-flow-col gap-2 lg:grid-flow-row lg:grid-cols-7">
-            {weeklyStrip.map((day) => {
-              const positive = day.pnl > 0
-              const negative = day.pnl < 0
-              return (
-                <article key={day.key} className="min-h-[78px] rounded-xl border border-white/8 bg-[#0b0b0b] p-3">
-                  <div className="flex items-center justify-between gap-2">
-                    <p className="text-xs font-semibold text-zinc-300">{day.label}</p>
-                    <span className={`text-[10px] font-semibold tabular-nums ${positive ? "text-emerald-300" : negative ? "text-rose-300" : "text-zinc-600"}`}>
-                      {day.percent > 0 ? "+" : ""}{day.percent.toFixed(2)}%
-                    </span>
-                  </div>
-                  <p className={`mt-3 text-sm font-bold tabular-nums ${positive ? "text-emerald-300" : negative ? "text-rose-300" : "text-zinc-600"}`}>
-                    {day.trades ? formatTradePnl(day.pnl) : "—"}
-                  </p>
-                  <p className="mt-1 text-[10px] text-zinc-600">{day.trades} trade{day.trades === 1 ? "" : "s"}</p>
-                </article>
-              )
-            })}
-          </div>
-        </CardContent>
-      </Card>
+      <div className="hidden lg:block">
+        <WeeklyPerformanceCard weeklyStrip={weeklyStrip} formatTradePnl={formatTradePnl} />
+      </div>
 
       <section className="grid gap-3 xl:grid-cols-12">
-        <Card className="gap-0 overflow-hidden border-white/8 bg-[#070707] shadow-none xl:col-span-7">
-          <CardHeader className="border-b border-white/8 px-4 py-3.5 sm:grid-cols-[1fr_auto]">
+        <Card className="gap-0 overflow-hidden rounded-2xl border-white/8 bg-[#070707] shadow-none xl:col-span-7">
+          <CardHeader className="border-b border-white/8 px-4 py-4 sm:grid-cols-[1fr_auto] sm:py-3.5">
             <div>
-              <CardDescription className="text-[10px] font-bold uppercase tracking-[0.15em]">Account balance</CardDescription>
-              <CardTitle className="mt-1 text-2xl font-bold tracking-[-0.035em] text-white sm:text-3xl">{formatBalance(currentEquity)}</CardTitle>
-              <p className={`mt-1 text-xs font-semibold ${currentPnl >= 0 ? "text-emerald-300" : "text-rose-300"}`}>
-                {formatTradePnl(currentPnl)} across {monthCount} closed trades
+              <CardDescription className="text-[11px] font-bold uppercase tracking-[0.13em] sm:text-[10px]">Account balance</CardDescription>
+              <CardTitle className="mt-2 text-4xl font-medium tracking-[-0.05em] text-white sm:mt-1 sm:text-3xl">{formatBalance(currentEquity)}</CardTitle>
+              <p className={`mt-2 text-sm font-semibold sm:mt-1 sm:text-xs ${currentPnl >= 0 ? "text-emerald-300" : "text-rose-300"}`}>
+                {formatTradePnl(currentPnl)} · last 30 days
               </p>
             </div>
-            <div className="mt-3 flex gap-5 sm:mt-0 sm:text-right">
+            <div className="mt-4 flex gap-5 sm:mt-0 sm:text-right">
               <div><p className="text-[9px] uppercase tracking-wider text-zinc-600">Start</p><p className="mt-1 text-xs font-semibold tabular-nums text-zinc-300">{formatBalance(account.initialBalance)}</p></div>
               <div><p className="text-[9px] uppercase tracking-wider text-zinc-600">Return</p><p className={`mt-1 text-xs font-semibold tabular-nums ${currentPnl >= 0 ? "text-emerald-300" : "text-rose-300"}`}>{account.initialBalance ? `${currentPnl >= 0 ? "+" : ""}${((currentPnl / account.initialBalance) * 100).toFixed(2)}%` : "0.00%"}</p></div>
             </div>
           </CardHeader>
-          <CardContent className="h-[270px] px-1 pb-2 pt-3 sm:h-[350px] sm:px-3">
+          <CardContent className="h-[330px] px-0 pb-1 pt-4 min-[430px]:h-[370px] sm:h-[350px] sm:px-3 sm:pb-2 sm:pt-3">
             {equity.length > 1 ? (
               <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={equity} margin={{ left: 8, right: 16, top: 18, bottom: 4 }}>
+                <AreaChart data={equity} margin={{ left: 0, right: 10, top: 18, bottom: 2 }}>
                   <defs>
                     <linearGradient id="tradoxDashboardEquity" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor="#22c55e" stopOpacity={0.25} />
+                      <stop offset="0%" stopColor="#22c55e" stopOpacity={0.24} />
                       <stop offset="58%" stopColor="#22c55e" stopOpacity={0.07} />
                       <stop offset="100%" stopColor="#22c55e" stopOpacity={0} />
                     </linearGradient>
                   </defs>
                   <CartesianGrid stroke="rgba(255,255,255,.05)" vertical={false} />
                   <XAxis dataKey="trade" axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: "#52525b" }} />
-                  <YAxis width={66} axisLine={false} tickLine={false} tickFormatter={(value) => balancesHidden ? "••••" : `$${Number(value / 1000).toFixed(1)}k`} tick={{ fontSize: 10, fill: "#52525b" }} domain={["dataMin - 100", "dataMax + 100"]} />
+                  <YAxis hide={true} domain={["dataMin - 100", "dataMax + 100"]} />
                   <Tooltip formatter={(value) => formatBalance(Number(value))} labelFormatter={(_, payload) => payload?.[0]?.payload?.label ?? "Balance"} contentStyle={{ background: "#0b0b0b", border: "1px solid rgba(255,255,255,.1)", borderRadius: 12, color: "#f4f4f5" }} />
                   <Area type="monotone" dataKey="equity" stroke="#22c55e" fill="url(#tradoxDashboardEquity)" strokeWidth={2} dot={false} activeDot={{ r: 4, fill: "#22c55e", stroke: "#050505", strokeWidth: 2 }} />
                 </AreaChart>
               </ResponsiveContainer>
             ) : (
-              <Empty className="h-full border-0 bg-transparent">
-                <EmptyMedia><TrendingUp className="size-4" /></EmptyMedia>
-                <EmptyHeader><EmptyTitle>No balance curve yet</EmptyTitle><EmptyDescription>Add the first closed trade to start tracking account growth.</EmptyDescription></EmptyHeader>
-                <EmptyContent><Button size="sm" variant="outline" onClick={onAddTrade}>Add first trade</Button></EmptyContent>
-              </Empty>
+              <div className="relative h-full">
+                <div className="absolute inset-x-0 bottom-7 h-px bg-emerald-500/80" />
+                <Empty className="h-full border-0 bg-transparent">
+                  <EmptyMedia><TrendingUp className="size-4" /></EmptyMedia>
+                  <EmptyHeader><EmptyTitle>No balance curve yet</EmptyTitle><EmptyDescription>Add the first closed trade to start tracking account growth.</EmptyDescription></EmptyHeader>
+                  <EmptyContent><Button size="sm" variant="outline" onClick={onAddTrade}>Add first trade</Button></EmptyContent>
+                </Empty>
+              </div>
             )}
           </CardContent>
         </Card>
 
-        <div className="grid gap-3 sm:grid-cols-2 xl:col-span-5">
-          <Card className="gap-0 border-white/8 bg-[#070707] shadow-none">
-            <CardHeader className="px-4 py-3.5"><SectionHeader title="Most traded assets" description="Recent account activity" /></CardHeader>
+        <div className="grid grid-cols-2 gap-3 xl:col-span-5">
+          <Card className="min-h-[178px] gap-0 rounded-2xl border-white/8 bg-[#070707] shadow-none sm:min-h-0">
+            <CardHeader className="px-3.5 py-3.5 sm:px-4"><SectionHeader title="Most traded assets" description="Recent activity" /></CardHeader>
             <CardContent className="space-y-1 px-3 pb-3">
-              {instrumentStats.length ? instrumentStats.slice(0, 4).map((item, index) => (
-                <div key={item.symbol} className="flex items-center gap-2.5 rounded-xl px-2 py-2 hover:bg-white/[.025]">
-                  <span className="w-4 text-[10px] font-bold text-zinc-700">{index + 1}</span>
-                  <InstrumentBadge symbol={item.symbol} compact className="shrink-0 bg-[#111111]" />
-                  <div className="min-w-0 flex-1"><p className="truncate text-xs font-semibold text-white">{item.symbol}</p><p className="text-[10px] text-zinc-600">{item.trades} trade{item.trades === 1 ? "" : "s"}</p></div>
-                  <p className={`text-xs font-semibold tabular-nums ${item.pnl >= 0 ? "text-emerald-300" : "text-rose-300"}`}>{formatTradePnl(item.pnl)}</p>
+              {instrumentStats.length ? instrumentStats.slice(0, 3).map((item) => (
+                <div key={item.symbol} className="flex items-center gap-2 rounded-lg border-b border-white/8 px-0.5 py-2 last:border-0">
+                  <InstrumentBadge symbol={item.symbol} compact className="hidden shrink-0 bg-[#111111] min-[390px]:grid" />
+                  <div className="min-w-0 flex-1"><p className="truncate text-xs font-semibold text-white">{item.symbol}</p><p className="text-[9px] text-zinc-600">{item.trades} trade{item.trades === 1 ? "" : "s"}</p></div>
+                  <p className={`hidden text-[10px] font-semibold tabular-nums min-[430px]:block ${item.pnl >= 0 ? "text-emerald-300" : "text-rose-300"}`}>{formatTradePnl(item.pnl)}</p>
                 </div>
-              )) : <p className="py-8 text-center text-xs text-zinc-600">No instrument data yet.</p>}
+              )) : (
+                <div className="py-4">
+                  <p className="text-3xl font-medium text-white">N/A</p>
+                  <div className="mt-5 space-y-3">{Array.from({ length: 3 }, (_, index) => <div key={index} className="h-px bg-white/10" />)}</div>
+                </div>
+              )}
             </CardContent>
           </Card>
 
-          <Card className="gap-0 border-white/8 bg-[#070707] shadow-none">
-            <CardHeader className="px-4 py-3.5"><SectionHeader title="Total trades" description="Current dashboard period" /></CardHeader>
-            <CardContent className="px-4 pb-4">
-              <p className="text-4xl font-bold tracking-[-0.045em] tabular-nums text-white">{monthCount}</p>
-              <div className="mt-5 space-y-3 text-xs">
+          <Card className="min-h-[178px] gap-0 rounded-2xl border-white/8 bg-[#070707] shadow-none sm:min-h-0">
+            <CardHeader className="px-3.5 py-3.5 sm:px-4"><SectionHeader title="Total trades" description="Current period" /></CardHeader>
+            <CardContent className="px-3.5 pb-4 sm:px-4">
+              <p className="text-4xl font-medium tracking-[-0.045em] tabular-nums text-white">{monthCount}</p>
+              <div className="mt-4 space-y-2.5 text-[11px] sm:mt-5 sm:text-xs">
                 <div className="flex items-center justify-between border-b border-white/8 pb-2"><span className="text-zinc-500">Winning</span><strong className="tabular-nums text-emerald-300">{stats.wins}</strong></div>
                 <div className="flex items-center justify-between border-b border-white/8 pb-2"><span className="text-zinc-500">Breakeven</span><strong className="tabular-nums text-zinc-300">{breakeven}</strong></div>
                 <div className="flex items-center justify-between"><span className="text-zinc-500">Losing</span><strong className="tabular-nums text-rose-300">{stats.losses}</strong></div>
@@ -360,39 +381,43 @@ export function DashboardOverview({
             </CardContent>
           </Card>
 
-          <Card className="gap-0 border-white/8 bg-[#070707] shadow-none">
-            <CardHeader className="px-4 py-3.5"><SectionHeader title="Trade win rate" description="Closed trade efficiency" /></CardHeader>
-            <CardContent className="flex items-center justify-between gap-3 px-4 pb-4">
-              <div className="space-y-3 text-xs">
-                <div><p className="text-zinc-600">Winning trades</p><p className="mt-1 font-semibold tabular-nums text-emerald-300">{stats.wins}</p></div>
-                <div><p className="text-zinc-600">Losing trades</p><p className="mt-1 font-semibold tabular-nums text-rose-300">{stats.losses}</p></div>
+          <Card className="min-h-[160px] gap-0 rounded-2xl border-white/8 bg-[#070707] shadow-none sm:min-h-0">
+            <CardHeader className="px-3.5 py-3.5 sm:px-4"><SectionHeader title="Trade win rate" description="Efficiency" /></CardHeader>
+            <CardContent className="flex items-center justify-between gap-2 px-3.5 pb-4 sm:px-4">
+              <div className="min-w-0 text-[10px] sm:text-xs">
+                <p className="text-zinc-600">Wins</p><p className="mt-1 font-semibold tabular-nums text-emerald-300">{stats.wins}</p>
+                <p className="mt-3 text-zinc-600">Losses</p><p className="mt-1 font-semibold tabular-nums text-rose-300">{stats.losses}</p>
               </div>
               <MetricRing value={stats.rate} />
             </CardContent>
           </Card>
 
-          <Card className="gap-0 border-white/8 bg-[#070707] shadow-none">
-            <CardHeader className="px-4 py-3.5"><SectionHeader title="Profit factor" description="Gross win / gross loss" /></CardHeader>
-            <CardContent className="px-4 pb-4">
-              <p className={`text-3xl font-bold tabular-nums ${stats.pf >= 1 ? "text-white" : "text-rose-300"}`}>{stats.pf.toFixed(2)}</p>
-              <div className="mt-5 flex gap-1" aria-label="Profit factor visual scale">
+          <Card className="min-h-[160px] gap-0 rounded-2xl border-white/8 bg-[#070707] shadow-none sm:min-h-0">
+            <CardHeader className="px-3.5 py-3.5 sm:px-4"><SectionHeader title="Profit factor" description="Win / loss" /></CardHeader>
+            <CardContent className="px-3.5 pb-4 sm:px-4">
+              <p className={`text-3xl font-medium tabular-nums ${stats.pf >= 1 ? "text-white" : "text-rose-300"}`}>{stats.pf.toFixed(2)}</p>
+              <div className="mt-4 flex gap-0.5 sm:gap-1" aria-label="Profit factor visual scale">
                 {Array.from({ length: profitSegments }, (_, index) => (
-                  <span key={index} className={`h-8 w-1 flex-1 rounded-full ${index < positiveSegments ? "bg-emerald-400" : "bg-rose-400"}`} />
+                  <span key={index} className={`h-7 w-1 flex-1 rounded-full ${index < positiveSegments ? "bg-emerald-400" : "bg-rose-400"}`} />
                 ))}
               </div>
-              <div className="mt-4 flex items-center justify-between text-[10px] text-zinc-600"><span>Loss pressure</span><span>{stats.pf >= 1 ? "Positive expectancy" : "Below break-even"}</span></div>
+              <p className="mt-3 truncate text-[9px] text-zinc-600 sm:text-[10px]">{stats.pf >= 1 ? "Positive expectancy" : "Below break-even"}</p>
             </CardContent>
           </Card>
         </div>
       </section>
 
+      <div className="lg:hidden">
+        <WeeklyPerformanceCard weeklyStrip={weeklyStrip} formatTradePnl={formatTradePnl} />
+      </div>
+
       <section className="grid gap-3 xl:grid-cols-12">
-        <Card className="gap-0 border-white/8 bg-[#070707] shadow-none xl:col-span-7">
-          <CardHeader className="border-b border-white/8 px-4 py-3.5">
+        <Card className="min-h-[310px] gap-0 rounded-2xl border-white/8 bg-[#070707] shadow-none xl:col-span-7">
+          <CardHeader className="border-b border-white/8 px-4 py-4 sm:py-3.5">
             <SectionHeader
               title="Recent trades"
               description="Latest journal entries for this account"
-              action={<Button type="button" variant="ghost" size="sm" onClick={onSeeAll} className="h-8 px-2 text-[11px] text-zinc-400">See all <ArrowUpRight className="size-3.5" /></Button>}
+              action={<Button type="button" variant="secondary" size="sm" onClick={onSeeAll} className="h-9 rounded-xl px-3 text-xs text-zinc-200">See all <ArrowUpRight className="size-3.5" /></Button>}
             />
           </CardHeader>
           <CardContent className="p-2">
@@ -406,7 +431,7 @@ export function DashboardOverview({
                 <div className="text-right"><p className={`text-sm font-bold tabular-nums ${trade.pnl >= 0 ? "text-emerald-300" : "text-rose-300"}`}>{formatTradePnl(trade.pnl)}</p><p className="mt-1 text-[9px] text-zinc-700">{trade.resultR ? `${trade.resultR.toFixed(2)}R` : trade.rawDate}</p></div>
               </button>
             )) : (
-              <Empty className="my-2 min-h-52">
+              <Empty className="my-2 min-h-64">
                 <EmptyMedia><BookOpen className="size-4" /></EmptyMedia>
                 <EmptyHeader><EmptyTitle>No trades yet</EmptyTitle><EmptyDescription>Register a trade to unlock performance analytics.</EmptyDescription></EmptyHeader>
                 <EmptyContent><Button size="sm" onClick={onAddTrade}>Add first trade</Button></EmptyContent>
@@ -415,11 +440,11 @@ export function DashboardOverview({
           </CardContent>
         </Card>
 
-        <Card className="gap-0 border-white/8 bg-[#070707] shadow-none xl:col-span-5">
-          <CardHeader className="border-b border-white/8 px-4 py-3.5">
+        <Card className="min-h-[310px] gap-0 rounded-2xl border-white/8 bg-[#070707] shadow-none xl:col-span-5">
+          <CardHeader className="border-b border-white/8 px-4 py-4 sm:py-3.5">
             <SectionHeader
               title="Daily high-impact news"
-              description={newsLimited ? "Live economic calendar · limited feed" : "Live economic calendar for major markets"}
+              description={newsLimited ? "Live economic calendar · limited feed" : "Today's upcoming high-impact releases"}
               action={
                 <Button type="button" variant="ghost" size="icon-sm" onClick={() => void loadNews()} disabled={newsLoading} aria-label="Refresh market news" className="text-zinc-500">
                   <RefreshCw className={`size-3.5 ${newsLoading ? "animate-spin" : ""}`} />
@@ -427,29 +452,29 @@ export function DashboardOverview({
               }
             />
           </CardHeader>
-          <CardContent className="p-2">
+          <CardContent className="p-2.5 sm:p-2">
             {newsLoading ? (
               <div className="space-y-2 p-1">
-                {Array.from({ length: 4 }, (_, index) => <div key={index} className="h-14 animate-pulse rounded-xl bg-white/[.04]" />)}
+                {Array.from({ length: 4 }, (_, index) => <div key={index} className="h-[74px] animate-pulse rounded-xl bg-white/[.04] sm:h-14" />)}
               </div>
             ) : news.length ? (
-              <div>
+              <div className="space-y-2 sm:space-y-0">
                 {news.slice(0, 6).map((item) => {
                   const date = eventDate(item.date)
                   return (
-                    <article key={item.id} className="flex items-center gap-3 border-b border-white/8 px-2 py-3 last:border-0">
-                      <span className="grid h-8 min-w-10 shrink-0 place-items-center rounded-lg border border-white/8 bg-[#101010] px-2 text-[9px] font-bold text-zinc-300">{eventCurrency(item)}</span>
-                      <div className="min-w-0 flex-1">
-                        <p className="truncate text-xs font-semibold text-white">{item.event}</p>
-                        <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[9px] text-zinc-600">
-                          <span>{item.country}</span>
-                          {item.forecast ? <span>Forecast {item.forecast}</span> : null}
-                          {item.previous ? <span>Previous {item.previous}</span> : null}
+                    <article key={item.id} className="grid min-h-[72px] grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2.5 rounded-xl border border-white/8 bg-[#090909] px-3 py-3 sm:min-h-0 sm:rounded-none sm:border-x-0 sm:border-t-0 sm:bg-transparent sm:last:border-b-0">
+                      <span className="grid h-9 min-w-11 shrink-0 place-items-center rounded-lg border border-white/8 bg-[#101010] px-2 text-[10px] font-bold text-zinc-300">{eventCurrency(item)}</span>
+                      <div className="min-w-0">
+                        <p className="line-clamp-2 break-words text-xs font-semibold leading-4 text-white">{item.event}</p>
+                        <div className="mt-1 flex min-w-0 items-center gap-1.5 text-[9px] text-zinc-600">
+                          <span className="truncate">{item.country}</span>
+                          {item.forecast ? <span className="hidden truncate min-[430px]:inline">F {item.forecast}</span> : null}
+                          {item.previous ? <span className="hidden truncate sm:inline">P {item.previous}</span> : null}
                         </div>
                       </div>
                       <div className="shrink-0 text-right">
-                        <p className="text-[10px] font-semibold tabular-nums text-zinc-300">{Number.isNaN(date.getTime()) ? "TBD" : date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</p>
-                        <div className="mt-1 flex justify-end gap-0.5" aria-label="High impact">
+                        <p className="rounded-lg bg-black px-2 py-2 text-[10px] font-semibold tabular-nums text-zinc-200">{Number.isNaN(date.getTime()) ? "TBD" : date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</p>
+                        <div className="mt-1.5 flex justify-end gap-0.5" aria-label="High impact">
                           {Array.from({ length: 3 }, (_, index) => <span key={index} className="size-1.5 rounded-full bg-rose-400" />)}
                         </div>
                       </div>
@@ -458,7 +483,7 @@ export function DashboardOverview({
                 })}
               </div>
             ) : (
-              <div className="grid min-h-52 place-items-center px-5 text-center">
+              <div className="grid min-h-64 place-items-center px-5 text-center">
                 <div>
                   <CalendarDays className="mx-auto size-5 text-zinc-600" />
                   <p className="mt-3 text-sm font-semibold text-zinc-300">No high-impact releases found</p>
@@ -469,11 +494,6 @@ export function DashboardOverview({
           </CardContent>
         </Card>
       </section>
-
-      <div className="flex items-start gap-2 rounded-xl border border-white/8 bg-[#070707] px-3 py-2.5 text-[11px] text-zinc-500">
-        <Sparkles className="mt-0.5 size-3.5 shrink-0 text-emerald-300" />
-        <span><strong className="font-semibold text-zinc-300">AI focus:</strong> {aiFocus}</span>
-      </div>
     </div>
   )
 }
