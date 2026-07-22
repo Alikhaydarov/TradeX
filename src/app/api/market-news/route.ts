@@ -31,6 +31,10 @@ function isoDate(date: Date) {
   return date.toISOString().slice(0, 10)
 }
 
+function validIsoDate(value: string | null) {
+  return Boolean(value && /^\d{4}-\d{2}-\d{2}$/.test(value) && !Number.isNaN(new Date(`${value}T00:00:00Z`).getTime()))
+}
+
 function apiUrl(path: string, key: string) {
   const url = new URL(`https://api.tradingeconomics.com${path}`)
   url.searchParams.set("c", key)
@@ -63,13 +67,25 @@ async function fetchCalendar(key: string, start: string, end: string) {
   return Array.isArray(data) ? data as TradingEconomicsEvent[] : []
 }
 
-export async function GET() {
+export async function GET(request: Request) {
+  const url = new URL(request.url)
   const now = new Date()
   const tomorrow = new Date(now)
   tomorrow.setUTCDate(tomorrow.getUTCDate() + 1)
 
-  const start = isoDate(now)
-  const end = isoDate(tomorrow)
+  const requestedStart = url.searchParams.get("start")
+  const requestedEnd = url.searchParams.get("end")
+  const hasRange = validIsoDate(requestedStart) && validIsoDate(requestedEnd)
+  const start = hasRange ? requestedStart! : isoDate(now)
+  const end = hasRange ? requestedEnd! : isoDate(tomorrow)
+
+  const startTime = new Date(`${start}T00:00:00Z`).getTime()
+  const endTime = new Date(`${end}T23:59:59Z`).getTime()
+  const maxRangeMs = 45 * 24 * 60 * 60 * 1000
+  if (endTime < startTime || endTime - startTime > maxRangeMs) {
+    return Response.json({ events: [], date: start, provider: "Trading Economics", limited: true }, { status: 400 })
+  }
+
   const key = process.env.TRADING_ECONOMICS_API_KEY?.trim() || "guest:guest"
 
   try {
@@ -90,7 +106,7 @@ export async function GET() {
         source: String(item.Source || "Trading Economics"),
       }))
       .sort((left, right) => new Date(left.date).getTime() - new Date(right.date).getTime())
-      .slice(0, 8)
+      .slice(0, hasRange ? 160 : 8)
 
     return Response.json({
       events,
