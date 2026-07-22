@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist_Mono, Inter } from "next/font/google";
+import { DM_Sans } from "next/font/google";
 import { AppShell } from "@/components/app-shell";
 import { AccountCardMenuBridge } from "@/components/account-card-menu-bridge";
 import { AuthProvider } from "@/components/auth-context";
@@ -18,8 +18,11 @@ import "./sidebar-width.css";
 import "./dashboard-cleanups.css";
 import "./workspace-design-system.css";
 
-const inter = Inter({ variable: "--font-inter", subsets: ["latin"] });
-const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] });
+const dmSans = DM_Sans({
+  variable: "--font-dm-sans",
+  subsets: ["latin"],
+  display: "swap",
+});
 
 export const metadata: Metadata = {
   title: "Tradox",
@@ -33,7 +36,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
   const { data } = supabase ? await supabase.auth.getUser() : { data: { user: null } };
 
   return (
-    <html lang="en" className={`dark ${inter.variable} ${geistMono.variable}`}>
+    <html lang="en" className={`dark ${dmSans.variable}`}>
       <body className="font-sans antialiased">
         <AppRouterCacheProvider options={{ enableCssLayer: true }}>
           <AuthProvider initialUser={data.user} initialConfigured={configured}>
