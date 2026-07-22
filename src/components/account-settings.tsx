@@ -4,6 +4,7 @@ import { CheckCircle2, Settings, ShieldCheck, SlidersHorizontal, WalletCards, Wi
 import { useEffect, useMemo, useState } from "react";
 import { apiRequest } from "@/lib/api-client";
 import { useActiveAccountStore } from "./active-account-context";
+import { CTraderSettings } from "./ctrader-settings";
 import { Mt5Settings } from "./mt5-settings";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
@@ -41,7 +42,7 @@ function connectorLabel(account: PropAccount) {
   if (platform === "mt5" || account.importSource === "mt5_bridge") return "MT5 Auto Sync";
   if (platform === "tradovate") return "Tradovate";
   if (platform === "ninjatrader") return "NinjaTrader";
-  if (platform === "ctrader") return "cTrader";
+  if (platform === "ctrader" || account.importSource === "ctrader") return "cTrader Import";
   if (platform === "projectx") return "ProjectX";
   return "Manual journal";
 }
@@ -102,7 +103,10 @@ export function AccountSettings({ onLogin: _onLogin }: { onLogin: () => void }) 
     );
   }
 
-  const isMt5 = String(account.platform || "").toLowerCase() === "mt5" || account.importSource === "mt5_bridge";
+  const platform = String(account.platform || "").toLowerCase();
+  const isMt5 = platform === "mt5" || account.importSource === "mt5_bridge";
+  const isCTrader = platform === "ctrader" || account.importSource === "ctrader";
+  const connectorActive = isMt5 || isCTrader;
   const connector = connectorLabel(account);
 
   return (
@@ -113,7 +117,7 @@ export function AccountSettings({ onLogin: _onLogin }: { onLogin: () => void }) 
             <Settings size={15} /> Selected account / settings
           </p>
           <h1 className="mt-2 text-[2rem] font-black tracking-tight text-white">{account.name}</h1>
-          <p className="mt-1 text-sm text-zinc-500">Change account details, manage connector settings and keep auto-sync healthy.</p>
+          <p className="mt-1 text-sm text-zinc-500">Change account details, manage connector settings and keep import/sync healthy.</p>
         </div>
         <div className="w-full lg:w-[320px]">
           <Select value={account.id} onValueChange={setActiveAccount}>
@@ -158,12 +162,14 @@ export function AccountSettings({ onLogin: _onLogin }: { onLogin: () => void }) 
           <p className="flex items-center gap-2 text-xs font-black uppercase tracking-[0.18em] text-zinc-500"><ShieldCheck size={14} /> Connector status</p>
           <div className="rounded-2xl border border-white/8 bg-[#050505] p-4">
             <div className="flex items-center gap-3">
-              <span className={`grid size-10 place-items-center rounded-2xl border ${isMt5 ? "border-emerald-400/20 bg-emerald-400/10 text-emerald-300" : "border-white/10 bg-[#050505] text-zinc-300"}`}>
+              <span className={`grid size-10 place-items-center rounded-2xl border ${connectorActive ? "border-emerald-400/20 bg-emerald-400/10 text-emerald-300" : "border-white/10 bg-[#050505] text-zinc-300"}`}>
                 <Wifi size={18} />
               </span>
               <div>
                 <p className="text-sm font-black text-white">{connector}</p>
-                <p className="text-xs text-zinc-500">{isMt5 ? "Auto-sync connector is attached to this account." : "Manual or reserved connector workspace."}</p>
+                <p className="text-xs text-zinc-500">
+                  {isMt5 ? "Auto-sync connector is attached to this account." : isCTrader ? "cTrader CSV import is active for this account." : "Manual or reserved connector workspace."}
+                </p>
               </div>
             </div>
           </div>
@@ -185,11 +191,13 @@ export function AccountSettings({ onLogin: _onLogin }: { onLogin: () => void }) 
 
         {isMt5 ? (
           <Mt5Settings account={account} onSynced={refreshAccounts} />
+        ) : isCTrader ? (
+          <CTraderSettings account={account} onImported={refreshAccounts} />
         ) : (
           <div className="grid min-h-44 place-items-center rounded-2xl border border-dashed border-white/10 bg-black/20 text-center">
             <div>
               <h3 className="text-lg font-black text-white">{connector}</h3>
-              <p className="mt-2 max-w-md text-sm leading-6 text-zinc-500">This connector settings panel is reserved here. MT5 auto-sync settings appear automatically for MT5 accounts.</p>
+              <p className="mt-2 max-w-md text-sm leading-6 text-zinc-500">This connector settings panel is reserved here. MT5 and cTrader settings appear automatically for supported accounts.</p>
             </div>
           </div>
         )}
