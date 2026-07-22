@@ -157,10 +157,11 @@ function AppShellInner() {
 
   const changeSection = (nextSection: Section) => {
     if (nextSection === "admin" && isAdmin !== true) return;
-    if (nextSection === section && nextSection !== "account") return;
+    if (nextSection === section && nextSection !== "account" && nextSection !== "calendar") return;
     setProfileUsername("");
     setSection(nextSection);
     window.history.pushState(null, "", pathFromSection(nextSection));
+    window.dispatchEvent(new Event("popstate"));
     workspaceMainRef.current?.scrollTo({ top: 0, behavior: "instant" });
   };
 
