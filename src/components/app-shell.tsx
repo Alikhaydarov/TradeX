@@ -54,8 +54,11 @@ const Journal = dynamic(
   () => import("./journal").then((module) => module.Journal),
   { ssr: false, loading: () => <WorkspaceSectionSkeleton /> },
 );
-const CalendarWorkspace = dynamic(
-  () => import("./calendar-workspace").then((module) => module.CalendarWorkspace),
+const CalendarWorkspaceV2 = dynamic(
+  () =>
+    import("./calendar-workspace-v2").then(
+      (module) => module.CalendarWorkspaceV2,
+    ),
   { ssr: false, loading: () => <WorkspaceSectionSkeleton /> },
 );
 const CommunityWorkspace = dynamic(
@@ -157,7 +160,12 @@ function AppShellInner() {
 
   const changeSection = (nextSection: Section) => {
     if (nextSection === "admin" && isAdmin !== true) return;
-    if (nextSection === section && nextSection !== "account" && nextSection !== "calendar") return;
+    if (
+      nextSection === section &&
+      nextSection !== "account" &&
+      nextSection !== "calendar"
+    )
+      return;
     setProfileUsername("");
     setSection(nextSection);
     window.history.pushState(null, "", pathFromSection(nextSection));
@@ -168,7 +176,7 @@ function AppShellInner() {
   const renderSection = (item: Section) => {
     if (item === "accounts")
       return <Journal onLogin={openLogin} mode="accounts" />;
-    if (item === "calendar") return <CalendarWorkspace />;
+    if (item === "calendar") return <CalendarWorkspaceV2 />;
     const workspaceTabs: Partial<Record<Section, WorkspaceTab>> = {
       dashboard: "overview",
       trades: "trades",
@@ -200,7 +208,8 @@ function AppShellInner() {
         </div>
       );
     }
-    if (item === "admin" && isAdmin) return <AdminPanel onLogin={openLogin} />;
+    if (item === "admin" && isAdmin)
+      return <AdminPanel onLogin={openLogin} />;
     return (
       <FreeUserStart>
         <FeedV3 onLogin={openLogin} />
