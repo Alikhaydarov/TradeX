@@ -16,7 +16,6 @@ import "./auth-landing-clean.css";
 import "./onyx-overrides.css";
 import "./responsive-fixes.css";
 import "./quality-overrides.css";
-import "./sidebar-width.css";
 import "./dashboard-cleanups.css";
 import "./workspace-design-system.css";
 import "./typography.css";
