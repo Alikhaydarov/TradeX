@@ -3,7 +3,6 @@ import { DM_Sans } from "next/font/google";
 import { AppShell } from "@/components/app-shell";
 import { AccountCardMenuBridge } from "@/components/account-card-menu-bridge";
 import { AuthProvider } from "@/components/auth-context";
-import { BrandIdentitySync } from "@/components/brand-identity-sync";
 import { DashboardGreetingSync } from "@/components/dashboard-greeting-sync";
 import { FloatingAddTradeButton } from "@/components/floating-add-trade-button";
 import { MobileTradesBridge } from "@/components/mobile-trades-bridge";
@@ -47,7 +46,6 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
         <AppRouterCacheProvider options={{ enableCssLayer: true }}>
           <AuthProvider initialUser={data.user} initialConfigured={configured}>
             <AppShell />
-            <BrandIdentitySync />
             <DashboardGreetingSync />
             <AccountCardMenuBridge />
             <FloatingAddTradeButton />
