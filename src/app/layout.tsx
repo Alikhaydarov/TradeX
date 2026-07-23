@@ -19,6 +19,7 @@ import "./sidebar-width.css";
 import "./dashboard-cleanups.css";
 import "./workspace-design-system.css";
 import "./typography.css";
+import "./floating-actions-layout.css";
 
 const dmSans = DM_Sans({
   variable: "--font-dm-sans",
