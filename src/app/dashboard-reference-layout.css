@@ -19,46 +19,6 @@
     padding-left: 0 !important;
     padding-right: 0 !important;
   }
-
-  /* Dashboard-only density refinements. Width remains shared with every workspace page. */
-  [data-workspace-main] .animate-page-in.mx-auto.max-w-\[1540px\] > .space-y-3 {
-    padding-inline: 0 !important;
-  }
-
-  [data-workspace-main] .animate-page-in.mx-auto.max-w-\[1540px\] > .space-y-3 > .hidden.lg\:block > [data-slot="card"] {
-    border: 0 !important;
-    background: transparent !important;
-    box-shadow: none !important;
-  }
-
-  [data-workspace-main] .animate-page-in.mx-auto.max-w-\[1540px\] > .space-y-3 > .hidden.lg\:block > [data-slot="card"] > [data-slot="card-header"] {
-    display: none !important;
-  }
-
-  [data-workspace-main] .animate-page-in.mx-auto.max-w-\[1540px\] > .space-y-3 > .hidden.lg\:block > [data-slot="card"] > [data-slot="card-content"] {
-    padding: 0 !important;
-    overflow: visible !important;
-  }
-
-  [data-workspace-main] .animate-page-in.mx-auto.max-w-\[1540px\] > .space-y-3 > .hidden.lg\:block article {
-    min-height: 66px !important;
-    padding: 0.72rem 0.82rem !important;
-    border-radius: 0.8rem !important;
-  }
-
-  [data-workspace-main] .animate-page-in.mx-auto.max-w-\[1540px\] > .space-y-3 > section.grid.xl\:grid-cols-12:nth-of-type(2) > [data-slot="card"]:first-child > [data-slot="card-content"] {
-    height: 310px !important;
-  }
-
-  [data-workspace-main] .animate-page-in.mx-auto.max-w-\[1540px\] > .space-y-3 > section.grid.xl\:grid-cols-12:nth-of-type(2) > div.grid {
-    grid-template-rows: repeat(2, minmax(0, 1fr));
-    align-self: stretch;
-  }
-
-  [data-workspace-main] .animate-page-in.mx-auto.max-w-\[1540px\] > .space-y-3 > section.grid.xl\:grid-cols-12:nth-of-type(2) > div.grid > [data-slot="card"] {
-    min-height: 0 !important;
-    height: 100%;
-  }
 }
 
 @media (max-width: 1023px) {
