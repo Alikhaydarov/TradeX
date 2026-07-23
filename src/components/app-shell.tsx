@@ -7,6 +7,7 @@ import { ActiveAccountProvider } from "./active-account-context";
 import { NotificationListener } from "./notification-listener";
 import { PremiumUpsellDialog } from "./premium-upsell-dialog";
 import { Sidebar } from "./sidebar";
+import { WorkspaceBootLoader } from "./workspace-boot-loader";
 import { WorkspaceTopbar } from "./workspace-topbar";
 import { WorkspacePreferencesProvider } from "./workspace-preferences-context";
 import { TradeWayLoginLanding } from "./tradeway-login-landing";
@@ -238,6 +239,7 @@ function AppShellInner() {
   return (
     <>
       <ActiveAccountProvider>
+        <WorkspaceBootLoader />
         <div
           className="workspace-shell mx-auto flex h-[100dvh] w-full max-w-[1920px] gap-0 overflow-hidden bg-[#000000] p-0 text-foreground lg:gap-3 lg:p-3"
         >
