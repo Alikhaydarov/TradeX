@@ -11,7 +11,7 @@
   .workspace-shell > aside {
     left: 0 !important;
     top: 0 !important;
-    width: 236px !important;
+    width: 238px !important;
     height: 100dvh !important;
     padding: 0.85rem !important;
     border: 0 !important;
@@ -21,7 +21,7 @@
   }
 
   .workspace-shell > div[aria-hidden="true"] {
-    width: 236px !important;
+    width: 238px !important;
   }
 
   [data-workspace-main] {
