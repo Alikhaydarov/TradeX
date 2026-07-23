@@ -1,0 +1,38 @@
+/* Desktop workspace is docked to the viewport like a native trading terminal. */
+@media (min-width: 1024px) {
+  .workspace-shell {
+    width: 100% !important;
+    max-width: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    gap: 0 !important;
+  }
+
+  .workspace-shell > aside {
+    left: 0 !important;
+    top: 0 !important;
+    width: 236px !important;
+    height: 100dvh !important;
+    padding: 0.85rem !important;
+    border: 0 !important;
+    border-right: 1px solid rgba(255, 255, 255, 0.1) !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+  }
+
+  .workspace-shell > div[aria-hidden="true"] {
+    width: 236px !important;
+  }
+
+  [data-workspace-main] {
+    height: 100dvh !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+  }
+
+  .tw-app-topbar {
+    top: 0 !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+  }
+}
