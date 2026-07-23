@@ -20,6 +20,7 @@ import {
 } from "recharts"
 
 import { apiRequest } from "@/lib/api-client"
+import { useAuth } from "@/components/auth-context"
 import { InstrumentBadge } from "@/components/instrument-badge"
 import type { JournalEntry, OpenPosition, PropAccount } from "@/components/types"
 import { Button } from "@/components/ui/button"
@@ -131,7 +132,18 @@ const COUNTRY_CURRENCY: Record<string, string> = {
 }
 
 const CARD_SURFACE =
-  "gap-0 overflow-hidden rounded-[18px] border-white/10 bg-gradient-to-b from-[#0a0a0a] to-[#060606] shadow-[0_14px_40px_rgba(0,0,0,.2)]"
+  "gap-0 overflow-hidden rounded-2xl border-white/10 bg-[#080808] py-0 shadow-none"
+
+function cleanUsername(value: unknown) {
+  return (
+    String(value ?? "")
+      .trim()
+      .toLowerCase()
+      .replace(/^@/, "")
+      .replace(/[^a-z0-9_.]/g, "")
+      .slice(0, 30) || "trader"
+  )
+}
 
 function clamp(value: number) {
   return Math.min(100, Math.max(0, Number.isFinite(value) ? value : 0))
@@ -160,9 +172,9 @@ function SectionHeader({
   action?: React.ReactNode
 }) {
   return (
-    <div className="flex min-w-0 items-start justify-between gap-3">
+    <div className="flex min-w-0 items-center justify-between gap-3">
       <div className="min-w-0">
-        <h2 className="truncate text-[14px] font-bold tracking-[-0.02em] text-white sm:text-[15px]">
+        <h2 className="truncate text-[15px] font-bold tracking-[-0.025em] text-white">
           {title}
         </h2>
         <p className="mt-0.5 truncate text-[11px] font-medium text-zinc-500">
@@ -178,31 +190,31 @@ function MetricRing({ value }: { value: number }) {
   const bounded = clamp(value)
 
   return (
-    <div className="relative grid size-[72px] shrink-0 place-items-center sm:size-[80px]">
+    <div className="relative grid size-[82px] shrink-0 place-items-center">
       <CircularProgress
         variant="determinate"
         value={100}
         size="100%"
-        thickness={3.7}
+        thickness={3.6}
         sx={{ color: "rgba(255,255,255,.09)", position: "absolute" }}
       />
       <CircularProgress
         variant="determinate"
         value={bounded}
         size="100%"
-        thickness={3.7}
+        thickness={3.6}
         sx={{
-          color: bounded >= 50 ? "#34d399" : "#f59e0b",
+          color: bounded >= 50 ? "#22c55e" : "#f59e0b",
           position: "absolute",
           transform: "rotate(-90deg) !important",
           "& .MuiCircularProgress-circle": { strokeLinecap: "round" },
         }}
       />
       <div className="text-center">
-        <p className="text-lg font-bold tabular-nums text-white">
+        <p className="text-xl font-bold tabular-nums text-white">
           {Math.round(bounded)}%
         </p>
-        <p className="mt-0.5 text-[8px] font-bold uppercase tracking-[0.12em] text-zinc-500">
+        <p className="mt-0.5 text-[8px] font-bold uppercase tracking-[0.13em] text-zinc-500">
           Win rate
         </p>
       </div>
@@ -210,78 +222,63 @@ function MetricRing({ value }: { value: number }) {
   )
 }
 
-function WeeklyPerformanceCard({
+function WeeklyStrip({
   weeklyStrip,
   formatTradePnl,
 }: {
   weeklyStrip: WeeklyDay[]
   formatTradePnl: (amount: number) => string
 }) {
-  const tradeCount = weeklyStrip.reduce((sum, day) => sum + day.trades, 0)
-
   return (
-    <Card className={`${CARD_SURFACE} py-0`}>
-      <CardHeader className="border-b border-white/8 px-3.5 py-2.5 sm:px-4">
-        <SectionHeader
-          title="Current week"
-          description={`${tradeCount} closed trades`}
-          action={
-            <span className="rounded-lg border border-white/10 bg-white/[0.03] px-2.5 py-1 text-[10px] font-bold text-zinc-400">
-              7 days
-            </span>
-          }
-        />
-      </CardHeader>
-      <CardContent className="overflow-x-auto p-2.5">
-        <div className="grid auto-cols-[minmax(118px,1fr)] grid-flow-col gap-2 lg:grid-flow-row lg:grid-cols-7">
-          {weeklyStrip.map((day) => {
-            const positive = day.pnl > 0
-            const negative = day.pnl < 0
+    <div className="overflow-x-auto pb-0.5">
+      <div className="grid auto-cols-[minmax(132px,1fr)] grid-flow-col gap-2 lg:grid-flow-row lg:grid-cols-7">
+        {weeklyStrip.map((day) => {
+          const positive = day.pnl > 0
+          const negative = day.pnl < 0
 
-            return (
-              <article
-                key={day.key}
-                className="min-h-[72px] rounded-xl border border-white/8 bg-white/[0.02] px-3 py-2.5 transition hover:border-white/15 hover:bg-white/[0.035]"
-              >
-                <div className="flex items-center justify-between gap-2">
-                  <p className="text-[12px] font-semibold text-zinc-200">
-                    {day.label}
-                  </p>
-                  <span
-                    className={`text-[10px] font-semibold tabular-nums ${
-                      positive
-                        ? "text-emerald-300"
-                        : negative
-                          ? "text-rose-300"
-                          : "text-zinc-500"
-                    }`}
-                  >
-                    {day.percent > 0 ? "+" : ""}
-                    {day.percent.toFixed(2)}%
-                  </span>
-                </div>
-                <div className="mt-2 flex items-end justify-between gap-2">
-                  <p
-                    className={`text-[13px] font-bold tabular-nums ${
-                      positive
-                        ? "text-emerald-300"
-                        : negative
-                          ? "text-rose-300"
-                          : "text-zinc-400"
-                    }`}
-                  >
-                    {day.trades ? formatTradePnl(day.pnl) : "—"}
-                  </p>
-                  <p className="text-[10px] text-zinc-500">
-                    {day.trades} trade{day.trades === 1 ? "" : "s"}
-                  </p>
-                </div>
-              </article>
-            )
-          })}
-        </div>
-      </CardContent>
-    </Card>
+          return (
+            <article
+              key={day.key}
+              className="h-[62px] rounded-xl border border-white/10 bg-[#0a0a0a] px-3 py-2.5 transition hover:border-white/18 hover:bg-[#0d0d0d]"
+            >
+              <div className="flex items-center justify-between gap-2">
+                <p className="text-[12px] font-semibold text-zinc-200">
+                  {day.label}
+                </p>
+                <span
+                  className={`text-[10px] font-semibold tabular-nums ${
+                    positive
+                      ? "text-emerald-400"
+                      : negative
+                        ? "text-rose-400"
+                        : "text-zinc-500"
+                  }`}
+                >
+                  {day.percent > 0 ? "+" : ""}
+                  {day.percent.toFixed(2)}%
+                </span>
+              </div>
+              <div className="mt-1.5 flex items-center justify-between gap-2">
+                <p
+                  className={`text-[12px] font-bold tabular-nums ${
+                    positive
+                      ? "text-emerald-400"
+                      : negative
+                        ? "text-rose-400"
+                        : "text-zinc-400"
+                  }`}
+                >
+                  {day.trades ? formatTradePnl(day.pnl) : "—"}
+                </p>
+                <p className="text-[10px] text-zinc-500">
+                  {day.trades} trade{day.trades === 1 ? "" : "s"}
+                </p>
+              </div>
+            </article>
+          )
+        })}
+      </div>
+    </div>
   )
 }
 
@@ -300,12 +297,38 @@ export function DashboardOverviewCompact({
   onSeeAll,
   onAddTrade,
 }: DashboardOverviewProps) {
-  const formatBalance = (value: number) =>
-    balancesHidden ? "******" : money.format(value)
-  const breakeven = Math.max(0, monthCount - stats.wins - stats.losses)
+  const { user } = useAuth()
+  const fallbackUsername = useMemo(
+    () =>
+      cleanUsername(
+        user?.user_metadata.user_name ??
+          user?.user_metadata.preferred_username ??
+          user?.email?.split("@")[0],
+      ),
+    [user],
+  )
+  const [username, setUsername] = useState(fallbackUsername)
   const [news, setNews] = useState<MarketNewsEvent[]>([])
   const [newsLoading, setNewsLoading] = useState(true)
   const [newsLimited, setNewsLimited] = useState(false)
+
+  useEffect(() => {
+    setUsername(fallbackUsername)
+    if (!user) return
+
+    let active = true
+    void apiRequest<{ profile?: { username?: string | null } }>("/api/profile")
+      .then(({ profile }) => {
+        if (active && profile?.username) {
+          setUsername(cleanUsername(profile.username))
+        }
+      })
+      .catch(() => undefined)
+
+    return () => {
+      active = false
+    }
+  }, [fallbackUsername, user])
 
   const loadNews = useCallback(async () => {
     setNewsLoading(true)
@@ -348,7 +371,8 @@ export function DashboardOverviewCompact({
     [recentTrades],
   )
 
-  const profitSegments = 14
+  const breakeven = Math.max(0, monthCount - stats.wins - stats.losses)
+  const profitSegments = 18
   const positiveSegments =
     stats.pf > 0
       ? Math.min(
@@ -359,69 +383,68 @@ export function DashboardOverviewCompact({
           ),
         )
       : 0
-
   const todayLabel = new Intl.DateTimeFormat("en-US", {
     weekday: "short",
     month: "short",
     day: "2-digit",
     year: "numeric",
   }).format(new Date())
-
   const returnPercent = account.initialBalance
     ? (currentPnl / account.initialBalance) * 100
     : 0
+  const formatBalance = (value: number) =>
+    balancesHidden ? "******" : money.format(value)
 
   return (
     <div className="space-y-3 pb-4">
-      <section className="flex min-h-[48px] items-center justify-between gap-3 px-0.5">
+      <section className="flex min-h-[54px] items-end justify-between gap-4 px-0.5">
         <div className="min-w-0">
-          <h1 className="truncate text-[25px] font-semibold tracking-[-0.04em] text-white sm:text-[28px]">
-            Welcome back
+          <h1 className="truncate text-[25px] font-medium tracking-[-0.04em] text-white sm:text-[27px]">
+            Welcome back, {username}
           </h1>
           <p className="mt-0.5 text-[12px] font-medium text-zinc-500">
             {todayLabel}
           </p>
         </div>
-        <div className="hidden items-center gap-2 rounded-xl border border-white/10 bg-white/[0.025] px-3 py-2 sm:flex">
-          <span
-            className={`size-2 rounded-full ${
-              account.status === "Active" ? "bg-emerald-400" : "bg-amber-400"
-            }`}
-          />
-          <span className="text-[11px] font-semibold text-zinc-200">
+        <div className="hidden items-center gap-2 sm:flex">
+          <span className="rounded-lg border border-white/10 bg-[#0b0b0b] px-3 py-2 text-[11px] font-semibold text-zinc-300">
+            Current week
+          </span>
+          <span className="flex items-center gap-2 rounded-lg border border-white/10 bg-[#0b0b0b] px-3 py-2 text-[11px] font-semibold text-zinc-300">
+            <span
+              className={`size-1.5 rounded-full ${
+                account.status === "Active" ? "bg-emerald-400" : "bg-amber-400"
+              }`}
+            />
             {account.status}
           </span>
-          <span className="text-zinc-600">/</span>
-          <span className="text-[11px] text-zinc-400">{account.marketType}</span>
         </div>
       </section>
 
-      <div className="hidden lg:block">
-        <WeeklyPerformanceCard
-          weeklyStrip={weeklyStrip}
-          formatTradePnl={formatTradePnl}
-        />
-      </div>
+      <WeeklyStrip
+        weeklyStrip={weeklyStrip}
+        formatTradePnl={formatTradePnl}
+      />
 
-      <section className="grid items-stretch gap-3 xl:h-[318px] xl:grid-cols-12">
-        <Card className={`${CARD_SURFACE} flex h-full flex-col xl:col-span-7`}>
-          <CardHeader className="shrink-0 border-b border-white/8 px-4 py-3 sm:grid-cols-[1fr_auto]">
+      <section className="grid items-stretch gap-3 xl:h-[392px] xl:grid-cols-2">
+        <Card className={`${CARD_SURFACE} flex h-full flex-col`}>
+          <CardHeader className="flex shrink-0 flex-row items-start justify-between gap-4 border-b border-white/8 px-4 py-3.5">
             <div>
-              <CardDescription className="text-[10px] font-bold uppercase tracking-[0.13em] text-zinc-500">
-                Account balance
+              <CardDescription className="text-[11px] font-medium text-zinc-500">
+                Account Balance
               </CardDescription>
               <CardTitle className="mt-1 text-[30px] font-medium tracking-[-0.05em] text-white sm:text-[32px]">
                 {formatBalance(currentEquity)}
               </CardTitle>
               <p
                 className={`mt-1 text-[12px] font-semibold ${
-                  currentPnl >= 0 ? "text-emerald-300" : "text-rose-300"
+                  currentPnl >= 0 ? "text-emerald-400" : "text-rose-400"
                 }`}
               >
                 {formatTradePnl(currentPnl)} · last 30 days
               </p>
             </div>
-            <div className="mt-3 flex gap-5 sm:mt-0 sm:text-right">
+            <div className="flex gap-5 text-right">
               <div>
                 <p className="text-[9px] font-semibold uppercase tracking-[0.12em] text-zinc-500">
                   Start
@@ -436,7 +459,7 @@ export function DashboardOverviewCompact({
                 </p>
                 <p
                   className={`mt-1 text-[12px] font-semibold tabular-nums ${
-                    returnPercent >= 0 ? "text-emerald-300" : "text-rose-300"
+                    returnPercent >= 0 ? "text-emerald-400" : "text-rose-400"
                   }`}
                 >
                   {returnPercent > 0 ? "+" : ""}
@@ -445,12 +468,12 @@ export function DashboardOverviewCompact({
               </div>
             </div>
           </CardHeader>
-          <CardContent className="min-h-[270px] flex-1 px-1 pb-1 pt-2 sm:px-3 xl:min-h-0">
+          <CardContent className="min-h-[280px] flex-1 px-1 pb-1 pt-2 sm:px-3 xl:min-h-0">
             {equity.length > 1 ? (
               <ResponsiveContainer width="100%" height="100%">
                 <AreaChart
                   data={equity}
-                  margin={{ left: 0, right: 10, top: 12, bottom: 0 }}
+                  margin={{ left: 0, right: 10, top: 14, bottom: 0 }}
                 >
                   <defs>
                     <linearGradient
@@ -460,8 +483,8 @@ export function DashboardOverviewCompact({
                       x2="0"
                       y2="1"
                     >
-                      <stop offset="0%" stopColor="#22c55e" stopOpacity={0.26} />
-                      <stop offset="60%" stopColor="#22c55e" stopOpacity={0.07} />
+                      <stop offset="0%" stopColor="#22c55e" stopOpacity={0.24} />
+                      <stop offset="62%" stopColor="#22c55e" stopOpacity={0.07} />
                       <stop offset="100%" stopColor="#22c55e" stopOpacity={0} />
                     </linearGradient>
                   </defs>
@@ -491,7 +514,7 @@ export function DashboardOverviewCompact({
                     dataKey="equity"
                     stroke="#22c55e"
                     fill="url(#tradoxCompactEquity)"
-                    strokeWidth={2.1}
+                    strokeWidth={2}
                     dot={false}
                     activeDot={{
                       r: 4,
@@ -526,14 +549,14 @@ export function DashboardOverviewCompact({
           </CardContent>
         </Card>
 
-        <div className="grid grid-cols-2 gap-3 xl:col-span-5 xl:h-[318px] xl:grid-rows-2">
-          <Card className={`${CARD_SURFACE} min-h-[150px]`}>
+        <div className="grid grid-cols-2 gap-3 xl:h-[392px] xl:grid-rows-2">
+          <Card className={`${CARD_SURFACE} min-h-[184px]`}>
             <CardHeader className="px-3.5 py-3">
-              <SectionHeader title="Most traded assets" description="Recent activity" />
+              <SectionHeader title="Most Traded Assets" description="Recent activity" />
             </CardHeader>
-            <CardContent className="space-y-0 px-3.5 pb-3">
+            <CardContent className="px-3.5 pb-3">
               {instrumentStats.length ? (
-                instrumentStats.slice(0, 2).map((item) => (
+                instrumentStats.slice(0, 3).map((item) => (
                   <div
                     key={item.symbol}
                     className="flex items-center gap-2 border-b border-white/8 py-2 last:border-0"
@@ -541,7 +564,7 @@ export function DashboardOverviewCompact({
                     <InstrumentBadge
                       symbol={item.symbol}
                       compact
-                      className="hidden shrink-0 bg-[#111111] min-[390px]:grid"
+                      className="hidden shrink-0 bg-[#111111] min-[420px]:grid"
                     />
                     <div className="min-w-0 flex-1">
                       <p className="truncate text-[12px] font-semibold text-white">
@@ -552,8 +575,8 @@ export function DashboardOverviewCompact({
                       </p>
                     </div>
                     <p
-                      className={`hidden text-[10px] font-semibold tabular-nums min-[430px]:block ${
-                        item.pnl >= 0 ? "text-emerald-300" : "text-rose-300"
+                      className={`hidden text-[10px] font-semibold tabular-nums min-[480px]:block ${
+                        item.pnl >= 0 ? "text-emerald-400" : "text-rose-400"
                       }`}
                     >
                       {formatTradePnl(item.pnl)}
@@ -564,7 +587,7 @@ export function DashboardOverviewCompact({
                 <div className="py-3">
                   <p className="text-2xl font-medium text-white">N/A</p>
                   <div className="mt-4 space-y-2.5">
-                    {Array.from({ length: 2 }, (_, index) => (
+                    {Array.from({ length: 3 }, (_, index) => (
                       <div key={index} className="h-px bg-white/10" />
                     ))}
                   </div>
@@ -573,43 +596,43 @@ export function DashboardOverviewCompact({
             </CardContent>
           </Card>
 
-          <Card className={`${CARD_SURFACE} min-h-[150px]`}>
+          <Card className={`${CARD_SURFACE} min-h-[184px]`}>
             <CardHeader className="px-3.5 py-3">
-              <SectionHeader title="Total trades" description="Current period" />
+              <SectionHeader title="Total Trades" description="Current period" />
             </CardHeader>
             <CardContent className="px-3.5 pb-3">
               <p className="text-[34px] font-medium leading-none tracking-[-0.05em] tabular-nums text-white">
                 {monthCount}
               </p>
-              <div className="mt-3 space-y-1.5 text-[11px]">
-                <div className="flex items-center justify-between border-b border-white/8 pb-1.5">
+              <div className="mt-3 space-y-2 text-[11px]">
+                <div className="flex items-center justify-between border-b border-white/8 pb-2">
                   <span className="text-zinc-400">Winning</span>
-                  <strong className="tabular-nums text-emerald-300">{stats.wins}</strong>
+                  <strong className="tabular-nums text-emerald-400">{stats.wins}</strong>
                 </div>
-                <div className="flex items-center justify-between border-b border-white/8 pb-1.5">
+                <div className="flex items-center justify-between border-b border-white/8 pb-2">
                   <span className="text-zinc-400">Breakeven</span>
                   <strong className="tabular-nums text-zinc-200">{breakeven}</strong>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-zinc-400">Losing</span>
-                  <strong className="tabular-nums text-rose-300">{stats.losses}</strong>
+                  <strong className="tabular-nums text-rose-400">{stats.losses}</strong>
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          <Card className={`${CARD_SURFACE} min-h-[150px]`}>
+          <Card className={`${CARD_SURFACE} min-h-[184px]`}>
             <CardHeader className="px-3.5 py-3">
-              <SectionHeader title="Trade win rate" description="Efficiency" />
+              <SectionHeader title="Trade Winrate" description="Efficiency" />
             </CardHeader>
-            <CardContent className="flex items-center justify-between gap-2 px-3.5 pb-3">
+            <CardContent className="flex items-center justify-between gap-3 px-3.5 pb-3">
               <div className="min-w-0 text-[11px]">
-                <p className="text-zinc-400">Wins</p>
-                <p className="mt-0.5 font-semibold tabular-nums text-emerald-300">
+                <p className="text-zinc-400">Winning trades</p>
+                <p className="mt-1 font-semibold tabular-nums text-emerald-400">
                   {stats.wins}
                 </p>
-                <p className="mt-2 text-zinc-400">Losses</p>
-                <p className="mt-0.5 font-semibold tabular-nums text-rose-300">
+                <p className="mt-3 text-zinc-400">Losing trades</p>
+                <p className="mt-1 font-semibold tabular-nums text-rose-400">
                   {stats.losses}
                 </p>
               </div>
@@ -617,29 +640,29 @@ export function DashboardOverviewCompact({
             </CardContent>
           </Card>
 
-          <Card className={`${CARD_SURFACE} min-h-[150px]`}>
+          <Card className={`${CARD_SURFACE} min-h-[184px]`}>
             <CardHeader className="px-3.5 py-3">
-              <SectionHeader title="Profit factor" description="Win / loss" />
+              <SectionHeader title="Profit Factor" description="Win / loss" />
             </CardHeader>
             <CardContent className="px-3.5 pb-3">
               <p
-                className={`text-[28px] font-medium leading-none tabular-nums ${
-                  stats.pf >= 1 ? "text-white" : "text-rose-300"
+                className={`text-[29px] font-medium leading-none tabular-nums ${
+                  stats.pf >= 1 ? "text-white" : "text-rose-400"
                 }`}
               >
                 {stats.pf.toFixed(2)}
               </p>
-              <div className="mt-3 flex gap-0.5" aria-label="Profit factor visual scale">
+              <div className="mt-4 flex gap-0.5" aria-label="Profit factor visual scale">
                 {Array.from({ length: profitSegments }, (_, index) => (
                   <span
                     key={index}
-                    className={`h-6 w-1 flex-1 rounded-full ${
-                      index < positiveSegments ? "bg-emerald-400" : "bg-rose-400"
+                    className={`h-7 w-1 flex-1 rounded-full ${
+                      index < positiveSegments ? "bg-emerald-500" : "bg-rose-500"
                     }`}
                   />
                 ))}
               </div>
-              <p className="mt-2 truncate text-[10px] text-zinc-500">
+              <p className="mt-3 truncate text-[10px] text-zinc-500">
                 {stats.pf >= 1 ? "Positive expectancy" : "Below break-even"}
               </p>
             </CardContent>
@@ -647,19 +670,12 @@ export function DashboardOverviewCompact({
         </div>
       </section>
 
-      <div className="lg:hidden">
-        <WeeklyPerformanceCard
-          weeklyStrip={weeklyStrip}
-          formatTradePnl={formatTradePnl}
-        />
-      </div>
-
-      <section className="grid items-stretch gap-3 xl:h-[188px] xl:grid-cols-12">
-        <Card className={`${CARD_SURFACE} xl:col-span-7 xl:h-[188px]`}>
-          <CardHeader className="border-b border-white/8 px-4 py-3">
+      <section className="grid items-stretch gap-3 xl:h-[156px] xl:grid-cols-2">
+        <Card className={`${CARD_SURFACE} xl:h-[156px]`}>
+          <CardHeader className="border-b border-white/8 px-4 py-2.5">
             <SectionHeader
-              title="Recent trades"
-              description="Latest journal entries for this account"
+              title="Recent Trades"
+              description="Latest journal entries"
               action={
                 <Button
                   type="button"
@@ -680,7 +696,7 @@ export function DashboardOverviewCompact({
                   key={trade.id}
                   type="button"
                   onClick={() => onOpenTrade(trade)}
-                  className="grid w-full grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 rounded-xl px-2.5 py-2 text-left transition hover:bg-white/[.04] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/25"
+                  className="grid w-full grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 rounded-lg px-2.5 py-1.5 text-left transition hover:bg-white/[.04] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/25"
                 >
                   <InstrumentBadge
                     symbol={trade.symbol}
@@ -695,8 +711,8 @@ export function DashboardOverviewCompact({
                       <span
                         className={`rounded px-1.5 py-0.5 text-[8px] font-bold uppercase ${
                           trade.side === "Long"
-                            ? "bg-emerald-400/10 text-emerald-300"
-                            : "bg-rose-400/10 text-rose-300"
+                            ? "bg-emerald-400/10 text-emerald-400"
+                            : "bg-rose-400/10 text-rose-400"
                         }`}
                       >
                         {trade.side === "Long" ? "Buy" : "Sell"}
@@ -709,7 +725,7 @@ export function DashboardOverviewCompact({
                   <div className="text-right">
                     <p
                       className={`text-[13px] font-bold tabular-nums ${
-                        trade.pnl >= 0 ? "text-emerald-300" : "text-rose-300"
+                        trade.pnl >= 0 ? "text-emerald-400" : "text-rose-400"
                       }`}
                     >
                       {formatTradePnl(trade.pnl)}
@@ -723,15 +739,13 @@ export function DashboardOverviewCompact({
                 </button>
               ))
             ) : (
-              <Empty className="min-h-[112px] border-0 bg-transparent py-2">
+              <Empty className="min-h-[88px] border-0 bg-transparent py-1">
                 <EmptyMedia>
                   <BookOpen className="size-4" />
                 </EmptyMedia>
                 <EmptyHeader>
                   <EmptyTitle>No trades yet</EmptyTitle>
-                  <EmptyDescription>
-                    Register a trade to unlock performance analytics.
-                  </EmptyDescription>
+                  <EmptyDescription>Add a trade to begin tracking performance.</EmptyDescription>
                 </EmptyHeader>
                 <EmptyContent>
                   <Button size="sm" onClick={onAddTrade}>
@@ -743,14 +757,12 @@ export function DashboardOverviewCompact({
           </CardContent>
         </Card>
 
-        <Card className={`${CARD_SURFACE} xl:col-span-5 xl:h-[188px]`}>
-          <CardHeader className="border-b border-white/8 px-4 py-3">
+        <Card className={`${CARD_SURFACE} xl:h-[156px]`}>
+          <CardHeader className="border-b border-white/8 px-4 py-2.5">
             <SectionHeader
-              title="Daily high-impact news"
+              title="High Impact News"
               description={
-                newsLimited
-                  ? "Live economic calendar · limited feed"
-                  : "Today's upcoming high-impact releases"
+                newsLimited ? "Live calendar · limited feed" : "Today's upcoming releases"
               }
               action={
                 <Button
@@ -762,20 +774,18 @@ export function DashboardOverviewCompact({
                   aria-label="Refresh market news"
                   className="text-zinc-400"
                 >
-                  <RefreshCw
-                    className={`size-3.5 ${newsLoading ? "animate-spin" : ""}`}
-                  />
+                  <RefreshCw className={`size-3.5 ${newsLoading ? "animate-spin" : ""}`} />
                 </Button>
               }
             />
           </CardHeader>
           <CardContent className="p-2">
             {newsLoading ? (
-              <div className="space-y-1.5 p-0.5">
+              <div className="space-y-1.5">
                 {Array.from({ length: 2 }, (_, index) => (
                   <div
                     key={index}
-                    className="h-[48px] animate-pulse rounded-xl bg-white/[.04]"
+                    className="h-[38px] animate-pulse rounded-lg bg-white/[.04]"
                   />
                 ))}
               </div>
@@ -786,9 +796,9 @@ export function DashboardOverviewCompact({
                   return (
                     <article
                       key={item.id}
-                      className="grid min-h-[48px] grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2 rounded-xl px-2 py-1.5 transition hover:bg-white/[.025]"
+                      className="grid h-[42px] grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2.5 border-b border-white/8 px-1.5 last:border-0"
                     >
-                      <span className="grid h-8 min-w-10 shrink-0 place-items-center rounded-lg border border-white/9 bg-white/[0.03] px-2 text-[10px] font-bold text-zinc-200">
+                      <span className="grid h-7 min-w-10 place-items-center rounded-lg border border-white/10 bg-[#101010] px-1.5 text-[9px] font-bold text-zinc-200">
                         {eventCurrency(item)}
                       </span>
                       <div className="min-w-0">
@@ -797,11 +807,10 @@ export function DashboardOverviewCompact({
                         </p>
                         <p className="mt-0.5 truncate text-[9px] text-zinc-500">
                           {item.country}
-                          {item.forecast ? ` · F ${item.forecast}` : ""}
                         </p>
                       </div>
-                      <div className="shrink-0 text-right">
-                        <p className="rounded-lg bg-black/80 px-2 py-1.5 text-[10px] font-semibold tabular-nums text-zinc-200">
+                      <div className="text-right">
+                        <p className="text-[10px] font-semibold tabular-nums text-zinc-200">
                           {Number.isNaN(date.getTime())
                             ? "TBD"
                             : date.toLocaleTimeString([], {
@@ -811,10 +820,7 @@ export function DashboardOverviewCompact({
                         </p>
                         <div className="mt-1 flex justify-end gap-0.5" aria-label="High impact">
                           {Array.from({ length: 3 }, (_, index) => (
-                            <span
-                              key={index}
-                              className="size-1.5 rounded-full bg-rose-400"
-                            />
+                            <span key={index} className="size-1.5 rounded-full bg-rose-400" />
                           ))}
                         </div>
                       </div>
@@ -823,14 +829,11 @@ export function DashboardOverviewCompact({
                 })}
               </div>
             ) : (
-              <div className="grid min-h-[112px] place-items-center px-4 text-center">
+              <div className="grid min-h-[88px] place-items-center text-center">
                 <div>
-                  <CalendarDays className="mx-auto size-5 text-zinc-500" />
-                  <p className="mt-2 text-[13px] font-semibold text-zinc-200">
+                  <CalendarDays className="mx-auto size-4 text-zinc-500" />
+                  <p className="mt-2 text-[12px] font-semibold text-zinc-300">
                     No high-impact releases found
-                  </p>
-                  <p className="mt-1 text-[10px] leading-4 text-zinc-500">
-                    The calendar is quiet or the current feed has no releases.
                   </p>
                 </div>
               </div>
