@@ -1,8 +1,28 @@
+/* Shared desktop width contract for Dashboard, Calendar, Trades, Analytics and Accounts. */
+
+:root {
+  --tradox-workspace-content-max: 1320px;
+  --tradox-workspace-side-clearance: 11rem;
+}
+
 @media (min-width: 1024px) {
-  [data-workspace-main] .animate-page-in.mx-auto.max-w-\[1540px\] {
-    width: calc(100% - 7.5rem);
-    max-width: 1240px !important;
+  [data-workspace-main] .animate-page-in.mx-auto.max-w-\[1540px\],
+  [data-workspace-main] .mx-auto.max-w-\[1420px\],
+  [data-workspace-main] .animate-page-in.mx-auto.max-w-\[1320px\] {
+    box-sizing: border-box;
+    width: min(
+      var(--tradox-workspace-content-max),
+      calc(100% - var(--tradox-workspace-side-clearance))
+    ) !important;
+    max-width: var(--tradox-workspace-content-max) !important;
     margin-inline: auto !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+  }
+
+  /* Dashboard-only density refinements. Width remains shared with every workspace page. */
+  [data-workspace-main] .animate-page-in.mx-auto.max-w-\[1540px\] > .space-y-3 {
+    padding-inline: 0 !important;
   }
 
   [data-workspace-main] .animate-page-in.mx-auto.max-w-\[1540px\] > .space-y-3 > .hidden.lg\:block > [data-slot="card"] {
@@ -21,13 +41,13 @@
   }
 
   [data-workspace-main] .animate-page-in.mx-auto.max-w-\[1540px\] > .space-y-3 > .hidden.lg\:block article {
-    min-height: 64px !important;
-    padding: 0.7rem 0.8rem !important;
-    border-radius: 0.75rem !important;
+    min-height: 66px !important;
+    padding: 0.72rem 0.82rem !important;
+    border-radius: 0.8rem !important;
   }
 
   [data-workspace-main] .animate-page-in.mx-auto.max-w-\[1540px\] > .space-y-3 > section.grid.xl\:grid-cols-12:nth-of-type(2) > [data-slot="card"]:first-child > [data-slot="card-content"] {
-    height: 286px !important;
+    height: 310px !important;
   }
 
   [data-workspace-main] .animate-page-in.mx-auto.max-w-\[1540px\] > .space-y-3 > section.grid.xl\:grid-cols-12:nth-of-type(2) > div.grid {
@@ -38,6 +58,16 @@
   [data-workspace-main] .animate-page-in.mx-auto.max-w-\[1540px\] > .space-y-3 > section.grid.xl\:grid-cols-12:nth-of-type(2) > div.grid > [data-slot="card"] {
     min-height: 0 !important;
     height: 100%;
+  }
+}
+
+@media (max-width: 1023px) {
+  [data-workspace-main] .animate-page-in.mx-auto.max-w-\[1540px\],
+  [data-workspace-main] .mx-auto.max-w-\[1420px\],
+  [data-workspace-main] .animate-page-in.mx-auto.max-w-\[1320px\] {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin-inline: 0 !important;
   }
 }
 
