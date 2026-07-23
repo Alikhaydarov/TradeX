@@ -59,7 +59,8 @@ export function DashboardGreetingSync() {
       );
       if (!heading) return;
 
-      heading.textContent = `Welcome back, ${username}`;
+      const nextGreeting = `Welcome back, ${username}`;
+      if (heading.textContent?.trim() !== nextGreeting) heading.textContent = nextGreeting;
       heading.classList.remove("truncate");
 
       const container = heading.parentElement;
@@ -69,8 +70,10 @@ export function DashboardGreetingSync() {
       paragraphs.forEach((paragraph) => {
         const text = paragraph.textContent?.trim().toLowerCase() ?? "";
         if (text.includes("/ dashboard") || text.startsWith("ai focus:")) {
-          paragraph.hidden = true;
-          paragraph.setAttribute("aria-hidden", "true");
+          if (!paragraph.hidden) paragraph.hidden = true;
+          if (paragraph.getAttribute("aria-hidden") !== "true") {
+            paragraph.setAttribute("aria-hidden", "true");
+          }
         }
       });
     };
