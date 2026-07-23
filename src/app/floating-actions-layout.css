@@ -1,4 +1,4 @@
-/* Desktop workspace action rail and floating controls. */
+/* Desktop floating controls. Page width is controlled by dashboard-reference-layout.css. */
 
 .tw-floating-add-trade,
 button[aria-label="Open Tradox AI"] {
@@ -122,16 +122,6 @@ button[aria-label="Open Tradox AI"]:active {
 }
 
 @media (min-width: 1024px) {
-  /* Reserve a clean right-side rail so cards never sit under the floating actions. */
-  [data-workspace-main] .animate-page-in.mx-auto.max-w-\[1540px\],
-  [data-workspace-main] .mx-auto.max-w-\[1420px\] {
-    width: 100%;
-    max-width: none !important;
-    margin-right: 0 !important;
-    margin-left: 0 !important;
-    padding-right: clamp(5.9rem, 6.8vw, 7rem) !important;
-  }
-
   .tw-floating-add-trade {
     right: 1.75rem !important;
     bottom: 1.75rem !important;
@@ -144,7 +134,6 @@ button[aria-label="Open Tradox AI"]:active {
 }
 
 @media (max-width: 1023px) {
-  /* Add-trade FAB is desktop-only; AI stays reachable above mobile navigation. */
   button[aria-label="Open Tradox AI"] {
     right: 1rem !important;
     bottom: 5.75rem !important;
