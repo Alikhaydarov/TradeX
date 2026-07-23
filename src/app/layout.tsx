@@ -3,7 +3,6 @@ import { DM_Sans } from "next/font/google";
 import { AppShell } from "@/components/app-shell";
 import { AccountCardMenuBridge } from "@/components/account-card-menu-bridge";
 import { AuthProvider } from "@/components/auth-context";
-import { DashboardGreetingSync } from "@/components/dashboard-greeting-sync";
 import { FloatingAddTradeButton } from "@/components/floating-add-trade-button";
 import { MobileTradesBridge } from "@/components/mobile-trades-bridge";
 import { ProAiCoachLauncher } from "@/components/pro-ai-coach-launcher";
@@ -55,7 +54,6 @@ export default async function RootLayout({
             initialConfigured={configured}
           >
             <AppShell />
-            <DashboardGreetingSync />
             <AccountCardMenuBridge />
             <FloatingAddTradeButton />
             <MobileTradesBridge />
