@@ -56,6 +56,24 @@ const suggestedQuestions = [
 
 const AI_WORKSPACE_ROUTES = ["/dashboard", "/calendar", "/trades", "/analytics"];
 
+function orderChatMessages(items: ChatMessage[]) {
+  return [...items].sort((left, right) => {
+    const leftTime = Date.parse(left.createdAt);
+    const rightTime = Date.parse(right.createdAt);
+    const timeDifference = leftTime - rightTime;
+
+    if (Number.isFinite(timeDifference) && timeDifference !== 0) {
+      return timeDifference;
+    }
+
+    if (left.role !== right.role) {
+      return left.role === "user" ? -1 : 1;
+    }
+
+    return left.id.localeCompare(right.id);
+  });
+}
+
 export function ProAiCoachLauncher() {
   const [pathname, setPathname] = useState("");
   const [status, setStatus] = useState<PremiumStatus | null>(null);
@@ -126,7 +144,7 @@ export function ProAiCoachLauncher() {
       const response = await apiRequest<{ messages: ChatMessage[] }>(
         `/api/ai/chat?accountId=${encodeURIComponent(nextAccountId)}`,
       );
-      setMessages(response.messages || []);
+      setMessages(orderChatMessages(response.messages || []));
     } catch (caught) {
       setMessages([]);
       setChatError(
