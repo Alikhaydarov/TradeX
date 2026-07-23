@@ -1,1 +1,1 @@
-export { DashboardOverviewCompact as DashboardOverview } from "./dashboard-overview-compact"
+export { DashboardOverviewPolished as DashboardOverview } from "./dashboard-overview-polished"
