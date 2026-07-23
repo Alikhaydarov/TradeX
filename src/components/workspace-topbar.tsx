@@ -79,80 +79,82 @@ export function WorkspaceTopbar({ section }: { section: Section }) {
   return (
     <header
       role="banner"
-      className="tw-app-topbar sticky top-0 z-[70] shrink-0 border-b border-white/10 bg-black/95 px-3 py-2.5 backdrop-blur-xl supports-[backdrop-filter]:bg-black/88 lg:flex lg:min-h-[72px] lg:items-center lg:gap-5 lg:px-6 lg:py-3"
+      className="tw-app-topbar sticky top-0 z-[70] shrink-0 border-b border-white/10 bg-black/95 backdrop-blur-xl supports-[backdrop-filter]:bg-black/88"
     >
-      <div
-        className="grid items-center gap-2 lg:flex lg:min-w-0 lg:flex-1 lg:gap-5"
-        style={{
-          gridTemplateColumns: isHome
-            ? "40px minmax(0, 1fr) auto auto"
-            : "40px minmax(0, 1fr) auto",
-        }}
-      >
-        <button
-          type="button"
-          onClick={openMobileDrawer}
-          className="grid size-10 shrink-0 place-items-center rounded-xl border border-white/12 bg-[#0c0c0c] text-zinc-100 transition hover:border-white/20 hover:bg-[#151515] active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/30 lg:hidden"
-          aria-label="Open mobile menu"
+      <div className="mx-auto w-full max-w-[1540px] px-3 py-2.5 sm:px-4 lg:min-h-[72px] lg:px-4 lg:py-3">
+        <div
+          className="grid items-center gap-2 lg:flex lg:min-w-0 lg:flex-1 lg:gap-5"
+          style={{
+            gridTemplateColumns: isHome
+              ? "40px minmax(0, 1fr) auto auto"
+              : "40px minmax(0, 1fr) auto",
+          }}
         >
-          <Menu size={18} strokeWidth={2} />
-        </button>
+          <button
+            type="button"
+            onClick={openMobileDrawer}
+            className="grid size-10 shrink-0 place-items-center rounded-xl border border-white/12 bg-[#0c0c0c] text-zinc-100 transition hover:border-white/20 hover:bg-[#151515] active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/30 lg:hidden"
+            aria-label="Open mobile menu"
+          >
+            <Menu size={18} strokeWidth={2} />
+          </button>
 
-        <div className="min-w-0 lg:flex-1">
-          <div className="flex min-w-0 items-center gap-2.5">
-            <h1 className="truncate text-[15px] font-bold leading-tight tracking-[-0.025em] text-white lg:text-[16px]">
-              {page}
-            </h1>
-            {isAccountScoped ? (
-              <span className="hidden max-w-[220px] items-center gap-2 rounded-full border border-white/10 bg-white/[0.045] px-2.5 py-1 text-[10px] font-semibold text-zinc-300 lg:inline-flex">
-                <span className="size-1.5 shrink-0 rounded-full bg-emerald-400 shadow-[0_0_10px_rgba(52,211,153,.6)]" />
-                <span className="truncate">{workspace}</span>
-              </span>
-            ) : null}
+          <div className="min-w-0 lg:flex-1">
+            <div className="flex min-w-0 items-center gap-2.5">
+              <h1 className="truncate text-[15px] font-bold leading-tight tracking-[-0.025em] text-white lg:text-[16px]">
+                {page}
+              </h1>
+              {isAccountScoped ? (
+                <span className="hidden max-w-[220px] items-center gap-2 rounded-full border border-white/10 bg-white/[0.045] px-2.5 py-1 text-[10px] font-semibold text-zinc-300 lg:inline-flex">
+                  <span className="size-1.5 shrink-0 rounded-full bg-emerald-400 shadow-[0_0_10px_rgba(52,211,153,.6)]" />
+                  <span className="truncate">{workspace}</span>
+                </span>
+              ) : null}
+            </div>
+            <p className="mt-1 truncate text-[10px] font-medium text-zinc-500 lg:text-[11px]">
+              {isAccountScoped
+                ? "Trading performance workspace"
+                : "Tradox workspace"}
+            </p>
           </div>
-          <p className="mt-1 truncate text-[10px] font-medium text-zinc-500 lg:text-[11px]">
-            {isAccountScoped
-              ? "Trading performance workspace"
-              : "Tradox workspace"}
-          </p>
+
+          <SocialActions compact expandedSearch />
+
+          {isHome ? (
+            <div className="shrink-0 lg:hidden">
+              <PostTradeButton compact />
+            </div>
+          ) : null}
+
+          <div className="ml-auto hidden shrink-0 items-center gap-2.5 lg:flex">
+            {isHome ? <PostTradeButton /> : null}
+            <PnlModeMenu
+              pnlMode={pnlMode}
+              pnlLabel={pnlLabel}
+              onChange={setPnlMode}
+            />
+          </div>
         </div>
 
-        <SocialActions compact expandedSearch />
-
-        {isHome ? (
-          <div className="shrink-0 lg:hidden">
-            <PostTradeButton compact />
+        {isAccountScoped ? (
+          <div className="mt-2.5 flex items-center gap-2.5 border-t border-white/8 pt-2.5 lg:hidden">
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-[9px] font-semibold uppercase tracking-[0.14em] text-zinc-500">
+                Active account
+              </p>
+              <p className="mt-0.5 truncate text-xs font-semibold text-zinc-200">
+                {workspace}
+              </p>
+            </div>
+            <PnlModeMenu
+              pnlMode={pnlMode}
+              pnlLabel={pnlLabel}
+              onChange={setPnlMode}
+              compact
+            />
           </div>
         ) : null}
-
-        <div className="ml-auto hidden shrink-0 items-center gap-2.5 lg:flex">
-          {isHome ? <PostTradeButton /> : null}
-          <PnlModeMenu
-            pnlMode={pnlMode}
-            pnlLabel={pnlLabel}
-            onChange={setPnlMode}
-          />
-        </div>
       </div>
-
-      {isAccountScoped ? (
-        <div className="mt-2.5 flex items-center gap-2.5 border-t border-white/8 pt-2.5 lg:hidden">
-          <div className="min-w-0 flex-1">
-            <p className="truncate text-[9px] font-semibold uppercase tracking-[0.14em] text-zinc-500">
-              Active account
-            </p>
-            <p className="mt-0.5 truncate text-xs font-semibold text-zinc-200">
-              {workspace}
-            </p>
-          </div>
-          <PnlModeMenu
-            pnlMode={pnlMode}
-            pnlLabel={pnlLabel}
-            onChange={setPnlMode}
-            compact
-          />
-        </div>
-      ) : null}
     </header>
   );
 }
