@@ -101,6 +101,19 @@ function TradoxBrand({ mobile = false }: { mobile?: boolean }) {
   );
 }
 
+function ProfileLoadingCard({ mobile = false }: { mobile?: boolean }) {
+  return (
+    <div
+      role="status"
+      aria-label="Loading profile"
+      className={`${mobile ? "h-[62px] p-2.5" : "h-[54px] p-2"} grid w-full place-items-center rounded-2xl border border-white/10 bg-[#0b0b0b] shadow-[inset_0_1px_0_rgba(255,255,255,.035)]`}
+    >
+      <span className="size-5 animate-spin rounded-full border-2 border-white/15 border-t-white" />
+      <span className="sr-only">Loading profile</span>
+    </div>
+  );
+}
+
 export function Sidebar({
   active,
   onChange,
@@ -119,6 +132,7 @@ export function Sidebar({
   const [profileUsername, setProfileUsername] = useState("");
   const [profileAvatar, setProfileAvatar] = useState("");
   const [profileFullName, setProfileFullName] = useState("");
+  const [profileLoading, setProfileLoading] = useState(Boolean(user));
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [accountSwitcherOpen, setAccountSwitcherOpen] = useState(false);
   const [accountQuery, setAccountQuery] = useState("");
@@ -168,9 +182,17 @@ export function Sidebar({
   }, [accountQuery, accounts]);
 
   useEffect(() => {
-    if (!user) return;
+    if (!user?.id) {
+      setProfileUsername("");
+      setProfileAvatar("");
+      setProfileFullName("");
+      setProfileLoading(false);
+      return;
+    }
 
-    let active = true;
+    let mounted = true;
+    setProfileLoading(true);
+
     apiRequest<{
       profile: {
         username?: string | null;
@@ -180,22 +202,25 @@ export function Sidebar({
       };
     }>("/api/profile")
       .then(({ profile }) => {
-        if (!active) return;
+        if (!mounted) return;
         setProfileUsername(profile.username || "");
         setProfileAvatar(profile.avatar_url || "");
         setProfileFullName(profile.full_name || "");
       })
       .catch(() => {
-        if (!active) return;
+        if (!mounted) return;
         setProfileUsername("");
         setProfileAvatar("");
         setProfileFullName("");
+      })
+      .finally(() => {
+        if (mounted) setProfileLoading(false);
       });
 
     return () => {
-      active = false;
+      mounted = false;
     };
-  }, [user]);
+  }, [user?.id]);
 
   useEffect(() => {
     const open = () => setMobileMenuOpen(true);
@@ -459,84 +484,88 @@ export function Sidebar({
         </div>
 
         <div className="mt-auto">
-          <div className="flex w-full items-center gap-3 rounded-2xl border border-white/10 bg-[#0b0b0b] p-2 text-left shadow-[inset_0_1px_0_rgba(255,255,255,.035)] transition-colors hover:bg-[#121212]">
-            <TraderAvatar
-              name={name}
-              value={avatar}
-              className="h-9 w-9 text-xs"
-            />
-            <button onClick={openProfile} className="min-w-0 flex-1 text-left">
-              <span className="flex min-w-0 items-center gap-1">
-                <strong className="truncate text-xs">{visibleName}</strong>
-              </span>
-              <small className="block truncate text-[10px] text-zinc-500">
-                {visibleHandle}
-              </small>
-            </button>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <button
-                  type="button"
-                  className="grid size-8 place-items-center rounded-xl text-zinc-400 transition hover:bg-[#111111] hover:text-white"
+          {profileLoading ? (
+            <ProfileLoadingCard />
+          ) : (
+            <div className="flex h-[54px] w-full items-center gap-3 rounded-2xl border border-white/10 bg-[#0b0b0b] p-2 text-left shadow-[inset_0_1px_0_rgba(255,255,255,.035)] transition-colors hover:bg-[#121212]">
+              <TraderAvatar
+                name={name}
+                value={avatar}
+                className="h-9 w-9 text-xs"
+              />
+              <button onClick={openProfile} className="min-w-0 flex-1 text-left">
+                <span className="flex min-w-0 items-center gap-1">
+                  <strong className="truncate text-xs">{visibleName}</strong>
+                </span>
+                <small className="block truncate text-[10px] text-zinc-500">
+                  {visibleHandle}
+                </small>
+              </button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button
+                    type="button"
+                    className="grid size-8 place-items-center rounded-xl text-zinc-400 transition hover:bg-[#111111] hover:text-white"
+                  >
+                    <MoreHorizontal size={16} />
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent
+                  align="end"
+                  className="w-44 border-white/10 bg-[#090909]"
                 >
-                  <MoreHorizontal size={16} />
-                </button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent
-                align="end"
-                className="w-44 border-white/10 bg-[#090909]"
-              >
-                <DropdownMenuItem
-                  onClick={openSettings}
-                  className="px-3 py-2.5"
-                >
-                  <Settings2 size={14} className="mr-2" />
-                  Settings
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={openPricing} className="px-3 py-2.5">
-                  {premium.isPremium ? "Manage subscription" : "View plans"}
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  onClick={() => setLocale("en")}
-                  className="flex items-center justify-between px-3 py-2.5"
-                >
-                  <span className="flex items-center gap-2">
-                    <Globe size={14} /> English
-                  </span>
-                  {locale === "en" ? (
-                    <span className="text-[10px] font-bold text-zinc-400">
-                      Active
+                  <DropdownMenuItem
+                    onClick={openSettings}
+                    className="px-3 py-2.5"
+                  >
+                    <Settings2 size={14} className="mr-2" />
+                    Settings
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={openPricing} className="px-3 py-2.5">
+                    {premium.isPremium ? "Manage subscription" : "View plans"}
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={() => setLocale("en")}
+                    className="flex items-center justify-between px-3 py-2.5"
+                  >
+                    <span className="flex items-center gap-2">
+                      <Globe size={14} /> English
                     </span>
-                  ) : null}
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  onClick={() => setLocale("es")}
-                  className="flex items-center justify-between px-3 py-2.5"
-                >
-                  <span className="flex items-center gap-2 pl-6">Spanish</span>
-                  {locale === "es" ? (
-                    <span className="text-[10px] font-bold text-zinc-400">
-                      Active
-                    </span>
-                  ) : null}
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  onClick={openHelpCenter}
-                  className="px-3 py-2.5"
-                >
-                  <CircleHelp size={14} className="mr-2" />
-                  Help Center
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  onClick={() => setLogoutConfirmOpen(true)}
-                  className="px-3 py-2.5 text-rose-300 focus:text-rose-200"
-                >
-                  Logout
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-            {!user ? <LogIn size={16} className="text-zinc-500" /> : null}
-          </div>
+                    {locale === "en" ? (
+                      <span className="text-[10px] font-bold text-zinc-400">
+                        Active
+                      </span>
+                    ) : null}
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={() => setLocale("es")}
+                    className="flex items-center justify-between px-3 py-2.5"
+                  >
+                    <span className="flex items-center gap-2 pl-6">Spanish</span>
+                    {locale === "es" ? (
+                      <span className="text-[10px] font-bold text-zinc-400">
+                        Active
+                      </span>
+                    ) : null}
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={openHelpCenter}
+                    className="px-3 py-2.5"
+                  >
+                    <CircleHelp size={14} className="mr-2" />
+                    Help Center
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={() => setLogoutConfirmOpen(true)}
+                    className="px-3 py-2.5 text-rose-300 focus:text-rose-200"
+                  >
+                    Logout
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+              {!user ? <LogIn size={16} className="text-zinc-500" /> : null}
+            </div>
+          )}
         </div>
       </aside>
 
@@ -608,86 +637,90 @@ export function Sidebar({
               </div>
 
               <div className="border-t border-white/8 p-3">
-                <div className="flex w-full items-center gap-3 rounded-2xl border border-white/10 bg-[#0b0b0b] p-2.5 text-left">
-                  <TraderAvatar
-                    name={name}
-                    value={avatar}
-                    className="size-10 text-xs"
-                  />
-                  <button
-                    onClick={openProfile}
-                    className="min-w-0 flex-1 text-left"
-                  >
-                    <strong className="block truncate text-sm text-white">
-                      {visibleName}
-                    </strong>
-                    <small className="block truncate text-[11px] text-zinc-500">
-                      {visibleHandle}
-                    </small>
-                  </button>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <button
-                        type="button"
-                        className="grid size-8 place-items-center rounded-xl text-zinc-400 transition hover:bg-[#111111] hover:text-white"
-                      >
-                        <MoreHorizontal size={15} />
-                      </button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent
-                      align="end"
-                      className="w-44 border-white/10 bg-[#090909]"
+                {profileLoading ? (
+                  <ProfileLoadingCard mobile />
+                ) : (
+                  <div className="flex h-[62px] w-full items-center gap-3 rounded-2xl border border-white/10 bg-[#0b0b0b] p-2.5 text-left">
+                    <TraderAvatar
+                      name={name}
+                      value={avatar}
+                      className="size-10 text-xs"
+                    />
+                    <button
+                      onClick={openProfile}
+                      className="min-w-0 flex-1 text-left"
                     >
-                      <DropdownMenuItem
-                        onClick={openSettings}
-                        className="px-3 py-2.5"
+                      <strong className="block truncate text-sm text-white">
+                        {visibleName}
+                      </strong>
+                      <small className="block truncate text-[11px] text-zinc-500">
+                        {visibleHandle}
+                      </small>
+                    </button>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <button
+                          type="button"
+                          className="grid size-8 place-items-center rounded-xl text-zinc-400 transition hover:bg-[#111111] hover:text-white"
+                        >
+                          <MoreHorizontal size={15} />
+                        </button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent
+                        align="end"
+                        className="w-44 border-white/10 bg-[#090909]"
                       >
-                        <Settings2 size={14} className="mr-2" />
-                        Settings
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
-                        onClick={() => setLocale("en")}
-                        className="flex items-center justify-between px-3 py-2.5"
-                      >
-                        <span className="flex items-center gap-2">
-                          <Globe size={14} /> English
-                        </span>
-                        {locale === "en" ? (
-                          <span className="text-[10px] font-bold text-zinc-400">
-                            Active
+                        <DropdownMenuItem
+                          onClick={openSettings}
+                          className="px-3 py-2.5"
+                        >
+                          <Settings2 size={14} className="mr-2" />
+                          Settings
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          onClick={() => setLocale("en")}
+                          className="flex items-center justify-between px-3 py-2.5"
+                        >
+                          <span className="flex items-center gap-2">
+                            <Globe size={14} /> English
                           </span>
-                        ) : null}
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
-                        onClick={() => setLocale("es")}
-                        className="flex items-center justify-between px-3 py-2.5"
-                      >
-                        <span className="flex items-center gap-2 pl-6">
-                          Spanish
-                        </span>
-                        {locale === "es" ? (
-                          <span className="text-[10px] font-bold text-zinc-400">
-                            Active
+                          {locale === "en" ? (
+                            <span className="text-[10px] font-bold text-zinc-400">
+                              Active
+                            </span>
+                          ) : null}
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          onClick={() => setLocale("es")}
+                          className="flex items-center justify-between px-3 py-2.5"
+                        >
+                          <span className="flex items-center gap-2 pl-6">
+                            Spanish
                           </span>
-                        ) : null}
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
-                        onClick={openHelpCenter}
-                        className="px-3 py-2.5"
-                      >
-                        <CircleHelp size={14} className="mr-2" />
-                        Help Center
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
-                        onClick={() => setLogoutConfirmOpen(true)}
-                        className="px-3 py-2.5 text-rose-300 focus:text-rose-200"
-                      >
-                        Logout
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                  {!user ? <LogIn size={16} className="text-zinc-500" /> : null}
-                </div>
+                          {locale === "es" ? (
+                            <span className="text-[10px] font-bold text-zinc-400">
+                              Active
+                            </span>
+                          ) : null}
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          onClick={openHelpCenter}
+                          className="px-3 py-2.5"
+                        >
+                          <CircleHelp size={14} className="mr-2" />
+                          Help Center
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          onClick={() => setLogoutConfirmOpen(true)}
+                          className="px-3 py-2.5 text-rose-300 focus:text-rose-200"
+                        >
+                          Logout
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                    {!user ? <LogIn size={16} className="text-zinc-500" /> : null}
+                  </div>
+                )}
               </div>
             </div>
           </DialogContent>
