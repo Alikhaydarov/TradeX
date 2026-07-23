@@ -84,8 +84,8 @@
 }
 
 button[aria-label="Open Tradox AI"] {
-  display: grid !important;
-  place-items: center !important;
+  position: fixed !important;
+  display: block !important;
   width: 3.1rem !important;
   height: 3.1rem !important;
   min-width: 3.1rem !important;
@@ -101,10 +101,15 @@ button[aria-label="Open Tradox AI"] {
 }
 
 button[aria-label="Open Tradox AI"] svg {
+  position: absolute !important;
+  top: 50% !important;
+  left: 50% !important;
   width: 1.15rem !important;
   height: 1.15rem !important;
+  margin: 0 !important;
   color: #f4f4f5 !important;
   flex: none !important;
+  transform: translate(-50%, -50%) !important;
 }
 
 @media (min-width: 1024px) {
