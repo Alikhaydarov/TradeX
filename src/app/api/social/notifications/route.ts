@@ -117,6 +117,15 @@ export async function GET(request: Request) {
   return Response.json({
     notifications: (data ?? []).map((item: NotificationRow) => {
       const actor = item.actor_id ? actorMap.get(item.actor_id) : null;
+      const aiActor = item.type.startsWith("ai_")
+        ? {
+            id: "tradox-ai",
+            username: "",
+            fullName: "Tradox AI",
+            avatarUrl: null,
+            isVerified: true,
+          }
+        : null;
       return {
         id: item.id,
         type: item.type,
@@ -134,7 +143,7 @@ export async function GET(request: Request) {
               avatarUrl: actor.avatar_url,
               isVerified: premiumVerified(actor),
             }
-          : null,
+          : aiActor,
       };
     }),
   });
