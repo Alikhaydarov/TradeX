@@ -1,6 +1,6 @@
 "use client";
 
-import { Bell, BellRing, X } from "lucide-react";
+import { Bell, BellRing, BrainCircuit, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { apiRequest } from "@/lib/api-client";
 import { Button } from "@/components/ui/button";
@@ -9,6 +9,7 @@ import { useAuth } from "./auth-context";
 interface ToastState {
   title: string;
   body: string;
+  type: string;
 }
 
 interface AppNotification {
@@ -30,8 +31,12 @@ type AudioWindow = Window & typeof globalThis & {
   webkitAudioContext?: typeof AudioContext;
 };
 
-function shortText(value: string, max = 90) {
+function shortText(value: string, max = 110) {
   return value.length > max ? `${value.slice(0, max - 1)}...` : value;
+}
+
+function isAiNotification(type: string) {
+  return type.startsWith("ai_");
 }
 
 function playNotificationSound() {
@@ -71,6 +76,7 @@ export function NotificationListener() {
   const seenMessageIds = useRef(new Set<string>());
   const initialized = useRef(false);
   const polling = useRef(false);
+  const smartSyncing = useRef(false);
   const soundEnabled = useRef(false);
 
   useEffect(() => {
@@ -84,6 +90,44 @@ export function NotificationListener() {
   }, []);
 
   useEffect(() => {
+    if (!user) return;
+    let active = true;
+    let proEnabled = false;
+
+    const syncSmartNotifications = async () => {
+      if (!active || !proEnabled || smartSyncing.current || document.hidden) return;
+      smartSyncing.current = true;
+      try {
+        await apiRequest("/api/ai/notifications/sync", { method: "POST" });
+      } catch {
+        // Smart notifications are best-effort and never block the workspace.
+      } finally {
+        smartSyncing.current = false;
+      }
+    };
+
+    void apiRequest<{ plan: "free" | "standard" | "pro"; aiEnabled: boolean }>("/api/premium/status")
+      .then((status) => {
+        if (!active) return;
+        proEnabled = status.plan === "pro" && status.aiEnabled;
+        if (proEnabled) window.setTimeout(() => void syncSmartNotifications(), 2500);
+      })
+      .catch(() => undefined);
+
+    const timer = window.setInterval(() => void syncSmartNotifications(), 15 * 60 * 1000);
+    const onVisible = () => {
+      if (!document.hidden) void syncSmartNotifications();
+    };
+    document.addEventListener("visibilitychange", onVisible);
+
+    return () => {
+      active = false;
+      window.clearInterval(timer);
+      document.removeEventListener("visibilitychange", onVisible);
+    };
+  }, [user]);
+
+  useEffect(() => {
     if (!user) {
       seenMessageIds.current.clear();
       initialized.current = false;
@@ -93,10 +137,11 @@ export function NotificationListener() {
     let active = true;
 
     const notify = (item: AppNotification) => {
-      const actorName = item.actor?.fullName || "TradeWay";
+      const ai = isAiNotification(item.type);
+      const actorName = ai ? "Tradox AI" : item.actor?.fullName || "Tradox";
       const body = shortText(item.message);
-      setToast({ title: actorName, body });
-      window.setTimeout(() => setToast(null), 4500);
+      setToast({ title: actorName, body, type: item.type });
+      window.setTimeout(() => setToast(null), 5200);
 
       if (soundEnabled.current) playNotificationSound();
 
@@ -107,7 +152,7 @@ export function NotificationListener() {
       ) {
         const notification = new Notification(actorName, {
           body,
-          tag: `tradeway-notification-${item.id}`,
+          tag: `tradox-notification-${item.id}`,
         });
 
         notification.onclick = () => {
@@ -175,6 +220,8 @@ export function NotificationListener() {
 
   if (!user) return null;
 
+  const toastIsAi = toast ? isAiNotification(toast.type) : false;
+
   return (
     <>
       {permission === "default" && !promptDismissed && (
@@ -182,8 +229,8 @@ export function NotificationListener() {
           <div className="flex gap-2 pr-7">
             <Bell size={16} className="mt-0.5 shrink-0 text-zinc-300" />
             <div>
-              <p className="font-bold">Chat notification yoqilsinmi?</p>
-              <p className="mt-1 leading-5 text-slate-400">Yangi xabar kelsa notification va ovoz chiqadi.</p>
+              <p className="font-bold">Tradox notifications yoqilsinmi?</p>
+              <p className="mt-1 leading-5 text-slate-400">Yangi xabar, risk warning yoki Pro AI insight kelsa notification chiqadi.</p>
             </div>
           </div>
           <button onClick={dismissPrompt} className="absolute right-2 top-2 grid h-7 w-7 place-items-center rounded-xl text-slate-500 hover:bg-white/[.06] hover:text-white" aria-label="Notification promptni yopish">
@@ -196,14 +243,14 @@ export function NotificationListener() {
       )}
 
       {toast && (
-        <div className="fixed right-3 top-3 z-[80] w-[min(360px,calc(100vw-24px))] rounded-2xl border border-white/10 bg-[#080808] p-3 text-sm text-white shadow-2xl shadow-slate-950/50">
+        <div className="fixed right-3 top-3 z-[80] w-[min(380px,calc(100vw-24px))] rounded-2xl border border-white/10 bg-[#080808] p-3 text-sm text-white shadow-2xl shadow-slate-950/50">
           <div className="flex items-start gap-3">
-            <span className="grid h-9 w-9 shrink-0 place-items-center rounded-2xl bg-white/[.06] text-zinc-300">
-              <BellRing size={17} />
+            <span className={`grid h-9 w-9 shrink-0 place-items-center rounded-2xl ${toastIsAi ? "bg-violet-400/10 text-violet-300" : "bg-white/[.06] text-zinc-300"}`}>
+              {toastIsAi ? <BrainCircuit size={17} /> : <BellRing size={17} />}
             </span>
             <div className="min-w-0 flex-1">
               <p className="truncate text-xs font-black">{toast.title}</p>
-              <p className="mt-1 line-clamp-2 text-xs leading-5 text-slate-300">{toast.body}</p>
+              <p className="mt-1 line-clamp-3 text-xs leading-5 text-slate-300">{toast.body}</p>
             </div>
             <button onClick={() => setToast(null)} className="grid h-7 w-7 shrink-0 place-items-center rounded-xl text-slate-500 hover:bg-white/[.06] hover:text-white" aria-label="Yopish">
               <X size={14} />
