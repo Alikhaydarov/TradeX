@@ -81,14 +81,14 @@ export function WorkspaceBootLoader() {
             className="absolute inset-0 size-16 text-white/35"
             strokeWidth={1.25}
           />
-          <div className="relative size-9 overflow-hidden rounded-lg border border-white/15 bg-[#171717] shadow-[0_10px_35px_rgba(255,255,255,.08)]">
+          <div className="relative size-10">
             <Image
               src="/tradox-logo.webp"
               alt="Tradox"
               fill
-              sizes="36px"
+              sizes="40px"
               priority
-              className="object-cover"
+              className="object-contain p-1"
             />
           </div>
         </div>
