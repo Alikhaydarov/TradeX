@@ -81,7 +81,7 @@ export function WorkspaceTopbar({ section }: { section: Section }) {
       role="banner"
       className="tw-app-topbar sticky top-0 z-[70] shrink-0 border-b border-white/10 bg-black/95 backdrop-blur-xl supports-[backdrop-filter]:bg-black/88"
     >
-      <div className="mx-auto w-full max-w-[1540px] px-3 py-2.5 sm:px-4 lg:min-h-[72px] lg:px-4 lg:py-3">
+      <div className="mx-auto w-full max-w-[1180px] px-3 py-2.5 sm:px-4 lg:min-h-[72px] lg:px-4 lg:py-3">
         <div
           className="grid items-center gap-2 lg:flex lg:min-w-0 lg:flex-1 lg:gap-5"
           style={{
