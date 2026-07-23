@@ -7,7 +7,7 @@ export async function requireProAi(auth: ApiAuth) {
   if (!status.isPremium || status.plan !== "pro") {
     return Response.json(
       {
-        error: "AI Coach is available on the Pro plan only.",
+        error: "Tradox AI is available on the Pro plan only.",
         code: "PRO_AI_REQUIRED",
         upgradeUrl: "/pricing",
       },
