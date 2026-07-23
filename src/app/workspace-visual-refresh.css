@@ -1,0 +1,280 @@
+/* Tradox visual refresh — final workspace layer. */
+:root {
+  --tw-canvas: #000000;
+  --tw-surface: #080a09;
+  --tw-surface-raised: #0c0f0d;
+  --tw-surface-hover: #121613;
+  --tw-line: rgba(255, 255, 255, 0.1);
+  --tw-line-strong: rgba(255, 255, 255, 0.17);
+  --tw-copy: #fafafa;
+  --tw-copy-muted: #b7b7c0;
+  --tw-copy-dim: #85858f;
+  --tw-positive: #34d399;
+  --tw-negative: #fb7185;
+}
+
+/* Improve readability across all workspace sections. */
+.workspace-shell [class~="text-zinc-700"] {
+  color: #777781 !important;
+}
+
+.workspace-shell [class~="text-zinc-600"] {
+  color: #90909a !important;
+}
+
+.workspace-shell [class~="text-zinc-500"] {
+  color: #a8a8b2 !important;
+}
+
+.workspace-shell [class~="text-zinc-400"] {
+  color: #c6c6ce !important;
+}
+
+.workspace-shell [class~="text-zinc-300"] {
+  color: #e4e4e7 !important;
+}
+
+/* Desktop sidebar. */
+.workspace-shell > aside {
+  border-color: rgba(255, 255, 255, 0.11) !important;
+  background:
+    radial-gradient(circle at 18% 0%, rgba(52, 211, 153, 0.055), transparent 28%),
+    linear-gradient(180deg, #030403 0%, #000 46%, #020302 100%) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.045),
+    0 24px 70px rgba(0, 0, 0, 0.34) !important;
+}
+
+.workspace-shell > aside button[aria-label="Tradox home"] {
+  min-height: 3.75rem;
+  padding: 0.5rem 0.55rem !important;
+  border: 1px solid transparent;
+  border-radius: 1rem !important;
+}
+
+.workspace-shell > aside button[aria-label="Tradox home"]:hover {
+  border-color: rgba(255, 255, 255, 0.09);
+  background: rgba(255, 255, 255, 0.035) !important;
+}
+
+.workspace-shell > aside button[aria-label="Tradox home"] > span:first-child,
+[role="dialog"] button[aria-label="Tradox home"] > span:first-child {
+  width: 2.75rem !important;
+  height: 2.75rem !important;
+  padding: 0.28rem;
+  border-radius: 0.9rem !important;
+  border-color: rgba(255, 255, 255, 0.14) !important;
+  background:
+    radial-gradient(circle at 32% 24%, rgba(255, 255, 255, 0.16), transparent 42%),
+    #111312 !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    0 10px 28px rgba(0, 0, 0, 0.48) !important;
+}
+
+.workspace-shell > aside button[aria-label="Tradox home"] img,
+[role="dialog"] button[aria-label="Tradox home"] img {
+  object-fit: contain !important;
+  transform: scale(0.92);
+  filter: contrast(1.05) brightness(1.08);
+}
+
+.workspace-shell > aside button[aria-label="Tradox home"] strong {
+  font-size: 0.94rem !important;
+  font-weight: 750 !important;
+  letter-spacing: -0.025em !important;
+  color: #ffffff !important;
+}
+
+.workspace-shell > aside button[aria-label="Tradox home"] small {
+  display: block;
+  margin-top: 0.16rem;
+  font-size: 0.68rem !important;
+  font-weight: 550;
+  color: #9a9aa4 !important;
+}
+
+/* Account switcher in sidebar. */
+.workspace-shell > aside > div[class*="mt-4"] {
+  min-height: 3.25rem;
+  border-color: rgba(255, 255, 255, 0.11) !important;
+  background: linear-gradient(180deg, #0b0d0c, #070807) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.035);
+}
+
+.workspace-shell > aside > div[class*="mt-4"]:hover {
+  border-color: rgba(255, 255, 255, 0.17) !important;
+  background: #101310 !important;
+}
+
+/* Sidebar section labels. */
+.workspace-shell > aside > div.mt-3 > p {
+  padding-top: 1rem !important;
+  padding-bottom: 0.38rem !important;
+  font-size: 0.59rem !important;
+  font-weight: 750 !important;
+  letter-spacing: 0.18em !important;
+  color: #8d8d97 !important;
+}
+
+/* Sidebar navigation. */
+.workspace-shell > aside nav {
+  display: grid;
+  gap: 0.22rem;
+}
+
+.workspace-shell > aside nav > button {
+  min-height: 2.72rem;
+  gap: 0.68rem !important;
+  padding: 0.42rem 0.58rem !important;
+  border: 1px solid transparent;
+  border-radius: 0.82rem !important;
+  color: #c4c4cc !important;
+}
+
+.workspace-shell > aside nav > button:hover {
+  border-color: rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.045) !important;
+  color: #ffffff !important;
+}
+
+.workspace-shell > aside nav > button[class*="ring-white/10"] {
+  border-color: rgba(255, 255, 255, 0.13) !important;
+  background:
+    linear-gradient(90deg, rgba(52, 211, 153, 0.09), rgba(255, 255, 255, 0.055)) !important;
+  color: #ffffff !important;
+  box-shadow:
+    inset 3px 0 0 #34d399,
+    inset 0 1px 0 rgba(255, 255, 255, 0.045) !important;
+}
+
+.workspace-shell > aside nav > button > span:first-child {
+  width: 1.95rem !important;
+  height: 1.95rem !important;
+  border: 1px solid rgba(255, 255, 255, 0.065);
+  border-radius: 0.65rem !important;
+  background: #0b0d0c !important;
+  color: #a8a8b2 !important;
+}
+
+.workspace-shell > aside nav > button:hover > span:first-child,
+.workspace-shell > aside nav > button[class*="ring-white/10"] > span:first-child {
+  border-color: rgba(52, 211, 153, 0.22);
+  background: rgba(52, 211, 153, 0.08) !important;
+  color: #f8fafc !important;
+}
+
+.workspace-shell > aside nav > button > span:last-child {
+  font-size: 0.87rem !important;
+  font-weight: 620 !important;
+  letter-spacing: -0.012em;
+}
+
+/* Sidebar profile card. */
+.workspace-shell > aside > div.mt-auto > div {
+  min-height: 3.65rem;
+  border-color: rgba(255, 255, 255, 0.11) !important;
+  background: linear-gradient(180deg, #0d0f0e, #080908) !important;
+}
+
+.workspace-shell > aside > div.mt-auto > div:hover {
+  border-color: rgba(255, 255, 255, 0.18) !important;
+  background: #111411 !important;
+}
+
+.workspace-shell > aside > div.mt-auto strong {
+  font-size: 0.78rem !important;
+  color: #f4f4f5 !important;
+}
+
+.workspace-shell > aside > div.mt-auto small {
+  font-size: 0.68rem !important;
+  color: #9a9aa4 !important;
+}
+
+/* Top header. */
+.tw-app-topbar {
+  border-color: rgba(255, 255, 255, 0.1) !important;
+  background:
+    linear-gradient(180deg, rgba(8, 10, 9, 0.98), rgba(0, 0, 0, 0.96)) !important;
+  box-shadow:
+    0 14px 34px rgba(0, 0, 0, 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 0.025) !important;
+}
+
+/* Shared component surfaces. */
+.workspace-shell [data-slot="card"] {
+  border-color: rgba(255, 255, 255, 0.1) !important;
+  background:
+    linear-gradient(145deg, rgba(13, 16, 14, 0.98), rgba(5, 6, 5, 0.99)) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.025),
+    0 16px 42px rgba(0, 0, 0, 0.18) !important;
+  transition:
+    border-color 180ms ease,
+    background-color 180ms ease,
+    transform 180ms ease;
+}
+
+.workspace-shell [data-slot="card"]:hover {
+  border-color: rgba(255, 255, 255, 0.145) !important;
+}
+
+.workspace-shell [data-slot="card-header"] {
+  border-color: rgba(255, 255, 255, 0.085) !important;
+}
+
+.workspace-shell :is(input, textarea, [data-slot="select-trigger"]) {
+  border-color: rgba(255, 255, 255, 0.11) !important;
+  background: #0a0c0b !important;
+}
+
+.workspace-shell :is(input, textarea, [data-slot="select-trigger"]):hover {
+  border-color: rgba(255, 255, 255, 0.17) !important;
+}
+
+.workspace-shell :is(input, textarea)::placeholder {
+  color: #777781 !important;
+}
+
+.workspace-shell [data-slot="button"][data-variant="outline"],
+.workspace-shell [data-slot="button"][data-variant="secondary"] {
+  border-color: rgba(255, 255, 255, 0.11) !important;
+  background: linear-gradient(180deg, #0d0f0e, #080908) !important;
+  color: #ededf0 !important;
+}
+
+.workspace-shell [data-slot="button"][data-variant="outline"]:hover,
+.workspace-shell [data-slot="button"][data-variant="secondary"]:hover {
+  border-color: rgba(255, 255, 255, 0.18) !important;
+  background: #141714 !important;
+}
+
+.workspace-shell table thead {
+  color: #b7b7c0;
+}
+
+.workspace-shell table tbody tr {
+  border-color: rgba(255, 255, 255, 0.075) !important;
+  transition: background-color 150ms ease;
+}
+
+.workspace-shell table tbody tr:hover {
+  background: rgba(255, 255, 255, 0.025);
+}
+
+@media (max-width: 1023px) {
+  [role="dialog"] button[aria-label="Tradox home"] strong {
+    color: #fff !important;
+  }
+
+  [role="dialog"] nav > button {
+    min-height: 2.9rem;
+    color: #d1d1d7 !important;
+  }
+
+  [role="dialog"] nav > button > span:last-child {
+    font-size: 0.9rem !important;
+    font-weight: 620 !important;
+  }
+}
