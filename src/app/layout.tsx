@@ -22,6 +22,7 @@ import "./workspace-design-system.css";
 import "./typography.css";
 import "./floating-actions-layout.css";
 import "./dashboard-reference-layout.css";
+import "./workspace-visual-refresh.css";
 
 const dmSans = DM_Sans({
   variable: "--font-dm-sans",
@@ -31,20 +32,28 @@ const dmSans = DM_Sans({
 
 export const metadata: Metadata = {
   title: "Tradox",
-  description: "Tradox: trading feed, private chats, journal and backtesting workspace.",
+  description:
+    "Tradox: trading feed, private chats, journal and backtesting workspace.",
   applicationName: "Tradox",
 };
 
-export default async function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+export default async function RootLayout({
+  children,
+}: Readonly<{ children: React.ReactNode }>) {
   const configured = isSupabaseConfigured();
   const supabase = await getSupabaseServerClient();
-  const { data } = supabase ? await supabase.auth.getUser() : { data: { user: null } };
+  const { data } = supabase
+    ? await supabase.auth.getUser()
+    : { data: { user: null } };
 
   return (
     <html lang="en" className={`dark ${dmSans.variable}`}>
       <body className="font-sans antialiased">
         <AppRouterCacheProvider options={{ enableCssLayer: true }}>
-          <AuthProvider initialUser={data.user} initialConfigured={configured}>
+          <AuthProvider
+            initialUser={data.user}
+            initialConfigured={configured}
+          >
             <AppShell />
             <DashboardGreetingSync />
             <AccountCardMenuBridge />
