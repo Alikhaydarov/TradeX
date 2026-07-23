@@ -69,6 +69,9 @@ export function WorkspaceTopbar({ section }: { section: Section }) {
   const isAccountScoped = ACCOUNT_SCOPED_SECTIONS.has(section);
   const isHome = section === "feed";
   const workspace = activeAccount?.name || "All Accounts";
+  const headerContainerClass = isHome
+    ? "max-w-4xl px-3 sm:px-5"
+    : "max-w-[1180px] px-3 sm:px-4 lg:px-4";
   const pnlLabel =
     pnlMode === "percentage"
       ? "Percentage View"
@@ -81,7 +84,9 @@ export function WorkspaceTopbar({ section }: { section: Section }) {
       role="banner"
       className="tw-app-topbar sticky top-0 z-[70] shrink-0 border-b border-white/10 bg-black/95 backdrop-blur-xl supports-[backdrop-filter]:bg-black/88"
     >
-      <div className="mx-auto w-full max-w-[1180px] px-3 py-2.5 sm:px-4 lg:min-h-[72px] lg:px-4 lg:py-3">
+      <div
+        className={`mx-auto w-full py-2.5 lg:min-h-[72px] lg:py-3 ${headerContainerClass}`}
+      >
         <div
           className="grid items-center gap-2 lg:flex lg:min-w-0 lg:flex-1 lg:gap-5"
           style={{
