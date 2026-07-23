@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import type { User } from "@supabase/supabase-js";
 import {
   CircleHelp,
@@ -80,6 +81,26 @@ function GroupLabel({ children }: { children: string }) {
   );
 }
 
+function TradoxBrand({ mobile = false }: { mobile?: boolean }) {
+  const size = mobile ? 40 : 36;
+
+  return (
+    <span
+      className={`${mobile ? "size-10" : "h-9 w-9"} relative grid shrink-0 place-items-center overflow-hidden rounded-xl border border-white/10 bg-[#171717] shadow-[0_10px_24px_rgba(0,0,0,.32)]`}
+    >
+      <Image
+        src="/tradox-logo.webp"
+        alt="Tradox"
+        width={size}
+        height={size}
+        sizes={`${size}px`}
+        className="h-full w-full object-cover"
+        priority
+      />
+    </span>
+  );
+}
+
 export function Sidebar({
   active,
   onChange,
@@ -151,7 +172,12 @@ export function Sidebar({
 
     let active = true;
     apiRequest<{
-      profile: { username?: string | null; is_verified?: boolean | null; avatar_url?: string | null; full_name?: string | null };
+      profile: {
+        username?: string | null;
+        is_verified?: boolean | null;
+        avatar_url?: string | null;
+        full_name?: string | null;
+      };
     }>("/api/profile")
       .then(({ profile }) => {
         if (!active) return;
@@ -313,7 +339,7 @@ export function Sidebar({
             aria-label="Open account switcher"
           >
             <ChevronDown
-              size={mobile ? 14 : 14}
+              size={14}
               className={`transition-transform ${accountSwitcherOpen ? "rotate-180" : ""}`}
             />
           </button>
@@ -391,15 +417,13 @@ export function Sidebar({
         <button
           onClick={() => onChange("feed")}
           className="flex items-center gap-3 rounded-2xl px-2 py-1.5 text-left transition-colors hover:bg-[#080808]"
-          aria-label="TradeWay home"
+          aria-label="Tradox home"
         >
-          <span className="grid h-9 w-9 place-items-center rounded-xl bg-[linear-gradient(180deg,rgba(255,255,255,1),rgba(232,232,236,1))] text-sm font-black text-black shadow-[0_10px_24px_rgba(255,255,255,.06)]">
-            TW
-          </span>
+          <TradoxBrand />
           <span className="min-w-0">
             <span className="flex items-center gap-2">
               <strong className="block truncate text-[13px] tracking-tight">
-                TradeWay
+                Tradox
               </strong>
               <span
                 className={`rounded-full px-2 py-0.5 text-[10px] font-black ${premium.isPremium ? "bg-[#0b1c12] text-emerald-300" : "bg-[#0a0a0a] text-zinc-400"}`}
@@ -524,14 +548,20 @@ export function Sidebar({
           >
             <div className="flex h-full flex-col">
               <div className="flex items-center justify-between border-b border-white/8 px-4 py-4">
-                <div className="flex items-center gap-3">
-                  <span className="grid size-10 place-items-center rounded-xl bg-white text-sm font-black text-black">
-                    TW
-                  </span>
-                  <div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMobileMenuOpen(false);
+                    onChange("feed");
+                  }}
+                  className="flex min-w-0 items-center gap-3 rounded-xl text-left"
+                  aria-label="Tradox home"
+                >
+                  <TradoxBrand mobile />
+                  <div className="min-w-0">
                     <span className="flex items-center gap-2">
-                      <strong className="block text-base leading-tight text-white">
-                        TradeWay
+                      <strong className="block truncate text-base leading-tight text-white">
+                        Tradox
                       </strong>
                       <span
                         className={`rounded-full px-2 py-0.5 text-[10px] font-black ${premium.isPremium ? "bg-[#0b1c12] text-emerald-300" : "bg-[#0a0a0a] text-zinc-400"}`}
@@ -543,7 +573,7 @@ export function Sidebar({
                       Trading workspace
                     </small>
                   </div>
-                </div>
+                </button>
                 <button
                   type="button"
                   onClick={() => setMobileMenuOpen(false)}
