@@ -36,8 +36,8 @@ type NotificationSelectResult = {
 
 const premiumVerified = hasVerifiedPremiumAccess;
 
-function isMissingEntityColumn(message: string) {
-  return /notifications\.(entity_id|entity_type)|column\s+(entity_id|entity_type)\s+does\s+not\s+exist/i.test(
+function isMissingSmartColumn(message: string) {
+  return /notifications\.(entity_id|entity_type|metadata)|column\s+(entity_id|entity_type|metadata)\s+does\s+not\s+exist|schema cache/i.test(
     message,
   );
 }
@@ -57,7 +57,7 @@ async function selectNotifications(
       .returns<NotificationRow[]>();
 
   const result = (await query()) as NotificationSelectResult;
-  if (!result.error || !isMissingEntityColumn(result.error.message))
+  if (!result.error || !isMissingSmartColumn(result.error.message))
     return result;
 
   const fallback = await auth.supabase
