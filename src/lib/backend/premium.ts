@@ -69,6 +69,7 @@ export async function getPremiumStatus(auth: ApiAuth): Promise<PremiumStatus> {
       accessFromSubscription = isPremium;
     }
   }
+
   let billingManaged = false;
 
   if (isPremium) {
@@ -85,11 +86,13 @@ export async function getPremiumStatus(auth: ApiAuth): Promise<PremiumStatus> {
     billingManaged = Boolean(subscription?.provider_customer_id);
   }
 
+  const proAiEnabled = isPremium && plan === "pro";
+
   return {
     plan,
     isPremium,
-    aiEnabled: isPremium && (accessFromSubscription || Boolean(data?.ai_enabled)),
-    traderoxEnabled: isPremium && (accessFromSubscription || Boolean(data?.traderox_enabled)),
+    aiEnabled: proAiEnabled,
+    traderoxEnabled: proAiEnabled,
     autoSyncEnabled: isPremium && (accessFromSubscription || Boolean(data?.auto_sync_enabled)),
     isVerified: isPremium && (accessFromSubscription || Boolean(data?.is_verified)),
     billingManaged,
