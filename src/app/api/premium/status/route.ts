@@ -8,7 +8,14 @@ export async function GET(request: Request) {
   if (!auth) return unauthorized();
 
   try {
-    return Response.json(await getPremiumStatus(auth), { headers: { "Cache-Control": "no-store" } });
+    const status = await getPremiumStatus(auth);
+    return Response.json(
+      {
+        ...status,
+        aiEnabled: status.plan === "pro" && status.aiEnabled,
+      },
+      { headers: { "Cache-Control": "no-store" } },
+    );
   } catch (error) {
     return serverError(error instanceof Error ? error.message : undefined);
   }
