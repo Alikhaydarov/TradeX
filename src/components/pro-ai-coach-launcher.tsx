@@ -3,22 +3,17 @@
 import {
   BrainCircuit,
   LoaderCircle,
-  LockKeyhole,
-  MessageCircle,
-  RotateCcw,
   Send,
   Sparkles,
   Trash2,
 } from "lucide-react";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import { apiRequest } from "@/lib/api-client";
-import { Badge } from "./ui/badge";
 import { Button } from "./ui/button";
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from "./ui/dialog";
@@ -29,12 +24,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "./ui/select";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
 import { Textarea } from "./ui/textarea";
 
 type PremiumStatus = {
   plan: "free" | "standard" | "pro";
-  isPremium: boolean;
   aiEnabled: boolean;
 };
 
@@ -52,49 +45,29 @@ type ChatMessage = {
 };
 
 type ChatResponse = {
-  model: string;
   message: ChatMessage;
-  persistence: boolean;
-};
-
-type AiInsight = {
-  headline?: string;
-  summary?: string;
-  strengths?: string[];
-  risks?: string[];
-  nextAction?: string;
-  confidence?: number;
-};
-
-type AiResponse = {
-  model: string;
-  insight: AiInsight;
 };
 
 const suggestedQuestions = [
   "Oxirgi trade'larimdagi asosiy xato nima?",
-  "Qaysi setup eng yaxshi natija beryapti?",
-  "Risk boshqaruvimni tahlil qil.",
-  "So‘nggi 20 trade'ni qisqa xulosa qil.",
+  "Qaysi setup menga eng yaxshi natija beryapti?",
+  "Risk boshqaruvimni qisqa tahlil qil.",
 ];
+
+const AI_WORKSPACE_ROUTES = ["/dashboard", "/calendar", "/trades", "/analytics"];
 
 export function ProAiCoachLauncher() {
   const [pathname, setPathname] = useState("");
   const [status, setStatus] = useState<PremiumStatus | null>(null);
   const [open, setOpen] = useState(false);
-  const [tab, setTab] = useState("chat");
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [accountId, setAccountId] = useState("");
   const [question, setQuestion] = useState("");
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [historyLoading, setHistoryLoading] = useState(false);
   const [sending, setSending] = useState(false);
-  const [persistence, setPersistence] = useState(true);
+  const [clearing, setClearing] = useState(false);
   const [chatError, setChatError] = useState("");
-  const [reportQuestion, setReportQuestion] = useState("What should I improve next?");
-  const [reportLoading, setReportLoading] = useState(false);
-  const [reportError, setReportError] = useState("");
-  const [report, setReport] = useState<AiResponse | null>(null);
   const chatEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -113,6 +86,7 @@ export function ProAiCoachLauncher() {
       .catch(() => {
         if (active) setStatus(null);
       });
+
     return () => {
       active = false;
     };
@@ -123,10 +97,12 @@ export function ProAiCoachLauncher() {
       const response = await apiRequest<{ accounts: Account[] }>("/api/prop-accounts");
       const nextAccounts = response.accounts || [];
       setAccounts(nextAccounts);
+
       const stored = window.localStorage.getItem("tradeway.active-account-id") || "";
       const preferred = nextAccounts.some((account) => account.id === stored)
         ? stored
         : nextAccounts[0]?.id || "";
+
       setAccountId((current) =>
         current && nextAccounts.some((account) => account.id === current)
           ? current
@@ -142,18 +118,20 @@ export function ProAiCoachLauncher() {
       setMessages([]);
       return;
     }
+
     setHistoryLoading(true);
     setChatError("");
+
     try {
-      const response = await apiRequest<{
-        messages: ChatMessage[];
-        persistence: boolean;
-      }>(`/api/ai/chat?accountId=${encodeURIComponent(nextAccountId)}`);
+      const response = await apiRequest<{ messages: ChatMessage[] }>(
+        `/api/ai/chat?accountId=${encodeURIComponent(nextAccountId)}`,
+      );
       setMessages(response.messages || []);
-      setPersistence(response.persistence);
     } catch (caught) {
       setMessages([]);
-      setChatError(caught instanceof Error ? caught.message : "Chat history could not be loaded.");
+      setChatError(
+        caught instanceof Error ? caught.message : "Chat history could not be loaded.",
+      );
     } finally {
       setHistoryLoading(false);
     }
@@ -167,8 +145,6 @@ export function ProAiCoachLauncher() {
   useEffect(() => {
     if (!open || !accountId) return;
     window.localStorage.setItem("tradeway.active-account-id", accountId);
-    setReport(null);
-    setReportError("");
     void loadHistory(accountId);
   }, [accountId, loadHistory, open]);
 
@@ -177,7 +153,9 @@ export function ProAiCoachLauncher() {
   }, [messages, sending]);
 
   const isPro = status?.plan === "pro" && status.aiEnabled;
-  const visible = pathname.startsWith("/dashboard") && isPro;
+  const visible = Boolean(
+    isPro && AI_WORKSPACE_ROUTES.some((route) => pathname.startsWith(route)),
+  );
   const selectedAccount = accounts.find((account) => account.id === accountId) || null;
 
   const sendMessage = async (preset?: string) => {
@@ -202,49 +180,34 @@ export function ProAiCoachLauncher() {
         body: JSON.stringify({ accountId, message: text }),
       });
       setMessages((current) => [...current, response.message]);
-      setPersistence(response.persistence);
     } catch (caught) {
-      setChatError(caught instanceof Error ? caught.message : "Tradox AI could not answer.");
+      setChatError(
+        caught instanceof Error ? caught.message : "Tradox AI could not answer.",
+      );
     } finally {
       setSending(false);
     }
   };
 
   const clearChat = async () => {
-    if (!accountId) return;
+    if (!accountId || clearing || !messages.length) return;
+
+    setClearing(true);
     setChatError("");
+
     try {
       await apiRequest(`/api/ai/chat?accountId=${encodeURIComponent(accountId)}`, {
         method: "DELETE",
       });
       setMessages([]);
     } catch (caught) {
-      setChatError(caught instanceof Error ? caught.message : "Chat could not be cleared.");
-    }
-  };
-
-  const generateReport = async () => {
-    if (!accountId || reportLoading) return;
-    setReportLoading(true);
-    setReportError("");
-    setReport(null);
-    try {
-      const response = await apiRequest<AiResponse>("/api/ai/trade-coach", {
-        method: "POST",
-        body: JSON.stringify({ accountId, question: reportQuestion }),
-      });
-      setReport(response);
-    } catch (caught) {
-      setReportError(caught instanceof Error ? caught.message : "Tradox AI could not generate the report.");
+      setChatError(
+        caught instanceof Error ? caught.message : "Chat could not be cleared.",
+      );
     } finally {
-      setReportLoading(false);
+      setClearing(false);
     }
   };
-
-  const confidence = useMemo(() => {
-    const value = Number(report?.insight?.confidence ?? 0);
-    return Number.isFinite(value) ? Math.min(100, Math.max(0, Math.round(value))) : 0;
-  }, [report]);
 
   if (!visible) return null;
 
@@ -253,262 +216,175 @@ export function ProAiCoachLauncher() {
       <Button
         type="button"
         onClick={() => setOpen(true)}
-        className="fixed bottom-24 right-4 z-[80] h-11 rounded-full border border-white/12 bg-white px-4 text-black shadow-[0_16px_45px_rgba(0,0,0,.5)] hover:bg-zinc-200 sm:bottom-6 sm:right-6"
+        className="fixed bottom-24 right-4 z-[80] h-11 rounded-full border border-white/10 bg-white px-4 text-black shadow-[0_16px_45px_rgba(0,0,0,.55)] transition hover:-translate-y-0.5 hover:bg-zinc-200 sm:bottom-6 sm:right-6"
         aria-label="Open Tradox AI"
       >
-        <BrainCircuit className="size-4" /> Tradox AI
+        <Sparkles className="size-4" /> Tradox AI
       </Button>
 
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="max-h-[92dvh] overflow-hidden border-white/10 bg-[#070707] p-0 sm:max-w-[760px]">
-          <DialogHeader className="border-b border-white/8 px-4 py-4 text-left sm:px-5 sm:py-5">
-            <div className="flex flex-wrap items-center gap-2">
-              <Badge className="rounded-full bg-amber-300/15 text-amber-200 hover:bg-amber-300/15">
-                <Sparkles className="size-3.5" /> Pro
-              </Badge>
-              <span className="text-xs text-zinc-600">Account-scoped Groq analysis</span>
+        <DialogContent className="flex h-[min(92dvh,760px)] w-[calc(100vw-1rem)] flex-col gap-0 overflow-hidden rounded-[24px] border-white/10 bg-[#070707] p-0 sm:max-w-[760px] sm:rounded-[28px]">
+          <DialogHeader className="shrink-0 border-b border-white/8 px-4 py-4 text-left sm:px-5">
+            <div className="flex items-center gap-3 pr-9">
+              <span className="grid size-10 shrink-0 place-items-center rounded-2xl border border-white/10 bg-white text-black">
+                <BrainCircuit className="size-5" />
+              </span>
+              <div className="min-w-0 flex-1">
+                <DialogTitle className="text-base font-semibold tracking-[-0.02em] text-white sm:text-lg">
+                  Tradox AI
+                </DialogTitle>
+                <p className="mt-0.5 truncate text-[11px] text-zinc-500">
+                  {selectedAccount
+                    ? `Analyzing ${selectedAccount.name}`
+                    : "Select an account to start"}
+                </p>
+              </div>
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon-sm"
+                onClick={() => void clearChat()}
+                disabled={!messages.length || clearing}
+                className="shrink-0 text-zinc-600 hover:bg-rose-400/10 hover:text-rose-300"
+                aria-label="Clear chat"
+                title="Clear chat"
+              >
+                {clearing ? (
+                  <LoaderCircle className="size-4 animate-spin" />
+                ) : (
+                  <Trash2 className="size-4" />
+                )}
+              </Button>
             </div>
-            <DialogTitle className="mt-2 text-2xl font-semibold text-white">Tradox AI</DialogTitle>
-            <DialogDescription className="text-zinc-500">
-              Ask in any language. Answers use only the selected account’s Supabase journal data.
-            </DialogDescription>
           </DialogHeader>
 
-          <div className="border-b border-white/8 px-4 py-3 sm:px-5">
-            <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-end">
-              <label className="grid gap-1.5 text-xs font-medium text-zinc-500">
-                Selected trading account
-                <Select value={accountId} onValueChange={setAccountId}>
-                  <SelectTrigger className="h-11 rounded-xl border-white/10 bg-black">
-                    <SelectValue placeholder="Select account" />
-                  </SelectTrigger>
-                  <SelectContent className="z-[170] border-white/10 bg-[#0b0b0b]">
-                    {accounts.map((account) => (
-                      <SelectItem key={account.id} value={account.id}>
-                        {account.name}{account.firm ? ` · ${account.firm}` : ""}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </label>
-              <div className="flex h-11 items-center gap-2 rounded-xl border border-white/8 bg-black px-3 text-xs text-zinc-500">
-                <LockKeyhole className="size-4 text-amber-300" /> Pro-only backend
-              </div>
-            </div>
+          <div className="shrink-0 border-b border-white/8 bg-[#090909] px-4 py-3 sm:px-5">
+            <Select value={accountId} onValueChange={setAccountId}>
+              <SelectTrigger className="h-10 w-full rounded-xl border-white/10 bg-black px-3 text-sm sm:max-w-[360px]">
+                <SelectValue placeholder="Select trading account" />
+              </SelectTrigger>
+              <SelectContent className="z-[170] border-white/10 bg-[#0b0b0b]">
+                {accounts.map((account) => (
+                  <SelectItem key={account.id} value={account.id}>
+                    {account.name}{account.firm ? ` · ${account.firm}` : ""}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
-          <Tabs value={tab} onValueChange={setTab} className="min-h-0 flex-1 gap-0">
-            <div className="border-b border-white/8 px-4 py-2 sm:px-5">
-              <TabsList className="w-full border-white/8 bg-black">
-                <TabsTrigger value="chat">
-                  <MessageCircle className="size-4" /> Chat
-                </TabsTrigger>
-                <TabsTrigger value="report">
-                  <Sparkles className="size-4" /> Account report
-                </TabsTrigger>
-              </TabsList>
-            </div>
-
-            <TabsContent value="chat" className="min-h-0">
-              <div className="flex h-[min(62dvh,590px)] min-h-[430px] flex-col">
-                <div className="min-h-0 flex-1 overflow-y-auto px-4 py-4 sm:px-5">
-                  {historyLoading ? (
-                    <div className="grid h-full place-items-center text-sm text-zinc-600">
-                      <LoaderCircle className="size-5 animate-spin" />
-                    </div>
-                  ) : messages.length ? (
-                    <div className="space-y-3">
-                      {messages.map((message) => (
-                        <article
-                          key={message.id}
-                          className={`max-w-[88%] rounded-2xl px-4 py-3 text-sm leading-6 ${
-                            message.role === "user"
-                              ? "ml-auto bg-white text-black"
-                              : "mr-auto border border-white/8 bg-[#0c0c0c] text-zinc-200"
-                          }`}
-                        >
-                          <p className="whitespace-pre-wrap break-words">{message.content}</p>
-                        </article>
-                      ))}
-                      {sending ? (
-                        <div className="mr-auto flex items-center gap-2 rounded-2xl border border-white/8 bg-[#0c0c0c] px-4 py-3 text-sm text-zinc-500">
-                          <LoaderCircle className="size-4 animate-spin" /> Tradox AI is analyzing {selectedAccount?.name || "the account"}…
-                        </div>
-                      ) : null}
-                      <div ref={chatEndRef} />
+          <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-3 py-4 sm:px-5 sm:py-5">
+            {historyLoading ? (
+              <div className="grid h-full place-items-center text-zinc-600">
+                <LoaderCircle className="size-5 animate-spin" />
+              </div>
+            ) : messages.length ? (
+              <div className="space-y-4">
+                {messages.map((message) =>
+                  message.role === "user" ? (
+                    <div key={message.id} className="flex justify-end">
+                      <article className="max-w-[88%] rounded-[20px] rounded-br-md bg-white px-4 py-3 text-sm leading-6 text-black shadow-sm sm:max-w-[76%]">
+                        <p className="whitespace-pre-wrap break-words">{message.content}</p>
+                      </article>
                     </div>
                   ) : (
-                    <div className="grid h-full content-center gap-5 text-center">
-                      <div>
-                        <span className="mx-auto grid size-12 place-items-center rounded-2xl border border-white/8 bg-[#0d0d0d] text-zinc-300">
-                          <BrainCircuit className="size-5" />
-                        </span>
-                        <h3 className="mt-3 text-base font-semibold text-white">Ask about this account</h3>
-                        <p className="mx-auto mt-1 max-w-md text-xs leading-5 text-zinc-600">
-                          Tradox AI can explain performance, setups, sessions, risk behavior and repeated mistakes. It does not provide trade signals.
-                        </p>
-                      </div>
-                      <div className="grid gap-2 sm:grid-cols-2">
-                        {suggestedQuestions.map((item) => (
-                          <button
-                            key={item}
-                            type="button"
-                            onClick={() => void sendMessage(item)}
-                            disabled={!accountId || sending}
-                            className="rounded-xl border border-white/8 bg-[#0a0a0a] px-3 py-3 text-left text-xs leading-5 text-zinc-400 transition hover:border-white/15 hover:bg-white/[.035] hover:text-white disabled:opacity-40"
-                          >
-                            {item}
-                          </button>
-                        ))}
-                      </div>
+                    <div key={message.id} className="flex items-start gap-2.5">
+                      <span className="mt-0.5 grid size-7 shrink-0 place-items-center rounded-xl border border-white/10 bg-[#101010] text-zinc-300">
+                        <Sparkles className="size-3.5" />
+                      </span>
+                      <article className="max-w-[calc(100%-2.5rem)] rounded-[20px] rounded-tl-md border border-white/8 bg-[#0d0d0d] px-4 py-3 text-sm leading-6 text-zinc-200 sm:max-w-[78%]">
+                        <p className="whitespace-pre-wrap break-words">{message.content}</p>
+                      </article>
                     </div>
-                  )}
-                </div>
+                  ),
+                )}
 
-                <div className="border-t border-white/8 bg-[#080808] p-3 sm:p-4">
-                  {chatError ? (
-                    <div className="mb-3 rounded-xl border border-rose-400/20 bg-rose-400/[.08] px-3 py-2 text-xs text-rose-200">
-                      {chatError}
+                {sending ? (
+                  <div className="flex items-start gap-2.5">
+                    <span className="grid size-7 shrink-0 place-items-center rounded-xl border border-white/10 bg-[#101010] text-zinc-300">
+                      <Sparkles className="size-3.5" />
+                    </span>
+                    <div className="flex items-center gap-1.5 rounded-[20px] rounded-tl-md border border-white/8 bg-[#0d0d0d] px-4 py-3">
+                      <span className="size-1.5 animate-pulse rounded-full bg-zinc-500" />
+                      <span className="size-1.5 animate-pulse rounded-full bg-zinc-500 [animation-delay:120ms]" />
+                      <span className="size-1.5 animate-pulse rounded-full bg-zinc-500 [animation-delay:240ms]" />
                     </div>
-                  ) : null}
-                  {!persistence ? (
-                    <div className="mb-3 rounded-xl border border-amber-300/15 bg-amber-300/[.06] px-3 py-2 text-xs text-amber-100">
-                      Chat works, but history storage needs the latest Supabase migration.
-                    </div>
-                  ) : null}
-                  <div className="flex items-end gap-2">
-                    <Textarea
-                      value={question}
-                      onChange={(event) => setQuestion(event.target.value.slice(0, 2000))}
-                      onKeyDown={(event) => {
-                        if (event.key === "Enter" && !event.shiftKey) {
-                          event.preventDefault();
-                          void sendMessage();
-                        }
-                      }}
-                      className="max-h-36 min-h-11 resize-none rounded-xl border-white/10 bg-black text-sm text-white"
-                      placeholder="Ask Tradox AI in any language…"
-                    />
-                    <Button
-                      type="button"
-                      size="icon"
-                      onClick={() => void sendMessage()}
-                      disabled={sending || !accountId || !question.trim()}
-                      className="size-11 shrink-0 rounded-xl bg-white text-black hover:bg-zinc-200"
-                      aria-label="Send message"
-                    >
-                      {sending ? <LoaderCircle className="size-4 animate-spin" /> : <Send className="size-4" />}
-                    </Button>
-                  </div>
-                  <div className="mt-2 flex items-center justify-between gap-3">
-                    <p className="truncate text-[10px] text-zinc-700">Only {selectedAccount?.name || "the selected account"} data is used.</p>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => void clearChat()}
-                      disabled={!messages.length}
-                      className="h-7 rounded-lg px-2 text-[10px] text-zinc-600 hover:text-rose-300"
-                    >
-                      <Trash2 className="size-3" /> Clear
-                    </Button>
-                  </div>
-                </div>
-              </div>
-            </TabsContent>
-
-            <TabsContent value="report" className="max-h-[66dvh] overflow-y-auto p-4 sm:p-5">
-              <div className="space-y-4">
-                <div className="rounded-2xl border border-white/8 bg-black p-4">
-                  <p className="text-xs font-medium text-zinc-500">Report focus</p>
-                  <Textarea
-                    value={reportQuestion}
-                    onChange={(event) => setReportQuestion(event.target.value.slice(0, 500))}
-                    className="mt-2 min-h-24 rounded-xl border-white/10 bg-[#090909] text-sm text-white"
-                    placeholder="What should Tradox AI analyze?"
-                  />
-                  <Button
-                    type="button"
-                    onClick={() => void generateReport()}
-                    disabled={reportLoading || !accountId}
-                    className="mt-3 h-11 w-full rounded-xl bg-white text-black hover:bg-zinc-200"
-                  >
-                    {reportLoading ? <LoaderCircle className="size-4 animate-spin" /> : <Sparkles className="size-4" />}
-                    {reportLoading ? "Analyzing journal…" : "Generate account report"}
-                  </Button>
-                </div>
-
-                {reportError ? (
-                  <div className="rounded-xl border border-rose-400/20 bg-rose-400/[.08] px-4 py-3 text-sm text-rose-200">
-                    {reportError}
                   </div>
                 ) : null}
-
-                {report ? (
-                  <section className="space-y-4 rounded-2xl border border-white/10 bg-black p-4">
-                    <div className="flex items-start justify-between gap-3">
-                      <div>
-                        <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-zinc-600">Tradox AI report</p>
-                        <h3 className="mt-1 text-lg font-semibold text-white">{report.insight.headline || "Account review"}</h3>
-                      </div>
-                      <Badge variant="secondary" className="rounded-full bg-white/[.07] text-zinc-300">
-                        {confidence}% confidence
-                      </Badge>
-                    </div>
-
-                    <p className="text-sm leading-6 text-zinc-300">{report.insight.summary}</p>
-
-                    <div className="grid gap-3 sm:grid-cols-2">
-                      <InsightList title="Strengths" items={report.insight.strengths || []} tone="positive" />
-                      <InsightList title="Risks" items={report.insight.risks || []} tone="negative" />
-                    </div>
-
-                    <div className="rounded-xl border border-sky-300/15 bg-sky-300/[.06] px-4 py-3">
-                      <p className="text-[10px] font-semibold uppercase tracking-[0.13em] text-sky-300">Next action</p>
-                      <p className="mt-1 text-sm leading-6 text-zinc-200">{report.insight.nextAction}</p>
-                    </div>
-                  </section>
-                ) : (
-                  <div className="grid min-h-48 place-items-center rounded-2xl border border-dashed border-white/8 bg-black/40 px-5 text-center">
-                    <div>
-                      <RotateCcw className="mx-auto size-5 text-zinc-700" />
-                      <p className="mt-3 text-sm font-semibold text-zinc-400">No report generated yet</p>
-                      <p className="mt-1 text-xs text-zinc-700">Reports summarize the selected account’s latest reviewed trades.</p>
-                    </div>
-                  </div>
-                )}
+                <div ref={chatEndRef} />
               </div>
-            </TabsContent>
-          </Tabs>
+            ) : (
+              <div className="grid min-h-full content-center py-8 text-center">
+                <span className="mx-auto grid size-14 place-items-center rounded-[20px] border border-white/10 bg-[#0d0d0d] text-white shadow-[0_18px_50px_rgba(0,0,0,.35)]">
+                  <BrainCircuit className="size-6" />
+                </span>
+                <h3 className="mt-4 text-lg font-semibold tracking-[-0.02em] text-white">
+                  Ask about your trading
+                </h3>
+                <p className="mx-auto mt-1 max-w-sm text-xs leading-5 text-zinc-600">
+                  Tradox AI answers from the selected account’s journal and performance data.
+                </p>
+
+                <div className="mx-auto mt-6 flex max-w-lg flex-wrap justify-center gap-2">
+                  {suggestedQuestions.map((item) => (
+                    <button
+                      key={item}
+                      type="button"
+                      onClick={() => void sendMessage(item)}
+                      disabled={!accountId || sending}
+                      className="rounded-full border border-white/10 bg-[#0b0b0b] px-3.5 py-2 text-xs text-zinc-400 transition hover:border-white/20 hover:bg-[#111111] hover:text-white disabled:cursor-not-allowed disabled:opacity-40"
+                    >
+                      {item}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+
+          <form
+            className="shrink-0 border-t border-white/8 bg-[#090909] p-3 sm:p-4"
+            onSubmit={(event) => {
+              event.preventDefault();
+              void sendMessage();
+            }}
+          >
+            {chatError ? (
+              <div className="mb-3 rounded-xl border border-rose-400/20 bg-rose-400/[.08] px-3 py-2 text-xs text-rose-200">
+                {chatError}
+              </div>
+            ) : null}
+
+            <div className="flex items-end gap-2 rounded-[18px] border border-white/10 bg-black p-1.5 focus-within:border-white/20">
+              <Textarea
+                value={question}
+                onChange={(event) => setQuestion(event.target.value.slice(0, 2000))}
+                onKeyDown={(event) => {
+                  if (event.key === "Enter" && !event.shiftKey) {
+                    event.preventDefault();
+                    void sendMessage();
+                  }
+                }}
+                className="max-h-36 min-h-10 flex-1 resize-none border-0 bg-transparent px-3 py-2 text-[16px] leading-6 text-white shadow-none focus-visible:ring-0 sm:text-sm"
+                placeholder="Message Tradox AI…"
+              />
+              <Button
+                type="submit"
+                size="icon"
+                disabled={sending || !accountId || !question.trim()}
+                className="size-10 shrink-0 rounded-[14px] bg-white text-black hover:bg-zinc-200"
+                aria-label="Send message"
+              >
+                {sending ? (
+                  <LoaderCircle className="size-4 animate-spin" />
+                ) : (
+                  <Send className="size-4" />
+                )}
+              </Button>
+            </div>
+          </form>
         </DialogContent>
       </Dialog>
     </>
-  );
-}
-
-function InsightList({
-  title,
-  items,
-  tone,
-}: {
-  title: string;
-  items: string[];
-  tone: "positive" | "negative";
-}) {
-  return (
-    <div className="rounded-xl border border-white/8 bg-[#0a0a0a] p-3">
-      <p className={`text-[10px] font-semibold uppercase tracking-[0.13em] ${tone === "positive" ? "text-emerald-300" : "text-rose-300"}`}>
-        {title}
-      </p>
-      <div className="mt-2 space-y-2">
-        {items.length ? (
-          items.slice(0, 3).map((item) => (
-            <p key={item} className="text-xs leading-5 text-zinc-400">• {item}</p>
-          ))
-        ) : (
-          <p className="text-xs text-zinc-600">No reliable pattern yet.</p>
-        )}
-      </div>
-    </div>
   );
 }
