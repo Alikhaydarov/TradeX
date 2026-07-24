@@ -35,6 +35,10 @@ const TradovateCsvSettings = dynamic(
   () => import("./tradovate-csv-settings").then((module) => module.TradovateCsvSettings),
   { ssr: false, loading: ConnectorLoading },
 );
+const PlatformCsvSettings = dynamic(
+  () => import("./platform-csv-settings").then((module) => module.PlatformCsvSettings),
+  { ssr: false, loading: ConnectorLoading },
+);
 
 const cash = new Intl.NumberFormat("en-US", {
   style: "currency",
@@ -43,6 +47,14 @@ const cash = new Intl.NumberFormat("en-US", {
 });
 
 type SettingsTab = "profile" | "connector";
+type AdditionalCsvPlatform = "ninjatrader" | "matchtrader" | "projectx";
+
+type ConnectorMeta = {
+  type: "mt5" | "tradovate" | "ctrader" | AdditionalCsvPlatform | "manual";
+  label: string;
+  description: string;
+  tone: "auto" | "csv" | "idle";
+};
 
 function accountFrom(row: Record<string, unknown>): PropAccount {
   return {
@@ -66,26 +78,29 @@ function accountFrom(row: Record<string, unknown>): PropAccount {
   };
 }
 
-function connectorMeta(account: PropAccount) {
+function connectorMeta(account: PropAccount): ConnectorMeta {
   const platform = String(account.platform || "manual").toLowerCase();
   const source = String(account.importSource || "manual").toLowerCase();
 
   if (platform === "mt5" || source === "mt5_bridge") {
-    return { type: "mt5" as const, label: "MT5 Auto Sync", description: "Read-only automatic trade synchronization.", tone: "auto" as const };
+    return { type: "mt5", label: "MT5 Auto Sync", description: "Read-only automatic trade synchronization.", tone: "auto" };
   }
   if (platform === "tradovate" || source === "tradovate") {
-    return { type: "tradovate" as const, label: "Tradovate CSV Import", description: "Position History report import for futures trades.", tone: "csv" as const };
+    return { type: "tradovate", label: "Tradovate CSV Import", description: "Position History report import for futures trades.", tone: "csv" };
   }
   if (platform === "ctrader" || source === "ctrader") {
-    return { type: "ctrader" as const, label: "cTrader CSV Import", description: "Closed trade-history CSV import.", tone: "csv" as const };
+    return { type: "ctrader", label: "cTrader CSV Import", description: "Closed trade-history CSV import.", tone: "csv" };
   }
-  if (platform === "ninjatrader") {
-    return { type: "unsupported" as const, label: "NinjaTrader", description: "Connector workspace is reserved.", tone: "idle" as const };
+  if (platform === "ninjatrader" || source === "ninjatrader") {
+    return { type: "ninjatrader", label: "NinjaTrader CSV Import", description: "Trade Performance report import for futures trades.", tone: "csv" };
   }
-  if (platform === "projectx") {
-    return { type: "unsupported" as const, label: "Project X", description: "Connector workspace is reserved.", tone: "idle" as const };
+  if (platform === "matchtrader" || source === "matchtrader") {
+    return { type: "matchtrader", label: "MatchTrader CSV Import", description: "Closed Positions report import for CFD trades.", tone: "csv" };
   }
-  return { type: "manual" as const, label: "Manual Journal", description: "Trades are entered manually.", tone: "idle" as const };
+  if (platform === "projectx" || source === "projectx") {
+    return { type: "projectx", label: "Project X CSV Import", description: "Closed trades or day-trades report import.", tone: "csv" };
+  }
+  return { type: "manual", label: "Manual Journal", description: "Trades are entered manually.", tone: "idle" };
 }
 
 export function AccountSettings({ onLogin: _onLogin }: { onLogin: () => void }) {
@@ -187,10 +202,7 @@ export function AccountSettings({ onLogin: _onLogin }: { onLogin: () => void }) 
           </div>
 
           <div className="flex w-full flex-col gap-2 sm:flex-row lg:w-auto">
-            <Select
-              value={account.id}
-              onValueChange={(value) => startTransition(() => setActiveAccount(value))}
-            >
+            <Select value={account.id} onValueChange={(value) => startTransition(() => setActiveAccount(value))}>
               <SelectTrigger className="h-11 w-full rounded-xl border-white/10 bg-[#050505] sm:w-[280px]">
                 <SelectValue />
               </SelectTrigger>
@@ -229,15 +241,9 @@ export function AccountSettings({ onLogin: _onLogin }: { onLogin: () => void }) 
             </div>
 
             <div className="mt-5 grid gap-3 sm:grid-cols-3">
-              <Field label="Account name">
-                <Input value={name} maxLength={60} onChange={(event) => setName(event.target.value)} />
-              </Field>
-              <Field label="Firm / broker">
-                <Input value={firm} maxLength={80} onChange={(event) => setFirm(event.target.value)} />
-              </Field>
-              <Field label="Phase">
-                <Input value={phase} maxLength={40} onChange={(event) => setPhase(event.target.value)} />
-              </Field>
+              <Field label="Account name"><Input value={name} maxLength={60} onChange={(event) => setName(event.target.value)} /></Field>
+              <Field label="Firm / broker"><Input value={firm} maxLength={80} onChange={(event) => setFirm(event.target.value)} /></Field>
+              <Field label="Phase"><Input value={phase} maxLength={40} onChange={(event) => setPhase(event.target.value)} /></Field>
             </div>
 
             <div className="mt-5 flex flex-col gap-2 sm:flex-row sm:items-center">
@@ -253,10 +259,7 @@ export function AccountSettings({ onLogin: _onLogin }: { onLogin: () => void }) 
             <div className="mt-4 space-y-2">
               <Detail label="Platform" value={(account.platform || "manual").toUpperCase()} />
               <Detail label="Import source" value={account.importSource || "manual"} />
-              <Detail
-                label="Prop login"
-                value={hidePersonalInfo && account.propLogin ? `••••${account.propLogin.slice(-3)}` : account.propLogin || "-"}
-              />
+              <Detail label="Prop login" value={hidePersonalInfo && account.propLogin ? `••••${account.propLogin.slice(-3)}` : account.propLogin || "-"} />
               <Detail label="Start date" value={account.startDate || "-"} />
             </div>
           </aside>
@@ -298,6 +301,8 @@ export function AccountSettings({ onLogin: _onLogin }: { onLogin: () => void }) 
             <TradovateCsvSettings account={account} onImported={refreshAccounts} />
           ) : connector.type === "ctrader" ? (
             <CTraderSettings account={account} onImported={refreshAccounts} />
+          ) : connector.type === "ninjatrader" || connector.type === "matchtrader" || connector.type === "projectx" ? (
+            <PlatformCsvSettings account={account} platform={connector.type} onImported={refreshAccounts} />
           ) : (
             <div className="grid min-h-48 place-items-center rounded-2xl border border-dashed border-white/10 bg-black/20 px-4 text-center">
               <div>
