@@ -102,6 +102,15 @@ type TradovateProduct = {
   valuePerPoint: number;
 };
 
+type TradovateCashBalanceLog = {
+  id: number;
+  accountId: number;
+  timestamp: string;
+  fillPairId?: number;
+  realizedPnL?: number;
+  delta?: number;
+};
+
 export type TradovateJournalRow = {
   user_id: string;
   prop_account_id: string;
@@ -144,6 +153,7 @@ export function getTradovateConfig() {
   const clientSecret = env("TRADOVATE_CLIENT_SECRET");
   const redirectUri = env("TRADOVATE_REDIRECT_URI") || `${appUrl()}/api/tradovate/callback`;
   const apiBase = env("TRADOVATE_API_BASE") || `https://${environment}.tradovateapi.com/v1`;
+  const tokenUrl = env("TRADOVATE_TOKEN_URL") || `https://${environment}.tradovateapi.com/auth/oauthtoken`;
   const oauthUrl = env("TRADOVATE_OAUTH_URL") || "https://trader.tradovate.com/oauth";
   const stateSecret = env("TRADOVATE_STATE_SECRET") || env("CONNECTOR_ENCRYPTION_KEY");
 
@@ -154,7 +164,16 @@ export function getTradovateConfig() {
     throw new Error("TRADOVATE_STATE_SECRET or CONNECTOR_ENCRYPTION_KEY is required.");
   }
 
-  return { environment, clientId, clientSecret, redirectUri, apiBase, oauthUrl, stateSecret };
+  return {
+    environment,
+    clientId,
+    clientSecret,
+    redirectUri,
+    apiBase,
+    tokenUrl,
+    oauthUrl,
+    stateSecret,
+  };
 }
 
 function base64url(value: string | Buffer) {
@@ -205,7 +224,7 @@ export function buildTradovateAuthorizationUrl(state: string) {
 
 async function tokenRequest(params: URLSearchParams) {
   const config = getTradovateConfig();
-  const response = await fetch(`${config.apiBase}/auth/oauthtoken`, {
+  const response = await fetch(config.tokenUrl, {
     method: "POST",
     headers: {
       Accept: "application/json",
@@ -216,50 +235,66 @@ async function tokenRequest(params: URLSearchParams) {
   });
   const payload = (await response.json().catch(() => ({}))) as TradovateTokenResponse;
   if (!response.ok || payload.error || !payload.access_token) {
-    throw new Error(payload.error_description || payload.error || `Tradovate token exchange failed (${response.status}).`);
+    throw new Error(
+      payload.error_description ||
+        payload.error ||
+        `Tradovate token exchange failed (${response.status}).`,
+    );
   }
   return payload;
 }
 
 export function exchangeTradovateCode(code: string) {
   const config = getTradovateConfig();
-  return tokenRequest(new URLSearchParams({
-    grant_type: "authorization_code",
-    code,
-    redirect_uri: config.redirectUri,
-    client_id: config.clientId,
-    client_secret: config.clientSecret,
-  }));
+  return tokenRequest(
+    new URLSearchParams({
+      grant_type: "authorization_code",
+      code,
+      redirect_uri: config.redirectUri,
+      client_id: config.clientId,
+      client_secret: config.clientSecret,
+    }),
+  );
 }
 
 export function refreshTradovateToken(refreshToken: string) {
   const config = getTradovateConfig();
-  return tokenRequest(new URLSearchParams({
-    grant_type: "refresh_token",
-    refresh_token: refreshToken,
-    client_id: config.clientId,
-    client_secret: config.clientSecret,
-  }));
+  return tokenRequest(
+    new URLSearchParams({
+      grant_type: "refresh_token",
+      refresh_token: refreshToken,
+      client_id: config.clientId,
+      client_secret: config.clientSecret,
+    }),
+  );
 }
 
-export async function tradovateRequest<T>(accessToken: string, path: string, init?: RequestInit): Promise<T> {
+export async function tradovateRequest<T>(
+  accessToken: string,
+  path: string,
+  init?: RequestInit,
+): Promise<T> {
   const config = getTradovateConfig();
-  const response = await fetch(`${config.apiBase}${path.startsWith("/") ? path : `/${path}`}`, {
-    ...init,
-    headers: {
-      Accept: "application/json",
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${accessToken}`,
-      ...(init?.headers || {}),
+  const response = await fetch(
+    `${config.apiBase}${path.startsWith("/") ? path : `/${path}`}`,
+    {
+      ...init,
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${accessToken}`,
+        ...(init?.headers || {}),
+      },
+      cache: "no-store",
     },
-    cache: "no-store",
-  });
+  );
 
   const payload = await response.json().catch(() => null);
   if (!response.ok) {
-    const message = payload && typeof payload === "object" && "errorText" in payload
-      ? String((payload as { errorText?: unknown }).errorText || "")
-      : "";
+    const message =
+      payload && typeof payload === "object" && "errorText" in payload
+        ? String((payload as { errorText?: unknown }).errorText || "")
+        : "";
     throw new Error(message || `Tradovate request failed (${response.status}).`);
   }
   return payload as T;
@@ -289,7 +324,9 @@ function numeric(value: unknown) {
 
 function date(value: string) {
   const parsed = new Date(value);
-  return Number.isNaN(parsed.getTime()) ? new Date().toISOString().slice(0, 10) : parsed.toISOString().slice(0, 10);
+  return Number.isNaN(parsed.getTime())
+    ? new Date().toISOString().slice(0, 10)
+    : parsed.toISOString().slice(0, 10);
 }
 
 export async function loadTradovateJournalRows(params: {
@@ -298,15 +335,17 @@ export async function loadTradovateJournalRows(params: {
   userId: string;
   account: TradovateJournalAccount;
 }) {
-  const [orders, fills, fillPairs, positions, contracts, maturities, products] = await Promise.all([
-    tradovateRequest<TradovateOrder[]>(params.accessToken, "/order/list"),
-    tradovateRequest<TradovateFill[]>(params.accessToken, "/fill/list"),
-    tradovateRequest<TradovateFillPair[]>(params.accessToken, "/fillPair/list"),
-    tradovateRequest<TradovatePosition[]>(params.accessToken, "/position/list"),
-    tradovateRequest<TradovateContract[]>(params.accessToken, "/contract/list"),
-    tradovateRequest<TradovateContractMaturity[]>(params.accessToken, "/contractMaturity/list"),
-    tradovateRequest<TradovateProduct[]>(params.accessToken, "/product/list"),
-  ]);
+  const [orders, fills, fillPairs, positions, contracts, maturities, products, cashLogs] =
+    await Promise.all([
+      tradovateRequest<TradovateOrder[]>(params.accessToken, "/order/list"),
+      tradovateRequest<TradovateFill[]>(params.accessToken, "/fill/list"),
+      tradovateRequest<TradovateFillPair[]>(params.accessToken, "/fillPair/list"),
+      tradovateRequest<TradovatePosition[]>(params.accessToken, "/position/list"),
+      tradovateRequest<TradovateContract[]>(params.accessToken, "/contract/list"),
+      tradovateRequest<TradovateContractMaturity[]>(params.accessToken, "/contractMaturity/list"),
+      tradovateRequest<TradovateProduct[]>(params.accessToken, "/product/list"),
+      tradovateRequest<TradovateCashBalanceLog[]>(params.accessToken, "/cashBalanceLog/list"),
+    ]);
 
   const ordersById = new Map(orders.map((item) => [item.id, item]));
   const fillsById = new Map(fills.map((item) => [item.id, item]));
@@ -314,6 +353,11 @@ export async function loadTradovateJournalRows(params: {
   const contractsById = new Map(contracts.map((item) => [item.id, item]));
   const maturitiesById = new Map(maturities.map((item) => [item.id, item]));
   const productsById = new Map(products.map((item) => [item.id, item]));
+  const cashLogByFillPair = new Map(
+    cashLogs
+      .filter((item) => item.accountId === params.externalAccountId && item.fillPairId)
+      .map((item) => [Number(item.fillPairId), item]),
+  );
   const accountSize = numeric(params.account.account_size);
   const profitTarget = numeric(params.account.profit_target);
   const maxDrawdown = numeric(params.account.max_drawdown);
@@ -322,13 +366,22 @@ export async function loadTradovateJournalRows(params: {
     const position = positionsById.get(pair.positionId);
     const buyFill = fillsById.get(pair.buyFillId);
     const sellFill = fillsById.get(pair.sellFillId);
-    if (!position || position.accountId !== params.externalAccountId || !buyFill || !sellFill) return [];
+    if (!position || position.accountId !== params.externalAccountId || !buyFill || !sellFill) {
+      return [];
+    }
 
     const buyOrder = ordersById.get(buyFill.orderId);
     const sellOrder = ordersById.get(sellFill.orderId);
-    if (buyOrder?.accountId !== params.externalAccountId || sellOrder?.accountId !== params.externalAccountId) return [];
+    if (
+      buyOrder?.accountId !== params.externalAccountId ||
+      sellOrder?.accountId !== params.externalAccountId
+    ) {
+      return [];
+    }
 
-    const contract = contractsById.get(position.contractId || buyFill.contractId || sellFill.contractId);
+    const contract = contractsById.get(
+      position.contractId || buyFill.contractId || sellFill.contractId,
+    );
     const maturity = contract ? maturitiesById.get(contract.contractMaturityId) : undefined;
     const product = maturity ? productsById.get(maturity.productId) : undefined;
     const buyTime = new Date(buyFill.timestamp).getTime();
@@ -338,31 +391,40 @@ export async function loadTradovateJournalRows(params: {
     const exitPrice = side === "Long" ? numeric(pair.sellPrice) : numeric(pair.buyPrice);
     const quantity = Math.max(0, numeric(pair.qty));
     const valuePerPoint = numeric(product?.valuePerPoint) || 1;
-    const pnl = (numeric(pair.sellPrice) - numeric(pair.buyPrice)) * valuePerPoint * quantity;
-    const closeTimestamp = buyTime > sellTime ? buyFill.timestamp : sellFill.timestamp;
+    const computedPnl =
+      (numeric(pair.sellPrice) - numeric(pair.buyPrice)) * valuePerPoint * quantity;
+    const cashLog = cashLogByFillPair.get(pair.id);
+    const reportedPnl = numeric(cashLog?.realizedPnL ?? cashLog?.delta);
+    const pnl = reportedPnl || computedPnl;
+    const closeTimestamp = cashLog?.timestamp ||
+      (buyTime > sellTime ? buyFill.timestamp : sellFill.timestamp);
 
-    return [{
-      user_id: params.userId,
-      prop_account_id: params.account.id,
-      symbol: String(contract?.name || product?.name || `CONTRACT-${position.contractId}`).toUpperCase(),
-      side,
-      entry_price: entryPrice,
-      exit_price: exitPrice,
-      quantity,
-      fees: 0,
-      pnl: Number(pnl.toFixed(2)),
-      note: "Synced from Tradovate OAuth",
-      traded_at: date(closeTimestamp),
-      account_name: params.account.name,
-      market_type: params.account.market_type || "Futures",
-      setup: "Tradovate sync",
-      risk_amount: 0,
-      result_r: 0,
-      account_size: accountSize,
-      profit_target: profitTarget,
-      max_drawdown: maxDrawdown,
-      external_source: "tradovate_api",
-      external_id: `fill-pair:${pair.id}`,
-    }];
+    return [
+      {
+        user_id: params.userId,
+        prop_account_id: params.account.id,
+        symbol: String(
+          contract?.name || product?.name || `CONTRACT-${position.contractId}`,
+        ).toUpperCase(),
+        side,
+        entry_price: entryPrice,
+        exit_price: exitPrice,
+        quantity,
+        fees: 0,
+        pnl: Number(pnl.toFixed(2)),
+        note: "Synced from Tradovate OAuth",
+        traded_at: date(closeTimestamp),
+        account_name: params.account.name,
+        market_type: params.account.market_type || "Futures",
+        setup: "Tradovate sync",
+        risk_amount: 0,
+        result_r: 0,
+        account_size: accountSize,
+        profit_target: profitTarget,
+        max_drawdown: maxDrawdown,
+        external_source: "tradovate_api",
+        external_id: `fill-pair:${pair.id}`,
+      },
+    ];
   });
 }
