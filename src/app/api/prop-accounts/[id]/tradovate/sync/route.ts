@@ -1,4 +1,5 @@
 import { authenticateRequest, badRequest, serverError, unauthorized } from "@/lib/backend/auth";
+import { renewTradovateAccessToken } from "@/lib/backend/tradovate-renew";
 import {
   decryptTradovateToken,
   encryptTradovateToken,
@@ -50,12 +51,22 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
     const expiresAt = savedConnection.expires_at
       ? new Date(savedConnection.expires_at).getTime()
       : 0;
-    const shouldRefresh = Boolean(refreshToken) && (!expiresAt || expiresAt <= Date.now() + 5 * 60 * 1000);
+    const shouldRenew = !expiresAt || expiresAt <= Date.now() + 15 * 60 * 1000;
 
-    if (shouldRefresh) {
-      const refreshed = await refreshTradovateToken(refreshToken);
-      accessToken = String(refreshed.access_token || accessToken);
-      refreshToken = String(refreshed.refresh_token || refreshToken);
+    if (shouldRenew) {
+      let nextExpiresAt = "";
+
+      try {
+        const renewed = await renewTradovateAccessToken(accessToken);
+        accessToken = String(renewed.accessToken || accessToken);
+        nextExpiresAt = renewed.expirationTime || tokenExpiresAt(90 * 60);
+      } catch (renewError) {
+        if (!refreshToken) throw renewError;
+        const refreshed = await refreshTradovateToken(refreshToken);
+        accessToken = String(refreshed.access_token || accessToken);
+        refreshToken = String(refreshed.refresh_token || refreshToken);
+        nextExpiresAt = tokenExpiresAt(refreshed.expires_in);
+      }
 
       const { error: refreshSaveError } = await auth.supabase
         .from("tradovate_connections")
@@ -64,7 +75,7 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
           refresh_token_encrypted: refreshToken
             ? encryptTradovateToken(refreshToken)
             : savedConnection.refresh_token_encrypted,
-          expires_at: tokenExpiresAt(refreshed.expires_in),
+          expires_at: nextExpiresAt,
           status: "connected",
           last_error: null,
           updated_at: new Date().toISOString(),
