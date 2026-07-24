@@ -6,6 +6,7 @@ import { apiRequest } from "@/lib/api-client";
 import { useActiveAccountStore } from "./active-account-context";
 import { CTraderSettings } from "./ctrader-settings";
 import { Mt5Settings } from "./mt5-settings";
+import { TradovateSettings } from "./tradovate-settings";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Spinner } from "./ui/spinner";
@@ -40,7 +41,7 @@ function accountFrom(row: Record<string, unknown>): PropAccount {
 function connectorLabel(account: PropAccount) {
   const platform = String(account.platform || "manual").toLowerCase();
   if (platform === "mt5" || account.importSource === "mt5_bridge") return "MT5 Auto Sync";
-  if (platform === "tradovate") return "Tradovate";
+  if (platform === "tradovate" || account.importSource === "tradovate") return "Tradovate OAuth Sync";
   if (platform === "ninjatrader") return "NinjaTrader";
   if (platform === "ctrader" || account.importSource === "ctrader") return "cTrader Import";
   if (platform === "projectx") return "ProjectX";
@@ -106,7 +107,8 @@ export function AccountSettings({ onLogin: _onLogin }: { onLogin: () => void }) 
   const platform = String(account.platform || "").toLowerCase();
   const isMt5 = platform === "mt5" || account.importSource === "mt5_bridge";
   const isCTrader = platform === "ctrader" || account.importSource === "ctrader";
-  const connectorActive = isMt5 || isCTrader;
+  const isTradovate = platform === "tradovate" || account.importSource === "tradovate";
+  const connectorActive = isMt5 || isCTrader || isTradovate;
   const connector = connectorLabel(account);
 
   return (
@@ -168,7 +170,13 @@ export function AccountSettings({ onLogin: _onLogin }: { onLogin: () => void }) 
               <div>
                 <p className="text-sm font-black text-white">{connector}</p>
                 <p className="text-xs text-zinc-500">
-                  {isMt5 ? "Auto-sync connector is attached to this account." : isCTrader ? "cTrader CSV import is active for this account." : "Manual or reserved connector workspace."}
+                  {isMt5
+                    ? "Auto-sync connector is attached to this account."
+                    : isTradovate
+                      ? "Tradovate OAuth futures sync is available for this account."
+                      : isCTrader
+                        ? "cTrader CSV import is active for this account."
+                        : "Manual or reserved connector workspace."}
                 </p>
               </div>
             </div>
@@ -191,13 +199,15 @@ export function AccountSettings({ onLogin: _onLogin }: { onLogin: () => void }) 
 
         {isMt5 ? (
           <Mt5Settings account={account} onSynced={refreshAccounts} />
+        ) : isTradovate ? (
+          <TradovateSettings account={account} onSynced={refreshAccounts} />
         ) : isCTrader ? (
           <CTraderSettings account={account} onImported={refreshAccounts} />
         ) : (
           <div className="grid min-h-44 place-items-center rounded-2xl border border-dashed border-white/10 bg-black/20 text-center">
             <div>
               <h3 className="text-lg font-black text-white">{connector}</h3>
-              <p className="mt-2 max-w-md text-sm leading-6 text-zinc-500">This connector settings panel is reserved here. MT5 and cTrader settings appear automatically for supported accounts.</p>
+              <p className="mt-2 max-w-md text-sm leading-6 text-zinc-500">This connector settings panel is reserved here. MT5, Tradovate and cTrader settings appear automatically for supported accounts.</p>
             </div>
           </div>
         )}
