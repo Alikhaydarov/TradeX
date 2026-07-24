@@ -7,7 +7,7 @@ export const runtime = "nodejs";
 const ACCOUNT_STATUSES = new Set(["Processing", "Active", "Passed", "Failed", "Paused"]);
 const DUPLICATE_NAME_PATTERN = /prop_accounts_user_id_name_key|duplicate key value/i;
 const PREMIUM_PLATFORMS = new Set(["tradelocker", "ctrader", "tradovate", "matchtrader"]);
-const IMPORT_SOURCES = new Set(["manual", "mt5_bridge", "ctrader", "tradovate", "ninjatrader", "projectx", "official_api"]);
+const IMPORT_SOURCES = new Set(["manual", "mt5_bridge", "ctrader", "tradovate", "ninjatrader", "matchtrader", "projectx", "official_api"]);
 
 function values(body: Record<string, unknown>) {
   const name = String(body.name || "").trim().slice(0, 80);
