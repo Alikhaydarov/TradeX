@@ -1,0 +1,148 @@
+.mobileRoot {
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  overflow-x: clip;
+}
+
+.mobileRoot > div {
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.mobileRoot > div > :not([hidden]) ~ :not([hidden]) {
+  margin-top: 0.625rem !important;
+}
+
+.mobileRoot :global([data-slot="card"]) {
+  min-width: 0;
+  border-radius: 0.875rem !important;
+}
+
+.mobileRoot :global([data-slot="card-header"]),
+.mobileRoot :global([data-slot="card-content"]) {
+  min-width: 0;
+}
+
+.mobileRoot :global(.recharts-responsive-container),
+.mobileRoot :global(.recharts-wrapper),
+.mobileRoot :global(.recharts-surface) {
+  max-width: 100% !important;
+}
+
+@media (max-width: 1023px) {
+  .mobileRoot > div > section:first-of-type {
+    padding-top: 0.25rem !important;
+    padding-bottom: 0.25rem !important;
+  }
+
+  .mobileRoot > div > section:first-of-type h1 {
+    font-size: clamp(1.5rem, 7vw, 1.85rem) !important;
+    line-height: 1.08 !important;
+  }
+
+  .mobileRoot > div > section:first-of-type p {
+    margin-top: 0.4rem !important;
+    font-size: 0.82rem !important;
+  }
+
+  /* Main balance card: same compact proportion as the supplied reference. */
+  .mobileRoot > div > :global([data-slot="card"]):first-of-type {
+    min-height: 255px !important;
+    height: 255px !important;
+  }
+
+  .mobileRoot > div > :global([data-slot="card"]):first-of-type > :global([data-slot="card-header"]) {
+    padding: 1rem 1rem 0.25rem !important;
+  }
+
+  .mobileRoot > div > :global([data-slot="card"]):first-of-type > :global([data-slot="card-header"]) > div:first-child {
+    padding-right: 6.75rem !important;
+  }
+
+  .mobileRoot > div > :global([data-slot="card"]):first-of-type :global([data-slot="card-description"]) {
+    font-size: 0.82rem !important;
+    line-height: 1rem !important;
+  }
+
+  .mobileRoot > div > :global([data-slot="card"]):first-of-type :global([data-slot="card-title"]) {
+    margin-top: 0.25rem !important;
+    font-size: clamp(1.85rem, 9vw, 2.2rem) !important;
+    line-height: 1 !important;
+  }
+
+  .mobileRoot > div > :global([data-slot="card"]):first-of-type > :global([data-slot="card-header"]) p:last-child {
+    margin-top: 0.55rem !important;
+    font-size: 0.78rem !important;
+  }
+
+  .mobileRoot > div > :global([data-slot="card"]):first-of-type > :global([data-slot="card-header"]) > div:last-child {
+    top: 1.1rem !important;
+    right: 1rem !important;
+    padding: 0.48rem 0.72rem !important;
+    border-radius: 0.65rem !important;
+    font-size: 0.82rem !important;
+  }
+
+  .mobileRoot > div > :global([data-slot="card"]):first-of-type > :global([data-slot="card-content"]) {
+    height: 150px !important;
+    min-height: 150px !important;
+    padding-top: 0.25rem !important;
+  }
+
+  /* Mobile stats stay in two columns, including narrow phones. */
+  .mobileRoot > div > section:nth-of-type(2) {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 0.5rem !important;
+  }
+
+  .mobileRoot > div > section:nth-of-type(2) > :global([data-slot="card"]) {
+    min-height: 198px !important;
+  }
+
+  .mobileRoot > div > section:nth-of-type(2) :global([data-slot="card-header"]) {
+    padding: 0.9rem 0.8rem 0 !important;
+  }
+
+  .mobileRoot > div > section:nth-of-type(2) :global([data-slot="card-title"]) {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 0.78rem !important;
+    line-height: 1rem !important;
+  }
+
+  .mobileRoot > div > section:nth-of-type(2) :global([data-slot="card-content"]) {
+    padding: 0.9rem 0.8rem 0.75rem !important;
+  }
+
+  .mobileRoot > div > section:nth-of-type(2) :global([data-slot="card-content"]) > p:first-child {
+    font-size: clamp(1.7rem, 7.8vw, 2.05rem) !important;
+    line-height: 1 !important;
+  }
+
+  .mobileRoot > div > section:nth-of-type(2) > :global([data-slot="card"]):nth-child(-n + 2) {
+    min-height: 202px !important;
+  }
+
+  .mobileRoot > div > section:nth-of-type(2) > :global([data-slot="card"]):nth-child(n + 3) {
+    min-height: 176px !important;
+  }
+}
+
+@media (max-width: 359px) {
+  .mobileRoot > div > section:nth-of-type(2) {
+    gap: 0.4rem !important;
+  }
+
+  .mobileRoot > div > section:nth-of-type(2) :global([data-slot="card-header"]),
+  .mobileRoot > div > section:nth-of-type(2) :global([data-slot="card-content"]) {
+    padding-left: 0.65rem !important;
+    padding-right: 0.65rem !important;
+  }
+
+  .mobileRoot > div > section:nth-of-type(2) :global([data-slot="card-title"]) {
+    font-size: 0.7rem !important;
+  }
+}
