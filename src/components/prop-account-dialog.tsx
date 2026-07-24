@@ -10,7 +10,7 @@ import {
   ShieldCheck,
   Zap,
 } from "lucide-react";
-import { FormEvent, useEffect, useMemo, useState } from "react";
+import { FormEvent, type ReactNode, useEffect, useMemo, useState } from "react";
 import { apiRequest } from "@/lib/api-client";
 import { cn } from "@/lib/utils";
 import {
@@ -28,23 +28,37 @@ import { Input } from "./ui/input";
 import { Label } from "./ui/label";
 
 const PROP_FIRMS = ["FTMO", "The5ers", "FundedNext", "FundingPips", "Alpha Capital", "Other"];
-const BROKERS = ["Exness", "IC Markets", "MetaTrader Broker", "Other"];
+const BROKERS = ["Tradovate", "Exness", "IC Markets", "MetaTrader Broker", "Other"];
 const SIZES = [10000, 25000, 50000, 100000, 200000];
 
 type WizardStep = 1 | 2 | 3;
 type AccountKind = "manual" | "automatic";
 
-function stepTitle(step: WizardStep, accountKind: AccountKind | null) {
+type PremiumStatus = {
+  plan: AccountPlan;
+  isPremium: boolean;
+  autoSyncEnabled: boolean;
+};
+
+function stepTitle(step: WizardStep, accountKind: AccountKind | null, platform?: PlatformConfig) {
   if (step === 1) return "Select the Account Type";
   if (step === 2) return "Select your Trading Platform";
   if (accountKind === "manual") return "Create Manual Account";
+  if (platform?.id === "tradovate") return "Connect Tradovate";
+  if (platform?.id === "ctrader") return "Create cTrader Import Account";
   return "Connect MetaTrader 5";
 }
 
-function stepDescription(step: WizardStep, accountKind: AccountKind | null) {
+function stepDescription(step: WizardStep, accountKind: AccountKind | null, platform?: PlatformConfig) {
   if (step === 1) return "Select if you want to add trades manually or import them from your trading account.";
-  if (step === 2) return "Connect the platform that is available for your current plan.";
+  if (step === 2) return "Choose a supported platform for secure sync or trade-history import.";
   if (accountKind === "manual") return "Create a clean journal account and add trades manually.";
+  if (platform?.id === "tradovate") {
+    return "Create the account, then authorize Tradox through Tradovate OAuth. Your Tradovate password is never stored.";
+  }
+  if (platform?.id === "ctrader") {
+    return "Create the account now, then upload closed cTrader trade history from the connector settings.";
+  }
   return "Use your MT5 login, investor password and broker server. Existing MT5 flow is unchanged.";
 }
 
@@ -53,29 +67,41 @@ function StepDots({ step }: { step: WizardStep }) {
     <div className="flex items-center justify-center gap-0" aria-label={`Step ${step} of 3`}>
       {[1, 2, 3].map((item) => (
         <div key={item} className="flex items-center">
-          <span className={cn(
-            "grid size-2.5 place-items-center rounded-full border transition",
-            step >= item ? "border-white bg-white" : "border-white/10 bg-[#111111]"
-          )} />
-          {item < 3 ? <span className={cn("h-px w-10 transition sm:w-16", step > item ? "bg-white" : "bg-[#262626]")} /> : null}
+          <span
+            className={cn(
+              "grid size-2.5 place-items-center rounded-full border transition",
+              step >= item ? "border-white bg-white" : "border-white/10 bg-[#111111]",
+            )}
+          />
+          {item < 3 ? (
+            <span className={cn("h-px w-10 transition sm:w-16", step > item ? "bg-white" : "bg-[#262626]")} />
+          ) : null}
         </div>
       ))}
     </div>
   );
 }
-type PremiumStatus = {
-  plan: AccountPlan;
-  isPremium: boolean;
-  autoSyncEnabled: boolean;
-};
+
+function createdAccountId(value: unknown) {
+  if (!value || typeof value !== "object") return "";
+  const direct = value as { id?: unknown; account?: unknown };
+  if (direct.id) return String(direct.id);
+  if (direct.account && typeof direct.account === "object" && "id" in direct.account) {
+    return String((direct.account as { id?: unknown }).id || "");
+  }
+  return "";
+}
 
 export function PropAccountDialog({
-  open, saving, onOpenChange, onSave,
+  open,
+  saving,
+  onOpenChange,
+  onSave,
 }: {
   open: boolean;
   saving: boolean;
-  onOpenChange: (v: boolean) => void;
-  onSave: (f: FormData) => Promise<unknown> | unknown;
+  onOpenChange: (value: boolean) => void;
+  onSave: (form: FormData) => Promise<unknown> | unknown;
 }) {
   const [step, setStep] = useState<WizardStep>(1);
   const [accountKind, setAccountKind] = useState<AccountKind | null>(null);
@@ -86,18 +112,34 @@ export function PropAccountDialog({
   const [connectNow, setConnectNow] = useState(true);
   const [internalSaving, setInternalSaving] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
-  const [premiumStatus, setPremiumStatus] = useState<PremiumStatus>({ plan: "free", isPremium: false, autoSyncEnabled: false });
+  const [premiumStatus, setPremiumStatus] = useState<PremiumStatus>({
+    plan: "free",
+    isPremium: false,
+    autoSyncEnabled: false,
+  });
   const [premiumLoaded, setPremiumLoaded] = useState(false);
 
-  const selectedPlatform = useMemo(() => ACCOUNT_PLATFORMS.find((item) => item.id === platform) ?? ACCOUNT_PLATFORMS[0], [platform]);
+  const selectedPlatform = useMemo(
+    () => ACCOUNT_PLATFORMS.find((item) => item.id === platform) ?? ACCOUNT_PLATFORMS[0],
+    [platform],
+  );
   const sources = accountType === "prop" ? PROP_FIRMS : BROKERS;
   const activePlatform = accountKind === "manual" ? "manual" : platform;
   const market = accountKind === "manual" ? "CFD" : selectedPlatform.market;
-  const importSource = accountKind === "manual"
-    ? "manual"
-    : "mt5_bridge";
+  const importSource =
+    accountKind === "manual"
+      ? "manual"
+      : selectedPlatform.id === "mt5"
+        ? "mt5_bridge"
+        : selectedPlatform.id === "tradovate"
+          ? "tradovate"
+          : selectedPlatform.id === "ctrader"
+            ? "ctrader"
+            : selectedPlatform.id;
   const phase = accountType === "real" ? "Live" : "Challenge";
   const createsProcessingMt5 = accountKind === "automatic" && platform === "mt5" && connectNow;
+  const createsProcessingTradovate = accountKind === "automatic" && platform === "tradovate";
+  const createsProcessingConnector = createsProcessingMt5 || createsProcessingTradovate;
   const isSubmitting = saving || internalSaving;
 
   useEffect(() => {
@@ -124,7 +166,9 @@ export function PropAccountDialog({
         if (active) setPremiumStatus(response);
       })
       .catch(() => {
-        if (active) setPremiumStatus({ plan: "free", isPremium: false, autoSyncEnabled: false });
+        if (active) {
+          setPremiumStatus({ plan: "free", isPremium: false, autoSyncEnabled: false });
+        }
       })
       .finally(() => {
         if (active) setPremiumLoaded(true);
@@ -136,7 +180,7 @@ export function PropAccountDialog({
 
   function changeAccountType(next: "prop" | "real") {
     setAccountType(next);
-    setFirm(next === "prop" ? "FTMO" : "Exness");
+    setFirm(next === "prop" ? "FTMO" : selectedPlatform.id === "tradovate" ? "Tradovate" : "Exness");
   }
 
   function chooseManual() {
@@ -154,15 +198,15 @@ export function PropAccountDialog({
   }
 
   function choosePlatform(item: PlatformConfig) {
-    if (premiumStatus.plan === "free") {
-      return;
-    }
+    if (premiumStatus.plan === "free") return;
     if (item.status !== "live") {
       setSubmitError(`${item.name} connector is coming soon.`);
       return;
     }
+
     setPlatform(item.id);
     setConnectNow(item.id === "mt5");
+    if (item.id === "tradovate" && accountType === "real") setFirm("Tradovate");
     setSubmitError(null);
     setStep(3);
   }
@@ -207,6 +251,20 @@ export function PropAccountDialog({
     try {
       const created = await onSave(form);
       if (!created) return;
+
+      if (createsProcessingTradovate) {
+        const accountId = createdAccountId(created);
+        if (!accountId) {
+          throw new Error("Tradovate account was created, but its account ID was not returned.");
+        }
+        const response = await apiRequest<{ url: string }>(
+          `/api/prop-accounts/${accountId}/tradovate/connect`,
+          { method: "POST" },
+        );
+        window.location.assign(response.url);
+        return;
+      }
+
       onOpenChange(false);
     } catch (error) {
       setSubmitError(error instanceof Error ? error.message : "Account was not created.");
@@ -240,9 +298,7 @@ export function PropAccountDialog({
           <DialogHeader className="min-w-0 sm:w-36">
             <DialogTitle className="truncate text-base font-black sm:text-lg">Add account</DialogTitle>
           </DialogHeader>
-          <div className="flex flex-1 justify-center">
-            <StepDots step={step} />
-          </div>
+          <div className="flex flex-1 justify-center"><StepDots step={step} /></div>
           <span className="mr-8 w-10 shrink-0 text-right text-[10px] font-black text-zinc-600 sm:mr-7 sm:w-20">{step} / 3</span>
         </div>
 
@@ -255,9 +311,9 @@ export function PropAccountDialog({
             ) : null}
 
             <div className="mx-auto mb-5 max-w-xl text-left sm:text-center">
-              <h2 className="text-xl font-black tracking-tight sm:text-2xl">{stepTitle(step, accountKind)}</h2>
+              <h2 className="text-xl font-black tracking-tight sm:text-2xl">{stepTitle(step, accountKind, selectedPlatform)}</h2>
               <p className="mt-1.5 text-xs font-medium leading-5 text-zinc-500 sm:mx-auto sm:max-w-md sm:text-sm">
-                {stepDescription(step, accountKind)}
+                {stepDescription(step, accountKind, selectedPlatform)}
               </p>
             </div>
 
@@ -278,7 +334,7 @@ export function PropAccountDialog({
                 <ChoiceCard
                   icon={<Zap size={22} />}
                   title="Automatic Account"
-                  text="Connect MetaTrader 5 with secure, read-only automatic sync."
+                  text="Connect MT5 or Tradovate securely, or use a supported trading-history import."
                   onClick={chooseAutomatic}
                 />
               </div>
@@ -309,14 +365,16 @@ export function PropAccountDialog({
                     </div>
                     <div className="mt-3 flex items-center gap-3">
                       <PropFirmLogo firm={firm} compact />
-                      <div className="min-w-0 flex-1">
-                        <p className="text-sm font-black text-zinc-100">{firm}</p>
-                        <p className="text-xs text-zinc-500">
+                      <div className="min-w-0">
+                        <p className="truncate text-sm font-black text-white">{firm}</p>
+                        <p className="truncate text-[11px] text-zinc-500">
                           {accountKind === "manual"
                             ? "Manual journal workspace"
                             : selectedPlatform.id === "mt5"
                               ? "Auto sync with MT5 bridge"
-                              : `${selectedPlatform.name} import flow`}
+                              : selectedPlatform.id === "tradovate"
+                                ? "Read-only Tradovate OAuth sync"
+                                : `${selectedPlatform.name} import flow`}
                         </p>
                       </div>
                       <div className="ml-auto shrink-0 whitespace-nowrap text-right">
@@ -334,11 +392,29 @@ export function PropAccountDialog({
                     sources={sources}
                     size={size}
                     setSize={setSize}
-                    placeholder={accountKind === "manual" ? "Manual account" : "FTMO MT5 100K"}
+                    placeholder={
+                      accountKind === "manual"
+                        ? "Manual account"
+                        : selectedPlatform.id === "tradovate"
+                          ? "Tradovate futures account"
+                          : selectedPlatform.id === "ctrader"
+                            ? "cTrader account"
+                            : "FTMO MT5 100K"
+                    }
                   />
 
                   {accountKind === "automatic" && selectedPlatform.id === "mt5" ? (
                     <Mt5Fields connectNow={connectNow} setConnectNow={setConnectNow} />
+                  ) : null}
+
+                  {accountKind === "automatic" && selectedPlatform.id === "tradovate" ? (
+                    <TradovateFields />
+                  ) : null}
+
+                  {accountKind === "automatic" && selectedPlatform.id === "ctrader" ? (
+                    <div className="rounded-xl border border-white/10 bg-[#050505] p-4 text-xs leading-5 text-zinc-400">
+                      After creating this account, open Account Settings and upload the CSV exported from cTrader closed history.
+                    </div>
                   ) : null}
 
                   {accountKind === "manual" ? (
@@ -356,7 +432,7 @@ export function PropAccountDialog({
               <Button type="button" variant="outline" onClick={() => onOpenChange(false)} className="flex-1 sm:flex-none">Cancel</Button>
               <Button disabled={isSubmitting} className="flex-1 bg-white font-semibold text-black hover:bg-zinc-200 sm:flex-none">
                 {isSubmitting ? <LoaderCircle className="animate-spin" /> : <Plus size={18} />}
-                {createsProcessingMt5 ? "Create and sync" : "Add account"}
+                {createsProcessingTradovate ? "Create and authorize" : createsProcessingMt5 ? "Create and sync" : "Add account"}
               </Button>
             </div>
           ) : null}
@@ -364,7 +440,7 @@ export function PropAccountDialog({
           <input type="hidden" name="accountType" value={accountType} />
           <input type="hidden" name="firm" value={firm} />
           <input type="hidden" name="propSite" value={accountType === "prop" ? firm : ""} />
-          <input type="hidden" name="propLogin" value="" />
+          {selectedPlatform.id !== "tradovate" ? <input type="hidden" name="propLogin" value="" /> : null}
           <input type="hidden" name="phase" value={phase} />
           <input type="hidden" name="marketType" value={market} />
           <input type="hidden" name="platform" value={activePlatform} />
@@ -375,14 +451,14 @@ export function PropAccountDialog({
           <input type="hidden" name="maxDrawdown" value={Math.round(size * 0.10)} />
           <input type="hidden" name="dailyDrawdown" value={Math.round(size * 0.05)} />
           <input type="hidden" name="startDate" value={new Date().toISOString().slice(0, 10)} />
-          <input type="hidden" name="status" value={createsProcessingMt5 ? "Processing" : "Active"} />
+          <input type="hidden" name="status" value={createsProcessingConnector ? "Processing" : "Active"} />
         </form>
       </DialogContent>
     </Dialog>
   );
 }
 
-function ChoiceCard({ icon, title, text, onClick }: { icon: React.ReactNode; title: string; text: string; onClick: () => void }) {
+function ChoiceCard({ icon, title, text, onClick }: { icon: ReactNode; title: string; text: string; onClick: () => void }) {
   return (
     <button
       type="button"
@@ -408,12 +484,12 @@ function AccountBasics({
   placeholder,
 }: {
   accountType: "prop" | "real";
-  changeAccountType: (v: "prop" | "real") => void;
+  changeAccountType: (value: "prop" | "real") => void;
   firm: string;
-  setFirm: (v: string) => void;
+  setFirm: (value: string) => void;
   sources: string[];
   size: number;
-  setSize: (v: number) => void;
+  setSize: (value: number) => void;
   placeholder: string;
 }) {
   return (
@@ -426,7 +502,7 @@ function AccountBasics({
             onClick={() => changeAccountType(type)}
             className={cn(
               "rounded-lg py-2 text-sm font-bold capitalize transition",
-              accountType === type ? "bg-white text-black" : "text-zinc-500 hover:text-zinc-100"
+              accountType === type ? "bg-white text-black" : "text-zinc-500 hover:text-zinc-100",
             )}
           >
             {type}
@@ -465,7 +541,13 @@ function AccountBasics({
   );
 }
 
-function Mt5Fields({ connectNow, setConnectNow }: { connectNow: boolean; setConnectNow: (v: boolean | ((value: boolean) => boolean)) => void }) {
+function Mt5Fields({
+  connectNow,
+  setConnectNow,
+}: {
+  connectNow: boolean;
+  setConnectNow: (value: boolean | ((current: boolean) => boolean)) => void;
+}) {
   return (
     <div className="rounded-xl border border-white/10 bg-[#0b0b0b] p-4">
       <button type="button" onClick={() => setConnectNow((value) => !value)} className="mb-4 flex w-full items-center justify-between text-left">
@@ -480,7 +562,7 @@ function Mt5Fields({ connectNow, setConnectNow }: { connectNow: boolean; setConn
           </div>
           <Input name="mt5Server" placeholder="Broker server, e.g. Exness-MT5Trial15" autoComplete="off" className="h-11 border-white/10 bg-[#080808]" />
           <div className="rounded-xl border border-emerald-400/15 bg-emerald-400/[.055] p-3 text-[11px] leading-5 text-emerald-50/80">
-            <p className="flex items-start gap-2"><ShieldCheck size={13} className="mt-0.5 shrink-0" /> Investor password tavsiya qilinadi. TradeWay faqat history o&apos;qiydi — trade ochmaydi, yopmaydi yoki o&apos;zgartirmaydi.</p>
+            <p className="flex items-start gap-2"><ShieldCheck size={13} className="mt-0.5 shrink-0" /> Investor password tavsiya qilinadi. Tradox faqat history o&apos;qiydi — trade ochmaydi, yopmaydi yoki o&apos;zgartirmaydi.</p>
           </div>
         </div>
       ) : null}
@@ -488,3 +570,30 @@ function Mt5Fields({ connectNow, setConnectNow }: { connectNow: boolean; setConn
   );
 }
 
+function TradovateFields() {
+  return (
+    <div className="rounded-xl border border-white/10 bg-[#0b0b0b] p-4">
+      <div className="flex items-start gap-3">
+        <PlatformLogoBadge platform="tradovate" compact />
+        <div>
+          <h3 className="text-sm font-black text-white">Tradovate OAuth authorization</h3>
+          <p className="mt-1 text-xs leading-5 text-zinc-500">
+            After creating the account, you will be redirected to Tradovate to approve read-only access.
+          </p>
+        </div>
+      </div>
+      <div className="mt-4 space-y-2">
+        <Label className="text-xs font-semibold uppercase tracking-wider text-zinc-500">Tradovate account name or ID (optional)</Label>
+        <Input
+          name="propLogin"
+          placeholder="Leave blank to use the first active account"
+          autoComplete="off"
+          className="h-11 border-white/10 bg-[#080808]"
+        />
+      </div>
+      <div className="mt-4 rounded-xl border border-emerald-400/15 bg-emerald-400/[.055] p-3 text-[11px] leading-5 text-emerald-50/80">
+        <p className="flex items-start gap-2"><ShieldCheck size={13} className="mt-0.5 shrink-0" /> Your Tradovate username and password are entered only on Tradovate. Tradox stores encrypted OAuth tokens and imports closed futures trades.</p>
+      </div>
+    </div>
+  );
+}
