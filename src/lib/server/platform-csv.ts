@@ -60,8 +60,8 @@ const COMMON = {
   signedQuantityKeys: ["position size", "net position", "signed quantity"],
   entryKeys: ["entry price", "open price", "opening price", "average entry price", "avg entry price", "entry"],
   exitKeys: ["exit price", "close price", "closing price", "average exit price", "avg exit price", "exit"],
-  closeTimeKeys: ["exit time", "close time", "closing time", "closed at", "trade day", "created at", "timestamp", "date"],
-  pnlKeys: ["profit and loss", "profit/loss", "net profit", "net pnl", "realized pnl", "profit", "pnl"],
+  closeTimeKeys: ["exit time", "exit date", "close time", "close date", "closing time", "closed at", "trade day", "created at", "timestamp", "date"],
+  pnlKeys: ["profit and loss", "profit/loss", "net profit", "gross profit", "net pnl", "realized pnl", "profit", "pnl"],
   feeKeys: ["fees", "fee", "commission", "commissions", "swap", "swap fee"],
   idKeys: ["trade id", "trade number", "trade #", "position id", "position", "ticket", "order id", "execution id", "id"],
 };
@@ -79,7 +79,7 @@ const DEFINITIONS: Record<CsvImportPlatform, PlatformDefinition> = {
     exitKeys: ["exit price", ...COMMON.exitKeys],
     closeTimeKeys: ["exit time", ...COMMON.closeTimeKeys],
     pnlKeys: ["profit", "profit currency", ...COMMON.pnlKeys],
-    feeKeys: ["commission", ...COMMON.feeKeys],
+    feeKeys: COMMON.feeKeys,
     idKeys: ["trade number", "trade #", ...COMMON.idKeys],
   },
   matchtrader: {
@@ -94,7 +94,7 @@ const DEFINITIONS: Record<CsvImportPlatform, PlatformDefinition> = {
     exitKeys: ["close price", ...COMMON.exitKeys],
     closeTimeKeys: ["close time", "closing time", ...COMMON.closeTimeKeys],
     pnlKeys: ["profit", "net profit", ...COMMON.pnlKeys],
-    feeKeys: ["commission", "swap", ...COMMON.feeKeys],
+    feeKeys: COMMON.feeKeys,
     idKeys: ["position id", "position", "ticket", ...COMMON.idKeys],
   },
   projectx: {
@@ -109,13 +109,17 @@ const DEFINITIONS: Record<CsvImportPlatform, PlatformDefinition> = {
     exitKeys: ["exit price", ...COMMON.exitKeys],
     closeTimeKeys: ["trade day", "created at", ...COMMON.closeTimeKeys],
     pnlKeys: ["profit and loss", "profitandloss", ...COMMON.pnlKeys],
-    feeKeys: ["fees", ...COMMON.feeKeys],
+    feeKeys: COMMON.feeKeys,
     idKeys: ["id", "trade id", ...COMMON.idKeys],
   },
 };
 
 function normalizeKey(value: string) {
   return value.toLowerCase().replace(/[^a-z0-9]+/g, "").trim();
+}
+
+function uniqueKeys(keys: string[]) {
+  return [...new Set(keys.map(normalizeKey))];
 }
 
 function guessDelimiter(text: string) {
@@ -179,8 +183,8 @@ function parseCsv(text: string): CsvRecord[] {
 }
 
 function first(record: CsvRecord, keys: string[]) {
-  for (const key of keys) {
-    const value = record[normalizeKey(key)];
+  for (const key of uniqueKeys(keys)) {
+    const value = record[key];
     if (typeof value === "string" && value.trim()) return value.trim();
   }
   return "";
@@ -211,13 +215,21 @@ function parseNumber(value: string): number | null {
 }
 
 function firstNumber(record: CsvRecord, keys: string[]) {
-  for (const key of keys) {
-    const raw = record[normalizeKey(key)];
+  for (const key of uniqueKeys(keys)) {
+    const raw = record[key];
     if (typeof raw !== "string" || !raw.trim()) continue;
     const value = parseNumber(raw);
     if (value !== null) return { found: true, value };
   }
   return { found: false, value: 0 };
+}
+
+function sumNumbers(record: CsvRecord, keys: string[]) {
+  return uniqueKeys(keys).reduce((total, key) => {
+    const raw = record[key];
+    const value = typeof raw === "string" ? parseNumber(raw) : null;
+    return total + Math.abs(value || 0);
+  }, 0);
 }
 
 function parseDate(value: string) {
@@ -320,11 +332,7 @@ export function parsePlatformCsvToJournalRows(params: {
       return [];
     }
 
-    const fees = definition.feeKeys.reduce((total, key) => {
-      const raw = record[normalizeKey(key)];
-      const value = typeof raw === "string" ? parseNumber(raw) : null;
-      return total + Math.abs(value || 0);
-    }, 0);
+    const fees = sumNumbers(record, definition.feeKeys);
     const externalId = first(record, definition.idKeys) || hashRecord(params.platform, record);
     const side = sideFrom({
       platform: params.platform,
