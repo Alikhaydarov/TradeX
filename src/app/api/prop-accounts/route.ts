@@ -6,7 +6,7 @@ export const runtime = "nodejs";
 
 const ACCOUNT_STATUSES = new Set(["Processing", "Active", "Passed", "Failed", "Paused"]);
 const DUPLICATE_NAME_PATTERN = /prop_accounts_user_id_name_key|duplicate key value/i;
-const PREMIUM_PLATFORMS = new Set(["tradelocker", "ctrader", "matchtrader"]);
+const PREMIUM_PLATFORMS = new Set(["tradelocker", "ctrader", "tradovate", "matchtrader"]);
 const IMPORT_SOURCES = new Set(["manual", "mt5_bridge", "ctrader", "tradovate", "ninjatrader", "projectx", "official_api"]);
 
 function values(body: Record<string, unknown>) {
@@ -15,7 +15,11 @@ function values(body: Record<string, unknown>) {
   const platform = String(body.platform || "mt5").trim().toLowerCase().slice(0, 30);
   const importSourceRaw = String(body.importSource || "manual").trim().toLowerCase();
   const requestedImportSource = IMPORT_SOURCES.has(importSourceRaw) ? importSourceRaw : "manual";
-  const importSource = platform === "ctrader" ? "ctrader" : requestedImportSource;
+  const importSource = platform === "ctrader"
+    ? "ctrader"
+    : platform === "tradovate"
+      ? "tradovate"
+      : requestedImportSource;
   const accountSize = Number(body.accountSize);
   const initialBalance = Number(body.initialBalance || accountSize);
   const profitTarget = Number(body.profitTarget || 0);
