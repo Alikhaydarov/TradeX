@@ -22,11 +22,11 @@ export type PlatformConfig = {
 export const ACCOUNT_PLATFORMS: PlatformConfig[] = [
   { id: "mt5", name: "MetaTrader 5", mode: "auto", market: "CFD", helper: "Read-only automatic sync", status: "live" },
   { id: "tradovate", name: "Tradovate", mode: "csv", market: "Futures", helper: "Position History CSV import", status: "live" },
-  { id: "ctrader", name: "cTrader", mode: "csv", market: "CFD", helper: "CSV trade history import", status: "live" },
-  { id: "tradelocker", name: "TradeLocker", mode: "auto", market: "CFD", helper: "Automatic trade sync", status: "coming" },
-  { id: "ninjatrader", name: "NinjaTrader", mode: "csv", market: "Futures", helper: "Trade history import", status: "coming" },
-  { id: "matchtrader", name: "MatchTrader", mode: "auto", market: "CFD", helper: "Automatic trade sync", status: "coming" },
-  { id: "projectx", name: "Project X", mode: "csv", market: "Futures", helper: "Trade history import", status: "coming" },
+  { id: "ninjatrader", name: "NinjaTrader", mode: "csv", market: "Futures", helper: "Trade Performance CSV import", status: "live" },
+  { id: "projectx", name: "Project X", mode: "csv", market: "Futures", helper: "Trades CSV import", status: "live" },
+  { id: "ctrader", name: "cTrader", mode: "csv", market: "CFD", helper: "Closed history CSV import", status: "live" },
+  { id: "matchtrader", name: "MatchTrader", mode: "csv", market: "CFD", helper: "Closed Positions CSV import", status: "live" },
+  { id: "tradelocker", name: "TradeLocker", mode: "auto", market: "CFD", helper: "Native history export unavailable", status: "coming" },
 ];
 
 function PlanSummary({ plan }: { plan: Exclude<AccountPlan, "free"> }) {
