@@ -3,6 +3,7 @@
 import {
   ArrowLeft,
   ChevronRight,
+  FileSpreadsheet,
   KeyRound,
   LoaderCircle,
   Pencil,
@@ -44,22 +45,22 @@ function stepTitle(step: WizardStep, accountKind: AccountKind | null, platform?:
   if (step === 1) return "Select the Account Type";
   if (step === 2) return "Select your Trading Platform";
   if (accountKind === "manual") return "Create Manual Account";
-  if (platform?.id === "tradovate") return "Connect Tradovate";
+  if (platform?.id === "tradovate") return "Create Tradovate Import Account";
   if (platform?.id === "ctrader") return "Create cTrader Import Account";
   return "Connect MetaTrader 5";
 }
 
 function stepDescription(step: WizardStep, accountKind: AccountKind | null, platform?: PlatformConfig) {
-  if (step === 1) return "Select if you want to add trades manually or import them from your trading account.";
-  if (step === 2) return "Choose a supported platform for secure sync or trade-history import.";
+  if (step === 1) return "Create a manual journal or connect/import an existing trading account.";
+  if (step === 2) return "Choose a supported platform for secure sync or CSV trade-history import.";
   if (accountKind === "manual") return "Create a clean journal account and add trades manually.";
   if (platform?.id === "tradovate") {
-    return "Create the account, then authorize Tradox through Tradovate OAuth. Your Tradovate password is never stored.";
+    return "Create the account now, then upload the Tradovate Position History CSV from Account Settings.";
   }
   if (platform?.id === "ctrader") {
-    return "Create the account now, then upload closed cTrader trade history from the connector settings.";
+    return "Create the account now, then upload closed cTrader history from Account Settings.";
   }
-  return "Use your MT5 login, investor password and broker server. Existing MT5 flow is unchanged.";
+  return "Use your MT5 login, investor password and broker server. Existing MT5 sync remains unchanged.";
 }
 
 function StepDots({ step }: { step: WizardStep }) {
@@ -80,16 +81,6 @@ function StepDots({ step }: { step: WizardStep }) {
       ))}
     </div>
   );
-}
-
-function createdAccountId(value: unknown) {
-  if (!value || typeof value !== "object") return "";
-  const direct = value as { id?: unknown; account?: unknown };
-  if (direct.id) return String(direct.id);
-  if (direct.account && typeof direct.account === "object" && "id" in direct.account) {
-    return String((direct.account as { id?: unknown }).id || "");
-  }
-  return "";
 }
 
 export function PropAccountDialog({
@@ -131,15 +122,9 @@ export function PropAccountDialog({
       ? "manual"
       : selectedPlatform.id === "mt5"
         ? "mt5_bridge"
-        : selectedPlatform.id === "tradovate"
-          ? "tradovate"
-          : selectedPlatform.id === "ctrader"
-            ? "ctrader"
-            : selectedPlatform.id;
+        : selectedPlatform.id;
   const phase = accountType === "real" ? "Live" : "Challenge";
   const createsProcessingMt5 = accountKind === "automatic" && platform === "mt5" && connectNow;
-  const createsProcessingTradovate = accountKind === "automatic" && platform === "tradovate";
-  const createsProcessingConnector = createsProcessingMt5 || createsProcessingTradovate;
   const isSubmitting = saving || internalSaving;
 
   useEffect(() => {
@@ -166,9 +151,7 @@ export function PropAccountDialog({
         if (active) setPremiumStatus(response);
       })
       .catch(() => {
-        if (active) {
-          setPremiumStatus({ plan: "free", isPremium: false, autoSyncEnabled: false });
-        }
+        if (active) setPremiumStatus({ plan: "free", isPremium: false, autoSyncEnabled: false });
       })
       .finally(() => {
         if (active) setPremiumLoaded(true);
@@ -232,7 +215,7 @@ export function PropAccountDialog({
     setSubmitError(null);
 
     if (accountKind === "automatic" && premiumStatus.plan === "free") {
-      setSubmitError("Standard or Pro is required for automatic account sync.");
+      setSubmitError("Standard or Pro is required for platform sync and imports.");
       setStep(2);
       return;
     }
@@ -251,20 +234,6 @@ export function PropAccountDialog({
     try {
       const created = await onSave(form);
       if (!created) return;
-
-      if (createsProcessingTradovate) {
-        const accountId = createdAccountId(created);
-        if (!accountId) {
-          throw new Error("Tradovate account was created, but its account ID was not returned.");
-        }
-        const response = await apiRequest<{ url: string }>(
-          `/api/prop-accounts/${accountId}/tradovate/connect`,
-          { method: "POST" },
-        );
-        window.location.assign(response.url);
-        return;
-      }
-
       onOpenChange(false);
     } catch (error) {
       setSubmitError(error instanceof Error ? error.message : "Account was not created.");
@@ -328,13 +297,13 @@ export function PropAccountDialog({
                 <ChoiceCard
                   icon={<Pencil size={22} />}
                   title="Manual Account"
-                  text="Create a manual account and add your trades manually. Analytics will be generated automatically."
+                  text="Create a journal account and add your trades manually."
                   onClick={chooseManual}
                 />
                 <ChoiceCard
                   icon={<Zap size={22} />}
-                  title="Automatic Account"
-                  text="Connect MT5 or Tradovate securely, or use a supported trading-history import."
+                  title="Sync or Import Account"
+                  text="Sync MT5 automatically or import Tradovate and cTrader trade history from CSV."
                   onClick={chooseAutomatic}
                 />
               </div>
@@ -373,7 +342,7 @@ export function PropAccountDialog({
                             : selectedPlatform.id === "mt5"
                               ? "Auto sync with MT5 bridge"
                               : selectedPlatform.id === "tradovate"
-                                ? "Read-only Tradovate OAuth sync"
+                                ? "Tradovate Position History CSV import"
                                 : `${selectedPlatform.name} import flow`}
                         </p>
                       </div>
@@ -408,13 +377,11 @@ export function PropAccountDialog({
                   ) : null}
 
                   {accountKind === "automatic" && selectedPlatform.id === "tradovate" ? (
-                    <TradovateFields />
+                    <CsvImportNotice platform="Tradovate" report="Reports → Position History → Download report" />
                   ) : null}
 
                   {accountKind === "automatic" && selectedPlatform.id === "ctrader" ? (
-                    <div className="rounded-xl border border-white/10 bg-[#050505] p-4 text-xs leading-5 text-zinc-400">
-                      After creating this account, open Account Settings and upload the CSV exported from cTrader closed history.
-                    </div>
+                    <CsvImportNotice platform="cTrader" report="Closed history / deals CSV export" />
                   ) : null}
 
                   {accountKind === "manual" ? (
@@ -432,7 +399,7 @@ export function PropAccountDialog({
               <Button type="button" variant="outline" onClick={() => onOpenChange(false)} className="flex-1 sm:flex-none">Cancel</Button>
               <Button disabled={isSubmitting} className="flex-1 bg-white font-semibold text-black hover:bg-zinc-200 sm:flex-none">
                 {isSubmitting ? <LoaderCircle className="animate-spin" /> : <Plus size={18} />}
-                {createsProcessingTradovate ? "Create and authorize" : createsProcessingMt5 ? "Create and sync" : "Add account"}
+                {createsProcessingMt5 ? "Create and sync" : "Add account"}
               </Button>
             </div>
           ) : null}
@@ -440,7 +407,7 @@ export function PropAccountDialog({
           <input type="hidden" name="accountType" value={accountType} />
           <input type="hidden" name="firm" value={firm} />
           <input type="hidden" name="propSite" value={accountType === "prop" ? firm : ""} />
-          {selectedPlatform.id !== "tradovate" ? <input type="hidden" name="propLogin" value="" /> : null}
+          <input type="hidden" name="propLogin" value="" />
           <input type="hidden" name="phase" value={phase} />
           <input type="hidden" name="marketType" value={market} />
           <input type="hidden" name="platform" value={activePlatform} />
@@ -451,7 +418,7 @@ export function PropAccountDialog({
           <input type="hidden" name="maxDrawdown" value={Math.round(size * 0.10)} />
           <input type="hidden" name="dailyDrawdown" value={Math.round(size * 0.05)} />
           <input type="hidden" name="startDate" value={new Date().toISOString().slice(0, 10)} />
-          <input type="hidden" name="status" value={createsProcessingConnector ? "Processing" : "Active"} />
+          <input type="hidden" name="status" value={createsProcessingMt5 ? "Processing" : "Active"} />
         </form>
       </DialogContent>
     </Dialog>
@@ -570,29 +537,22 @@ function Mt5Fields({
   );
 }
 
-function TradovateFields() {
+function CsvImportNotice({ platform, report }: { platform: string; report: string }) {
   return (
     <div className="rounded-xl border border-white/10 bg-[#0b0b0b] p-4">
       <div className="flex items-start gap-3">
-        <PlatformLogoBadge platform="tradovate" compact />
+        <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-amber-400/10 text-amber-300">
+          <FileSpreadsheet size={18} />
+        </span>
         <div>
-          <h3 className="text-sm font-black text-white">Tradovate OAuth authorization</h3>
+          <h3 className="text-sm font-black text-white">{platform} CSV import</h3>
           <p className="mt-1 text-xs leading-5 text-zinc-500">
-            After creating the account, you will be redirected to Tradovate to approve read-only access.
+            Create the account first. Then open Account Settings and upload: {report}.
           </p>
         </div>
       </div>
-      <div className="mt-4 space-y-2">
-        <Label className="text-xs font-semibold uppercase tracking-wider text-zinc-500">Tradovate account name or ID (optional)</Label>
-        <Input
-          name="propLogin"
-          placeholder="Leave blank to use the first active account"
-          autoComplete="off"
-          className="h-11 border-white/10 bg-[#080808]"
-        />
-      </div>
       <div className="mt-4 rounded-xl border border-emerald-400/15 bg-emerald-400/[.055] p-3 text-[11px] leading-5 text-emerald-50/80">
-        <p className="flex items-start gap-2"><ShieldCheck size={13} className="mt-0.5 shrink-0" /> Your Tradovate username and password are entered only on Tradovate. Tradox stores encrypted OAuth tokens and imports closed futures trades.</p>
+        <p className="flex items-start gap-2"><ShieldCheck size={13} className="mt-0.5 shrink-0" /> No API add-on, login password or OAuth key is required for CSV import.</p>
       </div>
     </div>
   );
