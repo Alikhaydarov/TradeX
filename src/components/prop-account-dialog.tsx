@@ -28,8 +28,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog";
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
 
-const PROP_FIRMS = ["FTMO", "The5ers", "FundedNext", "FundingPips", "Alpha Capital", "Other"];
-const BROKERS = ["Tradovate", "Exness", "IC Markets", "MetaTrader Broker", "Other"];
+const PROP_FIRMS = ["FTMO", "The5ers", "FundedNext", "FundingPips", "Alpha Capital", "Topstep", "Apex Trader Funding", "Other"];
+const BROKERS = ["Tradovate", "NinjaTrader", "MatchTrader", "Project X", "Exness", "IC Markets", "MetaTrader Broker", "Other"];
 const SIZES = [10000, 25000, 50000, 100000, 200000];
 
 type WizardStep = 1 | 2 | 3;
@@ -41,12 +41,19 @@ type PremiumStatus = {
   autoSyncEnabled: boolean;
 };
 
+const CSV_REPORTS: Partial<Record<PlatformId, string>> = {
+  tradovate: "Reports → Position History → Download report",
+  ctrader: "Closed history or deals CSV export",
+  ninjatrader: "Trade Performance → Trades → Export CSV",
+  matchtrader: "Closed Positions → Export to CSV",
+  projectx: "Trades or Day Trades report → Download CSV",
+};
+
 function stepTitle(step: WizardStep, accountKind: AccountKind | null, platform?: PlatformConfig) {
   if (step === 1) return "Select the Account Type";
   if (step === 2) return "Select your Trading Platform";
   if (accountKind === "manual") return "Create Manual Account";
-  if (platform?.id === "tradovate") return "Create Tradovate Import Account";
-  if (platform?.id === "ctrader") return "Create cTrader Import Account";
+  if (platform?.mode === "csv") return `Create ${platform.name} Import Account`;
   return "Connect MetaTrader 5";
 }
 
@@ -54,11 +61,8 @@ function stepDescription(step: WizardStep, accountKind: AccountKind | null, plat
   if (step === 1) return "Create a manual journal or connect/import an existing trading account.";
   if (step === 2) return "Choose a supported platform for secure sync or CSV trade-history import.";
   if (accountKind === "manual") return "Create a clean journal account and add trades manually.";
-  if (platform?.id === "tradovate") {
-    return "Create the account now, then upload the Tradovate Position History CSV from Account Settings.";
-  }
-  if (platform?.id === "ctrader") {
-    return "Create the account now, then upload closed cTrader history from Account Settings.";
+  if (platform?.mode === "csv") {
+    return `Create the account now, then upload the ${platform.name} closed-trade CSV from Account Settings.`;
   }
   return "Use your MT5 login, investor password and broker server. Existing MT5 sync remains unchanged.";
 }
@@ -68,15 +72,11 @@ function StepDots({ step }: { step: WizardStep }) {
     <div className="flex items-center justify-center gap-0" aria-label={`Step ${step} of 3`}>
       {[1, 2, 3].map((item) => (
         <div key={item} className="flex items-center">
-          <span
-            className={cn(
-              "grid size-2.5 place-items-center rounded-full border transition",
-              step >= item ? "border-white bg-white" : "border-white/10 bg-[#111111]",
-            )}
-          />
-          {item < 3 ? (
-            <span className={cn("h-px w-10 transition sm:w-16", step > item ? "bg-white" : "bg-[#262626]")} />
-          ) : null}
+          <span className={cn(
+            "grid size-2.5 place-items-center rounded-full border transition",
+            step >= item ? "border-white bg-white" : "border-white/10 bg-[#111111]",
+          )} />
+          {item < 3 ? <span className={cn("h-px w-10 transition sm:w-16", step > item ? "bg-white" : "bg-[#262626]")} /> : null}
         </div>
       ))}
     </div>
@@ -117,12 +117,11 @@ export function PropAccountDialog({
   const sources = accountType === "prop" ? PROP_FIRMS : BROKERS;
   const activePlatform = accountKind === "manual" ? "manual" : platform;
   const market = accountKind === "manual" ? "CFD" : selectedPlatform.market;
-  const importSource =
-    accountKind === "manual"
-      ? "manual"
-      : selectedPlatform.id === "mt5"
-        ? "mt5_bridge"
-        : selectedPlatform.id;
+  const importSource = accountKind === "manual"
+    ? "manual"
+    : selectedPlatform.id === "mt5"
+      ? "mt5_bridge"
+      : selectedPlatform.id;
   const phase = accountType === "real" ? "Live" : "Challenge";
   const createsProcessingMt5 = accountKind === "automatic" && platform === "mt5" && connectNow;
   const isSubmitting = saving || internalSaving;
@@ -163,7 +162,7 @@ export function PropAccountDialog({
 
   function changeAccountType(next: "prop" | "real") {
     setAccountType(next);
-    setFirm(next === "prop" ? "FTMO" : selectedPlatform.id === "tradovate" ? "Tradovate" : "Exness");
+    setFirm(next === "prop" ? "FTMO" : selectedPlatform.mode === "csv" ? selectedPlatform.name : "Exness");
   }
 
   function chooseManual() {
@@ -189,7 +188,7 @@ export function PropAccountDialog({
 
     setPlatform(item.id);
     setConnectNow(item.id === "mt5");
-    if (item.id === "tradovate" && accountType === "real") setFirm("Tradovate");
+    if (accountType === "real") setFirm(item.mode === "csv" ? item.name : "Exness");
     setSubmitError(null);
     setStep(3);
   }
@@ -294,18 +293,8 @@ export function PropAccountDialog({
 
             {step === 1 ? (
               <div className="grid gap-5 md:grid-cols-2">
-                <ChoiceCard
-                  icon={<Pencil size={22} />}
-                  title="Manual Account"
-                  text="Create a journal account and add your trades manually."
-                  onClick={chooseManual}
-                />
-                <ChoiceCard
-                  icon={<Zap size={22} />}
-                  title="Sync or Import Account"
-                  text="Sync MT5 automatically or import Tradovate and cTrader trade history from CSV."
-                  onClick={chooseAutomatic}
-                />
+                <ChoiceCard icon={<Pencil size={22} />} title="Manual Account" text="Create a journal account and add your trades manually." onClick={chooseManual} />
+                <ChoiceCard icon={<Zap size={22} />} title="Sync or Import Account" text="Sync MT5 automatically or import supported platform trade history from CSV." onClick={chooseAutomatic} />
               </div>
             ) : null}
 
@@ -339,11 +328,9 @@ export function PropAccountDialog({
                         <p className="truncate text-[11px] text-zinc-500">
                           {accountKind === "manual"
                             ? "Manual journal workspace"
-                            : selectedPlatform.id === "mt5"
-                              ? "Auto sync with MT5 bridge"
-                              : selectedPlatform.id === "tradovate"
-                                ? "Tradovate Position History CSV import"
-                                : `${selectedPlatform.name} import flow`}
+                            : selectedPlatform.mode === "csv"
+                              ? `${selectedPlatform.name} CSV trade import`
+                              : "Auto sync with MT5 bridge"}
                         </p>
                       </div>
                       <div className="ml-auto shrink-0 whitespace-nowrap text-right">
@@ -361,27 +348,18 @@ export function PropAccountDialog({
                     sources={sources}
                     size={size}
                     setSize={setSize}
-                    placeholder={
-                      accountKind === "manual"
-                        ? "Manual account"
-                        : selectedPlatform.id === "tradovate"
-                          ? "Tradovate futures account"
-                          : selectedPlatform.id === "ctrader"
-                            ? "cTrader account"
-                            : "FTMO MT5 100K"
-                    }
+                    placeholder={accountKind === "manual" ? "Manual account" : selectedPlatform.mode === "csv" ? `${selectedPlatform.name} account` : "FTMO MT5 100K"}
                   />
 
                   {accountKind === "automatic" && selectedPlatform.id === "mt5" ? (
                     <Mt5Fields connectNow={connectNow} setConnectNow={setConnectNow} />
                   ) : null}
 
-                  {accountKind === "automatic" && selectedPlatform.id === "tradovate" ? (
-                    <CsvImportNotice platform="Tradovate" report="Reports → Position History → Download report" />
-                  ) : null}
-
-                  {accountKind === "automatic" && selectedPlatform.id === "ctrader" ? (
-                    <CsvImportNotice platform="cTrader" report="Closed history / deals CSV export" />
+                  {accountKind === "automatic" && selectedPlatform.mode === "csv" ? (
+                    <CsvImportNotice
+                      platform={selectedPlatform.name}
+                      report={CSV_REPORTS[selectedPlatform.id] || "Closed trade-history CSV export"}
+                    />
                   ) : null}
 
                   {accountKind === "manual" ? (
@@ -541,18 +519,14 @@ function CsvImportNotice({ platform, report }: { platform: string; report: strin
   return (
     <div className="rounded-xl border border-white/10 bg-[#0b0b0b] p-4">
       <div className="flex items-start gap-3">
-        <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-amber-400/10 text-amber-300">
-          <FileSpreadsheet size={18} />
-        </span>
+        <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-amber-400/10 text-amber-300"><FileSpreadsheet size={18} /></span>
         <div>
           <h3 className="text-sm font-black text-white">{platform} CSV import</h3>
-          <p className="mt-1 text-xs leading-5 text-zinc-500">
-            Create the account first. Then open Account Settings and upload: {report}.
-          </p>
+          <p className="mt-1 text-xs leading-5 text-zinc-500">Create the account first. Then open Account Settings and upload: {report}.</p>
         </div>
       </div>
       <div className="mt-4 rounded-xl border border-emerald-400/15 bg-emerald-400/[.055] p-3 text-[11px] leading-5 text-emerald-50/80">
-        <p className="flex items-start gap-2"><ShieldCheck size={13} className="mt-0.5 shrink-0" /> No API add-on, login password or OAuth key is required for CSV import.</p>
+        <p className="flex items-start gap-2"><ShieldCheck size={13} className="mt-0.5 shrink-0" /> No login password or OAuth key is required for CSV import.</p>
       </div>
     </div>
   );
