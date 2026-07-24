@@ -21,9 +21,9 @@ export type PlatformConfig = {
 
 export const ACCOUNT_PLATFORMS: PlatformConfig[] = [
   { id: "mt5", name: "MetaTrader 5", mode: "auto", market: "CFD", helper: "Read-only automatic sync", status: "live" },
+  { id: "tradovate", name: "Tradovate", mode: "auto", market: "Futures", helper: "Read-only OAuth futures sync", status: "live" },
   { id: "ctrader", name: "cTrader", mode: "csv", market: "CFD", helper: "CSV trade history import", status: "live" },
   { id: "tradelocker", name: "TradeLocker", mode: "auto", market: "CFD", helper: "Automatic trade sync", status: "coming" },
-  { id: "tradovate", name: "Tradovate", mode: "auto", market: "Futures", helper: "Futures account sync", status: "coming" },
   { id: "ninjatrader", name: "NinjaTrader", mode: "csv", market: "Futures", helper: "Trade history import", status: "coming" },
   { id: "matchtrader", name: "MatchTrader", mode: "auto", market: "CFD", helper: "Automatic trade sync", status: "coming" },
   { id: "projectx", name: "Project X", mode: "csv", market: "Futures", helper: "Trade history import", status: "coming" },
