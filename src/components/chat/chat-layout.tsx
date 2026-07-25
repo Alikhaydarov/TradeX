@@ -1,7 +1,7 @@
 "use client";
 
 import { LoaderCircle, MessageCircle, X } from "lucide-react";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import type {
   ChatChannel,
   ChatContextPayload,
@@ -246,14 +246,12 @@ export function ChatLayout({ communityId }: { communityId: string }) {
 
   const sidebar = context ? (
     <CommunityChatSidebar
-      community={context.community}
       channels={context.channels}
       dms={context.dms}
       members={members}
       selected={selected}
       canManage={context.isOwner || context.role === "admin"}
       currentUserId={context.currentUser.id}
-      onBack={back}
       onSelect={chooseRoom}
       onCreateChannel={createChannel}
       onStartDm={startDm}
@@ -261,9 +259,11 @@ export function ChatLayout({ communityId }: { communityId: string }) {
     />
   ) : null;
 
+  const frameClass = "h-[calc(100dvh-7rem)] min-h-[420px] md:h-[calc(100dvh-3rem)] lg:h-[100dvh]";
+
   if (loading) {
     return (
-      <div className="grid h-[100dvh] place-items-center bg-[#030303] text-zinc-600">
+      <div className={`grid place-items-center bg-[#030303] text-zinc-600 ${frameClass}`}>
         <LoaderCircle size={22} className="animate-spin" />
       </div>
     );
@@ -271,8 +271,8 @@ export function ChatLayout({ communityId }: { communityId: string }) {
 
   if (!context) {
     return (
-      <div className="grid min-h-[70dvh] place-items-center p-4 text-center">
-        <div className="max-w-sm rounded-xl border border-white/8 bg-[#070707] p-4">
+      <div className={`grid place-items-center p-4 text-center ${frameClass}`}>
+        <div className="max-w-sm rounded-2xl border border-white/8 bg-[#070707] p-4">
           <MessageCircle size={22} className="mx-auto text-zinc-700" />
           <h1 className="mt-3 text-sm font-bold text-white">Chat unavailable</h1>
           <p className="mt-1 text-[11px] leading-5 text-zinc-600">{error || "Apply the community chat migration and try again."}</p>
@@ -283,9 +283,9 @@ export function ChatLayout({ communityId }: { communityId: string }) {
   }
 
   return (
-    <div className="relative flex h-[100dvh] min-h-0 overflow-hidden bg-[#030303]">
-      <aside className="hidden w-[220px] shrink-0 border-r border-white/8 lg:block">{sidebar}</aside>
-      <main className="min-w-0 flex-1">
+    <div className={`relative flex min-h-0 overflow-hidden border-y border-white/8 bg-[#030303] lg:border-y-0 ${frameClass}`}>
+      <aside className="hidden w-[224px] shrink-0 border-r border-white/8 lg:block">{sidebar}</aside>
+      <main className="min-h-0 min-w-0 flex-1">
         {selected ? (
           <ChatRoomPanel context={context} room={selected} onOpenSidebar={() => setMobileSidebarOpen(true)} />
         ) : (
@@ -300,9 +300,9 @@ export function ChatLayout({ communityId }: { communityId: string }) {
       </main>
 
       {mobileSidebarOpen ? (
-        <div className="fixed inset-0 z-[10000] lg:hidden">
-          <button type="button" className="absolute inset-0 bg-black/75" onClick={() => setMobileSidebarOpen(false)} aria-label="Close sidebar" />
-          <aside className="absolute inset-y-0 left-0 w-[min(290px,88vw)] border-r border-white/10 bg-[#050505] shadow-2xl">
+        <div className="fixed inset-0 z-[130] lg:hidden">
+          <button type="button" className="absolute inset-0 bg-black/75 backdrop-blur-sm" onClick={() => setMobileSidebarOpen(false)} aria-label="Close channels" />
+          <aside className="absolute inset-y-0 left-0 w-[min(290px,88vw)] border-r border-white/10 bg-[#050505] shadow-2xl md:left-[72px]">
             {sidebar}
           </aside>
         </div>
