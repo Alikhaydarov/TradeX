@@ -24,6 +24,10 @@ import type { Section } from "./types";
 import { Spinner } from "./ui/spinner";
 import { WorkspaceSectionSkeleton } from "./workspace-section-skeleton";
 import { FreeUserStart } from "./free-user-start";
+import {
+  CommunitySidebar,
+  type CommunitySection,
+} from "@/features/community/components/community-sidebar";
 
 const UserSettingsDialog = dynamic(
   () =>
@@ -81,6 +85,17 @@ function tradeIdFromPath(pathname: string) {
   return match?.[1] ? decodeURIComponent(match[1]) : null;
 }
 
+function communityRouteFromPath(pathname: string) {
+  const match = pathname.match(
+    /^\/community\/([^/]+)(?:\/(overview|analytics|leaderboard|members))?\/?$/,
+  );
+  if (!match?.[1]) return null;
+  return {
+    communityId: decodeURIComponent(match[1]),
+    tab: (match[2] || "overview") as CommunitySection,
+  };
+}
+
 function AuthGate({ onLogin }: { onLogin: () => void }) {
   return <TradeWayLoginLanding onLogin={onLogin} />;
 }
@@ -96,6 +111,7 @@ export function AppShell() {
 function AppShellInner() {
   const pathname = usePathname();
   const tradeId = tradeIdFromPath(pathname);
+  const communityRoute = communityRouteFromPath(pathname);
   const [section, setSection] = useState<Section>(getCurrentSection);
   const [profileUsername, setProfileUsername] = useState(
     getCurrentProfileUsername,
@@ -201,6 +217,23 @@ function AppShellInner() {
     workspaceMainRef.current?.scrollTo({ top: 0, behavior: "instant" });
   };
 
+  const openCommunitySection = (next: CommunitySection) => {
+    if (!communityRoute) return;
+    window.history.pushState(
+      null,
+      "",
+      `/community/${communityRoute.communityId}/${next}`,
+    );
+    window.dispatchEvent(new Event("popstate"));
+    workspaceMainRef.current?.scrollTo({ top: 0, behavior: "instant" });
+  };
+
+  const closeCommunityWorkspace = () => {
+    window.history.pushState(null, "", "/community");
+    window.dispatchEvent(new Event("popstate"));
+    workspaceMainRef.current?.scrollTo({ top: 0, behavior: "instant" });
+  };
+
   const renderSection = (item: Section) => {
     if (item === "accounts")
       return <Journal onLogin={openLogin} mode="accounts" />;
@@ -271,12 +304,21 @@ function AppShellInner() {
       <ActiveAccountProvider>
         <WorkspaceBootLoader />
         <div className="workspace-shell flex h-[100dvh] w-full overflow-hidden bg-black p-0 text-foreground">
-          <Sidebar
-            active={section}
-            onChange={changeSection}
-            onLogin={openLogin}
-            user={user}
-          />
+          {communityRoute ? (
+            <CommunitySidebar
+              communityId={communityRoute.communityId}
+              active={communityRoute.tab}
+              onNavigate={openCommunitySection}
+              onBack={closeCommunityWorkspace}
+            />
+          ) : (
+            <Sidebar
+              active={section}
+              onChange={changeSection}
+              onLogin={openLogin}
+              user={user}
+            />
+          )}
           <div
             className="hidden w-[236px] shrink-0 lg:block"
             aria-hidden="true"
@@ -286,7 +328,7 @@ function AppShellInner() {
             data-workspace-main
             className="workspace-main h-[100dvh] min-w-0 flex-1 overscroll-contain overflow-y-auto overflow-x-hidden bg-black pb-[max(env(safe-area-inset-bottom),0.5rem)] lg:pb-0"
           >
-            <WorkspaceTopbar section={section} />
+            {!communityRoute ? <WorkspaceTopbar section={section} /> : null}
             <section className="min-h-full">{renderSection(section)}</section>
           </main>
         </div>
