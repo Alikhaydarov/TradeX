@@ -3,10 +3,8 @@
 import { usePathname } from "next/navigation";
 
 import { ChatLayout } from "@/components/chat/chat-layout";
-import {
-  CommunityDetail,
-  CommunityHub,
-} from "@/features/community/components/community-experience";
+import { CommunityDetailPremium } from "@/features/community/components/community-detail-premium";
+import { CommunityHubPremium } from "@/features/community/components/community-hub-premium";
 import type { CommunitySection } from "@/features/community/components/community-sidebar";
 
 const VALID_TABS = new Set<CommunitySection>([
@@ -33,11 +31,11 @@ export function CommunityWorkspace() {
   const pathname = usePathname();
   const route = communityRoute(pathname);
 
-  if (!route) return <CommunityHub />;
+  if (!route) return <CommunityHubPremium />;
   if (route.tab === "chat") return <ChatLayout communityId={route.communityId} />;
 
   return (
-    <CommunityDetail
+    <CommunityDetailPremium
       communityId={route.communityId}
       activeTab={route.tab}
     />
