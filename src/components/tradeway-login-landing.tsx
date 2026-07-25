@@ -1,10 +1,43 @@
 "use client";
 
 import { ArrowRight, BarChart3, BookOpen, Check, ShieldCheck, Users } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
-const PLATFORMS = ["Tradovate", "cTrader", "MT5", "NinjaTrader", "TradingView", "DXtrade"];
+const PLATFORMS = [
+  { name: "Tradovate", logo: "/platforms/tradovate.png", note: "Futures" },
+  { name: "cTrader", logo: "/platforms/ctrader.svg", note: "Forex & CFD" },
+  { name: "MetaTrader 5", logo: "/platforms/metatrader5.png", note: "Multi-asset" },
+  { name: "NinjaTrader", logo: "/platforms/ninjatrader.png", note: "Futures" },
+  { name: "TradeLocker", logo: "/platforms/tradelocker.png", note: "Multi-asset" },
+  { name: "Match-Trader", logo: "/platforms/matchtrader.png", note: "Forex & CFD" },
+  { name: "ProjectX", logo: "/platforms/projectx.png", note: "Futures" },
+];
+
+function PlatformPreview() {
+  return (
+    <div className="auth3-platform-preview" aria-hidden="true">
+      <div className="auth3-preview-side">
+        <span className="active"><BarChart3 size={15} /> Overview</span>
+        <span><BookOpen size={15} /> Journal</span>
+        <span><Users size={15} /> Community</span>
+      </div>
+      <div className="auth3-preview-main">
+        <div className="auth3-preview-top"><span>Connected accounts</span><b><i /> Synced now</b></div>
+        <div className="auth3-preview-cards">
+          <div><small>Combined balance</small><strong>$48,240</strong><span>4 accounts</span></div>
+          <div><small>Execution score</small><strong>91.4</strong><span>Top 8%</span></div>
+        </div>
+        <div className="auth3-preview-chart">
+          {[44, 62, 38, 74, 54, 88, 68, 96, 78, 112, 94, 128].map((height, index) => (
+            <i key={index} style={{ height }} />
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
 
 function MarketCanvas() {
   return (
@@ -96,7 +129,14 @@ export function TradeWayLoginLanding({
 
       <section className="auth3-platforms">
         <p>Fits your existing trading workflow</p>
-        <div>{PLATFORMS.map((platform) => <span key={platform}>{platform}</span>)}</div>
+        <div>
+          {PLATFORMS.map((platform) => (
+            <span key={platform.name}>
+              <Image src={platform.logo} alt="" width={24} height={24} />
+              {platform.name}
+            </span>
+          ))}
+        </div>
       </section>
 
       <section className="auth3-workflow" id="workflow">
@@ -109,6 +149,32 @@ export function TradeWayLoginLanding({
           <article><BarChart3 /><span>02</span><h3>Find the pattern</h3><p>Turn executions into clean performance insights you can act on.</p></article>
           <article><Users /><span>03</span><h3>Improve together</h3><p>Share verified progress inside private, focused trader communities.</p></article>
         </div>
+      </section>
+
+      <section className="auth3-integrations" id="integrations">
+        <div className="auth3-integration-copy">
+          <span>ONE WORKSPACE, EVERY ACCOUNT</span>
+          <h2>Your platforms stay yours.<br />Tradox makes them useful.</h2>
+          <p>Bring results from the tools you already trade with into one clear review workflow. Compare accounts, understand execution and keep your journal attached to the numbers.</p>
+          <div className="auth3-integration-points">
+            <span><Check size={14} /> Unified performance view</span>
+            <span><Check size={14} /> Account-level privacy controls</span>
+            <span><Check size={14} /> Fast CSV and connector workflows</span>
+          </div>
+        </div>
+        <PlatformPreview />
+      </section>
+
+      <section className="auth3-platform-grid" aria-label="Supported trading platforms">
+        {PLATFORMS.map((platform, index) => (
+          <article key={platform.name}>
+            <div className="auth3-platform-logo">
+              <Image src={platform.logo} alt={`${platform.name} logo`} width={44} height={44} />
+            </div>
+            <div><h3>{platform.name}</h3><p>{platform.note}</p></div>
+            <span>{String(index + 1).padStart(2, "0")}</span>
+          </article>
+        ))}
       </section>
 
       <section className="auth3-final">

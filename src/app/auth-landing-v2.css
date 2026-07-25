@@ -34,6 +34,8 @@
 .auth3-hero,
 .auth3-platforms,
 .auth3-workflow,
+.auth3-integrations,
+.auth3-platform-grid,
 .auth3-final,
 .auth3-footer {
   position: relative;
@@ -115,8 +117,9 @@
 
 .auth3-platforms { display: flex; align-items: center; justify-content: space-between; gap: 30px; border-block: 1px solid var(--auth-border); padding-block: 25px; }
 .auth3-platforms p { color: #5f5f5f; font-size: 10px; font-weight: 750; letter-spacing: .13em; text-transform: uppercase; white-space: nowrap; }
-.auth3-platforms div { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 24px; }
-.auth3-platforms span { color: #8a8a8a; font-size: 12px; font-weight: 650; }
+.auth3-platforms div { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 12px; }
+.auth3-platforms span { display: inline-flex; align-items: center; gap: 8px; border: 1px solid rgba(255,255,255,.07); border-radius: 999px; background: rgba(255,255,255,.025); padding: 6px 10px 6px 7px; color: #9a9a9a; font-size: 11px; font-weight: 650; }
+.auth3-platforms img { width: 22px; height: 22px; border-radius: 6px; object-fit: contain; background: rgba(255,255,255,.92); padding: 2px; }
 
 .auth3-workflow { padding-block: 120px; }
 .auth3-section-title > span, .auth3-final > div > span { color: #5f5f5f; font-size: 10px; font-weight: 750; letter-spacing: .16em; }
@@ -130,6 +133,38 @@
 .auth3-feature-grid h3 { margin-top: 65px; font-size: 18px; font-weight: 650; letter-spacing: -.025em; }
 .auth3-feature-grid p { max-width: 290px; margin-top: 12px; color: #747474; font-size: 13px; line-height: 1.65; }
 
+.auth3-integrations { display: grid; grid-template-columns: .8fr 1.2fr; align-items: center; gap: 80px; border-top: 1px solid var(--auth-border); padding-block: 120px 70px; }
+.auth3-integration-copy > span { color: #626262; font-size: 10px; font-weight: 750; letter-spacing: .16em; }
+.auth3-integration-copy h2 { margin-top: 18px; font-size: clamp(34px, 4vw, 56px); font-weight: 600; letter-spacing: -.057em; line-height: 1.02; }
+.auth3-integration-copy > p { max-width: 510px; margin-top: 24px; color: #777; font-size: 14px; line-height: 1.75; }
+.auth3-integration-points { display: grid; gap: 11px; margin-top: 28px; color: #aaa; font-size: 12px; }
+.auth3-integration-points span { display: flex; align-items: center; gap: 9px; }
+.auth3-integration-points svg { border-radius: 50%; background: #fff; color: #000; padding: 2px; }
+.auth3-platform-preview { display: grid; min-height: 430px; grid-template-columns: 145px 1fr; overflow: hidden; border: 1px solid var(--auth-border); border-radius: 22px; background: #050505; box-shadow: 0 35px 90px rgba(0,0,0,.55), inset 0 1px rgba(255,255,255,.06); }
+.auth3-preview-side { display: flex; flex-direction: column; gap: 7px; border-right: 1px solid var(--auth-border); background: rgba(255,255,255,.018); padding: 22px 13px; }
+.auth3-preview-side span { display: flex; align-items: center; gap: 9px; border-radius: 9px; padding: 10px; color: #606060; font-size: 10px; font-weight: 650; }
+.auth3-preview-side span.active { background: #fff; color: #000; }
+.auth3-preview-main { min-width: 0; padding: 24px; }
+.auth3-preview-top { display: flex; align-items: center; justify-content: space-between; color: #a8a8a8; font-size: 11px; font-weight: 650; }
+.auth3-preview-top b { display: flex; align-items: center; gap: 7px; color: #656565; font-size: 9px; font-weight: 600; }
+.auth3-preview-top i { width: 5px; height: 5px; border-radius: 50%; background: #fff; box-shadow: 0 0 0 4px rgba(255,255,255,.08); }
+.auth3-preview-cards { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-top: 24px; }
+.auth3-preview-cards > div { border: 1px solid rgba(255,255,255,.08); border-radius: 13px; background: rgba(255,255,255,.025); padding: 16px; }
+.auth3-preview-cards small { display: block; color: #5d5d5d; font-size: 9px; }
+.auth3-preview-cards strong { display: block; margin-top: 11px; font-family: var(--font-geist-mono), monospace; font-size: 21px; letter-spacing: -.05em; }
+.auth3-preview-cards span { display: block; margin-top: 8px; color: #777; font-size: 9px; }
+.auth3-preview-chart { display: flex; height: 210px; align-items: end; gap: 8px; margin-top: 24px; border-bottom: 1px solid rgba(255,255,255,.1); background-image: linear-gradient(rgba(255,255,255,.035) 1px, transparent 1px); background-size: 100% 42px; padding: 0 8px; }
+.auth3-preview-chart i { flex: 1; min-width: 5px; border-radius: 4px 4px 0 0; background: linear-gradient(to top, rgba(255,255,255,.09), rgba(255,255,255,.72)); transform-origin: bottom; animation: auth3-bars .8s both; }
+.auth3-platform-grid { display: grid; grid-template-columns: repeat(4, 1fr); border-block: 1px solid var(--auth-border); margin-bottom: 120px; }
+.auth3-platform-grid article { position: relative; display: flex; min-height: 132px; align-items: center; gap: 14px; border-right: 1px solid var(--auth-border); border-bottom: 1px solid var(--auth-border); padding: 24px; }
+.auth3-platform-grid article:nth-child(4n) { border-right: 0; }
+.auth3-platform-grid article:nth-last-child(-n+3) { border-bottom: 0; }
+.auth3-platform-logo { display: grid; width: 48px; height: 48px; flex: 0 0 48px; place-items: center; border: 1px solid rgba(255,255,255,.1); border-radius: 13px; background: rgba(255,255,255,.93); padding: 7px; }
+.auth3-platform-logo img { width: 100%; height: 100%; object-fit: contain; }
+.auth3-platform-grid h3 { font-size: 13px; font-weight: 700; }
+.auth3-platform-grid p { margin-top: 4px; color: #646464; font-size: 10px; }
+.auth3-platform-grid article > span { position: absolute; right: 13px; top: 12px; color: #343434; font-family: var(--font-geist-mono), monospace; font-size: 9px; }
+
 .auth3-final { display: flex; align-items: end; justify-content: space-between; gap: 30px; border: 1px solid var(--auth-border); border-radius: 24px; background: radial-gradient(circle at 85% 0, rgba(255,255,255,.09), transparent 30%), #050505; padding: 56px; }
 .auth3-final button { display: inline-flex; flex-shrink: 0; align-items: center; gap: 10px; border-radius: 999px; background: #fff; padding: 15px 20px; color: #000; font-size: 13px; font-weight: 750; transition: transform .2s, background .2s; }
 .auth3-final button:hover { transform: translateY(-2px); background: #ddd; }
@@ -141,6 +176,7 @@
 @keyframes auth3-draw { to { stroke-dashoffset: 0; } }
 @keyframes auth3-pulse { 50% { box-shadow: 0 0 0 9px rgba(255,255,255,0); } }
 @keyframes auth3-float { 50% { transform: translateY(-8px); } }
+@keyframes auth3-bars { from { opacity: 0; transform: scaleY(.1); } to { opacity: 1; transform: scaleY(1); } }
 
 @media (max-width: 900px) {
   .auth3-hero { min-height: auto; grid-template-columns: 1fr; gap: 68px; padding-block: 80px; }
@@ -149,11 +185,17 @@
   .auth3-visual { width: min(680px, 92%); margin-inline: auto; }
   .auth3-platforms { align-items: flex-start; flex-direction: column; }
   .auth3-platforms div { justify-content: flex-start; }
+  .auth3-integrations { grid-template-columns: 1fr; gap: 55px; }
+  .auth3-platform-grid { grid-template-columns: repeat(2, 1fr); }
+  .auth3-platform-grid article:nth-child(4n) { border-right: 1px solid var(--auth-border); }
+  .auth3-platform-grid article:nth-child(2n) { border-right: 0; }
+  .auth3-platform-grid article:nth-last-child(-n+3) { border-bottom: 1px solid var(--auth-border); }
+  .auth3-platform-grid article:last-child { border-bottom: 0; }
   .auth3-final { align-items: flex-start; flex-direction: column; }
 }
 
 @media (max-width: 640px) {
-  .auth3-nav, .auth3-error, .auth3-hero, .auth3-platforms, .auth3-workflow, .auth3-final, .auth3-footer { width: min(100% - 30px, 1180px); }
+  .auth3-nav, .auth3-error, .auth3-hero, .auth3-platforms, .auth3-workflow, .auth3-integrations, .auth3-platform-grid, .auth3-final, .auth3-footer { width: min(100% - 30px, 1180px); }
   .auth3-nav { min-height: 68px; }
   .auth3-navlinks > a, .auth3-navlinks > button:not(.auth3-nav-cta) { display: none; }
   .auth3-hero { gap: 54px; padding-block: 65px 72px; }
@@ -175,6 +217,17 @@
   .auth3-feature-grid article, .auth3-feature-grid article:not(:first-child) { min-height: 230px; border-right: 0; border-bottom: 1px solid var(--auth-border); padding: 28px 10px 30px; }
   .auth3-feature-grid article:last-child { border-bottom: 0; }
   .auth3-feature-grid h3 { margin-top: 48px; }
+  .auth3-integrations { gap: 42px; padding-block: 90px 52px; }
+  .auth3-platform-preview { min-height: 360px; grid-template-columns: 1fr; }
+  .auth3-preview-side { display: grid; grid-template-columns: repeat(3, 1fr); border-right: 0; border-bottom: 1px solid var(--auth-border); padding: 9px; }
+  .auth3-preview-side span { justify-content: center; padding: 9px 5px; }
+  .auth3-preview-side svg { display: none; }
+  .auth3-preview-main { padding: 17px; }
+  .auth3-preview-cards strong { font-size: 17px; }
+  .auth3-preview-chart { height: 150px; }
+  .auth3-platform-grid { grid-template-columns: 1fr; margin-bottom: 90px; }
+  .auth3-platform-grid article, .auth3-platform-grid article:nth-child(2n), .auth3-platform-grid article:nth-child(4n) { min-height: 92px; border-right: 0; border-bottom: 1px solid var(--auth-border); padding: 16px 8px; }
+  .auth3-platform-grid article:last-child { border-bottom: 0; }
   .auth3-final { padding: 35px 24px; }
   .auth3-final button { width: 100%; justify-content: center; }
   .auth3-footer { align-items: flex-start; flex-direction: column; gap: 16px; margin-top: 65px; }
