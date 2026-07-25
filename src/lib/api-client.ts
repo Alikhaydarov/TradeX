@@ -7,6 +7,11 @@ interface RequestOptions {
 }
 
 const inFlightGets = new Map<string, Promise<unknown>>();
+const responseCache = new Map<string, { value: unknown; expiresAt: number }>();
+
+// A small client cache keeps route-to-route navigation instant without making
+// trading data stale for long. Mutations clear it immediately.
+const GET_CACHE_TTL_MS = 4_000;
 
 export async function apiRequest<T = unknown>(
   url: string,
@@ -27,10 +32,19 @@ export async function apiRequest<T = unknown>(
   const key = `${url}:${JSON.stringify(requestHeaders)}`;
 
   if (method === "GET") {
+    const cached = responseCache.get(key);
+    if (cached && cached.expiresAt > Date.now()) return cached.value as T;
+    if (cached) responseCache.delete(key);
+
     const pending = inFlightGets.get(key);
     if (pending) return pending as Promise<T>;
 
-    const request = performRequest<T>(url, method, body, requestHeaders);
+    const request = performRequest<T>(url, method, body, requestHeaders).then(
+      (value) => {
+        responseCache.set(key, { value, expiresAt: Date.now() + GET_CACHE_TTL_MS });
+        return value;
+      },
+    );
     inFlightGets.set(key, request);
     try {
       return await request;
@@ -39,7 +53,18 @@ export async function apiRequest<T = unknown>(
     }
   }
 
+  responseCache.clear();
   return performRequest<T>(url, method, body, requestHeaders);
+}
+
+export function invalidateApiCache(url?: string) {
+  if (!url) {
+    responseCache.clear();
+    return;
+  }
+  for (const key of responseCache.keys()) {
+    if (key.startsWith(`${url}:`)) responseCache.delete(key);
+  }
 }
 
 async function performRequest<T>(

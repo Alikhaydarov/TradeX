@@ -165,6 +165,18 @@ function AppShellInner() {
   }, []);
 
   useEffect(() => {
+    if (!user) return;
+    const preload = () => {
+      void import("./journal");
+      void import("./feed-v3");
+      void import("./account");
+      void import("./community-workspace");
+    };
+    const idleId = window.requestIdleCallback(preload, { timeout: 1600 });
+    return () => window.cancelIdleCallback(idleId);
+  }, [user]);
+
+  useEffect(() => {
     if (!user) {
       const timer = window.setTimeout(() => setIsAdmin(false), 0);
       return () => window.clearTimeout(timer);

@@ -163,36 +163,48 @@ export async function GET(request: Request) {
         share,
       ]),
     );
+    const metricsByAccount = new Map<
+      string,
+      { trades: number; pnl: number; wins: number }
+    >();
+    for (const entry of journalRows.data ?? []) {
+      const key = `${entry.user_id}:${entry.prop_account_id}`;
+      const metric = metricsByAccount.get(key) ?? { trades: 0, pnl: 0, wins: 0 };
+      const pnl = Number(entry.pnl ?? 0);
+      metric.trades += 1;
+      metric.pnl += pnl;
+      if (pnl > 0) metric.wins += 1;
+      metricsByAccount.set(key, metric);
+    }
     const results = (sharedAccountRows.data ?? []).map((account) => {
-      const trades = (journalRows.data ?? []).filter(
-        (entry) =>
-          entry.user_id === account.user_id &&
-          entry.prop_account_id === account.id,
-      );
-      const pnl = trades.reduce(
-        (sum, entry) => sum + Number(entry.pnl ?? 0),
-        0,
-      );
-      const wins = trades.filter((entry) => Number(entry.pnl ?? 0) > 0).length;
+      const metrics = metricsByAccount.get(`${account.user_id}:${account.id}`) ?? {
+        trades: 0,
+        pnl: 0,
+        wins: 0,
+      };
       const share = shareMap.get(`${account.user_id}:${account.id}`);
       return {
         accountId: account.id,
         accountName: account.name,
         firm: account.firm,
         member: profileMap.get(account.user_id) ?? null,
-        trades: trades.length,
-        winRate: trades.length ? Math.round((wins / trades.length) * 100) : 0,
+        trades: metrics.trades,
+        winRate: metrics.trades
+          ? Math.round((metrics.wins / metrics.trades) * 100)
+          : 0,
         pnlPercent:
           Number(account.initial_balance ?? account.account_size) > 0
             ? Number(
                 (
-                  (pnl /
+                  (metrics.pnl /
                     Number(account.initial_balance ?? account.account_size)) *
                   100
                 ).toFixed(2),
               )
             : 0,
-        dollarPnl: share?.show_dollar_pnl ? Number(pnl.toFixed(2)) : null,
+        dollarPnl: share?.show_dollar_pnl
+          ? Number(metrics.pnl.toFixed(2))
+          : null,
       };
     });
 
