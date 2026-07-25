@@ -7,7 +7,8 @@ function cleanText(node: Element | undefined) {
 }
 
 function isTradesPage() {
-  return typeof window !== "undefined" && window.location.pathname.startsWith("/trades");
+  if (typeof window === "undefined") return false;
+  return /^\/trades\/?$/.test(window.location.pathname);
 }
 
 function isMobileViewport() {
