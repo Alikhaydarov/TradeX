@@ -1073,35 +1073,7 @@ export function JournalV2({
             onRemoveTrade={removeTrade}
             onMt5Synced={reloadJournal}
           />
-        ) : (
-          <div className="rounded-[1.5rem] border border-white/8 bg-[#0b0b0b] p-5 shadow-[0_18px_46px_rgba(0,0,0,.22)]">
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-              <div>
-                <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-zinc-500">
-                  Workspace
-                </p>
-                <h3 className="mt-2 text-xl font-black text-white">
-                  Select an account to load dashboard, calendar, trades and
-                  analytics.
-                </h3>
-                <p className="mt-1 text-sm text-zinc-500">
-                  Home keeps the feed at the top, and your account workspace
-                  opens right under it.
-                </p>
-              </div>
-              <Button
-                type="button"
-                className="h-11 rounded-2xl bg-white px-4 text-black hover:bg-zinc-200"
-                onClick={() => {
-                  window.history.pushState(null, "", "/accounts");
-                  window.dispatchEvent(new Event("popstate"));
-                }}
-              >
-                Open accounts
-              </Button>
-            </div>
-          </div>
-        )
+        ) : null
       ) : (
         <Accounts
           activeAccountId={activeAccountId}

@@ -1,8 +1,8 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import { EyeOff, Menu, Percent, Plus, Wallet } from "lucide-react";
 import { useActiveAccountStore } from "./active-account-context";
-import { SocialActions } from "./social-actions-v2";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -14,6 +14,14 @@ import {
   type PnlViewMode,
 } from "./workspace-preferences-context";
 import type { Section } from "./types";
+
+const SocialActions = dynamic(
+  () => import("./social-actions-v2").then((module) => module.SocialActions),
+  {
+    ssr: false,
+    loading: () => <div className="h-10 w-[88px] shrink-0" aria-hidden="true" />,
+  },
+);
 
 const LABELS: Partial<Record<Section, string>> = {
   feed: "Home",
@@ -50,7 +58,7 @@ function PostTradeButton({ compact = false }: { compact?: boolean }) {
     <button
       type="button"
       onClick={dispatchPostTrade}
-      className={`inline-flex h-10 shrink-0 items-center justify-center rounded-xl bg-white font-bold text-black shadow-[0_8px_22px_rgba(255,255,255,.08)] transition hover:-translate-y-0.5 hover:bg-zinc-100 active:translate-y-0 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40 ${compact ? "w-10 px-0" : "gap-2 px-4 text-[12px]"}`}
+      className={`inline-flex h-10 shrink-0 items-center justify-center rounded-lg bg-white font-bold text-black shadow-[0_8px_22px_rgba(255,255,255,.08)] transition hover:-translate-y-0.5 hover:bg-zinc-100 active:translate-y-0 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40 ${compact ? "w-10 px-0" : "gap-2 px-4 text-[12px]"}`}
       aria-label="Post trade"
       title="Post trade"
     >
@@ -92,7 +100,7 @@ export function WorkspaceTopbar({ section }: { section: Section }) {
         <button
           type="button"
           onClick={openMobileDrawer}
-          className="grid size-10 shrink-0 place-items-center rounded-xl border border-white/12 bg-[#0c0c0c] text-zinc-100 transition hover:border-white/20 hover:bg-[#151515] active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/30 lg:hidden"
+          className="grid size-10 shrink-0 place-items-center rounded-lg border border-white/12 bg-[#0c0c0c] text-zinc-100 transition hover:border-white/20 hover:bg-[#151515] active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/30 lg:hidden"
           aria-label="Open mobile menu"
         >
           <Menu size={18} strokeWidth={2} />
@@ -161,7 +169,7 @@ function PnlModeMenu({
   pnlMode,
   pnlLabel,
   onChange,
-  compact = false,
+  compact = true,
 }: {
   pnlMode: PnlViewMode;
   pnlLabel: string;
@@ -177,18 +185,21 @@ function PnlModeMenu({
     { value: "percentage", label: "Percentage View", icon: Percent },
     { value: "hidden", label: "Hide P&L", icon: EyeOff },
   ];
+  const activeItem = items.find((item) => item.value === pnlMode) || items[0];
+  const ActiveIcon = activeItem.icon;
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <button
           type="button"
-          className={`inline-flex h-10 items-center rounded-xl border border-white/12 bg-[#0c0c0c] text-zinc-100 shadow-[inset_0_1px_0_rgba(255,255,255,.035)] transition hover:border-white/20 hover:bg-[#151515] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/30 ${compact ? "w-10 justify-center px-0" : "gap-2.5 px-3.5 text-[12px] font-semibold"}`}
+          className="inline-flex size-10 items-center justify-center rounded-lg border border-white/12 bg-[#0c0c0c] text-zinc-100 shadow-[inset_0_1px_0_rgba(255,255,255,.035)] transition hover:border-white/20 hover:bg-[#151515] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/30"
+          data-compact={compact ? "true" : "false"}
           aria-label={`P&L display: ${pnlLabel}`}
           title={pnlLabel}
         >
-          <Percent size={15} strokeWidth={2.2} />
-          {compact ? null : pnlLabel}
+          <ActiveIcon size={16} strokeWidth={2.1} />
+          <span className="sr-only">{pnlLabel}</span>
         </button>
       </DropdownMenuTrigger>
       <DropdownMenuContent
