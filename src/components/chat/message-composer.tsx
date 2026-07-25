@@ -62,59 +62,61 @@ export function MessageComposer({
   };
 
   return (
-    <div className="border-t border-white/8 bg-[#050505] px-2.5 py-2 sm:px-3">
-      {reply ? (
-        <div className="mb-1.5 flex items-center gap-2 rounded-lg border border-white/8 bg-[#090909] px-2.5 py-1.5">
-          <CornerUpLeft size={12} className="shrink-0 text-zinc-600" />
-          <div className="min-w-0 flex-1">
-            <p className="text-[9px] font-semibold text-zinc-500">Replying to {reply.senderName}</p>
-            <p className="truncate text-[10px] text-zinc-700">{reply.content}</p>
+    <div className="shrink-0 border-t border-white/[.07] bg-[#040404]/95 px-3 pb-3 pt-2 backdrop-blur sm:px-5 lg:px-7">
+      <div className="mx-auto w-full max-w-[980px]">
+        {reply ? (
+          <div className="mb-2 flex items-center gap-2 rounded-xl border border-white/8 bg-[#090909] px-3 py-2">
+            <CornerUpLeft size={12} className="shrink-0 text-zinc-600" />
+            <div className="min-w-0 flex-1">
+              <p className="text-[9px] font-semibold text-zinc-500">Replying to {reply.senderName}</p>
+              <p className="truncate text-[10px] text-zinc-700">{reply.content}</p>
+            </div>
+            <button
+              type="button"
+              onClick={onReplyClear}
+              className="grid size-7 shrink-0 place-items-center rounded-lg text-zinc-600 transition hover:bg-white/[.05] hover:text-white"
+              aria-label="Cancel reply"
+            >
+              <X size={12} />
+            </button>
           </div>
-          <button
-            type="button"
-            onClick={onReplyClear}
-            className="grid size-6 shrink-0 place-items-center rounded-md text-zinc-600 hover:bg-white/[.05] hover:text-white"
-            aria-label="Cancel reply"
-          >
-            <X size={12} />
-          </button>
-        </div>
-      ) : null}
+        ) : null}
 
-      <div className="flex items-end gap-2 rounded-xl border border-white/10 bg-[#090909] p-1.5 focus-within:border-white/18">
-        <Textarea
-          ref={textareaRef}
-          value={value}
-          onChange={(event) => {
-            setValue(event.target.value.slice(0, 4000));
-            onTyping(Boolean(event.target.value.trim()));
-          }}
-          onBlur={() => onTyping(false)}
-          onKeyDown={(event) => {
-            if (event.key === "Enter" && !event.shiftKey) {
-              event.preventDefault();
-              void submit();
-            }
-          }}
-          disabled={disabled}
-          placeholder={remaining ? `Slow down — ${remaining}s` : `Message ${roomLabel}`}
-          className="max-h-36 min-h-9 flex-1 resize-none border-0 bg-transparent px-2 py-2 text-xs leading-5 shadow-none focus-visible:ring-0"
-          rows={1}
-        />
-        <Button
-          type="button"
-          size="icon"
-          onClick={() => void submit()}
-          disabled={blocked || !value.trim()}
-          className="size-9 shrink-0 rounded-lg bg-white text-black hover:bg-zinc-200"
-          aria-label="Send message"
-        >
-          <Send size={15} />
-        </Button>
-      </div>
-      <div className="mt-1 flex items-center justify-between px-1 text-[8px] text-zinc-700">
-        <span>Enter to send · Shift+Enter for newline</span>
-        <span>{value.length}/4000</span>
+        <div className="flex items-end gap-2 rounded-2xl border border-white/10 bg-[#090909] p-2 shadow-[0_12px_35px_rgba(0,0,0,.22)] transition focus-within:border-white/18 focus-within:bg-[#0b0b0b]">
+          <Textarea
+            ref={textareaRef}
+            value={value}
+            onChange={(event) => {
+              setValue(event.target.value.slice(0, 4000));
+              onTyping(Boolean(event.target.value.trim()));
+            }}
+            onBlur={() => onTyping(false)}
+            onKeyDown={(event) => {
+              if (event.key === "Enter" && !event.shiftKey) {
+                event.preventDefault();
+                void submit();
+              }
+            }}
+            disabled={disabled}
+            placeholder={remaining ? `Slow down — ${remaining}s` : `Message ${roomLabel}`}
+            className="max-h-36 min-h-10 flex-1 resize-none border-0 bg-transparent px-2.5 py-2.5 text-[13px] leading-5 shadow-none focus-visible:ring-0"
+            rows={1}
+          />
+          <Button
+            type="button"
+            size="icon"
+            onClick={() => void submit()}
+            disabled={blocked || !value.trim()}
+            className="size-10 shrink-0 rounded-xl bg-white text-black hover:bg-zinc-200"
+            aria-label="Send message"
+          >
+            <Send size={15} />
+          </Button>
+        </div>
+        <div className="mt-1.5 flex items-center justify-between px-1 text-[8px] text-zinc-700">
+          <span>Enter to send · Shift+Enter for newline</span>
+          <span>{value.length}/4000</span>
+        </div>
       </div>
     </div>
   );
