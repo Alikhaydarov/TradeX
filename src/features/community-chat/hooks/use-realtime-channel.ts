@@ -158,7 +158,19 @@ export function useRealtimeChannel({
       }
 
       if (typing) {
-        typingTimerRef.current = window.setTimeout(() => updateTyping(false), 1100);
+        typingTimerRef.current = window.setTimeout(() => {
+          const activeChannel = channelRef.current;
+          if (!activeChannel || !typingStateRef.current) return;
+          typingStateRef.current = false;
+          void activeChannel.track({
+            userId: currentUser.id,
+            username: currentUser.username,
+            fullName: currentUser.fullName,
+            avatarUrl: currentUser.avatarUrl,
+            onlineAt: new Date().toISOString(),
+            typing: false,
+          } satisfies ChatPresenceMeta);
+        }, 1100);
       }
     },
     [currentUser],
