@@ -2,14 +2,11 @@
 
 import { useEffect, useRef, useState } from "react";
 import dynamic from "next/dynamic";
-import { usePathname } from "next/navigation";
-import { MessageCircle } from "lucide-react";
 import { AuthModal } from "./auth-modal";
 import { ActiveAccountProvider } from "./active-account-context";
 import { NotificationListener } from "./notification-listener";
 import { PremiumUpsellDialog } from "./premium-upsell-dialog";
 import { Sidebar } from "./sidebar";
-import { WorkspaceBootLoader } from "./workspace-boot-loader";
 import { WorkspaceTopbar } from "./workspace-topbar";
 import { WorkspacePreferencesProvider } from "./workspace-preferences-context";
 import { TradeWayLoginLanding } from "./tradeway-login-landing";
@@ -25,10 +22,6 @@ import type { Section } from "./types";
 import { Spinner } from "./ui/spinner";
 import { WorkspaceSectionSkeleton } from "./workspace-section-skeleton";
 import { FreeUserStart } from "./free-user-start";
-import {
-  CommunitySidebar,
-  type CommunitySection,
-} from "@/features/community/components/community-sidebar";
 
 const UserSettingsDialog = dynamic(
   () =>
@@ -61,44 +54,19 @@ const Journal = dynamic(
   () => import("./journal").then((module) => module.Journal),
   { ssr: false, loading: () => <WorkspaceSectionSkeleton /> },
 );
-const CalendarWorkspaceV2 = dynamic(
-  () =>
-    import("./calendar-workspace-v2").then(
-      (module) => module.CalendarWorkspaceV2,
-    ),
-  { ssr: false, loading: () => <WorkspaceSectionSkeleton /> },
-);
 const CommunityWorkspace = dynamic(
   () =>
     import("./community-workspace").then((module) => module.CommunityWorkspace),
   { ssr: false, loading: () => <WorkspaceSectionSkeleton /> },
 );
-const TradeDetailPage = dynamic(
-  () =>
-    import("@/features/trades/components/trade-detail-page").then(
-      (module) => module.TradeDetailPage,
-    ),
-  { ssr: false, loading: () => <WorkspaceSectionSkeleton /> },
-);
-
-function tradeIdFromPath(pathname: string) {
-  const match = pathname.match(/^\/trades\/([^/]+)\/?$/);
-  return match?.[1] ? decodeURIComponent(match[1]) : null;
-}
-
-function communityRouteFromPath(pathname: string) {
-  const match = pathname.match(
-    /^\/community\/([^/]+)(?:\/(overview|analytics|leaderboard|members|chat))?\/?$/,
-  );
-  if (!match?.[1]) return null;
-  return {
-    communityId: decodeURIComponent(match[1]),
-    tab: (match[2] || "overview") as CommunitySection,
-  };
-}
-
-function AuthGate({ onLogin }: { onLogin: () => void }) {
-  return <TradeWayLoginLanding onLogin={onLogin} />;
+function AuthGate({
+  onLogin,
+  onRegister,
+}: {
+  onLogin: () => void;
+  onRegister: () => void;
+}) {
+  return <TradeWayLoginLanding onLogin={onLogin} onRegister={onRegister} />;
 }
 
 export function AppShell() {
@@ -110,20 +78,25 @@ export function AppShell() {
 }
 
 function AppShellInner() {
-  const pathname = usePathname();
-  const tradeId = tradeIdFromPath(pathname);
-  const communityRoute = communityRouteFromPath(pathname);
   const [section, setSection] = useState<Section>(getCurrentSection);
   const [profileUsername, setProfileUsername] = useState(
     getCurrentProfileUsername,
   );
   const [authOpen, setAuthOpen] = useState(false);
+  const [authMode, setAuthMode] = useState<"login" | "register">("login");
   const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
   const [notificationsMounted, setNotificationsMounted] = useState(false);
   const [profileOpening, setProfileOpening] = useState(false);
   const workspaceMainRef = useRef<HTMLElement>(null);
   const { user } = useAuth();
-  const openLogin = () => setAuthOpen(true);
+  const openLogin = () => {
+    setAuthMode("login");
+    setAuthOpen(true);
+  };
+  const openRegister = () => {
+    setAuthMode("register");
+    setAuthOpen(true);
+  };
 
   useEffect(() => {
     const syncFromPath = () => {
@@ -149,11 +122,6 @@ function AppShellInner() {
   }, []);
 
   useEffect(() => {
-    setSection(getCurrentSection());
-    workspaceMainRef.current?.scrollTo({ top: 0, behavior: "instant" });
-  }, [pathname]);
-
-  useEffect(() => {
     if (!profileOpening) return;
     const timer = window.setTimeout(() => setProfileOpening(false), 180);
     return () => window.clearTimeout(timer);
@@ -163,18 +131,6 @@ function AppShellInner() {
     const timer = window.setTimeout(() => setNotificationsMounted(true), 800);
     return () => window.clearTimeout(timer);
   }, []);
-
-  useEffect(() => {
-    if (!user) return;
-    const preload = () => {
-      void import("./journal");
-      void import("./feed-v3");
-      void import("./account");
-      void import("./community-workspace");
-    };
-    const idleId = window.requestIdleCallback(preload, { timeout: 1600 });
-    return () => window.cancelIdleCallback(idleId);
-  }, [user]);
 
   useEffect(() => {
     if (!user) {
@@ -211,51 +167,19 @@ function AppShellInner() {
 
   const changeSection = (nextSection: Section) => {
     if (nextSection === "admin" && isAdmin !== true) return;
-    if (
-      nextSection === section &&
-      nextSection !== "account" &&
-      nextSection !== "calendar"
-    )
-      return;
+    if (nextSection === section && nextSection !== "account") return;
     setProfileUsername("");
     setSection(nextSection);
     window.history.pushState(null, "", pathFromSection(nextSection));
-    window.dispatchEvent(new Event("popstate"));
-    workspaceMainRef.current?.scrollTo({ top: 0, behavior: "instant" });
-  };
-
-  const closeTradeDetail = () => {
-    window.history.pushState(null, "", "/trades");
-    window.dispatchEvent(new Event("popstate"));
-    workspaceMainRef.current?.scrollTo({ top: 0, behavior: "instant" });
-  };
-
-  const openCommunitySection = (next: CommunitySection) => {
-    if (!communityRoute) return;
-    window.history.pushState(
-      null,
-      "",
-      `/community/${communityRoute.communityId}/${next}`,
-    );
-    window.dispatchEvent(new Event("popstate"));
-    workspaceMainRef.current?.scrollTo({ top: 0, behavior: "instant" });
-  };
-
-  const closeCommunityWorkspace = () => {
-    window.history.pushState(null, "", "/community");
-    window.dispatchEvent(new Event("popstate"));
     workspaceMainRef.current?.scrollTo({ top: 0, behavior: "instant" });
   };
 
   const renderSection = (item: Section) => {
     if (item === "accounts")
       return <Journal onLogin={openLogin} mode="accounts" />;
-    if (item === "calendar") return <CalendarWorkspaceV2 />;
-    if (item === "trades" && tradeId) {
-      return <TradeDetailPage tradeId={tradeId} onBack={closeTradeDetail} />;
-    }
     const workspaceTabs: Partial<Record<Section, WorkspaceTab>> = {
       dashboard: "overview",
+      calendar: "calendar",
       trades: "trades",
       analytics: "analytics",
     };
@@ -285,8 +209,7 @@ function AppShellInner() {
         </div>
       );
     }
-    if (item === "admin" && isAdmin)
-      return <AdminPanel onLogin={openLogin} />;
+    if (item === "admin" && isAdmin) return <AdminPanel onLogin={openLogin} />;
     return (
       <FreeUserStart>
         <FeedV3 onLogin={openLogin} />
@@ -298,7 +221,7 @@ function AppShellInner() {
     return (
       <>
         <Pricing onLogin={openLogin} />
-        <AuthModal open={authOpen} onClose={() => setAuthOpen(false)} />
+        <AuthModal open={authOpen} onClose={() => setAuthOpen(false)} initialMode={authMode} />
       </>
     );
   }
@@ -306,8 +229,8 @@ function AppShellInner() {
   if (!user) {
     return (
       <>
-        <AuthGate onLogin={openLogin} />
-        <AuthModal open={authOpen} onClose={() => setAuthOpen(false)} />
+        <AuthGate onLogin={openLogin} onRegister={openRegister} />
+        <AuthModal open={authOpen} onClose={() => setAuthOpen(false)} initialMode={authMode} />
       </>
     );
   }
@@ -315,46 +238,28 @@ function AppShellInner() {
   return (
     <>
       <ActiveAccountProvider>
-        <WorkspaceBootLoader />
-        <div className="workspace-shell flex h-[100dvh] w-full overflow-hidden bg-black p-0 text-foreground">
-          {communityRoute ? (
-            <CommunitySidebar
-              communityId={communityRoute.communityId}
-              active={communityRoute.tab}
-              onNavigate={openCommunitySection}
-              onBack={closeCommunityWorkspace}
-            />
-          ) : (
-            <Sidebar
-              active={section}
-              onChange={changeSection}
-              onLogin={openLogin}
-              user={user}
-            />
-          )}
+        <div
+          className="workspace-shell mx-auto flex h-[100dvh] w-full max-w-[1920px] gap-0 overflow-hidden bg-[#000000] p-0 text-foreground lg:gap-3 lg:p-3"
+        >
+          <Sidebar
+            active={section}
+            onChange={changeSection}
+            onLogin={openLogin}
+            user={user}
+          />
           <div
-            className="hidden w-[236px] shrink-0 lg:block"
+            className="hidden w-[286px] shrink-0 lg:block"
             aria-hidden="true"
           />
           <main
             ref={workspaceMainRef}
             data-workspace-main
-            className="workspace-main h-[100dvh] min-w-0 flex-1 overscroll-contain overflow-y-auto overflow-x-hidden bg-black pb-[max(env(safe-area-inset-bottom),0.5rem)] lg:pb-0"
+            className="workspace-main h-[100dvh] min-w-0 flex-1 overscroll-contain overflow-y-auto overflow-x-hidden bg-[#000000] pb-[max(env(safe-area-inset-bottom),0.5rem)] lg:h-[calc(100dvh-2rem)] lg:rounded-[1rem] lg:border lg:border-white/8 lg:pb-0"
           >
-            {!communityRoute ? <WorkspaceTopbar section={section} /> : null}
+            <WorkspaceTopbar section={section} />
             <section className="min-h-full">{renderSection(section)}</section>
           </main>
         </div>
-        {communityRoute && communityRoute.tab !== "chat" ? (
-          <button
-            type="button"
-            onClick={() => openCommunitySection("chat")}
-            className="fixed bottom-[max(1rem,env(safe-area-inset-bottom))] right-3 z-[90] inline-flex h-10 items-center gap-2 rounded-xl border border-white/10 bg-white px-3 text-[11px] font-bold text-black shadow-2xl lg:hidden"
-            aria-label="Open community chat"
-          >
-            <MessageCircle size={15} /> Chat
-          </button>
-        ) : null}
       </ActiveAccountProvider>
       {profileOpening ? (
         <div
@@ -368,7 +273,7 @@ function AppShellInner() {
       {notificationsMounted && <NotificationListener />}
       <PremiumUpsellDialog />
       <UserSettingsDialog />
-      <AuthModal open={authOpen} onClose={() => setAuthOpen(false)} />
+      <AuthModal open={authOpen} onClose={() => setAuthOpen(false)} initialMode={authMode} />
     </>
   );
 }
