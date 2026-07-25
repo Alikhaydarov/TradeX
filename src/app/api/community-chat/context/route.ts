@@ -45,14 +45,18 @@ export async function GET(request: Request) {
     }
 
     let channelRows = channelsResult.data ?? [];
-    if (!channelRows.length) {
+    const hasGeneral = channelRows.some((channel) => channel.name.trim().toLowerCase() === "general");
+    if (!hasGeneral) {
+      const firstPosition = channelRows.length
+        ? Math.min(...channelRows.map((channel) => Number(channel.position ?? 0))) - 1
+        : 0;
       const inserted = await admin
         .from("channels")
         .insert({
           community_id: communityId,
           name: "general",
           is_premium_only: false,
-          position: 0,
+          position: firstPosition,
           created_by: access.community.owner_id,
         })
         .select("id, community_id, name, is_premium_only, position, created_at")
@@ -69,7 +73,7 @@ export async function GET(request: Request) {
         if (refreshed.error) throw new Error(refreshed.error.message);
         channelRows = refreshed.data ?? [];
       } else {
-        channelRows = [inserted.data];
+        channelRows = [inserted.data, ...channelRows];
       }
     }
 
