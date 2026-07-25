@@ -79,7 +79,6 @@ export function WorkspaceBootLoader() {
         <div className="relative grid size-16 place-items-center">
           <Spinner
             className="absolute inset-0 size-16 text-white/35"
-            strokeWidth={1.25}
           />
           <div className="relative size-10">
             <Image

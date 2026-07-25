@@ -1,14 +1,15 @@
-import { LoaderCircle } from "lucide-react"
-
 import { cn } from "@/lib/utils"
 
-function Spinner({ className, ...props }: React.ComponentProps<typeof LoaderCircle>) {
+function Spinner({ className, ...props }: React.ComponentProps<"span">) {
   return (
-    <LoaderCircle
+    <span
       data-slot="spinner"
       role="status"
       aria-label="Loading"
-      className={cn("size-4 animate-spin", className)}
+      className={cn(
+        "inline-block size-4 shrink-0 rounded-full border-2 border-current border-t-transparent text-current",
+        className,
+      )}
       {...props}
     />
   )

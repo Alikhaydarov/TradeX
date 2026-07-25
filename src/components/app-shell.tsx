@@ -22,6 +22,7 @@ import type { Section } from "./types";
 import { Spinner } from "./ui/spinner";
 import { WorkspaceSectionSkeleton } from "./workspace-section-skeleton";
 import { FreeUserStart } from "./free-user-start";
+import { WorkspaceBootLoader } from "./workspace-boot-loader";
 import type { CommunitySection } from "@/features/community/components/community-sidebar";
 
 const UserSettingsDialog = dynamic(
@@ -289,6 +290,7 @@ function AppShellInner() {
   return (
     <>
       <ActiveAccountProvider>
+        <WorkspaceBootLoader />
         <div
           className="workspace-shell mx-auto flex h-[100dvh] w-full max-w-[1920px] gap-0 overflow-hidden bg-[#000000] p-0 text-foreground lg:gap-3 lg:p-3"
         >

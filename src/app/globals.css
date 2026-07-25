@@ -125,6 +125,19 @@
 
 * { box-sizing: border-box; }
 
+@keyframes tradeway-spinner {
+  to { transform: rotate(360deg); }
+}
+
+[data-slot="spinner"] {
+  animation: tradeway-spinner 720ms linear infinite;
+  will-change: transform;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-slot="spinner"] { animation-duration: 1.8s; }
+}
+
 html {
   background: #000000;
   color-scheme: dark;
