@@ -657,18 +657,18 @@ function YearOverview({
 }) {
   return (
     <div className="space-y-4">
-      <Card className="gap-0 border-white/8 bg-[#070707] shadow-none">
-        <CardContent className="flex items-center gap-4 p-5 sm:justify-between">
+      <Card className="gap-0 overflow-hidden border-white/8 bg-[#070707] shadow-none">
+        <CardContent className="flex items-center gap-4 border-b border-white/8 p-4 sm:p-5 sm:justify-between">
           <div className="min-w-0 flex-1">
-            <h1 className="text-xl font-semibold tracking-tight text-white sm:text-2xl">
+            <h1 className="text-lg font-semibold tracking-tight text-white sm:text-xl">
               Yearly Performance
             </h1>
-            <p className="mt-1 text-sm leading-5 text-zinc-500">
+            <p className="mt-1 text-xs leading-5 text-zinc-500">
               Select a month to view its performance
             </p>
           </div>
           <Select value={yearFilter} onValueChange={onYearFilter}>
-            <SelectTrigger className="h-12 w-[138px] rounded-xl border-white/10 bg-[#171717] text-sm sm:w-[180px]">
+            <SelectTrigger className="h-9 w-[126px] rounded-lg border-white/10 bg-[#111] text-xs sm:w-[150px]">
               <SelectValue />
             </SelectTrigger>
             <SelectContent className="border-white/10 bg-[#090909]">
@@ -692,11 +692,11 @@ function YearOverview({
             key={year}
             className="gap-0 border-white/8 bg-[#070707] shadow-none"
           >
-            <CardHeader className="px-5 pb-0 pt-5">
-              <h2 className="text-lg font-semibold text-white">{year}</h2>
+            <CardHeader className="border-b border-white/8 px-4 pb-3 pt-4 sm:px-5">
+              <h2 className="text-sm font-semibold text-white">{year}</h2>
             </CardHeader>
-            <CardContent className="p-4 sm:p-5">
-              <div className="grid grid-cols-3 gap-x-3 gap-y-5 sm:grid-cols-4 lg:grid-cols-6">
+            <CardContent className="overflow-x-auto p-3 sm:p-4">
+              <div className="grid min-w-[620px] grid-cols-6 gap-x-2 gap-y-3 sm:grid-cols-7 lg:grid-cols-[repeat(13,minmax(0,1fr))]">
                 {stats.map((item) => (
                   <MonthTile
                     key={item.month}
@@ -707,7 +707,7 @@ function YearOverview({
                 ))}
                 <div>
                   <p className="mb-2 text-center text-xs text-zinc-500">YTD</p>
-                  <div className={`grid min-h-[76px] place-items-center rounded-xl border p-2 text-center ${bgTone(ytdPnl)}`}>
+                  <div className={`grid min-h-[70px] place-items-center rounded-lg border p-2 text-center ${bgTone(ytdPnl)}`}>
                     <div>
                       <p className={`text-sm font-semibold tabular-nums ${tone(ytdPnl)}`}>
                         {ytdTrades ? cash.format(ytdPnl) : "—"}
@@ -724,14 +724,14 @@ function YearOverview({
         );
       })}
 
-      <Card className="gap-0 border-white/8 bg-[#070707] shadow-none">
-        <CardHeader className="px-5 pb-0 pt-5">
-          <h2 className="text-xl font-semibold text-white">Account Balance</h2>
-          <p className="mt-1 text-sm text-zinc-500">
+      <Card className="gap-0 overflow-hidden border-white/8 bg-[#070707] shadow-none">
+        <CardHeader className="px-4 pb-0 pt-4 sm:px-5 sm:pt-5">
+          <h2 className="text-lg font-semibold text-white">Account Balance</h2>
+          <p className="mt-1 text-xs text-zinc-500">
             Equity curve of selected time period · {accountName}
           </p>
         </CardHeader>
-        <CardContent className="h-[280px] px-0 pb-2 pt-4 sm:h-[360px] sm:px-3">
+        <CardContent className="h-[250px] px-0 pb-2 pt-3 sm:h-[340px] sm:px-3">
           <ResponsiveContainer width="100%" height="100%">
             <AreaChart data={curve} margin={{ left: 2, right: 18, top: 12, bottom: 4 }}>
               <defs>
@@ -799,7 +799,7 @@ function MonthTile({
       <button
         type="button"
         onClick={() => onOpen(year, item.month)}
-        className={`grid min-h-[76px] w-full place-items-center rounded-xl border p-2 text-center transition hover:border-white/20 ${bgTone(item.pnl)}`}
+        className={`grid min-h-[70px] w-full place-items-center rounded-lg border p-2 text-center transition hover:border-white/20 ${bgTone(item.pnl)}`}
       >
         <div>
           <p className={`text-sm font-semibold tabular-nums ${tone(item.pnl)}`}>
