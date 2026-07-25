@@ -8,7 +8,17 @@ function mergeMessages(current: ChatMessage[], incoming: ChatMessage[]) {
   for (const message of [...current, ...incoming]) {
     const key = message.clientId ? `client:${message.clientId}` : `id:${message.id}`;
     const existing = byId.get(key);
-    byId.set(key, existing ? { ...existing, ...message, pending: message.pending ?? existing.pending } : message);
+    byId.set(
+      key,
+      existing
+        ? {
+            ...existing,
+            ...message,
+            pending: message.pending ?? existing.pending,
+            failed: message.failed ?? existing.failed,
+          }
+        : message,
+    );
   }
   return [...byId.values()].sort(
     (left, right) =>
@@ -52,7 +62,7 @@ export function useMessagesPagination({
         | (ChatMessagesPage & { error?: string })
         | null;
       if (!response.ok || !payload) throw new Error(payload?.error || "Messages could not be loaded.");
-      setMessages(payload.messages);
+      setMessages((current) => mergeMessages(current.filter((message) => message.pending), payload.messages));
       setNextCursor(payload.nextCursor);
     } catch (nextError) {
       setError(nextError instanceof Error ? nextError.message : "Messages could not be loaded.");
@@ -109,6 +119,10 @@ export function useMessagesPagination({
     );
   }, []);
 
+  const removeByClientId = useCallback((clientId: string) => {
+    setMessages((current) => current.filter((message) => message.clientId !== clientId));
+  }, []);
+
   const remove = useCallback((messageId: string) => {
     setMessages((current) => current.filter((message) => message.id !== messageId));
   }, []);
@@ -125,6 +139,7 @@ export function useMessagesPagination({
     merge,
     replaceByClientId,
     markFailed,
+    removeByClientId,
     remove,
   };
 }
