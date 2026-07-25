@@ -22,6 +22,7 @@ import "./floating-actions-layout.css";
 import "./dashboard-reference-layout.css";
 import "./workspace-visual-refresh.css";
 import "./workspace-docked-shell.css";
+import "./community-ui-fixes.css";
 
 const dmSans = DM_Sans({
   variable: "--font-dm-sans",
