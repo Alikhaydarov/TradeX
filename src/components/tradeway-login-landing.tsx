@@ -3,7 +3,7 @@
 import { ArrowRight, BarChart3, BookOpen, Check, ShieldCheck, Users } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 const PLATFORMS = [
   { name: "Tradovate", logo: "/platforms/tradovate.png", note: "Futures" },
@@ -79,6 +79,7 @@ export function TradeWayLoginLanding({
   onRegister: () => void;
 }) {
   const [authError, setAuthError] = useState<string | null>(null);
+  const shellRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
     const url = new URL(window.location.href);
@@ -95,8 +96,28 @@ export function TradeWayLoginLanding({
     window.history.replaceState(null, "", `${url.pathname}${url.search}${url.hash}`);
   }, []);
 
+  useEffect(() => {
+    const shell = shellRef.current;
+    if (!shell) return;
+
+    const targets = Array.from(shell.querySelectorAll<HTMLElement>("[data-reveal]"));
+    shell.classList.add("auth3-motion-ready");
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (!entry.isIntersecting) return;
+          entry.target.classList.add("is-visible");
+          observer.unobserve(entry.target);
+        });
+      },
+      { rootMargin: "0px 0px -10% 0px", threshold: 0.12 },
+    );
+    targets.forEach((target) => observer.observe(target));
+    return () => observer.disconnect();
+  }, []);
+
   return (
-    <main className="auth3-shell">
+    <main ref={shellRef} className="auth3-shell">
       <div className="auth3-noise" aria-hidden="true" />
       <nav className="auth3-nav">
         <Link href="/" className="auth3-logo" aria-label="Tradox home"><b>TD</b><span>Tradox</span></Link>
@@ -140,12 +161,12 @@ export function TradeWayLoginLanding({
       </section>
 
       <section className="auth3-workflow" id="workflow">
-        <div className="auth3-section-title">
+        <div className="auth3-section-title" data-reveal>
           <span>THE DAILY LOOP</span>
           <h2>Everything around the trade.<br />None of the noise.</h2>
         </div>
         <div className="auth3-feature-grid">
-          <article>
+          <article data-reveal>
             <BookOpen /><span>01</span><h3>Journal the decision</h3><p>Capture setup, risk and psychology while the context is still fresh.</p>
             <div className="auth3-feature-art auth3-note-art" aria-hidden="true">
               <div><small>SETUP</small><b>London continuation</b></div>
@@ -153,7 +174,7 @@ export function TradeWayLoginLanding({
               <span><i /> A+ execution</span>
             </div>
           </article>
-          <article>
+          <article data-reveal>
             <BarChart3 /><span>02</span><h3>Find the pattern</h3><p>Turn executions into clean performance insights you can act on.</p>
             <div className="auth3-feature-art auth3-bars-art" aria-hidden="true">
               <div><span>Mon</span><i style={{ height: "44%" }} /></div>
@@ -163,7 +184,7 @@ export function TradeWayLoginLanding({
               <div><span>Fri</span><i style={{ height: "64%" }} /></div>
             </div>
           </article>
-          <article>
+          <article data-reveal>
             <Users /><span>03</span><h3>Improve together</h3><p>Share verified progress inside private, focused trader communities.</p>
             <div className="auth3-feature-art auth3-community-art" aria-hidden="true">
               <div className="auth3-avatar-stack"><i>AK</i><i>MR</i><i>JL</i><i>+8</i></div>
@@ -175,7 +196,7 @@ export function TradeWayLoginLanding({
       </section>
 
       <section className="auth3-integrations" id="integrations">
-        <div className="auth3-integration-copy">
+        <div className="auth3-integration-copy" data-reveal>
           <span>ONE WORKSPACE, EVERY ACCOUNT</span>
           <h2>Your platforms stay yours.<br />Tradox makes them useful.</h2>
           <p>Bring results from the tools you already trade with into one clear review workflow. Compare accounts, understand execution and keep your journal attached to the numbers.</p>
@@ -185,12 +206,12 @@ export function TradeWayLoginLanding({
             <span><Check size={14} /> Fast CSV and connector workflows</span>
           </div>
         </div>
-        <PlatformPreview />
+        <div data-reveal><PlatformPreview /></div>
       </section>
 
       <section className="auth3-platform-grid" aria-label="Supported trading platforms">
         {PLATFORMS.map((platform, index) => (
-          <article key={platform.name}>
+          <article key={platform.name} data-reveal>
             <div className="auth3-platform-logo">
               <Image src={platform.logo} alt={`${platform.name} logo`} width={44} height={44} />
             </div>
@@ -200,7 +221,7 @@ export function TradeWayLoginLanding({
         ))}
       </section>
 
-      <section className="auth3-final">
+      <section className="auth3-final" data-reveal>
         <div><span>YOUR NEXT SESSION STARTS HERE</span><h2>Build a trading process<br />you can actually repeat.</h2></div>
         <button onClick={onRegister}>Create your workspace <ArrowRight size={18} /></button>
       </section>
