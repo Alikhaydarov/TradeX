@@ -44,6 +44,39 @@ export async function GET(request: Request) {
       if (result.error) throw new Error(result.error.message);
     }
 
+    let channelRows = channelsResult.data ?? [];
+    const hasGeneral = channelRows.some((channel) => channel.name.trim().toLowerCase() === "general");
+    if (!hasGeneral) {
+      const firstPosition = channelRows.length
+        ? Math.min(...channelRows.map((channel) => Number(channel.position ?? 0))) - 1
+        : 0;
+      const inserted = await admin
+        .from("channels")
+        .insert({
+          community_id: communityId,
+          name: "general",
+          is_premium_only: false,
+          position: firstPosition,
+          created_by: access.community.owner_id,
+        })
+        .select("id, community_id, name, is_premium_only, position, created_at")
+        .single();
+
+      if (inserted.error) {
+        // A concurrent request may have created the default channel first.
+        const refreshed = await admin
+          .from("channels")
+          .select("id, community_id, name, is_premium_only, position, created_at")
+          .eq("community_id", communityId)
+          .order("position", { ascending: true })
+          .order("created_at", { ascending: true });
+        if (refreshed.error) throw new Error(refreshed.error.message);
+        channelRows = refreshed.data ?? [];
+      } else {
+        channelRows = [inserted.data, ...channelRows];
+      }
+    }
+
     const readByChannel = new Map(
       (readsResult.data ?? [])
         .filter((row) => row.channel_id)
@@ -56,7 +89,7 @@ export async function GET(request: Request) {
     );
 
     const channels = await Promise.all(
-      (channelsResult.data ?? []).map(async (channel) => {
+      channelRows.map(async (channel) => {
         let countQuery = admin
           .from("messages")
           .select("id", { count: "exact", head: true })
