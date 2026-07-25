@@ -2,6 +2,7 @@
 
 import { usePathname } from "next/navigation";
 
+import { ChatLayout } from "@/components/chat/chat-layout";
 import {
   CommunityDetail,
   CommunityHub,
@@ -13,11 +14,12 @@ const VALID_TABS = new Set<CommunitySection>([
   "analytics",
   "leaderboard",
   "members",
+  "chat",
 ]);
 
 function communityRoute(pathname: string) {
   const match = pathname.match(
-    /^\/community\/([^/]+)(?:\/(overview|analytics|leaderboard|members))?\/?$/,
+    /^\/community\/([^/]+)(?:\/(overview|analytics|leaderboard|members|chat))?\/?$/,
   );
   if (!match?.[1]) return null;
   const tab = (match[2] || "overview") as CommunitySection;
@@ -32,6 +34,7 @@ export function CommunityWorkspace() {
   const route = communityRoute(pathname);
 
   if (!route) return <CommunityHub />;
+  if (route.tab === "chat") return <ChatLayout communityId={route.communityId} />;
 
   return (
     <CommunityDetail
