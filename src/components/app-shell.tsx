@@ -97,8 +97,14 @@ function communityRouteFromPath(pathname: string) {
   };
 }
 
-function AuthGate({ onLogin }: { onLogin: () => void }) {
-  return <TradeWayLoginLanding onLogin={onLogin} />;
+function AuthGate({
+  onLogin,
+  onRegister,
+}: {
+  onLogin: () => void;
+  onRegister: () => void;
+}) {
+  return <TradeWayLoginLanding onLogin={onLogin} onRegister={onRegister} />;
 }
 
 export function AppShell() {
@@ -118,12 +124,20 @@ function AppShellInner() {
     getCurrentProfileUsername,
   );
   const [authOpen, setAuthOpen] = useState(false);
+  const [authMode, setAuthMode] = useState<"login" | "register">("login");
   const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
   const [notificationsMounted, setNotificationsMounted] = useState(false);
   const [profileOpening, setProfileOpening] = useState(false);
   const workspaceMainRef = useRef<HTMLElement>(null);
   const { user } = useAuth();
-  const openLogin = () => setAuthOpen(true);
+  const openLogin = () => {
+    setAuthMode("login");
+    setAuthOpen(true);
+  };
+  const openRegister = () => {
+    setAuthMode("register");
+    setAuthOpen(true);
+  };
 
   useEffect(() => {
     const syncFromPath = () => {
@@ -286,7 +300,11 @@ function AppShellInner() {
     return (
       <>
         <Pricing onLogin={openLogin} />
-        <AuthModal open={authOpen} onClose={() => setAuthOpen(false)} />
+        <AuthModal
+          open={authOpen}
+          onClose={() => setAuthOpen(false)}
+          initialMode={authMode}
+        />
       </>
     );
   }
@@ -294,8 +312,12 @@ function AppShellInner() {
   if (!user) {
     return (
       <>
-        <AuthGate onLogin={openLogin} />
-        <AuthModal open={authOpen} onClose={() => setAuthOpen(false)} />
+        <AuthGate onLogin={openLogin} onRegister={openRegister} />
+        <AuthModal
+          open={authOpen}
+          onClose={() => setAuthOpen(false)}
+          initialMode={authMode}
+        />
       </>
     );
   }
@@ -356,7 +378,11 @@ function AppShellInner() {
       {notificationsMounted && <NotificationListener />}
       <PremiumUpsellDialog />
       <UserSettingsDialog />
-      <AuthModal open={authOpen} onClose={() => setAuthOpen(false)} />
+      <AuthModal
+        open={authOpen}
+        onClose={() => setAuthOpen(false)}
+        initialMode={authMode}
+      />
     </>
   );
 }
