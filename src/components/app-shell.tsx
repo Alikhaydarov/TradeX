@@ -55,6 +55,13 @@ const Journal = dynamic(
   () => import("./journal").then((module) => module.Journal),
   { ssr: false, loading: () => <WorkspaceSectionSkeleton /> },
 );
+const CalendarWorkspace = dynamic(
+  () =>
+    import("./calendar-workspace-v2").then(
+      (module) => module.CalendarWorkspaceV2,
+    ),
+  { ssr: false, loading: () => <WorkspaceSectionSkeleton /> },
+);
 const CommunityWorkspace = dynamic(
   () =>
     import("./community-workspace").then((module) => module.CommunityWorkspace),
@@ -221,9 +228,9 @@ function AppShellInner() {
   const renderSection = (item: Section) => {
     if (item === "accounts")
       return <Journal onLogin={openLogin} mode="accounts" />;
+    if (item === "calendar") return <CalendarWorkspace />;
     const workspaceTabs: Partial<Record<Section, WorkspaceTab>> = {
       dashboard: "overview",
-      calendar: "calendar",
       trades: "trades",
       analytics: "analytics",
     };
