@@ -3,12 +3,11 @@
 import { useEffect, useRef, useState } from "react";
 import dynamic from "next/dynamic";
 import { usePathname } from "next/navigation";
-import { MessageCircle } from "lucide-react";
 import { AuthModal } from "./auth-modal";
 import { ActiveAccountProvider } from "./active-account-context";
+import { GlobalRail } from "./global-rail";
 import { NotificationListener } from "./notification-listener";
 import { PremiumUpsellDialog } from "./premium-upsell-dialog";
-import { Sidebar } from "./sidebar";
 import { WorkspaceBootLoader } from "./workspace-boot-loader";
 import { WorkspaceTopbar } from "./workspace-topbar";
 import { WorkspacePreferencesProvider } from "./workspace-preferences-context";
@@ -150,7 +149,7 @@ function AppShellInner() {
 
   useEffect(() => {
     setSection(getCurrentSection());
-    workspaceMainRef.current?.scrollTo({ top: 0, behavior: "instant" });
+    workspaceMainRef.current?.scrollTo({ top: 0, behavior: "auto" });
   }, [pathname]);
 
   useEffect(() => {
@@ -209,13 +208,13 @@ function AppShellInner() {
     setSection(nextSection);
     window.history.pushState(null, "", pathFromSection(nextSection));
     window.dispatchEvent(new Event("popstate"));
-    workspaceMainRef.current?.scrollTo({ top: 0, behavior: "instant" });
+    workspaceMainRef.current?.scrollTo({ top: 0, behavior: "auto" });
   };
 
   const closeTradeDetail = () => {
     window.history.pushState(null, "", "/trades");
     window.dispatchEvent(new Event("popstate"));
-    workspaceMainRef.current?.scrollTo({ top: 0, behavior: "instant" });
+    workspaceMainRef.current?.scrollTo({ top: 0, behavior: "auto" });
   };
 
   const openCommunitySection = (next: CommunitySection) => {
@@ -226,13 +225,13 @@ function AppShellInner() {
       `/community/${communityRoute.communityId}/${next}`,
     );
     window.dispatchEvent(new Event("popstate"));
-    workspaceMainRef.current?.scrollTo({ top: 0, behavior: "instant" });
+    workspaceMainRef.current?.scrollTo({ top: 0, behavior: "auto" });
   };
 
   const closeCommunityWorkspace = () => {
     window.history.pushState(null, "", "/community");
     window.dispatchEvent(new Event("popstate"));
-    workspaceMainRef.current?.scrollTo({ top: 0, behavior: "instant" });
+    workspaceMainRef.current?.scrollTo({ top: 0, behavior: "auto" });
   };
 
   const renderSection = (item: Section) => {
@@ -305,6 +304,12 @@ function AppShellInner() {
       <ActiveAccountProvider>
         <WorkspaceBootLoader />
         <div className="workspace-shell flex h-[100dvh] w-full overflow-hidden bg-black p-0 text-foreground">
+          <GlobalRail
+            active={section}
+            onChange={changeSection}
+            onLogin={openLogin}
+            user={user}
+          />
           {communityRoute ? (
             <CommunitySidebar
               communityId={communityRoute.communityId}
@@ -312,37 +317,24 @@ function AppShellInner() {
               onNavigate={openCommunitySection}
               onBack={closeCommunityWorkspace}
             />
-          ) : (
-            <Sidebar
-              active={section}
-              onChange={changeSection}
-              onLogin={openLogin}
-              user={user}
-            />
-          )}
-          <div
-            className="hidden w-[236px] shrink-0 lg:block"
-            aria-hidden="true"
-          />
+          ) : null}
+
+          <div className="hidden w-[72px] shrink-0 md:block" aria-hidden="true" />
+          {communityRoute ? (
+            <div className="hidden w-[240px] shrink-0 lg:block" aria-hidden="true" />
+          ) : null}
+
           <main
             ref={workspaceMainRef}
             data-workspace-main
-            className="workspace-main h-[100dvh] min-w-0 flex-1 overscroll-contain overflow-y-auto overflow-x-hidden bg-black pb-[max(env(safe-area-inset-bottom),0.5rem)] lg:pb-0"
+            className={`workspace-main h-[100dvh] min-w-0 flex-1 overscroll-contain overflow-y-auto overflow-x-hidden bg-black pb-20 md:pb-0 ${
+              communityRoute ? "pt-12 lg:pt-0" : ""
+            }`}
           >
             {!communityRoute ? <WorkspaceTopbar section={section} /> : null}
             <section className="min-h-full">{renderSection(section)}</section>
           </main>
         </div>
-        {communityRoute && communityRoute.tab !== "chat" ? (
-          <button
-            type="button"
-            onClick={() => openCommunitySection("chat")}
-            className="fixed bottom-[max(1rem,env(safe-area-inset-bottom))] right-3 z-[90] inline-flex h-10 items-center gap-2 rounded-xl border border-white/10 bg-white px-3 text-[11px] font-bold text-black shadow-2xl lg:hidden"
-            aria-label="Open community chat"
-          >
-            <MessageCircle size={15} /> Chat
-          </button>
-        ) : null}
       </ActiveAccountProvider>
       {profileOpening ? (
         <div
