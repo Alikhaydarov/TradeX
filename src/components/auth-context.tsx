@@ -15,9 +15,18 @@ interface AuthContextValue {
   user: User | null;
   loading: boolean;
   configured: boolean;
+  signInWithOAuth: (provider: AuthProviderName) => Promise<string | null>;
   signInWithGoogle: () => Promise<string | null>;
+  signInWithPassword: (email: string, password: string) => Promise<string | null>;
+  signUpWithPassword: (
+    name: string,
+    email: string,
+    password: string,
+  ) => Promise<{ error: string | null; requiresEmailConfirmation: boolean }>;
   signOut: () => Promise<void>;
 }
+
+export type AuthProviderName = "google" | "apple";
 
 const AUTH_CACHE_KEY = "tradeup:user";
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -98,10 +107,55 @@ export function AuthProvider({
       user,
       loading,
       configured,
+      async signInWithOAuth(provider) {
+        if (!configured) return "Backend auth is not configured yet.";
+        window.location.assign(`/api/auth/oauth/${provider}`);
+        return null;
+      },
       async signInWithGoogle() {
         if (!configured) return "Backend auth is not configured yet.";
-        window.location.assign("/api/auth/google");
+        window.location.assign("/api/auth/oauth/google");
         return null;
+      },
+      async signInWithPassword(email, password) {
+        if (!configured) return "Backend auth is not configured yet.";
+        try {
+          await apiRequest<{ ok: true }>("/api/auth/password", {
+            method: "POST",
+            body: JSON.stringify({ mode: "login", email, password }),
+          });
+          window.location.assign("/");
+          return null;
+        } catch (error) {
+          return error instanceof Error ? error.message : "Sign in failed.";
+        }
+      },
+      async signUpWithPassword(name, email, password) {
+        if (!configured) {
+          return {
+            error: "Backend auth is not configured yet.",
+            requiresEmailConfirmation: false,
+          };
+        }
+        try {
+          const result = await apiRequest<{
+            ok: true;
+            requiresEmailConfirmation: boolean;
+          }>("/api/auth/password", {
+            method: "POST",
+            body: JSON.stringify({ mode: "register", name, email, password }),
+          });
+          if (!result.requiresEmailConfirmation) window.location.assign("/");
+          return {
+            error: null,
+            requiresEmailConfirmation: result.requiresEmailConfirmation,
+          };
+        } catch (error) {
+          return {
+            error: error instanceof Error ? error.message : "Registration failed.",
+            requiresEmailConfirmation: false,
+          };
+        }
       },
       async signOut() {
         await apiRequest<{ ok: boolean }>("/api/auth/signout", { method: "POST" });
