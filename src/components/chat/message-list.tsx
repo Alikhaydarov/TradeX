@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowDown, LoaderCircle } from "lucide-react";
+import { ArrowDown, Hash, LoaderCircle } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { ChatMessage, ChatPresenceMeta, ChatReplyPreview } from "@/features/community-chat/types";
 import { Button } from "@/components/ui/button";
@@ -71,7 +71,7 @@ export function MessageList({
     return groups;
   }, [messages]);
 
-  const scrollToLatest = (behavior: ScrollBehavior = "smooth") => {
+  const scrollToLatest = (behavior: ScrollBehavior = "auto") => {
     const scroller = scrollerRef.current;
     if (!scroller) return;
     scroller.scrollTo({ top: scroller.scrollHeight, behavior });
@@ -86,7 +86,7 @@ export function MessageList({
   useEffect(() => {
     if (!lastMessageId) return;
     if (nearBottom) {
-      requestAnimationFrame(() => scrollToLatest("smooth"));
+      requestAnimationFrame(() => scrollToLatest("auto"));
       void onRead(lastMessageId);
     }
   }, [lastMessageId, nearBottom, onRead]);
@@ -95,7 +95,7 @@ export function MessageList({
     const scroller = scrollerRef.current;
     if (!scroller) return;
     const distanceFromBottom = scroller.scrollHeight - scroller.scrollTop - scroller.clientHeight;
-    const nextNearBottom = distanceFromBottom < 100;
+    const nextNearBottom = distanceFromBottom < 120;
     setNearBottom(nextNearBottom);
     if (nextNearBottom && lastMessageId) void onRead(lastMessageId);
 
@@ -111,49 +111,49 @@ export function MessageList({
 
   if (loading) {
     return (
-      <div className="grid min-h-0 flex-1 place-items-center bg-[#020202] text-zinc-600">
+      <div className="grid min-h-0 flex-1 place-items-center bg-[#15171a] text-zinc-500">
         <LoaderCircle size={20} className="animate-spin" />
       </div>
     );
   }
 
   return (
-    <div className="relative min-h-0 flex-1 overflow-hidden bg-[radial-gradient(circle_at_top,rgba(255,255,255,.018),transparent_38%)]">
+    <div className="relative min-h-0 flex-1 overflow-hidden bg-[#15171a]">
       <div
         ref={scrollerRef}
         onScroll={() => void handleScroll()}
-        className="h-full overflow-y-auto overscroll-contain px-3 py-3 scrollbar-thin sm:px-5 lg:px-7"
+        className="h-full overflow-y-auto overscroll-contain py-3 scrollbar-thin"
       >
-        <div className="mx-auto w-full max-w-[980px] pb-2">
+        <div className="mx-auto w-full max-w-[1120px] pb-3">
           {loadingOlder ? (
-            <div className="flex h-9 items-center justify-center text-zinc-700">
+            <div className="flex h-9 items-center justify-center text-zinc-600">
               <LoaderCircle size={14} className="animate-spin" />
             </div>
           ) : hasOlder ? (
-            <div className="py-1.5 text-center text-[9px] text-zinc-800">Scroll up for older messages</div>
+            <div className="py-1.5 text-center text-[9px] text-zinc-600">Scroll up for older messages</div>
           ) : null}
 
           {!messages.length ? (
-            <div className="grid min-h-[58vh] place-items-center px-5 text-center">
-              <div className="max-w-sm rounded-2xl border border-white/7 bg-[#060606] px-6 py-7 shadow-[0_18px_50px_rgba(0,0,0,.24)]">
-                <div className="mx-auto grid size-11 place-items-center rounded-xl border border-white/8 bg-[#0a0a0a] text-base text-zinc-500">#</div>
-                <h3 className="mt-3 text-sm font-bold text-zinc-200">Start the conversation</h3>
-                <p className="mt-1 text-[11px] leading-5 text-zinc-600">
-                  Messages, replies and reactions will appear here in real time.
+            <div className="flex min-h-[58vh] items-end px-5 pb-8 sm:px-8">
+              <div className="max-w-md">
+                <div className="grid size-14 place-items-center rounded-full bg-[#2b2d31] text-zinc-200">
+                  <Hash size={27} strokeWidth={2.4} />
+                </div>
+                <h3 className="mt-4 text-xl font-extrabold tracking-[-0.03em] text-zinc-100">Welcome to the conversation</h3>
+                <p className="mt-1 text-[12px] leading-5 text-zinc-500">
+                  This is the beginning of this channel. Messages, replies and reactions appear here instantly.
                 </p>
               </div>
             </div>
           ) : (
             grouped.map((group) => (
               <section key={group.day}>
-                <div className="sticky top-1 z-10 my-3 flex items-center gap-3 px-2">
-                  <span className="h-px flex-1 bg-white/[.05]" />
-                  <span className="rounded-full border border-white/8 bg-[#080808]/95 px-2.5 py-1 text-[8px] font-semibold text-zinc-600 backdrop-blur">
-                    {dayLabel(group.day)}
-                  </span>
-                  <span className="h-px flex-1 bg-white/[.05]" />
+                <div className="my-4 flex items-center gap-3 px-4">
+                  <span className="h-px flex-1 bg-white/[.055]" />
+                  <span className="text-[10px] font-semibold text-zinc-500">{dayLabel(group.day)}</span>
+                  <span className="h-px flex-1 bg-white/[.055]" />
                 </div>
-                <div className="space-y-0.5">
+                <div>
                   {group.messages.map((message, index) => {
                     const previous = group.messages[index - 1];
                     const compact = Boolean(
@@ -163,7 +163,7 @@ export function MessageList({
                     );
                     return (
                       <MessageBubble
-                        key={message.id}
+                        key={message.clientId || message.id}
                         message={message}
                         currentUserId={currentUserId}
                         canModerate={canModerate}
@@ -187,7 +187,7 @@ export function MessageList({
         <Button
           type="button"
           size="sm"
-          onClick={() => scrollToLatest()}
+          onClick={() => scrollToLatest("smooth")}
           className="absolute bottom-4 left-1/2 h-8 -translate-x-1/2 rounded-full bg-white px-3 text-[10px] font-bold text-black shadow-xl hover:bg-zinc-200"
         >
           <ArrowDown size={13} /> Jump to latest
