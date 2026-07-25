@@ -25,6 +25,29 @@ interface JournalUpdatePayload {
   tags?: string[];
 }
 
+export async function GET(
+  request: Request,
+  context: { params: Promise<{ id: string }> },
+) {
+  const auth = await authenticateRequest(request);
+  if (!auth) return unauthorized();
+
+  const { id } = await context.params;
+  const { data, error } = await auth.supabase
+    .from("journal_entries")
+    .select("*")
+    .eq("id", id)
+    .eq("user_id", auth.user.id)
+    .maybeSingle();
+
+  if (error) return serverError(error.message);
+  if (!data) {
+    return Response.json({ error: "Trade not found." }, { status: 404 });
+  }
+
+  return Response.json({ entry: data });
+}
+
 export async function PATCH(
   request: Request,
   context: { params: Promise<{ id: string }> },
