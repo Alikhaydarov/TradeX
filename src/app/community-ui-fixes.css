@@ -1,0 +1,46 @@
+/* Community-only layout corrections. Keep global workspace styles untouched. */
+
+[data-community-sidebar] + [aria-hidden="true"] {
+  transition: width 200ms ease-out;
+}
+
+@media (min-width: 1280px) {
+  body:has([data-community-sidebar])
+    [data-workspace-main]
+    div[class*="xl:grid-cols-[minmax(0,1.18fr)_minmax(300px,.82fr)]"] {
+    align-items: start;
+  }
+
+  body:has([data-community-sidebar])
+    [data-workspace-main]
+    div[class*="xl:grid-cols-[minmax(0,1.18fr)_minmax(300px,.82fr)]"]
+    > section:first-child {
+    min-height: 270px;
+  }
+
+  body:has([data-community-sidebar])
+    [data-workspace-main]
+    div[class*="xl:grid-cols-[minmax(0,1.18fr)_minmax(300px,.82fr)]"]
+    > section:last-child {
+    align-self: start;
+    max-height: 360px;
+  }
+
+  body:has([data-community-sidebar])
+    [data-workspace-main]
+    div[class*="xl:grid-cols-[minmax(0,1.18fr)_minmax(300px,.82fr)]"]
+    > section:last-child
+    > div:nth-child(2) {
+    max-height: 255px !important;
+  }
+}
+
+@media (min-width: 1024px) {
+  body:has([data-community-sidebar="collapsed"])
+    [data-workspace-main]
+    > section
+    > div[class*="max-w-[1320px]"] {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+}
