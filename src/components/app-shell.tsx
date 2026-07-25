@@ -87,7 +87,7 @@ function tradeIdFromPath(pathname: string) {
 
 function communityRouteFromPath(pathname: string) {
   const match = pathname.match(
-    /^\/community\/([^/]+)(?:\/(overview|analytics|leaderboard|members))?\/?$/,
+    /^\/community\/([^/]+)(?:\/(overview|analytics|leaderboard|members|chat))?\/?$/,
   );
   if (!match?.[1]) return null;
   return {
