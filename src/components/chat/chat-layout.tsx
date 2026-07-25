@@ -100,7 +100,7 @@ function ChatRoomPanel({
   };
 
   return (
-    <div className="flex h-full min-h-0 flex-col bg-[#15171a]">
+    <div className="flex h-full min-h-0 flex-col bg-[#090909]">
       <ChatHeader
         roomKind={room.kind}
         title={roomTitle}
@@ -263,7 +263,7 @@ export function ChatLayout({ communityId }: { communityId: string }) {
 
   if (loading) {
     return (
-      <div className="grid h-[100dvh] place-items-center bg-[#15171a] text-zinc-500">
+      <div className="grid h-full min-h-0 place-items-center bg-[#090909] text-zinc-500">
         <LoaderCircle size={22} className="animate-spin" />
       </div>
     );
@@ -271,7 +271,7 @@ export function ChatLayout({ communityId }: { communityId: string }) {
 
   if (!context) {
     return (
-      <div className="grid h-[100dvh] place-items-center bg-[#15171a] p-4 text-center">
+      <div className="grid h-full min-h-0 place-items-center bg-[#090909] p-4 text-center">
         <div className="max-w-sm rounded-xl border border-white/[.07] bg-[#111214] p-5">
           <MessageCircle size={22} className="mx-auto text-zinc-600" />
           <h1 className="mt-3 text-sm font-bold text-white">Chat unavailable</h1>
@@ -283,7 +283,7 @@ export function ChatLayout({ communityId }: { communityId: string }) {
   }
 
   return (
-    <div className="relative flex h-[100dvh] min-h-0 overflow-hidden bg-[#15171a]">
+    <div data-community-chat className="relative flex h-full min-h-0 overflow-hidden bg-[#090909]">
       <aside className="hidden w-[240px] shrink-0 border-r border-black/35 lg:block">{sidebar}</aside>
       <main className="min-h-0 min-w-0 flex-1">
         {selected ? (
@@ -294,7 +294,7 @@ export function ChatLayout({ communityId }: { communityId: string }) {
             onOpenSidebar={() => setMobileSidebarOpen(true)}
           />
         ) : (
-          <div className="grid h-full place-items-center bg-[#15171a] text-center">
+          <div className="grid h-full place-items-center bg-[#090909] text-center">
             <div>
               <MessageCircle size={28} className="mx-auto text-zinc-600" />
               <p className="mt-2 text-xs text-zinc-500">Create or select a channel to start chatting.</p>

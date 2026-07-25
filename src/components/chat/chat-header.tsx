@@ -22,7 +22,7 @@ export function ChatHeader({
   const live = connection === "connected";
 
   return (
-    <header className="flex h-12 shrink-0 items-center gap-2 border-b border-black/40 bg-[#15171a] px-3 shadow-[0_1px_0_rgba(255,255,255,.035),0_2px_8px_rgba(0,0,0,.22)] sm:px-4">
+    <header className="flex h-12 shrink-0 items-center gap-2 border-b border-white/[.08] bg-[#090909] px-3 shadow-[0_1px_0_rgba(255,255,255,.025)] sm:px-4">
       <Button
         type="button"
         variant="ghost"

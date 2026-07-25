@@ -139,6 +139,17 @@
   border-right-color: var(--tw-line) !important;
 }
 
+/* A community chat owns its room scroll. The app shell must not add a second
+   scrollbar or leave the global topbar above the channel header. */
+.workspace-shell:has([data-community-chat]) [data-workspace-main] {
+  overflow: hidden !important;
+}
+
+.workspace-shell:has([data-community-chat]) [data-workspace-main] > section {
+  height: 100%;
+  min-height: 0;
+}
+
 .tw-app-topbar {
   min-height: 3.875rem !important;
   border-bottom-color: var(--tw-line) !important;

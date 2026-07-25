@@ -525,11 +525,11 @@ export function Account({ onLogin, profileUsername }: { onLogin: () => void; pro
 
   return (
     <div className="min-h-full bg-[#0b0b0b]">
-      {error && <div className="mx-auto mt-3 max-w-5xl rounded-2xl border border-rose-300/15 bg-rose-400/10 px-4 py-3 text-sm text-rose-200">{error}</div>}
+      {error && <div className="mx-auto mt-3 max-w-4xl rounded-lg border border-rose-300/15 bg-rose-400/10 px-4 py-3 text-sm text-rose-200">{error}</div>}
 
-      <div className="mx-auto max-w-3xl px-0 sm:px-4 sm:py-3">
-        <section className="overflow-hidden border-b border-border bg-card sm:rounded-lg sm:border">
-          <div className="relative h-20 overflow-hidden bg-[linear-gradient(135deg,#111111,#202020)] sm:h-28">
+      <div className="mx-auto max-w-4xl px-0 sm:px-4 sm:py-4">
+        <section className="overflow-hidden border-b border-border bg-card sm:rounded-xl sm:border">
+          <div className="relative h-24 overflow-hidden bg-[linear-gradient(135deg,#101010,#1a1a1a)] sm:h-32">
             {profile.bannerUrl ? <MediaImage src={profile.bannerUrl} alt={`${profile.fullName} banner`} className="h-full w-full object-cover" /> : null}
             {isOwnProfile ? (
               <>
@@ -540,8 +540,8 @@ export function Account({ onLogin, profileUsername }: { onLogin: () => void; pro
               </>
             ) : null}
           </div>
-          <div className="px-4 pb-4 sm:px-5">
-            <div className="-mt-9 flex items-end justify-between gap-3 sm:-mt-11">
+          <div className="px-4 pb-5 sm:px-6">
+            <div className="-mt-10 flex items-end justify-between gap-3 sm:-mt-12">
               <TraderAvatar name={profile.fullName} value={profile.avatarUrl} className="h-20 w-20 rounded-full border-4 border-card bg-black text-xl shadow-xl sm:h-24 sm:w-24 sm:text-2xl" />
               {isOwnProfile ? (
                 <div className="flex items-center gap-2">
@@ -553,26 +553,26 @@ export function Account({ onLogin, profileUsername }: { onLogin: () => void; pro
               )}
             </div>
 
-            <div className="mt-3">
+            <div className="mt-4">
               <div className="flex min-w-0 items-center gap-2">
-                <h2 className="truncate text-xl font-black leading-7 sm:text-2xl">{profile.fullName}</h2>
+                <h2 className="truncate text-[22px] font-bold leading-7 tracking-tight sm:text-2xl">{profile.fullName}</h2>
                 {profile.isVerified ? <VerifiedBadge size={20} /> : null}
                 {saved && <span className="rounded-full bg-emerald-400/10 px-2 py-1 text-[10px] font-bold text-emerald-300">Saved</span>}
               </div>
-              <p className="text-xs text-zinc-500">@{profile.username}</p>
-              {profile.bio ? <p className="mt-3 max-w-2xl whitespace-pre-line text-sm leading-5 text-zinc-200">{profile.bio}</p> : null}
-              <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1.5 text-xs text-zinc-500">
+              <p className="mt-0.5 text-[13px] text-zinc-500">@{profile.username}</p>
+              {profile.bio ? <p className="mt-3 max-w-2xl whitespace-pre-line text-[14px] leading-6 text-zinc-300">{profile.bio}</p> : null}
+              <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1.5 text-[12px] text-zinc-500">
                 {profile.location ? <p className="flex items-center gap-1"><MapPin size={13} /> {profile.location}</p> : null}
                 <p className="flex items-center gap-1"><TrendingUp size={13} /> {profile.tradingStyle}</p>
               </div>
-              <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-zinc-500">
+              <div className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-2 text-[13px] text-zinc-500">
                 <button onClick={() => openConnections("followers")} className="rounded-lg text-left transition hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/20">
-                  <b className="font-black text-white">{formatCount(profile.followersCount ?? 0)}</b> Followers
+                  <b className="font-bold text-white">{formatCount(profile.followersCount ?? 0)}</b> Followers
                 </button>
                 <button onClick={() => openConnections("following")} className="rounded-lg text-left transition hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/20">
-                  <b className="font-black text-white">{formatCount(profile.followingCount ?? 0)}</b> Following
+                  <b className="font-bold text-white">{formatCount(profile.followingCount ?? 0)}</b> Following
                 </button>
-                <span><b className="font-black text-white">{posts.length}</b> Posts</span>
+                <span><b className="font-bold text-white">{posts.length}</b> Posts</span>
               </div>
             </div>
 
@@ -581,16 +581,16 @@ export function Account({ onLogin, profileUsername }: { onLogin: () => void; pro
                 {isOwnProfile && profile.statsVisible === false ? (
                   <p className="mb-1.5 flex items-center gap-1 text-[10px] font-semibold text-zinc-600"><EyeOff size={11} /> Boshqalarga yashirilgan &mdash; faqat siz ko&apos;rasiz</p>
                 ) : null}
-                <div className="grid grid-cols-4 divide-x divide-border overflow-hidden rounded-lg border border-border bg-[#111111]">
+                <div className="grid grid-cols-4 divide-x divide-border overflow-hidden rounded-lg border border-border bg-[#101010]">
                   {[
                     ["Trades", String(stats.trades)],
                     ["Win", `${stats.winRate}%`],
                     ["P&L", formatMoneyCompact(stats.netPnl)],
                     ["Avg R", `${stats.averageR.toFixed(2)}R`],
                   ].map(([label, value]) => (
-                    <div key={label} className="min-w-0 px-2 py-2.5 text-center">
-                      <strong className="block truncate font-mono text-xs text-zinc-100">{value}</strong>
-                      <span className="mt-0.5 block text-[8px] font-bold uppercase text-zinc-600">{label}</span>
+                    <div key={label} className="min-w-0 px-2 py-3 text-center">
+                      <strong className="block truncate font-mono text-[13px] font-semibold text-zinc-100">{value}</strong>
+                      <span className="mt-1 block text-[9px] font-semibold uppercase tracking-[0.08em] text-zinc-600">{label}</span>
                     </div>
                   ))}
                 </div>
@@ -599,12 +599,12 @@ export function Account({ onLogin, profileUsername }: { onLogin: () => void; pro
           </div>
         </section>
 
-        {(achievements.length > 0 || isOwnProfile) ? <section className="mt-2 border-y border-border bg-card px-4 py-3 sm:rounded-lg sm:border">
+        {(achievements.length > 0 || isOwnProfile) ? <section className="mt-3 border-y border-border bg-card px-4 py-4 sm:rounded-xl sm:border sm:px-5">
           <div className="flex items-center gap-2">
             <span className="grid size-8 place-items-center rounded-lg border border-amber-300/15 bg-amber-300/[.06] text-amber-200"><Award size={15} /></span>
             <div className="min-w-0">
-              <h3 className="text-sm font-black">Achievements</h3>
-              <p className="truncate text-[10px] text-muted-foreground">{achievements.length} certificates</p>
+              <h3 className="text-sm font-bold">Achievements</h3>
+              <p className="truncate text-[11px] text-muted-foreground">{achievements.length} certificates</p>
             </div>
             {isOwnProfile ? <Button onClick={() => setAchievementOpen(true)} variant="ghost" size="sm" className="ml-auto"><Plus size={14} /> Add</Button> : null}
           </div>
@@ -626,11 +626,11 @@ export function Account({ onLogin, profileUsername }: { onLogin: () => void; pro
           ) : null}
         </section> : null}
 
-        <section className="border-b border-border bg-card sm:mt-2 sm:overflow-hidden sm:rounded-lg sm:border">
+        <section className="border-b border-border bg-card sm:mt-3 sm:overflow-hidden sm:rounded-xl sm:border">
           <div className="relative z-10 grid grid-cols-2 border-b border-border bg-card">
             {tabs.map((tab) => {
               const active = activeTab === tab.id;
-              return <button key={tab.id} onClick={() => setActiveTab(tab.id)} className={`relative min-w-0 px-2 py-3 text-xs font-black transition-colors ${active ? "text-white" : "text-zinc-500 hover:bg-white/[.03] hover:text-zinc-300"}`}>{tab.label}{active ? <span className="absolute inset-x-8 bottom-0 h-0.5 rounded-full bg-white" /> : null}</button>;
+              return <button key={tab.id} onClick={() => setActiveTab(tab.id)} className={`relative min-w-0 px-2 py-3.5 text-[13px] font-semibold transition-colors ${active ? "text-white" : "text-zinc-500 hover:bg-white/[.03] hover:text-zinc-300"}`}>{tab.label}{active ? <span className="absolute inset-x-8 bottom-0 h-0.5 rounded-full bg-white" /> : null}</button>;
             })}
           </div>
           {loadingProfile ? <div className="grid min-h-48 place-items-center text-slate-500"><XSpinner size="lg" /></div> : visiblePosts.length ? <div className="relative z-0">{visiblePosts.map(renderPost)}</div> : <EmptyTab tab={activeTab} />}

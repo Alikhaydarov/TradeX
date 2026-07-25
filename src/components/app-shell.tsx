@@ -22,6 +22,7 @@ import type { Section } from "./types";
 import { Spinner } from "./ui/spinner";
 import { WorkspaceSectionSkeleton } from "./workspace-section-skeleton";
 import { FreeUserStart } from "./free-user-start";
+import type { CommunitySection } from "@/features/community/components/community-sidebar";
 
 const UserSettingsDialog = dynamic(
   () =>
@@ -59,6 +60,35 @@ const CommunityWorkspace = dynamic(
     import("./community-workspace").then((module) => module.CommunityWorkspace),
   { ssr: false, loading: () => <WorkspaceSectionSkeleton /> },
 );
+const CommunitySidebar = dynamic(
+  () =>
+    import("@/features/community/components/community-sidebar").then(
+      (module) => module.CommunitySidebar,
+    ),
+  { ssr: false },
+);
+
+const communityTabs = new Set<CommunitySection>([
+  "overview",
+  "analytics",
+  "leaderboard",
+  "members",
+  "chat",
+]);
+
+function getCommunityDetailRoute() {
+  if (typeof window === "undefined") return null;
+  const match = window.location.pathname.match(
+    /^\/community\/([^/]+)(?:\/(overview|analytics|leaderboard|members|chat))?\/?$/,
+  );
+  if (!match?.[1]) return null;
+  const tab = (match[2] || "overview") as CommunitySection;
+  return {
+    communityId: decodeURIComponent(match[1]),
+    tab: communityTabs.has(tab) ? tab : "overview",
+  };
+}
+
 function AuthGate({
   onLogin,
   onRegister,
@@ -87,6 +117,7 @@ function AppShellInner() {
   const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
   const [notificationsMounted, setNotificationsMounted] = useState(false);
   const [profileOpening, setProfileOpening] = useState(false);
+  const [communityDetail, setCommunityDetail] = useState(getCommunityDetailRoute);
   const workspaceMainRef = useRef<HTMLElement>(null);
   const { user } = useAuth();
   const openLogin = () => {
@@ -103,6 +134,7 @@ function AppShellInner() {
       const nextSection = getCurrentSection();
       setSection(nextSection);
       setProfileUsername(getCurrentProfileUsername());
+      setCommunityDetail(getCommunityDetailRoute());
     };
     const handleOpenProfile = () => {
       setProfileOpening(true);
@@ -169,9 +201,21 @@ function AppShellInner() {
     if (nextSection === "admin" && isAdmin !== true) return;
     if (nextSection === section && nextSection !== "account") return;
     setProfileUsername("");
+    setCommunityDetail(null);
     setSection(nextSection);
     window.history.pushState(null, "", pathFromSection(nextSection));
     workspaceMainRef.current?.scrollTo({ top: 0, behavior: "instant" });
+  };
+
+  const navigateCommunity = (tab: CommunitySection) => {
+    if (!communityDetail) return;
+    window.history.pushState(null, "", `/community/${communityDetail.communityId}/${tab}`);
+    window.dispatchEvent(new Event("popstate"));
+  };
+
+  const exitCommunity = () => {
+    window.history.pushState(null, "", "/community");
+    window.dispatchEvent(new Event("popstate"));
   };
 
   const renderSection = (item: Section) => {
@@ -241,14 +285,23 @@ function AppShellInner() {
         <div
           className="workspace-shell mx-auto flex h-[100dvh] w-full max-w-[1920px] gap-0 overflow-hidden bg-[#000000] p-0 text-foreground lg:gap-3 lg:p-3"
         >
-          <Sidebar
-            active={section}
-            onChange={changeSection}
-            onLogin={openLogin}
-            user={user}
-          />
+          {communityDetail ? (
+            <CommunitySidebar
+              communityId={communityDetail.communityId}
+              active={communityDetail.tab}
+              onNavigate={navigateCommunity}
+              onBack={exitCommunity}
+            />
+          ) : (
+            <Sidebar
+              active={section}
+              onChange={changeSection}
+              onLogin={openLogin}
+              user={user}
+            />
+          )}
           <div
-            className="hidden w-[286px] shrink-0 lg:block"
+            className={`hidden shrink-0 lg:block ${communityDetail ? "w-[236px]" : "w-[286px]"}`}
             aria-hidden="true"
           />
           <main
@@ -256,7 +309,7 @@ function AppShellInner() {
             data-workspace-main
             className="workspace-main h-[100dvh] min-w-0 flex-1 overscroll-contain overflow-y-auto overflow-x-hidden bg-[#000000] pb-[max(env(safe-area-inset-bottom),0.5rem)] lg:h-[calc(100dvh-2rem)] lg:rounded-[1rem] lg:border lg:border-white/8 lg:pb-0"
           >
-            <WorkspaceTopbar section={section} />
+            {!communityDetail ? <WorkspaceTopbar section={section} /> : null}
             <section className="min-h-full">{renderSection(section)}</section>
           </main>
         </div>
