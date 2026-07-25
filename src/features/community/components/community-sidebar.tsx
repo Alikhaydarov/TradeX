@@ -4,6 +4,7 @@ import {
   ArrowLeft,
   BarChart3,
   LayoutDashboard,
+  MessageCircle,
   ShieldCheck,
   Trophy,
   UsersRound,
@@ -14,7 +15,8 @@ export type CommunitySection =
   | "overview"
   | "analytics"
   | "leaderboard"
-  | "members";
+  | "members"
+  | "chat";
 
 type CommunitySummary = {
   community?: {
@@ -30,6 +32,7 @@ const NAV = [
   { id: "analytics" as const, label: "Analytics", icon: BarChart3 },
   { id: "leaderboard" as const, label: "Leaderboard", icon: Trophy },
   { id: "members" as const, label: "Members", icon: UsersRound },
+  { id: "chat" as const, label: "Chat", icon: MessageCircle },
 ];
 
 export function CommunitySidebar({
@@ -133,7 +136,7 @@ export function CommunitySidebar({
             Private workspace
           </p>
           <p className="mt-1 text-[11px] leading-4 text-zinc-400">
-            Only accepted members can view shared performance.
+            Accepted members can access performance and realtime chat.
           </p>
         </div>
       </div>
