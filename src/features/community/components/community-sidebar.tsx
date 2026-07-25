@@ -72,9 +72,13 @@ export function CommunitySidebar({
   }, []);
 
   useEffect(() => {
+    if (active === "chat") setCollapsed(true);
+  }, [active]);
+
+  useEffect(() => {
     const spacer = asideRef.current?.nextElementSibling as HTMLElement | null;
     if (spacer) {
-      spacer.style.width = collapsed ? "76px" : "236px";
+      spacer.style.width = collapsed ? "72px" : "236px";
       spacer.style.transition = "width 200ms ease-out";
     }
     try {
@@ -123,7 +127,7 @@ export function CommunitySidebar({
     <aside
       ref={asideRef}
       className="fixed inset-y-0 left-0 z-40 hidden flex-col overflow-hidden border-r border-white/[.075] bg-[#030303] transition-[width] duration-200 ease-out lg:flex"
-      style={{ width: collapsed ? 76 : 236 }}
+      style={{ width: collapsed ? 72 : 236 }}
       data-community-sidebar={collapsed ? "collapsed" : "expanded"}
     >
       <div
