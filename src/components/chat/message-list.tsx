@@ -19,7 +19,11 @@ function dayLabel(value: string) {
   yesterday.setDate(today.getDate() - 1);
   if (value === today.toISOString().slice(0, 10)) return "Today";
   if (value === yesterday.toISOString().slice(0, 10)) return "Yesterday";
-  return date.toLocaleDateString("en-US", { month: "short", day: "numeric", year: date.getFullYear() === today.getFullYear() ? undefined : "numeric" });
+  return date.toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: date.getFullYear() === today.getFullYear() ? undefined : "numeric",
+  });
 }
 
 export function MessageList({
@@ -107,70 +111,76 @@ export function MessageList({
 
   if (loading) {
     return (
-      <div className="grid min-h-0 flex-1 place-items-center bg-[#030303] text-zinc-600">
+      <div className="grid min-h-0 flex-1 place-items-center bg-[#020202] text-zinc-600">
         <LoaderCircle size={20} className="animate-spin" />
       </div>
     );
   }
 
   return (
-    <div className="relative min-h-0 flex-1 bg-[#030303]">
+    <div className="relative min-h-0 flex-1 overflow-hidden bg-[radial-gradient(circle_at_top,rgba(255,255,255,.018),transparent_38%)]">
       <div
         ref={scrollerRef}
         onScroll={() => void handleScroll()}
-        className="h-full overflow-y-auto overscroll-contain px-1 py-2 scrollbar-thin"
+        className="h-full overflow-y-auto overscroll-contain px-3 py-3 scrollbar-thin sm:px-5 lg:px-7"
       >
-        {loadingOlder ? (
-          <div className="flex h-8 items-center justify-center text-zinc-700">
-            <LoaderCircle size={14} className="animate-spin" />
-          </div>
-        ) : hasOlder ? (
-          <div className="py-1 text-center text-[9px] text-zinc-800">Scroll up for older messages</div>
-        ) : null}
-
-        {!messages.length ? (
-          <div className="grid min-h-[55vh] place-items-center px-5 text-center">
-            <div>
-              <div className="mx-auto grid size-10 place-items-center rounded-xl border border-white/8 bg-[#090909] text-lg">#</div>
-              <h3 className="mt-3 text-sm font-bold text-zinc-200">Start the conversation</h3>
-              <p className="mt-1 max-w-xs text-[11px] leading-5 text-zinc-600">Messages, replies and reactions will appear here in real time.</p>
+        <div className="mx-auto w-full max-w-[980px] pb-2">
+          {loadingOlder ? (
+            <div className="flex h-9 items-center justify-center text-zinc-700">
+              <LoaderCircle size={14} className="animate-spin" />
             </div>
-          </div>
-        ) : (
-          grouped.map((group) => (
-            <section key={group.day}>
-              <div className="sticky top-1 z-10 my-2 flex items-center gap-2 px-3">
-                <span className="h-px flex-1 bg-white/[.055]" />
-                <span className="rounded-full border border-white/8 bg-[#080808]/95 px-2 py-0.5 text-[8px] font-semibold text-zinc-600 backdrop-blur">
-                  {dayLabel(group.day)}
-                </span>
-                <span className="h-px flex-1 bg-white/[.055]" />
+          ) : hasOlder ? (
+            <div className="py-1.5 text-center text-[9px] text-zinc-800">Scroll up for older messages</div>
+          ) : null}
+
+          {!messages.length ? (
+            <div className="grid min-h-[58vh] place-items-center px-5 text-center">
+              <div className="max-w-sm rounded-2xl border border-white/7 bg-[#060606] px-6 py-7 shadow-[0_18px_50px_rgba(0,0,0,.24)]">
+                <div className="mx-auto grid size-11 place-items-center rounded-xl border border-white/8 bg-[#0a0a0a] text-base text-zinc-500">#</div>
+                <h3 className="mt-3 text-sm font-bold text-zinc-200">Start the conversation</h3>
+                <p className="mt-1 text-[11px] leading-5 text-zinc-600">
+                  Messages, replies and reactions will appear here in real time.
+                </p>
               </div>
-              {group.messages.map((message, index) => {
-                const previous = group.messages[index - 1];
-                const compact = Boolean(
-                  previous &&
-                    previous.senderId === message.senderId &&
-                    new Date(message.createdAt).getTime() - new Date(previous.createdAt).getTime() < 5 * 60_000,
-                );
-                return (
-                  <MessageBubble
-                    key={message.id}
-                    message={message}
-                    currentUserId={currentUserId}
-                    canModerate={canModerate}
-                    compact={compact}
-                    onReply={onReply}
-                    onEdit={onEdit}
-                    onDelete={onDelete}
-                    onReact={onReact}
-                  />
-                );
-              })}
-            </section>
-          ))
-        )}
-        <TypingIndicator users={typingUsers} />
+            </div>
+          ) : (
+            grouped.map((group) => (
+              <section key={group.day}>
+                <div className="sticky top-1 z-10 my-3 flex items-center gap-3 px-2">
+                  <span className="h-px flex-1 bg-white/[.05]" />
+                  <span className="rounded-full border border-white/8 bg-[#080808]/95 px-2.5 py-1 text-[8px] font-semibold text-zinc-600 backdrop-blur">
+                    {dayLabel(group.day)}
+                  </span>
+                  <span className="h-px flex-1 bg-white/[.05]" />
+                </div>
+                <div className="space-y-0.5">
+                  {group.messages.map((message, index) => {
+                    const previous = group.messages[index - 1];
+                    const compact = Boolean(
+                      previous &&
+                        previous.senderId === message.senderId &&
+                        new Date(message.createdAt).getTime() - new Date(previous.createdAt).getTime() < 5 * 60_000,
+                    );
+                    return (
+                      <MessageBubble
+                        key={message.id}
+                        message={message}
+                        currentUserId={currentUserId}
+                        canModerate={canModerate}
+                        compact={compact}
+                        onReply={onReply}
+                        onEdit={onEdit}
+                        onDelete={onDelete}
+                        onReact={onReact}
+                      />
+                    );
+                  })}
+                </div>
+              </section>
+            ))
+          )}
+          <TypingIndicator users={typingUsers} />
+        </div>
       </div>
 
       {!nearBottom && messages.length ? (
@@ -178,7 +188,7 @@ export function MessageList({
           type="button"
           size="sm"
           onClick={() => scrollToLatest()}
-          className="absolute bottom-3 left-1/2 h-8 -translate-x-1/2 rounded-full bg-white px-3 text-[10px] font-bold text-black shadow-xl hover:bg-zinc-200"
+          className="absolute bottom-4 left-1/2 h-8 -translate-x-1/2 rounded-full bg-white px-3 text-[10px] font-bold text-black shadow-xl hover:bg-zinc-200"
         >
           <ArrowDown size={13} /> Jump to latest
         </Button>
