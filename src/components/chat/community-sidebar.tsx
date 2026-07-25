@@ -1,20 +1,17 @@
 "use client";
 
 import {
-  ArrowLeft,
   Crown,
   Hash,
   LockKeyhole,
   MessageCircle,
   Plus,
   Search,
-  UsersRound,
   X,
 } from "lucide-react";
 import { useMemo, useState } from "react";
 import type {
   ChatChannel,
-  ChatCommunity,
   ChatDmThread,
   ChatProfile,
   ChatRoomKind,
@@ -30,27 +27,23 @@ export interface SelectedChatRoom {
 }
 
 export function CommunityChatSidebar({
-  community,
   channels,
   dms,
   members,
   selected,
   canManage,
   currentUserId,
-  onBack,
   onSelect,
   onCreateChannel,
   onStartDm,
   onCloseMobile,
 }: {
-  community: ChatCommunity;
   channels: ChatChannel[];
   dms: ChatDmThread[];
   members: ChatProfile[];
   selected: SelectedChatRoom | null;
   canManage: boolean;
   currentUserId: string;
-  onBack: () => void;
   onSelect: (room: SelectedChatRoom) => void;
   onCreateChannel: (name: string, premiumOnly: boolean) => Promise<void>;
   onStartDm: (userId: string) => Promise<void>;
@@ -108,26 +101,15 @@ export function CommunityChatSidebar({
 
   return (
     <div className="flex h-full min-h-0 flex-col bg-[#050505]">
-      <div className="border-b border-white/8 p-2.5">
-        <button
-          type="button"
-          onClick={onBack}
-          className="flex h-8 w-full items-center gap-2 rounded-lg px-2 text-[10px] font-semibold text-zinc-600 transition hover:bg-white/[.04] hover:text-white"
-        >
-          <ArrowLeft size={13} /> Community workspace
-        </button>
-        <div className="mt-1.5 flex items-center gap-2 rounded-lg border border-white/8 bg-[#090909] p-2">
-          <span className="grid size-8 shrink-0 place-items-center rounded-lg border border-white/8 bg-[#111] text-zinc-300">
-            <UsersRound size={15} />
-          </span>
-          <div className="min-w-0 flex-1">
-            <p className="truncate text-[12px] font-bold text-white">{community.name}</p>
-            <p className="truncate text-[9px] text-zinc-700">Realtime community chat</p>
-          </div>
+      <div className="flex h-12 items-center border-b border-white/8 px-3">
+        <div className="min-w-0 flex-1">
+          <p className="text-[11px] font-bold text-zinc-200">Conversations</p>
+          <p className="mt-0.5 text-[8px] text-zinc-700">Channels and direct messages</p>
         </div>
+        <MessageCircle size={15} className="text-zinc-700" />
       </div>
 
-      <div className="min-h-0 flex-1 overflow-y-auto p-2">
+      <div className="min-h-0 flex-1 overflow-y-auto p-2.5">
         <section>
           <div className="flex h-7 items-center px-1.5">
             <p className="text-[8px] font-bold uppercase tracking-[0.15em] text-zinc-700">Channels</p>
@@ -144,7 +126,7 @@ export function CommunityChatSidebar({
           </div>
 
           {createOpen ? (
-            <div className="mb-1.5 rounded-lg border border-white/8 bg-[#080808] p-2">
+            <div className="mb-2 rounded-xl border border-white/8 bg-[#080808] p-2.5">
               <Input
                 value={channelName}
                 onChange={(event) => setChannelName(event.target.value)}
@@ -155,7 +137,7 @@ export function CommunityChatSidebar({
                 className="h-8 border-white/10 bg-[#050505] text-[10px]"
                 maxLength={60}
               />
-              <label className="mt-1.5 flex items-center gap-2 text-[9px] text-zinc-600">
+              <label className="mt-2 flex items-center gap-2 text-[9px] text-zinc-600">
                 <input
                   type="checkbox"
                   checked={premiumOnly}
@@ -168,7 +150,7 @@ export function CommunityChatSidebar({
                 type="button"
                 onClick={() => void createChannel()}
                 disabled={busy || !channelName.trim()}
-                className="mt-2 h-7 w-full rounded-md bg-white text-[9px] font-bold text-black hover:bg-zinc-200"
+                className="mt-2 h-7 w-full rounded-lg bg-white text-[9px] font-bold text-black hover:bg-zinc-200"
               >
                 <Plus size={11} /> Create channel
               </Button>
@@ -183,7 +165,11 @@ export function CommunityChatSidebar({
                   key={channel.id}
                   type="button"
                   onClick={() => select({ kind: "channel", id: channel.id })}
-                  className={`flex h-8 w-full min-w-0 items-center gap-2 rounded-lg px-2 text-left transition ${active ? "bg-[#121212] text-white ring-1 ring-white/8" : "text-zinc-600 hover:bg-[#090909] hover:text-zinc-300"}`}
+                  className={`flex h-9 w-full min-w-0 items-center gap-2 rounded-lg px-2 text-left transition ${
+                    active
+                      ? "bg-white/[.085] text-white ring-1 ring-white/9"
+                      : "text-zinc-600 hover:bg-white/[.04] hover:text-zinc-300"
+                  }`}
                 >
                   {channel.isPremiumOnly ? <LockKeyhole size={12} className="shrink-0 text-amber-500/70" /> : <Hash size={13} className="shrink-0" />}
                   <span className="min-w-0 flex-1 truncate text-[11px] font-medium">{channel.name}</span>
@@ -209,8 +195,8 @@ export function CommunityChatSidebar({
           </div>
 
           {dmOpen ? (
-            <div className="mb-1.5 rounded-lg border border-white/8 bg-[#080808] p-2">
-              <div className="flex h-8 items-center gap-1.5 rounded-md border border-white/8 bg-[#050505] px-2">
+            <div className="mb-2 rounded-xl border border-white/8 bg-[#080808] p-2.5">
+              <div className="flex h-8 items-center gap-1.5 rounded-lg border border-white/8 bg-[#050505] px-2">
                 <Search size={11} className="text-zinc-700" />
                 <input
                   value={query}
@@ -245,7 +231,11 @@ export function CommunityChatSidebar({
                   key={thread.id}
                   type="button"
                   onClick={() => select({ kind: "dm", id: thread.id })}
-                  className={`flex h-9 w-full min-w-0 items-center gap-2 rounded-lg px-2 text-left transition ${active ? "bg-[#121212] text-white ring-1 ring-white/8" : "text-zinc-600 hover:bg-[#090909] hover:text-zinc-300"}`}
+                  className={`flex h-9 w-full min-w-0 items-center gap-2 rounded-lg px-2 text-left transition ${
+                    active
+                      ? "bg-white/[.085] text-white ring-1 ring-white/9"
+                      : "text-zinc-600 hover:bg-white/[.04] hover:text-zinc-300"
+                  }`}
                 >
                   <div className="relative shrink-0">
                     <TraderAvatar name={thread.peer.fullName} value={thread.peer.avatarUrl} className="size-6 rounded-md text-[8px]" />
