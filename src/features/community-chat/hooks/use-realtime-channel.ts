@@ -49,50 +49,68 @@ export function useRealtimeChannel({
       return;
     }
 
+    let alive = true;
+    let room: RealtimeChannel | null = null;
     setConnection("connecting");
-    const room = supabase.channel(roomName(roomKind, roomId), {
-      config: {
-        broadcast: { self: false, ack: false },
-        presence: { key: currentUser.id },
-      },
-    });
-    channelRef.current = room;
 
-    room
-      .on("broadcast", { event: "chat-event" }, ({ payload }) => {
-        const event = payload as RealtimeChatEvent;
-        if (event.message) pagination.merge(event.message);
-      })
-      .on("presence", { event: "sync" }, () => {
-        const state = room.presenceState<ChatPresenceMeta>();
-        const users = Object.values(state)
-          .flat()
-          .filter((item): item is ChatPresenceMeta => Boolean(item?.userId));
-        const unique = new Map(users.map((user) => [user.userId, user]));
-        setPresence([...unique.values()]);
-      })
-      .subscribe(async (status) => {
-        if (status === "SUBSCRIBED") {
-          setConnection("connected");
-          await room.track({
-            userId: currentUser.id,
-            username: currentUser.username,
-            fullName: currentUser.fullName,
-            avatarUrl: currentUser.avatarUrl,
-            onlineAt: new Date().toISOString(),
-            typing: false,
-          } satisfies ChatPresenceMeta);
-          if (subscribedOnceRef.current) void pagination.reload();
-          subscribedOnceRef.current = true;
-        } else if (status === "CHANNEL_ERROR" || status === "TIMED_OUT" || status === "CLOSED") {
-          setConnection("offline");
-        }
+    const connect = async () => {
+      await supabase.realtime.setAuth();
+      if (!alive) return;
+
+      room = supabase.channel(roomName(roomKind, roomId), {
+        config: {
+          private: true,
+          broadcast: { self: false, ack: false },
+          presence: { key: currentUser.id },
+        },
       });
+      channelRef.current = room;
+
+      room
+        .on("broadcast", { event: "chat-event" }, ({ payload }) => {
+          const event = payload as RealtimeChatEvent;
+          if (event.message) pagination.merge(event.message);
+        })
+        .on("presence", { event: "sync" }, () => {
+          if (!room) return;
+          const state = room.presenceState<ChatPresenceMeta>();
+          const users = Object.values(state)
+            .flat()
+            .filter((item): item is ChatPresenceMeta => Boolean(item?.userId));
+          const unique = new Map(users.map((user) => [user.userId, user]));
+          setPresence([...unique.values()]);
+        })
+        .subscribe(async (status) => {
+          if (!room) return;
+          if (status === "SUBSCRIBED") {
+            setConnection("connected");
+            await room.track({
+              userId: currentUser.id,
+              username: currentUser.username,
+              fullName: currentUser.fullName,
+              avatarUrl: currentUser.avatarUrl,
+              onlineAt: new Date().toISOString(),
+              typing: false,
+            } satisfies ChatPresenceMeta);
+            if (subscribedOnceRef.current) void pagination.reload();
+            subscribedOnceRef.current = true;
+          } else if (status === "CHANNEL_ERROR" || status === "TIMED_OUT" || status === "CLOSED") {
+            setConnection("offline");
+          }
+        });
+    };
+
+    void connect().catch(() => {
+      if (alive) setConnection("offline");
+    });
 
     return () => {
+      alive = false;
       if (typingTimerRef.current) window.clearTimeout(typingTimerRef.current);
-      void room.untrack();
-      void supabase.removeChannel(room);
+      if (room) {
+        void room.untrack();
+        void supabase.removeChannel(room);
+      }
       channelRef.current = null;
       setPresence([]);
     };
