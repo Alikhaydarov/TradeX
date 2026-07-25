@@ -4,7 +4,7 @@ import { getSupabaseServerClient } from "@/lib/supabase/server";
 
 export const runtime = "nodejs";
 
-const ENABLED_PROVIDERS = new Set<Provider>(["google", "github", "discord"]);
+const ENABLED_PROVIDERS = new Set<Provider>(["google", "apple"]);
 
 export async function GET(
   request: Request,

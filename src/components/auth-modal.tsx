@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowRight, Check, Eye, EyeOff, Github, Mail, X } from "lucide-react";
+import { ArrowRight, Check, Eye, EyeOff, Mail, X } from "lucide-react";
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { useAuth, type AuthProviderName } from "./auth-context";
 
@@ -17,10 +17,10 @@ function GoogleMark() {
   );
 }
 
-function DiscordMark() {
+function AppleMark() {
   return (
     <svg viewBox="0 0 24 24" className="size-5" fill="currentColor" aria-hidden="true">
-      <path d="M19.5 5.34A17.1 17.1 0 0 0 15.44 4l-.5 1.02a15.4 15.4 0 0 0-5.86 0L8.56 4A17.2 17.2 0 0 0 4.5 5.35C1.93 9.15 1.24 12.86 1.6 16.5a16.4 16.4 0 0 0 4.98 2.5l1.2-1.65a10.8 10.8 0 0 1-1.88-.9l.46-.35c3.63 1.67 7.57 1.67 11.15 0l.47.35c-.6.35-1.23.65-1.89.9L17.3 19a16.3 16.3 0 0 0 4.98-2.5c.43-4.22-.73-7.9-2.78-11.16ZM8.86 14.28c-1.09 0-1.98-1-1.98-2.22s.87-2.23 1.98-2.23c1.12 0 2 1.01 1.98 2.23 0 1.22-.87 2.22-1.98 2.22Zm6.27 0c-1.09 0-1.98-1-1.98-2.22s.87-2.23 1.98-2.23c1.12 0 2 1.01 1.98 2.23 0 1.22-.86 2.22-1.98 2.22Z" />
+      <path d="M17.05 12.54c.02-2.04 1.67-3.03 1.75-3.08a3.76 3.76 0 0 0-2.96-1.6c-1.24-.13-2.45.75-3.08.75-.64 0-1.61-.74-2.66-.72a3.92 3.92 0 0 0-3.3 2.01c-1.43 2.47-.37 6.1 1 8.1.68.97 1.47 2.04 2.52 2 1.02-.04 1.4-.64 2.63-.64 1.22 0 1.58.64 2.64.62 1.1-.02 1.79-.97 2.44-1.95a8 8 0 0 0 1.12-2.28 3.52 3.52 0 0 1-2.1-3.21ZM15.03 6.55a3.56 3.56 0 0 0 .82-2.55 3.63 3.63 0 0 0-2.36 1.21 3.4 3.4 0 0 0-.84 2.46 3 3 0 0 0 2.38-1.12Z" />
     </svg>
   );
 }
@@ -152,15 +152,14 @@ export function AuthModal({
                 </p>
               </div>
 
-              <div className="mt-6 grid grid-cols-3 gap-2">
-                <button onClick={() => oauth("google")} disabled={Boolean(pending)} className="grid h-12 place-items-center rounded-xl border border-white/10 bg-white/[.035] transition hover:border-white/25 hover:bg-white/[.07] disabled:opacity-50" aria-label="Continue with Google">
+              <div className="mt-6 grid grid-cols-2 gap-2">
+                <button onClick={() => oauth("google")} disabled={Boolean(pending)} className="flex h-12 items-center justify-center gap-2.5 rounded-xl border border-white/10 bg-white/[.035] text-sm font-semibold transition hover:border-white/25 hover:bg-white/[.07] disabled:opacity-50" aria-label="Continue with Google">
                   {pending === "google" ? <span className="size-4 animate-spin rounded-full border-2 border-white/20 border-t-white" /> : <GoogleMark />}
+                  Google
                 </button>
-                <button onClick={() => oauth("github")} disabled={Boolean(pending)} className="grid h-12 place-items-center rounded-xl border border-white/10 bg-white/[.035] transition hover:border-white/25 hover:bg-white/[.07] disabled:opacity-50" aria-label="Continue with GitHub">
-                  {pending === "github" ? <span className="size-4 animate-spin rounded-full border-2 border-white/20 border-t-white" /> : <Github size={21} />}
-                </button>
-                <button onClick={() => oauth("discord")} disabled={Boolean(pending)} className="grid h-12 place-items-center rounded-xl border border-white/10 bg-white/[.035] transition hover:border-white/25 hover:bg-white/[.07] disabled:opacity-50" aria-label="Continue with Discord">
-                  {pending === "discord" ? <span className="size-4 animate-spin rounded-full border-2 border-white/20 border-t-white" /> : <DiscordMark />}
+                <button onClick={() => oauth("apple")} disabled={Boolean(pending)} className="flex h-12 items-center justify-center gap-2.5 rounded-xl border border-white/10 bg-white/[.035] text-sm font-semibold transition hover:border-white/25 hover:bg-white/[.07] disabled:opacity-50" aria-label="Continue with Apple">
+                  {pending === "apple" ? <span className="size-4 animate-spin rounded-full border-2 border-white/20 border-t-white" /> : <AppleMark />}
+                  Apple
                 </button>
               </div>
 

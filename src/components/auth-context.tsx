@@ -26,7 +26,7 @@ interface AuthContextValue {
   signOut: () => Promise<void>;
 }
 
-export type AuthProviderName = "google" | "github" | "discord";
+export type AuthProviderName = "google" | "apple";
 
 const AUTH_CACHE_KEY = "tradeup:user";
 const AuthContext = createContext<AuthContextValue | null>(null);
