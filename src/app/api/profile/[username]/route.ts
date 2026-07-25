@@ -114,7 +114,7 @@ export async function GET(request: Request, context: Params) {
 
   const { data: profile, error } = await supabase
     .from("profiles")
-    .select("id, username, full_name, avatar_url, bio, trading_style, location, is_verified, plan, premium_until, ai_enabled, auto_sync_enabled, stats_visible")
+    .select("id, username, full_name, avatar_url, banner_url, bio, trading_style, location, is_verified, plan, premium_until, ai_enabled, auto_sync_enabled, stats_visible")
     .eq("username", username)
     .maybeSingle();
 

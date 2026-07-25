@@ -174,7 +174,7 @@ export async function GET(request: Request) {
 
   const { data, error } = await auth.supabase
     .from("profiles")
-    .select("id, username, full_name, avatar_url, bio, trading_style, location, is_verified, plan, premium_until, ai_enabled, auto_sync_enabled, stats_visible")
+    .select("id, username, full_name, avatar_url, banner_url, bio, trading_style, location, is_verified, plan, premium_until, ai_enabled, auto_sync_enabled, stats_visible")
     .eq("id", auth.user.id)
     .single();
 
@@ -311,7 +311,7 @@ export async function PATCH(request: Request) {
       updated_at: new Date().toISOString(),
     })
     .eq("id", auth.user.id)
-    .select("id, username, full_name, avatar_url, bio, trading_style, location, is_verified, plan, premium_until, ai_enabled, auto_sync_enabled, stats_visible")
+    .select("id, username, full_name, avatar_url, banner_url, bio, trading_style, location, is_verified, plan, premium_until, ai_enabled, auto_sync_enabled, stats_visible")
     .single();
 
   if (error) {

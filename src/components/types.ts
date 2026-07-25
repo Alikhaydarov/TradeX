@@ -107,6 +107,7 @@ export interface Profile {
   username: string;
   fullName: string;
   avatarUrl: string | null;
+  bannerUrl?: string | null;
   bio: string;
   tradingStyle: string;
   location: string;

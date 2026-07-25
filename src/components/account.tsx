@@ -53,6 +53,7 @@ interface ProfileRecord {
   username: string;
   full_name: string;
   avatar_url: string | null;
+  banner_url?: string | null;
   bio: string;
   trading_style: string;
   location: string;
@@ -114,6 +115,7 @@ function toProfile(data: ProfileRecord): Profile & { isFollowing?: boolean } {
     username: data.username,
     fullName: data.full_name,
     avatarUrl: data.avatar_url,
+    bannerUrl: data.banner_url ?? null,
     bio: data.bio ?? "",
     tradingStyle: data.trading_style ?? "Price Action",
     location: data.location ?? "",
@@ -169,6 +171,7 @@ export function Account({ onLogin, profileUsername }: { onLogin: () => void; pro
   const [editOpen, setEditOpen] = useState(false);
   const [saved, setSaved] = useState(false);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const [uploadingBanner, setUploadingBanner] = useState(false);
   const [followLoading, setFollowLoading] = useState(false);
   const [connectionsOpen, setConnectionsOpen] = useState<"followers" | "following" | null>(null);
   const [connections, setConnections] = useState<ConnectionUser[]>([]);
@@ -184,6 +187,7 @@ export function Account({ onLogin, profileUsername }: { onLogin: () => void; pro
   const [achievementImage, setAchievementImage] = useState("");
   const [achievementBusy, setAchievementBusy] = useState(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const bannerInputRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
     return () => viewObserver.current?.disconnect();
@@ -374,6 +378,31 @@ export function Account({ onLogin, profileUsername }: { onLogin: () => void; pro
     }
   };
 
+  const uploadBanner = async (file: File | undefined) => {
+    if (!file || !isOwnProfile) return;
+    setUploadingBanner(true);
+    setError(null);
+
+    try {
+      const formData = new FormData();
+      formData.append("banner", file);
+      const response = await fetch("/api/profile/banner", { method: "POST", credentials: "same-origin", body: formData });
+      const payload = (await response.json()) as { bannerUrl?: string; error?: string };
+      if (!response.ok || !payload.bannerUrl) throw new Error(payload.error || "Banner upload failed.");
+
+      const nextProfile = { ...(draftProfile ?? profile), bannerUrl: payload.bannerUrl };
+      setDraftProfile(nextProfile);
+      setProfile(nextProfile);
+      setSaved(true);
+      window.setTimeout(() => setSaved(false), 1800);
+    } catch (nextError) {
+      setError(nextError instanceof Error ? nextError.message : "Banner upload failed.");
+    } finally {
+      setUploadingBanner(false);
+      if (bannerInputRef.current) bannerInputRef.current.value = "";
+    }
+  };
+
   const toggleFollow = async () => {
     if (isOwnProfile) return;
     setFollowLoading(true);
@@ -500,7 +529,17 @@ export function Account({ onLogin, profileUsername }: { onLogin: () => void; pro
 
       <div className="mx-auto max-w-3xl px-0 sm:px-4 sm:py-3">
         <section className="overflow-hidden border-b border-border bg-card sm:rounded-lg sm:border">
-          <div className="h-20 bg-[linear-gradient(135deg,#111111,#202020)] sm:h-28" />
+          <div className="relative h-20 overflow-hidden bg-[linear-gradient(135deg,#111111,#202020)] sm:h-28">
+            {profile.bannerUrl ? <MediaImage src={profile.bannerUrl} alt={`${profile.fullName} banner`} className="h-full w-full object-cover" /> : null}
+            {isOwnProfile ? (
+              <>
+                <input ref={bannerInputRef} type="file" accept="image/png,image/jpeg,image/webp,image/gif" className="hidden" onChange={(event) => void uploadBanner(event.target.files?.[0])} />
+                <button type="button" onClick={() => bannerInputRef.current?.click()} disabled={uploadingBanner} className="absolute right-2 top-2 grid size-8 place-items-center rounded-lg bg-black/55 text-white backdrop-blur transition hover:bg-black/70 disabled:opacity-60" aria-label="Change banner">
+                  {uploadingBanner ? <XSpinner size="sm" /> : <Camera size={14} />}
+                </button>
+              </>
+            ) : null}
+          </div>
           <div className="px-4 pb-4 sm:px-5">
             <div className="-mt-9 flex items-end justify-between gap-3 sm:-mt-11">
               <TraderAvatar name={profile.fullName} value={profile.avatarUrl} className="h-20 w-20 rounded-full border-4 border-card bg-black text-xl shadow-xl sm:h-24 sm:w-24 sm:text-2xl" />
@@ -637,7 +676,12 @@ export function Account({ onLogin, profileUsername }: { onLogin: () => void; pro
               <DialogTitle>Edit profile</DialogTitle>
               <DialogDescription>Profil ma&apos;lumotlari va trading uslubingizni yangilang.</DialogDescription>
             </DialogHeader>
-            <div className="h-36 bg-[#080808]" />
+            <div className="relative h-36 overflow-hidden bg-[#080808]">
+              {draftProfile.bannerUrl ? <MediaImage src={draftProfile.bannerUrl} alt="Banner" className="h-full w-full object-cover" /> : null}
+              <button type="button" onClick={() => bannerInputRef.current?.click()} disabled={uploadingBanner} className="absolute inset-0 grid h-full w-full place-items-center bg-black/35 text-white transition hover:bg-black/50 disabled:opacity-70" aria-label="Change banner">
+                {uploadingBanner ? <XSpinner size="sm" /> : <span className="inline-flex items-center gap-1.5 rounded-full bg-black/55 px-3 py-1.5 text-xs font-semibold backdrop-blur"><Camera size={14} /> Change cover</span>}
+              </button>
+            </div>
             <div className="px-5 pb-6">
               <div className="-mt-14 flex items-end">
                 <div className="relative">
