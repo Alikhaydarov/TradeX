@@ -3,6 +3,7 @@
 import {
   Crown,
   Hash,
+  Home,
   LockKeyhole,
   MessageCircle,
   Plus,
@@ -29,6 +30,7 @@ export interface SelectedChatRoom {
 
 export function CommunityChatSidebar({
   communityName,
+  communityAvatar,
   currentUser,
   channels,
   dms,
@@ -39,9 +41,11 @@ export function CommunityChatSidebar({
   onSelect,
   onCreateChannel,
   onStartDm,
+  onCommunityHome,
   onCloseMobile,
 }: {
   communityName: string;
+  communityAvatar: string | null;
   currentUser: ChatProfile;
   channels: ChatChannel[];
   dms: ChatDmThread[];
@@ -52,6 +56,7 @@ export function CommunityChatSidebar({
   onSelect: (room: SelectedChatRoom) => void;
   onCreateChannel: (name: string, premiumOnly: boolean) => Promise<void>;
   onStartDm: (userId: string) => Promise<void>;
+  onCommunityHome: () => void;
   onCloseMobile?: () => void;
 }) {
   const [createOpen, setCreateOpen] = useState(false);
@@ -59,6 +64,7 @@ export function CommunityChatSidebar({
   const [channelName, setChannelName] = useState("");
   const [premiumOnly, setPremiumOnly] = useState(false);
   const [query, setQuery] = useState("");
+  const [sidebarQuery, setSidebarQuery] = useState("");
   const [busy, setBusy] = useState(false);
 
   const dmPeerIds = useMemo(() => new Set(dms.map((thread) => thread.peer.id)), [dms]);
@@ -72,6 +78,29 @@ export function CommunityChatSidebar({
           : `${member.fullName} ${member.username}`.toLowerCase().includes(normalized),
       );
   }, [currentUserId, dmPeerIds, members, query]);
+  const normalizedSidebarQuery = sidebarQuery.trim().toLowerCase();
+  const visibleChannels = useMemo(
+    () =>
+      channels.filter((channel) =>
+        normalizedSidebarQuery
+          ? channel.name.toLowerCase().includes(normalizedSidebarQuery)
+          : true,
+      ),
+    [channels, normalizedSidebarQuery],
+  );
+  const publicChannels = visibleChannels.filter((channel) => !channel.isPremiumOnly);
+  const premiumChannels = visibleChannels.filter((channel) => channel.isPremiumOnly);
+  const visibleDms = useMemo(
+    () =>
+      dms.filter((thread) =>
+        normalizedSidebarQuery
+          ? `${thread.peer.fullName} ${thread.peer.username}`
+              .toLowerCase()
+              .includes(normalizedSidebarQuery)
+          : true,
+      ),
+    [dms, normalizedSidebarQuery],
+  );
 
   const select = (room: SelectedChatRoom) => {
     onSelect(room);
@@ -106,20 +135,57 @@ export function CommunityChatSidebar({
 
   return (
     <div className="flex h-full min-h-0 flex-col bg-[#111214] text-zinc-300">
-      <div className="flex h-12 shrink-0 items-center border-b border-black/40 px-3 shadow-[0_1px_0_rgba(255,255,255,.025)]">
+      <div className="flex h-14 shrink-0 items-center gap-2.5 border-b border-black/40 px-3 shadow-[0_1px_0_rgba(255,255,255,.025)]">
+        <TraderAvatar
+          name={communityName}
+          value={communityAvatar}
+          className="size-8 rounded-[10px] border border-white/[.09] text-[9px]"
+        />
         <div className="min-w-0 flex-1">
           <p className="truncate text-[13px] font-bold tracking-[-0.02em] text-zinc-100">{communityName}</p>
-          <p className="mt-0.5 text-[9px] text-zinc-500">Community chat</p>
+          <p className="mt-0.5 flex items-center gap-1 text-[9px] text-zinc-500">
+            <span className="size-1.5 rounded-full bg-emerald-400" />
+            Trader community
+          </p>
         </div>
-        <span className="grid size-7 place-items-center rounded-md text-zinc-500">
-          <MessageCircle size={15} />
-        </span>
+        {onCloseMobile ? (
+          <button
+            type="button"
+            onClick={onCloseMobile}
+            className="grid size-7 place-items-center rounded-md text-zinc-500 transition hover:bg-white/[.06] hover:text-white lg:hidden"
+            aria-label="Close channels"
+          >
+            <X size={14} />
+          </button>
+        ) : null}
+      </div>
+
+      <div className="shrink-0 space-y-1.5 px-2 pt-2">
+        <button
+          type="button"
+          onClick={onCommunityHome}
+          className="flex h-9 w-full items-center gap-2 rounded-md px-2 text-left text-[11px] font-semibold text-zinc-400 transition hover:bg-white/[.055] hover:text-white"
+        >
+          <span className="grid size-6 place-items-center rounded-md bg-white/[.04] text-zinc-500">
+            <Home size={13} />
+          </span>
+          Community overview
+        </button>
+        <label className="flex h-8 items-center gap-2 rounded-md border border-white/[.065] bg-[#0b0c0e] px-2.5 transition focus-within:border-white/[.15]">
+          <Search size={12} className="text-zinc-600" />
+          <input
+            value={sidebarQuery}
+            onChange={(event) => setSidebarQuery(event.target.value)}
+            placeholder="Find channels or people"
+            className="min-w-0 flex-1 bg-transparent text-[10px] text-zinc-200 outline-none placeholder:text-zinc-700"
+          />
+        </label>
       </div>
 
       <div className="min-h-0 flex-1 overflow-y-auto px-2 pb-3 pt-2 scrollbar-thin">
         <section>
           <div className="flex h-7 items-center px-1.5">
-            <p className="text-[10px] font-bold uppercase tracking-[0.08em] text-zinc-500">Text channels</p>
+            <p className="text-[9px] font-bold uppercase tracking-[0.1em] text-zinc-500">Channels</p>
             {canManage ? (
               <button
                 type="button"
@@ -165,7 +231,7 @@ export function CommunityChatSidebar({
           ) : null}
 
           <div className="space-y-0.5">
-            {channels.map((channel) => {
+            {publicChannels.map((channel) => {
               const active = selected?.kind === "channel" && selected.id === channel.id;
               return (
                 <button
@@ -189,6 +255,34 @@ export function CommunityChatSidebar({
                 </button>
               );
             })}
+            {premiumChannels.length ? (
+              <p className="px-2 pb-1 pt-3 text-[8px] font-bold uppercase tracking-[.12em] text-amber-400/45">
+                Premium rooms
+              </p>
+            ) : null}
+            {premiumChannels.map((channel) => {
+              const active = selected?.kind === "channel" && selected.id === channel.id;
+              return (
+                <button
+                  key={channel.id}
+                  type="button"
+                  onClick={() => select({ kind: "channel", id: channel.id })}
+                  className={`group relative flex h-8 w-full min-w-0 items-center gap-1.5 rounded-md px-2 text-left transition ${
+                    active
+                      ? "bg-[#35373c] text-white before:absolute before:-left-2 before:h-5 before:w-1 before:rounded-r-full before:bg-amber-300"
+                      : "text-zinc-500 hover:bg-[#2a2c31] hover:text-zinc-200"
+                  }`}
+                >
+                  <LockKeyhole size={14} className="shrink-0 text-amber-400/80" />
+                  <span className="min-w-0 flex-1 truncate text-[12px] font-medium">{channel.name}</span>
+                  <Crown size={11} className="shrink-0 text-amber-400/60" />
+                  <UnreadBadge count={channel.unreadCount} />
+                </button>
+              );
+            })}
+            {!visibleChannels.length && normalizedSidebarQuery ? (
+              <p className="px-2 py-3 text-[10px] text-zinc-600">No matching channels</p>
+            ) : null}
           </div>
         </section>
 
@@ -237,7 +331,7 @@ export function CommunityChatSidebar({
           ) : null}
 
           <div className="space-y-0.5">
-            {dms.map((thread) => {
+            {visibleDms.map((thread) => {
               const active = selected?.kind === "dm" && selected.id === thread.id;
               return (
                 <button
@@ -259,10 +353,13 @@ export function CommunityChatSidebar({
                 </button>
               );
             })}
-            {!dms.length ? (
+            {!visibleDms.length && !normalizedSidebarQuery ? (
               <div className="flex items-center gap-2 rounded-md px-2 py-3 text-[10px] text-zinc-600">
                 <UsersRound size={13} /> Start a private conversation
               </div>
+            ) : null}
+            {!visibleDms.length && normalizedSidebarQuery ? (
+              <p className="px-2 py-3 text-[10px] text-zinc-600">No matching conversations</p>
             ) : null}
           </div>
         </section>
