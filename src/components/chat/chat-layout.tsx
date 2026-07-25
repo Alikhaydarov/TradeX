@@ -18,6 +18,7 @@ import {
 } from "./community-sidebar";
 import { MessageComposer } from "./message-composer";
 import { MessageList } from "./message-list";
+import { MemberPanel } from "./member-panel";
 
 interface CommunityMemberPayload {
   members?: Array<{
@@ -63,14 +64,17 @@ function updateRoomUrl(communityId: string, room: SelectedChatRoom) {
 function ChatRoomPanel({
   context,
   room,
+  members,
   onOpenSidebar,
 }: {
   context: ChatContextPayload;
   room: SelectedChatRoom;
+  members: ChatProfile[];
   onOpenSidebar: () => void;
 }) {
   const [reply, setReply] = useState<ChatReplyPreview | null>(null);
   const [actionError, setActionError] = useState("");
+  const [membersOpen, setMembersOpen] = useState(true);
   const realtime = useRealtimeChannel({
     roomKind: room.kind,
     roomId: room.id,
@@ -100,43 +104,58 @@ function ChatRoomPanel({
   };
 
   return (
-    <div className="flex h-full min-h-0 flex-col bg-[#15171a]">
-      <ChatHeader
-        roomKind={room.kind}
-        title={roomTitle}
-        subtitle={roomSubtitle}
-        onlineCount={realtime.onlineUsers.length}
-        connection={realtime.connection}
-        onOpenSidebar={onOpenSidebar}
-      />
-      {actionError || realtime.error ? (
-        <div className="flex items-center gap-2 border-b border-rose-400/10 bg-rose-400/[.045] px-4 py-2 text-[10px] text-rose-300">
-          <X size={12} /> {actionError || realtime.error}
+    <div className="flex h-full min-h-0 bg-[#090909]">
+      <div className="flex min-h-0 min-w-0 flex-1 flex-col">
+        <ChatHeader
+          roomKind={room.kind}
+          title={roomTitle}
+          subtitle={roomSubtitle}
+          onlineCount={realtime.onlineUsers.length}
+          connection={realtime.connection}
+          membersOpen={membersOpen}
+          onOpenSidebar={onOpenSidebar}
+          onToggleMembers={() => setMembersOpen((current) => !current)}
+        />
+        {actionError || realtime.error ? (
+          <div className="flex items-center gap-2 border-b border-rose-400/10 bg-rose-400/[.045] px-4 py-2 text-[10px] text-rose-300">
+            <X size={12} /> {actionError || realtime.error}
+          </div>
+        ) : null}
+        <MessageList
+          messages={realtime.messages}
+          currentUserId={context.currentUser.id}
+          canModerate={canModerate}
+          loading={realtime.loading}
+          loadingOlder={realtime.loadingOlder}
+          hasOlder={realtime.hasOlder}
+          typingUsers={realtime.typingUsers}
+          onLoadOlder={realtime.loadOlder}
+          onRead={realtime.markRead}
+          onReply={setReply}
+          onEdit={(messageId, content) => realtime.editMessage(messageId, content).then(() => undefined)}
+          onDelete={(messageId) => run(() => realtime.deleteMessage(messageId))}
+          onReact={(messageId, emoji) => run(() => realtime.react(messageId, emoji))}
+        />
+        <MessageComposer
+          roomLabel={room.kind === "channel" ? `#${roomTitle}` : roomTitle}
+          reply={reply}
+          rateLimitedUntil={realtime.rateLimitedUntil}
+          onReplyClear={() => setReply(null)}
+          onTyping={realtime.setTyping}
+          onSend={realtime.sendMessage}
+        />
+      </div>
+      {membersOpen ? (
+        <div className="hidden h-full min-h-0 xl:block">
+          <MemberPanel
+            members={members}
+            onlineUsers={realtime.onlineUsers}
+            currentUserId={context.currentUser.id}
+            currentUserIsModerator={canModerate}
+            onClose={() => setMembersOpen(false)}
+          />
         </div>
       ) : null}
-      <MessageList
-        messages={realtime.messages}
-        currentUserId={context.currentUser.id}
-        canModerate={canModerate}
-        loading={realtime.loading}
-        loadingOlder={realtime.loadingOlder}
-        hasOlder={realtime.hasOlder}
-        typingUsers={realtime.typingUsers}
-        onLoadOlder={realtime.loadOlder}
-        onRead={realtime.markRead}
-        onReply={setReply}
-        onEdit={(messageId, content) => realtime.editMessage(messageId, content).then(() => undefined)}
-        onDelete={(messageId) => run(() => realtime.deleteMessage(messageId))}
-        onReact={(messageId, emoji) => run(() => realtime.react(messageId, emoji))}
-      />
-      <MessageComposer
-        roomLabel={room.kind === "channel" ? `#${roomTitle}` : roomTitle}
-        reply={reply}
-        rateLimitedUntil={realtime.rateLimitedUntil}
-        onReplyClear={() => setReply(null)}
-        onTyping={realtime.setTyping}
-        onSend={realtime.sendMessage}
-      />
     </div>
   );
 }
@@ -247,6 +266,7 @@ export function ChatLayout({ communityId }: { communityId: string }) {
   const sidebar = context ? (
     <CommunityChatSidebar
       communityName={context.community.name}
+      communityAvatar={context.community.avatarUrl}
       currentUser={context.currentUser}
       channels={context.channels}
       dms={context.dms}
@@ -257,13 +277,14 @@ export function ChatLayout({ communityId }: { communityId: string }) {
       onSelect={chooseRoom}
       onCreateChannel={createChannel}
       onStartDm={startDm}
+      onCommunityHome={back}
       onCloseMobile={() => setMobileSidebarOpen(false)}
     />
   ) : null;
 
   if (loading) {
     return (
-      <div className="grid h-[100dvh] place-items-center bg-[#15171a] text-zinc-500">
+      <div className="grid h-full min-h-0 place-items-center bg-[#090909] text-zinc-500">
         <LoaderCircle size={22} className="animate-spin" />
       </div>
     );
@@ -271,7 +292,7 @@ export function ChatLayout({ communityId }: { communityId: string }) {
 
   if (!context) {
     return (
-      <div className="grid h-[100dvh] place-items-center bg-[#15171a] p-4 text-center">
+      <div className="grid h-full min-h-0 place-items-center bg-[#090909] p-4 text-center">
         <div className="max-w-sm rounded-xl border border-white/[.07] bg-[#111214] p-5">
           <MessageCircle size={22} className="mx-auto text-zinc-600" />
           <h1 className="mt-3 text-sm font-bold text-white">Chat unavailable</h1>
@@ -283,18 +304,19 @@ export function ChatLayout({ communityId }: { communityId: string }) {
   }
 
   return (
-    <div className="relative flex h-[100dvh] min-h-0 overflow-hidden bg-[#15171a]">
-      <aside className="hidden w-[240px] shrink-0 border-r border-black/35 lg:block">{sidebar}</aside>
+    <div data-community-chat className="relative flex h-[100dvh] min-h-0 overflow-hidden bg-[#090909] lg:h-[calc(100dvh-2rem)]">
+      <aside className="hidden w-[264px] shrink-0 border-r border-black/35 lg:block">{sidebar}</aside>
       <main className="min-h-0 min-w-0 flex-1">
         {selected ? (
           <ChatRoomPanel
             key={`${selected.kind}:${selected.id}`}
             context={context}
             room={selected}
+            members={members}
             onOpenSidebar={() => setMobileSidebarOpen(true)}
           />
         ) : (
-          <div className="grid h-full place-items-center bg-[#15171a] text-center">
+          <div className="grid h-full place-items-center bg-[#090909] text-center">
             <div>
               <MessageCircle size={28} className="mx-auto text-zinc-600" />
               <p className="mt-2 text-xs text-zinc-500">Create or select a channel to start chatting.</p>
@@ -305,7 +327,7 @@ export function ChatLayout({ communityId }: { communityId: string }) {
       </main>
 
       {mobileSidebarOpen ? (
-        <div className="fixed inset-0 z-[10000] lg:hidden">
+        <div className="absolute inset-0 z-50 lg:hidden">
           <button
             type="button"
             className="absolute inset-0 bg-black/75 backdrop-blur-sm"
