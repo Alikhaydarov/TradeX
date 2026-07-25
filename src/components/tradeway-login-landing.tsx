@@ -145,9 +145,32 @@ export function TradeWayLoginLanding({
           <h2>Everything around the trade.<br />None of the noise.</h2>
         </div>
         <div className="auth3-feature-grid">
-          <article><BookOpen /><span>01</span><h3>Journal the decision</h3><p>Capture setup, risk and psychology while the context is still fresh.</p></article>
-          <article><BarChart3 /><span>02</span><h3>Find the pattern</h3><p>Turn executions into clean performance insights you can act on.</p></article>
-          <article><Users /><span>03</span><h3>Improve together</h3><p>Share verified progress inside private, focused trader communities.</p></article>
+          <article>
+            <BookOpen /><span>01</span><h3>Journal the decision</h3><p>Capture setup, risk and psychology while the context is still fresh.</p>
+            <div className="auth3-feature-art auth3-note-art" aria-hidden="true">
+              <div><small>SETUP</small><b>London continuation</b></div>
+              <p>Waited for the retest. Risk stayed inside plan.</p>
+              <span><i /> A+ execution</span>
+            </div>
+          </article>
+          <article>
+            <BarChart3 /><span>02</span><h3>Find the pattern</h3><p>Turn executions into clean performance insights you can act on.</p>
+            <div className="auth3-feature-art auth3-bars-art" aria-hidden="true">
+              <div><span>Mon</span><i style={{ height: "44%" }} /></div>
+              <div><span>Tue</span><i style={{ height: "72%" }} /></div>
+              <div><span>Wed</span><i style={{ height: "56%" }} /></div>
+              <div><span>Thu</span><i style={{ height: "88%" }} /></div>
+              <div><span>Fri</span><i style={{ height: "64%" }} /></div>
+            </div>
+          </article>
+          <article>
+            <Users /><span>03</span><h3>Improve together</h3><p>Share verified progress inside private, focused trader communities.</p>
+            <div className="auth3-feature-art auth3-community-art" aria-hidden="true">
+              <div className="auth3-avatar-stack"><i>AK</i><i>MR</i><i>JL</i><i>+8</i></div>
+              <div><small>WEEKLY REVIEW</small><b>12 traders checked in</b></div>
+              <span><i /> Private space</span>
+            </div>
+          </article>
         </div>
       </section>
 
