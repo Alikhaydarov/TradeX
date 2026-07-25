@@ -11,7 +11,6 @@ type DashboardOverviewProps = ComponentProps<typeof DashboardOverviewResponsive>
 
 type JournalStatsRow = {
   pnl?: string | number | null
-  result_r?: string | number | null
 }
 
 type JournalStatsResponse = {
@@ -23,7 +22,6 @@ type SyncedStats = {
   wins: number
   losses: number
   rate: number
-  r: number
   pf: number
   count: number
 }
@@ -34,24 +32,18 @@ function finiteNumber(value: unknown) {
 }
 
 function calculateStats(entries: JournalStatsRow[]): SyncedStats {
-  const normalized = entries.map((entry) => ({
-    pnl: finiteNumber(entry.pnl),
-    resultR: finiteNumber(entry.result_r),
-  }))
-  const wins = normalized.filter((entry) => entry.pnl > 0)
-  const losses = normalized.filter((entry) => entry.pnl < 0)
+  const normalized = entries.map((entry) => finiteNumber(entry.pnl))
+  const wins = normalized.filter((pnl) => pnl > 0)
+  const losses = normalized.filter((pnl) => pnl < 0)
   const decidedTrades = wins.length + losses.length
-  const grossWins = wins.reduce((total, entry) => total + entry.pnl, 0)
-  const grossLosses = Math.abs(losses.reduce((total, entry) => total + entry.pnl, 0))
+  const grossWins = wins.reduce((total, pnl) => total + pnl, 0)
+  const grossLosses = Math.abs(losses.reduce((total, pnl) => total + pnl, 0))
 
   return {
-    pnl: normalized.reduce((total, entry) => total + entry.pnl, 0),
+    pnl: normalized.reduce((total, pnl) => total + pnl, 0),
     wins: wins.length,
     losses: losses.length,
     rate: decidedTrades ? Math.round((wins.length / decidedTrades) * 100) : 0,
-    r: normalized.length
-      ? normalized.reduce((total, entry) => total + entry.resultR, 0) / normalized.length
-      : 0,
     pf: grossLosses ? grossWins / grossLosses : grossWins > 0 ? grossWins : 0,
     count: normalized.length,
   }
@@ -73,7 +65,7 @@ export function DashboardOverview(props: DashboardOverviewProps) {
       const payload = (await response.json()) as JournalStatsResponse
       setSynced(calculateStats(payload.entries ?? []))
     } catch {
-      // Keep the server-provided dashboard values when a refresh request fails.
+      // Keep the existing dashboard values if the refresh request fails.
     }
   }, [props.account.id])
 
@@ -101,7 +93,6 @@ export function DashboardOverview(props: DashboardOverviewProps) {
               wins: synced.wins,
               losses: synced.losses,
               rate: synced.rate,
-              r: synced.r,
               pf: synced.pf,
             },
             monthCount: synced.count,
