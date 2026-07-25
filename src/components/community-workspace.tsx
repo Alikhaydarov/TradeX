@@ -1,12 +1,9 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-
 import { ChatLayout } from "@/components/chat/chat-layout";
-import {
-  CommunityDetail,
-  CommunityHub,
-} from "@/features/community/components/community-experience";
+import { CommunityDetailV2 } from "@/features/community/components/community-detail-v2";
+import { CommunityHubV2 } from "@/features/community/components/community-hub-v2";
 import type { CommunitySection } from "@/features/community/components/community-sidebar";
 
 const VALID_TABS = new Set<CommunitySection>([
@@ -33,13 +30,8 @@ export function CommunityWorkspace() {
   const pathname = usePathname();
   const route = communityRoute(pathname);
 
-  if (!route) return <CommunityHub />;
+  if (!route) return <CommunityHubV2 />;
   if (route.tab === "chat") return <ChatLayout communityId={route.communityId} />;
 
-  return (
-    <CommunityDetail
-      communityId={route.communityId}
-      activeTab={route.tab}
-    />
-  );
+  return <CommunityDetailV2 communityId={route.communityId} activeTab={route.tab} />;
 }
