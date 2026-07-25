@@ -13,16 +13,22 @@ function initials(name: string) {
 export function TraderAvatar({
   name,
   value,
+  src,
   className,
 }: {
   name: string;
   value?: string | null;
+  src?: string | null;
   className?: string;
 }) {
-  const imageUrl = value?.startsWith("http://") || value?.startsWith("https://")
-    ? value
-    : null;
-  const label = imageUrl ? initials(name) : value?.slice(0, 2) || initials(name) || "TW";
+  const resolvedValue = value ?? src;
+  const imageUrl =
+    resolvedValue?.startsWith("http://") || resolvedValue?.startsWith("https://")
+      ? resolvedValue
+      : null;
+  const label = imageUrl
+    ? initials(name)
+    : resolvedValue?.slice(0, 2) || initials(name) || "TW";
 
   return (
     <span
@@ -31,11 +37,15 @@ export function TraderAvatar({
         "relative inline-flex shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-gradient-to-br from-zinc-100 via-zinc-500 to-zinc-900 font-black text-white shadow-inner shadow-white/10",
         className,
       )}
-      style={imageUrl ? {
-        backgroundImage: `url("${imageUrl.replaceAll('"', "%22")}")`,
-        backgroundPosition: "center",
-        backgroundSize: "cover",
-      } : undefined}
+      style={
+        imageUrl
+          ? {
+              backgroundImage: `url("${imageUrl.replaceAll('"', "%22")}")`,
+              backgroundPosition: "center",
+              backgroundSize: "cover",
+            }
+          : undefined
+      }
     >
       {!imageUrl && label}
     </span>
