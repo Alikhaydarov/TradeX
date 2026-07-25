@@ -81,6 +81,62 @@ export function CommunitySidebar({
   const community = summary?.community;
   const memberCount = summary?.members?.filter((member) => member.status === "active").length ?? community?.memberCount ?? 0;
 
+  if (active === "chat") {
+    return (
+      <aside className="fixed inset-y-0 left-0 z-40 hidden w-[76px] flex-col border-r border-white/[.075] bg-[#030303] lg:flex">
+        <div className="flex flex-col items-center gap-2 border-b border-white/[.075] px-2 py-3">
+          <button
+            type="button"
+            onClick={onBack}
+            className="grid size-9 place-items-center rounded-xl text-zinc-600 transition hover:bg-white/[.05] hover:text-white"
+            aria-label="Back to my communities"
+            title="My communities"
+          >
+            <ArrowLeft size={15} />
+          </button>
+          <div className="relative">
+            <TraderAvatar
+              name={community?.name || "Community"}
+              value={community?.avatar_url || community?.owner?.avatar_url}
+              className="size-10 rounded-xl border border-white/10 text-[10px]"
+            />
+            <span className="absolute -bottom-1 -right-1 size-3 rounded-full border-2 border-[#030303] bg-emerald-400" />
+          </div>
+        </div>
+
+        <nav className="flex min-h-0 flex-1 flex-col items-center gap-1.5 overflow-y-auto px-2 py-3" aria-label="Community workspace">
+          {NAV.map((item) => {
+            const Icon = item.icon;
+            const selected = active === item.id;
+            return (
+              <button
+                key={item.id}
+                type="button"
+                onClick={() => onNavigate(item.id)}
+                className={`group relative grid size-10 place-items-center rounded-xl border transition ${
+                  selected
+                    ? "border-white/12 bg-white/[.085] text-white shadow-[0_8px_24px_rgba(0,0,0,.28)]"
+                    : "border-transparent text-zinc-700 hover:border-white/7 hover:bg-white/[.035] hover:text-zinc-300"
+                }`}
+                aria-label={item.label}
+                title={item.label}
+              >
+                {selected ? <span className="absolute inset-y-2 left-0 w-0.5 rounded-full bg-emerald-400" /> : null}
+                <Icon size={16} />
+              </button>
+            );
+          })}
+        </nav>
+
+        <div className="border-t border-white/[.075] p-2.5">
+          <div className="grid h-10 place-items-center rounded-xl border border-emerald-400/12 bg-emerald-400/[.04] text-emerald-300" title={`${memberCount} members · live`}>
+            <Radio size={15} />
+          </div>
+        </div>
+      </aside>
+    );
+  }
+
   return (
     <aside className="fixed inset-y-0 left-0 z-40 hidden w-[236px] flex-col border-r border-white/[.075] bg-[#030303] lg:flex">
       <div className="border-b border-white/[.075] p-3">
@@ -132,7 +188,7 @@ export function CommunitySidebar({
               key={item.id}
               type="button"
               onClick={() => onNavigate(item.id)}
-              className={`group relative flex min-h-11 w-full items-center gap-2.5 rounded-xl px-2.5 text-left transition ${
+              className={`group relative flex h-10 w-full items-center gap-2.5 rounded-xl px-2.5 text-left transition ${
                 selected
                   ? "bg-white/[.075] text-white ring-1 ring-white/10"
                   : "text-zinc-600 hover:bg-white/[.035] hover:text-zinc-200"
