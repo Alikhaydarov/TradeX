@@ -23,6 +23,7 @@ import "./dashboard-reference-layout.css";
 import "./workspace-visual-refresh.css";
 import "./workspace-docked-shell.css";
 import "./community-ui-fixes.css";
+import "./workspace-unification.css";
 
 const dmSans = DM_Sans({
   variable: "--font-dm-sans",

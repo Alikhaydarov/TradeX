@@ -1,0 +1,175 @@
+/* Final visual contract for the authenticated workspace.
+   This file intentionally comes last: older page-level styles may remain,
+   but they cannot turn each route into a different product. */
+
+:root {
+  color-scheme: dark;
+  --tw-canvas: #000;
+  --tw-surface: #090909;
+  --tw-surface-raised: #0e0e0e;
+  --tw-surface-hover: #151515;
+  --tw-line: rgba(255, 255, 255, 0.09);
+  --tw-line-strong: rgba(255, 255, 255, 0.16);
+  --tw-copy: #f5f5f5;
+  --tw-copy-muted: #a1a1aa;
+  --tw-copy-dim: #71717a;
+  --tw-positive: #34d399;
+  --tw-negative: #fb7185;
+}
+
+* {
+  scrollbar-color: #3f3f46 #050505;
+  scrollbar-width: thin;
+}
+
+*::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+*::-webkit-scrollbar-track {
+  background: #050505;
+}
+
+*::-webkit-scrollbar-thumb {
+  border: 3px solid #050505;
+  border-radius: 999px;
+  background: #3f3f46;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background: #71717a;
+}
+
+.workspace-shell,
+[data-workspace-main],
+[data-workspace-main] > section {
+  background: var(--tw-canvas) !important;
+}
+
+/* Keep one quiet material language. Semantic P&L colors remain untouched. */
+.workspace-shell :is(
+  [data-slot="card"],
+  [data-slot="dialog-content"],
+  [data-slot="alert-dialog-content"],
+  [data-slot="popover-content"],
+  [data-slot="dropdown-menu-content"],
+  [data-slot="select-content"],
+  .surface,
+  .surface-soft,
+  .surface-strong,
+  .prop-card-glow
+) {
+  border-color: var(--tw-line) !important;
+  background: var(--tw-surface) !important;
+  background-image: none !important;
+  box-shadow: none !important;
+}
+
+.workspace-shell :is(
+  [data-slot="card"],
+  [data-slot="dialog-content"],
+  [data-slot="alert-dialog-content"],
+  .prop-card-glow
+) {
+  border-radius: 0.875rem !important;
+}
+
+.workspace-shell :is(
+  input,
+  textarea,
+  select,
+  [data-slot="select-trigger"],
+  [data-slot="button"][data-variant="outline"],
+  [data-slot="button"][data-variant="secondary"]
+) {
+  min-height: 2.5rem;
+  border-color: var(--tw-line) !important;
+  background: #090909 !important;
+  color: var(--tw-copy) !important;
+  box-shadow: none !important;
+}
+
+.workspace-shell :is(input, textarea, select, [data-slot="select-trigger"])::placeholder {
+  color: var(--tw-copy-dim) !important;
+}
+
+.workspace-shell :is(
+  input,
+  textarea,
+  select,
+  [data-slot="select-trigger"],
+  [data-slot="button"]
+) {
+  transition:
+    border-color 140ms ease,
+    background-color 140ms ease,
+    color 140ms ease,
+    transform 140ms ease !important;
+}
+
+.workspace-shell :is(input, textarea, select, [data-slot="select-trigger"]):focus-visible,
+.workspace-shell [data-slot="button"]:focus-visible,
+.workspace-shell button:focus-visible {
+  outline: 2px solid rgba(255, 255, 255, 0.36) !important;
+  outline-offset: 2px;
+  box-shadow: none !important;
+}
+
+.workspace-shell [data-slot="button"] {
+  min-height: 2.5rem;
+  border-radius: 0.625rem !important;
+  box-shadow: none !important;
+}
+
+.workspace-shell [data-slot="button"]:hover {
+  border-color: var(--tw-line-strong) !important;
+  background-color: var(--tw-surface-hover) !important;
+}
+
+.workspace-shell > aside:not([data-community-sidebar]),
+.workspace-shell > aside[data-community-sidebar],
+.tw-app-topbar {
+  background: #000 !important;
+  background-image: none !important;
+  box-shadow: none !important;
+}
+
+.workspace-shell > aside:not([data-community-sidebar]) {
+  border-right-color: var(--tw-line) !important;
+}
+
+.tw-app-topbar {
+  min-height: 3.875rem !important;
+  border-bottom-color: var(--tw-line) !important;
+}
+
+@media (max-width: 1023px) {
+  .tw-app-topbar {
+    min-height: 3.625rem !important;
+  }
+
+  [data-workspace-main] > section {
+    padding-bottom: calc(4.75rem + env(safe-area-inset-bottom));
+  }
+
+  .workspace-shell :is(
+    [data-slot="dialog-content"],
+    [data-slot="alert-dialog-content"]
+  ) {
+    width: calc(100vw - 1rem) !important;
+    max-width: calc(100vw - 1rem) !important;
+    max-height: calc(100dvh - 1rem) !important;
+    border-radius: 0.875rem !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .workspace-shell *,
+  .workspace-shell *::before,
+  .workspace-shell *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+  }
+}
