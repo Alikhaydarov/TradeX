@@ -19,37 +19,43 @@ export function ChatHeader({
   connection: "connecting" | "connected" | "offline";
   onOpenSidebar: () => void;
 }) {
+  const live = connection === "connected";
+
   return (
-    <header className="flex h-14 shrink-0 items-center gap-2.5 border-b border-white/[.07] bg-[#050505]/95 px-3.5 backdrop-blur sm:px-4">
+    <header className="flex h-12 shrink-0 items-center gap-2 border-b border-black/40 bg-[#15171a] px-3 shadow-[0_1px_0_rgba(255,255,255,.035),0_2px_8px_rgba(0,0,0,.22)] sm:px-4">
       <Button
         type="button"
         variant="ghost"
         size="icon-sm"
         onClick={onOpenSidebar}
-        className="lg:hidden"
+        className="text-zinc-400 hover:bg-white/[.06] hover:text-white lg:hidden"
         aria-label="Open chat sidebar"
       >
-        <Menu size={16} />
+        <Menu size={17} />
       </Button>
-      <span className="grid size-9 shrink-0 place-items-center rounded-xl border border-white/8 bg-[#0a0a0a] text-zinc-400">
-        {roomKind === "channel" ? <Hash size={16} /> : <MessageCircle size={16} />}
+
+      <span className="grid size-7 shrink-0 place-items-center text-zinc-500">
+        {roomKind === "channel" ? <Hash size={20} strokeWidth={2.4} /> : <MessageCircle size={18} />}
       </span>
-      <div className="min-w-0 flex-1">
-        <h1 className="truncate text-[14px] font-bold tracking-[-0.02em] text-white">{title}</h1>
-        <p className="mt-0.5 truncate text-[9px] text-zinc-600">{subtitle}</p>
+
+      <div className="flex min-w-0 flex-1 items-center gap-2.5">
+        <h1 className="truncate text-[14px] font-bold tracking-[-0.015em] text-zinc-100">{title}</h1>
+        <span className="hidden h-5 w-px bg-white/[.07] sm:block" />
+        <p className="hidden min-w-0 truncate text-[10px] text-zinc-500 sm:block">{subtitle}</p>
       </div>
-      <div className="hidden items-center gap-1.5 rounded-lg border border-white/7 bg-[#090909] px-2 py-1.5 text-[9px] text-zinc-500 sm:flex">
-        <UsersRound size={12} /> {onlineCount} online
+
+      <div className="hidden items-center gap-1.5 px-1.5 text-[10px] font-medium text-zinc-500 sm:flex">
+        <UsersRound size={13} /> {onlineCount} online
       </div>
       <span
-        className={`inline-flex items-center gap-1 rounded-lg border px-2 py-1.5 text-[8px] font-bold ${
-          connection === "connected"
-            ? "border-emerald-400/12 bg-emerald-400/[.06] text-emerald-400"
-            : "border-amber-400/12 bg-amber-400/[.06] text-amber-400"
+        className={`inline-flex h-7 items-center gap-1.5 rounded-md border px-2 text-[9px] font-bold ${
+          live
+            ? "border-emerald-400/15 bg-emerald-400/[.065] text-emerald-300"
+            : "border-white/[.08] bg-white/[.035] text-zinc-500"
         }`}
       >
-        {connection === "connected" ? <Wifi size={10} /> : <WifiOff size={10} />}
-        <span className="hidden sm:inline">{connection === "connected" ? "Live" : connection}</span>
+        {live ? <Wifi size={11} /> : <WifiOff size={11} />}
+        <span className="hidden sm:inline">{live ? "Live" : connection}</span>
       </span>
     </header>
   );
