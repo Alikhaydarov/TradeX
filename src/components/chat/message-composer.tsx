@@ -24,7 +24,6 @@ export function MessageComposer({
   onSend: (content: string, reply: ChatReplyPreview | null) => Promise<unknown>;
 }) {
   const [value, setValue] = useState("");
-  const [sending, setSending] = useState(false);
   const [now, setNow] = useState(Date.now());
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
 
@@ -42,79 +41,73 @@ export function MessageComposer({
     () => Math.max(0, Math.ceil((rateLimitedUntil - now) / 1000)),
     [now, rateLimitedUntil],
   );
-  const blocked = disabled || sending || remaining > 0;
+  const blocked = disabled || remaining > 0;
 
-  const submit = async () => {
+  const submit = () => {
     const content = value.trim();
     if (!content || blocked) return;
-    setSending(true);
-    try {
-      const result = await onSend(content, reply);
-      if (result) {
-        setValue("");
-        onReplyClear();
-        onTyping(false);
-      }
-    } finally {
-      setSending(false);
-      textareaRef.current?.focus();
-    }
+    const activeReply = reply;
+    setValue("");
+    onReplyClear();
+    onTyping(false);
+    void onSend(content, activeReply).finally(() => textareaRef.current?.focus());
   };
 
   return (
-    <div className="shrink-0 border-t border-white/[.07] bg-[#040404]/95 px-3 pb-3 pt-2 backdrop-blur sm:px-5 lg:px-7">
-      <div className="mx-auto w-full max-w-[980px]">
+    <div className="shrink-0 bg-[#15171a] px-3 pb-3 pt-2 sm:px-4">
+      <div className="mx-auto w-full max-w-[1120px]">
         {reply ? (
-          <div className="mb-2 flex items-center gap-2 rounded-xl border border-white/8 bg-[#090909] px-3 py-2">
-            <CornerUpLeft size={12} className="shrink-0 text-zinc-600" />
+          <div className="flex items-center gap-2 rounded-t-lg border border-b-0 border-white/[.07] bg-[#202226] px-3 py-2">
+            <CornerUpLeft size={13} className="shrink-0 text-zinc-500" />
             <div className="min-w-0 flex-1">
-              <p className="text-[9px] font-semibold text-zinc-500">Replying to {reply.senderName}</p>
-              <p className="truncate text-[10px] text-zinc-700">{reply.content}</p>
+              <p className="text-[10px] font-semibold text-zinc-400">Replying to {reply.senderName}</p>
+              <p className="truncate text-[10px] text-zinc-500">{reply.content}</p>
             </div>
             <button
               type="button"
               onClick={onReplyClear}
-              className="grid size-7 shrink-0 place-items-center rounded-lg text-zinc-600 transition hover:bg-white/[.05] hover:text-white"
+              className="grid size-6 shrink-0 place-items-center rounded text-zinc-500 transition hover:bg-white/[.06] hover:text-white"
               aria-label="Cancel reply"
             >
-              <X size={12} />
+              <X size={13} />
             </button>
           </div>
         ) : null}
 
-        <div className="flex items-end gap-2 rounded-2xl border border-white/10 bg-[#090909] p-2 shadow-[0_12px_35px_rgba(0,0,0,.22)] transition focus-within:border-white/18 focus-within:bg-[#0b0b0b]">
+        <div className={`flex items-end gap-2 border border-white/[.07] bg-[#272a2f] px-2.5 py-1.5 shadow-[0_8px_28px_rgba(0,0,0,.18)] transition focus-within:border-white/[.12] ${reply ? "rounded-b-lg" : "rounded-lg"}`}>
           <Textarea
             ref={textareaRef}
             value={value}
             onChange={(event) => {
-              setValue(event.target.value.slice(0, 4000));
-              onTyping(Boolean(event.target.value.trim()));
+              const next = event.target.value.slice(0, 4000);
+              setValue(next);
+              onTyping(Boolean(next.trim()));
             }}
             onBlur={() => onTyping(false)}
             onKeyDown={(event) => {
               if (event.key === "Enter" && !event.shiftKey) {
                 event.preventDefault();
-                void submit();
+                submit();
               }
             }}
             disabled={disabled}
             placeholder={remaining ? `Slow down — ${remaining}s` : `Message ${roomLabel}`}
-            className="max-h-36 min-h-10 flex-1 resize-none border-0 bg-transparent px-2.5 py-2.5 text-[13px] leading-5 shadow-none focus-visible:ring-0"
+            className="max-h-36 min-h-10 flex-1 resize-none border-0 bg-transparent px-1.5 py-2.5 text-[14px] leading-5 text-zinc-100 shadow-none placeholder:text-zinc-500 focus-visible:ring-0"
             rows={1}
           />
           <Button
             type="button"
             size="icon"
-            onClick={() => void submit()}
+            onClick={submit}
             disabled={blocked || !value.trim()}
-            className="size-10 shrink-0 rounded-xl bg-white text-black hover:bg-zinc-200"
+            className="mb-0.5 size-9 shrink-0 rounded-md bg-white text-black hover:bg-zinc-200 disabled:bg-white/[.08] disabled:text-zinc-600"
             aria-label="Send message"
           >
             <Send size={15} />
           </Button>
         </div>
-        <div className="mt-1.5 flex items-center justify-between px-1 text-[8px] text-zinc-700">
-          <span>Enter to send · Shift+Enter for newline</span>
+        <div className="mt-1 flex items-center justify-between px-1 text-[8px] text-zinc-600">
+          <span>Enter to send · Shift+Enter for a new line</span>
           <span>{value.length}/4000</span>
         </div>
       </div>

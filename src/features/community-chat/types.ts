@@ -80,9 +80,17 @@ export interface ChatMessagesPage {
 }
 
 export interface RealtimeChatEvent {
-  type: "message.created" | "message.updated" | "message.deleted" | "reaction.changed" | "read.changed";
+  type:
+    | "message.optimistic"
+    | "message.created"
+    | "message.updated"
+    | "message.deleted"
+    | "message.rejected"
+    | "reaction.changed"
+    | "read.changed";
   message?: ChatMessage;
   messageId?: string;
+  clientId?: string;
   actorId: string;
   sentAt: string;
 }
