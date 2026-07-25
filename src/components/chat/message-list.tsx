@@ -75,7 +75,7 @@ export function MessageList({
 
   useEffect(() => {
     if (loading || initialScrollDone || !messages.length) return;
-    requestAnimationFrame(() => scrollToLatest("instant"));
+    requestAnimationFrame(() => scrollToLatest("auto"));
     setInitialScrollDone(true);
   }, [initialScrollDone, loading, messages.length]);
 
