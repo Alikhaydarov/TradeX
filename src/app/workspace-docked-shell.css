@@ -8,7 +8,8 @@
     gap: 0 !important;
   }
 
-  .workspace-shell > aside {
+  /* The primary application sidebar keeps the legacy docked dimensions. */
+  .workspace-shell > aside:not([data-community-sidebar]) {
     left: 0 !important;
     top: 0 !important;
     width: 238px !important;
@@ -20,8 +21,39 @@
     box-shadow: none !important;
   }
 
-  .workspace-shell > div[aria-hidden="true"] {
+  .workspace-shell:has(> aside:not([data-community-sidebar]))
+    > div[aria-hidden="true"] {
     width: 238px !important;
+  }
+
+  /* Community owns its width and internal spacing. Do not force the app sidebar contract on it. */
+  .workspace-shell > aside[data-community-sidebar] {
+    left: 0 !important;
+    top: 0 !important;
+    height: 100dvh !important;
+    padding: 0 !important;
+    border: 0 !important;
+    border-right: 1px solid rgba(255, 255, 255, 0.075) !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+  }
+
+  .workspace-shell > aside[data-community-sidebar="collapsed"] {
+    width: 76px !important;
+  }
+
+  .workspace-shell > aside[data-community-sidebar="expanded"] {
+    width: 236px !important;
+  }
+
+  .workspace-shell:has(> aside[data-community-sidebar="collapsed"])
+    > div[aria-hidden="true"] {
+    width: 76px !important;
+  }
+
+  .workspace-shell:has(> aside[data-community-sidebar="expanded"])
+    > div[aria-hidden="true"] {
+    width: 236px !important;
   }
 
   [data-workspace-main] {
