@@ -1,5 +1,5 @@
 import { authenticateRequest, badRequest, serverError, unauthorized } from "@/lib/backend/auth";
-import { parseTradovateCsvToJournalRows } from "@/lib/server/tradovate-csv";
+import { parseTradovatePositionHistoryCsv } from "@/lib/server/tradovate-position-history-csv";
 
 export const runtime = "nodejs";
 
@@ -57,7 +57,7 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
   }
 
   const text = await decodeCsv(file);
-  const parsed = parseTradovateCsvToJournalRows({
+  const parsed = parseTradovatePositionHistoryCsv({
     text,
     userId: auth.user.id,
     account,
@@ -68,7 +68,7 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
       ? `Header was found, but ${parsed.skipped} data rows were invalid.`
       : "The trade-table header was not found inside the file.";
     return badRequest(
-      `No closed Tradovate positions were recognized. ${headerNote} Export Reports → Position History as CSV with Contract, quantity, buy/sell or entry/exit prices, close date and P/L columns.`,
+      `No closed Tradovate positions were recognized. ${headerNote} Export Reports → Position History as CSV with Contract, Paired Qty, Pair ID, Buy Price, Sell Price, Trade Date and P/L columns.`,
     );
   }
 
@@ -83,6 +83,8 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
   if (error) return serverError(error.message);
 
   const imported = data?.length || 0;
+  const databaseDuplicates = Math.max(0, parsed.rows.length - imported);
+
   await auth.supabase
     .from("prop_accounts")
     .update({ status: "Active", updated_at: new Date().toISOString() })
@@ -93,7 +95,9 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
     imported,
     scanned: parsed.scanned,
     skipped: parsed.skipped,
-    duplicates: Math.max(0, parsed.rows.length - imported),
+    duplicates: parsed.duplicateRows + databaseDuplicates,
+    fileDuplicates: parsed.duplicateRows,
+    databaseDuplicates,
     headerRows: parsed.headerRows,
   });
 }
