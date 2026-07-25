@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import dynamic from "next/dynamic";
+import { usePathname } from "next/navigation";
 import { AuthModal } from "./auth-modal";
 import { ActiveAccountProvider } from "./active-account-context";
 import { NotificationListener } from "./notification-listener";
@@ -67,6 +68,19 @@ const CommunityWorkspace = dynamic(
     import("./community-workspace").then((module) => module.CommunityWorkspace),
   { ssr: false, loading: () => <WorkspaceSectionSkeleton /> },
 );
+const TradeDetailPage = dynamic(
+  () =>
+    import("@/features/trades/components/trade-detail-page").then(
+      (module) => module.TradeDetailPage,
+    ),
+  { ssr: false, loading: () => <WorkspaceSectionSkeleton /> },
+);
+
+function tradeIdFromPath(pathname: string) {
+  const match = pathname.match(/^\/trades\/([^/]+)\/?$/);
+  return match?.[1] ? decodeURIComponent(match[1]) : null;
+}
+
 function AuthGate({ onLogin }: { onLogin: () => void }) {
   return <TradeWayLoginLanding onLogin={onLogin} />;
 }
@@ -80,6 +94,8 @@ export function AppShell() {
 }
 
 function AppShellInner() {
+  const pathname = usePathname();
+  const tradeId = tradeIdFromPath(pathname);
   const [section, setSection] = useState<Section>(getCurrentSection);
   const [profileUsername, setProfileUsername] = useState(
     getCurrentProfileUsername,
@@ -114,6 +130,11 @@ function AppShellInner() {
       window.removeEventListener("tradeup:profile-ready", handleProfileReady);
     };
   }, []);
+
+  useEffect(() => {
+    setSection(getCurrentSection());
+    workspaceMainRef.current?.scrollTo({ top: 0, behavior: "instant" });
+  }, [pathname]);
 
   useEffect(() => {
     if (!profileOpening) return;
@@ -174,10 +195,19 @@ function AppShellInner() {
     workspaceMainRef.current?.scrollTo({ top: 0, behavior: "instant" });
   };
 
+  const closeTradeDetail = () => {
+    window.history.pushState(null, "", "/trades");
+    window.dispatchEvent(new Event("popstate"));
+    workspaceMainRef.current?.scrollTo({ top: 0, behavior: "instant" });
+  };
+
   const renderSection = (item: Section) => {
     if (item === "accounts")
       return <Journal onLogin={openLogin} mode="accounts" />;
     if (item === "calendar") return <CalendarWorkspaceV2 />;
+    if (item === "trades" && tradeId) {
+      return <TradeDetailPage tradeId={tradeId} onBack={closeTradeDetail} />;
+    }
     const workspaceTabs: Partial<Record<Section, WorkspaceTab>> = {
       dashboard: "overview",
       trades: "trades",
