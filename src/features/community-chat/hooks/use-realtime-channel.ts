@@ -74,9 +74,17 @@ export function useRealtimeChannel({
         .on("presence", { event: "sync" }, () => {
           if (!room) return;
           const state = room.presenceState<ChatPresenceMeta>();
-          const users = Object.values(state)
+          const users: ChatPresenceMeta[] = Object.values(state)
             .flat()
-            .filter((item): item is ChatPresenceMeta => Boolean(item?.userId));
+            .filter((item) => Boolean(item.userId))
+            .map((item) => ({
+              userId: item.userId,
+              username: item.username,
+              fullName: item.fullName,
+              avatarUrl: item.avatarUrl,
+              onlineAt: item.onlineAt,
+              typing: item.typing,
+            }));
           const unique = new Map(users.map((user) => [user.userId, user]));
           setPresence([...unique.values()]);
         })
