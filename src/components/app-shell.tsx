@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import dynamic from "next/dynamic";
 import { usePathname } from "next/navigation";
+import { MessageCircle } from "lucide-react";
 import { AuthModal } from "./auth-modal";
 import { ActiveAccountProvider } from "./active-account-context";
 import { NotificationListener } from "./notification-listener";
@@ -332,6 +333,16 @@ function AppShellInner() {
             <section className="min-h-full">{renderSection(section)}</section>
           </main>
         </div>
+        {communityRoute && communityRoute.tab !== "chat" ? (
+          <button
+            type="button"
+            onClick={() => openCommunitySection("chat")}
+            className="fixed bottom-[max(1rem,env(safe-area-inset-bottom))] right-3 z-[90] inline-flex h-10 items-center gap-2 rounded-xl border border-white/10 bg-white px-3 text-[11px] font-bold text-black shadow-2xl lg:hidden"
+            aria-label="Open community chat"
+          >
+            <MessageCircle size={15} /> Chat
+          </button>
+        ) : null}
       </ActiveAccountProvider>
       {profileOpening ? (
         <div
