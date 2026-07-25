@@ -1,19 +1,122 @@
-import type { ComponentProps } from "react"
+"use client"
 
-import { DashboardOverviewMobile } from "./dashboard-overview-mobile"
+import type { ComponentProps } from "react"
+import { useCallback, useEffect, useMemo, useState } from "react"
+
 import styles from "./dashboard-overview-mobile.module.css"
+import { DashboardOverviewMobile } from "./dashboard-overview-mobile"
 import { DashboardOverviewResponsive } from "./dashboard-overview-responsive"
 
 type DashboardOverviewProps = ComponentProps<typeof DashboardOverviewResponsive>
 
+type JournalStatsRow = {
+  pnl?: string | number | null
+  result_r?: string | number | null
+}
+
+type JournalStatsResponse = {
+  entries?: JournalStatsRow[]
+}
+
+type SyncedStats = {
+  pnl: number
+  wins: number
+  losses: number
+  rate: number
+  r: number
+  pf: number
+  count: number
+}
+
+function finiteNumber(value: unknown) {
+  const number = Number(value ?? 0)
+  return Number.isFinite(number) ? number : 0
+}
+
+function calculateStats(entries: JournalStatsRow[]): SyncedStats {
+  const normalized = entries.map((entry) => ({
+    pnl: finiteNumber(entry.pnl),
+    resultR: finiteNumber(entry.result_r),
+  }))
+  const wins = normalized.filter((entry) => entry.pnl > 0)
+  const losses = normalized.filter((entry) => entry.pnl < 0)
+  const decidedTrades = wins.length + losses.length
+  const grossWins = wins.reduce((total, entry) => total + entry.pnl, 0)
+  const grossLosses = Math.abs(losses.reduce((total, entry) => total + entry.pnl, 0))
+
+  return {
+    pnl: normalized.reduce((total, entry) => total + entry.pnl, 0),
+    wins: wins.length,
+    losses: losses.length,
+    rate: decidedTrades ? Math.round((wins.length / decidedTrades) * 100) : 0,
+    r: normalized.length
+      ? normalized.reduce((total, entry) => total + entry.resultR, 0) / normalized.length
+      : 0,
+    pf: grossLosses ? grossWins / grossLosses : grossWins > 0 ? grossWins : 0,
+    count: normalized.length,
+  }
+}
+
 export function DashboardOverview(props: DashboardOverviewProps) {
+  const [synced, setSynced] = useState<SyncedStats | null>(null)
+
+  const loadStats = useCallback(async () => {
+    try {
+      const response = await fetch(
+        `/api/journal?accountId=${encodeURIComponent(props.account.id)}`,
+        {
+          cache: "no-store",
+          credentials: "same-origin",
+        },
+      )
+      if (!response.ok) return
+      const payload = (await response.json()) as JournalStatsResponse
+      setSynced(calculateStats(payload.entries ?? []))
+    } catch {
+      // Keep the server-provided dashboard values when a refresh request fails.
+    }
+  }, [props.account.id])
+
+  useEffect(() => {
+    setSynced(null)
+    void loadStats()
+
+    const refresh = () => void loadStats()
+    window.addEventListener("focus", refresh)
+    window.addEventListener("tradox:journal-updated", refresh)
+    return () => {
+      window.removeEventListener("focus", refresh)
+      window.removeEventListener("tradox:journal-updated", refresh)
+    }
+  }, [loadStats])
+
+  const dashboardProps = useMemo<DashboardOverviewProps>(
+    () =>
+      synced
+        ? {
+            ...props,
+            stats: {
+              ...props.stats,
+              pnl: synced.pnl,
+              wins: synced.wins,
+              losses: synced.losses,
+              rate: synced.rate,
+              r: synced.r,
+              pf: synced.pf,
+            },
+            monthCount: synced.count,
+          }
+        : props,
+    [props, synced],
+  )
+
   return (
     <>
       <div className={`${styles.mobileRoot} lg:hidden`}>
-        <DashboardOverviewMobile {...props} />
+        <DashboardOverviewMobile {...dashboardProps} />
       </div>
       <div className="hidden lg:block">
-        <DashboardOverviewResponsive {...props} />
+        <DashboardOverviewResponsive {...dashboardProps} />
       </div>
     </>
   )
