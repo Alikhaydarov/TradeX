@@ -261,7 +261,7 @@ export function ChatLayout({ communityId }: { communityId: string }) {
 
   if (loading) {
     return (
-      <div className="grid h-[100dvh] place-items-center bg-[#020202] text-zinc-600 lg:-ml-[160px] lg:w-[calc(100%+160px)]">
+      <div className="grid h-[100dvh] place-items-center bg-[#020202] text-zinc-600">
         <LoaderCircle size={22} className="animate-spin" />
       </div>
     );
@@ -269,7 +269,7 @@ export function ChatLayout({ communityId }: { communityId: string }) {
 
   if (!context) {
     return (
-      <div className="grid h-[100dvh] place-items-center bg-[#020202] p-4 text-center lg:-ml-[160px] lg:w-[calc(100%+160px)]">
+      <div className="grid h-[100dvh] place-items-center bg-[#020202] p-4 text-center">
         <div className="max-w-sm rounded-2xl border border-white/8 bg-[#070707] p-5">
           <MessageCircle size={22} className="mx-auto text-zinc-700" />
           <h1 className="mt-3 text-sm font-bold text-white">Chat unavailable</h1>
@@ -281,7 +281,7 @@ export function ChatLayout({ communityId }: { communityId: string }) {
   }
 
   return (
-    <div className="relative flex h-[100dvh] min-h-0 overflow-hidden bg-[#020202] lg:-ml-[160px] lg:w-[calc(100%+160px)]">
+    <div className="relative flex h-[100dvh] min-h-0 overflow-hidden bg-[#020202]">
       <aside className="hidden w-[232px] shrink-0 border-r border-white/[.07] lg:block">{sidebar}</aside>
       <main className="min-h-0 min-w-0 flex-1">
         {selected ? (
