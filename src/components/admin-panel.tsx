@@ -196,7 +196,7 @@ export function AdminPanel({ onLogin }: { onLogin: () => void }) {
           <p className="text-[10px] font-bold uppercase tracking-[.22em] text-zinc-500">Superadmin</p>
           <h1 className="mt-1 text-xl font-black tracking-tight text-white sm:text-2xl">TradeWay access console</h1>
         </div>
-        <span className="ml-auto flex items-center gap-1.5 rounded-full border border-emerald-400/15 bg-emerald-500/10 px-3 py-1.5 text-[10px] font-bold text-emerald-200">
+        <span className="ml-auto flex items-center gap-1.5 rounded-full border border-emerald-400/15 bg-emerald-400/10 px-3 py-1.5 text-[10px] font-bold text-emerald-200">
           <ShieldCheck size={12} /> ROOT ACCESS
         </span>
       </header>
@@ -313,7 +313,7 @@ export function AdminPanel({ onLogin }: { onLogin: () => void }) {
                             <span className="rounded-full border border-white/8 bg-white/[.03] px-2.5 py-1">
                               Joined: {formatDate(target.createdAt)}
                             </span>
-                            <span className={`rounded-full border px-2.5 py-1 ${target.aiEnabled ? "border-emerald-500/20 bg-emerald-500/10 text-emerald-200" : "border-white/8 bg-white/[.03] text-zinc-500"}`}>
+                            <span className={`rounded-full border px-2.5 py-1 ${target.aiEnabled ? "border-emerald-500/20 bg-emerald-400/10 text-emerald-200" : "border-white/8 bg-white/[.03] text-zinc-500"}`}>
                               <Sparkles className="mr-1 inline size-3" /> AI {target.aiEnabled ? "on" : "off"}
                             </span>
                             <span className={`rounded-full border px-2.5 py-1 ${target.autoSyncEnabled ? "border-sky-500/20 bg-sky-500/10 text-sky-200" : "border-white/8 bg-white/[.03] text-zinc-500"}`}>
