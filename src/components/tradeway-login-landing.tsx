@@ -1,162 +1,232 @@
 "use client";
 
-import { LockKeyhole, Star } from "lucide-react";
-import { useState } from "react";
-import { useAuth } from "./auth-context";
-import { Button } from "./ui/button";
+import { ArrowRight, BarChart3, BookOpen, Check, ShieldCheck, Users } from "lucide-react";
+import Image from "next/image";
+import Link from "next/link";
+import { useEffect, useRef, useState } from "react";
 
 const PLATFORMS = [
-  { name: "Tradovate", mark: "TV" },
-  { name: "cTrader", mark: "cT" },
-  { name: "MT5", mark: "M5" },
-  { name: "NinjaTrader", mark: "NT" },
-  { name: "TradingView", mark: "TV" },
-  { name: "DXtrade", mark: "DX" },
+  { name: "Tradovate", logo: "/platforms/tradovate.png", note: "Futures" },
+  { name: "cTrader", logo: "/platforms/ctrader.svg", note: "Forex & CFD" },
+  { name: "MetaTrader 5", logo: "/platforms/metatrader5.png", note: "Multi-asset" },
+  { name: "NinjaTrader", logo: "/platforms/ninjatrader.png", note: "Futures" },
+  { name: "TradeLocker", logo: "/platforms/tradelocker.png", note: "Multi-asset" },
+  { name: "Match-Trader", logo: "/platforms/matchtrader.png", note: "Forex & CFD" },
+  { name: "ProjectX", logo: "/platforms/projectx.png", note: "Futures" },
 ];
 
-function GoogleIcon() {
+function PlatformPreview() {
   return (
-    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true" className="size-4">
-      <path
-        d="M21.35 11.1h-9.17v2.73h6.51c-.33 3.81-3.5 5.44-6.5 5.44C8.36 19.27 5 16.25 5 12s3.36-7.27 7.19-7.27c3.08 0 4.9 1.97 4.9 1.97L19 4.72S16.56 2 12.19 2C6.42 2 2.03 6.8 2.03 12s4.39 10 10.16 10c5.05 0 9.81-3.55 9.81-10.13 0-.83-.09-1.31-.09-1.31z"
-        fill="currentColor"
-      />
-    </svg>
-  );
-}
-
-function ChartLine() {
-  return (
-    <svg className="auth2-chart-line" viewBox="0 0 1400 400" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-      <defs>
-        <linearGradient id="auth2ChartGradient" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="rgba(59,130,246,0.2)" />
-          <stop offset="55%" stopColor="rgba(34,197,94,0.08)" />
-          <stop offset="100%" stopColor="rgba(59,130,246,0)" />
-        </linearGradient>
-      </defs>
-      <path className="auth2-chart-fill" d="M0,260 L60,240 L130,270 L200,210 L280,235 L350,180 L420,205 L500,150 L580,175 L660,130 L740,160 L820,110 L900,140 L980,95 L1060,125 L1140,85 L1220,110 L1300,70 L1400,95 L1400,400 L0,400 Z" />
-      <path className="auth2-chart-stroke" d="M0,260 L60,240 L130,270 L200,210 L280,235 L350,180 L420,205 L500,150 L580,175 L660,130 L740,160 L820,110 L900,140 L980,95 L1060,125 L1140,85 L1220,110 L1300,70 L1400,95" />
-    </svg>
-  );
-}
-
-function PlatformStrip() {
-  return (
-    <div className="auth2-platforms" aria-label="Supported trading platforms">
-      <p>Connect your workflow</p>
-      <div>
-        {PLATFORMS.map((platform) => (
-          <span key={platform.name} className="auth2-platform-pill">
-            <b>{platform.mark}</b>
-            {platform.name}
-          </span>
-        ))}
+    <div className="auth3-platform-preview" aria-hidden="true">
+      <div className="auth3-preview-side">
+        <span className="active"><BarChart3 size={15} /> Overview</span>
+        <span><BookOpen size={15} /> Journal</span>
+        <span><Users size={15} /> Community</span>
+      </div>
+      <div className="auth3-preview-main">
+        <div className="auth3-preview-top"><span>Connected accounts</span><b><i /> Synced now</b></div>
+        <div className="auth3-preview-cards">
+          <div><small>Combined balance</small><strong>$48,240</strong><span>4 accounts</span></div>
+          <div><small>Execution score</small><strong>91.4</strong><span>Top 8%</span></div>
+        </div>
+        <div className="auth3-preview-chart">
+          {[44, 62, 38, 74, 54, 88, 68, 96, 78, 112, 94, 128].map((height, index) => (
+            <i key={index} style={{ height }} />
+          ))}
+        </div>
       </div>
     </div>
   );
 }
 
-export function TradeWayLoginLanding({ onLogin }: { onLogin: () => void }) {
-  const { signInWithGoogle } = useAuth();
-  const [error, setError] = useState<string | null>(null);
-  const [pending, setPending] = useState(false);
+function MarketCanvas() {
+  return (
+    <div className="auth3-market" aria-hidden="true">
+      <div className="auth3-market-head">
+        <span><i /> Live performance</span>
+        <b>30D</b>
+      </div>
+      <div className="auth3-market-value">
+        <div><small>Net P&amp;L</small><strong>+$12,840.20</strong></div>
+        <span>+18.4%</span>
+      </div>
+      <svg viewBox="0 0 720 260" preserveAspectRatio="none">
+        <defs>
+          <linearGradient id="tradeFill" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stopColor="#fff" stopOpacity=".18" />
+            <stop offset="1" stopColor="#fff" stopOpacity="0" />
+          </linearGradient>
+        </defs>
+        <path className="auth3-area" d="M0 222L55 205L105 212L158 166L212 179L267 135L322 153L376 96L430 117L484 77L538 92L590 48L645 62L720 25V260H0Z" />
+        <path className="auth3-line" pathLength="1" d="M0 222L55 205L105 212L158 166L212 179L267 135L322 153L376 96L430 117L484 77L538 92L590 48L645 62L720 25" />
+      </svg>
+      <div className="auth3-stat-row">
+        <div><span>Win rate</span><b>68.2%</b></div>
+        <div><span>Profit factor</span><b>2.14</b></div>
+        <div><span>Best streak</span><b>9 trades</b></div>
+      </div>
+      <div className="auth3-float auth3-float-a"><Check size={13} /> Plan followed</div>
+      <div className="auth3-float auth3-float-b"><span>R</span><div><small>Risk today</small><b>0.72%</b></div></div>
+    </div>
+  );
+}
 
-  const loginWithGoogle = async () => {
-    setError(null);
-    setPending(true);
-    const nextError = await signInWithGoogle();
-    if (nextError) {
-      setError(nextError);
-      setPending(false);
-    }
-  };
+export function TradeWayLoginLanding({
+  onLogin,
+  onRegister,
+}: {
+  onLogin: () => void;
+  onRegister: () => void;
+}) {
+  const [authError, setAuthError] = useState<string | null>(null);
+  const shellRef = useRef<HTMLElement>(null);
+
+  useEffect(() => {
+    const url = new URL(window.location.href);
+    const code = url.searchParams.get("auth_error");
+    if (!code) return;
+    const messages: Record<string, string> = {
+      not_configured: "Authentication is not configured yet.",
+      unsupported_provider: "That sign-in method is not supported.",
+      oauth_start: "This provider is not enabled yet. Please use another sign-in method.",
+      oauth: "Sign-in could not be completed. Please try again.",
+    };
+    setAuthError(messages[code] ?? "Sign-in could not be completed.");
+    url.searchParams.delete("auth_error");
+    window.history.replaceState(null, "", `${url.pathname}${url.search}${url.hash}`);
+  }, []);
+
+  useEffect(() => {
+    const shell = shellRef.current;
+    if (!shell) return;
+
+    const targets = Array.from(shell.querySelectorAll<HTMLElement>("[data-reveal]"));
+    shell.classList.add("auth3-motion-ready");
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (!entry.isIntersecting) return;
+          entry.target.classList.add("is-visible");
+          observer.unobserve(entry.target);
+        });
+      },
+      { rootMargin: "0px 0px -10% 0px", threshold: 0.12 },
+    );
+    targets.forEach((target) => observer.observe(target));
+    return () => observer.disconnect();
+  }, []);
 
   return (
-    <main className="auth2-wrap min-h-[100dvh] overflow-hidden bg-black text-[#f5f5f5]">
-      <div className="auth2-bg" aria-hidden="true">
-        <div className="auth2-grid" />
-        <div className="auth2-orb auth2-orb-1" />
-        <div className="auth2-orb auth2-orb-2" />
-        <div className="auth2-orb auth2-orb-3" />
-        <div className="auth2-vignette" />
-        <ChartLine />
-      </div>
-
-      <nav className="auth2-nav">
-        <div className="auth2-brand">
-          <span className="auth2-mark">TD</span>
-          <span>Tradox</span>
+    <main ref={shellRef} className="auth3-shell">
+      <div className="auth3-noise" aria-hidden="true" />
+      <nav className="auth3-nav">
+        <Link href="/" className="auth3-logo" aria-label="Tradox home"><b>TD</b><span>Tradox</span></Link>
+        <div className="auth3-navlinks">
+          <a href="#workflow">Product</a>
+          <Link href="/pricing">Pricing</Link>
+          <button onClick={onLogin}>Sign in</button>
+          <button className="auth3-nav-cta" onClick={onRegister}>Get started</button>
         </div>
-        <div className="auth2-status"><span />All systems normal</div>
       </nav>
 
-      <section className="auth2-stage">
-        <div className="auth2-card">
-          <div className="auth2-head">
-            <p>PRIVATE WORKSPACE</p>
-            <h1>Sign in to your trading workspace</h1>
-            <span>Journal, account progress, proof profile and trade sharing stay in one fast flow.</span>
+      {authError && <div className="auth3-error" role="alert">{authError}<button onClick={() => setAuthError(null)} aria-label="Dismiss"><span aria-hidden="true">×</span></button></div>}
+
+      <section className="auth3-hero">
+        <div className="auth3-copy">
+          <div className="auth3-eyebrow"><span /> Built for deliberate traders</div>
+          <h1>Trade less.<br /><em>Learn faster.</em></h1>
+          <p>One focused workspace to journal decisions, measure execution and share verified progress with traders you trust.</p>
+          <div className="auth3-actions">
+            <button onClick={onRegister}>Start for free <ArrowRight size={17} /></button>
+            <button onClick={onLogin}>I have an account</button>
           </div>
-
-          <Button
-            type="button"
-            onClick={loginWithGoogle}
-            disabled={pending}
-            className="auth2-cta-primary h-auto w-full rounded-[10px] border-0"
-          >
-            {pending ? (
-              <span className="inline-flex size-4 animate-spin rounded-full border-2 border-black/20 border-t-black" aria-hidden="true" />
-            ) : (
-              <GoogleIcon />
-            )}
-            {pending ? "Redirecting..." : "Continue with Google"}
-          </Button>
-
-          <Button type="button" variant="outline" onClick={onLogin} className="auth2-cta-secondary h-auto w-full rounded-[10px]">
-            <LockKeyhole size={16} />
-            More sign-in options
-          </Button>
-
-          {error && (
-            <p className="mt-3 text-sm text-rose-300" role="alert">
-              {error}
-            </p>
-          )}
-
-          <div className="auth2-tabs" aria-hidden="true">
-            <span className="active">Journal</span>
-            <span>Accounts</span>
-            <span>Proof</span>
+          <div className="auth3-proof">
+            <span><ShieldCheck size={15} /> Secure Supabase auth</span>
+            <span><Check size={15} /> No card required</span>
           </div>
+        </div>
+        <div className="auth3-visual"><MarketCanvas /></div>
+      </section>
 
-          <div className="auth2-note">
-            <Star size={15} />
-            <p><b>Trading plan first.</b> Risk, setup and review notes stay attached to each trade.</p>
-          </div>
-
-          <div className="auth2-features">
-            <div>
-              <p>Secure Auth</p>
-              <span>Google OAuth</span>
-            </div>
-            <div>
-              <p>Premium Ready</p>
-              <span>AI + MT5</span>
-            </div>
-            <div>
-              <p>Fast Journal</p>
-              <span>Proof workflow</span>
-            </div>
-          </div>
-
-          <p className="auth2-foot">
-            By continuing, you agree to Tradox&apos;s <a href="#">Terms</a> and <a href="#">Privacy Policy</a>.
-          </p>
+      <section className="auth3-platforms">
+        <p>Fits your existing trading workflow</p>
+        <div>
+          {PLATFORMS.map((platform) => (
+            <span key={platform.name}>
+              <Image src={platform.logo} alt="" width={24} height={24} />
+              {platform.name}
+            </span>
+          ))}
         </div>
       </section>
 
-      <PlatformStrip />
+      <section className="auth3-workflow" id="workflow">
+        <div className="auth3-section-title" data-reveal>
+          <span>THE DAILY LOOP</span>
+          <h2>Everything around the trade.<br />None of the noise.</h2>
+        </div>
+        <div className="auth3-feature-grid">
+          <article data-reveal>
+            <BookOpen /><span>01</span><h3>Journal the decision</h3><p>Capture setup, risk and psychology while the context is still fresh.</p>
+            <div className="auth3-feature-art auth3-note-art" aria-hidden="true">
+              <div><small>SETUP</small><b>London continuation</b></div>
+              <p>Waited for the retest. Risk stayed inside plan.</p>
+              <span><i /> A+ execution</span>
+            </div>
+          </article>
+          <article data-reveal>
+            <BarChart3 /><span>02</span><h3>Find the pattern</h3><p>Turn executions into clean performance insights you can act on.</p>
+            <div className="auth3-feature-art auth3-bars-art" aria-hidden="true">
+              <div><span>Mon</span><i style={{ height: "44%" }} /></div>
+              <div><span>Tue</span><i style={{ height: "72%" }} /></div>
+              <div><span>Wed</span><i style={{ height: "56%" }} /></div>
+              <div><span>Thu</span><i style={{ height: "88%" }} /></div>
+              <div><span>Fri</span><i style={{ height: "64%" }} /></div>
+            </div>
+          </article>
+          <article data-reveal>
+            <Users /><span>03</span><h3>Improve together</h3><p>Share verified progress inside private, focused trader communities.</p>
+            <div className="auth3-feature-art auth3-community-art" aria-hidden="true">
+              <div className="auth3-avatar-stack"><i>AK</i><i>MR</i><i>JL</i><i>+8</i></div>
+              <div><small>WEEKLY REVIEW</small><b>12 traders checked in</b></div>
+              <span><i /> Private space</span>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <section className="auth3-integrations" id="integrations">
+        <div className="auth3-integration-copy" data-reveal>
+          <span>ONE WORKSPACE, EVERY ACCOUNT</span>
+          <h2>Your platforms stay yours.<br />Tradox makes them useful.</h2>
+          <p>Bring results from the tools you already trade with into one clear review workflow. Compare accounts, understand execution and keep your journal attached to the numbers.</p>
+          <div className="auth3-integration-points">
+            <span><Check size={14} /> Unified performance view</span>
+            <span><Check size={14} /> Account-level privacy controls</span>
+            <span><Check size={14} /> Fast CSV and connector workflows</span>
+          </div>
+        </div>
+        <div data-reveal><PlatformPreview /></div>
+      </section>
+
+      <section className="auth3-platform-grid" aria-label="Supported trading platforms">
+        {PLATFORMS.map((platform, index) => (
+          <article key={platform.name} data-reveal>
+            <div className="auth3-platform-logo">
+              <Image src={platform.logo} alt={`${platform.name} logo`} width={44} height={44} />
+            </div>
+            <div><h3>{platform.name}</h3><p>{platform.note}</p></div>
+            <span>{String(index + 1).padStart(2, "0")}</span>
+          </article>
+        ))}
+      </section>
+
+      <section className="auth3-final" data-reveal>
+        <div><span>YOUR NEXT SESSION STARTS HERE</span><h2>Build a trading process<br />you can actually repeat.</h2></div>
+        <button onClick={onRegister}>Create your workspace <ArrowRight size={18} /></button>
+      </section>
+
+      <footer className="auth3-footer"><Link href="/" className="auth3-logo"><b>TD</b><span>Tradox</span></Link><p>Trading clarity, one session at a time.</p><span>© 2026 Tradox</span></footer>
     </main>
   );
 }
