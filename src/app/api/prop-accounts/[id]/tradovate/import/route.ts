@@ -5,6 +5,29 @@ export const runtime = "nodejs";
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024;
 
+async function decodeCsv(file: File) {
+  const bytes = new Uint8Array(await file.arrayBuffer());
+  if (bytes.length >= 2 && bytes[0] === 0xff && bytes[1] === 0xfe) {
+    return new TextDecoder("utf-16le").decode(bytes);
+  }
+  if (bytes.length >= 2 && bytes[0] === 0xfe && bytes[1] === 0xff) {
+    return new TextDecoder("utf-16be").decode(bytes);
+  }
+
+  const sample = bytes.slice(0, Math.min(bytes.length, 400));
+  let evenZeroes = 0;
+  let oddZeroes = 0;
+  for (let index = 0; index < sample.length; index += 1) {
+    if (sample[index] !== 0) continue;
+    if (index % 2 === 0) evenZeroes += 1;
+    else oddZeroes += 1;
+  }
+
+  if (oddZeroes > sample.length * 0.12) return new TextDecoder("utf-16le").decode(bytes);
+  if (evenZeroes > sample.length * 0.12) return new TextDecoder("utf-16be").decode(bytes);
+  return new TextDecoder("utf-8").decode(bytes);
+}
+
 export async function POST(request: Request, context: { params: Promise<{ id: string }> }) {
   const auth = await authenticateRequest(request);
   if (!auth) return unauthorized();
@@ -33,7 +56,7 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
     return badRequest("Select a Tradovate account before importing this report.");
   }
 
-  const text = await file.text();
+  const text = await decodeCsv(file);
   const parsed = parseTradovateCsvToJournalRows({
     text,
     userId: auth.user.id,
@@ -41,8 +64,11 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
   });
 
   if (!parsed.rows.length) {
+    const headerNote = parsed.headerRows > 0
+      ? `Header was found, but ${parsed.skipped} data rows were invalid.`
+      : "The trade-table header was not found inside the file.";
     return badRequest(
-      "No closed Tradovate positions were recognized. Export Reports → Position History as CSV and make sure the report includes Contract, timestamps and P/L columns.",
+      `No closed Tradovate positions were recognized. ${headerNote} Export Reports → Position History as CSV with Contract, quantity, buy/sell or entry/exit prices, close date and P/L columns.`,
     );
   }
 
@@ -68,5 +94,6 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
     scanned: parsed.scanned,
     skipped: parsed.skipped,
     duplicates: Math.max(0, parsed.rows.length - imported),
+    headerRows: parsed.headerRows,
   });
 }
