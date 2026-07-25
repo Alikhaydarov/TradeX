@@ -122,7 +122,6 @@ function StatDivider() {
 }
 
 export function DashboardOverviewMobile({
-  account,
   stats,
   equity,
   monthCount,
@@ -233,7 +232,7 @@ export function DashboardOverviewMobile({
             className={`absolute right-4 top-7 rounded-xl px-3.5 py-2 text-[15px] font-semibold tabular-nums ${
               currentPnl >= 0
                 ? "bg-emerald-950/70 text-emerald-500"
-                : "bg-rose-950/70 text-rose-400"
+                : "bg-rose-950/70 text-rose-300"
             }`}
           >
             {formattedPnl}
@@ -436,7 +435,7 @@ export function DashboardOverviewMobile({
                 </div>
                 <p
                   className={`text-[12px] font-bold tabular-nums ${
-                    trade.pnl >= 0 ? "text-emerald-400" : "text-rose-400"
+                    trade.pnl >= 0 ? "text-emerald-300" : "text-rose-300"
                   }`}
                 >
                   {formatTradePnl(trade.pnl)}

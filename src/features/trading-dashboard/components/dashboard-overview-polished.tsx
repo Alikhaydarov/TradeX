@@ -246,9 +246,9 @@ function WeeklyStrip({
                 <span
                   className={`shrink-0 text-[10px] font-semibold tabular-nums ${
                     positive
-                      ? "text-emerald-400"
+                      ? "text-emerald-300"
                       : negative
-                        ? "text-rose-400"
+                        ? "text-rose-300"
                         : "text-zinc-500"
                   }`}
                 >
@@ -260,9 +260,9 @@ function WeeklyStrip({
                 <p
                   className={`truncate text-[12px] font-bold tabular-nums ${
                     positive
-                      ? "text-emerald-400"
+                      ? "text-emerald-300"
                       : negative
-                        ? "text-rose-400"
+                        ? "text-rose-300"
                         : "text-zinc-400"
                   }`}
                 >
@@ -291,9 +291,9 @@ function BreakdownRow({
 }) {
   const toneClass =
     tone === "positive"
-      ? "text-emerald-400"
+      ? "text-emerald-300"
       : tone === "negative"
-        ? "text-rose-400"
+        ? "text-rose-300"
         : "text-zinc-200"
 
   return (
@@ -459,7 +459,7 @@ export function DashboardOverviewPolished({
               </CardTitle>
               <p
                 className={`mt-1 text-[12px] font-semibold ${
-                  currentPnl >= 0 ? "text-emerald-400" : "text-rose-400"
+                  currentPnl >= 0 ? "text-emerald-300" : "text-rose-300"
                 }`}
               >
                 {formatTradePnl(currentPnl)} · last 30 days
@@ -480,7 +480,7 @@ export function DashboardOverviewPolished({
                 </p>
                 <p
                   className={`mt-1 text-[12px] font-semibold tabular-nums ${
-                    returnPercent >= 0 ? "text-emerald-400" : "text-rose-400"
+                    returnPercent >= 0 ? "text-emerald-300" : "text-rose-300"
                   }`}
                 >
                   {returnPercent > 0 ? "+" : ""}
@@ -597,7 +597,7 @@ export function DashboardOverviewPolished({
                     </div>
                     <p
                       className={`hidden shrink-0 text-[9px] font-semibold tabular-nums min-[480px]:block ${
-                        item.pnl >= 0 ? "text-emerald-400" : "text-rose-400"
+                        item.pnl >= 0 ? "text-emerald-300" : "text-rose-300"
                       }`}
                     >
                       {formatTradePnl(item.pnl)}
@@ -638,11 +638,11 @@ export function DashboardOverviewPolished({
             <CardContent className="flex min-h-0 flex-1 items-center justify-between gap-2 px-3.5 py-2">
               <div className="min-w-0 text-[10px] leading-none">
                 <p className="text-zinc-400">Winning trades</p>
-                <p className="mt-1.5 font-semibold tabular-nums text-emerald-400">
+                <p className="mt-1.5 font-semibold tabular-nums text-emerald-300">
                   {stats.wins}
                 </p>
                 <p className="mt-3 text-zinc-400">Losing trades</p>
-                <p className="mt-1.5 font-semibold tabular-nums text-rose-400">
+                <p className="mt-1.5 font-semibold tabular-nums text-rose-300">
                   {stats.losses}
                 </p>
               </div>
@@ -657,7 +657,7 @@ export function DashboardOverviewPolished({
             <CardContent className="grid min-h-0 flex-1 grid-rows-[auto_auto_1fr] px-3.5 pb-2.5 pt-2">
               <p
                 className={`text-[27px] font-medium leading-none tabular-nums ${
-                  stats.pf >= 1 ? "text-white" : "text-rose-400"
+                  stats.pf >= 1 ? "text-white" : "text-rose-300"
                 }`}
               >
                 {stats.pf.toFixed(2)}
@@ -721,8 +721,8 @@ export function DashboardOverviewPolished({
                       <span
                         className={`rounded px-1.5 py-0.5 text-[8px] font-bold uppercase ${
                           trade.side === "Long"
-                            ? "bg-emerald-400/10 text-emerald-400"
-                            : "bg-rose-400/10 text-rose-400"
+                            ? "bg-emerald-400/10 text-emerald-300"
+                            : "bg-rose-400/10 text-rose-300"
                         }`}
                       >
                         {trade.side === "Long" ? "Buy" : "Sell"}
@@ -735,7 +735,7 @@ export function DashboardOverviewPolished({
                   <div className="text-right">
                     <p
                       className={`text-[12px] font-bold tabular-nums ${
-                        trade.pnl >= 0 ? "text-emerald-400" : "text-rose-400"
+                        trade.pnl >= 0 ? "text-emerald-300" : "text-rose-300"
                       }`}
                     >
                       {formatTradePnl(trade.pnl)}

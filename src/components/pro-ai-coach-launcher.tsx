@@ -87,6 +87,7 @@ export function ProAiCoachLauncher() {
   const [clearing, setClearing] = useState(false);
   const [chatError, setChatError] = useState("");
   const chatEndRef = useRef<HTMLDivElement>(null);
+  const localMessageSeq = useRef(0);
 
   useEffect(() => {
     const syncPath = () => setPathname(window.location.pathname);
@@ -180,8 +181,9 @@ export function ProAiCoachLauncher() {
     const text = (preset ?? question).trim();
     if (!text || !accountId || sending) return;
 
+    localMessageSeq.current += 1;
     const optimistic: ChatMessage = {
-      id: `local-${Date.now()}`,
+      id: `local-${localMessageSeq.current}`,
       role: "user",
       content: text,
       createdAt: new Date().toISOString(),

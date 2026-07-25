@@ -214,7 +214,7 @@ export function TradovateSettings({
 
         <div className="mt-5 flex flex-col gap-3 border-t border-white/8 pt-4 sm:flex-row sm:items-center sm:justify-between">
           <p className="flex max-w-xl items-start gap-2 text-[11px] leading-5 text-zinc-500">
-            <ShieldCheck size={14} className="mt-0.5 shrink-0 text-emerald-400" />
+            <ShieldCheck size={14} className="mt-0.5 shrink-0 text-emerald-300" />
             Read-only authorization is used to import account and closed-trade history. Tradox does not place, modify or close trades.
           </p>
           {status?.connected ? (

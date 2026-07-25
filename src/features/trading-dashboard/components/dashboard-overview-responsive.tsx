@@ -228,9 +228,9 @@ function WeeklyStrip({
           const positive = day.pnl > 0
           const negative = day.pnl < 0
           const tone = positive
-            ? "text-emerald-400"
+            ? "text-emerald-300"
             : negative
-              ? "text-rose-400"
+              ? "text-rose-300"
               : "text-zinc-500"
 
           return (
@@ -274,9 +274,9 @@ function BreakdownRow({
 }) {
   const valueClass =
     tone === "positive"
-      ? "text-emerald-400"
+      ? "text-emerald-300"
       : tone === "negative"
-        ? "text-rose-400"
+        ? "text-rose-300"
         : "text-zinc-200"
 
   return (
@@ -444,7 +444,7 @@ export function DashboardOverviewResponsive({
               </CardTitle>
               <p
                 className={`mt-1 text-[11px] font-semibold sm:text-[12px] ${
-                  currentPnl >= 0 ? "text-emerald-400" : "text-rose-400"
+                  currentPnl >= 0 ? "text-emerald-300" : "text-rose-300"
                 }`}
               >
                 {formatTradePnl(currentPnl)} · last 30 days
@@ -465,7 +465,7 @@ export function DashboardOverviewResponsive({
                 </p>
                 <p
                   className={`mt-1 text-[11px] font-semibold tabular-nums sm:text-[12px] ${
-                    returnPercent >= 0 ? "text-emerald-400" : "text-rose-400"
+                    returnPercent >= 0 ? "text-emerald-300" : "text-rose-300"
                   }`}
                 >
                   {returnPercent > 0 ? "+" : ""}
@@ -582,7 +582,7 @@ export function DashboardOverviewResponsive({
                     </div>
                     <p
                       className={`hidden shrink-0 text-[9px] font-semibold tabular-nums min-[450px]:block ${
-                        item.pnl >= 0 ? "text-emerald-400" : "text-rose-400"
+                        item.pnl >= 0 ? "text-emerald-300" : "text-rose-300"
                       }`}
                     >
                       {formatTradePnl(item.pnl)}
@@ -623,11 +623,11 @@ export function DashboardOverviewResponsive({
             <CardContent className="flex min-h-0 flex-1 items-center justify-between gap-2 px-3.5 py-2">
               <div className="min-w-0 text-[10px] leading-none sm:text-[11px]">
                 <p className="truncate text-zinc-400">Winning trades</p>
-                <p className="mt-1.5 font-semibold tabular-nums text-emerald-400">
+                <p className="mt-1.5 font-semibold tabular-nums text-emerald-300">
                   {stats.wins}
                 </p>
                 <p className="mt-3 truncate text-zinc-400">Losing trades</p>
-                <p className="mt-1.5 font-semibold tabular-nums text-rose-400">
+                <p className="mt-1.5 font-semibold tabular-nums text-rose-300">
                   {stats.losses}
                 </p>
               </div>
@@ -642,7 +642,7 @@ export function DashboardOverviewResponsive({
             <CardContent className="grid min-h-0 flex-1 grid-rows-[auto_auto_minmax(0,1fr)] px-3.5 pb-2.5 pt-2">
               <p
                 className={`text-[25px] font-medium leading-none tabular-nums sm:text-[27px] ${
-                  stats.pf >= 1 ? "text-white" : "text-rose-400"
+                  stats.pf >= 1 ? "text-white" : "text-rose-300"
                 }`}
               >
                 {stats.pf.toFixed(2)}
@@ -706,8 +706,8 @@ export function DashboardOverviewResponsive({
                       <span
                         className={`shrink-0 rounded px-1.5 py-0.5 text-[8px] font-bold uppercase ${
                           trade.side === "Long"
-                            ? "bg-emerald-400/10 text-emerald-400"
-                            : "bg-rose-400/10 text-rose-400"
+                            ? "bg-emerald-400/10 text-emerald-300"
+                            : "bg-rose-400/10 text-rose-300"
                         }`}
                       >
                         {trade.side === "Long" ? "Buy" : "Sell"}
@@ -720,7 +720,7 @@ export function DashboardOverviewResponsive({
                   <div className="text-right">
                     <p
                       className={`text-[12px] font-bold tabular-nums ${
-                        trade.pnl >= 0 ? "text-emerald-400" : "text-rose-400"
+                        trade.pnl >= 0 ? "text-emerald-300" : "text-rose-300"
                       }`}
                     >
                       {formatTradePnl(trade.pnl)}

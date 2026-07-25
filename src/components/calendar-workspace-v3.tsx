@@ -208,8 +208,8 @@ function eventFlag(event: MarketNewsEvent) {
 }
 
 function tone(value: number) {
-  if (value > 0) return "text-emerald-400";
-  if (value < 0) return "text-rose-400";
+  if (value > 0) return "text-emerald-300";
+  if (value < 0) return "text-rose-300";
   return "text-zinc-500";
 }
 
@@ -495,11 +495,11 @@ function YearOverview({
 }) {
   const totalPnl = stats.reduce((sum, item) => sum + item.pnl, 0);
   const totalTrades = stats.reduce((sum, item) => sum + item.trades, 0);
-  let running = accountBalance;
-  const curve = stats.map((item) => {
-    running += item.pnl;
-    return { month: monthShort(year, item.month), balance: running };
-  });
+  const curve = stats.reduce<{ month: string; balance: number }[]>((acc, item) => {
+    const previousBalance = acc.length ? acc[acc.length - 1].balance : accountBalance;
+    acc.push({ month: monthShort(year, item.month), balance: previousBalance + item.pnl });
+    return acc;
+  }, []);
 
   return (
     <div className="space-y-3">
