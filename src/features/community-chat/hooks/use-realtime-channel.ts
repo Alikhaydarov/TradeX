@@ -27,9 +27,18 @@ export function useRealtimeChannel({
   currentUser: ChatProfile;
 }) {
   const pagination = useMessagesPagination({ roomKind, roomId });
+  const {
+    merge,
+    replaceByClientId,
+    markFailed,
+    removeByClientId,
+    reload,
+  } = pagination;
   const channelRef = useRef<RealtimeChannel | null>(null);
   const typingTimerRef = useRef<number | null>(null);
-  const subscribedOnceRef = useRef(false);
+  const typingStateRef = useRef(false);
+  const readTimerRef = useRef<number | null>(null);
+  const lastReadMessageRef = useRef<string | null>(null);
   const [connection, setConnection] = useState<"connecting" | "connected" | "offline">("connecting");
   const [presence, setPresence] = useState<ChatPresenceMeta[]>([]);
   const [rateLimitedUntil, setRateLimitedUntil] = useState(0);
@@ -37,8 +46,6 @@ export function useRealtimeChannel({
   const broadcast = useCallback(async (event: RealtimeChatEvent) => {
     const channel = channelRef.current;
     if (!channel) return;
-    // Writes are committed through Route Handlers first, then broadcast. This avoids
-    // broadcasting uncommitted rows. A reconnect reload heals any missed event.
     await channel.send({ type: "broadcast", event: "chat-event", payload: event });
   }, []);
 
@@ -51,7 +58,9 @@ export function useRealtimeChannel({
 
     let alive = true;
     let room: RealtimeChannel | null = null;
+    let subscribedBefore = false;
     setConnection("connecting");
+    typingStateRef.current = false;
 
     const connect = async () => {
       await supabase.realtime.setAuth();
@@ -69,7 +78,11 @@ export function useRealtimeChannel({
       room
         .on("broadcast", { event: "chat-event" }, ({ payload }) => {
           const event = payload as RealtimeChatEvent;
-          if (event.message) pagination.merge(event.message);
+          if (event.type === "message.rejected" && event.clientId) {
+            removeByClientId(event.clientId);
+            return;
+          }
+          if (event.message) merge(event.message);
         })
         .on("presence", { event: "sync" }, () => {
           if (!room) return;
@@ -100,8 +113,8 @@ export function useRealtimeChannel({
               onlineAt: new Date().toISOString(),
               typing: false,
             } satisfies ChatPresenceMeta);
-            if (subscribedOnceRef.current) void pagination.reload();
-            subscribedOnceRef.current = true;
+            if (subscribedBefore) void reload();
+            subscribedBefore = true;
           } else if (status === "CHANNEL_ERROR" || status === "TIMED_OUT" || status === "CLOSED") {
             setConnection("offline");
           }
@@ -115,47 +128,64 @@ export function useRealtimeChannel({
     return () => {
       alive = false;
       if (typingTimerRef.current) window.clearTimeout(typingTimerRef.current);
+      if (readTimerRef.current) window.clearTimeout(readTimerRef.current);
       if (room) {
         void room.untrack();
         void supabase.removeChannel(room);
       }
       channelRef.current = null;
+      typingStateRef.current = false;
       setPresence([]);
     };
-  }, [currentUser, pagination.merge, pagination.reload, roomId, roomKind]);
+  }, [currentUser, merge, reload, removeByClientId, roomId, roomKind]);
 
   const updateTyping = useCallback(
     (typing: boolean) => {
       const channel = channelRef.current;
       if (!channel) return;
-      void channel.track({
-        userId: currentUser.id,
-        username: currentUser.username,
-        fullName: currentUser.fullName,
-        avatarUrl: currentUser.avatarUrl,
-        onlineAt: new Date().toISOString(),
-        typing,
-      } satisfies ChatPresenceMeta);
+
       if (typingTimerRef.current) window.clearTimeout(typingTimerRef.current);
+      if (typing !== typingStateRef.current) {
+        typingStateRef.current = typing;
+        void channel.track({
+          userId: currentUser.id,
+          username: currentUser.username,
+          fullName: currentUser.fullName,
+          avatarUrl: currentUser.avatarUrl,
+          onlineAt: new Date().toISOString(),
+          typing,
+        } satisfies ChatPresenceMeta);
+      }
+
       if (typing) {
-        typingTimerRef.current = window.setTimeout(() => updateTyping(false), 1300);
+        typingTimerRef.current = window.setTimeout(() => updateTyping(false), 1100);
       }
     },
     [currentUser],
   );
 
+  useEffect(() => {
+    lastReadMessageRef.current = null;
+  }, [roomId, roomKind]);
+
   const markRead = useCallback(
     async (lastReadMessageId: string | null) => {
-      await fetch("/api/community-chat/read", {
-        method: "POST",
-        credentials: "same-origin",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          channelId: roomKind === "channel" ? roomId : null,
-          dmThreadId: roomKind === "dm" ? roomId : null,
-          lastReadMessageId,
-        }),
-      });
+      if (lastReadMessageRef.current === lastReadMessageId) return;
+      lastReadMessageRef.current = lastReadMessageId;
+      if (readTimerRef.current) window.clearTimeout(readTimerRef.current);
+      readTimerRef.current = window.setTimeout(() => {
+        void fetch("/api/community-chat/read", {
+          method: "POST",
+          credentials: "same-origin",
+          keepalive: true,
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            channelId: roomKind === "channel" ? roomId : null,
+            dmThreadId: roomKind === "dm" ? roomId : null,
+            lastReadMessageId,
+          }),
+        }).catch(() => undefined);
+      }, 160);
     },
     [roomId, roomKind],
   );
@@ -180,9 +210,18 @@ export function useRealtimeChannel({
         deletedAt: null,
         createdAt: new Date().toISOString(),
         pending: true,
+        failed: false,
       };
-      pagination.merge(optimistic);
+
+      merge(optimistic);
       updateTyping(false);
+      void broadcast({
+        type: "message.optimistic",
+        message: optimistic,
+        clientId,
+        actorId: currentUser.id,
+        sentAt: optimistic.createdAt,
+      }).catch(() => undefined);
 
       try {
         const response = await fetch("/api/community-chat/messages", {
@@ -206,22 +245,30 @@ export function useRealtimeChannel({
           }
           throw new Error(payload?.error || "Message could not be sent.");
         }
+
         const confirmed = { ...payload.message, pending: false, failed: false };
-        pagination.replaceByClientId(clientId, confirmed);
-        await broadcast({
+        replaceByClientId(clientId, confirmed);
+        void broadcast({
           type: "message.created",
           message: confirmed,
+          clientId,
           actorId: currentUser.id,
           sentAt: new Date().toISOString(),
-        });
+        }).catch(() => undefined);
         void markRead(confirmed.id);
         return confirmed;
       } catch {
-        pagination.markFailed(clientId);
+        markFailed(clientId);
+        void broadcast({
+          type: "message.rejected",
+          clientId,
+          actorId: currentUser.id,
+          sentAt: new Date().toISOString(),
+        }).catch(() => undefined);
         return null;
       }
     },
-    [broadcast, currentUser, markRead, pagination, rateLimitedUntil, roomId, roomKind, updateTyping],
+    [broadcast, currentUser, markFailed, markRead, merge, rateLimitedUntil, replaceByClientId, roomId, roomKind, updateTyping],
   );
 
   const editMessage = useCallback(
@@ -234,16 +281,16 @@ export function useRealtimeChannel({
       });
       const payload = (await response.json().catch(() => null)) as { message?: ChatMessage; error?: string } | null;
       if (!response.ok || !payload?.message) throw new Error(payload?.error || "Message could not be edited.");
-      pagination.merge(payload.message);
-      await broadcast({
+      merge(payload.message);
+      void broadcast({
         type: "message.updated",
         message: payload.message,
         actorId: currentUser.id,
         sentAt: new Date().toISOString(),
-      });
+      }).catch(() => undefined);
       return payload.message;
     },
-    [broadcast, currentUser.id, pagination],
+    [broadcast, currentUser.id, merge],
   );
 
   const deleteMessage = useCallback(
@@ -254,15 +301,15 @@ export function useRealtimeChannel({
       });
       const payload = (await response.json().catch(() => null)) as { message?: ChatMessage; error?: string } | null;
       if (!response.ok || !payload?.message) throw new Error(payload?.error || "Message could not be deleted.");
-      pagination.merge(payload.message);
-      await broadcast({
+      merge(payload.message);
+      void broadcast({
         type: "message.deleted",
         message: payload.message,
         actorId: currentUser.id,
         sentAt: new Date().toISOString(),
-      });
+      }).catch(() => undefined);
     },
-    [broadcast, currentUser.id, pagination],
+    [broadcast, currentUser.id, merge],
   );
 
   const react = useCallback(
@@ -275,15 +322,15 @@ export function useRealtimeChannel({
       });
       const payload = (await response.json().catch(() => null)) as { message?: ChatMessage; error?: string } | null;
       if (!response.ok || !payload?.message) throw new Error(payload?.error || "Reaction could not be updated.");
-      pagination.merge(payload.message);
-      await broadcast({
+      merge(payload.message);
+      void broadcast({
         type: "reaction.changed",
         message: payload.message,
         actorId: currentUser.id,
         sentAt: new Date().toISOString(),
-      });
+      }).catch(() => undefined);
     },
-    [broadcast, currentUser.id, pagination],
+    [broadcast, currentUser.id, merge],
   );
 
   const onlineUsers = useMemo(() => presence, [presence]);
