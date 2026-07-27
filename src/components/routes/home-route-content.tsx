@@ -6,7 +6,7 @@ import { FreeUserStart } from "../free-user-start";
 import { WorkspaceSectionSkeleton } from "../workspace-section-skeleton";
 
 const FeedV3 = dynamic(
-  () => import("../feed-v3").then((module) => module.FeedV3),
+  () => import("../feed/feed-page").then((module) => module.FeedPage),
   { ssr: false, loading: () => <WorkspaceSectionSkeleton /> },
 );
 
