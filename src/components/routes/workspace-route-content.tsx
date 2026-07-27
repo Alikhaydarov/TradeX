@@ -1,6 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
+import { useRouter } from "next/navigation";
 
 import type { WorkspaceTab } from "../journal-v2";
 import { WorkspaceSectionSkeleton } from "../workspace-section-skeleton";
@@ -39,6 +40,14 @@ const CommunityWorkspace = dynamic(
 
 const Pricing = dynamic(
   () => import("../pricing").then((module) => module.Pricing),
+  { ssr: false, loading: () => <WorkspaceSectionSkeleton /> },
+);
+
+const TradeDetailPage = dynamic(
+  () =>
+    import("@/features/trades/components/trade-detail-page").then(
+      (module) => module.TradeDetailPage,
+    ),
   { ssr: false, loading: () => <WorkspaceSectionSkeleton /> },
 );
 
@@ -88,4 +97,9 @@ export function CommunityRouteContent() {
 
 export function PricingRouteContent() {
   return <Pricing onLogin={openLogin} />;
+}
+
+export function TradeDetailRouteContent({ tradeId }: { tradeId: string }) {
+  const router = useRouter();
+  return <TradeDetailPage tradeId={tradeId} onBack={() => router.push("/trades")} />;
 }
