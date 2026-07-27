@@ -45,7 +45,9 @@ jobs:
         with:
           name: refactor-source
           path: |
-            src/components/account.tsx
+            src/components/profile
+            src/components/journal
+            src/components/chat
             src/components/journal-v2.tsx
             src/components/calendar-workspace-v3.tsx
             src/components/section-config.ts
