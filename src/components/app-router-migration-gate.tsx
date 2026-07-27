@@ -5,6 +5,8 @@ import { usePathname } from "next/navigation";
 import { AppShell } from "./app-shell";
 import { useAuth } from "./auth-context";
 
+const MIGRATED_WORKSPACE_ROUTES = ["/dashboard"];
+
 /**
  * Temporary compatibility bridge while routes are migrated from the legacy
  * SPA shell to real App Router pages. Migrated routes render through
@@ -16,8 +18,11 @@ export function AppRouterMigrationGate() {
   const { user } = useAuth();
 
   const landingHandledByAppRouter = pathname === "/" && !user;
+  const workspaceHandledByAppRouter = MIGRATED_WORKSPACE_ROUTES.some(
+    (route) => pathname === route || pathname.startsWith(`${route}/`),
+  );
 
-  if (landingHandledByAppRouter) return null;
+  if (landingHandledByAppRouter || workspaceHandledByAppRouter) return null;
 
   return <AppShell />;
 }
