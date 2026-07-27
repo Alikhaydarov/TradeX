@@ -1,5 +1,7 @@
 "use client";
 
+import { navigateApp } from "@/lib/app-navigation";
+
 import {
   Bell,
   Check,
@@ -66,13 +68,12 @@ function ago(value: string) {
 
 function openProfile(username: string) {
   const clean = username.replace(/^@/, "").toLowerCase();
-  window.history.pushState(null, "", `/${clean}`);
+  navigateApp(`/${clean}`);
   window.dispatchEvent(new Event("tradeup:open-profile"));
 }
 
 function openFeedPost(postId?: string | null) {
-  window.history.pushState(null, "", postId ? `/#post-${postId}` : "/");
-  window.dispatchEvent(new Event("popstate"));
+  navigateApp(postId ? `/#post-${postId}` : "/");
   if (!postId) return;
   window.setTimeout(() => {
     document
@@ -395,8 +396,7 @@ function NotificationsDialog({
       );
       window.dispatchEvent(new Event("tradox:community-membership-changed"));
       if (decision === "accept") {
-        window.history.pushState(null, "", "/community");
-        window.dispatchEvent(new Event("popstate"));
+        navigateApp("/community");
         onClose();
       }
     } catch (err) {

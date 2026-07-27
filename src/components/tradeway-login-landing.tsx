@@ -1,5 +1,7 @@
 "use client";
 
+import { navigateApp } from "@/lib/app-navigation";
+
 import {
   ArrowRight,
   BarChart3,
@@ -218,7 +220,7 @@ export function TradeWayLoginLanding({
     };
     setAuthError(messages[code] ?? "Sign-in could not be completed.");
     url.searchParams.delete("auth_error");
-    window.history.replaceState(null, "", `${url.pathname}${url.search}${url.hash}`);
+    navigateApp(`${url.pathname}${url.search}${url.hash}`, { replace: true });
   }, []);
 
   return (

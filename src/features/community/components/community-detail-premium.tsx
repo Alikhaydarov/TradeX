@@ -1,5 +1,7 @@
 "use client";
 
+import { navigateApp } from "@/lib/app-navigation";
+
 import {
   Activity,
   ArrowLeft,
@@ -99,8 +101,7 @@ const money = new Intl.NumberFormat("en-US", {
 const PANEL = "rounded-2xl border border-white/[.085] bg-[#070707]";
 
 function go(path: string) {
-  window.history.pushState(null, "", path);
-  window.dispatchEvent(new Event("popstate"));
+  navigateApp(path);
 }
 
 function SectionHeading({

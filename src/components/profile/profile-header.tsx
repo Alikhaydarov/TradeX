@@ -53,8 +53,8 @@ export function ProfileHeader({
   const bannerRef = useRef<HTMLInputElement | null>(null);
 
   return (
-    <section className="overflow-hidden rounded-2xl border border-white/8 bg-[#090909]">
-      <div className="relative h-28 overflow-hidden bg-[linear-gradient(135deg,#101010,#222)] sm:h-44">
+    <section className="overflow-hidden border-b border-white/8 bg-[#090909] sm:rounded-lg sm:border">
+      <div className="relative h-20 overflow-hidden bg-[linear-gradient(135deg,#111111,#202020)] sm:h-28">
         {profile.bannerUrl ? (
           <MediaImage
             src={profile.bannerUrl}
@@ -84,13 +84,13 @@ export function ProfileHeader({
         ) : null}
       </div>
 
-      <div className="px-4 pb-5 sm:px-6">
+      <div className="px-4 pb-4 sm:px-5">
         <div className="-mt-10 flex items-end justify-between gap-3 sm:-mt-14">
           <div className="relative">
             <TraderAvatar
               name={profile.fullName}
               value={profile.avatarUrl}
-              className="size-20 rounded-full border-4 border-[#090909] bg-black text-xl shadow-xl sm:size-28 sm:text-2xl"
+              className="size-20 rounded-full border-4 border-[#090909] bg-black text-xl shadow-xl sm:size-24 sm:text-2xl"
             />
             {isOwnProfile ? (
               <>
@@ -148,7 +148,7 @@ export function ProfileHeader({
 
         <div className="mt-4">
           <div className="flex flex-wrap items-center gap-2">
-            <h1 className="text-xl font-semibold tracking-[-0.025em] text-white sm:text-2xl">
+            <h1 className="text-xl font-black tracking-[-0.025em] text-white sm:text-2xl">
               {profile.fullName}
             </h1>
             {profile.isVerified ? <VerifiedBadge size={18} /> : null}
@@ -192,7 +192,7 @@ export function ProfileHeader({
         </div>
 
         {profile.statsVisible !== false ? (
-          <div className="mt-5 grid grid-cols-2 gap-2 sm:grid-cols-4">
+          <div className="mt-4 grid grid-cols-4 divide-x divide-white/8 overflow-hidden rounded-lg border border-white/8 bg-[#111111]">
             <Stat label="Trades" value={String(stats.trades)} />
             <Stat label="Win rate" value={`${stats.winRate}%`} />
             <Stat
@@ -218,12 +218,12 @@ function Stat({
   tone?: number;
 }) {
   return (
-    <div className="rounded-xl border border-white/8 bg-white/[.025] p-3">
-      <p className="text-[9px] font-semibold uppercase tracking-[0.12em] text-zinc-600">
+    <div className="min-w-0 px-2 py-2.5 text-center">
+      <p className="text-[8px] font-bold uppercase tracking-[0.12em] text-zinc-600">
         {label}
       </p>
       <p
-        className={`mt-2 font-mono text-base font-semibold ${
+        className={`mt-0.5 truncate font-mono text-xs font-semibold ${
           tone === undefined
             ? "text-zinc-100"
             : tone >= 0

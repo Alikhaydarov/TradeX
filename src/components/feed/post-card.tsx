@@ -88,7 +88,7 @@ export function PostCard({
       <article
         id={`post-${post.id}`}
         ref={observe}
-        className="rounded-2xl border border-white/8 bg-[#090909] p-4 transition hover:border-white/12 sm:p-5"
+        className="rounded-[1.25rem] border border-white/8 bg-[#17181b] px-3 py-4 transition-colors hover:bg-[#191a1e] sm:px-5 sm:py-5"
       >
         <div className="flex gap-3.5">
           <button
@@ -110,12 +110,12 @@ export function PostCard({
                 <button
                   type="button"
                   onClick={openProfile}
-                  className="flex max-w-full items-center gap-1 truncate text-left text-[15px] font-semibold tracking-tight hover:underline"
+                  className="flex max-w-full items-center gap-1 truncate text-left text-[15px] font-black tracking-tight hover:underline"
                 >
                   {post.name}
                   {post.isVerified ? <VerifiedBadge size={16} /> : null}
                 </button>
-                <p className="truncate text-[11px] text-zinc-600">
+                <p className="truncate text-[11px] text-slate-500">
                   {post.handle} · {post.time}
                 </p>
               </div>
@@ -158,11 +158,11 @@ export function PostCard({
             </div>
 
             {post.symbol ? (
-              <div className="mt-3 flex flex-wrap items-center gap-2 rounded-xl border border-white/8 bg-white/[.02] px-3 py-2.5">
+              <div className="mt-3 flex flex-wrap items-center gap-2 rounded-[1rem] border border-white/8 bg-black/14 px-3 py-2.5">
                 <InstrumentBadge
                   symbol={post.symbol}
                   compact
-                  className="mr-auto bg-[#121212]"
+                  className="mr-auto rounded-xl bg-white/[.03]"
                 />
                 <span
                   className={`rounded-md px-2 py-1 text-[9px] font-semibold ${
@@ -203,14 +203,14 @@ export function PostCard({
             ) : null}
 
             {post.text && post.text !== `${post.symbol} trade` ? (
-              <p className="mt-3 whitespace-pre-line text-[15px] leading-6 text-zinc-200">
+              <p className="mt-3 whitespace-pre-line text-[15px] leading-6 text-slate-100">
                 {post.text}
               </p>
             ) : null}
 
             <PostMedia post={post} onOpen={setLightboxUrl} />
 
-            <div className="mt-3 grid grid-cols-5 rounded-xl border border-white/8 bg-black/20 p-0.5 text-zinc-500">
+            <div className="mt-3 grid grid-cols-5 rounded-xl border border-white/8 bg-black/10 p-0.5 text-zinc-500">
               <ActionButton
                 active={repliesOpen}
                 label="Replies"

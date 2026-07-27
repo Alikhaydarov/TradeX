@@ -1,5 +1,7 @@
 "use client";
 
+import { navigateApp } from "@/lib/app-navigation";
+
 import {
   ArrowUpRight,
   Check,
@@ -93,8 +95,7 @@ function normalizeAccent(value?: string): Accent {
 }
 
 function go(path: string) {
-  window.history.pushState(null, "", path);
-  window.dispatchEvent(new Event("popstate"));
+  navigateApp(path);
 }
 
 function formatCount(value: number) {

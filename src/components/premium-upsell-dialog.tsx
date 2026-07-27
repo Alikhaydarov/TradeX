@@ -1,5 +1,7 @@
 "use client";
 
+import { navigateApp } from "@/lib/app-navigation";
+
 import { Crown, Sparkles, X } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { apiRequest } from "@/lib/api-client";
@@ -87,8 +89,7 @@ export function PremiumUpsellDialog() {
 
   const openPricing = () => {
     setOpen(false);
-    window.history.pushState(null, "", "/pricing");
-    window.dispatchEvent(new Event("popstate"));
+    navigateApp("/pricing");
   };
 
   const startCheckout = async (planId: "standard" | "pro") => {

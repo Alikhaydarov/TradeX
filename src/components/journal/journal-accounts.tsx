@@ -25,7 +25,7 @@ export function JournalAccounts({
   formatPnl: (value: number, baseValue?: number) => string;
 }) {
   return (
-    <div className="mx-auto w-full max-w-[1680px] space-y-5 p-3 sm:p-4 lg:p-6">
+    <div className="mx-auto w-full max-w-[1320px] space-y-5 p-3 sm:p-4 lg:p-6">
       <header className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-zinc-600">

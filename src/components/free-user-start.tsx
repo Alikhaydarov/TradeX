@@ -1,5 +1,7 @@
 "use client";
 
+import { navigateApp } from "@/lib/app-navigation";
+
 import {
   ArrowRight,
   BarChart3,
@@ -16,8 +18,7 @@ import { Spinner } from "./ui/spinner";
 import { usePremiumStatus } from "./use-premium-status";
 
 function openAccountSetup() {
-  window.history.pushState(null, "", "/accounts?new=1");
-  window.dispatchEvent(new Event("popstate"));
+  navigateApp("/accounts?new=1");
 }
 
 export function FreeUserStart({ children }: { children: ReactNode }) {
