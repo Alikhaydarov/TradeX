@@ -1,11 +1,28 @@
 "use client";
 
-import { ArrowUpRight, Plus, Trash2, WalletCards } from "lucide-react";
+import {
+  ChevronRight,
+  MoreHorizontal,
+  Plus,
+  Trash2,
+  WalletCards,
+} from "lucide-react";
 
-import { PropFirmLogo } from "@/components/prop-firm-logo";
 import type { PropAccount } from "@/components/types";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import type { JournalSummary } from "./use-journal-data";
+
+const cash = new Intl.NumberFormat("en-US", {
+  style: "currency",
+  currency: "USD",
+  maximumFractionDigits: 2,
+});
 
 export function JournalAccounts({
   summaries,
@@ -24,153 +41,240 @@ export function JournalAccounts({
   onDelete: (account: PropAccount) => void;
   formatPnl: (value: number, baseValue?: number) => string;
 }) {
+  const startingCapital = summaries.reduce(
+    (total, item) => total + item.account.accountSize,
+    0,
+  );
+  const netPnl = summaries.reduce((total, item) => total + item.pnl, 0);
+  const portfolioValue = startingCapital + netPnl;
+
   return (
-    <div className="mx-auto w-full max-w-[1320px] space-y-5 p-3 sm:p-4 lg:p-6">
-      <header className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+    <div className="animate-page-in mx-auto w-full max-w-[1320px] space-y-3 p-3 sm:p-4 lg:p-5">
+      <div className="flex items-center justify-between gap-3">
         <div>
-          <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-zinc-600">
-            Trading accounts
-          </p>
-          <h1 className="mt-2 text-2xl font-bold tracking-[-0.035em] text-white">
-            Choose your workspace
-          </h1>
-          <p className="mt-1 max-w-2xl text-sm text-zinc-500">
-            Compare prop and live accounts, then open one focused performance workspace.
+          <h1 className="text-xl font-black text-white sm:text-2xl">Accounts</h1>
+          <p className="mt-0.5 text-xs text-zinc-600">
+            Your trading journals in one place.
           </p>
         </div>
-        <Button onClick={onAdd} className="h-10 bg-white text-black hover:bg-zinc-200">
-          <Plus className="size-4" /> Add account
+        <Button
+          onClick={onAdd}
+          className="h-9 shrink-0 rounded-xl bg-white px-3 text-xs font-bold text-black hover:bg-zinc-200 sm:px-4 sm:text-sm"
+        >
+          <Plus size={15} />
+          <span className="hidden sm:inline">Add account</span>
+          <span className="sm:hidden">Add</span>
         </Button>
-      </header>
+      </div>
 
-      {!summaries.length ? (
-        <section className="grid min-h-[340px] place-items-center rounded-2xl border border-dashed border-white/10 bg-[#080808] p-6 text-center">
-          <div className="max-w-sm">
-            <span className="mx-auto grid size-12 place-items-center rounded-xl border border-white/8 bg-white/[.035] text-zinc-400">
-              <WalletCards className="size-5" />
-            </span>
-            <h2 className="mt-5 text-lg font-semibold text-white">No trading accounts yet</h2>
-            <p className="mt-2 text-sm leading-6 text-zinc-500">
-              Create a manual journal or connect a supported platform to start tracking execution.
-            </p>
-            <Button onClick={onAdd} className="mt-5 bg-white text-black hover:bg-zinc-200">
-              <Plus className="size-4" /> Create first account
-            </Button>
+      {summaries.length ? (
+        <section>
+          <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-white/10 bg-[#060606] px-4 py-3">
+            <div>
+              <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-zinc-600">
+                Portfolio value
+              </p>
+              <p className="mt-1 font-mono text-xl font-black tracking-tight text-white sm:text-2xl">
+                {cash.format(portfolioValue)}
+              </p>
+            </div>
+            <div className="text-right">
+              <span
+                className={`rounded-lg px-2 py-1 font-mono text-xs font-bold ${
+                  netPnl >= 0
+                    ? "bg-emerald-400/10 text-emerald-300"
+                    : "bg-rose-400/10 text-rose-300"
+                }`}
+              >
+                {formatPnl(netPnl, startingCapital || 1)}
+              </span>
+              <p className="mt-1.5 text-[10px] text-zinc-600">
+                {summaries.length} {summaries.length === 1 ? "account" : "accounts"} ·{" "}
+                {cash.format(startingCapital)} capital
+              </p>
+            </div>
           </div>
         </section>
-      ) : (
-        <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
-          {summaries.map((summary) => {
-            const active = summary.account.id === activeAccountId;
-            return (
-              <article
-                key={summary.account.id}
-                className={`group rounded-xl border bg-[#090909] p-4 transition hover:-translate-y-0.5 hover:border-white/15 ${active ? "border-white/20" : "border-white/8"}`}
-              >
-                <div className="flex items-start gap-3">
-                  <span className="rounded-xl border border-white/8 bg-[#111] p-0.5">
-                    <PropFirmLogo firm={summary.account.firm} compact />
-                  </span>
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-center gap-2">
-                      <h2 className="truncate text-sm font-semibold text-white">
-                        {summary.account.name}
-                      </h2>
-                      {active ? (
-                        <span className="size-1.5 shrink-0 rounded-full bg-emerald-400" />
-                      ) : null}
-                    </div>
-                    <p className="mt-1 truncate text-[11px] text-zinc-600">
-                      {summary.account.firm} · {summary.account.phase}
-                    </p>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => onDelete(summary.account)}
-                    disabled={deleting === summary.account.id}
-                    className="grid size-8 shrink-0 place-items-center rounded-lg text-zinc-600 transition hover:bg-rose-500/10 hover:text-rose-300 disabled:opacity-40"
-                    aria-label={`Delete ${summary.account.name}`}
-                  >
-                    <Trash2 className="size-3.5" />
-                  </button>
-                </div>
+      ) : null}
 
-                <div className="mt-5 grid grid-cols-2 gap-2">
-                  <Metric label="Net P&L" value={formatPnl(summary.pnl, summary.account.accountSize)} tone={summary.pnl} />
-                  <Metric label="Win rate" value={`${summary.winRate}%`} />
-                  <Metric label="Trades" value={String(summary.trades)} />
-                  <Metric label="Account size" value={formatPnl(summary.account.accountSize)} />
-                </div>
-
-                <div className="mt-4 space-y-2">
-                  <Progress label="Target" value={summary.target} />
-                  <Progress label="Drawdown used" value={summary.drawdown} danger />
-                </div>
-
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => onOpen(summary.account.id)}
-                  className="mt-4 w-full justify-between border-white/8 bg-[#0c0c0c] hover:bg-white/[.05]"
-                >
-                  Open workspace <ArrowUpRight className="size-4" />
-                </Button>
-              </article>
-            );
-          })}
+      {!summaries.length ? (
+        <div className="grid min-h-80 place-items-center rounded-[24px] border border-dashed border-white/12 bg-[#050505] px-5 text-center">
+          <div>
+            <div className="mx-auto grid size-14 place-items-center rounded-2xl border border-white/8 bg-[#0d0d0d]">
+              <WalletCards size={24} className="text-zinc-300" />
+            </div>
+            <h2 className="mt-4 text-xl font-black text-white">
+              Create your first journal
+            </h2>
+            <p className="mx-auto mt-2 max-w-sm text-sm leading-6 text-zinc-500">
+              Add an account name and starting balance. You can begin logging trades
+              immediately.
+            </p>
+            <Button
+              onClick={onAdd}
+              className="mt-5 h-11 rounded-xl bg-white px-5 text-black hover:bg-zinc-200"
+            >
+              <Plus size={16} /> Add account
+            </Button>
+          </div>
         </div>
+      ) : (
+        <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
+          {summaries.map((summary) => (
+            <AccountCard
+              key={summary.account.id}
+              active={activeAccountId === summary.account.id}
+              summary={summary}
+              deleting={deleting}
+              onOpen={onOpen}
+              onDelete={onDelete}
+              formatPnl={formatPnl}
+            />
+          ))}
+          <button
+            type="button"
+            onClick={onAdd}
+            className="group grid min-h-[172px] place-items-center rounded-2xl border border-dashed border-white/12 bg-[#030303] p-4 text-center transition hover:border-white/25 hover:bg-[#070707] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/30"
+          >
+            <span>
+              <span className="mx-auto grid size-9 place-items-center rounded-xl border border-white/10 bg-[#0d0d0d] text-zinc-500 transition group-hover:text-white">
+                <Plus size={17} />
+              </span>
+              <span className="mt-2.5 block text-sm font-bold text-zinc-500 transition group-hover:text-zinc-200">
+                Add account
+              </span>
+            </span>
+          </button>
+        </section>
       )}
     </div>
   );
 }
 
-function Metric({
-  label,
-  value,
-  tone,
+function AccountCard({
+  active,
+  summary,
+  deleting,
+  onOpen,
+  onDelete,
+  formatPnl,
 }: {
-  label: string;
-  value: string;
-  tone?: number;
+  active: boolean;
+  summary: JournalSummary;
+  deleting: string | null;
+  onOpen: (id: string) => void;
+  onDelete: (account: PropAccount) => void;
+  formatPnl: (value: number, baseValue?: number) => string;
 }) {
-  return (
-    <div className="rounded-lg border border-white/7 bg-white/[.025] p-3">
-      <p className="text-[9px] uppercase tracking-[0.12em] text-zinc-600">{label}</p>
-      <p
-        className={`mt-1 truncate font-mono text-sm font-semibold ${
-          tone === undefined
-            ? "text-zinc-200"
-            : tone >= 0
-              ? "text-emerald-300"
-              : "text-rose-300"
-        }`}
-      >
-        {value}
-      </p>
-    </div>
-  );
-}
+  const statusColor: Record<string, string> = {
+    Processing: "text-sky-300 bg-[#091119] border-sky-400/20",
+    Active: "text-emerald-300 bg-[#0b1c12] border-emerald-400/20",
+    Passed: "text-zinc-300 bg-[#0a0a0a] border-white/15",
+    Failed: "text-rose-300 bg-[#1a0d10] border-rose-400/20",
+    Paused: "text-amber-400 bg-[#1a1407] border-amber-400/20",
+  };
+  const sourceLabel =
+    summary.account.importSource === "mt5_bridge" ? "MT5 sync" : "Manual";
+  const currentBalance = summary.account.accountSize + summary.pnl;
 
-function Progress({
-  label,
-  value,
-  danger = false,
-}: {
-  label: string;
-  value: number;
-  danger?: boolean;
-}) {
   return (
-    <div>
-      <div className="mb-1 flex items-center justify-between text-[10px] text-zinc-600">
-        <span>{label}</span>
-        <span>{Math.round(value)}%</span>
-      </div>
-      <div className="h-1.5 overflow-hidden rounded-full bg-white/6">
-        <div
-          className={`h-full rounded-full ${danger ? "bg-rose-400" : "bg-emerald-400"}`}
-          style={{ width: `${Math.min(100, Math.max(0, value))}%` }}
-        />
+    <div
+      role="button"
+      tabIndex={0}
+      onClick={() => onOpen(summary.account.id)}
+      onKeyDown={(event) => {
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          onOpen(summary.account.id);
+        }
+      }}
+      className={`group relative min-h-[172px] cursor-pointer overflow-hidden rounded-2xl border transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/30 ${
+        active
+          ? "border-white/20 bg-[#080808] shadow-[0_12px_32px_rgba(0,0,0,.3)]"
+          : "border-white/10 bg-[#050505] hover:border-white/20 hover:bg-[#080808]"
+      }`}
+    >
+      <div className="p-3.5">
+        <div className="flex items-start gap-3">
+          <div className="min-w-0 flex-1 space-y-1">
+            <div className="flex min-w-0 items-center gap-2">
+              <span className="size-2 shrink-0 rounded-full bg-emerald-400 shadow-[0_0_12px_rgba(52,211,153,.45)]" />
+              <p className="truncate text-[15px] font-bold text-white">
+                {summary.account.name}
+              </p>
+            </div>
+            <p className="truncate text-[11px] text-zinc-600">
+              {sourceLabel} ·{" "}
+              {summary.account.accountType === "real"
+                ? "Personal"
+                : summary.account.firm || "Prop account"}
+            </p>
+          </div>
+          <div className="flex shrink-0 items-center gap-2">
+            <span
+              className={`rounded-md border px-1.5 py-0.5 text-[9px] font-semibold ${
+                statusColor[summary.account.status] || statusColor.Active
+              }`}
+            >
+              {summary.account.status}
+            </span>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon-sm"
+                  aria-label="Account actions"
+                  onClick={(event) => event.stopPropagation()}
+                >
+                  <MoreHorizontal size={15} />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent
+                align="end"
+                className="border-white/10 bg-[#0a0a0a]"
+                onClick={(event) => event.stopPropagation()}
+              >
+                <DropdownMenuItem
+                  variant="destructive"
+                  disabled={deleting === summary.account.id}
+                  onClick={() => onDelete(summary.account)}
+                >
+                  <Trash2 size={14} /> Delete account
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+        </div>
+
+        <div className="mt-3.5">
+          <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-zinc-600">
+            Current balance
+          </p>
+          <div className="mt-1 flex items-end justify-between gap-2">
+            <p className="font-mono text-xl font-black text-white">
+              {cash.format(currentBalance)}
+            </p>
+            <p
+              className={`font-mono text-xs font-bold ${
+                summary.pnl >= 0 ? "text-emerald-300" : "text-rose-300"
+              }`}
+            >
+              {formatPnl(summary.pnl, summary.account.accountSize || 1)}
+            </p>
+          </div>
+        </div>
+
+        <div className="mt-3.5 flex items-center justify-between gap-3 border-t border-white/8 pt-2.5">
+          <div className="flex min-w-0 items-center gap-3 text-[11px] text-zinc-500">
+            <span>{summary.trades} trades</span>
+            <span className="text-zinc-800">/</span>
+            <span>{summary.winRate}% win rate</span>
+          </div>
+          <ChevronRight
+            size={16}
+            className="text-zinc-600 transition-transform group-hover:translate-x-0.5"
+          />
+        </div>
       </div>
     </div>
   );
