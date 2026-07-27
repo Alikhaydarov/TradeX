@@ -84,7 +84,8 @@ export function WorkspaceRouteShell({
             />
           )}
           <div
-            className="hidden w-[236px] shrink-0 lg:block"
+            data-workspace-spacer
+            className={`hidden shrink-0 lg:block ${community ? "w-[236px]" : "w-[238px]"}`}
             aria-hidden="true"
           />
           <main
