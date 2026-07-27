@@ -204,7 +204,7 @@ function MetricRing({ value }: { value: number }) {
         sx={{
           color: bounded >= 50 ? "#22c55e" : "#f59e0b",
           position: "absolute",
-          transform: "rotate(-90deg) !important",
+          transform: "rotate(-90deg)",
           "& .MuiCircularProgress-circle": { strokeLinecap: "round" },
         }}
       />

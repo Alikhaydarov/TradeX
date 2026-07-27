@@ -145,7 +145,7 @@ export function ProfilePage({
   return (
     <div className="min-h-full bg-black">
       {data.error ? (
-        <div className="mx-auto mt-3 flex max-w-5xl items-center gap-3 rounded-xl border border-rose-500/20 bg-rose-500/8 px-4 py-3 text-sm text-rose-300">
+        <div className="mx-auto mt-3 flex max-w-3xl items-center gap-3 rounded-xl border border-rose-500/20 bg-rose-500/8 px-4 py-3 text-sm text-rose-300">
           <span className="min-w-0 flex-1">{data.error}</span>
           <button
             type="button"
@@ -158,7 +158,7 @@ export function ProfilePage({
         </div>
       ) : null}
 
-      <div className="mx-auto max-w-5xl space-y-4 px-3 py-4 sm:px-5 lg:py-6">
+      <div className="mx-auto max-w-3xl space-y-4 px-3 py-4 sm:px-5 lg:py-6">
         <ProfileHeader
           profile={data.profile}
           stats={data.stats}
@@ -376,7 +376,7 @@ function Field({
 
 function ProfileSkeleton() {
   return (
-    <div className="mx-auto max-w-5xl animate-pulse space-y-4 px-3 py-4 sm:px-5 lg:py-6">
+    <div className="mx-auto max-w-3xl animate-pulse space-y-4 px-3 py-4 sm:px-5 lg:py-6">
       <div className="overflow-hidden rounded-2xl border border-white/8 bg-[#090909]">
         <div className="h-28 bg-white/[.035] sm:h-44" />
         <div className="px-5 pb-6">

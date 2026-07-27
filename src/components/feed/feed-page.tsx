@@ -60,12 +60,12 @@ export function FeedPage({ onLogin }: { onLogin: () => void }) {
 
   return (
     <div className="min-h-full">
-      <header className="sticky top-0 z-20 border-b border-white/8 bg-black/92 px-3 py-3 backdrop-blur-xl sm:px-6">
+      <header className="sticky top-0 z-20 border-b border-white/8 bg-[#111214]/96 px-3 py-3 backdrop-blur-xl sm:px-6">
         <div className="mx-auto flex max-w-4xl items-center gap-3">
           <div className="min-w-0 flex-1">
-            <h1 className="text-lg font-semibold tracking-tight text-white">Trade feed</h1>
+            <h1 className="text-lg font-black tracking-tight text-white">Trade feed</h1>
             <p className="mt-0.5 text-[10px] text-zinc-600">
-              Verified execution reviews from the community
+              Shared trade reviews only
             </p>
           </div>
           <SocialActions className="lg:hidden" />

@@ -1,5 +1,7 @@
 "use client";
 
+import { navigateApp } from "@/lib/app-navigation";
+
 import {
   ArrowLeft,
   CalendarDays,
@@ -157,8 +159,7 @@ function currentRoute(): RouteState {
 }
 
 function navigate(path: string) {
-  window.history.pushState(null, "", path);
-  window.dispatchEvent(new Event("popstate"));
+  navigateApp(path);
 }
 
 function monthName(year: number, month: number) {

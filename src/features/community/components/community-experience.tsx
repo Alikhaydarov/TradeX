@@ -1,5 +1,7 @@
 "use client";
 
+import { navigateApp } from "@/lib/app-navigation";
+
 import {
   ArrowLeft,
   ArrowUpRight,
@@ -108,8 +110,7 @@ const CARD = "rounded-xl border border-white/8 bg-[#070707]";
 const MUTED = "text-[11px] text-zinc-500";
 
 function go(path: string) {
-  window.history.pushState(null, "", path);
-  window.dispatchEvent(new Event("popstate"));
+  navigateApp(path);
 }
 
 function EmptyState({ title, text }: { title: string; text: string }) {

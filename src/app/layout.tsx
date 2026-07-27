@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { DM_Sans } from "next/font/google";
 import { AccountCardMenuBridge } from "@/components/account-card-menu-bridge";
+import { AppNavigationBridge } from "@/components/app-navigation-bridge";
 import { AuthProvider } from "@/components/auth-context";
 import { FloatingWorkspaceActions } from "@/components/floating-workspace-actions";
 import { AppRouterCacheProvider } from "@mui/material-nextjs/v16-appRouter";
@@ -38,6 +39,7 @@ export default async function RootLayout({
             initialUser={data.user}
             initialConfigured={configured}
           >
+            <AppNavigationBridge />
             {children}
             <AccountCardMenuBridge />
             <FloatingWorkspaceActions />

@@ -1,5 +1,7 @@
 "use client";
 
+import { navigateApp } from "@/lib/app-navigation";
+
 import { LoaderCircle, MessageCircle, X } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import type {
@@ -58,7 +60,7 @@ function roomFromUrl(): SelectedChatRoom | null {
 function updateRoomUrl(communityId: string, room: SelectedChatRoom) {
   const params = new URLSearchParams();
   params.set(room.kind === "channel" ? "channel" : "dm", room.id);
-  window.history.replaceState(null, "", `/community/${communityId}/chat?${params.toString()}`);
+  navigateApp(`/community/${communityId}/chat?${params.toString()}`, { replace: true });
 }
 
 function ChatRoomPanel({
@@ -259,8 +261,7 @@ export function ChatLayout({ communityId }: { communityId: string }) {
   };
 
   const back = () => {
-    window.history.pushState(null, "", `/community/${communityId}/overview`);
-    window.dispatchEvent(new Event("popstate"));
+    navigateApp(`/community/${communityId}/overview`);
   };
 
   const sidebar = context ? (

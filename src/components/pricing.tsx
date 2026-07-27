@@ -1,5 +1,7 @@
 "use client";
 
+import { navigateApp } from "@/lib/app-navigation";
+
 import {
   BrainCircuit,
   Check,
@@ -299,8 +301,7 @@ export function Pricing({ onLogin }: { onLogin?: () => void } = {}) {
             current={premium?.plan === "free"}
             actionLabel={premium?.plan === "free" ? "Current plan" : "Continue with Free"}
             onAction={() => {
-              window.history.pushState(null, "", "/");
-              window.dispatchEvent(new Event("popstate"));
+              navigateApp("/");
             }}
           />
 

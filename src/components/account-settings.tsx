@@ -1,5 +1,7 @@
 "use client";
 
+import { navigateApp } from "@/lib/app-navigation";
+
 import dynamic from "next/dynamic";
 import {
   CheckCircle2,
@@ -179,8 +181,7 @@ export function AccountSettings({ onLogin: _onLogin }: { onLogin: () => void }) 
           <h1 className="mt-4 text-2xl font-black text-white">Select an account first</h1>
           <p className="mt-2 text-sm leading-6 text-zinc-500">Settings are attached to one selected prop or real account.</p>
           <Button className="mt-5 bg-white text-black hover:bg-zinc-200" onClick={() => {
-            window.history.pushState(null, "", "/accounts");
-            window.dispatchEvent(new Event("popstate"));
+            navigateApp("/accounts");
           }}>
             Open accounts
           </Button>

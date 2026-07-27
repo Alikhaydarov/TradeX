@@ -1,5 +1,7 @@
 "use client";
 
+import { navigateApp } from "@/lib/app-navigation";
+
 import {
   ArrowLeft,
   ChevronRight,
@@ -305,8 +307,7 @@ export function PropAccountDialog({
                 onBack={goBack}
                 onUpgrade={() => {
                   onOpenChange(false);
-                  window.history.pushState(null, "", "/pricing");
-                  window.dispatchEvent(new Event("popstate"));
+                  navigateApp("/pricing");
                 }}
               />
             ) : null}
