@@ -58,16 +58,46 @@ jobs:
         if: steps.pending.outputs.enabled == 'true'
         run: npm run check:ui-parity
 
-      - name: Lint
+      - name: Lint and capture diagnostics
         if: steps.pending.outputs.enabled == 'true'
-        run: npm run lint
+        id: lint
+        shell: bash
+        run: |
+          set +e
+          npm run lint > lint.log 2>&1
+          status=$?
+          echo "status=$status" >> "$GITHUB_OUTPUT"
+          tail -n 200 lint.log
+          exit 0
 
-      - name: Production build
+      - name: Production build and capture diagnostics
         if: steps.pending.outputs.enabled == 'true'
-        run: npm run build
+        id: build
+        shell: bash
+        run: |
+          set +e
+          npm run build > build.log 2>&1
+          status=$?
+          echo "status=$status" >> "$GITHUB_OUTPUT"
+          tail -n 200 build.log
+          exit 0
+
+      - name: Upload validation diagnostics
+        if: always() && steps.pending.outputs.enabled == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: journal-completion-diagnostics
+          path: |
+            lint.log
+            build.log
+          if-no-files-found: warn
+
+      - name: Fail when validation failed
+        if: steps.pending.outputs.enabled == 'true' && (steps.lint.outputs.status != '0' || steps.build.outputs.status != '0')
+        run: exit 1
 
       - name: Commit validated migration to PR branch
-        if: steps.pending.outputs.enabled == 'true'
+        if: steps.pending.outputs.enabled == 'true' && steps.lint.outputs.status == '0' && steps.build.outputs.status == '0'
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
