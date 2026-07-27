@@ -1,17 +1,12 @@
 import type { Metadata } from "next";
 import type { CSSProperties } from "react";
 import { DM_Sans } from "next/font/google";
-import { AccountCardMenuBridge } from "@/components/account-card-menu-bridge";
+
 import { AuthProvider } from "@/components/auth-context";
-import { FloatingAddTradeButton } from "@/components/floating-add-trade-button";
-import { MobileTradesBridge } from "@/components/mobile-trades-bridge";
-import { ProAiCoachLauncherBoundary } from "@/components/pro-ai-coach-launcher-boundary";
 import { APP_ROOT_TAILWIND_CLASS } from "@/components/tailwind/app-tailwind-classes";
-import { WorkspaceTailwindBoundary } from "@/components/tailwind/workspace-tailwind-boundary";
-import { WorkspaceAppRouterShellV2 } from "@/components/workspace-app-router-shell-v2";
 import { AppRouterCacheProvider } from "@mui/material-nextjs/v16-appRouter";
-import { getSupabaseServerClient } from "@/lib/supabase/server";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
+import { getSupabaseServerClient } from "@/lib/supabase/server";
 import "./globals.css";
 
 const dmSans = DM_Sans({
@@ -64,13 +59,7 @@ export default async function RootLayout({
             initialUser={data.user}
             initialConfigured={configured}
           >
-            <WorkspaceTailwindBoundary>
-              <WorkspaceAppRouterShellV2>{children}</WorkspaceAppRouterShellV2>
-            </WorkspaceTailwindBoundary>
-            <AccountCardMenuBridge />
-            <FloatingAddTradeButton />
-            <MobileTradesBridge />
-            <ProAiCoachLauncherBoundary />
+            {children}
           </AuthProvider>
         </AppRouterCacheProvider>
       </body>
