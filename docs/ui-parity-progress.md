@@ -70,10 +70,10 @@
 
 ## Validation
 
-- Tailwind-only ownership guard is required in CI.
-- ESLint is required in CI.
-- Next.js production build is required in CI.
+- Tailwind-only ownership guard passed on the accepted branch commit.
+- ESLint passed on the same accepted branch commit.
+- Next.js production build passed on the same accepted branch commit.
+- The independent Build Check workflow also passed dependency installation, Tailwind ownership, lint and production build.
 - Extracted Profile, Chat and Journal modules are type-checked as independent production modules.
 - Source, ownership, lint and build diagnostics are available through workflow artifacts.
-- The acceptance gate is a green Tailwind guard, green ESLint and green Next.js production build on the same final branch commit.
 - Browser screenshot comparison was not run because the connected Vercel account remains build-rate-limited; no claim of automated pixel-diff verification is made.
