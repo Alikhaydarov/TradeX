@@ -1,0 +1,88 @@
+/* Temporary parity layer for the AI launcher only.
+   The add-trade action has moved to component-level Tailwind classes. */
+
+button[aria-label="Open Tradox AI"] {
+  -webkit-tap-highlight-color: transparent;
+  isolation: isolate;
+  width: 3.25rem !important;
+  height: 3.25rem !important;
+  min-width: 3.25rem !important;
+  padding: 0 !important;
+  gap: 0 !important;
+  overflow: visible;
+  border-radius: 9999px !important;
+  border: 1px solid rgba(255, 255, 255, 0.16) !important;
+  background:
+    radial-gradient(circle at 30% 22%, rgba(255, 255, 255, 0.12), transparent 32%),
+    linear-gradient(145deg, rgba(24, 24, 27, 0.98), rgba(5, 5, 5, 0.98)) !important;
+  color: #f4f4f5 !important;
+  font-size: 0 !important;
+  box-shadow:
+    0 16px 42px rgba(0, 0, 0, 0.58),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08) !important;
+  backdrop-filter: blur(18px);
+  transition: transform 180ms ease, border-color 180ms ease, background 180ms ease !important;
+}
+
+button[aria-label="Open Tradox AI"] svg {
+  width: 1.15rem !important;
+  height: 1.15rem !important;
+  color: #e4e4e7;
+  filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.18));
+}
+
+button[aria-label="Open Tradox AI"]::after {
+  content: "Tradox AI";
+  position: absolute;
+  right: calc(100% + 0.65rem);
+  top: 50%;
+  padding: 0.42rem 0.65rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 0.65rem;
+  background: rgba(8, 8, 8, 0.94);
+  color: #d4d4d8;
+  font-size: 0.68rem;
+  font-weight: 650;
+  line-height: 1;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transform: translate(5px, -50%);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
+  transition: opacity 150ms ease, transform 150ms ease;
+}
+
+button[aria-label="Open Tradox AI"]:hover {
+  border-color: rgba(255, 255, 255, 0.28) !important;
+  background:
+    radial-gradient(circle at 30% 22%, rgba(255, 255, 255, 0.18), transparent 34%),
+    linear-gradient(145deg, #202024, #090909) !important;
+  transform: translateY(-2px) scale(1.04) !important;
+}
+
+button[aria-label="Open Tradox AI"]:hover::after {
+  opacity: 1;
+  transform: translate(0, -50%);
+}
+
+button[aria-label="Open Tradox AI"]:active {
+  transform: scale(0.94) !important;
+}
+
+@media (min-width: 1024px) {
+  button[aria-label="Open Tradox AI"] {
+    right: 2rem !important;
+    bottom: 6.35rem !important;
+  }
+}
+
+@media (max-width: 1023px) {
+  button[aria-label="Open Tradox AI"] {
+    right: 1rem !important;
+    bottom: 5.75rem !important;
+  }
+
+  button[aria-label="Open Tradox AI"]::after {
+    display: none;
+  }
+}
