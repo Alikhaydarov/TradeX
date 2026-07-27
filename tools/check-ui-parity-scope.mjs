@@ -18,7 +18,6 @@ const protectedFiles = new Set([
   "src/app/responsive-fixes.css",
   "src/app/quality-overrides.css",
   "src/app/workspace-design-system.css",
-  "src/app/typography.css",
   "src/app/workspace-visual-refresh.css",
   "src/app/workspace-docked-shell.css",
   "src/app/community-ui-fixes.css",
