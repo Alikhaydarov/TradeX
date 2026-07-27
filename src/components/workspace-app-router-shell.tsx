@@ -38,6 +38,10 @@ const APP_ROUTER_CONTENT_PATHS = new Set([
   "/trades",
   "/analytics",
   "/calendar",
+  "/settings",
+  "/profile",
+  "/community",
+  "/pricing",
 ]);
 
 const UserSettingsDialog = dynamic(
@@ -292,7 +296,8 @@ function WorkspaceAppRouterShellInner({ children }: { children: ReactNode }) {
     );
   };
 
-  const routeOwnsContent = APP_ROUTER_CONTENT_PATHS.has(pathname);
+  const routeOwnsContent =
+    APP_ROUTER_CONTENT_PATHS.has(pathname) || profileUsername.length > 0;
   const routeContent = routeOwnsContent ? children : renderLegacySection(section);
 
   if (!user && section === "pricing") {
