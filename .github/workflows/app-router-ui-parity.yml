@@ -6,6 +6,7 @@ on:
       - agent/app-router-ui-parity-v2
     paths:
       - "src/**"
+      - "tools/**"
       - "package.json"
       - "package-lock.json"
       - "next.config.*"
@@ -17,6 +18,7 @@ on:
       - main
     paths:
       - "src/**"
+      - "tools/**"
       - "package.json"
       - "package-lock.json"
       - "next.config.*"
@@ -35,6 +37,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Setup Node
         uses: actions/setup-node@v4
@@ -44,6 +48,9 @@ jobs:
 
       - name: Install dependencies
         run: npm ci
+
+      - name: Verify UI parity scope
+        run: npm run check:ui-parity
 
       - name: Lint
         run: npm run lint
