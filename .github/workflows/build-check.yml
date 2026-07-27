@@ -1,6 +1,9 @@
 name: Build check
 
 on:
+  push:
+    branches:
+      - agent/app-router-ui-parity-v2
   pull_request:
     branches: [main]
   workflow_dispatch:
@@ -11,14 +14,20 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: npm
       - run: npm ci
+      - name: Verify UI parity scope
+        run: npm run check:ui-parity
+      - name: Lint
+        run: npm run lint
       - name: Build and capture log
         id: build
         shell: bash
