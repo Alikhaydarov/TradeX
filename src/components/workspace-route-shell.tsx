@@ -4,6 +4,10 @@ import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
 import { useEffect, useState, type ReactNode } from "react";
 
+import {
+  CommunitySidebar,
+  type CommunitySection,
+} from "@/features/community/components/community-sidebar";
 import { ActiveAccountProvider } from "./active-account-context";
 import { useAuth } from "./auth-context";
 import { NotificationListener } from "./notification-listener";
@@ -23,12 +27,19 @@ const UserSettingsDialog = dynamic(
   { ssr: false },
 );
 
+type CommunityShellConfig = {
+  communityId: string;
+  active: CommunitySection;
+};
+
 export function WorkspaceRouteShell({
   section,
   children,
+  community,
 }: {
   section: Section;
   children: ReactNode;
+  community?: CommunityShellConfig;
 }) {
   const router = useRouter();
   const { user } = useAuth();
@@ -54,12 +65,23 @@ export function WorkspaceRouteShell({
       <ActiveAccountProvider>
         <WorkspaceBootLoader />
         <div className="workspace-shell flex h-[100dvh] w-full overflow-hidden bg-black p-0 text-foreground">
-          <Sidebar
-            active={section}
-            onChange={changeSection}
-            onLogin={() => router.push("/")}
-            user={user}
-          />
+          {community ? (
+            <CommunitySidebar
+              communityId={community.communityId}
+              active={community.active}
+              onNavigate={(next) =>
+                router.push(`/community/${community.communityId}/${next}`)
+              }
+              onBack={() => router.push("/community")}
+            />
+          ) : (
+            <Sidebar
+              active={section}
+              onChange={changeSection}
+              onLogin={() => router.push("/")}
+              user={user}
+            />
+          )}
           <div
             className="hidden w-[236px] shrink-0 lg:block"
             aria-hidden="true"
@@ -68,7 +90,7 @@ export function WorkspaceRouteShell({
             data-workspace-main
             className="workspace-main h-[100dvh] min-w-0 flex-1 overscroll-contain overflow-y-auto overflow-x-hidden bg-black pb-[max(env(safe-area-inset-bottom),0.5rem)] lg:pb-0"
           >
-            <WorkspaceTopbar section={section} />
+            {!community ? <WorkspaceTopbar section={section} /> : null}
             <section className="min-h-full">{children}</section>
           </main>
         </div>
