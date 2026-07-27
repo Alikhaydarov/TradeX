@@ -17,7 +17,7 @@ import "./quality-overrides.css";
 import "./dashboard-cleanups.css";
 import "./workspace-design-system.css";
 import "./typography.css";
-import "./floating-actions-layout.css";
+import "./ai-launcher-layout.css";
 import "./dashboard-reference-layout.css";
 import "./workspace-visual-refresh.css";
 import "./workspace-docked-shell.css";
