@@ -15,8 +15,6 @@ import {
   ShieldCheck,
   Tag,
   Trash2,
-  TrendingDown,
-  TrendingUp,
   X,
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";

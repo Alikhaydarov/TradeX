@@ -1,0 +1,100 @@
+name: App Router UI parity
+
+on:
+  push:
+    branches:
+      - agent/app-router-ui-parity-v2
+    paths:
+      - "src/**"
+      - "tools/**"
+      - "package.json"
+      - "package-lock.json"
+      - "next.config.*"
+      - "tsconfig.json"
+      - ".github/workflows/app-router-ui-parity.yml"
+      - "docs/ui-parity-progress.md"
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "src/**"
+      - "tools/**"
+      - "package.json"
+      - "package-lock.json"
+      - "next.config.*"
+      - "tsconfig.json"
+      - ".github/workflows/app-router-ui-parity.yml"
+      - "docs/ui-parity-progress.md"
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Upload refactor source snapshot
+        uses: actions/upload-artifact@v4
+        with:
+          name: refactor-source
+          path: |
+            src/components/profile
+            src/components/journal
+            src/components/chat
+            src/components/journal-v2.tsx
+            src/components/calendar-workspace-v3.tsx
+            src/components/section-config.ts
+          if-no-files-found: error
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Verify UI parity scope
+        run: npm run check:ui-parity
+
+      - name: Upload Tailwind ownership audit
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ui-parity-audit
+          path: ui-parity-audit.json
+          if-no-files-found: warn
+
+      - name: Lint and capture log
+        id: lint
+        shell: bash
+        run: |
+          set +e
+          npm run lint > lint.log 2>&1
+          status=$?
+          echo "status=$status" >> "$GITHUB_OUTPUT"
+          tail -n 200 lint.log
+          exit 0
+
+      - name: Upload lint log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lint-log
+          path: lint.log
+          if-no-files-found: error
+
+      - name: Fail when lint failed
+        if: steps.lint.outputs.status != '0'
+        run: exit 1
+
+      - name: Production build
+        run: npm run build

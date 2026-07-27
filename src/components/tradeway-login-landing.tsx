@@ -5,6 +5,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 
+import { AUTH_LANDING_TAILWIND_CLASS } from "./tailwind/auth-tailwind-classes";
+
 const PLATFORMS = [
   { name: "Tradovate", logo: "/platforms/tradovate.png", note: "Futures" },
   { name: "cTrader", logo: "/platforms/ctrader.svg", note: "Forex & CFD" },
@@ -117,7 +119,7 @@ export function TradeWayLoginLanding({
   }, []);
 
   return (
-    <main ref={shellRef} className="auth3-shell">
+    <main ref={shellRef} className={AUTH_LANDING_TAILWIND_CLASS}>
       <div className="auth3-noise" aria-hidden="true" />
       <nav className="auth3-nav">
         <Link href="/" className="auth3-logo" aria-label="Tradox home"><b>TD</b><span>Tradox</span></Link>

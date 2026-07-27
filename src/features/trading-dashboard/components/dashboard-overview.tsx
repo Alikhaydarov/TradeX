@@ -3,7 +3,7 @@
 import type { ComponentProps } from "react"
 import { useCallback, useEffect, useMemo, useState } from "react"
 
-import styles from "./dashboard-overview-mobile.module.css"
+import { DASHBOARD_MOBILE_TAILWIND_CLASS } from "./dashboard-overview-mobile-tailwind"
 import { DashboardOverviewMobile } from "./dashboard-overview-mobile"
 import { DashboardOverviewResponsive } from "./dashboard-overview-responsive"
 
@@ -103,7 +103,7 @@ export function DashboardOverview(props: DashboardOverviewProps) {
 
   return (
     <>
-      <div className={`${styles.mobileRoot} lg:hidden`}>
+      <div className={`${DASHBOARD_MOBILE_TAILWIND_CLASS} lg:hidden`}>
         <DashboardOverviewMobile {...dashboardProps} />
       </div>
       <div className="hidden lg:block">

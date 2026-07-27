@@ -1,11 +1,17 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import { usePathname } from "next/navigation";
 
-import { ChatLayout } from "@/components/chat/chat-layout";
+import { WorkspaceSectionSkeleton } from "./workspace-section-skeleton";
 import { CommunityDetailPremium } from "@/features/community/components/community-detail-premium";
 import { CommunityHubPremium } from "@/features/community/components/community-hub-premium";
 import type { CommunitySection } from "@/features/community/components/community-sidebar";
+
+const ChatPage = dynamic(
+  () => import("@/components/chat/chat-page").then((module) => module.ChatPage),
+  { ssr: false, loading: () => <WorkspaceSectionSkeleton /> },
+);
 
 const VALID_TABS = new Set<CommunitySection>([
   "overview",
@@ -32,7 +38,7 @@ export function CommunityWorkspace() {
   const route = communityRoute(pathname);
 
   if (!route) return <CommunityHubPremium />;
-  if (route.tab === "chat") return <ChatLayout communityId={route.communityId} />;
+  if (route.tab === "chat") return <ChatPage communityId={route.communityId} />;
 
   return (
     <CommunityDetailPremium

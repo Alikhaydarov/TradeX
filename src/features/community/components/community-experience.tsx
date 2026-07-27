@@ -16,6 +16,7 @@ import {
   X,
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 
 import { apiRequest } from "@/lib/api-client";
 import { TraderAvatar } from "@/components/trader-avatar";
@@ -105,13 +106,6 @@ const money = new Intl.NumberFormat("en-US", {
 });
 
 const CARD = "rounded-xl border border-white/8 bg-[#070707]";
-const MUTED = "text-[11px] text-zinc-500";
-
-function go(path: string) {
-  window.history.pushState(null, "", path);
-  window.dispatchEvent(new Event("popstate"));
-}
-
 function EmptyState({ title, text }: { title: string; text: string }) {
   return (
     <div className={`${CARD} grid min-h-48 place-items-center px-4 text-center`}>
@@ -147,6 +141,7 @@ function SectionTitle({
 }
 
 export function CommunityHub() {
+  const router = useRouter();
   const [data, setData] = useState<HubData | null>(null);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
@@ -183,7 +178,7 @@ export function CommunityHub() {
         body: JSON.stringify({ action: "create", name, description }),
       });
       window.dispatchEvent(new Event("tradox:community-membership-changed"));
-      go(`/community/${response.community.id}/overview`);
+      router.push(`/community/${response.community.id}/overview`);
     } catch (nextError) {
       setError(nextError instanceof Error ? nextError.message : "Community could not be created.");
     } finally {
@@ -202,7 +197,7 @@ export function CommunityHub() {
       });
       window.dispatchEvent(new Event("tradox:community-membership-changed"));
       await load();
-      if (decision === "accept") go(`/community/${communityId}/overview`);
+      if (decision === "accept") router.push(`/community/${communityId}/overview`);
     } catch (nextError) {
       setError(nextError instanceof Error ? nextError.message : "Invitation could not be updated.");
     } finally {
@@ -325,7 +320,7 @@ export function CommunityHub() {
               <button
                 key={community.id}
                 type="button"
-                onClick={() => go(`/community/${community.id}/overview`)}
+                onClick={() => router.push(`/community/${community.id}/overview`)}
                 className={`${CARD} group min-h-44 p-3 text-left transition hover:border-white/16 hover:bg-[#0a0a0a]`}
               >
                 <div className="flex items-start gap-2.5">
@@ -426,6 +421,7 @@ export function CommunityDetail({
   communityId: string;
   activeTab: CommunitySection;
 }) {
+  const router = useRouter();
   const [data, setData] = useState<DetailData | null>(null);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
@@ -462,7 +458,7 @@ export function CommunityDetail({
     void load();
   }, [load]);
 
-  const navigate = (tab: CommunitySection) => go(`/community/${communityId}/${tab}`);
+  const navigate = (tab: CommunitySection) => router.push(`/community/${communityId}/${tab}`);
 
   const saveShares = async () => {
     if (busy) return;
@@ -538,7 +534,7 @@ export function CommunityDetail({
         <div className={`${CARD} p-5`}>
           <h1 className="text-base font-bold text-white">Community unavailable</h1>
           <p className="mt-1 text-xs leading-5 text-zinc-600">{error || "The community may have been removed or your invitation is not active."}</p>
-          <Button type="button" onClick={() => go("/community")} className="mt-4 h-8 text-xs">
+          <Button type="button" onClick={() => router.push("/community")} className="mt-4 h-8 text-xs">
             <ArrowLeft size={14} /> My communities
           </Button>
         </div>
@@ -555,7 +551,7 @@ export function CommunityDetail({
         <div className="flex min-w-0 items-center gap-3">
           <button
             type="button"
-            onClick={() => go("/community")}
+            onClick={() => router.push("/community")}
             className="grid size-9 shrink-0 place-items-center rounded-lg border border-white/8 bg-[#0b0b0b] text-zinc-500 transition hover:text-white lg:hidden"
           >
             <ArrowLeft size={16} />

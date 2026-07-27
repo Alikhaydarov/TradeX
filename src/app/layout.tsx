@@ -1,33 +1,40 @@
 import type { Metadata } from "next";
+import type { CSSProperties } from "react";
 import { DM_Sans } from "next/font/google";
-import { AppShell } from "@/components/app-shell";
 import { AccountCardMenuBridge } from "@/components/account-card-menu-bridge";
 import { AuthProvider } from "@/components/auth-context";
 import { FloatingAddTradeButton } from "@/components/floating-add-trade-button";
 import { MobileTradesBridge } from "@/components/mobile-trades-bridge";
-import { ProAiCoachLauncher } from "@/components/pro-ai-coach-launcher";
+import { ProAiCoachLauncherBoundary } from "@/components/pro-ai-coach-launcher-boundary";
+import { APP_ROOT_TAILWIND_CLASS } from "@/components/tailwind/app-tailwind-classes";
+import { WorkspaceTailwindBoundary } from "@/components/tailwind/workspace-tailwind-boundary";
+import { WorkspaceAppRouterShellV2 } from "@/components/workspace-app-router-shell-v2";
 import { AppRouterCacheProvider } from "@mui/material-nextjs/v16-appRouter";
 import { getSupabaseServerClient } from "@/lib/supabase/server";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
 import "./globals.css";
-import "./auth-landing-v2.css";
-import "./onyx-overrides.css";
-import "./responsive-fixes.css";
-import "./quality-overrides.css";
-import "./dashboard-cleanups.css";
-import "./workspace-design-system.css";
-import "./typography.css";
-import "./floating-actions-layout.css";
-import "./dashboard-reference-layout.css";
-import "./workspace-visual-refresh.css";
-import "./workspace-docked-shell.css";
-import "./community-ui-fixes.css";
 
 const dmSans = DM_Sans({
   variable: "--font-dm-sans",
   subsets: ["latin"],
   display: "swap",
 });
+
+const appFontVariables = {
+  "--font-app":
+    'var(--font-dm-sans), "DM Sans", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+  "--font-inter": "var(--font-app)",
+  "--font-geist-mono": "var(--font-app)",
+} as CSSProperties;
+
+const appTypographyClass = [
+  "font-sans antialiased [font-synthesis:none] [text-rendering:optimizeLegibility]",
+  "[&_.font-heading]:font-sans [&_.font-mono]:font-sans [&_.font-mono]:tabular-nums [&_.font-mono]:tracking-[-0.015em]",
+  "[&_.MuiTypography-root]:font-sans [&_.MuiButton-root]:font-sans [&_.MuiInputBase-root]:font-sans",
+  "[&_.MuiFormLabel-root]:font-sans [&_.MuiChip-root]:font-sans [&_.MuiTooltip-tooltip]:font-sans",
+  "[&_.MuiMenuItem-root]:font-sans [&_.MuiTab-root]:font-sans [&_.MuiTableCell-root]:font-sans",
+  "[&_.recharts-text]:font-sans [&_.recharts-cartesian-axis-tick-value]:font-sans [&_.recharts-tooltip-wrapper]:font-sans",
+].join(" ");
 
 export const metadata: Metadata = {
   title: "Tradox",
@@ -46,19 +53,24 @@ export default async function RootLayout({
     : { data: { user: null } };
 
   return (
-    <html lang="en" className={`dark ${dmSans.variable}`}>
-      <body className="font-sans antialiased">
+    <html
+      lang="en"
+      className={`dark ${dmSans.variable}`}
+      style={appFontVariables}
+    >
+      <body className={`${appTypographyClass} ${APP_ROOT_TAILWIND_CLASS}`}>
         <AppRouterCacheProvider options={{ enableCssLayer: true }}>
           <AuthProvider
             initialUser={data.user}
             initialConfigured={configured}
           >
-            <AppShell />
+            <WorkspaceTailwindBoundary>
+              <WorkspaceAppRouterShellV2>{children}</WorkspaceAppRouterShellV2>
+            </WorkspaceTailwindBoundary>
             <AccountCardMenuBridge />
             <FloatingAddTradeButton />
             <MobileTradesBridge />
-            <ProAiCoachLauncher />
-            <div className="hidden">{children}</div>
+            <ProAiCoachLauncherBoundary />
           </AuthProvider>
         </AppRouterCacheProvider>
       </body>

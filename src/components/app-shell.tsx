@@ -42,7 +42,8 @@ const FeedV3 = dynamic(
   { ssr: false, loading: () => <WorkspaceSectionSkeleton /> },
 );
 const Account = dynamic(
-  () => import("./account").then((module) => module.Account),
+  () =>
+    import("./profile/profile-page").then((module) => module.ProfilePage),
   { ssr: false, loading: () => <WorkspaceSectionSkeleton /> },
 );
 const AdminPanel = dynamic(

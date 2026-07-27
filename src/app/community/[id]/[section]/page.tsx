@@ -1,7 +1,10 @@
 import type { Metadata } from "next";
+import { notFound } from "next/navigation";
+
+import { CommunityRouteContent } from "@/components/routes/workspace-route-content";
 
 type CommunitySectionPageProps = {
-  params: Promise<{ section: string }>;
+  params: Promise<{ id: string; section: string }>;
 };
 
 const TITLES: Record<string, string> = {
@@ -21,6 +24,10 @@ export async function generateMetadata({
   };
 }
 
-export default function CommunitySectionRoute() {
-  return null;
+export default async function CommunitySectionRoute({
+  params,
+}: CommunitySectionPageProps) {
+  const { section } = await params;
+  if (!TITLES[section]) notFound();
+  return <CommunityRouteContent />;
 }
