@@ -1,11 +1,11 @@
 import type { Metadata } from "next";
 import { DM_Sans } from "next/font/google";
-import { AppShell } from "@/components/app-shell";
 import { AccountCardMenuBridge } from "@/components/account-card-menu-bridge";
 import { AuthProvider } from "@/components/auth-context";
 import { FloatingAddTradeButton } from "@/components/floating-add-trade-button";
 import { MobileTradesBridge } from "@/components/mobile-trades-bridge";
 import { ProAiCoachLauncher } from "@/components/pro-ai-coach-launcher";
+import { WorkspaceAppRouterShell } from "@/components/workspace-app-router-shell";
 import { AppRouterCacheProvider } from "@mui/material-nextjs/v16-appRouter";
 import { getSupabaseServerClient } from "@/lib/supabase/server";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
@@ -53,12 +53,11 @@ export default async function RootLayout({
             initialUser={data.user}
             initialConfigured={configured}
           >
-            <AppShell />
+            <WorkspaceAppRouterShell>{children}</WorkspaceAppRouterShell>
             <AccountCardMenuBridge />
             <FloatingAddTradeButton />
             <MobileTradesBridge />
             <ProAiCoachLauncher />
-            <div className="hidden">{children}</div>
           </AuthProvider>
         </AppRouterCacheProvider>
       </body>
