@@ -11,7 +11,7 @@ permissions:
 jobs:
   quality:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 30
 
     steps:
       - name: Checkout
@@ -75,3 +75,6 @@ jobs:
 
       - name: Lighthouse desktop audit
         run: npx --yes @lhci/cli@0.15.1 autorun
+
+      - name: Lighthouse mobile audit
+        run: npx --yes @lhci/cli@0.15.1 autorun --config=./lighthouserc.mobile.json
