@@ -50,6 +50,7 @@ import {
   AlertDialogTrigger,
 } from "./ui/alert-dialog";
 import dynamic from "next/dynamic";
+import { useRouter } from "next/navigation";
 import { Button } from "./ui/button";
 import { Card, CardContent } from "./ui/card";
 import { Checkbox } from "./ui/checkbox";
@@ -379,6 +380,7 @@ export function JournalV2({
   forcedTab?: WorkspaceTab;
 }) {
   const { user } = useAuth();
+  const router = useRouter();
   const {
     accounts,
     activeAccountId,
@@ -411,18 +413,17 @@ export function JournalV2({
     const params = new URLSearchParams(window.location.search);
     if (params.get("new") !== "1") return;
     setAccountOpen(true);
-    window.history.replaceState(null, "", "/accounts");
+    router.replace("/accounts");
   }, [mode]);
 
   const openTradeComposer = useCallback(() => {
     if (mode === "workspace" && !activeAccountId) {
       setError("Select an account before adding a trade.");
-      window.history.pushState(null, "", "/accounts");
-      window.dispatchEvent(new Event("popstate"));
+      router.push("/accounts");
       return;
     }
     setTradeOpen(true);
-  }, [activeAccountId, mode]);
+  }, [activeAccountId, mode, router]);
 
   // Accounts are loaded once by ActiveAccountProvider on mount. Never call
   // refreshAccounts() from inside loadEntries: doing so toggles accountsLoading,
@@ -949,16 +950,16 @@ export function JournalV2({
     const next = new Date(month.getFullYear(), monthIndex, 1);
     setMonth(next);
     setCalendarView("month");
-    window.history.pushState(null, "", `/calendar/${next.getFullYear()}/${next.getMonth() + 1}`);
+    router.push(`/calendar/${next.getFullYear()}/${next.getMonth() + 1}`);
   };
   const openCalendarOverview = () => {
     setCalendarView("year");
-    window.history.pushState(null, "", "/calendar");
+    router.push("/calendar");
   };
   const shiftCalendarYear = (delta: number) => setMonth((current) => new Date(current.getFullYear() + delta, current.getMonth(), 1));
   const shiftMonth = (delta: number) => setMonth((current) => {
     const next = new Date(current.getFullYear(), current.getMonth() + delta, 1);
-    if (calendarView === "month") window.history.pushState(null, "", `/calendar/${next.getFullYear()}/${next.getMonth() + 1}`);
+    if (calendarView === "month") router.push(`/calendar/${next.getFullYear()}/${next.getMonth() + 1}`);
     return next;
   });
   const exportCsv = () => {
@@ -1063,7 +1064,7 @@ export function JournalV2({
             onToday={() => {
               const today = new Date();
               setMonth(today);
-              if (calendarView === "month") window.history.pushState(null, "", `/calendar/${today.getFullYear()}/${today.getMonth() + 1}`);
+              if (calendarView === "month") router.push(`/calendar/${today.getFullYear()}/${today.getMonth() + 1}`);
             }}
             onCalendarMonthSelect={openCalendarMonth}
             onCalendarOverview={openCalendarOverview}
@@ -1092,8 +1093,7 @@ export function JournalV2({
                 type="button"
                 className="h-11 rounded-2xl bg-white px-4 text-black hover:bg-zinc-200"
                 onClick={() => {
-                  window.history.pushState(null, "", "/accounts");
-                  window.dispatchEvent(new Event("popstate"));
+                  router.push("/accounts");
                 }}
               >
                 Open accounts
@@ -1109,8 +1109,7 @@ export function JournalV2({
           onAdd={() => setAccountOpen(true)}
           onOpen={(id) => {
             setActiveAccount(id);
-            window.history.pushState(null, "", "/dashboard");
-            window.dispatchEvent(new Event("popstate"));
+            router.push("/dashboard");
           }}
           onDelete={removeAccount}
         />
@@ -1308,6 +1307,7 @@ function Workspace(p: {
     embedded = false,
     forcedTab,
   } = p;
+  const router = useRouter();
   const { pnlMode, tradeSort, setTradeSort, formatPnl } =
     useWorkspacePreferences();
   const [selectedTrade, setSelectedTrade] = useState<JournalEntry | null>(null);
@@ -1435,15 +1435,15 @@ function Workspace(p: {
 
   const openTrade = useCallback((trade: JournalEntry) => {
     setSelectedTrade(trade);
-    window.history.pushState(null, "", `/trades/${trade.id}`);
-  }, []);
+    router.push(`/trades/${trade.id}`);
+  }, [router]);
 
   const closeTrade = useCallback(() => {
     setSelectedTrade(null);
     if (window.location.pathname.startsWith("/trades/")) {
-      window.history.pushState(null, "", "/trades");
+      router.push("/trades");
     }
-  }, []);
+  }, [router]);
 
   const loadCoach = useCallback(async () => {
     setCoachLoading(true);

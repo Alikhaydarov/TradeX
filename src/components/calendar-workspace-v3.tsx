@@ -10,6 +10,7 @@ import {
   TrendingUp,
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { usePathname, useRouter } from "next/navigation";
 import {
   Area,
   AreaChart,
@@ -156,10 +157,6 @@ function currentRoute(): RouteState {
   return { mode: "journal", year: now.getFullYear(), month: now.getMonth(), monthly: false };
 }
 
-function navigate(path: string) {
-  window.history.pushState(null, "", path);
-  window.dispatchEvent(new Event("popstate"));
-}
 
 function monthName(year: number, month: number) {
   return new Date(year, month, 1).toLocaleDateString("en-US", { month: "long", year: "numeric" });
@@ -234,6 +231,8 @@ function CompactStat({ label, value, valueClass = "text-white" }: { label: strin
 }
 
 export function CalendarWorkspaceV3() {
+  const pathname = usePathname();
+  const router = useRouter();
   const { accounts, activeAccountId, loading: accountsLoading } = useActiveAccountStore();
   const activeAccount = accounts.find((account) => account.id === activeAccountId) || null;
 
@@ -248,13 +247,9 @@ export function CalendarWorkspaceV3() {
   const [yearFilter, setYearFilter] = useState<string>("all");
 
   useEffect(() => {
-    const sync = () => {
-      setRoute(currentRoute());
-      setDayDialogOpen(false);
-    };
-    window.addEventListener("popstate", sync);
-    return () => window.removeEventListener("popstate", sync);
-  }, []);
+    setRoute(currentRoute());
+    setDayDialogOpen(false);
+  }, [pathname]);
 
   useEffect(() => {
     if (!activeAccountId) {
@@ -380,12 +375,12 @@ export function CalendarWorkspaceV3() {
   const shiftMonth = (delta: number) => {
     const next = new Date(route.year, route.month + delta, 1);
     const base = route.mode === "economic" ? "/economic-calendar" : "/calendar";
-    navigate(`${base}/${next.getFullYear()}/${next.getMonth() + 1}`);
+    router.push(`${base}/${next.getFullYear()}/${next.getMonth() + 1}`);
   };
 
   const switchMode = (mode: CalendarMode) => {
     const base = mode === "economic" ? "/economic-calendar" : "/calendar";
-    navigate(`${base}/${route.year}/${route.month + 1}`);
+    router.push(`${base}/${route.year}/${route.month + 1}`);
   };
 
   const openDay = (day: number) => {
@@ -409,7 +404,7 @@ export function CalendarWorkspaceV3() {
           <CalendarDays className="mx-auto size-7 text-zinc-600" />
           <h2 className="mt-4 text-xl font-bold text-white">Select an account first</h2>
           <p className="mt-2 text-sm text-zinc-500">Calendar performance follows the active trading account.</p>
-          <Button className="mt-5" onClick={() => navigate("/accounts")}>Open accounts</Button>
+          <Button className="mt-5" onClick={() => router.push("/accounts")}>Open accounts</Button>
         </div>
       </div>
     );
@@ -438,7 +433,7 @@ export function CalendarWorkspaceV3() {
               if (value !== "all") setRoute((current) => ({ ...current, year: Number(value) }));
             }}
             onShift={(delta) => setRoute((current) => ({ ...current, year: current.year + delta }))}
-            onOpen={(month) => navigate(`/calendar/${route.year}/${month + 1}`)}
+            onOpen={(month) => router.push(`/calendar/${route.year}/${month + 1}`)}
           />
         ) : (
           <MonthlyCalendar
@@ -450,7 +445,7 @@ export function CalendarWorkspaceV3() {
             newsLoading={newsLoading}
             newsLimited={newsLimited}
             stats={{ total: monthEntries.length, tradingDays, realizedR, mostTraded, winRate, pnl: monthPnl, monthReturn }}
-            onBack={() => navigate("/calendar")}
+            onBack={() => router.push("/calendar")}
             onShift={shiftMonth}
             onRefresh={() => void loadNews()}
             onOpenDay={openDay}
