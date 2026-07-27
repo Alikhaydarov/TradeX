@@ -40,6 +40,17 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Upload refactor source snapshot
+        uses: actions/upload-artifact@v4
+        with:
+          name: refactor-source
+          path: |
+            src/components/account.tsx
+            src/components/journal-v2.tsx
+            src/components/calendar-workspace-v3.tsx
+            src/components/section-config.ts
+          if-no-files-found: error
+
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
