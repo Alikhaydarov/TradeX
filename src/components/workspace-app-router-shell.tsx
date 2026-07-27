@@ -31,6 +31,15 @@ import { WorkspaceTopbar } from "./workspace-topbar";
 import { TradeWayLoginLanding } from "./tradeway-login-landing";
 import type { WorkspaceTab } from "./journal-v2";
 
+const APP_ROUTER_CONTENT_PATHS = new Set([
+  "/",
+  "/accounts",
+  "/dashboard",
+  "/trades",
+  "/analytics",
+  "/calendar",
+]);
+
 const UserSettingsDialog = dynamic(
   () =>
     import("./user-settings-dialog").then(
@@ -283,7 +292,7 @@ function WorkspaceAppRouterShellInner({ children }: { children: ReactNode }) {
     );
   };
 
-  const routeOwnsContent = pathname === "/";
+  const routeOwnsContent = APP_ROUTER_CONTENT_PATHS.has(pathname);
   const routeContent = routeOwnsContent ? children : renderLegacySection(section);
 
   if (!user && section === "pricing") {
