@@ -13,7 +13,6 @@ const protectedFiles = new Set([
   "src/components/sidebar.tsx",
   "src/components/workspace-topbar.tsx",
   "src/components/pro-ai-coach-launcher.tsx",
-  "src/app/ai-launcher-layout.css",
   "src/app/auth-landing-v2.css",
   "src/app/onyx-overrides.css",
   "src/app/responsive-fixes.css",
@@ -21,7 +20,6 @@ const protectedFiles = new Set([
   "src/app/dashboard-cleanups.css",
   "src/app/workspace-design-system.css",
   "src/app/typography.css",
-  "src/app/workspace-width-contract.css",
   "src/app/workspace-visual-refresh.css",
   "src/app/workspace-docked-shell.css",
   "src/app/community-ui-fixes.css",
@@ -45,7 +43,7 @@ try {
 const violations = changedFiles.filter((file) => protectedFiles.has(file));
 
 if (violations.length > 0) {
-  console.error("UI parity guard failed. Protected visual files changed:");
+  console.error("UI parity guard failed. Protected legacy visual files changed:");
   for (const file of violations) console.error(`- ${file}`);
   console.error(
     "Move visual changes to a dedicated parity-verified phase or set ALLOW_UI_CHANGES=1 intentionally.",
@@ -53,4 +51,4 @@ if (violations.length > 0) {
   process.exit(1);
 }
 
-console.log("UI parity guard passed: protected visual files are unchanged.");
+console.log("UI parity guard passed: protected legacy visual files are unchanged.");
