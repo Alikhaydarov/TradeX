@@ -1,4 +1,4 @@
-import { readdirSync, readFileSync } from "node:fs";
+import { readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { extname, join, relative } from "node:path";
 
 if (process.env.ALLOW_UI_CHANGES === "1") {
@@ -20,13 +20,6 @@ const sourceCssFiles = sourceFiles
   .sort();
 const allowedCssFiles = ["src/app/globals.css"];
 
-if (JSON.stringify(sourceCssFiles) !== JSON.stringify(allowedCssFiles)) {
-  console.error("Tailwind-only guard failed. Runtime CSS files are:");
-  for (const file of sourceCssFiles) console.error(`- ${file}`);
-  console.error(`Expected only: ${allowedCssFiles.join(", ")}`);
-  process.exit(1);
-}
-
 const sourceModules = sourceFiles.filter((file) =>
   [".ts", ".tsx", ".js", ".jsx"].includes(extname(file)),
 );
@@ -38,6 +31,20 @@ const cssImports = sourceModules.flatMap((file) => {
     statement: match[0],
   }));
 });
+
+const audit = {
+  sourceCssFiles,
+  allowedCssFiles,
+  cssImports,
+};
+writeFileSync("ui-parity-audit.json", `${JSON.stringify(audit, null, 2)}\n`);
+
+if (JSON.stringify(sourceCssFiles) !== JSON.stringify(allowedCssFiles)) {
+  console.error("Tailwind-only guard failed. Runtime CSS files are:");
+  for (const file of sourceCssFiles) console.error(`- ${file}`);
+  console.error(`Expected only: ${allowedCssFiles.join(", ")}`);
+  process.exit(1);
+}
 
 const validImports = cssImports.filter(
   ({ file, statement }) =>
