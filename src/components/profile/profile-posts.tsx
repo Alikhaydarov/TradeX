@@ -32,62 +32,72 @@ export function ProfilePosts({
       : posts;
 
   return (
-    <section className="overflow-hidden rounded-2xl border border-white/8 bg-[#090909]">
-      <div className="grid grid-cols-2 border-b border-white/8">
-        {(["posts", "media"] as const).map((tab) => (
-          <button
-            key={tab}
-            type="button"
-            onClick={() => onTabChange(tab)}
-            className={`relative h-12 text-sm font-semibold capitalize transition hover:bg-white/[.03] ${
-              activeTab === tab ? "text-white" : "text-zinc-600"
-            }`}
-          >
-            {tab}
-            {activeTab === tab ? (
-              <span className="absolute inset-x-8 bottom-0 h-0.5 rounded-full bg-white" />
-            ) : null}
-          </button>
-        ))}
+    <section className="border-b border-border bg-card sm:mt-2 sm:overflow-hidden sm:rounded-lg sm:border">
+      <div className="relative z-10 grid grid-cols-2 border-b border-border bg-card">
+        {(["posts", "media"] as const).map((tab) => {
+          const active = activeTab === tab;
+          return (
+            <button
+              key={tab}
+              type="button"
+              onClick={() => onTabChange(tab)}
+              className={`relative min-w-0 px-2 py-3 text-xs font-black capitalize transition-colors ${
+                active
+                  ? "text-white"
+                  : "text-zinc-500 hover:bg-white/[.03] hover:text-zinc-300"
+              }`}
+            >
+              {tab}
+              {active ? (
+                <span className="absolute inset-x-8 bottom-0 h-0.5 rounded-full bg-white" />
+              ) : null}
+            </button>
+          );
+        })}
       </div>
 
       {visible.length ? (
-        <div className="divide-y divide-white/8">
+        <div className="relative z-0">
           {visible.map((post) => (
-            <article key={post.id} className="p-4 transition hover:bg-white/[.018] sm:p-5">
-              <div className="grid grid-cols-[40px_minmax(0,1fr)] gap-3 sm:grid-cols-[46px_minmax(0,1fr)]">
+            <article
+              key={post.id}
+              className="group border-b border-white/8 bg-[#111111] px-4 py-5 last:border-b-0 transition hover:bg-[#141414] sm:px-6"
+            >
+              <div className="grid grid-cols-[40px_minmax(0,1fr)] gap-3 sm:grid-cols-[48px_minmax(0,1fr)] sm:gap-4">
                 <TraderAvatar
                   name={post.name}
                   value={post.avatar}
-                  className="size-10 rounded-full text-xs ring-1 ring-white/10 sm:size-11"
+                  className="mt-1 size-10 shrink-0 rounded-full text-xs ring-2 ring-white/5 transition group-hover:ring-white/15 sm:size-12"
                 />
                 <div className="min-w-0">
-                  <div className="flex flex-wrap items-center gap-1.5 text-sm">
-                    <strong className="truncate text-white">{post.name}</strong>
+                  <div className="flex min-w-0 flex-wrap items-center gap-x-1.5 gap-y-0.5 text-[13px] leading-5 sm:text-sm">
+                    <strong className="max-w-full truncate font-black text-white">
+                      {post.name}
+                    </strong>
                     {post.isVerified ? <VerifiedBadge size={15} /> : null}
-                    <span className="truncate text-xs text-zinc-600">{post.handle}</span>
-                    <span className="text-xs text-zinc-700">·</span>
-                    <span className="text-xs text-zinc-600">{post.time}</span>
+                    <span className="truncate text-xs text-slate-500">{post.handle}</span>
+                    <span className="text-xs text-slate-700">/</span>
+                    <span className="text-xs text-slate-500">{post.time}</span>
                   </div>
 
                   {post.symbol ? (
-                    <div className="mt-3 flex flex-wrap items-center gap-2 rounded-xl border border-white/8 bg-black/30 px-3 py-2.5">
-                      <InstrumentBadge symbol={post.symbol} compact className="mr-auto bg-[#121212]" />
-                      <span
-                        className={`text-[10px] font-semibold ${
-                          post.side === "LONG" ? "text-emerald-300" : "text-rose-300"
-                        }`}
-                      >
+                    <div className="mt-3 flex flex-wrap items-center gap-2 rounded-2xl border border-white/8 bg-black px-3 py-2.5 shadow-[inset_0_1px_0_rgba(255,255,255,.04)]">
+                      <InstrumentBadge
+                        symbol={post.symbol}
+                        compact
+                        className="mr-auto rounded-xl bg-[#131313]"
+                      />
+                      <span className="text-[10px] font-black text-zinc-300">
                         {post.side}
                       </span>
                       {post.result ? (
                         <span
-                          className={`text-[10px] font-semibold ${
+                          className={`text-[10px] font-black ${
                             post.result === "WIN"
                               ? "text-emerald-300"
                               : post.result === "LOSS"
                                 ? "text-rose-300"
-                                : "text-zinc-400"
+                                : "text-zinc-300"
                           }`}
                         >
                           {post.result}
@@ -95,9 +105,11 @@ export function ProfilePosts({
                       ) : null}
                       {typeof post.pnl === "number" ? (
                         <strong
-                          className={`font-mono text-sm ${
-                            post.pnl >= 0 ? "text-emerald-300" : "text-rose-300"
-                          }`}
+                          className={
+                            post.pnl >= 0
+                              ? "text-sm text-emerald-300"
+                              : "text-sm text-rose-300"
+                          }
                         >
                           {post.pnl >= 0 ? "+" : ""}${post.pnl.toFixed(2)}
                         </strong>
@@ -106,19 +118,19 @@ export function ProfilePosts({
                   ) : null}
 
                   {post.text ? (
-                    <p className="mt-3 whitespace-pre-line break-words text-[15px] leading-6 text-zinc-200">
+                    <p className="mt-2 whitespace-pre-line break-words text-[15px] leading-6 text-slate-50">
                       {post.text}
                     </p>
                   ) : null}
 
                   <ProfilePostMedia post={post} />
 
-                  <div className="mt-3 grid max-w-md grid-cols-5 text-zinc-600">
-                    <Metric icon={<MessageCircle className="size-4" />} value={post.replies} />
-                    <Metric icon={<Repeat2 className="size-4" />} value={post.reposts} />
-                    <Metric icon={<Heart className="size-4" />} value={post.likes} />
-                    <Metric icon={<Eye className="size-4" />} value={formatCount(post.views)} />
-                    <Metric icon={<Bookmark className="size-4" />} value="" />
+                  <div className="mt-3 grid max-w-md grid-cols-5 text-slate-500">
+                    <Metric icon={<MessageCircle size={16} />} value={post.replies} />
+                    <Metric icon={<Repeat2 size={16} />} value={post.reposts} />
+                    <Metric icon={<Heart size={16} />} value={post.likes} />
+                    <Metric icon={<Eye size={16} />} value={formatCount(post.views)} />
+                    <Metric icon={<Bookmark size={16} />} value="" />
                   </div>
                 </div>
               </div>
@@ -128,14 +140,12 @@ export function ProfilePosts({
       ) : (
         <div className="grid min-h-64 place-items-center px-8 text-center">
           <div>
-            <ImageIcon className="mx-auto size-7 text-zinc-700" />
-            <h3 className="mt-4 text-lg font-semibold text-white">
+            <ImageIcon className="mx-auto text-slate-600" size={36} />
+            <h3 className="mt-4 text-2xl font-black text-white">
               {activeTab === "posts" ? "No posts yet" : "No media yet"}
             </h3>
-            <p className="mt-2 text-sm text-zinc-600">
-              {activeTab === "posts"
-                ? "Shared trade reviews will appear here."
-                : "Image posts will appear here."}
+            <p className="mt-2 text-sm text-slate-500">
+              {activeTab === "posts" ? "Posts will appear here." : "Image posts will appear here."}
             </p>
           </div>
         </div>
@@ -189,7 +199,7 @@ function Metric({
   value: string | number;
 }) {
   return (
-    <span className="flex h-8 items-center gap-1.5 rounded-full text-[12px]">
+    <span className="flex h-8 items-center gap-1.5 rounded-full text-[12px] transition hover:text-zinc-300">
       {icon}
       {value}
     </span>
