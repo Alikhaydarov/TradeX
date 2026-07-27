@@ -298,9 +298,11 @@ function WorkspaceAppRouterShellInner({ children }: { children: ReactNode }) {
 
   const routeOwnsContent =
     APP_ROUTER_CONTENT_PATHS.has(pathname) ||
+    pathname.startsWith("/calendar/") ||
     profileUsername.length > 0 ||
     tradeId !== null ||
-    communityRoute !== null;
+    communityRoute !== null ||
+    (section === "admin" && isAdmin === true);
   const routeContent = routeOwnsContent ? children : renderLegacySection(section);
 
   if (!user && section === "pricing") {
