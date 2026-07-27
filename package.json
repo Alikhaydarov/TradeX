@@ -7,6 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
+    "check:ui-parity": "node tools/check-ui-parity-scope.mjs",
     "check:billing": "node tools/check-billing-env.mjs"
   },
   "dependencies": {
