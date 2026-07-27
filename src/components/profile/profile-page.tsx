@@ -92,7 +92,8 @@ export function ProfilePage({ onLogin, profileUsername }: ProfilePageProps) {
           isOwnProfile={controller.isOwnProfile}
           saved={controller.saved}
           uploadingBanner={controller.uploadingBanner}
-            postCount={controller.posts.length}
+          bannerInputRef={controller.bannerInputRef}
+          postCount={controller.posts.length}
           followLoading={controller.followLoading}
           onBannerFile={(file) => void controller.uploadBanner(file)}
           onSignOut={() => void controller.signOut()}
@@ -140,7 +141,6 @@ export function ProfilePage({ onLogin, profileUsername }: ProfilePageProps) {
         uploadingAvatar={controller.uploadingAvatar}
         uploadingBanner={controller.uploadingBanner}
         avatarInputRef={controller.avatarInputRef}
-        bannerInputRef={controller.bannerInputRef}
         onOpenChange={controller.setEditOpen}
         onProfileChange={controller.setDraftProfile}
         onAvatarFile={(file) => void controller.uploadAvatar(file)}
