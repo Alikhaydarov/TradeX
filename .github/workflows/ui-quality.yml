@@ -26,6 +26,9 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Tailwind UI audit
+        run: npm run audit:ui
+
       - name: ESLint and capture report
         id: eslint
         shell: bash
