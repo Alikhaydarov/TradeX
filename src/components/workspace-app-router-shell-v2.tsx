@@ -53,6 +53,33 @@ function AuthGate({
   return <TradeWayLoginLanding onLogin={onLogin} onRegister={onRegister} />;
 }
 
+function CommunityRail({
+  communityId,
+  active,
+  onNavigate,
+  onBack,
+}: {
+  communityId: string;
+  active: CommunitySection;
+  onNavigate: (section: CommunitySection) => void;
+  onBack: () => void;
+}) {
+  return (
+    <div className="contents [&>aside]:!left-[238px]">
+      <CommunitySidebar
+        communityId={communityId}
+        active={active}
+        onNavigate={onNavigate}
+        onBack={onBack}
+      />
+      <div
+        className="hidden w-[236px] shrink-0 transition-[width] duration-200 ease-out lg:block"
+        aria-hidden="true"
+      />
+    </div>
+  );
+}
+
 export function WorkspaceAppRouterShellV2({
   children,
 }: {
@@ -220,25 +247,24 @@ function WorkspaceAppRouterShellInner({ children }: { children: ReactNode }) {
       <ActiveAccountProvider>
         <WorkspaceBootLoader />
         <div className="workspace-shell flex h-dvh w-full overflow-hidden bg-black p-0 text-foreground">
+          <Sidebar
+            active={section}
+            onChange={changeSection}
+            onLogin={openLogin}
+            user={user}
+          />
+          <div
+            className="hidden w-[238px] shrink-0 lg:block"
+            aria-hidden="true"
+          />
           {communityRoute ? (
-            <CommunitySidebar
+            <CommunityRail
               communityId={communityRoute.communityId}
               active={communityRoute.tab}
               onNavigate={openCommunitySection}
               onBack={closeCommunityWorkspace}
             />
-          ) : (
-            <Sidebar
-              active={section}
-              onChange={changeSection}
-              onLogin={openLogin}
-              user={user}
-            />
-          )}
-          <div
-            className="hidden w-[236px] shrink-0 lg:block"
-            aria-hidden="true"
-          />
+          ) : null}
           <main
             ref={workspaceMainRef}
             data-workspace-main
