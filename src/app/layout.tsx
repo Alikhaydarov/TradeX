@@ -2,8 +2,7 @@ import type { Metadata } from "next";
 import { DM_Sans } from "next/font/google";
 import { AccountCardMenuBridge } from "@/components/account-card-menu-bridge";
 import { AuthProvider } from "@/components/auth-context";
-import { FloatingAddTradeButton } from "@/components/floating-add-trade-button";
-import { ProAiCoachLauncher } from "@/components/pro-ai-coach-launcher";
+import { FloatingWorkspaceActions } from "@/components/floating-workspace-actions";
 import { AppRouterCacheProvider } from "@mui/material-nextjs/v16-appRouter";
 import { getSupabaseServerClient } from "@/lib/supabase/server";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
@@ -41,8 +40,7 @@ export default async function RootLayout({
           >
             {children}
             <AccountCardMenuBridge />
-            <FloatingAddTradeButton />
-            <ProAiCoachLauncher />
+            <FloatingWorkspaceActions />
           </AuthProvider>
         </AppRouterCacheProvider>
       </body>
