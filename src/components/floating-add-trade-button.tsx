@@ -1,23 +1,36 @@
 "use client";
 
 import { Plus } from "lucide-react";
-import { useCallback, useEffect, useState } from "react";
+import { usePathname, useRouter } from "next/navigation";
+import { useCallback, useEffect } from "react";
+
 import { useAuth } from "./auth-context";
 
-const ACCOUNT_WORKSPACE_PATHS = ["/dashboard", "/calendar", "/trades", "/analytics", "/settings"];
+const ACCOUNT_WORKSPACE_PATHS = [
+  "/dashboard",
+  "/calendar",
+  "/trades",
+  "/analytics",
+  "/settings",
+];
 
 function isVisibleEnough(element: HTMLElement) {
-  const section = element.closest("section[aria-hidden='true']");
-  if (section) return false;
-  return true;
+  return !element.closest("section[aria-hidden='true']");
 }
 
 function clickCurrentAddTradeButton() {
-  const activeSection = document.querySelector("main section:not([aria-hidden='true'])") || document.querySelector("main");
+  const activeSection =
+    document.querySelector("main section:not([aria-hidden='true'])") ||
+    document.querySelector("main");
   if (!activeSection) return false;
 
-  const buttons = Array.from(activeSection.querySelectorAll("button")) as HTMLButtonElement[];
-  const addTradeButton = buttons.find((button) => /add\s*trade/i.test(button.textContent || "") && isVisibleEnough(button));
+  const buttons = Array.from(
+    activeSection.querySelectorAll("button"),
+  ) as HTMLButtonElement[];
+  const addTradeButton = buttons.find(
+    (button) =>
+      /add\s*trade/i.test(button.textContent || "") && isVisibleEnough(button),
+  );
   if (!addTradeButton) return false;
 
   addTradeButton.click();
@@ -26,26 +39,19 @@ function clickCurrentAddTradeButton() {
 
 export function FloatingAddTradeButton() {
   const { user } = useAuth();
-  const [pathname, setPathname] = useState("");
+  const pathname = usePathname();
+  const router = useRouter();
 
   const openAddTrade = useCallback(() => {
     if (clickCurrentAddTradeButton()) return;
 
-    if (!ACCOUNT_WORKSPACE_PATHS.some((path) => window.location.pathname.startsWith(path))) {
-      window.history.pushState(null, "", "/trades");
-      window.dispatchEvent(new Event("popstate"));
+    if (!ACCOUNT_WORKSPACE_PATHS.some((path) => pathname.startsWith(path))) {
+      router.push("/trades");
     }
 
-    window.setTimeout(() => clickCurrentAddTradeButton(), 90);
-    window.setTimeout(() => clickCurrentAddTradeButton(), 260);
-  }, []);
-
-  useEffect(() => {
-    const sync = () => setPathname(window.location.pathname);
-    sync();
-    window.addEventListener("popstate", sync);
-    return () => window.removeEventListener("popstate", sync);
-  }, []);
+    window.setTimeout(() => clickCurrentAddTradeButton(), 120);
+    window.setTimeout(() => clickCurrentAddTradeButton(), 320);
+  }, [pathname, router]);
 
   useEffect(() => {
     if (!user) return;
@@ -55,7 +61,13 @@ export function FloatingAddTradeButton() {
 
   if (!user) return null;
 
-  const hiddenOutsideTrading = pathname.startsWith("/profile") || pathname.startsWith("/account") || pathname.startsWith("/admin") || pathname.startsWith("/pricing") || pathname.startsWith("/community");
+  const hiddenOutsideTrading =
+    pathname.startsWith("/profile") ||
+    pathname.startsWith("/account") ||
+    pathname.startsWith("/admin") ||
+    pathname.startsWith("/superadmin") ||
+    pathname.startsWith("/pricing") ||
+    pathname.startsWith("/community");
   if (hiddenOutsideTrading) return null;
 
   return (
