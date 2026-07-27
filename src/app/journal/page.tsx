@@ -1,3 +1,5 @@
+import { redirect } from "next/navigation";
+
 export default function JournalPage() {
-  return null;
+  redirect("/dashboard");
 }
