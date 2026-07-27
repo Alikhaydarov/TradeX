@@ -4,6 +4,10 @@ import type { Section } from "./types";
 
 const reservedPaths = new Set([
   "",
+  "home",
+  "chat",
+  "journal",
+  "backtest",
   "accounts",
   "dashboard",
   "calendar",
@@ -66,14 +70,24 @@ export function usernameFromPath(pathname: string) {
 export function sectionFromPath(pathname: string): Section {
   if (pathname.startsWith("/accounts")) return "accounts";
   if (pathname.startsWith("/dashboard")) return "dashboard";
-  if (pathname.startsWith("/calendar") || pathname.startsWith("/economic-calendar")) return "calendar";
+  if (
+    pathname.startsWith("/calendar") ||
+    pathname.startsWith("/economic-calendar")
+  )
+    return "calendar";
   if (pathname.startsWith("/trades")) return "trades";
   if (pathname.startsWith("/analytics")) return "analytics";
   if (pathname.startsWith("/community")) return "community";
   if (pathname.startsWith("/settings")) return "settings";
   if (pathname.startsWith("/pricing")) return "pricing";
-  if (pathname.startsWith("/profile") || pathname.startsWith("/account") || usernameFromPath(pathname)) return "account";
-  if (pathname.startsWith("/superadmin") || pathname.startsWith("/admin")) return "admin";
+  if (
+    pathname.startsWith("/profile") ||
+    pathname.startsWith("/account") ||
+    usernameFromPath(pathname)
+  )
+    return "account";
+  if (pathname.startsWith("/superadmin") || pathname.startsWith("/admin"))
+    return "admin";
   return "feed";
 }
 
