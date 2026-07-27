@@ -75,7 +75,7 @@ export function FloatingAddTradeButton() {
       type="button"
       aria-label="Add trade"
       onClick={openAddTrade}
-      className="tw-floating-add-trade fixed bottom-5 right-5 z-[70] hidden size-14 place-items-center rounded-full border border-emerald-400/25 bg-emerald-500 text-black shadow-[0_18px_55px_rgba(16,185,129,.22)] transition hover:scale-[1.03] hover:bg-emerald-400 active:scale-95 lg:bottom-7 lg:right-7 lg:grid"
+      className="tw-floating-add-trade fixed z-[70] hidden size-[3.45rem] place-items-center rounded-[1rem] border border-emerald-300/20 bg-[#062f16] text-[#35e977] shadow-[0_14px_36px_rgba(0,0,0,.52)] transition hover:scale-[1.03] hover:bg-[#083d1d] active:scale-95 lg:bottom-[1.8rem] lg:right-[1.8rem] lg:grid"
     >
       <Plus size={26} strokeWidth={2.4} />
     </button>
