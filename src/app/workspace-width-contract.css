@@ -1,0 +1,32 @@
+/* Shared desktop width contract for Dashboard, Calendar, Trades, Analytics and Accounts. */
+
+:root {
+  --tradox-workspace-content-max: 1320px;
+  --tradox-workspace-side-clearance: 11rem;
+}
+
+@media (min-width: 1024px) {
+  [data-workspace-main] .animate-page-in.mx-auto.max-w-\[1540px\],
+  [data-workspace-main] .mx-auto.max-w-\[1420px\],
+  [data-workspace-main] .animate-page-in.mx-auto.max-w-\[1320px\] {
+    box-sizing: border-box;
+    width: min(
+      var(--tradox-workspace-content-max),
+      calc(100% - var(--tradox-workspace-side-clearance))
+    ) !important;
+    max-width: var(--tradox-workspace-content-max) !important;
+    margin-inline: auto !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+  }
+}
+
+@media (max-width: 1023px) {
+  [data-workspace-main] .animate-page-in.mx-auto.max-w-\[1540px\],
+  [data-workspace-main] .mx-auto.max-w-\[1420px\],
+  [data-workspace-main] .animate-page-in.mx-auto.max-w-\[1320px\] {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin-inline: 0 !important;
+  }
+}
