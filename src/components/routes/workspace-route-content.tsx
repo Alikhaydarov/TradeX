@@ -3,21 +3,42 @@
 import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
 
-import type { WorkspaceTab } from "../journal-v2";
 import { WorkspaceSectionSkeleton } from "../workspace-section-skeleton";
 
-const Journal = dynamic(
+const JournalAccounts = dynamic(
   () =>
-    import("../journal/journal-workspace").then(
-      (module) => module.JournalWorkspace,
+    import("../journal/journal-accounts").then(
+      (module) => module.JournalAccounts,
     ),
   { ssr: false, loading: () => <WorkspaceSectionSkeleton /> },
 );
 
-const CalendarWorkspaceV2 = dynamic(
+const JournalStats = dynamic(
   () =>
-    import("../calendar-workspace-v2").then(
-      (module) => module.CalendarWorkspaceV2,
+    import("../journal/journal-stats").then((module) => module.JournalStats),
+  { ssr: false, loading: () => <WorkspaceSectionSkeleton /> },
+);
+
+const JournalTradeList = dynamic(
+  () =>
+    import("../journal/journal-trade-list").then(
+      (module) => module.JournalTradeList,
+    ),
+  { ssr: false, loading: () => <WorkspaceSectionSkeleton /> },
+);
+
+const JournalAnalytics = dynamic(
+  () =>
+    import("../journal/journal-analytics").then(
+      (module) => module.JournalAnalytics,
+    ),
+  { ssr: false, loading: () => <WorkspaceSectionSkeleton /> },
+);
+
+const JournalCalendar = dynamic(
+  () =>
+    import("../journal/journal-calendar").then(
+      (module) => module.JournalCalendar,
     ),
   { ssr: false, loading: () => <WorkspaceSectionSkeleton /> },
 );
@@ -66,30 +87,24 @@ function openLogin() {
   );
 }
 
-function JournalWorkspaceRoute({ forcedTab }: { forcedTab: WorkspaceTab }) {
-  return (
-    <Journal onLogin={openLogin} mode="workspace" forcedTab={forcedTab} />
-  );
-}
-
 export function AccountsRouteContent() {
-  return <Journal onLogin={openLogin} mode="accounts" />;
+  return <JournalAccounts />;
 }
 
 export function DashboardRouteContent() {
-  return <JournalWorkspaceRoute forcedTab="overview" />;
+  return <JournalStats />;
 }
 
 export function TradesRouteContent() {
-  return <JournalWorkspaceRoute forcedTab="trades" />;
+  return <JournalTradeList />;
 }
 
 export function AnalyticsRouteContent() {
-  return <JournalWorkspaceRoute forcedTab="analytics" />;
+  return <JournalAnalytics />;
 }
 
 export function CalendarRouteContent() {
-  return <CalendarWorkspaceV2 />;
+  return <JournalCalendar />;
 }
 
 export function SettingsRouteContent() {
@@ -114,5 +129,10 @@ export function AdminRouteContent() {
 
 export function TradeDetailRouteContent({ tradeId }: { tradeId: string }) {
   const router = useRouter();
-  return <TradeDetailPage tradeId={tradeId} onBack={() => router.push("/trades")} />;
+  return (
+    <TradeDetailPage
+      tradeId={tradeId}
+      onBack={() => router.push("/trades")}
+    />
+  );
 }
