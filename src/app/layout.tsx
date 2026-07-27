@@ -9,14 +9,6 @@ import { getSupabaseServerClient } from "@/lib/supabase/server";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
 import "./globals.css";
 import "./auth-landing-v2.css";
-import "./dashboard-cleanups.css";
-import "./workspace-design-system.css";
-import "./typography.css";
-import "./floating-actions-layout.css";
-import "./dashboard-reference-layout.css";
-import "./workspace-visual-refresh.css";
-import "./workspace-docked-shell.css";
-import "./community-ui-fixes.css";
 
 const dmSans = DM_Sans({
   variable: "--font-dm-sans",
