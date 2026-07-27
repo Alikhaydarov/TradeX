@@ -15,6 +15,10 @@ feedSource = feedSource.replace(
   brokenFeedError,
   "      setError(\n        nextError instanceof Error",
 );
+if (!feedSource.includes("setEctingId(")) {
+  throw new Error("Feed acting-state typo was not found.");
+}
+feedSource = feedSource.replaceAll("setEctingId(", "setActingId(");
 writeFileSync(feedPath, feedSource);
 
 const path = "src/components/journal-v2.tsx";
@@ -39,6 +43,7 @@ source = source.replace(
 source = source.replace('import dynamic from "next/dynamic";\n', "");
 source = source.replace('import { MediaImage } from "./media-image";\n', "");
 source = source.replace('import { Input } from "./ui/input";\n', "");
+source = source.replace('import { Checkbox } from "./ui/checkbox";\n', "");
 source = source.replace('import { Textarea } from "./ui/textarea";\n', "");
 source = source.replace(
   'import { TradingViewChart } from "./tradingview-chart";\n',
@@ -175,6 +180,15 @@ for (const forbidden of [
 }
 
 writeFileSync(path, source);
+
+const tradovatePath = "src/lib/server/tradovate-csv.ts";
+let tradovateSource = readFileSync(tradovatePath, "utf8");
+const unusedSecondNumber = "  const secondNumber = Number(second);\n";
+if (!tradovateSource.includes(unusedSecondNumber)) {
+  throw new Error("Tradovate unused number line was not found.");
+}
+tradovateSource = tradovateSource.replace(unusedSecondNumber, "");
+writeFileSync(tradovatePath, tradovateSource);
 
 for (const file of [
   "tools/apply-journal-completion.mjs",
