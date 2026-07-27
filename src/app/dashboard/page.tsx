@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 
-import { DashboardRoute } from "@/components/routes/dashboard-route";
+import { DashboardRoute } from "@/components/routes/workspace-pages";
 
 export const metadata: Metadata = {
   title: "Dashboard | Tradox",
