@@ -31,7 +31,7 @@ function money(value: number) {
 export function ProfileHeader({
   profile,
   stats,
-  postsCount,
+  postsCount = 0,
   isOwnProfile,
   busy,
   onEdit,
@@ -43,7 +43,7 @@ export function ProfileHeader({
 }: {
   profile: Profile & { isFollowing?: boolean };
   stats: ProfileStats;
-  postsCount: number;
+  postsCount?: number;
   isOwnProfile: boolean;
   busy: boolean;
   onEdit: () => void;
