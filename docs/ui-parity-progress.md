@@ -73,5 +73,6 @@
 - Tailwind-only ownership guard is required in CI.
 - ESLint is required in CI.
 - Next.js production build is required in CI.
-- Source and lint diagnostics are uploaded as workflow artifacts.
+- Source, ownership, lint and build diagnostics are available through workflow artifacts.
+- The acceptance gate is a green Tailwind guard, green ESLint and green Next.js production build on the same final branch commit.
 - Browser screenshot comparison was not run because the connected Vercel account remains build-rate-limited; no claim of automated pixel-diff verification is made.
