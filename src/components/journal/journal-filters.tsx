@@ -5,6 +5,7 @@ import dynamic from "next/dynamic";
 import type { TradeRange } from "@/features/trades/components/trades-archive";
 import type { JournalEntry } from "../types";
 import { PageSkeleton } from "../page-skeleton";
+import type { TradeSortMode } from "../workspace-preferences-context";
 
 const TradesArchive = dynamic(
   () =>
@@ -39,7 +40,7 @@ export function JournalFilters({
   range: TradeRange;
   customStart: string;
   customEnd: string;
-  sort: "newest" | "oldest" | "highest" | "lowest";
+  sort: TradeSortMode;
   winRate: number;
   averageR: number;
   formatPnl: (value: number) => string;
@@ -47,7 +48,7 @@ export function JournalFilters({
   onRangeChange: (value: TradeRange) => void;
   onCustomStartChange: (value: string) => void;
   onCustomEndChange: (value: string) => void;
-  onSortChange: (value: "newest" | "oldest" | "highest" | "lowest") => void;
+  onSortChange: (value: TradeSortMode) => void;
   onOpenTrade: (trade: JournalEntry) => void;
   onAddTrade: () => void;
 }) {
