@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import dynamic from "next/dynamic";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { MessageCircle } from "lucide-react";
 import { AuthModal } from "./auth-modal";
 import { ActiveAccountProvider } from "./active-account-context";
@@ -117,6 +117,7 @@ export function AppShell() {
 
 function AppShellInner() {
   const pathname = usePathname();
+  const router = useRouter();
   const tradeId = tradeIdFromPath(pathname);
   const communityRoute = communityRouteFromPath(pathname);
   const [section, setSection] = useState<Section>(getCurrentSection);
@@ -130,19 +131,24 @@ function AppShellInner() {
   const [profileOpening, setProfileOpening] = useState(false);
   const workspaceMainRef = useRef<HTMLElement>(null);
   const { user } = useAuth();
+
   const openLogin = () => {
     setAuthMode("login");
     setAuthOpen(true);
   };
+
   const openRegister = () => {
     setAuthMode("register");
     setAuthOpen(true);
   };
 
+  const scrollWorkspaceToTop = () => {
+    workspaceMainRef.current?.scrollTo({ top: 0, behavior: "instant" });
+  };
+
   useEffect(() => {
     const syncFromPath = () => {
-      const nextSection = getCurrentSection();
-      setSection(nextSection);
+      setSection(getCurrentSection());
       setProfileUsername(getCurrentProfileUsername());
     };
     const handleOpenProfile = () => {
@@ -152,6 +158,9 @@ function AppShellInner() {
     const handleProfileReady = () => {
       window.setTimeout(() => setProfileOpening(false), 40);
     };
+
+    // Kept temporarily for legacy components that still dispatch popstate.
+    // AppShell-owned navigation now uses Next.js App Router below.
     window.addEventListener("popstate", syncFromPath);
     window.addEventListener("tradeup:open-profile", handleOpenProfile);
     window.addEventListener("tradeup:profile-ready", handleProfileReady);
@@ -164,7 +173,8 @@ function AppShellInner() {
 
   useEffect(() => {
     setSection(getCurrentSection());
-    workspaceMainRef.current?.scrollTo({ top: 0, behavior: "instant" });
+    setProfileUsername(getCurrentProfileUsername());
+    scrollWorkspaceToTop();
   }, [pathname]);
 
   useEffect(() => {
@@ -204,12 +214,12 @@ function AppShellInner() {
   useEffect(() => {
     if (section === "admin" && user && isAdmin === false) {
       const timer = window.setTimeout(() => {
-        window.history.replaceState(null, "", "/");
+        router.replace("/", { scroll: false });
         setSection("feed");
       }, 0);
       return () => window.clearTimeout(timer);
     }
-  }, [section, user, isAdmin]);
+  }, [section, user, isAdmin, router]);
 
   const changeSection = (nextSection: Section) => {
     if (nextSection === "admin" && isAdmin !== true) return;
@@ -219,34 +229,29 @@ function AppShellInner() {
       nextSection !== "calendar"
     )
       return;
+
     setProfileUsername("");
     setSection(nextSection);
-    window.history.pushState(null, "", pathFromSection(nextSection));
-    window.dispatchEvent(new Event("popstate"));
-    workspaceMainRef.current?.scrollTo({ top: 0, behavior: "instant" });
+    router.push(pathFromSection(nextSection), { scroll: false });
+    scrollWorkspaceToTop();
   };
 
   const closeTradeDetail = () => {
-    window.history.pushState(null, "", "/trades");
-    window.dispatchEvent(new Event("popstate"));
-    workspaceMainRef.current?.scrollTo({ top: 0, behavior: "instant" });
+    router.push("/trades", { scroll: false });
+    scrollWorkspaceToTop();
   };
 
   const openCommunitySection = (next: CommunitySection) => {
     if (!communityRoute) return;
-    window.history.pushState(
-      null,
-      "",
-      `/community/${communityRoute.communityId}/${next}`,
-    );
-    window.dispatchEvent(new Event("popstate"));
-    workspaceMainRef.current?.scrollTo({ top: 0, behavior: "instant" });
+    router.push(`/community/${communityRoute.communityId}/${next}`, {
+      scroll: false,
+    });
+    scrollWorkspaceToTop();
   };
 
   const closeCommunityWorkspace = () => {
-    window.history.pushState(null, "", "/community");
-    window.dispatchEvent(new Event("popstate"));
-    workspaceMainRef.current?.scrollTo({ top: 0, behavior: "instant" });
+    router.push("/community", { scroll: false });
+    scrollWorkspaceToTop();
   };
 
   const renderSection = (item: Section) => {
