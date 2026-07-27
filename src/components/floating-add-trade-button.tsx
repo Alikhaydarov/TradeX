@@ -2,7 +2,7 @@
 
 import { Plus } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
-import { useCallback, useEffect } from "react";
+import { useCallback } from "react";
 
 import { useAuth } from "./auth-context";
 
@@ -14,27 +14,8 @@ const ACCOUNT_WORKSPACE_PATHS = [
   "/settings",
 ];
 
-function isVisibleEnough(element: HTMLElement) {
-  return !element.closest("section[aria-hidden='true']");
-}
-
-function clickCurrentAddTradeButton() {
-  const activeSection =
-    document.querySelector("main section:not([aria-hidden='true'])") ||
-    document.querySelector("main");
-  if (!activeSection) return false;
-
-  const buttons = Array.from(
-    activeSection.querySelectorAll("button"),
-  ) as HTMLButtonElement[];
-  const addTradeButton = buttons.find(
-    (button) =>
-      /add\s*trade/i.test(button.textContent || "") && isVisibleEnough(button),
-  );
-  if (!addTradeButton) return false;
-
-  addTradeButton.click();
-  return true;
+function dispatchAddTrade() {
+  window.dispatchEvent(new CustomEvent("tradox:add-trade"));
 }
 
 export function FloatingAddTradeButton() {
@@ -43,21 +24,19 @@ export function FloatingAddTradeButton() {
   const router = useRouter();
 
   const openAddTrade = useCallback(() => {
-    if (clickCurrentAddTradeButton()) return;
+    const insideTradingWorkspace = ACCOUNT_WORKSPACE_PATHS.some((path) =>
+      pathname.startsWith(path),
+    );
 
-    if (!ACCOUNT_WORKSPACE_PATHS.some((path) => pathname.startsWith(path))) {
-      router.push("/trades");
+    if (insideTradingWorkspace) {
+      dispatchAddTrade();
+      return;
     }
 
-    window.setTimeout(() => clickCurrentAddTradeButton(), 120);
-    window.setTimeout(() => clickCurrentAddTradeButton(), 320);
+    router.push("/trades");
+    window.setTimeout(dispatchAddTrade, 180);
+    window.setTimeout(dispatchAddTrade, 420);
   }, [pathname, router]);
-
-  useEffect(() => {
-    if (!user) return;
-    window.addEventListener("tradox:add-trade", openAddTrade);
-    return () => window.removeEventListener("tradox:add-trade", openAddTrade);
-  }, [openAddTrade, user]);
 
   if (!user) return null;
 
@@ -75,7 +54,7 @@ export function FloatingAddTradeButton() {
       type="button"
       aria-label="Add trade"
       onClick={openAddTrade}
-      className="tw-floating-add-trade fixed z-[70] hidden size-[3.45rem] place-items-center rounded-[1rem] border border-emerald-300/20 bg-[#062f16] text-[#35e977] shadow-[0_14px_36px_rgba(0,0,0,.52)] transition hover:scale-[1.03] hover:bg-[#083d1d] active:scale-95 lg:bottom-[1.8rem] lg:right-[1.8rem] lg:grid"
+      className="fixed z-[70] hidden size-[3.45rem] place-items-center rounded-2xl border border-emerald-300/20 bg-[#062f16] text-[#35e977] shadow-[0_14px_36px_rgba(0,0,0,.52)] transition hover:scale-[1.03] hover:bg-[#083d1d] active:scale-95 lg:bottom-[1.8rem] lg:right-[1.8rem] lg:grid"
     >
       <Plus size={26} strokeWidth={2.4} />
     </button>
