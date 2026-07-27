@@ -143,9 +143,9 @@ export function ProfilePage({
   };
 
   return (
-    <div className="min-h-full bg-black">
+    <div className="min-h-full bg-[#0b0b0b]">
       {data.error ? (
-        <div className="mx-auto mt-3 flex max-w-3xl items-center gap-3 rounded-xl border border-rose-500/20 bg-rose-500/8 px-4 py-3 text-sm text-rose-300">
+        <div className="mx-auto mt-3 flex max-w-5xl items-center gap-3 rounded-2xl border border-rose-300/15 bg-rose-400/10 px-4 py-3 text-sm text-rose-200">
           <span className="min-w-0 flex-1">{data.error}</span>
           <button
             type="button"
@@ -158,10 +158,11 @@ export function ProfilePage({
         </div>
       ) : null}
 
-      <div className="mx-auto max-w-3xl space-y-4 px-3 py-4 sm:px-5 lg:py-6">
+      <div className="mx-auto max-w-3xl px-0 sm:px-4 sm:py-3">
         <ProfileHeader
           profile={data.profile}
           stats={data.stats}
+          postsCount={data.posts.length}
           isOwnProfile={isOwnProfile}
           busy={data.busy}
           onEdit={openEdit}
@@ -376,18 +377,18 @@ function Field({
 
 function ProfileSkeleton() {
   return (
-    <div className="mx-auto max-w-3xl animate-pulse space-y-4 px-3 py-4 sm:px-5 lg:py-6">
-      <div className="overflow-hidden rounded-2xl border border-white/8 bg-[#090909]">
-        <div className="h-28 bg-white/[.035] sm:h-44" />
-        <div className="px-5 pb-6">
-          <div className="-mt-10 size-24 rounded-full border-4 border-[#090909] bg-white/[.07] sm:-mt-14 sm:size-28" />
+    <div className="mx-auto max-w-3xl animate-pulse px-0 sm:px-4 sm:py-3">
+      <div className="overflow-hidden border-b border-border bg-card sm:rounded-lg sm:border">
+        <div className="h-20 bg-white/[.035] sm:h-28" />
+        <div className="px-4 pb-4 sm:px-5">
+          <div className="-mt-9 size-20 rounded-full border-4 border-card bg-white/[.07] sm:-mt-11 sm:size-24" />
           <div className="mt-4 h-6 w-44 rounded bg-white/[.07]" />
           <div className="mt-3 h-4 w-28 rounded bg-white/[.04]" />
           <div className="mt-6 h-4 w-72 max-w-full rounded bg-white/[.04]" />
         </div>
       </div>
-      <div className="h-48 rounded-2xl border border-white/8 bg-[#090909]" />
-      <div className="h-64 rounded-2xl border border-white/8 bg-[#090909]" />
+      <div className="mt-2 h-36 border-y border-border bg-card sm:rounded-lg sm:border" />
+      <div className="mt-2 h-64 border-b border-border bg-card sm:rounded-lg sm:border" />
     </div>
   );
 }
