@@ -73,8 +73,28 @@ jobs:
           path: ui-parity-audit.json
           if-no-files-found: warn
 
-      - name: Lint
-        run: npm run lint
+      - name: Lint and capture log
+        id: lint
+        shell: bash
+        run: |
+          set +e
+          npm run lint > lint.log 2>&1
+          status=$?
+          echo "status=$status" >> "$GITHUB_OUTPUT"
+          tail -n 200 lint.log
+          exit 0
+
+      - name: Upload lint log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lint-log
+          path: lint.log
+          if-no-files-found: error
+
+      - name: Fail when lint failed
+        if: steps.lint.outputs.status != '0'
+        run: exit 1
 
       - name: Production build
         run: npm run build
