@@ -21,7 +21,7 @@ const protectedFiles = new Set([
   "src/app/dashboard-cleanups.css",
   "src/app/workspace-design-system.css",
   "src/app/typography.css",
-  "src/app/dashboard-reference-layout.css",
+  "src/app/workspace-width-contract.css",
   "src/app/workspace-visual-refresh.css",
   "src/app/workspace-docked-shell.css",
   "src/app/community-ui-fixes.css",
