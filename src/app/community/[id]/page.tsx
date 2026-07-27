@@ -1,9 +1,23 @@
 import type { Metadata } from "next";
 
-export const metadata: Metadata = {
-  title: "Community | Tradox",
+import { CommunityDetailRoute } from "@/components/routes/special-workspace-routes";
+
+type CommunityDetailPageProps = {
+  params: Promise<{ id: string }>;
 };
 
-export default function CommunityDetailRoute() {
-  return null;
+export const metadata: Metadata = {
+  title: "Community Overview | Tradox",
+};
+
+export default async function CommunityDetailPage({
+  params,
+}: CommunityDetailPageProps) {
+  const { id } = await params;
+  return (
+    <CommunityDetailRoute
+      communityId={decodeURIComponent(id)}
+      active="overview"
+    />
+  );
 }
