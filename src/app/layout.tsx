@@ -3,7 +3,6 @@ import { DM_Sans } from "next/font/google";
 import { AccountCardMenuBridge } from "@/components/account-card-menu-bridge";
 import { AuthProvider } from "@/components/auth-context";
 import { FloatingAddTradeButton } from "@/components/floating-add-trade-button";
-import { MobileTradesBridge } from "@/components/mobile-trades-bridge";
 import { ProAiCoachLauncher } from "@/components/pro-ai-coach-launcher";
 import { AppRouterCacheProvider } from "@mui/material-nextjs/v16-appRouter";
 import { getSupabaseServerClient } from "@/lib/supabase/server";
@@ -52,7 +51,6 @@ export default async function RootLayout({
             {children}
             <AccountCardMenuBridge />
             <FloatingAddTradeButton />
-            <MobileTradesBridge />
             <ProAiCoachLauncher />
           </AuthProvider>
         </AppRouterCacheProvider>
