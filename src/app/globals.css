@@ -245,15 +245,3 @@
 *::-webkit-scrollbar-thumb:hover {
   background: #303030;
 }
-
-@media (hover: none) and (pointer: coarse) {
-  button,
-  [role="button"],
-  a,
-  input,
-  textarea,
-  select,
-  [data-slot="select-trigger"] {
-    min-height: 44px;
-  }
-}

@@ -9,6 +9,8 @@ const reservedPaths = new Set([
   "economic-calendar",
   "trades",
   "analytics",
+  "backtest",
+  "chat",
   "community",
   "settings",
   "profile",
@@ -19,12 +21,13 @@ const reservedPaths = new Set([
 ]);
 
 const sectionPaths: Record<Section, string> = {
-  feed: "/",
+  feed: "/chat",
   accounts: "/accounts",
   dashboard: "/dashboard",
   calendar: "/calendar",
   trades: "/trades",
   analytics: "/analytics",
+  backtest: "/backtest",
   community: "/community",
   settings: "/settings",
   account: "/profile",
@@ -39,6 +42,7 @@ export const cachedSections: Section[] = [
   "calendar",
   "trades",
   "analytics",
+  "backtest",
   "community",
   "settings",
   "account",
@@ -52,6 +56,7 @@ export const workspaceSections: Section[] = [
   "calendar",
   "trades",
   "analytics",
+  "backtest",
   "community",
   "settings",
 ];
@@ -63,6 +68,7 @@ export function usernameFromPath(pathname: string) {
 }
 
 export function sectionFromPath(pathname: string): Section {
+  if (pathname.startsWith("/chat")) return "feed";
   if (pathname.startsWith("/accounts") || pathname.startsWith("/journal")) {
     return "accounts";
   }
@@ -75,6 +81,7 @@ export function sectionFromPath(pathname: string): Section {
   }
   if (pathname.startsWith("/trades")) return "trades";
   if (pathname.startsWith("/analytics")) return "analytics";
+  if (pathname.startsWith("/backtest")) return "backtest";
   if (pathname.startsWith("/community")) return "community";
   if (pathname.startsWith("/settings")) return "settings";
   if (pathname.startsWith("/pricing")) return "pricing";

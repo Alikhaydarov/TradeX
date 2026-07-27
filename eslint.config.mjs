@@ -8,6 +8,7 @@ export default defineConfig([
   {
     rules: {
       "react-hooks/set-state-in-effect": "off",
+      "react-hooks/preserve-manual-memoization": "off",
       "react/no-unescaped-entities": "off",
     },
   },
