@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { DM_Sans } from "next/font/google";
-import { AppShell } from "@/components/app-shell";
 import { AccountCardMenuBridge } from "@/components/account-card-menu-bridge";
+import { AppRouterMigrationGate } from "@/components/app-router-migration-gate";
 import { AuthProvider } from "@/components/auth-context";
 import { FloatingAddTradeButton } from "@/components/floating-add-trade-button";
 import { MobileTradesBridge } from "@/components/mobile-trades-bridge";
@@ -53,12 +53,12 @@ export default async function RootLayout({
             initialUser={data.user}
             initialConfigured={configured}
           >
-            <AppShell />
+            <AppRouterMigrationGate />
+            {children}
             <AccountCardMenuBridge />
             <FloatingAddTradeButton />
             <MobileTradesBridge />
             <ProAiCoachLauncher />
-            <div className="hidden">{children}</div>
           </AuthProvider>
         </AppRouterCacheProvider>
       </body>
