@@ -5,6 +5,18 @@ import {
   writeFileSync,
 } from "node:fs";
 
+const feedPath = "src/components/feed/use-feed-data.ts";
+let feedSource = readFileSync(feedPath, "utf8");
+const brokenFeedError = "      setError,\n        nextError instanceof Error";
+if (!feedSource.includes(brokenFeedError)) {
+  throw new Error("Feed archive error boundary was not found.");
+}
+feedSource = feedSource.replace(
+  brokenFeedError,
+  "      setError(\n        nextError instanceof Error",
+);
+writeFileSync(feedPath, feedSource);
+
 const path = "src/components/journal-v2.tsx";
 let source = readFileSync(path, "utf8");
 
@@ -18,12 +30,28 @@ function replaceRequired(pattern, replacement, label) {
 
 source = source.replace("  BookOpen,\n", "");
 source = source.replace("  CheckCircle2,\n", "");
+source = source.replace("  Plus,\n", "");
+source = source.replace("  Trash2,\n", "");
 source = source.replace(
   'import { useCallback, useEffect, useMemo, useRef, useState } from "react";',
   'import { useCallback, useEffect, useMemo, useState } from "react";',
 );
 source = source.replace('import dynamic from "next/dynamic";\n', "");
 source = source.replace('import { MediaImage } from "./media-image";\n', "");
+source = source.replace('import { Input } from "./ui/input";\n', "");
+source = source.replace('import { Textarea } from "./ui/textarea";\n', "");
+source = source.replace(
+  'import { TradingViewChart } from "./tradingview-chart";\n',
+  "",
+);
+source = source.replace(
+  /import \{\n  AlertDialog,[\s\S]*?\n\} from "\.\/ui\/alert-dialog";\n/,
+  "",
+);
+source = source.replace(
+  /import \{\n  DropdownMenu,[\s\S]*?\n\} from "\.\/ui\/dropdown-menu";\n/,
+  "",
+);
 replaceRequired(
   'import { JournalTradeEditor } from "./journal/journal-trade-editor";',
   'import { JournalTradeEditor } from "./journal/journal-trade-editor";\nimport { JournalGallery } from "./journal/journal-gallery";\nimport { JournalFilters, type JournalTradeRange as TradeRange } from "./journal/journal-filters";\nimport {\n  journalEntryFromRow,\n  type JournalEntryRow,\n  useJournalData,\n} from "./journal/use-journal-data";',
@@ -68,6 +96,24 @@ for (const line of [
 }
 
 replaceRequired(
+  "  }, [mode]);\n\n",
+  "  }, [mode, router]);\n\n",
+  "account query effect dependency",
+);
+
+const openComposerPattern =
+  /  const openTradeComposer = useCallback\(\(\) => \{[\s\S]*?\n  \}, \[activeAccountId, mode, router\]\);\n\n/;
+const openComposerMatch = source.match(openComposerPattern);
+if (!openComposerMatch) {
+  throw new Error("Journal trade composer callback was not found.");
+}
+const openComposer = openComposerMatch[0].replace(
+  "[activeAccountId, mode, router]",
+  "[activeAccountId, mode, router, setError]",
+);
+source = source.replace(openComposerPattern, "");
+
+replaceRequired(
   /  \/\/ Accounts are loaded once by ActiveAccountProvider[\s\S]*?  \}, \[loadEntries, user\]\);\n/,
   `  const requestAccountId = mode === "workspace" ? activeAccountId : null;
   const {
@@ -84,7 +130,8 @@ replaceRequired(
     accountId: requestAccountId,
     accountsLoading,
   });
-`,
+
+${openComposer}`,
   "journal data lifecycle",
 );
 
@@ -109,7 +156,7 @@ source = source.replace(
   biblePattern,
   `$1
               <JournalGallery
-                trades={bibleEntries}
+                trades={bibleTrades}
                 onOpenTrade={openTrade}
               />$2`,
 );
