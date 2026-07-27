@@ -2700,10 +2700,10 @@ function Workspace(p: {
                 <Empty text="No trades for this day." />
               )}
             </div>
- pinner className="size-6" />
-        </div>
-      )}
-    </section>
+          </DialogContent>
+        </Dialog>
+      </div>
+    </div>
   );
 }
 
