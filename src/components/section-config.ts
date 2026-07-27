@@ -2,6 +2,7 @@ import type { Section } from "./types";
 
 const reservedPaths = new Set([
   "",
+  "home",
   "accounts",
   "dashboard",
   "journal",
@@ -21,7 +22,7 @@ const reservedPaths = new Set([
 ]);
 
 const sectionPaths: Record<Section, string> = {
-  feed: "/chat",
+  feed: "/home",
   accounts: "/accounts",
   dashboard: "/dashboard",
   calendar: "/calendar",
@@ -68,7 +69,7 @@ export function usernameFromPath(pathname: string) {
 }
 
 export function sectionFromPath(pathname: string): Section {
-  if (pathname.startsWith("/chat")) return "feed";
+  if (pathname.startsWith("/home") || pathname.startsWith("/chat")) return "feed";
   if (pathname.startsWith("/accounts") || pathname.startsWith("/journal")) {
     return "accounts";
   }
