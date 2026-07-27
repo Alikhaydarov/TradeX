@@ -28,18 +28,26 @@ const UserSettingsDialog = dynamic(
   { ssr: false },
 );
 
-const CENTERED_WORKSPACE_SECTIONS = new Set<Section>([
-  "accounts",
-  "dashboard",
-  "calendar",
-  "trades",
-  "analytics",
-]);
-
 type CommunityShellConfig = {
   communityId: string;
   active: CommunitySection;
 };
+
+function workspaceContentClass(
+  section: Section,
+  community?: CommunityShellConfig,
+) {
+  if (community || section === "community") return "min-h-full";
+
+  const maxWidth =
+    section === "account"
+      ? "lg:max-w-3xl"
+      : section === "feed"
+        ? "lg:max-w-4xl"
+        : "lg:max-w-[1320px]";
+
+  return `mx-auto min-h-full w-full lg:w-[calc(100%_-_11rem)] ${maxWidth}`;
+}
 
 export function WorkspaceRouteShell({
   section,
@@ -68,8 +76,6 @@ export function WorkspaceRouteShell({
   const changeSection = (nextSection: Section) => {
     router.push(pathFromSection(nextSection));
   };
-  const centeredWorkspace =
-    !community && CENTERED_WORKSPACE_SECTIONS.has(section);
 
   return (
     <WorkspacePreferencesProvider>
@@ -103,13 +109,7 @@ export function WorkspaceRouteShell({
             className="workspace-main h-[100dvh] min-w-0 flex-1 overscroll-contain overflow-y-auto overflow-x-hidden bg-black pb-[max(env(safe-area-inset-bottom),0.5rem)] lg:pb-0"
           >
             {!community ? <WorkspaceTopbar section={section} /> : null}
-            <section
-              className={
-                centeredWorkspace
-                  ? "mx-auto min-h-full w-full lg:w-[calc(100%_-_11rem)] lg:max-w-[1320px]"
-                  : "min-h-full"
-              }
-            >
+            <section className={workspaceContentClass(section, community)}>
               <Suspense fallback={<WorkspaceSectionSkeleton />}>
                 {children}
               </Suspense>
