@@ -64,7 +64,7 @@ export function FeedPage({ onLogin }: { onLogin: () => void }) {
         <div className="mx-auto flex max-w-4xl items-center gap-3">
           <div className="min-w-0 flex-1">
             <h1 className="text-lg font-black tracking-tight text-white">Trade feed</h1>
-            <p className="mt-0.5 text-[10px] text-zinc-600">
+            <p className="mt-0.5 text-[10px] text-zinc-500">
               Shared trade reviews only
             </p>
           </div>
@@ -72,25 +72,27 @@ export function FeedPage({ onLogin }: { onLogin: () => void }) {
         </div>
       </header>
 
-      <div className="mx-auto max-w-4xl space-y-4 px-3 py-4 sm:px-5 sm:py-5">
+      <div className="hidden" aria-hidden="true">
         <PostComposer onLogin={onLogin} onPublished={feed.loadPosts} />
+      </div>
 
-        {feed.error ? (
-          <div className="flex items-center gap-3 rounded-xl border border-rose-500/20 bg-rose-500/8 px-4 py-3 text-sm text-rose-300">
-            <span className="min-w-0 flex-1">{feed.error}</span>
-            <button
-              type="button"
-              onClick={() => feed.setError(null)}
-              className="grid size-8 shrink-0 place-items-center rounded-lg hover:bg-white/6"
-              aria-label="Dismiss error"
-            >
-              <X className="size-3.5" />
-            </button>
-          </div>
-        ) : null}
+      {feed.error ? (
+        <div className="mx-auto mt-4 flex max-w-4xl items-center gap-3 rounded-2xl border border-rose-300/15 bg-rose-400/10 px-4 py-3 text-sm text-rose-200">
+          <span className="min-w-0 flex-1">{feed.error}</span>
+          <button
+            type="button"
+            onClick={() => feed.setError(null)}
+            className="grid size-8 shrink-0 place-items-center rounded-lg hover:bg-white/6"
+            aria-label="Dismiss error"
+          >
+            <X className="size-3.5" />
+          </button>
+        </div>
+      ) : null}
 
+      <div className="mx-auto max-w-4xl px-3 py-4 sm:px-5 sm:py-5">
         <div className="flex items-center px-1">
-          <h2 className="text-xs font-semibold uppercase tracking-[0.18em] text-zinc-600">
+          <h2 className="text-xs font-black uppercase tracking-[0.18em] text-zinc-500">
             Community tape
           </h2>
           <span className="ml-auto text-[10px] text-zinc-600">
@@ -101,7 +103,7 @@ export function FeedPage({ onLogin }: { onLogin: () => void }) {
         {feed.loading ? (
           <FeedSkeleton />
         ) : feed.posts.length ? (
-          <div className="space-y-3">
+          <div className="mt-3 space-y-3">
             {feed.posts.map((post) => (
               <PostCard
                 key={post.id}
@@ -128,7 +130,7 @@ export function FeedPage({ onLogin }: { onLogin: () => void }) {
             ))}
           </div>
         ) : (
-          <div className="rounded-2xl border border-dashed border-white/10 bg-[#090909] p-10 text-center text-sm text-zinc-600">
+          <div className="mt-3 rounded-[1.25rem] border border-white/8 bg-[#17181b] p-10 text-center text-sm text-slate-500">
             No trades shared yet.
           </div>
         )}
@@ -230,11 +232,11 @@ export function FeedPage({ onLogin }: { onLogin: () => void }) {
 
 function FeedSkeleton() {
   return (
-    <div className="space-y-3">
+    <div className="mt-3 space-y-3">
       {Array.from({ length: 4 }, (_, index) => (
         <div
           key={index}
-          className="rounded-2xl border border-white/8 bg-[#090909] p-4 sm:p-5"
+          className="rounded-[1.25rem] border border-white/8 bg-[#17181b] p-4 sm:p-5"
         >
           <div className="flex gap-3">
             <SkeletonBlock className="size-11 shrink-0 rounded-full" />
