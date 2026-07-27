@@ -17,7 +17,6 @@ const protectedFiles = new Set([
   "src/app/onyx-overrides.css",
   "src/app/responsive-fixes.css",
   "src/app/quality-overrides.css",
-  "src/app/dashboard-cleanups.css",
   "src/app/workspace-design-system.css",
   "src/app/typography.css",
   "src/app/workspace-visual-refresh.css",
