@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import type { CSSProperties } from "react";
 import { DM_Sans } from "next/font/google";
 import { AccountCardMenuBridge } from "@/components/account-card-menu-bridge";
 import { AuthProvider } from "@/components/auth-context";
@@ -15,7 +16,6 @@ import "./onyx-overrides.css";
 import "./responsive-fixes.css";
 import "./quality-overrides.css";
 import "./workspace-design-system.css";
-import "./typography.css";
 import "./workspace-width-contract.css";
 import "./workspace-visual-refresh.css";
 import "./workspace-docked-shell.css";
@@ -26,6 +26,22 @@ const dmSans = DM_Sans({
   subsets: ["latin"],
   display: "swap",
 });
+
+const appFontVariables = {
+  "--font-app":
+    'var(--font-dm-sans), "DM Sans", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+  "--font-inter": "var(--font-app)",
+  "--font-geist-mono": "var(--font-app)",
+} as CSSProperties;
+
+const appTypographyClass = [
+  "font-sans antialiased [font-synthesis:none] [text-rendering:optimizeLegibility]",
+  "[&_.font-heading]:font-sans [&_.font-mono]:font-sans [&_.font-mono]:tabular-nums [&_.font-mono]:tracking-[-0.015em]",
+  "[&_.MuiTypography-root]:font-sans [&_.MuiButton-root]:font-sans [&_.MuiInputBase-root]:font-sans",
+  "[&_.MuiFormLabel-root]:font-sans [&_.MuiChip-root]:font-sans [&_.MuiTooltip-tooltip]:font-sans",
+  "[&_.MuiMenuItem-root]:font-sans [&_.MuiTab-root]:font-sans [&_.MuiTableCell-root]:font-sans",
+  "[&_.recharts-text]:font-sans [&_.recharts-cartesian-axis-tick-value]:font-sans [&_.recharts-tooltip-wrapper]:font-sans",
+].join(" ");
 
 export const metadata: Metadata = {
   title: "Tradox",
@@ -44,8 +60,12 @@ export default async function RootLayout({
     : { data: { user: null } };
 
   return (
-    <html lang="en" className={`dark ${dmSans.variable}`}>
-      <body className="font-sans antialiased">
+    <html
+      lang="en"
+      className={`dark ${dmSans.variable}`}
+      style={appFontVariables}
+    >
+      <body className={appTypographyClass}>
         <AppRouterCacheProvider options={{ enableCssLayer: true }}>
           <AuthProvider
             initialUser={data.user}
