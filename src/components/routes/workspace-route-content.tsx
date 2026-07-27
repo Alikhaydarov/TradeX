@@ -43,6 +43,11 @@ const Pricing = dynamic(
   { ssr: false, loading: () => <WorkspaceSectionSkeleton /> },
 );
 
+const AdminPanel = dynamic(
+  () => import("../admin-panel").then((module) => module.AdminPanel),
+  { ssr: false, loading: () => <WorkspaceSectionSkeleton /> },
+);
+
 const TradeDetailPage = dynamic(
   () =>
     import("@/features/trades/components/trade-detail-page").then(
@@ -97,6 +102,10 @@ export function CommunityRouteContent() {
 
 export function PricingRouteContent() {
   return <Pricing onLogin={openLogin} />;
+}
+
+export function AdminRouteContent() {
+  return <AdminPanel onLogin={openLogin} />;
 }
 
 export function TradeDetailRouteContent({ tradeId }: { tradeId: string }) {
