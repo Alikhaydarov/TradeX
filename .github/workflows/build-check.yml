@@ -3,6 +3,7 @@ name: Build check
 on:
   push:
     branches:
+      - main
       - agent/app-router-ui-parity-v2
   pull_request:
     branches: [main]
@@ -14,11 +15,24 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 25
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+      - name: Upload refactor sources
+        uses: actions/upload-artifact@v4
+        with:
+          name: refactor-main-source
+          path: |
+            src/components/feed-v3.tsx
+            src/components/feed
+            src/components/journal-v2.tsx
+            src/components/journal
+            src/components/sidebar.tsx
+            src/components/workspace-app-router-shell-v2.tsx
+            src/app/(workspace)
+          if-no-files-found: warn
       - uses: actions/setup-node@v4
         with:
           node-version: 22
