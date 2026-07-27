@@ -26,8 +26,27 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Tailwind UI audit
-        run: npm run audit:ui
+      - name: Tailwind UI audit and capture report
+        id: ui_audit
+        shell: bash
+        run: |
+          set +e
+          npm run audit:ui 2>&1 | tee ui-audit.log
+          status=${PIPESTATUS[0]}
+          echo "status=$status" >> "$GITHUB_OUTPUT"
+          exit 0
+
+      - name: Upload Tailwind UI audit report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ui-audit-report
+          path: ui-audit.log
+          retention-days: 3
+
+      - name: Fail on Tailwind UI audit errors
+        if: steps.ui_audit.outputs.status != '0'
+        run: exit 1
 
       - name: ESLint and capture report
         id: eslint
