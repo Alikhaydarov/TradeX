@@ -5,7 +5,7 @@ if (process.env.ALLOW_UI_CHANGES === "1") {
   process.exit(0);
 }
 
-const protectedFiles = new Set([
+const protectedLegacyComponents = new Set([
   "src/components/account.tsx",
   "src/components/feed-v3.tsx",
   "src/components/journal.tsx",
@@ -13,23 +13,15 @@ const protectedFiles = new Set([
   "src/components/sidebar.tsx",
   "src/components/workspace-topbar.tsx",
   "src/components/pro-ai-coach-launcher.tsx",
-  "src/app/auth-landing-v2.css",
-  "src/app/onyx-overrides.css",
-  "src/app/responsive-fixes.css",
-  "src/app/quality-overrides.css",
-  "src/app/workspace-design-system.css",
-  "src/app/workspace-visual-refresh.css",
-  "src/app/workspace-docked-shell.css",
-  "src/app/community-ui-fixes.css",
 ]);
+
+function runGit(args) {
+  return execFileSync("git", args, { encoding: "utf8" }).trim();
+}
 
 let changedFiles;
 try {
-  changedFiles = execFileSync(
-    "git",
-    ["diff", "--name-only", "origin/main...HEAD"],
-    { encoding: "utf8" },
-  )
+  changedFiles = runGit(["diff", "--name-only", "origin/main...HEAD"])
     .split("\n")
     .map((file) => file.trim())
     .filter(Boolean);
@@ -38,15 +30,49 @@ try {
   throw error;
 }
 
-const violations = changedFiles.filter((file) => protectedFiles.has(file));
+const protectedViolations = changedFiles.filter((file) =>
+  protectedLegacyComponents.has(file),
+);
 
-if (violations.length > 0) {
-  console.error("UI parity guard failed. Protected legacy visual files changed:");
-  for (const file of violations) console.error(`- ${file}`);
-  console.error(
-    "Move visual changes to a dedicated parity-verified phase or set ALLOW_UI_CHANGES=1 intentionally.",
-  );
+if (protectedViolations.length > 0) {
+  console.error("UI parity guard failed. Protected legacy component markup changed:");
+  for (const file of protectedViolations) console.error(`- ${file}`);
   process.exit(1);
 }
 
-console.log("UI parity guard passed: protected legacy visual files are unchanged.");
+const cssFiles = runGit(["ls-files", "*.css"])
+  .split("\n")
+  .map((file) => file.trim())
+  .filter(Boolean);
+const unexpectedCssFiles = cssFiles.filter(
+  (file) => file !== "src/app/globals.css",
+);
+
+if (unexpectedCssFiles.length > 0) {
+  console.error("Tailwind-only guard failed. Custom CSS files remain:");
+  for (const file of unexpectedCssFiles) console.error(`- ${file}`);
+  process.exit(1);
+}
+
+let cssImports = "";
+try {
+  cssImports = runGit(["grep", "-n", "-E", "import .*\\.css", "--", "src"]);
+} catch {
+  cssImports = "";
+}
+
+const unexpectedImports = cssImports
+  .split("\n")
+  .map((line) => line.trim())
+  .filter(Boolean)
+  .filter((line) => !line.includes('src/app/layout.tsx:') || !line.includes('"./globals.css"'));
+
+if (unexpectedImports.length > 0) {
+  console.error("Tailwind-only guard failed. Unexpected CSS imports remain:");
+  for (const line of unexpectedImports) console.error(`- ${line}`);
+  process.exit(1);
+}
+
+console.log(
+  "UI parity guard passed: legacy markup is protected and UI ownership is Tailwind-only.",
+);
