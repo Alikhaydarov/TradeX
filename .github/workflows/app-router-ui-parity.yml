@@ -52,6 +52,14 @@ jobs:
       - name: Verify UI parity scope
         run: npm run check:ui-parity
 
+      - name: Upload Tailwind ownership audit
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ui-parity-audit
+          path: ui-parity-audit.json
+          if-no-files-found: warn
+
       - name: Lint
         run: npm run lint
 
