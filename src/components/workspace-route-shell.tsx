@@ -2,7 +2,7 @@
 
 import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
-import { useEffect, useState, type ReactNode } from "react";
+import { Suspense, useEffect, useState, type ReactNode } from "react";
 
 import {
   CommunitySidebar,
@@ -17,6 +17,7 @@ import { Sidebar } from "./sidebar";
 import type { Section } from "./types";
 import { WorkspaceBootLoader } from "./workspace-boot-loader";
 import { WorkspacePreferencesProvider } from "./workspace-preferences-context";
+import { WorkspaceSectionSkeleton } from "./workspace-section-skeleton";
 import { WorkspaceTopbar } from "./workspace-topbar";
 
 const UserSettingsDialog = dynamic(
@@ -91,7 +92,11 @@ export function WorkspaceRouteShell({
             className="workspace-main h-[100dvh] min-w-0 flex-1 overscroll-contain overflow-y-auto overflow-x-hidden bg-black pb-[max(env(safe-area-inset-bottom),0.5rem)] lg:pb-0"
           >
             {!community ? <WorkspaceTopbar section={section} /> : null}
-            <section className="min-h-full">{children}</section>
+            <section className="min-h-full">
+              <Suspense fallback={<WorkspaceSectionSkeleton />}>
+                {children}
+              </Suspense>
+            </section>
           </main>
         </div>
         {notificationsMounted ? <NotificationListener /> : null}
