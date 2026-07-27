@@ -4,7 +4,7 @@ import { AccountCardMenuBridge } from "@/components/account-card-menu-bridge";
 import { AuthProvider } from "@/components/auth-context";
 import { FloatingAddTradeButton } from "@/components/floating-add-trade-button";
 import { MobileTradesBridge } from "@/components/mobile-trades-bridge";
-import { ProAiCoachLauncher } from "@/components/pro-ai-coach-launcher";
+import { ProAiCoachLauncherBoundary } from "@/components/pro-ai-coach-launcher-boundary";
 import { WorkspaceAppRouterShell } from "@/components/workspace-app-router-shell";
 import { AppRouterCacheProvider } from "@mui/material-nextjs/v16-appRouter";
 import { getSupabaseServerClient } from "@/lib/supabase/server";
@@ -16,7 +16,6 @@ import "./responsive-fixes.css";
 import "./quality-overrides.css";
 import "./workspace-design-system.css";
 import "./typography.css";
-import "./ai-launcher-layout.css";
 import "./workspace-width-contract.css";
 import "./workspace-visual-refresh.css";
 import "./workspace-docked-shell.css";
@@ -56,7 +55,7 @@ export default async function RootLayout({
             <AccountCardMenuBridge />
             <FloatingAddTradeButton />
             <MobileTradesBridge />
-            <ProAiCoachLauncher />
+            <ProAiCoachLauncherBoundary />
           </AuthProvider>
         </AppRouterCacheProvider>
       </body>
