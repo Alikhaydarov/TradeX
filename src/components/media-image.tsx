@@ -1,21 +1,65 @@
 "use client";
 
-import type { ImgHTMLAttributes } from "react";
+import Image, {
+  type ImageLoader,
+  type ImageProps,
+} from "next/image";
 
-type MediaImageProps = Omit<ImgHTMLAttributes<HTMLImageElement>, "loading" | "decoding" | "draggable"> & {
+const passthroughLoader: ImageLoader = ({ src }) => src;
+
+const OPTIMIZED_HOSTS = new Set([
+  "lh3.googleusercontent.com",
+  "avatars.githubusercontent.com",
+  "images.unsplash.com",
+]);
+
+function canUseDefaultOptimizer(src: string) {
+  if (src.startsWith("/")) return true;
+  try {
+    const hostname = new URL(src).hostname;
+    return hostname.endsWith(".supabase.co") || OPTIMIZED_HOSTS.has(hostname);
+  } catch {
+    return false;
+  }
+}
+
+type MediaImageProps = Omit<
+  ImageProps,
+  "src" | "alt" | "width" | "height" | "priority" | "loading" | "loader"
+> & {
+  src: string;
+  alt: string;
   eager?: boolean;
+  width?: number;
+  height?: number;
 };
 
-export function MediaImage({ eager = false, alt, ...props }: MediaImageProps) {
+export function MediaImage({
+  src,
+  alt,
+  eager = false,
+  width = 1600,
+  height = 1000,
+  fill = false,
+  sizes,
+  ...props
+}: MediaImageProps) {
+  const optimized = canUseDefaultOptimizer(src);
+  const dimensions = fill ? {} : { width, height };
+  const loading = eager ? { priority: true as const } : { loading: "lazy" as const };
+
   return (
-    // User-uploaded media can be remote Supabase URLs or generated data URLs, so a plain img is intentional here.
-    // eslint-disable-next-line @next/next/no-img-element
-    <img
+    <Image
       {...props}
+      {...dimensions}
+      {...loading}
+      src={src}
       alt={alt}
-      decoding="async"
+      fill={fill || undefined}
+      sizes={sizes ?? (fill ? "100vw" : undefined)}
+      loader={optimized ? undefined : passthroughLoader}
+      unoptimized={!optimized}
       draggable={false}
-      loading={eager ? "eager" : "lazy"}
     />
   );
 }
