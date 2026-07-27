@@ -37,7 +37,6 @@ export function ProfileEditDialog({
   uploadingAvatar,
   uploadingBanner,
   avatarInputRef,
-  bannerInputRef,
   onOpenChange,
   onProfileChange,
   onAvatarFile,
@@ -52,7 +51,6 @@ export function ProfileEditDialog({
   uploadingAvatar: boolean;
   uploadingBanner: boolean;
   avatarInputRef: RefObject<HTMLInputElement | null>;
-  bannerInputRef: RefObject<HTMLInputElement | null>;
   onOpenChange: (open: boolean) => void;
   onProfileChange: (profile: Profile) => void;
   onAvatarFile: (file?: File) => void;
