@@ -6,6 +6,7 @@ import type { User } from "@supabase/supabase-js";
 import {
   CalendarDays,
   ChevronDown,
+  CircleHelp,
   Globe,
   History,
   Home,
@@ -48,11 +49,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "./ui/dropdown-menu";
-import {
-  Sheet,
-  SheetContent,
-  SheetTitle,
-} from "./ui/sheet";
+import { Sheet, SheetContent, SheetTitle } from "./ui/sheet";
 
 type NavItem = {
   id: Section;
@@ -74,12 +71,7 @@ function usernameFromUser(user: User | null) {
       "profile",
   );
 
-  return (
-    raw
-      .toLowerCase()
-      .replace(/[^a-z0-9_]/g, "")
-      .slice(0, 30) || "profile"
-  );
+  return raw.toLowerCase().replace(/[^a-z0-9_]/g, "").slice(0, 30) || "profile";
 }
 
 function initials(account: PropAccount | null) {
@@ -87,11 +79,19 @@ function initials(account: PropAccount | null) {
   return (account.name || account.firm || "A").trim().slice(0, 2).toUpperCase();
 }
 
-function Brand({ mobile = false }: { mobile?: boolean }) {
+function GroupLabel({ children }: { children: string }) {
+  return (
+    <p className="px-1.5 pb-1 pt-3 text-[8px] font-medium uppercase tracking-[0.14em] text-zinc-700">
+      {children}
+    </p>
+  );
+}
+
+function TradoxBrand({ mobile = false }: { mobile?: boolean }) {
   const size = mobile ? 40 : 36;
   return (
     <span
-      className={`${mobile ? "size-10" : "size-9"} relative grid shrink-0 place-items-center overflow-hidden rounded-xl border border-white/10 bg-[#171717]`}
+      className={`${mobile ? "size-10" : "size-9"} relative grid shrink-0 place-items-center overflow-hidden rounded-xl border border-white/10 bg-[#171717] shadow-[0_10px_24px_rgba(0,0,0,.32)]`}
     >
       <Image
         src="/tradox-logo.webp"
@@ -103,14 +103,6 @@ function Brand({ mobile = false }: { mobile?: boolean }) {
         priority
       />
     </span>
-  );
-}
-
-function GroupLabel({ children }: { children: string }) {
-  return (
-    <p className="px-2 pb-1 pt-4 text-[9px] font-semibold uppercase tracking-[0.16em] text-zinc-700">
-      {children}
-    </p>
   );
 }
 
@@ -127,27 +119,20 @@ export function Sidebar({
   user: User | null;
   hideMobile?: boolean;
 }) {
-  const { accounts, activeAccountId, setActiveAccount } =
-    useActiveAccountStore();
+  const { accounts, activeAccountId, setActiveAccount } = useActiveAccountStore();
   const { signOut } = useAuth();
   const { t, locale, setLocale } = useLanguage();
   const { status: premium } = usePremiumStatus(Boolean(user));
-  const { hidePersonalInfo, maskValue, setSettingsOpen } =
-    useWorkspacePreferences();
+  const { hidePersonalInfo, maskValue, setSettingsOpen } = useWorkspacePreferences();
 
   const [mobileOpen, setMobileOpen] = useState(false);
   const [accountOpen, setAccountOpen] = useState(false);
   const [accountQuery, setAccountQuery] = useState("");
   const [logoutOpen, setLogoutOpen] = useState(false);
   const [hasCommunityAccess, setHasCommunityAccess] = useState(false);
-  const [profile, setProfile] = useState({
-    username: "",
-    avatar: "",
-    fullName: "",
-  });
+  const [profile, setProfile] = useState({ username: "", avatar: "", fullName: "" });
 
-  const activeAccount =
-    accounts.find((account) => account.id === activeAccountId) ?? null;
+  const activeAccount = accounts.find((account) => account.id === activeAccountId) ?? null;
   const profileUsername = profile.username || usernameFromUser(user);
   const name = String(
     profile.fullName ||
@@ -157,18 +142,13 @@ export function Sidebar({
   );
   const avatar =
     profile.avatar ||
-    (typeof user?.user_metadata.avatar_url === "string"
-      ? user.user_metadata.avatar_url
-      : null);
+    (typeof user?.user_metadata.avatar_url === "string" ? user.user_metadata.avatar_url : null);
   const handle = user ? `@${profileUsername}` : "Sign in with Google";
   const visibleName = hidePersonalInfo ? maskValue(name) : name;
   const visibleHandle = hidePersonalInfo ? maskValue(handle) : handle;
+  const activeBalance = activeAccount ? money.format(activeAccount.accountSize) : "$0";
   const planLabel =
-    premium.plan === "pro"
-      ? "Pro"
-      : premium.plan === "standard"
-        ? "Standard"
-        : "Free";
+    premium.plan === "pro" ? "Pro" : premium.plan === "standard" ? "Standard" : "Free";
 
   const filteredAccounts = useMemo(() => {
     const query = accountQuery.trim().toLowerCase();
@@ -189,7 +169,7 @@ export function Sidebar({
   useEffect(() => {
     if (!user) return;
     let mounted = true;
-    apiRequest<{
+    void apiRequest<{
       profile: {
         username?: string | null;
         avatar_url?: string | null;
@@ -247,6 +227,10 @@ export function Sidebar({
       : [];
 
   const closeMobile = () => setMobileOpen(false);
+  const navigate = (section: Section, mobile = false) => {
+    if (mobile) closeMobile();
+    onChange(section);
+  };
 
   const renderNav = (item: NavItem, mobile = false) => {
     const Icon = item.icon;
@@ -259,7 +243,9 @@ export function Sidebar({
         onClick={() => {
           if (mobile) closeMobile();
         }}
-        className={`group flex min-h-11 w-full items-center gap-2 rounded-xl px-2.5 py-2 text-left transition ${
+        className={`group flex w-full items-center gap-2 rounded-xl px-2.5 py-2 text-left transition ${
+          mobile ? "min-h-11" : ""
+        } ${
           selected
             ? "bg-[#111111] text-white ring-1 ring-white/10"
             : "text-zinc-400 hover:bg-[#080808] hover:text-white"
@@ -267,7 +253,7 @@ export function Sidebar({
         aria-current={selected ? "page" : undefined}
       >
         <span
-          className={`grid size-7 place-items-center rounded-lg transition-colors ${
+          className={`grid size-7 shrink-0 place-items-center rounded-lg transition-colors ${
             selected
               ? "bg-[#1a1a1a] text-white"
               : "bg-[#050505] text-zinc-500 group-hover:bg-[#0f0f0f] group-hover:text-zinc-300"
@@ -275,9 +261,7 @@ export function Sidebar({
         >
           <Icon size={15} strokeWidth={selected ? 2.3 : 2} />
         </span>
-        <span className="min-w-0 flex-1 truncate text-[13px] font-medium">
-          {item.label}
-        </span>
+        <span className="min-w-0 flex-1 truncate text-[13px] font-medium">{item.label}</span>
       </Link>
     );
   };
@@ -291,39 +275,36 @@ export function Sidebar({
   const accountSwitcher = (mobile = false) => (
     <DropdownMenu open={accountOpen} onOpenChange={setAccountOpen}>
       <div
-        className={`${mobile ? "mt-2" : "mt-4"} flex items-center gap-2 rounded-2xl border border-white/10 bg-[#050505] p-2.5`}
+        className={`${
+          mobile
+            ? "flex w-full items-center gap-2 rounded-2xl border border-white/10 bg-[#030303] p-3"
+            : "mt-4 flex w-full items-center gap-2 rounded-[0.95rem] border border-white/8 bg-[#030303] p-2 transition hover:bg-[#070707]"
+        }`}
       >
         <button
           type="button"
-          onClick={() => {
-            onChange("accounts");
-            closeMobile();
-          }}
-          className="flex min-h-11 min-w-0 flex-1 items-center gap-3 text-left"
+          onClick={() => navigate("accounts", mobile)}
+          className="flex min-h-10 min-w-0 flex-1 items-center gap-3 text-left"
         >
-          <span className="grid size-8 shrink-0 place-items-center rounded-xl bg-[#151515] text-[10px] font-black text-white">
-            {initials(activeAccount)}
-          </span>
+          <span className={`size-2 shrink-0 rounded-full ${activeAccount ? "bg-emerald-500" : "bg-zinc-500"}`} />
           <span className="min-w-0 flex-1">
-            <strong className="block truncate text-xs text-white">
+            <strong className={`${mobile ? "text-sm" : "text-xs"} block truncate text-white`}>
               {activeAccount?.name || "Accounts"}
             </strong>
-            <small className="block truncate text-[10px] text-zinc-500">
-              {activeAccount
-                ? money.format(activeAccount.accountSize)
-                : "Select trading account"}
+            <small className={`${mobile ? "text-xs" : "text-[11px]"} block truncate text-zinc-500`}>
+              {activeAccount ? activeBalance : "Select trading account"}
             </small>
           </span>
         </button>
         <DropdownMenuTrigger asChild>
           <button
             type="button"
-            className="grid size-10 shrink-0 place-items-center rounded-xl border border-white/8 bg-[#0a0a0a] text-zinc-400 transition hover:text-white"
+            className={`${mobile ? "size-9" : "size-8"} grid shrink-0 place-items-center rounded-xl border border-white/8 bg-[#090909] text-zinc-400 transition hover:bg-[#111111] hover:text-white`}
             aria-label="Open account switcher"
           >
             <ChevronDown
               size={14}
-              className={accountOpen ? "rotate-180 transition" : "transition"}
+              className={`transition-transform ${accountOpen ? "rotate-180" : ""}`}
             />
           </button>
         </DropdownMenuTrigger>
@@ -331,51 +312,64 @@ export function Sidebar({
       <DropdownMenuContent
         side={mobile ? "bottom" : "right"}
         align="start"
-        sideOffset={10}
-        className="w-[min(320px,calc(100vw-2rem))] rounded-2xl border-white/10 bg-[#080808] p-0"
+        sideOffset={mobile ? 10 : 12}
+        className={`${mobile ? "w-[min(320px,calc(100vw-2rem))]" : "w-[320px]"} rounded-2xl border-white/10 bg-[#080808] p-0 shadow-[0_28px_80px_rgba(0,0,0,.65)]`}
       >
+        <div className="border-b border-white/8 px-4 py-3">
+          <button
+            type="button"
+            onClick={() => navigate("accounts", mobile)}
+            className="w-full rounded-xl px-2 py-1.5 text-left text-sm font-black text-white transition hover:bg-[#111111]"
+          >
+            All Accounts
+          </button>
+        </div>
         <div className="flex items-center gap-2 border-b border-white/8 px-4 py-3 text-zinc-500">
-          <Search size={15} />
+          <Search size={16} />
           <input
             value={accountQuery}
             onChange={(event) => setAccountQuery(event.target.value)}
             onKeyDown={(event) => event.stopPropagation()}
             placeholder="Search account"
-            className="h-9 min-w-0 flex-1 bg-transparent text-sm text-white outline-none placeholder:text-zinc-600"
+            className="h-8 min-w-0 flex-1 bg-transparent text-sm text-white outline-none placeholder:text-zinc-600"
           />
         </div>
-        <div className="max-h-[260px] overflow-y-auto p-2">
+        <div className="max-h-[250px] overflow-y-auto p-2">
           {filteredAccounts.length ? (
-            filteredAccounts.map((account) => (
-              <DropdownMenuItem
-                key={account.id}
-                onSelect={(event) => {
-                  event.preventDefault();
-                  selectAccount(account.id);
-                }}
-                className={`cursor-pointer rounded-xl px-3 py-3 ${
-                  account.id === activeAccountId
-                    ? "bg-[#141414] text-white"
-                    : "text-zinc-300"
-                }`}
-              >
-                <span className="min-w-0 flex-1">
-                  <strong className="block truncate text-sm">
-                    {account.name}
-                  </strong>
-                  <small className="block truncate text-[10px] text-zinc-500">
-                    {account.phase} · {account.marketType}
-                  </small>
-                </span>
-                <span className="font-mono text-xs text-zinc-500">
-                  {money.format(account.accountSize)}
-                </span>
-              </DropdownMenuItem>
-            ))
+            filteredAccounts.map((account) => {
+              const selected = account.id === activeAccountId;
+              return (
+                <DropdownMenuItem
+                  key={account.id}
+                  onSelect={(event) => {
+                    event.preventDefault();
+                    selectAccount(account.id);
+                  }}
+                  className={`flex cursor-pointer items-center gap-3 rounded-xl px-3 py-3 ${
+                    selected ? "bg-[#101010] text-white" : "text-zinc-300"
+                  }`}
+                >
+                  <span
+                    className={`grid size-8 shrink-0 place-items-center rounded-lg text-[10px] font-black ${
+                      selected ? "bg-white text-black" : "bg-[#141414] text-white"
+                    }`}
+                  >
+                    {initials(account)}
+                  </span>
+                  <span className="min-w-0 flex-1">
+                    <strong className="block truncate text-sm">{account.name}</strong>
+                    <small className="block truncate text-[11px] text-zinc-500">
+                      {account.phase} / {account.marketType}
+                    </small>
+                  </span>
+                  <span className="shrink-0 font-mono text-xs text-zinc-500">
+                    {money.format(account.accountSize)}
+                  </span>
+                </DropdownMenuItem>
+              );
+            })
           ) : (
-            <p className="px-4 py-6 text-center text-sm text-zinc-500">
-              No accounts found.
-            </p>
+            <p className="px-4 py-6 text-center text-sm text-zinc-500">No accounts found.</p>
           )}
         </div>
       </DropdownMenuContent>
@@ -383,61 +377,71 @@ export function Sidebar({
   );
 
   const profileCard = (mobile = false) => (
-    <div className="flex items-center gap-3 rounded-2xl border border-white/10 bg-[#0b0b0b] p-2.5">
-      <TraderAvatar name={name} value={avatar} className="size-9 text-xs" />
+    <div className="flex w-full items-center gap-3 rounded-2xl border border-white/10 bg-[#0b0b0b] p-2 text-left shadow-[inset_0_1px_0_rgba(255,255,255,.035)] transition-colors hover:bg-[#121212]">
+      <TraderAvatar name={name} value={avatar} className={`${mobile ? "size-10" : "size-9"} text-xs`} />
       <button
         type="button"
         onClick={() => {
           if (!user) onLogin();
-          else onChange("account");
-          if (mobile) closeMobile();
+          else navigate("account", mobile);
         }}
-        className="min-h-11 min-w-0 flex-1 text-left"
+        className="min-h-10 min-w-0 flex-1 text-left"
       >
-        <strong className="block truncate text-xs text-white">
+        <strong className={`${mobile ? "text-sm" : "text-xs"} block truncate text-white`}>
           {visibleName}
         </strong>
-        <small className="block truncate text-[10px] text-zinc-500">
-          {visibleHandle}
-        </small>
+        <small className="block truncate text-[10px] text-zinc-500">{visibleHandle}</small>
       </button>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <button
             type="button"
-            className="grid size-10 place-items-center rounded-xl text-zinc-400 transition hover:bg-[#151515] hover:text-white"
+            className="grid size-8 place-items-center rounded-xl text-zinc-400 transition hover:bg-[#111111] hover:text-white"
             aria-label="Open profile menu"
           >
             <MoreHorizontal size={16} />
           </button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-48 border-white/10 bg-[#090909]">
-          <DropdownMenuItem onClick={() => setSettingsOpen(true)}>
+          <DropdownMenuItem onClick={() => setSettingsOpen(true)} className="px-3 py-2.5">
             <Settings2 size={14} className="mr-2" /> Settings
           </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => onChange("pricing")}>
+          <DropdownMenuItem onClick={() => navigate("pricing", mobile)} className="px-3 py-2.5">
             {premium.isPremium ? "Manage subscription" : "View plans"}
           </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => setLocale(locale === "en" ? "es" : "en")}>
-            <Globe size={14} className="mr-2" />
-            {locale === "en" ? "Español" : "English"}
+          <DropdownMenuItem
+            onClick={() => setLocale("en")}
+            className="flex items-center justify-between px-3 py-2.5"
+          >
+            <span className="flex items-center gap-2"><Globe size={14} /> English</span>
+            {locale === "en" ? <span className="text-[10px] font-bold text-zinc-400">Active</span> : null}
+          </DropdownMenuItem>
+          <DropdownMenuItem
+            onClick={() => setLocale("es")}
+            className="flex items-center justify-between px-3 py-2.5"
+          >
+            <span className="pl-6">Spanish</span>
+            {locale === "es" ? <span className="text-[10px] font-bold text-zinc-400">Active</span> : null}
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={() => navigate("pricing", mobile)} className="px-3 py-2.5">
+            <CircleHelp size={14} className="mr-2" /> Help Center
           </DropdownMenuItem>
           <DropdownMenuItem
             onClick={() => setLogoutOpen(true)}
-            className="text-rose-300 focus:text-rose-200"
+            className="px-3 py-2.5 text-rose-300 focus:text-rose-200"
           >
             <LogOut size={14} className="mr-2" /> Logout
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
-      {!user ? <LogIn size={15} className="text-zinc-500" /> : null}
+      {!user ? <LogIn size={16} className="text-zinc-500" /> : null}
     </div>
   );
 
   const navigation = (mobile = false) => (
     <>
       {accountSwitcher(mobile)}
-      <div className="mt-3 flex-1 overflow-y-auto">
+      <div className={`${mobile ? "flex-1 overflow-y-auto px-2 py-3" : "mt-3"}`}>
         <nav className="space-y-1">{primaryNav.map((item) => renderNav(item, mobile))}</nav>
         <GroupLabel>Workspace</GroupLabel>
         <nav className="space-y-1">{workspaceNav.map((item) => renderNav(item, mobile))}</nav>
@@ -453,28 +457,30 @@ export function Sidebar({
 
   return (
     <>
-      <aside className="fixed left-[max(1rem,calc((100vw-1860px)/2+1rem))] top-3 z-40 hidden h-[calc(100dvh-1.5rem)] w-[238px] shrink-0 flex-col rounded-2xl border border-white/8 bg-black p-3 lg:flex">
+      <aside className="fixed inset-y-0 left-0 z-40 hidden w-[238px] shrink-0 flex-col border-r border-white/10 bg-black p-[0.85rem] lg:flex">
         <Link
           href={pathFromSection("feed")}
           prefetch
-          className="flex min-h-11 items-center gap-3 rounded-xl px-2 py-1.5 transition hover:bg-[#080808]"
+          className="flex items-center gap-3 rounded-2xl px-2 py-1.5 text-left transition-colors hover:bg-[#080808]"
           aria-label="Tradox home"
         >
-          <Brand />
-          <span className="min-w-0 flex-1">
+          <TradoxBrand />
+          <span className="min-w-0">
             <span className="flex items-center gap-2">
-              <strong className="truncate text-[13px] text-white">Tradox</strong>
-              <span className="rounded-full bg-[#101010] px-2 py-0.5 text-[9px] font-bold text-zinc-400">
+              <strong className="block truncate text-[13px] tracking-tight">Tradox</strong>
+              <span
+                className={`rounded-full px-2 py-0.5 text-[10px] font-black ${
+                  premium.isPremium ? "bg-[#0b1c12] text-emerald-300" : "bg-[#0a0a0a] text-zinc-400"
+                }`}
+              >
                 {planLabel}
               </span>
             </span>
-            <small className="block text-[10px] text-zinc-500">
-              Trading workspace
-            </small>
+            <small className="text-[10px] text-zinc-500">Trading workspace</small>
           </span>
         </Link>
         {navigation()}
-        <div className="mt-auto pt-3">{profileCard()}</div>
+        <div className="mt-auto">{profileCard()}</div>
       </aside>
 
       {!hideMobile ? (
@@ -482,34 +488,46 @@ export function Sidebar({
           <SheetContent
             side="left"
             showCloseButton={false}
-            className="w-[82vw] max-w-[320px] p-0 lg:hidden"
+            className="w-[82vw] max-w-[312px] border-r border-white/10 bg-black p-0 lg:hidden"
           >
             <SheetTitle className="sr-only">Tradox navigation</SheetTitle>
-            <div className="flex min-h-0 flex-1 flex-col p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
-              <div className="flex items-center justify-between border-b border-white/8 px-1 pb-3">
+            <div className="flex min-h-0 flex-1 flex-col">
+              <div className="flex items-center justify-between border-b border-white/8 px-4 py-4">
                 <Link
                   href={pathFromSection("feed")}
                   prefetch
                   onClick={closeMobile}
-                  className="flex min-h-11 items-center gap-3"
+                  className="flex min-w-0 items-center gap-3"
                 >
-                  <Brand mobile />
-                  <span>
-                    <strong className="block text-sm text-white">Tradox</strong>
-                    <small className="text-[10px] text-zinc-500">{planLabel} workspace</small>
+                  <TradoxBrand mobile />
+                  <span className="min-w-0">
+                    <span className="flex items-center gap-2">
+                      <strong className="block truncate text-base leading-tight text-white">Tradox</strong>
+                      <span
+                        className={`rounded-full px-2 py-0.5 text-[10px] font-black ${
+                          premium.isPremium ? "bg-[#0b1c12] text-emerald-300" : "bg-[#0a0a0a] text-zinc-400"
+                        }`}
+                      >
+                        {planLabel}
+                      </span>
+                    </span>
+                    <small className="text-xs text-zinc-500">Trading workspace</small>
                   </span>
                 </Link>
                 <button
                   type="button"
                   onClick={closeMobile}
-                  className="grid size-11 place-items-center rounded-xl border border-white/10 bg-[#0a0a0a] text-zinc-400"
+                  className="grid size-10 place-items-center rounded-xl border border-white/10 bg-[#0a0a0a] text-zinc-300"
                   aria-label="Close navigation"
                 >
                   <X size={17} />
                 </button>
               </div>
-              {navigation(true)}
-              <div className="pt-3">{profileCard(true)}</div>
+              <div className="border-b border-white/8 px-3.5 py-3.5">{accountSwitcher(true)}</div>
+              <div className="flex min-h-0 flex-1 flex-col">{navigation(true)}</div>
+              <div className="border-t border-white/8 p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
+                {profileCard(true)}
+              </div>
             </div>
           </SheetContent>
         </Sheet>
