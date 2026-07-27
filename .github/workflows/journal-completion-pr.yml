@@ -1,4 +1,4 @@
-name: Journal completion PR
+name: UI plan completion PR
 
 on:
   pull_request:
@@ -6,15 +6,22 @@ on:
     paths:
       - "docs/journal-completion-request.md"
       - "tools/apply-journal-completion.mjs"
+      - "tools/responsive-smoke.mjs"
+      - "next.config.ts"
+      - "src/components/feed/**"
       - "src/components/journal-v2.tsx"
       - "src/components/journal/**"
+      - "src/components/media-image.tsx"
+      - "src/components/sidebar.tsx"
+      - "src/components/sidebar/**"
+      - "src/components/workspace-route-layout.tsx"
       - ".github/workflows/journal-completion-pr.yml"
 
 permissions:
   contents: write
 
 concurrency:
-  group: journal-completion-${{ github.event.pull_request.number }}
+  group: ui-plan-completion-${{ github.event.pull_request.number }}
   cancel-in-progress: false
 
 jobs:
@@ -104,3 +111,92 @@ jobs:
           git add -A
           git commit -m "refactor: complete Journal module architecture"
           git push origin HEAD:${{ github.head_ref }}
+
+  responsive-smoke:
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: Checkout PR branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
+          fetch-depth: 0
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install application dependencies
+        run: npm ci
+
+      - name: Install audit tools
+        run: |
+          npm install --no-save --package-lock=false playwright@^1.55.0 lighthouse@^12.8.0
+          npx playwright install --with-deps chromium
+
+      - name: Build production application
+        run: npm run build
+
+      - name: Start production server
+        shell: bash
+        run: |
+          npm start -- -p 3000 > server.log 2>&1 &
+          echo $! > server.pid
+          for attempt in $(seq 1 60); do
+            if curl -fsS http://127.0.0.1:3000/ > /dev/null; then
+              exit 0
+            fi
+            sleep 1
+          done
+          cat server.log
+          exit 1
+
+      - name: Run responsive screenshots and overflow audit
+        env:
+          UI_AUDIT_BASE_URL: http://127.0.0.1:3000
+          UI_AUDIT_OUTPUT: ui-audit-artifacts
+        run: node tools/responsive-smoke.mjs
+
+      - name: Run Lighthouse 90 plus gate
+        shell: bash
+        run: |
+          CHROME_PATH=$(find "$HOME/.cache/ms-playwright" -type f \( -name chrome -o -name headless_shell \) -perm -111 | head -n 1)
+          if [ -z "$CHROME_PATH" ]; then
+            echo "Chromium executable was not found"
+            exit 1
+          fi
+          CHROME_PATH="$CHROME_PATH" npx lighthouse http://127.0.0.1:3000/ \
+            --quiet \
+            --chrome-flags="--headless --no-sandbox --disable-gpu" \
+            --only-categories=performance,accessibility,best-practices \
+            --output=json \
+            --output-path=ui-audit-artifacts/lighthouse-home.json
+          node --input-type=module <<'NODE'
+          import { readFile, writeFile } from "node:fs/promises";
+          const report = JSON.parse(await readFile("ui-audit-artifacts/lighthouse-home.json", "utf8"));
+          const scores = Object.fromEntries(
+            ["performance", "accessibility", "best-practices"].map((key) => [
+              key,
+              Math.round((report.categories[key]?.score ?? 0) * 100),
+            ]),
+          );
+          await writeFile(
+            "ui-audit-artifacts/lighthouse-summary.json",
+            `${JSON.stringify(scores, null, 2)}\n`,
+          );
+          console.log(scores);
+          if (Object.values(scores).some((score) => score < 90)) process.exit(1);
+          NODE
+
+      - name: Upload responsive audit artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: responsive-ui-audit
+          path: |
+            ui-audit-artifacts
+            server.log
+          if-no-files-found: warn
