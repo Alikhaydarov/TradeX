@@ -7,6 +7,7 @@ import { FloatingAddTradeButton } from "@/components/floating-add-trade-button";
 import { MobileTradesBridge } from "@/components/mobile-trades-bridge";
 import { ProAiCoachLauncherBoundary } from "@/components/pro-ai-coach-launcher-boundary";
 import { APP_ROOT_TAILWIND_CLASS } from "@/components/tailwind/app-tailwind-classes";
+import { WorkspaceTailwindBoundary } from "@/components/tailwind/workspace-tailwind-boundary";
 import { WorkspaceAppRouterShell } from "@/components/workspace-app-router-shell";
 import { AppRouterCacheProvider } from "@mui/material-nextjs/v16-appRouter";
 import { getSupabaseServerClient } from "@/lib/supabase/server";
@@ -63,7 +64,9 @@ export default async function RootLayout({
             initialUser={data.user}
             initialConfigured={configured}
           >
-            <WorkspaceAppRouterShell>{children}</WorkspaceAppRouterShell>
+            <WorkspaceTailwindBoundary>
+              <WorkspaceAppRouterShell>{children}</WorkspaceAppRouterShell>
+            </WorkspaceTailwindBoundary>
             <AccountCardMenuBridge />
             <FloatingAddTradeButton />
             <MobileTradesBridge />
