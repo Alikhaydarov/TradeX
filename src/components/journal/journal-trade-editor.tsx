@@ -1,7 +1,7 @@
 "use client";
 
 import { ChevronDown, Download, ImageIcon, Plus, Trash2, X } from "lucide-react";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import {
   AlertDialog,
