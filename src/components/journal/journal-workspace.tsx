@@ -12,10 +12,9 @@ import { Button } from "@/components/ui/button";
 import { WorkspaceSectionSkeleton } from "@/components/workspace-section-skeleton";
 import { useWorkspacePreferences } from "@/components/workspace-preferences-context";
 import { JournalAccounts } from "./journal-accounts";
+import { JournalAnalytics } from "./journal-analytics";
 import { JournalCalendar } from "./journal-calendar";
-import { JournalFilters } from "./journal-filters";
 import { JournalGallery } from "./journal-gallery";
-import { JournalStats } from "./journal-stats";
 import { JournalTradeList } from "./journal-trade-list";
 import { useJournalData } from "./use-journal-data";
 
@@ -189,14 +188,7 @@ export function JournalWorkspace({
 
     if (forcedTab === "trades") {
       return (
-        <div className="mx-auto w-full max-w-[1680px] space-y-3 p-3 sm:p-4 lg:p-6">
-          <JournalFilters
-            accounts={data.accounts}
-            activeAccountId={data.activeAccountId}
-            query={data.query}
-            onAccountChange={data.setActiveAccount}
-            onQueryChange={data.setQuery}
-          />
+        <div className="mx-auto w-full max-w-[1320px] p-3 sm:p-4 lg:p-5">
           <JournalTradeList
             trades={data.filteredEntries}
             query={data.query}
@@ -218,25 +210,16 @@ export function JournalWorkspace({
 
     if (forcedTab === "analytics") {
       return (
-        <div className="mx-auto w-full max-w-[1680px] space-y-5 p-3 sm:p-4 lg:p-6">
-          <JournalFilters
-            accounts={data.accounts}
-            activeAccountId={data.activeAccountId}
-            query={data.query}
-            onAccountChange={data.setActiveAccount}
-            onQueryChange={data.setQuery}
-          />
-          <JournalStats
+        <div className="mx-auto w-full max-w-[1320px] p-3 sm:p-4 lg:p-5">
+          <JournalAnalytics
+            account={data.account}
+            trades={data.entries}
             metrics={data.metrics}
+            equity={data.equity}
             setups={data.setups}
             mistakes={data.mistakes}
             planRate={data.planRate}
             formatPnl={preferences.formatPnl}
-          />
-          <JournalGallery
-            trades={data.filteredEntries}
-            formatPnl={preferences.formatPnl}
-            onOpenTrade={openTrade}
           />
         </div>
       );
@@ -244,7 +227,7 @@ export function JournalWorkspace({
 
     if (forcedTab === "bible") {
       return (
-        <div className="mx-auto w-full max-w-[1680px] p-3 sm:p-4 lg:p-6">
+        <div className="mx-auto w-full max-w-[1320px] p-3 sm:p-4 lg:p-5">
           <JournalGallery
             trades={data.entries.filter((trade) => trade.toTradingBible)}
             formatPnl={preferences.formatPnl}
