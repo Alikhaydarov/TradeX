@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import type { User } from "@supabase/supabase-js";
 import {
   CircleHelp,
@@ -36,7 +37,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "./ui/alert-dialog";
-import { Dialog, DialogContent } from "./ui/dialog";
+import { Sheet, SheetContent } from "./ui/sheet";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -45,6 +46,7 @@ import {
 } from "./ui/dropdown-menu";
 import { TraderAvatar } from "./trader-avatar";
 import type { PropAccount, Section } from "./types";
+import { pathFromSection } from "./section-config";
 
 function usernameFromUser(user: User | null) {
   const raw = String(
@@ -279,13 +281,18 @@ export function Sidebar({
     const { id, label, icon: Icon } = item;
     const selected = active === id;
     return (
-      <button
+      <Link
         key={id}
-        onClick={() => {
+        href={pathFromSection(id)}
+        prefetch
+        onClick={(event) => {
+          event.preventDefault();
           if (mobile) setMobileMenuOpen(false);
           onChange(id);
         }}
         className={`group flex w-full items-center gap-2 rounded-xl px-2.5 py-2 text-left transition ${
+          mobile ? "min-h-11" : ""
+        } ${
           selected
             ? "bg-[#111111] text-white ring-1 ring-white/10"
             : "text-zinc-400 hover:bg-[#080808] hover:text-white"
@@ -299,7 +306,7 @@ export function Sidebar({
         <span className="min-w-0 flex-1 truncate text-[13px] font-medium">
           {label}
         </span>
-      </button>
+      </Link>
     );
   };
 
@@ -541,10 +548,11 @@ export function Sidebar({
       </aside>
 
       {!hideMobile && (
-        <Dialog open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
-          <DialogContent
+        <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
+          <SheetContent
+            side="left"
             showCloseButton={false}
-            className="left-0 top-0 h-[100dvh] w-[76vw] max-w-[312px] translate-x-0 translate-y-0 rounded-none border-r border-white/10 bg-black p-0 sm:max-w-[312px] lg:hidden"
+            className="h-[100dvh] w-[76vw] max-w-[312px] p-0 sm:max-w-[312px] lg:hidden"
           >
             <div className="flex h-full flex-col">
               <div className="flex items-center justify-between border-b border-white/8 px-4 py-4">
@@ -690,8 +698,8 @@ export function Sidebar({
                 </div>
               </div>
             </div>
-          </DialogContent>
-        </Dialog>
+          </SheetContent>
+        </Sheet>
       )}
 
       <AlertDialog open={logoutConfirmOpen} onOpenChange={setLogoutConfirmOpen}>
