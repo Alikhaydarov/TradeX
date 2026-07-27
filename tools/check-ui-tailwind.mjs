@@ -3,7 +3,9 @@ import path from "node:path";
 
 const root = process.cwd();
 const sourceRoot = path.join(root, "src");
-const allowedCss = new Set([path.normalize("src/app/globals.css")]);
+const globalsCss = path.normalize("src/app/globals.css");
+const rootLayout = path.normalize("src/app/layout.tsx");
+const allowedCss = new Set([globalsCss]);
 const extensions = new Set([".ts", ".tsx", ".js", ".jsx", ".css"]);
 const failures = [];
 
@@ -47,12 +49,16 @@ for (const file of await walk(sourceRoot)) {
 
   report(file, content, /!important/g, "contains !important");
   report(file, content, /@media\b/g, "contains a media query; use Tailwind breakpoints");
-  report(
-    file,
-    content,
-    /(?:import|require\()[^\n]*["'][^"']+\.css["']/g,
-    "imports a CSS file outside the root Tailwind stylesheet",
-  );
+
+  if (rel !== globalsCss && rel !== rootLayout) {
+    report(
+      file,
+      content,
+      /(?:import|require\()[^\n]*["'][^"']+\.css["']/g,
+      "imports a component CSS file; use Tailwind utilities",
+    );
+  }
+
   report(
     file,
     content,
@@ -73,4 +79,4 @@ if (failures.length) {
   process.exit(1);
 }
 
-console.log("UI Tailwind audit passed: only globals.css remains, with no !important, media-query, CSS-import, or manual-history hacks.");
+console.log("UI Tailwind audit passed: no standalone component CSS, !important, media-query, CSS-import, or manual-history hacks remain.");
