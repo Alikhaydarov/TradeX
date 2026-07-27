@@ -18,7 +18,7 @@ import "./dashboard-cleanups.css";
 import "./workspace-design-system.css";
 import "./typography.css";
 import "./ai-launcher-layout.css";
-import "./dashboard-reference-layout.css";
+import "./workspace-width-contract.css";
 import "./workspace-visual-refresh.css";
 import "./workspace-docked-shell.css";
 import "./community-ui-fixes.css";
