@@ -8,7 +8,6 @@ import { AppRouterCacheProvider } from "@mui/material-nextjs/v16-appRouter";
 import { getSupabaseServerClient } from "@/lib/supabase/server";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
 import "./globals.css";
-import "./auth-landing-v2.css";
 
 const dmSans = DM_Sans({
   variable: "--font-dm-sans",
