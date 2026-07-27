@@ -97,84 +97,80 @@ export function ProfileAchievements({
     setImageUrl("");
   };
 
+  if (!achievements.length && !isOwnProfile) return null;
+
   return (
     <>
-      <section className="rounded-2xl border border-white/8 bg-[#090909] p-4 sm:p-5">
-        <header className="flex items-center gap-3">
-          <span className="grid size-9 place-items-center rounded-xl border border-white/8 bg-white/[.035] text-zinc-400">
-            <Award className="size-4" />
+      <section className="mt-2 border-y border-border bg-card px-4 py-3 sm:rounded-lg sm:border">
+        <div className="flex items-center gap-2">
+          <span className="grid size-8 place-items-center rounded-lg border border-amber-300/15 bg-amber-300/[.06] text-amber-200">
+            <Award size={15} />
           </span>
-          <div className="min-w-0 flex-1">
-            <h2 className="text-sm font-semibold text-white">Achievements</h2>
-            <p className="mt-0.5 text-xs text-zinc-600">
-              Funded account and payout certificates.
+          <div className="min-w-0">
+            <h2 className="text-sm font-black text-white">Achievements</h2>
+            <p className="truncate text-[10px] text-muted-foreground">
+              {achievements.length} certificates
             </p>
           </div>
           {isOwnProfile ? (
             <Button
-              variant="outline"
-              size="sm"
               onClick={() => setOpen(true)}
-              className="border-white/10"
+              variant="ghost"
+              size="sm"
+              className="ml-auto"
             >
-              <Plus className="size-3.5" /> Add
+              <Plus size={14} /> Add
             </Button>
           ) : null}
-        </header>
+        </div>
 
         {achievements.length ? (
-          <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+          <div className="mt-3 flex gap-2 overflow-x-auto pb-1">
             {achievements.map((achievement) => (
               <article
                 key={achievement.id}
-                className="group overflow-hidden rounded-xl border border-white/8 bg-[#0c0c0c]"
+                className="group relative w-36 shrink-0 overflow-hidden rounded-lg border border-border bg-[#111111] sm:w-40"
               >
                 <button
                   type="button"
                   onClick={() => setViewing(achievement)}
-                  className="relative block aspect-[4/3] w-full overflow-hidden bg-black"
+                  className="block w-full text-left"
                 >
                   <MediaImage
                     src={achievement.image_url}
                     alt={achievement.title}
-                    className="h-full w-full object-cover transition-transform group-hover:scale-[1.02]"
+                    className="aspect-[16/10] w-full object-cover"
                   />
-                  <span className="absolute left-2 top-2 rounded-md bg-black/75 px-2 py-1 text-[9px] font-semibold uppercase tracking-wide text-zinc-200">
-                    {achievement.achievement_type}
-                  </span>
-                </button>
-                <div className="flex items-start gap-3 p-3">
-                  <div className="min-w-0 flex-1">
-                    <h3 className="truncate text-sm font-semibold text-white">
+                  <div className="p-2.5">
+                    <span
+                      className={`text-[9px] font-black uppercase ${
+                        achievement.achievement_type === "payout"
+                          ? "text-emerald-300"
+                          : "text-amber-200"
+                      }`}
+                    >
+                      {achievement.achievement_type}
+                    </span>
+                    <h3 className="mt-1 truncate text-xs font-bold text-white">
                       {achievement.title}
                     </h3>
-                    <p className="mt-1 truncate text-xs text-zinc-600">
-                      {achievement.issuer || "Verified achievement"}
-                    </p>
                   </div>
-                  {isOwnProfile ? (
-                    <button
-                      type="button"
-                      onClick={() => onRemove(achievement.id)}
-                      disabled={busy}
-                      className="grid size-8 shrink-0 place-items-center rounded-lg text-zinc-600 hover:bg-rose-500/10 hover:text-rose-300 disabled:opacity-50"
-                      aria-label={`Delete ${achievement.title}`}
-                    >
-                      <Trash2 className="size-3.5" />
-                    </button>
-                  ) : null}
-                </div>
+                </button>
+                {isOwnProfile ? (
+                  <button
+                    type="button"
+                    onClick={() => onRemove(achievement.id)}
+                    disabled={busy}
+                    className="absolute right-2 top-2 grid size-8 place-items-center rounded-lg bg-black text-zinc-300 opacity-100 transition hover:text-rose-300 disabled:opacity-50 sm:opacity-0 sm:group-hover:opacity-100"
+                    aria-label={`Delete ${achievement.title}`}
+                  >
+                    <Trash2 size={14} />
+                  </button>
+                ) : null}
               </article>
             ))}
           </div>
-        ) : (
-          <div className="mt-4 grid min-h-36 place-items-center rounded-xl border border-dashed border-white/10 text-center">
-            <div>
-              <Award className="mx-auto size-5 text-zinc-700" />
-              <p className="mt-3 text-sm text-zinc-600">No achievements added.</p>
-            </div>
-          </div>
-        )}
+        ) : null}
       </section>
 
       <Dialog open={open} onOpenChange={setOpen}>
