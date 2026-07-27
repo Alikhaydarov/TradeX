@@ -1,1 +1,4 @@
-export { JournalV2 as Journal } from "./journal-v2";
+export {
+  JournalWorkspace as Journal,
+  type WorkspaceTab,
+} from "./journal/journal-workspace";

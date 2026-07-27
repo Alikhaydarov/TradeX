@@ -1,27 +1,14 @@
 import type { Metadata } from "next";
 import { DM_Sans } from "next/font/google";
-import { AppShell } from "@/components/app-shell";
 import { AccountCardMenuBridge } from "@/components/account-card-menu-bridge";
 import { AuthProvider } from "@/components/auth-context";
 import { FloatingAddTradeButton } from "@/components/floating-add-trade-button";
-import { MobileTradesBridge } from "@/components/mobile-trades-bridge";
 import { ProAiCoachLauncher } from "@/components/pro-ai-coach-launcher";
 import { AppRouterCacheProvider } from "@mui/material-nextjs/v16-appRouter";
 import { getSupabaseServerClient } from "@/lib/supabase/server";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
 import "./globals.css";
 import "./auth-landing-v2.css";
-import "./onyx-overrides.css";
-import "./responsive-fixes.css";
-import "./quality-overrides.css";
-import "./dashboard-cleanups.css";
-import "./workspace-design-system.css";
-import "./typography.css";
-import "./floating-actions-layout.css";
-import "./dashboard-reference-layout.css";
-import "./workspace-visual-refresh.css";
-import "./workspace-docked-shell.css";
-import "./community-ui-fixes.css";
 
 const dmSans = DM_Sans({
   variable: "--font-dm-sans",
@@ -53,12 +40,10 @@ export default async function RootLayout({
             initialUser={data.user}
             initialConfigured={configured}
           >
-            <AppShell />
+            {children}
             <AccountCardMenuBridge />
             <FloatingAddTradeButton />
-            <MobileTradesBridge />
             <ProAiCoachLauncher />
-            <div className="hidden">{children}</div>
           </AuthProvider>
         </AppRouterCacheProvider>
       </body>
