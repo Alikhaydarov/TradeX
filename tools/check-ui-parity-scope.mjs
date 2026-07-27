@@ -1,82 +1,57 @@
-import { execFileSync } from "node:child_process";
+import { readdirSync, readFileSync } from "node:fs";
+import { extname, join, relative } from "node:path";
 
 if (process.env.ALLOW_UI_CHANGES === "1") {
   console.log("UI parity scope guard disabled for an intentional visual-change phase.");
   process.exit(0);
 }
 
-const protectedLegacyComponents = new Set([
-  "src/components/account.tsx",
-  "src/components/feed-v3.tsx",
-  "src/components/journal.tsx",
-  "src/components/journal-v2.tsx",
-  "src/components/sidebar.tsx",
-  "src/components/workspace-topbar.tsx",
-  "src/components/pro-ai-coach-launcher.tsx",
-]);
-
-function runGit(args) {
-  return execFileSync("git", args, { encoding: "utf8" }).trim();
+function walk(directory) {
+  return readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
+    const absolute = join(directory, entry.name);
+    return entry.isDirectory() ? walk(absolute) : [absolute];
+  });
 }
 
-let changedFiles;
-try {
-  changedFiles = runGit(["diff", "--name-only", "origin/main...HEAD"])
-    .split("\n")
-    .map((file) => file.trim())
-    .filter(Boolean);
-} catch (error) {
-  console.error("Could not compare the branch with origin/main.");
-  throw error;
-}
+const sourceFiles = walk("src");
+const sourceCssFiles = sourceFiles
+  .filter((file) => extname(file) === ".css")
+  .map((file) => relative(".", file).replaceAll("\\", "/"))
+  .sort();
+const allowedCssFiles = ["src/app/globals.css"];
 
-const protectedViolations = changedFiles.filter((file) =>
-  protectedLegacyComponents.has(file),
-);
-
-if (protectedViolations.length > 0) {
-  console.error("UI parity guard failed. Protected legacy component markup changed:");
-  for (const file of protectedViolations) console.error(`- ${file}`);
+if (JSON.stringify(sourceCssFiles) !== JSON.stringify(allowedCssFiles)) {
+  console.error("Tailwind-only guard failed. Runtime CSS files are:");
+  for (const file of sourceCssFiles) console.error(`- ${file}`);
+  console.error(`Expected only: ${allowedCssFiles.join(", ")}`);
   process.exit(1);
 }
 
-const sourceFiles = runGit(["ls-files", "src"])
-  .split("\n")
-  .map((file) => file.trim())
-  .filter(Boolean);
-const sourceCssFiles = sourceFiles.filter((file) => file.endsWith(".css"));
-const unexpectedCssFiles = sourceCssFiles.filter(
-  (file) => file !== "src/app/globals.css",
+const sourceModules = sourceFiles.filter((file) =>
+  [".ts", ".tsx", ".js", ".jsx"].includes(extname(file)),
+);
+const cssImportPattern = /import\s+["'][^"']+\.css["'];?/g;
+const cssImports = sourceModules.flatMap((file) => {
+  const content = readFileSync(file, "utf8");
+  return [...content.matchAll(cssImportPattern)].map((match) => ({
+    file: relative(".", file).replaceAll("\\", "/"),
+    statement: match[0],
+  }));
+});
+
+const validImports = cssImports.filter(
+  ({ file, statement }) =>
+    file === "src/app/layout.tsx" && statement === 'import "./globals.css";',
 );
 
-if (unexpectedCssFiles.length > 0) {
-  console.error("Tailwind-only guard failed. Runtime source CSS files remain:");
-  for (const file of unexpectedCssFiles) console.error(`- ${file}`);
-  process.exit(1);
-}
-
-let cssImports = "";
-try {
-  cssImports = runGit(["grep", "-n", "-E", "import .*\\.css", "--", "src"]);
-} catch {
-  cssImports = "";
-}
-
-const importLines = cssImports
-  .split("\n")
-  .map((line) => line.trim())
-  .filter(Boolean);
-const allowedGlobalImport = 'src/app/layout.tsx:import "./globals.css";';
-const unexpectedImports = importLines.filter(
-  (line) => !line.endsWith(allowedGlobalImport.replace("src/app/layout.tsx:", "")) || !line.startsWith("src/app/layout.tsx:"),
-);
-
-if (unexpectedImports.length > 0) {
-  console.error("Tailwind-only guard failed. Unexpected CSS imports remain:");
-  for (const line of unexpectedImports) console.error(`- ${line}`);
+if (cssImports.length !== 1 || validImports.length !== 1) {
+  console.error("Tailwind-only guard failed. Runtime CSS imports are:");
+  for (const item of cssImports) {
+    console.error(`- ${item.file}: ${item.statement}`);
+  }
   process.exit(1);
 }
 
 console.log(
-  "UI parity guard passed: legacy markup is protected and runtime UI ownership is Tailwind-only.",
+  "UI parity guard passed: runtime UI ownership is Tailwind-only and globals.css is limited to Tailwind engine/tokens.",
 );
