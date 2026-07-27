@@ -68,10 +68,9 @@ export function JournalAccounts({
                 className={`group rounded-xl border bg-[#090909] p-4 transition hover:-translate-y-0.5 hover:border-white/15 ${active ? "border-white/20" : "border-white/8"}`}
               >
                 <div className="flex items-start gap-3">
-                  <PropFirmLogo
-                    firm={summary.account.firm}
-                    className="size-10 shrink-0 rounded-xl border border-white/8 bg-[#111]"
-                  />
+                  <span className="rounded-xl border border-white/8 bg-[#111] p-0.5">
+                    <PropFirmLogo firm={summary.account.firm} compact />
+                  </span>
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2">
                       <h2 className="truncate text-sm font-semibold text-white">
