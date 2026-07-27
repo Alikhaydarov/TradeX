@@ -7,7 +7,10 @@ import type { WorkspaceTab } from "../journal-v2";
 import { WorkspaceSectionSkeleton } from "../workspace-section-skeleton";
 
 const Journal = dynamic(
-  () => import("../journal").then((module) => module.Journal),
+  () =>
+    import("../journal/journal-workspace").then(
+      (module) => module.JournalWorkspace,
+    ),
   { ssr: false, loading: () => <WorkspaceSectionSkeleton /> },
 );
 
@@ -26,7 +29,8 @@ const AccountSettings = dynamic(
 );
 
 const Account = dynamic(
-  () => import("../account").then((module) => module.Account),
+  () =>
+    import("../profile/profile-page").then((module) => module.ProfilePage),
   { ssr: false, loading: () => <WorkspaceSectionSkeleton /> },
 );
 
