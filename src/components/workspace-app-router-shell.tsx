@@ -297,7 +297,10 @@ function WorkspaceAppRouterShellInner({ children }: { children: ReactNode }) {
   };
 
   const routeOwnsContent =
-    APP_ROUTER_CONTENT_PATHS.has(pathname) || profileUsername.length > 0;
+    APP_ROUTER_CONTENT_PATHS.has(pathname) ||
+    profileUsername.length > 0 ||
+    tradeId !== null ||
+    communityRoute !== null;
   const routeContent = routeOwnsContent ? children : renderLegacySection(section);
 
   if (!user && section === "pricing") {
