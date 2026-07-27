@@ -122,7 +122,7 @@ export function TradeWayLoginLanding({
     <main ref={shellRef} className={AUTH_LANDING_TAILWIND_CLASS}>
       <div className="auth3-noise" aria-hidden="true" />
       <nav className="auth3-nav">
-        <Link href="/" className="auth3-logo" aria-label="Tradox home"><b>TD</b><span>Tradox</span></Link>
+        <Link href="/" className="auth3-logo"><b>TD</b><span>Tradox</span></Link>
         <div className="auth3-navlinks">
           <a href="#workflow">Product</a>
           <Link href="/pricing">Pricing</Link>

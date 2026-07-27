@@ -2,22 +2,18 @@
 
 import {
   BarChart3,
-  BookOpen,
   BrainCircuit,
   CalendarDays,
-  CheckCircle2,
   ChevronLeft,
   ChevronRight,
-  Plus,
   ShieldCheck,
   Target,
-  Trash2,
   TrendingDown,
   TrendingUp,
   X,
   Zap,
 } from "lucide-react";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   Area,
   AreaChart,
@@ -36,28 +32,16 @@ import { apiRequest } from "../lib/api-client";
 import { DashboardOverview } from "@/features/trading-dashboard/components/dashboard-overview";
 import { JournalAccountList } from "./journal/journal-account-list";
 import { JournalTradeEditor } from "./journal/journal-trade-editor";
+import { JournalGallery } from "./journal/journal-gallery";
+import { JournalFilters, type JournalTradeRange as TradeRange } from "./journal/journal-filters";
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "./ui/alert-dialog";
-import dynamic from "next/dynamic";
+  journalEntryFromRow,
+  type JournalEntryRow,
+  useJournalData,
+} from "./journal/use-journal-data";
 import { useRouter } from "next/navigation";
 import { Button } from "./ui/button";
 import { Card, CardContent } from "./ui/card";
-import { Checkbox } from "./ui/checkbox";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "./ui/dropdown-menu";
 import {
   Dialog,
   DialogContent,
@@ -65,7 +49,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "./ui/dialog";
-import { Input } from "./ui/input";
 import {
   Select,
   SelectContent,
@@ -73,21 +56,17 @@ import {
   SelectTrigger,
   SelectValue,
 } from "./ui/select";
-import { Textarea } from "./ui/textarea";
 import { Tabs, TabsContent } from "./ui/tabs";
 import { Spinner } from "./ui/spinner";
 import { Skeleton } from "./ui/skeleton";
 import { useActiveAccountStore } from "./active-account-context";
 import { useAuth } from "./auth-context";
 import { InstrumentBadge } from "./instrument-badge";
-import { MediaImage } from "./media-image";
 import { PropAccountDialog } from "./prop-account-dialog";
 import { PropFirmLogo } from "./prop-firm-logo";
 import { Mt5Settings } from "./mt5-settings";
 import { TradeReviewModal } from "./trade-review-modal";
-import { TradingViewChart } from "./tradingview-chart";
 import { useWorkspacePreferences } from "./workspace-preferences-context";
-import type { TradeRange } from "@/features/trades/components/trades-archive";
 import type { JournalEntry, OpenPosition, PropAccount } from "./types";
 
 type AccountRow = {
@@ -116,34 +95,7 @@ type AccountRow = {
   start_date: string;
   status: PropAccount["status"];
 };
-type EntryRow = {
-  id: string;
-  prop_account_id?: string | null;
-  symbol: string;
-  side: "Long" | "Short";
-  entry_price: string;
-  exit_price: string;
-  quantity: string;
-  fees: string;
-  pnl: string;
-  note: string;
-  traded_at: string;
-  account_name?: string;
-  market_type?: string;
-  setup?: string;
-  emotion?: string;
-  risk_amount?: string;
-  result_r?: string;
-  risk_percent?: string;
-  session?: string;
-  following_plan?: boolean;
-  error_made?: boolean;
-  mistake_type?: string;
-  review_completed?: boolean;
-  to_trading_bible?: boolean;
-  image_url?: string | null;
-  tags?: string[];
-};
+type EntryRow = JournalEntryRow;
 type Summary = {
   account: PropAccount;
   trades: number;
@@ -163,26 +115,6 @@ type AiCoachReport = {
   nextSteps: string[];
   generatedBy: "rules" | "openai";
 };
-type JournalCacheEntry = {
-  entries: JournalEntry[];
-  fetchedAt: number;
-  etag?: string;
-};
-
-const JOURNAL_CACHE_TTL_MS = 5_000;
-const JOURNAL_REFRESH_MS = 30_000;
-const journalCache = new Map<string, JournalCacheEntry>();
-const TradesArchive = dynamic(
-  () =>
-    import("@/features/trades/components/trades-archive").then(
-      (module) => module.TradesArchive,
-    ),
-  {
-    loading: () => (
-      <Skeleton className="h-[520px] w-full rounded-xl bg-white/[.055]" />
-    ),
-  },
-);
 const cash = new Intl.NumberFormat("en-US", {
   style: "currency",
   currency: "USD",
@@ -233,52 +165,7 @@ const accountFrom = (a: AccountRow): PropAccount => ({
   startDate: a.start_date,
   status: a.status,
 });
-const parseTradeImages = (value?: string | null) => {
-  if (!value) return [];
-  try {
-    const parsed = JSON.parse(value);
-    return Array.isArray(parsed)
-      ? parsed
-          .filter((item): item is string => typeof item === "string")
-          .slice(0, 3)
-      : [value];
-  } catch {
-    return [value];
-  }
-};
-const entryFrom = (e: EntryRow): JournalEntry => {
-  const imageUrls = parseTradeImages(e.image_url);
-  return {
-    id: e.id,
-    propAccountId: e.prop_account_id,
-    symbol: e.symbol,
-    side: e.side,
-    entry: +e.entry_price,
-    exit: +e.exit_price,
-    quantity: +e.quantity,
-    fees: +e.fees,
-    pnl: +e.pnl,
-    note: e.note,
-    rawDate: e.traded_at,
-    date: new Date(`${e.traded_at}T00:00:00`).toLocaleDateString("uz-UZ"),
-    accountName: e.account_name,
-    marketType: e.market_type,
-    setup: e.setup || "",
-    emotion: e.emotion || "Neutral",
-    riskAmount: +(e.risk_amount || 0),
-    resultR: +(e.result_r || 0),
-    riskPercent: e.risk_percent || "1.0%",
-    session: e.session || "",
-    followingPlan: e.following_plan ?? true,
-    errorMade: e.error_made ?? false,
-    mistakeType: e.mistake_type || "",
-    reviewCompleted: e.review_completed ?? false,
-    toTradingBible: e.to_trading_bible ?? false,
-    imageUrl: imageUrls[0] ?? null,
-    imageUrls,
-    tags: e.tags || [],
-  };
-};
+const entryFrom = journalEntryFromRow;
 const monthId = (d: Date) =>
   `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
 function calendarMonthFromPath() {
@@ -387,16 +274,13 @@ export function JournalV2({
     refreshAccounts,
     loading: accountsLoading,
   } = useActiveAccountStore();
-  const [entries, setEntries] = useState<JournalEntry[]>([]);
   const [month, setMonth] = useState(() => calendarMonthFromPath() || new Date());
   const [calendarView, setCalendarView] = useState<"year" | "month">(() => calendarMonthFromPath() ? "month" : "year");
   const [accountOpen, setAccountOpen] = useState(false);
   const [tradeOpen, setTradeOpen] = useState(false);
-  const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState<string | null>(null);
   const [query, setQuery] = useState("");
-  const [error, setError] = useState<string | null>(null);
   const [tradeRange, setTradeRange] = useState<TradeRange>("monthly");
   const [customStart, setCustomStart] = useState(() =>
     new Date().toISOString().slice(0, 10),
@@ -404,7 +288,6 @@ export function JournalV2({
   const [customEnd, setCustomEnd] = useState(() =>
     new Date().toISOString().slice(0, 10),
   );
-  const requestVersion = useRef(0);
 
   useEffect(() => {
     if (mode !== "accounts") return;
@@ -412,7 +295,23 @@ export function JournalV2({
     if (params.get("new") !== "1") return;
     setAccountOpen(true);
     router.replace("/accounts");
-  }, [mode]);
+  }, [mode, router]);
+
+  const requestAccountId = mode === "workspace" ? activeAccountId : null;
+  const {
+    entries,
+    setEntries,
+    loading,
+    error,
+    setError,
+    invalidate,
+    reload: reloadJournal,
+  } = useJournalData({
+    userId: user?.id ?? null,
+    mode,
+    accountId: requestAccountId,
+    accountsLoading,
+  });
 
   const openTradeComposer = useCallback(() => {
     if (mode === "workspace" && !activeAccountId) {
@@ -421,118 +320,8 @@ export function JournalV2({
       return;
     }
     setTradeOpen(true);
-  }, [activeAccountId, mode, router]);
+  }, [activeAccountId, mode, router, setError]);
 
-  // Accounts are loaded once by ActiveAccountProvider on mount. Never call
-  // refreshAccounts() from inside loadEntries: doing so toggles accountsLoading,
-  // which recreated this callback and re-ran the effect below in an endless
-  // fetch/spinner loop for users without accounts.
-  const requestAccountId = mode === "workspace" ? activeAccountId : null;
-  const journalCacheKey = user
-    ? `${user.id}:${mode}:${requestAccountId || "all"}`
-    : "";
-
-  const loadEntries = useCallback(
-    async (silent = false, force = false) => {
-      if (!user) {
-        setEntries([]);
-        setLoading(false);
-        return;
-      }
-      if (mode === "workspace" && accountsLoading) {
-        if (!silent) setLoading(true);
-        return;
-      }
-
-      if (mode === "workspace" && !requestAccountId) {
-        setEntries([]);
-        setLoading(false);
-        return;
-      }
-
-      const cached = journalCache.get(journalCacheKey);
-      if (cached) {
-        setEntries(cached.entries);
-        if (!silent) setLoading(false);
-        if (!force && Date.now() - cached.fetchedAt < JOURNAL_CACHE_TTL_MS)
-          return;
-        silent = true;
-      }
-
-      if (!silent) setLoading(true);
-      setError(null);
-      const version = ++requestVersion.current;
-      try {
-        const search = requestAccountId
-          ? `?accountId=${encodeURIComponent(requestAccountId)}`
-          : "";
-        const response = await fetch(`/api/journal${search}`, {
-          cache: "no-store",
-          credentials: "same-origin",
-          headers: cached?.etag ? { "If-None-Match": cached.etag } : undefined,
-        });
-        if (version !== requestVersion.current) return;
-
-        if (response.status === 304 && cached) {
-          journalCache.set(journalCacheKey, {
-            ...cached,
-            fetchedAt: Date.now(),
-          });
-          return;
-        }
-
-        if (!response.ok) {
-          const payload = (await response.json().catch(() => null)) as {
-            error?: string;
-            message?: string;
-          } | null;
-          throw new Error(
-            payload?.error || payload?.message || "Failed to load journal.",
-          );
-        }
-
-        const payload = (await response.json()) as { entries: EntryRow[] };
-        const nextEntries = payload.entries.map(entryFrom);
-        journalCache.set(journalCacheKey, {
-          entries: nextEntries,
-          fetchedAt: Date.now(),
-          etag: response.headers.get("etag") ?? undefined,
-        });
-        setEntries(nextEntries);
-      } catch (nextError) {
-        if (version !== requestVersion.current) return;
-        const message =
-          nextError instanceof Error
-            ? nextError.message
-            : "Failed to load journal.";
-        setError(message);
-      } finally {
-        if (version === requestVersion.current && !silent) setLoading(false);
-      }
-    },
-    [accountsLoading, journalCacheKey, mode, requestAccountId, user],
-  );
-
-  useEffect(() => {
-    void loadEntries();
-  }, [loadEntries]);
-
-  useEffect(() => {
-    if (!user) return;
-    const refresh = () => {
-      if (document.visibilityState !== "visible") return;
-      void loadEntries(true);
-    };
-
-    const interval = window.setInterval(refresh, JOURNAL_REFRESH_MS);
-    window.addEventListener("focus", refresh);
-    document.addEventListener("visibilitychange", refresh);
-    return () => {
-      window.clearInterval(interval);
-      window.removeEventListener("focus", refresh);
-      document.removeEventListener("visibilitychange", refresh);
-    };
-  }, [loadEntries, user]);
 
   useEffect(() => {
     const syncCalendarRoute = () => {
@@ -857,7 +646,7 @@ export function JournalV2({
         }),
       });
       const next = entryFrom(r.entry);
-      journalCache.delete(journalCacheKey);
+      invalidate();
       setEntries((v) => [next, ...v]);
       setMonth(new Date(`${next.rawDate}T00:00:00`));
       // Modal handles its own close/share lifecycle now
@@ -914,7 +703,7 @@ export function JournalV2({
         },
       );
       const next = entryFrom(response.entry);
-      journalCache.delete(journalCacheKey);
+      invalidate();
       setEntries((current) =>
         current.map((entry) => (entry.id === id ? next : entry)),
       );
@@ -930,7 +719,7 @@ export function JournalV2({
     setSaving(true);
     try {
       await apiRequest(`/api/journal/${id}`, { method: "DELETE" });
-      journalCache.delete(journalCacheKey);
+      invalidate();
       setEntries((current) => current.filter((entry) => entry.id !== id));
     } catch (e) {
       setError(e instanceof Error ? e.message : "Trade o'chirilmadi");
@@ -939,10 +728,6 @@ export function JournalV2({
     }
   }
 
-  const reloadJournal = useCallback(async () => {
-    journalCache.delete(journalCacheKey);
-    await loadEntries(true, true);
-  }, [journalCacheKey, loadEntries]);
 
   const openCalendarMonth = (monthIndex: number) => {
     const next = new Date(month.getFullYear(), monthIndex, 1);
@@ -2087,7 +1872,7 @@ function Workspace(p: {
           {/* Trades */}
           {!singleTabMode || activeTab === "trades" ? (
             <TabsContent value="trades">
-              <TradesArchive
+              <JournalFilters
                 trades={sortedTrades}
                 query={p.query}
                 range={p.tradeRange}
@@ -2111,120 +1896,10 @@ function Workspace(p: {
           {/* Trading Bible */}
           {!singleTabMode || activeTab === "bible" ? (
             <TabsContent value="bible">
-              <section className="overflow-hidden rounded-[1rem] border border-white/8 bg-[#070707]">
-                <div className="flex flex-col gap-3 border-b border-white/8 px-5 py-4 sm:flex-row sm:items-center">
-                  <div>
-                    <h3 className="flex items-center gap-2 font-bold">
-                      <BookOpen size={17} className="text-zinc-300" /> Trading
-                      Bible
-                    </h3>
-                    <p className="text-xs text-zinc-500">
-                      Eng yaxshi setup va reviewlar playbook sifatida saqlanadi.
-                    </p>
-                  </div>
-                  <div className="grid grid-cols-2 gap-2 sm:ml-auto sm:flex">
-                    <MiniStat
-                      label="BIBLE TRADES"
-                      value={String(bibleTrades.length)}
-                    />
-                    <MiniStat
-                      label="REVIEWED"
-                      value={String(
-                        bibleTrades.filter((t) => t.reviewCompleted).length,
-                      )}
-                    />
-                  </div>
-                </div>
-                {bibleTrades.length ? (
-                  <div className="grid gap-3 p-3 lg:grid-cols-2">
-                    {bibleTrades.map((trade) => (
-                      <button
-                        key={trade.id}
-                        type="button"
-                        onClick={() => openTrade(trade)}
-                        className="group overflow-hidden rounded-[1rem] border border-white/8 bg-[#050505] text-left transition hover:border-white/20 hover:bg-[#0d0d0d]"
-                      >
-                        {trade.imageUrl ? (
-                          <div className="h-40 overflow-hidden border-b border-white/8 bg-black">
-                            <MediaImage
-                              src={trade.imageUrl}
-                              alt={`${trade.symbol} bible chart`}
-                              className="h-full w-full object-cover transition group-hover:scale-[1.02]"
-                            />
-                          </div>
-                        ) : null}
-                        <div className="p-4">
-                          <div className="flex items-start gap-3">
-                            <span
-                              className={`rounded-xl px-2.5 py-1 text-[10px] font-black ${trade.side === "Long" ? "bg-emerald-400/10 text-emerald-300" : "bg-rose-400/10 text-rose-300"}`}
-                            >
-                              {trade.side}
-                            </span>
-                            <div className="min-w-0 flex-1">
-                              <h4 className="truncate text-base font-black text-white">
-                                {trade.symbol}
-                              </h4>
-                              <p className="mt-0.5 truncate text-xs text-zinc-500">
-                                {trade.setup || "No setup"} /{" "}
-                                {trade.session || "No session"} / {trade.date}
-                              </p>
-                            </div>
-                            <span className="rounded-xl bg-[#0d0d0d] px-2.5 py-1 text-[10px] font-black text-zinc-300">
-                              {reviewScore(trade)}/6
-                            </span>
-                          </div>
-                          <p className="mt-3 line-clamp-3 text-sm leading-6 text-zinc-300">
-                            {trade.note || "Review note yozilmagan."}
-                          </p>
-                          <div className="mt-3 flex flex-wrap gap-1.5">
-                            {trade.reviewCompleted ? (
-                              <span className="inline-flex items-center gap-1 rounded-lg bg-[#0d0d0d] px-2 py-1 text-[10px] font-bold text-zinc-300">
-                                <CheckCircle2 size={11} /> Reviewed
-                              </span>
-                            ) : null}
-                            {trade.followingPlan ? (
-                              <span className="rounded-lg bg-emerald-400/10 px-2 py-1 text-[10px] font-bold text-emerald-300">
-                                Plan
-                              </span>
-                            ) : (
-                              <span className="rounded-lg bg-amber-500/10 px-2 py-1 text-[10px] font-bold text-amber-300">
-                                Off-plan
-                              </span>
-                            )}
-                            {trade.riskPercent ? (
-                              <span className="rounded-lg bg-amber-500/10 px-2 py-1 text-[10px] font-bold text-amber-300">
-                                {trade.riskPercent}
-                              </span>
-                            ) : null}
-                            {(trade.tags ?? []).slice(0, 3).map((tag) => (
-                              <span
-                                key={tag}
-                                className="rounded-lg bg-[#0d0d0d] px-2 py-1 text-[10px] text-zinc-400"
-                              >
-                                {tag}
-                              </span>
-                            ))}
-                          </div>
-                        </div>
-                      </button>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="grid min-h-72 place-items-center px-6 text-center">
-                    <div>
-                      <BookOpen className="mx-auto text-zinc-700" size={38} />
-                      <h3 className="mt-4 text-lg font-black">
-                        Trading Bible bo'sh
-                      </h3>
-                      <p className="mt-1 max-w-md text-sm leading-6 text-zinc-500">
-                        Trade review ochib "+ to Trading Bible" ni belgilang.
-                        Eng yaxshi setup va saboqlar shu yerda playbook bo'lib
-                        yig'iladi.
-                      </p>
-                    </div>
-                  </div>
-                )}
-              </section>
+              <JournalGallery
+                trades={bibleTrades}
+                onOpenTrade={openTrade}
+              />
             </TabsContent>
           ) : null}
 
