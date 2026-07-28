@@ -2,7 +2,6 @@ import {
   existsSync,
   mkdirSync,
   readFileSync,
-  readdirSync,
   rmSync,
   unlinkSync,
   writeFileSync,
@@ -14,13 +13,22 @@ import { gunzipSync } from "node:zlib";
 const EXPECTED_LENGTH = 81596;
 const EXPECTED_HASH = "a8adcc8f0e07ea65616241d2a92c9a9f46dd7fa110e053a2912acaf39447e224";
 const payloadDir = ".i18n-payload";
-const chunks = readdirSync(payloadDir)
-  .filter((name) => /^\d+\.txt$/.test(name))
-  .sort((a, b) => a.localeCompare(b, "en", { numeric: true }));
-
-if (chunks.length !== 11) {
-  throw new Error(`Expected 11 i18n payload chunks, found ${chunks.length}.`);
-}
+const chunks = [
+  "00.txt",
+  "01.txt",
+  "02.txt",
+  "03.txt",
+  "04.txt",
+  "050.txt",
+  "051.txt",
+  "052.txt",
+  "053.txt",
+  "06.txt",
+  "07.txt",
+  "08.txt",
+  "09.txt",
+  "10.txt",
+];
 
 const chunkDetails = chunks.map((name) => {
   const content = readFileSync(join(payloadDir, name), "utf8").trim();
