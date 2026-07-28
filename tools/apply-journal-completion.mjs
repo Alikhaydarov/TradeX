@@ -55,6 +55,12 @@ replaceRequired(
   "journal row mapper",
 );
 
+replaceRequired(
+  /  const openTradeComposer = useCallback\(\(\) => \{[\s\S]*?  \}, \[activeAccountId, mode, router\]\);\n\n/,
+  "",
+  "trade composer callback",
+);
+
 for (const line of [
   '  const [entries, setEntries] = useState<JournalEntry[]>([]);\n',
   '  const [loading, setLoading] = useState(true);\n',
@@ -84,6 +90,15 @@ replaceRequired(
     accountId: requestAccountId,
     accountsLoading,
   });
+
+  const openTradeComposer = useCallback(() => {
+    if (mode === "workspace" && !activeAccountId) {
+      setError("Select an account before adding a trade.");
+      router.push("/accounts");
+      return;
+    }
+    setTradeOpen(true);
+  }, [activeAccountId, mode, router, setError]);
 `,
   "journal data lifecycle",
 );

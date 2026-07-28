@@ -668,10 +668,10 @@ export function useFeedData(onLogin: () => void) {
       );
       setDeleteTarget(null);
     } catch (nextError) {
-      setError,
+      setError(
         nextError instanceof Error
-        ? nextError.message
-        : "Post could not be deleted. Only the author or admin can delete it.",
+          ? nextError.message
+          : "Post could not be deleted. Only the author or admin can delete it.",
       );
     } finally {
       setActingId(null);
