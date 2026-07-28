@@ -112,6 +112,7 @@ export function useFeedData(onLogin: () => void) {
   const [error, setError] = useState<string | null>(null);
   const [lightboxUrl, setLightboxUrl] = useState<string | null>(null);
   const viewed = useRef(new Set<string>());
+  const pendingViews = useRef(new Set<string>());
   const observer = useRef<IntersectionObserver | null>(null);
 
   const loadPosts = useCallback(() => {
@@ -255,8 +256,15 @@ export function useFeedData(onLogin: () => void) {
 
   const recordView = useCallback(
     (postId: string) => {
-      if (!user || viewed.current.has(postId)) return;
-      viewed.current.add(postId);
+      if (
+        !user ||
+        viewed.current.has(postId) ||
+        pendingViews.current.has(postId)
+      ) {
+        return;
+      }
+
+      pendingViews.current.add(postId);
       void apiRequest<{
         success: boolean;
         counted?: boolean;
@@ -266,6 +274,7 @@ export function useFeedData(onLogin: () => void) {
         body: JSON.stringify({ action: "view", postId }),
       })
         .then((response) => {
+          viewed.current.add(postId);
           const currentViews = response.views;
           if (typeof currentViews !== "number") return;
           setPosts((current) =>
@@ -274,7 +283,10 @@ export function useFeedData(onLogin: () => void) {
             ),
           );
         })
-        .catch(() => undefined);
+        .catch(() => undefined)
+        .finally(() => {
+          pendingViews.current.delete(postId);
+        });
     },
     [user],
   );
@@ -288,14 +300,14 @@ export function useFeedData(onLogin: () => void) {
             entries.forEach((entry) => {
               if (
                 entry.isIntersecting &&
-                entry.intersectionRatio >= 0.55
+                entry.intersectionRatio >= 0.2
               ) {
                 const id = entry.target.getAttribute("data-post-id");
                 if (id) recordView(id);
               }
             });
           },
-          { threshold: [0.55] },
+          { threshold: [0.2], rootMargin: "0px 0px -12% 0px" },
         );
       }
       node.setAttribute("data-post-id", postId);

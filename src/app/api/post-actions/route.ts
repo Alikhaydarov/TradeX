@@ -2,6 +2,11 @@ import { authenticateRequest, badRequest, serverError, unauthorized } from "@/li
 
 export const runtime = "nodejs";
 
+function toFiniteViewCount(value: unknown) {
+  const parsed = typeof value === "number" ? value : Number(value);
+  return Number.isFinite(parsed) ? Math.max(0, parsed) : null;
+}
+
 export async function POST(request: Request) {
   const auth = await authenticateRequest(request);
   if (!auth) return unauthorized();
@@ -20,10 +25,31 @@ export async function POST(request: Request) {
 
     if (error) return serverError(error.message);
     const result = Array.isArray(data) ? data[0] : data;
+    const rpcViews = toFiniteViewCount(
+      typeof result === "object" && result !== null
+        ? (result as { current_views?: unknown }).current_views
+        : result,
+    );
+
+    let views = rpcViews;
+    if (views === null) {
+      const { data: post, error: postError } = await auth.supabase
+        .from("posts")
+        .select("views_count")
+        .eq("id", body.postId)
+        .maybeSingle();
+
+      if (postError) return serverError(postError.message);
+      views = toFiniteViewCount(post?.views_count);
+    }
+
     return Response.json({
       success: true,
-      counted: Boolean(result?.counted),
-      views: typeof result?.current_views === "number" ? result.current_views : null,
+      counted:
+        typeof result === "object" && result !== null
+          ? Boolean((result as { counted?: unknown }).counted)
+          : true,
+      views,
     });
   }
 
