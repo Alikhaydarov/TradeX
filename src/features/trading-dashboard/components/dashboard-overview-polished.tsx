@@ -7,7 +7,6 @@ import {
   RefreshCw,
   TrendingUp,
 } from "lucide-react"
-import CircularProgress from "@mui/material/CircularProgress"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import {
   Area,
@@ -186,28 +185,38 @@ function SectionHeader({
 
 function MetricRing({ value }: { value: number }) {
   const bounded = clamp(value)
+  const radius = 31
+  const circumference = 2 * Math.PI * radius
+  const dashOffset = circumference - (bounded / 100) * circumference
 
   return (
     <div className="relative grid size-[72px] shrink-0 place-items-center sm:size-[76px]">
-      <CircularProgress
-        variant="determinate"
-        value={100}
-        size="100%"
-        thickness={3.7}
-        sx={{ color: "rgba(255,255,255,.09)", position: "absolute" }}
-      />
-      <CircularProgress
-        variant="determinate"
-        value={bounded}
-        size="100%"
-        thickness={3.7}
-        sx={{
-          color: bounded >= 50 ? "#22c55e" : "#f59e0b",
-          position: "absolute",
-          transform: "rotate(-90deg) !important",
-          "& .MuiCircularProgress-circle": { strokeLinecap: "round" },
-        }}
-      />
+      <svg
+        aria-hidden="true"
+        viewBox="0 0 72 72"
+        className="absolute inset-0 size-full -rotate-90"
+      >
+        <circle
+          cx="36"
+          cy="36"
+          r={radius}
+          fill="none"
+          stroke="rgba(255,255,255,.09)"
+          strokeWidth="5"
+        />
+        <circle
+          cx="36"
+          cy="36"
+          r={radius}
+          fill="none"
+          stroke={bounded >= 50 ? "#22c55e" : "#f59e0b"}
+          strokeWidth="5"
+          strokeLinecap="round"
+          strokeDasharray={circumference}
+          strokeDashoffset={dashOffset}
+          className="transition-[stroke-dashoffset] duration-500 ease-out"
+        />
+      </svg>
       <div className="text-center">
         <p className="text-lg font-bold leading-none tabular-nums text-white">
           {Math.round(bounded)}%

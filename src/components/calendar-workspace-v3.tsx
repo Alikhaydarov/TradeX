@@ -522,7 +522,7 @@ function YearOverview({
             <strong className="text-xl font-semibold text-white">{year}</strong>
             <Button variant="ghost" size="icon-sm" onClick={() => onShift(1)} aria-label="Next year"><ChevronRight className="size-4" /></Button>
           </div>
-          <div className="grid grid-cols-3 gap-x-3 gap-y-4 sm:grid-cols-4 lg:grid-cols-6">
+          <div className="grid grid-cols-2 gap-x-3 gap-y-4 min-[420px]:grid-cols-3 sm:grid-cols-4 lg:grid-cols-6">
             {stats.map((item) => (
               <button key={item.month} type="button" onClick={() => onOpen(item.month)} className="group text-center">
                 <p className="mb-2 text-xs font-medium text-zinc-500">{monthShort(year, item.month)}</p>
@@ -621,7 +621,7 @@ function MonthlyCalendar({
 
         <div className="md:hidden">
           {isJournal ? (
-            <div className="grid grid-cols-4 gap-2 rounded-2xl border border-white/8 bg-[#090909] px-3 py-4">
+            <div className="grid grid-cols-2 gap-2 rounded-2xl border border-white/8 bg-[#090909] px-3 py-4 min-[480px]:grid-cols-4">
               <CompactStat label="Total trades" value={String(stats.total)} />
               <CompactStat label="Realized RR" value={stats.total ? `${stats.realizedR.toFixed(2)}R` : "—"} />
               <CompactStat label="Trade Winrate" value={`${stats.winRate}%`} />

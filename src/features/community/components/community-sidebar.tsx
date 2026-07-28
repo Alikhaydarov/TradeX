@@ -13,7 +13,7 @@ import {
   Trophy,
   UsersRound,
 } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 
 import { TraderAvatar } from "@/components/trader-avatar";
 
@@ -53,13 +53,14 @@ export function CommunitySidebar({
   active,
   onNavigate,
   onBack,
+  onCollapsedChange,
 }: {
   communityId: string;
   active: CommunitySection;
   onNavigate: (section: CommunitySection) => void;
   onBack: () => void;
+  onCollapsedChange?: (collapsed: boolean) => void;
 }) {
-  const asideRef = useRef<HTMLElement | null>(null);
   const [summary, setSummary] = useState<CommunitySummary | null>(null);
   const [collapsed, setCollapsed] = useState(false);
 
@@ -76,25 +77,13 @@ export function CommunitySidebar({
   }, [active]);
 
   useEffect(() => {
-    const spacer = asideRef.current?.nextElementSibling as HTMLElement | null;
-    if (spacer) {
-      spacer.style.width = collapsed ? "72px" : "236px";
-      spacer.style.transition = "width 200ms ease-out";
-    }
+    onCollapsedChange?.(collapsed);
     try {
       window.localStorage.setItem(STORAGE_KEY, collapsed ? "1" : "0");
     } catch {
       // Ignore unavailable storage.
     }
-  }, [collapsed]);
-
-  useEffect(() => {
-    const sidebar = asideRef.current;
-    return () => {
-      const spacer = sidebar?.nextElementSibling as HTMLElement | null;
-      if (spacer) spacer.style.width = "236px";
-    };
-  }, []);
+  }, [collapsed, onCollapsedChange]);
 
   useEffect(() => {
     let alive = true;
@@ -125,9 +114,9 @@ export function CommunitySidebar({
 
   return (
     <aside
-      ref={asideRef}
-      className="fixed inset-y-0 left-0 z-40 hidden flex-col overflow-hidden border-r border-white/[.075] bg-[#030303] transition-[width] duration-200 ease-out lg:flex"
-      style={{ width: collapsed ? 72 : 236 }}
+      className={`fixed inset-y-0 left-0 z-40 hidden flex-col overflow-hidden border-r border-white/[.075] bg-[#030303] transition-[width] duration-200 ease-out xl:flex ${
+        collapsed ? "w-[72px]" : "w-[236px]"
+      }`}
       data-community-sidebar={collapsed ? "collapsed" : "expanded"}
     >
       <div

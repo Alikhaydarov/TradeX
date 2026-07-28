@@ -90,12 +90,11 @@ export function WorkspaceTopbar({ section }: { section: Section }) {
       className="tw-app-topbar sticky top-0 z-[70] shrink-0 border-b border-white/10 bg-black/95 px-3 py-2.5 backdrop-blur-xl supports-[backdrop-filter]:bg-black/88 lg:flex lg:min-h-[72px] lg:items-center lg:gap-5 lg:px-6 lg:py-3"
     >
       <div
-        className="grid items-center gap-2 lg:flex lg:min-w-0 lg:flex-1 lg:gap-5"
-        style={{
-          gridTemplateColumns: isHome
-            ? "40px minmax(0, 1fr) auto auto"
-            : "40px minmax(0, 1fr) auto",
-        }}
+        className={`grid min-w-0 items-center gap-2 lg:flex lg:flex-1 lg:gap-5 ${
+          isHome
+            ? "grid-cols-[40px_minmax(0,1fr)_auto_auto]"
+            : "grid-cols-[40px_minmax(0,1fr)_auto]"
+        }`}
       >
         <button
           type="button"

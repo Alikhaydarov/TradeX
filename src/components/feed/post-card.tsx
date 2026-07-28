@@ -13,6 +13,7 @@ import {
   Share2,
   Trash2,
 } from "lucide-react";
+import { memo } from "react";
 
 import {
   formatCount,
@@ -38,7 +39,7 @@ export function PostCard({
   post,
   userId,
   isAdmin,
-  actingId,
+  acting,
   openReplies,
   replies,
   replyDraft,
@@ -60,7 +61,7 @@ export function PostCard({
   post: Post;
   userId?: string | null;
   isAdmin: boolean;
-  actingId: string | null;
+  acting: boolean;
   openReplies: boolean;
   replies: PostReply[];
   replyDraft: string;
@@ -154,10 +155,10 @@ export function PostCard({
                   <DropdownMenuItem
                     variant="destructive"
                     onClick={() => onDelete(post)}
-                    disabled={actingId === post.id}
+                    disabled={acting}
                     className="min-h-9 px-2.5"
                   >
-                    {actingId === post.id ? (
+                    {acting ? (
                       <XSpinner size="sm" />
                     ) : (
                       <Trash2 />
@@ -401,3 +402,5 @@ export function PostCard({
     </article>
   );
 }
+
+export const MemoizedPostCard = memo(PostCard);

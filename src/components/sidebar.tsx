@@ -552,7 +552,7 @@ export function Sidebar({
           <SheetContent
             side="left"
             showCloseButton={false}
-            className="h-[100dvh] w-[76vw] max-w-[312px] p-0 sm:max-w-[312px] lg:hidden"
+            className="h-dvh w-[min(88vw,22rem)] max-w-none p-0 pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)] lg:hidden"
           >
             <div className="flex h-full flex-col">
               <div className="flex items-center justify-between border-b border-white/8 px-4 py-4">
