@@ -7,7 +7,7 @@ import { MediaImage } from "../media-image";
 import { SocialActions } from "../social-actions-v2";
 import { Button } from "../ui/button";
 import { Textarea } from "../ui/textarea";
-import { PostCard } from "./post-card";
+import { MemoizedPostCard as PostCard } from "./post-card";
 import { PostComposer } from "./post-composer";
 import { useFeedData } from "./use-feed-data";
 
@@ -86,7 +86,7 @@ export function FeedPage({ onLogin }: FeedPageProps) {
                 post={post}
                 userId={feed.user?.id}
                 isAdmin={feed.isAdmin}
-                actingId={feed.actingId}
+                acting={feed.actingId === post.id}
                 openReplies={feed.openReplies === post.id}
                 replies={feed.repliesByPost[post.id] ?? []}
                 replyDraft={feed.replyDrafts[post.id] ?? ""}
@@ -94,27 +94,16 @@ export function FeedPage({ onLogin }: FeedPageProps) {
                 savingReply={feed.savingReply === post.id}
                 observePost={feed.observePost}
                 onOpenProfile={feed.openProfile}
-                onShare={(item) => void feed.sharePost(item)}
-                onToggleBookmark={(item) =>
-                  void feed.toggleBookmark(item)
-                }
+                onShare={feed.sharePost}
+                onToggleBookmark={feed.toggleBookmark}
                 onEdit={feed.openEditPost}
                 onDelete={feed.openDeleteModal}
                 onOpenMedia={feed.setLightboxUrl}
-                onToggleReplies={(item) =>
-                  void feed.toggleReplies(item)
-                }
-                onToggleRepost={(item) =>
-                  void feed.toggleRepost(item)
-                }
-                onToggleLike={(item) => void feed.toggleLike(item)}
-                onReplyDraftChange={(postId, value) =>
-                  feed.setReplyDrafts((current) => ({
-                    ...current,
-                    [postId]: value,
-                  }))
-                }
-                onAddReply={(item) => void feed.addReply(item)}
+                onToggleReplies={feed.toggleReplies}
+                onToggleRepost={feed.toggleRepost}
+                onToggleLike={feed.toggleLike}
+                onReplyDraftChange={feed.updateReplyDraft}
+                onAddReply={feed.addReply}
               />
             ))}
 

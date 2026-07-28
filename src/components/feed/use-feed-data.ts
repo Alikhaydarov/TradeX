@@ -541,6 +541,12 @@ export function useFeedData(onLogin: () => void) {
     [openReplies, repliesByPost],
   );
 
+  const updateReplyDraft = useCallback((postId: string, value: string) => {
+    setReplyDrafts((current) =>
+      current[postId] === value ? current : { ...current, [postId]: value },
+    );
+  }, []);
+
   const addReply = useCallback(
     async (post: Post) => {
       if (!user) {
@@ -736,7 +742,7 @@ export function useFeedData(onLogin: () => void) {
     savePostEdit,
     toggleReplies,
     addReply,
-    setReplyDrafts,
+    updateReplyDraft,
     sharePost,
     openDeleteModal,
     archivePost,
