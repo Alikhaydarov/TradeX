@@ -1,0 +1,1 @@
+Validate the responsive mobile account action sheet.
