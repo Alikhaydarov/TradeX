@@ -1,0 +1,48 @@
+name: Fix community sidebar persistence
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "tools/fix-community-sidebar-persistence.mjs"
+      - ".github/workflows/fix-community-sidebar-persistence.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  migrate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Checkout branch
+        uses: actions/checkout@v4
+        with:
+          ref: agent/ui-performance-audit-1
+          fetch-depth: 0
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Apply persistence fix
+        run: node tools/fix-community-sidebar-persistence.mjs
+      - name: Install dependencies
+        run: npm ci
+      - name: Tailwind ownership guard
+        run: npm run check:ui-parity
+      - name: Lint
+        run: npm run lint
+      - name: Production build
+        run: npm run build
+      - name: Commit validated fix
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          if git diff --cached --quiet; then
+            exit 0
+          fi
+          git commit -m "fix: preserve responsive community rail state"
+          git push origin HEAD:agent/ui-performance-audit-1
