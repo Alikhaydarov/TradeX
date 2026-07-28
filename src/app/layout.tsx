@@ -30,7 +30,7 @@ const appTypographyClass = [
 export const metadata: Metadata = {
   title: "Tradox",
   description:
-    "Tradox: trading feed, private chats, journal and backtesting workspace.",
+    "Tradox: trading feed, private chats, journal and analytics workspace.",
   applicationName: "Tradox",
 };
 
@@ -51,11 +51,11 @@ export default async function RootLayout({
     >
       <body className={`${appTypographyClass} ${APP_ROOT_TAILWIND_CLASS}`}>
         <AuthProvider
-            initialUser={data.user}
-            initialConfigured={configured}
-          >
-            {children}
-          </AuthProvider>
+          initialUser={data.user}
+          initialConfigured={configured}
+        >
+          {children}
+        </AuthProvider>
       </body>
     </html>
   );
