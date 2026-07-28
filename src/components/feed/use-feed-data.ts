@@ -465,7 +465,7 @@ export function useFeedData(onLogin: () => void) {
     if (!editingPost || !editingText.trim()) return;
     const previous = editingPost.text;
     const content = editingText.trim();
-    setEctingId(editingPost.id);
+    setActingId(editingPost.id);
     setPosts((current) =>
       current.map((item) =>
         item.id === editingPost.id ? { ...item, text: content } : item,
