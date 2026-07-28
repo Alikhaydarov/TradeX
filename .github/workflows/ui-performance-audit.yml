@@ -10,6 +10,15 @@ on:
       - "package.json"
       - "package-lock.json"
       - ".github/workflows/ui-performance-audit.yml"
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "src/**"
+      - "tools/audit-ui-performance.mjs"
+      - "package.json"
+      - "package-lock.json"
+      - ".github/workflows/ui-performance-audit.yml"
   workflow_dispatch:
 
 permissions:
