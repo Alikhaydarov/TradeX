@@ -7,6 +7,7 @@ on:
       - "docs/journal-completion-request.md"
       - "tools/apply-journal-completion.mjs"
       - "tools/fix-feed-edit-typo.mjs"
+      - "tools/fix-journal-sort-mapping.mjs"
       - "src/components/feed/**"
       - "src/components/journal-v2.tsx"
       - "src/components/journal/**"
@@ -53,6 +54,13 @@ jobs:
         run: |
           if [ -f tools/fix-feed-edit-typo.mjs ]; then
             node tools/fix-feed-edit-typo.mjs
+          fi
+
+      - name: Apply Journal sort mapping
+        if: steps.pending.outputs.enabled == 'true'
+        run: |
+          if [ -f tools/fix-journal-sort-mapping.mjs ]; then
+            node tools/fix-journal-sort-mapping.mjs
           fi
 
       - name: Apply Journal modularization
