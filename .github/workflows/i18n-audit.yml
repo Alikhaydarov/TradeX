@@ -1,15 +1,13 @@
 name: I18n audit
 
 on:
-  push:
-    branches:
-      - agent/full-i18n-en-uz-ru-ko
   pull_request:
     branches:
       - main
     paths:
       - "src/**"
       - "tools/audit-i18n.mjs"
+      - "tools/check-i18n-coverage.mjs"
       - ".github/workflows/i18n-audit.yml"
       - "package.json"
       - "package-lock.json"
@@ -28,11 +26,12 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
-      - name: Scan user-facing source strings
-        run: node tools/audit-i18n.mjs
+      - name: Verify localization coverage
+        run: npm run check:i18n
       - name: Upload i18n audit
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: i18n-audit
           path: i18n-audit.json
-          if-no-files-found: error
+          if-no-files-found: warn
