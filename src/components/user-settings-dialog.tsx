@@ -132,7 +132,7 @@ function SettingsContent() {
       <Dialog open={settingsOpen} onOpenChange={setSettingsOpen}>
         <DialogContent
           showCloseButton={false}
-          className="z-[2147483000] flex h-[100dvh] max-h-[100dvh] w-screen max-w-none flex-col gap-0 overflow-hidden rounded-none border-white/10 bg-[#050505] p-0 sm:h-[min(820px,92dvh)] sm:max-h-[92dvh] sm:max-w-6xl sm:rounded-[24px]"
+          className="inset-0 z-[2147483000] flex h-dvh max-h-dvh w-full max-w-none flex-col gap-0 overflow-hidden rounded-none border-white/10 bg-[#050505] p-0 sm:inset-x-auto sm:bottom-auto sm:left-1/2 sm:top-1/2 sm:h-[min(820px,92dvh)] sm:max-h-[92dvh] sm:w-[calc(100vw-2rem)] sm:max-w-6xl sm:-translate-x-1/2 sm:-translate-y-1/2 sm:rounded-[24px]"
         >
           <header className="flex shrink-0 items-start justify-between gap-4 border-b border-white/8 px-4 py-4 sm:px-6 sm:py-5">
           <div>

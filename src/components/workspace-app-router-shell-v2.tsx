@@ -63,6 +63,12 @@ function CommunityRail({
   onNavigate: (section: CommunitySection) => void;
   onBack: () => void;
 }) {
+  const [collapsed, setCollapsed] = useState(active === "chat");
+
+  useEffect(() => {
+    if (active === "chat") setCollapsed(true);
+  }, [active]);
+
   return (
     <div className="contents [&>aside]:!left-[238px]">
       <CommunitySidebar
@@ -70,9 +76,12 @@ function CommunityRail({
         active={active}
         onNavigate={onNavigate}
         onBack={onBack}
+        onCollapsedChange={setCollapsed}
       />
       <div
-        className="hidden w-[236px] shrink-0 transition-[width] duration-200 ease-out lg:block"
+        className={`hidden shrink-0 transition-[width] duration-200 ease-out xl:block ${
+          collapsed ? "w-[72px]" : "w-[236px]"
+        }`}
         aria-hidden="true"
       />
     </div>

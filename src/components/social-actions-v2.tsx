@@ -127,9 +127,9 @@ function Modal({
   if (!mounted || typeof document === "undefined") return null;
 
   return createPortal(
-    <div className="fixed inset-0 isolate z-[2147483647] flex h-[100dvh] w-screen items-start justify-center overflow-y-auto bg-black/82 p-3 pt-[max(1rem,env(safe-area-inset-top))] sm:p-4 sm:pt-[max(1rem,env(safe-area-inset-top))]">
+    <div className="fixed inset-0 isolate z-[2147483647] flex min-h-dvh w-full items-start justify-center overflow-y-auto bg-black/82 px-2 py-[max(.5rem,env(safe-area-inset-top))] sm:p-4">
       <div className="absolute inset-0" onClick={onClose} aria-hidden="true" />
-      <section className="relative z-10 flex h-[min(92dvh,760px)] w-full max-w-xl flex-col overflow-hidden rounded-[30px] border border-white/10 bg-[#050505] text-white shadow-2xl shadow-black/80">
+      <section className="relative z-10 flex min-h-0 max-h-[calc(100dvh-1rem)] w-full max-w-xl flex-col overflow-hidden rounded-[24px] border border-white/10 bg-[#050505] text-white shadow-2xl shadow-black/80 sm:h-[min(92dvh,760px)] sm:max-h-[calc(100dvh-2rem)] sm:rounded-[30px]">
         <header className="flex items-center gap-3 border-b border-white/8 px-4 py-4">
           <div className="min-w-0 flex-1">
             <h2 className="text-xl font-black leading-6">{title}</h2>
@@ -265,7 +265,7 @@ function SearchDialog({ onClose }: { onClose: () => void }) {
           </p>
         ) : null}
       </form>
-      <div className="min-h-[360px] flex-1 overflow-y-auto overscroll-contain">
+      <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
         {cleanQuery.length < 2 ? (
           <div className="grid min-h-56 place-items-center px-6 text-center text-sm text-zinc-500">
             Type at least 2 letters to search live accounts.
@@ -414,7 +414,7 @@ function NotificationsDialog({
       subtitle="Replies, reposts, likes and follow activity."
       onClose={onClose}
     >
-      <div className="max-h-[70dvh] min-h-[320px] overflow-y-auto">
+      <div className="min-h-0 flex-1 overflow-y-auto">
         {loading ? (
           <div className="grid min-h-52 place-items-center">
             <Spinner className="size-8 text-zinc-300" />

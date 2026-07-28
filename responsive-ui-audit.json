@@ -1,0 +1,1718 @@
+{
+  "generatedAt": "2026-07-28T06:58:00.169Z",
+  "totals": {
+    "files": 61,
+    "findings": 183,
+    "highRiskFiles": 7
+  },
+  "files": [
+    {
+      "path": "src/components/journal-v2.tsx",
+      "bytes": 100729,
+      "score": 30,
+      "findings": [
+        {
+          "rule": "overflow-hidden",
+          "weight": 1,
+          "line": 1003,
+          "value": "overflow-hidden",
+          "source": "<div className=\"mt-3 h-2 overflow-hidden rounded-full bg-[#111111]\">"
+        },
+        {
+          "rule": "fixed-width",
+          "weight": 3,
+          "line": 1331,
+          "value": "max-w-[1540px]",
+          "source": "<div className=\"animate-page-in mx-auto max-w-[1540px]\">"
+        },
+        {
+          "rule": "unscoped-grid",
+          "weight": 2,
+          "line": 1354,
+          "value": "grid-cols-2",
+          "source": "<div className=\"grid grid-cols-2 gap-2 sm:gap-3 xl:grid-cols-5\">"
+        },
+        {
+          "rule": "overflow-hidden",
+          "weight": 1,
+          "line": 1647,
+          "value": "overflow-hidden",
+          "source": "<section className=\"calendar-surface overflow-hidden rounded-[1rem] border border-white/8 bg-[#070707]\">"
+        },
+        {
+          "rule": "unscoped-grid",
+          "weight": 2,
+          "line": 1663,
+          "value": "grid-cols-2",
+          "source": "<div className=\"grid grid-cols-2 gap-2 border-b border-white/8 p-2.5 sm:grid-cols-4 sm:gap-3 sm:p-4\">"
+        },
+        {
+          "rule": "unscoped-grid",
+          "weight": 2,
+          "line": 1676,
+          "value": "grid-cols-3",
+          "source": "<div className=\"grid grid-cols-3 gap-2 p-2.5 sm:grid-cols-4 sm:gap-3 sm:p-4 lg:grid-cols-6 xl:grid-cols-12\">"
+        },
+        {
+          "rule": "overflow-hidden",
+          "weight": 1,
+          "line": 1687,
+          "value": "overflow-hidden",
+          "source": "<section className=\"calendar-surface overflow-hidden rounded-[1rem] border border-white/8 bg-[#070707] p-3 sm:p-4\">"
+        },
+        {
+          "rule": "unscoped-grid",
+          "weight": 2,
+          "line": 1689,
+          "value": "grid-cols-12",
+          "source": "<div className=\"mt-4 grid h-28 grid-cols-12 items-end gap-1.5 sm:h-36 sm:gap-2\">"
+        },
+        {
+          "rule": "unscoped-grid",
+          "weight": 2,
+          "line": 1700,
+          "value": "grid-cols-3",
+          "source": "<div className=\"calendar-summary-grid grid grid-cols-3 gap-2 sm:gap-3\">"
+        },
+        {
+          "rule": "overflow-hidden",
+          "weight": 1,
+          "line": 1761,
+          "value": "overflow-hidden",
+          "source": "<div className=\"calendar-surface overflow-hidden rounded-[1rem] border border-white/8 bg-[#070707]\">"
+        },
+        {
+          "rule": "unscoped-grid",
+          "weight": 2,
+          "line": 1817,
+          "value": "grid-cols-7",
+          "source": "<div className=\"mb-1 grid grid-cols-7 gap-1 sm:mb-1.5 sm:gap-1.5\">"
+        },
+        {
+          "rule": "unscoped-grid",
+          "weight": 2,
+          "line": 1828,
+          "value": "grid-cols-7",
+          "source": "<div className=\"calendar-grid grid grid-cols-7 content-start gap-1 [grid-auto-rows:58px] sm:gap-1.5 sm:[grid-auto-rows:80px] md:[grid-auto-rows:92px] lg:[grid-auto-rows:100px]\">"
+        },
+        {
+          "rule": "overflow-hidden",
+          "weight": 1,
+          "line": 1838,
+          "value": "overflow-hidden",
+          "source": "className={`calendar-day relative h-full w-full overflow-hidden rounded-md border p-1 text-left transition-colors sm:rounded-[0.9rem] sm:p-2.5 ${c.trades.length ? (c.pnl >= 0 ? \"border-emerald-500/16 bg-[#07110c] hover:border-emerald-400/30"
+        },
+        {
+          "rule": "unscoped-grid",
+          "weight": 2,
+          "line": 1931,
+          "value": "grid-cols-3",
+          "source": "<div className=\"grid grid-cols-3 items-center gap-1 rounded-[0.95rem] border border-white/8 bg-[#050505] p-1 sm:flex sm:flex-wrap sm:gap-2\">"
+        },
+        {
+          "rule": "unscoped-grid",
+          "weight": 2,
+          "line": 2195,
+          "value": "grid-cols-2",
+          "source": "<div className=\"mt-4 grid grid-cols-2 gap-2.5\">"
+        },
+        {
+          "rule": "unscoped-grid",
+          "weight": 2,
+          "line": 2277,
+          "value": "grid-cols-2",
+          "source": "<div className=\"mt-4 grid grid-cols-2 gap-2.5\">"
+        },
+        {
+          "rule": "overflow-hidden",
+          "weight": 1,
+          "line": 2328,
+          "value": "overflow-hidden",
+          "source": "<DialogContent className=\"max-h-[90dvh] overflow-hidden border-border bg-background p-0 sm:max-w-2xl\">"
+        },
+        {
+          "rule": "overflow-hidden",
+          "weight": 1,
+          "line": 2422,
+          "value": "overflow-hidden",
+          "source": "<div className=\"h-1.5 overflow-hidden rounded-full bg-[#242424]\">"
+        }
+      ]
+    },
+    {
+      "path": "src/components/journal/journal-trade-editor.tsx",
+      "bytes": 27974,
+      "score": 24,
+      "findings": [
+        {
+          "rule": "overflow-hidden",
+          "weight": 1,
+          "line": 101,
+          "value": "overflow-hidden",
+          "source": "<div className=\"fixed inset-0 z-[9999] flex items-center justify-center overflow-hidden bg-black/88 p-2 pt-[max(.5rem,env(safe-area-inset-top))] pb-[max(.5rem,env(safe-area-inset-bottom))] sm:p-4\">"
+        },
+        {
+          "rule": "fixed-height",
+          "weight": 2,
+          "line": 105,
+          "value": "max-h-[920px]",
+          "source": "className=\"relative z-10 flex h-[calc(100dvh-1rem)] max-h-[920px] w-full max-w-5xl flex-col overflow-hidden rounded-[20px] border border-white/8 bg-[#070707] text-foreground shadow-2xl shadow-black/80 sm:h-auto sm:max-h-[92dvh] sm:rounded-["
+        },
+        {
+          "rule": "overflow-hidden",
+          "weight": 1,
+          "line": 105,
+          "value": "overflow-hidden",
+          "source": "className=\"relative z-10 flex h-[calc(100dvh-1rem)] max-h-[920px] w-full max-w-5xl flex-col overflow-hidden rounded-[20px] border border-white/8 bg-[#070707] text-foreground shadow-2xl shadow-black/80 sm:h-auto sm:max-h-[92dvh] sm:rounded-["
+        },
+        {
+          "rule": "overflow-hidden",
+          "weight": 1,
+          "line": 139,
+          "value": "overflow-hidden",
+          "source": "<section className=\"mb-4 overflow-hidden rounded-2xl border border-white/8\">"
+        },
+        {
+          "rule": "unscoped-grid",
+          "weight": 2,
+          "line": 162,
+          "value": "grid-cols-2",
+          "source": "<div className=\"grid min-w-0 grid-cols-2 gap-3 sm:grid-cols-[repeat(3,minmax(0,1fr))]\">"
+        },
+        {
+          "rule": "unscoped-grid",
+          "weight": 2,
+          "line": 193,
+          "value": "grid-cols-2",
+          "source": "<div className=\"mt-3 grid min-w-0 grid-cols-2 gap-3 sm:grid-cols-[repeat(3,minmax(0,1fr))]\">"
+        },
+        {
+          "rule": "unscoped-grid",
+          "weight": 2,
+          "line": 233,
+          "value": "grid-cols-2",
+          "source": "<div className=\"grid min-w-0 grid-cols-2 gap-3 sm:grid-cols-[repeat(3,minmax(0,1fr))]\">"
+        },
+        {
+          "rule": "unscoped-grid",
+          "weight": 2,
+          "line": 261,
+          "value": "grid-cols-2",
+          "source": "<div className=\"mt-3 grid min-w-0 grid-cols-2 gap-3 sm:grid-cols-[repeat(3,minmax(0,1fr))]\">"
+        },
+        {
+          "rule": "unscoped-grid",
+          "weight": 2,
+          "line": 339,
+          "value": "grid-cols-3",
+          "source": "<div className=\"grid grid-cols-3 gap-2\">"
+        },
+        {
+          "rule": "overflow-hidden",
+          "weight": 1,
+          "line": 343,
+          "value": "overflow-hidden",
+          "source": "className=\"group relative aspect-square overflow-hidden rounded-lg border border-white/10 bg-black\""
+        },
+        {
+          "rule": "overflow-hidden",
+          "weight": 1,
+          "line": 436,
+          "value": "overflow-hidden",
+          "source": "<details className=\"group overflow-hidden rounded-2xl border\">"
+        },
+        {
+          "rule": "unscoped-grid",
+          "weight": 2,
+          "line": 455,
+          "value": "grid-cols-3",
+          "source": "<footer className=\"grid shrink-0 grid-cols-3 gap-2 border-t border-border bg-card p-3 sm:flex sm:p-4\">"
+        },
+        {
+          "rule": "overflow-hidden",
+          "weight": 1,
+          "line": 495,
+          "value": "overflow-hidden",
+          "source": "<DialogContent className=\"max-h-[92dvh] max-w-[min(1100px,calc(100vw-1rem))] overflow-hidden border-border bg-background p-0 sm:max-w-[min(1100px,calc(100vw-2rem))]\">"
+        },
+        {
+          "rule": "fixed-width",
+          "weight": 3,
+          "line": 696,
+          "value": "max-w-[380px]",
+          "source": "<section className=\"mx-auto w-full max-w-[380px] overflow-hidden rounded-2xl border border-white/10 bg-[#171717] shadow-xl shadow-black/25\">"
+        },
+        {
+          "rule": "overflow-hidden",
+          "weight": 1,
+          "line": 696,
+          "value": "overflow-hidden",
+          "source": "<section className=\"mx-auto w-full max-w-[380px] overflow-hidden rounded-2xl border border-white/10 bg-[#171717] shadow-xl shadow-black/25\">"
+        }
+      ]
+    },
+    {
+      "path": "src/components/calendar-workspace-v3.tsx",
+      "bytes": 36950,
+      "score": 17,
+      "findings": [
+        {
+          "rule": "fixed-width",
+          "weight": 3,
+          "line": 393,
+          "value": "max-w-[1420px]",
+          "source": "<div className=\"mx-auto max-w-[1420px] space-y-3 p-3 sm:p-4 lg:p-5\">"
+        },
+        {
+          "rule": "fixed-width",
+          "weight": 3,
+          "line": 415,
+          "value": "max-w-[1420px]",
+          "source": "<div className=\"mx-auto max-w-[1420px] space-y-3 p-3 sm:p-4 lg:p-5\">"
+        },
+        {
+          "rule": "unscoped-grid",
+          "weight": 2,
+          "line": 525,
+          "value": "grid-cols-2",
+          "source": "<div className=\"grid grid-cols-2 gap-x-3 gap-y-4 min-[420px]:grid-cols-3 sm:grid-cols-4 lg:grid-cols-6\">"
+        },
+        {
+          "rule": "overflow-hidden",
+          "weight": 1,
+          "line": 606,
+          "value": "overflow-hidden",
+          "source": "<Card className=\"gap-0 overflow-hidden border-white/8 bg-[#070707] py-0 shadow-none\">"
+        },
+        {
+          "rule": "unscoped-grid",
+          "weight": 2,
+          "line": 624,
+          "value": "grid-cols-2",
+          "source": "<div className=\"grid grid-cols-2 gap-2 rounded-2xl border border-white/8 bg-[#090909] px-3 py-4 min-[480px]:grid-cols-4\">"
+        },
+        {
+          "rule": "unscoped-grid",
+          "weight": 2,
+          "line": 636,
+          "value": "grid-cols-6",
+          "source": "<div className=\"mb-4 hidden grid-cols-6 gap-2 md:grid\">"
+        },
+        {
+          "rule": "overflow-hidden",
+          "weight": 1,
+          "line": 776,
+          "value": "overflow-hidden",
+          "source": "<button type=\"button\" onClick={() => onOpenDay(day)} className={`relative min-h-[96px] overflow-hidden rounded-xl border p-2 text-left transition hover:border-white/20 hover:bg-white/[.03] ${mode === \"journal\" && entries.length ? resultSurf"
+        },
+        {
+          "rule": "unscoped-grid",
+          "weight": 2,
+          "line": 826,
+          "value": "grid-cols-7",
+          "source": "<div className=\"grid grid-cols-7 gap-2\">"
+        },
+        {
+          "rule": "overflow-hidden",
+          "weight": 1,
+          "line": 875,
+          "value": "overflow-hidden",
+          "source": "<DialogContent className=\"max-h-[85dvh] w-[calc(100vw-1.5rem)] max-w-xl overflow-hidden rounded-2xl border-white/10 bg-[#080808] p-0 shadow-2xl\">"
+        }
+      ]
+    },
+    {
+      "path": "src/features/trades/components/trade-detail-page.tsx",
+      "bytes": 32924,
+      "score": 16,
+      "findings": [
+        {
+          "rule": "fixed-width",
+          "weight": 3,
+          "line": 222,
+          "value": "max-w-[1540px]",
+          "source": "<div className=\"mx-auto max-w-[1540px] space-y-4 p-3 pb-24 sm:p-4 lg:p-5\">"
+        },
+        {
+          "rule": "fixed-width",
+          "weight": 3,
+          "line": 446,
+          "value": "max-w-[1540px]",
+          "source": "<div className=\"mx-auto max-w-[1540px] space-y-4 p-3 pb-28 sm:p-4 sm:pb-8 lg:p-5\">"
+        },
+        {
+          "rule": "unscoped-grid",
+          "weight": 2,
+          "line": 499,
+          "value": "grid-cols-2",
+          "source": "<div className=\"grid grid-cols-2 border-t border-white/8 sm:grid-cols-4 lg:grid-cols-6\">"
+        },
+        {
+          "rule": "unscoped-grid",
+          "weight": 2,
+          "line": 538,
+          "value": "grid-cols-2",
+          "source": "<div className=\"mt-1.5 grid h-10 grid-cols-2 rounded-lg border border-white/10 bg-[#0c0c0c] p-1\">"
+        },
+        {
+          "rule": "overflow-hidden",
+          "weight": 1,
+          "line": 630,
+          "value": "overflow-hidden",
+          "source": "<div key={url} className={`group relative overflow-hidden rounded-xl border border-white/8 bg-black ${index === 0 ? \"sm:col-span-2 xl:col-span-1 2xl:col-span-2\" : \"\"}`}>"
+        },
+        {
+          "rule": "fixed-width",
+          "weight": 3,
+          "line": 673,
+          "value": "max-w-[1540px]",
+          "source": "<div className=\"mx-auto flex max-w-[1540px] gap-2 sm:justify-end\">"
+        },
+        {
+          "rule": "unscoped-grid",
+          "weight": 2,
+          "line": 679,
+          "value": "grid-cols-3",
+          "source": "<div className=\"fixed inset-x-0 bottom-0 z-[9998] grid grid-cols-3 gap-2 border-t border-white/10 bg-black/94 p-3 backdrop-blur sm:hidden\">"
+        }
+      ]
+    },
+    {
+      "path": "src/features/community/components/community-experience.tsx",
+      "bytes": 34655,
+      "score": 15,
+      "findings": [
+        {
+          "rule": "fixed-width",
+          "weight": 3,
+          "line": 220,
+          "value": "max-w-[1240px]",
+          "source": "<div className=\"mx-auto max-w-[1240px] space-y-3 p-3 pb-20 sm:p-4 lg:p-5\">"
+        },
+        {
+          "rule": "fixed-width",
+          "weight": 3,
+          "line": 549,
+          "value": "max-w-[1320px]",
+          "source": "<div className=\"mx-auto max-w-[1320px] space-y-3 p-3 pb-20 sm:p-4 lg:p-5\">"
+        },
+        {
+          "rule": "unscoped-grid",
+          "weight": 2,
+          "line": 577,
+          "value": "grid-cols-4",
+          "source": "<nav className=\"grid grid-cols-4 gap-1 rounded-xl border border-white/8 bg-[#050505] p-1 lg:hidden\">"
+        },
+        {
+          "rule": "unscoped-grid",
+          "weight": 2,
+          "line": 610,
+          "value": "grid-cols-2",
+          "source": "<section className=\"grid grid-cols-2 gap-2 lg:grid-cols-5\">"
+        },
+        {
+          "rule": "unscoped-grid",
+          "weight": 2,
+          "line": 649,
+          "value": "grid-cols-2",
+          "source": "<section className=\"grid grid-cols-2 gap-2 lg:grid-cols-4\">"
+        },
+        {
+          "rule": "fixed-width",
+          "weight": 3,
+          "line": 665,
+          "value": "min-w-[650px]",
+          "source": "<table className=\"w-full min-w-[650px] text-left text-xs\">"
+        }
+      ]
+    },
+    {
+      "path": "src/components/account-platform-selector.tsx",
+      "bytes": 6491,
+      "score": 14,
+      "findings": [
+        {
+          "rule": "fixed-width",
+          "weight": 3,
+          "line": 87,
+          "value": "max-w-[700px]",
+          "source": "<div className=\"mx-auto w-full max-w-[700px] space-y-3\">"
+        },
+        {
+          "rule": "overflow-hidden",
+          "weight": 1,
+          "line": 89,
+          "value": "overflow-hidden",
+          "source": "<div className=\"relative overflow-hidden rounded-2xl\">"
+        },
+        {
+          "rule": "fixed-width",
+          "weight": 3,
+          "line": 91,
+          "value": "max-w-[360px]",
+          "source": "<label className=\"mx-auto flex h-10 max-w-[360px] items-center gap-2 rounded-xl border border-white/10 bg-[#111111] px-3\">"
+        },
+        {
+          "rule": "unscoped-grid",
+          "weight": 2,
+          "line": 95,
+          "value": "grid-cols-2",
+          "source": "<div data-platform-grid className=\"grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-4\">"
+        },
+        {
+          "rule": "fixed-width",
+          "weight": 3,
+          "line": 105,
+          "value": "max-w-[280px]",
+          "source": "<div className=\"mx-auto mt-4 grid max-w-[280px] grid-cols-2 gap-2\">"
+        },
+        {
+          "rule": "unscoped-grid",
+          "weight": 2,
+          "line": 105,
+          "value": "grid-cols-2",
+          "source": "<div className=\"mx-auto mt-4 grid max-w-[280px] grid-cols-2 gap-2\">"
+        }
+      ]
+    },
+    {
+      "path": "src/features/community/components/community-detail-premium.tsx",
+      "bytes": 25498,
+      "score": 12,
+      "findings": [
+        {
+          "rule": "fixed-width",
+          "weight": 3,
+          "line": 395,
+          "value": "max-w-[1320px]",
+          "source": "<div className=\"mx-auto max-w-[1320px] space-y-3 p-3 pb-24 sm:p-4 lg:p-5\">"
+        },
+        {
+          "rule": "unscoped-grid",
+          "weight": 2,
+          "line": 430,
+          "value": "grid-cols-5",
+          "source": "<nav className=\"grid grid-cols-5 gap-1 rounded-xl border border-white/8 bg-[#050505] p-1 lg:hidden\">"
+        },
+        {
+          "rule": "unscoped-grid",
+          "weight": 2,
+          "line": 452,
+          "value": "grid-cols-2",
+          "source": "<section className=\"grid grid-cols-2 gap-2 lg:grid-cols-5\">"
+        },
+        {
+          "rule": "unscoped-grid",
+          "weight": 2,
+          "line": 475,
+          "value": "grid-cols-2",
+          "source": "<section className=\"grid grid-cols-2 gap-2 lg:grid-cols-4\">"
+        },
+        {
+          "rule": "fixed-width",
+          "weight": 3,
+          "line": 484,
+          "value": "min-w-[680px]",
+          "source": "<table className=\"w-full min-w-[680px] text-left text-[10px]\">"
+        }
+      ]
+    },
+    {
+      "path": "src/components/trade-review-modal.tsx",
+      "bytes": 28172,
+      "score": 9,
+      "findings": [
+        {
+          "rule": "overflow-hidden",
+          "weight": 1,
+          "line": 98,
+          "value": "overflow-hidden",
+          "source": "<div className=\"absolute left-0 right-0 top-[calc(100%+6px)] z-[100] overflow-hidden rounded-xl border border-white/10 bg-[#0b0b0b] shadow-2xl shadow-black/70\">"
+        },
+        {
+          "rule": "overflow-hidden",
+          "weight": 1,
+          "line": 265,
+          "value": "overflow-hidden",
+          "source": "className=\"w-[calc(100vw-18px)] overflow-hidden rounded-[1rem] border border-white/10 bg-[#070707] p-0 shadow-2xl shadow-black/85 sm:max-w-[870px]\""
+        },
+        {
+          "rule": "overflow-hidden",
+          "weight": 1,
+          "line": 277,
+          "value": "overflow-hidden",
+          "source": "<form action={submit} className=\"flex max-h-[calc(100dvh-20px-57px)] flex-col overflow-hidden sm:max-h-[calc(92dvh-57px)]\">"
+        },
+        {
+          "rule": "unscoped-grid",
+          "weight": 2,
+          "line": 335,
+          "value": "grid-cols-2",
+          "source": "<div className=\"grid h-10 grid-cols-2 gap-1 rounded-lg border border-white/8 bg-[#111111] p-1\">"
+        },
+        {
+          "rule": "overflow-hidden",
+          "weight": 1,
+          "line": 352,
+          "value": "overflow-hidden",
+          "source": "<div className=\"flex h-4 flex-1 overflow-hidden rounded-full bg-[#202020]\">"
+        },
+        {
+          "rule": "unscoped-grid",
+          "weight": 2,
+          "line": 453,
+          "value": "grid-cols-3",
+          "source": "<div className=\"grid grid-cols-3 gap-2\">"
+        },
+        {
+          "rule": "overflow-hidden",
+          "weight": 1,
+          "line": 455,
+          "value": "overflow-hidden",
+          "source": "<div key={url} className=\"group relative aspect-square overflow-hidden rounded-lg border border-white/10 bg-black\">"
+        }
+      ]
+    },
+    {
+      "path": "src/components/feed/post-card.tsx",
+      "bytes": 14798,
+      "score": 9,
+      "findings": [
+        {
+          "rule": "overflow-hidden",
+          "weight": 1,
+          "line": 228,
+          "value": "overflow-hidden",
+          "source": "className={`mt-3 overflow-hidden rounded-xl border border-white/10 ${"
+        },
+        {
+          "rule": "unscoped-grid",
+          "weight": 2,
+          "line": 233,
+          "value": "grid-cols-2",
+          "source": "? \"grid grid-cols-2 gap-px bg-white/10\""
+        },
+        {
+          "rule": "unscoped-grid",
+          "weight": 2,
+          "line": 234,
+          "value": "grid-cols-3",
+          "source": ": \"grid grid-cols-3 gap-px bg-white/10\""
+        },
+        {
+          "rule": "overflow-hidden",
+          "weight": 1,
+          "line": 242,
+          "value": "overflow-hidden",
+          "source": "className=\"group relative aspect-square w-full overflow-hidden bg-black/90\""
+        },
+        {
+          "rule": "overflow-hidden",
+          "weight": 1,
+          "line": 260,
+          "value": "overflow-hidden",
+          "source": "className=\"group relative mt-3 block aspect-square w-full overflow-hidden rounded-xl border border-white/10 bg-black/90\""
+        },
+        {
+          "rule": "unscoped-grid",
+          "weight": 2,
+          "line": 270,
+          "value": "grid-cols-5",
+          "source": "<div className=\"mt-3 grid grid-cols-5 items-center rounded-xl border border-white/8 bg-black/10 p-0.5 text-zinc-500\">"
+        }
+      ]
+    },
+    {
+      "path": "src/components/profile/profile-posts.tsx",
+      "bytes": 9433,
+      "score": 9,
+      "findings": [
+        {
+          "rule": "overflow-hidden",
+          "weight": 1,
+          "line": 127,
+          "value": "overflow-hidden",
+          "source": "className={`mt-3 grid gap-px overflow-hidden rounded-xl border border-white/10 bg-white/10 ${"
+        },
+        {
+          "rule": "overflow-hidden",
+          "weight": 1,
+          "line": 141,
+          "value": "overflow-hidden",
+          "source": "className=\"grid min-h-40 place-items-center overflow-hidden bg-black/90\""
+        },
+        {
+          "rule": "fixed-height",
+          "weight": 2,
+          "line": 146,
+          "value": "max-h-[520px]",
+          "source": "className=\"h-full max-h-[520px] w-full object-cover\""
+        },
+        {
+          "rule": "overflow-hidden",
+          "weight": 1,
+          "line": 156,
+          "value": "overflow-hidden",
+          "source": "className=\"mt-3 grid min-h-40 place-items-center overflow-hidden rounded-xl border border-white/10 bg-black/90\""
+        },
+        {
+          "rule": "unscoped-grid",
+          "weight": 2,
+          "line": 165,
+          "value": "grid-cols-5",
+          "source": "<div className=\"mt-3 grid max-w-md grid-cols-5 text-slate-500\">"
+        },
+        {
+          "rule": "unscoped-grid",
+          "weight": 2,
+          "line": 208,
+          "value": "grid-cols-2",
+          "source": "<div className=\"relative z-10 grid grid-cols-2 border-b border-border bg-card\">"
+        }
+      ]
+    },
+    {
+      "path": "src/components/feed/feed-page.tsx",
+      "bytes": 9994,
+      "score": 9,
+      "findings": [
+        {
+          "rule": "overflow-hidden",
+          "weight": 1,
+          "line": 20,
+          "value": "overflow-hidden",
+          "source": "<div className=\"mt-3 overflow-hidden rounded-[1.3rem] border border-white/8 bg-[#17181b]\">"
+        },
+        {
+          "rule": "screen-width",
+          "weight": 2,
+          "line": 161,
+          "value": "w-screen",
+          "source": "<div className=\"fixed inset-0 z-[99999] flex h-[100dvh] w-screen items-center justify-center overflow-hidden bg-black/75 p-4 backdrop-blur-md\">"
+        },
+        {
+          "rule": "full-viewport",
+          "weight": 2,
+          "line": 161,
+          "value": "h-[100dvh]",
+          "source": "<div className=\"fixed inset-0 z-[99999] flex h-[100dvh] w-screen items-center justify-center overflow-hidden bg-black/75 p-4 backdrop-blur-md\">"
+        },
+        {
+          "rule": "overflow-hidden",
+          "weight": 1,
+          "line": 161,
+          "value": "overflow-hidden",
+          "source": "<div className=\"fixed inset-0 z-[99999] flex h-[100dvh] w-screen items-center justify-center overflow-hidden bg-black/75 p-4 backdrop-blur-md\">"
+        },
+        {
+          "rule": "fixed-width",
+          "weight": 3,
+          "line": 175,
+          "value": "max-w-[340px]",
+          "source": "className=\"relative z-10 w-full max-w-[340px] rounded-[30px] border border-white/10 bg-[#171717]/95 p-7 text-white shadow-2xl shadow-black/70\""
+        }
+      ]
+    },
+    {
+      "path": "src/features/community/components/community-hub-premium.tsx",
+      "bytes": 19114,
+      "score": 9,
+      "findings": [
+        {
+          "rule": "fixed-width",
+          "weight": 3,
+          "line": 106,
+          "value": "max-w-[1260px]",
+          "source": "<div className=\"mx-auto max-w-[1260px] space-y-4 p-3 pb-20 sm:p-4 lg:p-5\">"
+        },
+        {
+          "rule": "overflow-hidden",
+          "weight": 1,
+          "line": 148,
+          "value": "overflow-hidden",
+          "source": "<article className=\"group relative min-h-[196px] overflow-hidden rounded-2xl border border-white/[.085] bg-[#070707] shadow-[0_18px_45px_rgba(0,0,0,.18)] transition duration-200 hover:-translate-y-0.5 hover:border-white/18 hover:bg-[#0a0a0a"
+        },
+        {
+          "rule": "unscoped-grid",
+          "weight": 2,
+          "line": 193,
+          "value": "grid-cols-2",
+          "source": "<div className=\"mt-4 grid grid-cols-2 gap-2\">"
+        },
+        {
+          "rule": "fixed-width",
+          "weight": 3,
+          "line": 297,
+          "value": "max-w-[1260px]",
+          "source": "<div className=\"mx-auto max-w-[1260px] space-y-4 p-3 pb-24 sm:p-4 lg:p-5\">"
+        }
+      ]
+    },
+    {
+      "path": "src/components/prop-account-dialog.tsx",
+      "bytes": 22971,
+      "score": 8,
+      "findings": [
+        {
+          "rule": "overflow-hidden",
+          "weight": 1,
+          "line": 264,
+          "value": "overflow-hidden",
+          "source": "<DialogContent className=\"max-h-[calc(100dvh-1rem)] gap-0 overflow-hidden border-[#1a1a1a] bg-[#030303] p-0 text-zinc-100 sm:max-h-[88dvh] sm:max-w-[780px]\">"
+        },
+        {
+          "rule": "fixed-width",
+          "weight": 3,
+          "line": 315,
+          "value": "max-w-[640px]",
+          "source": "<div className=\"mx-auto max-w-[640px] overflow-hidden rounded-2xl border border-white/10 bg-black\">"
+        },
+        {
+          "rule": "overflow-hidden",
+          "weight": 1,
+          "line": 315,
+          "value": "overflow-hidden",
+          "source": "<div className=\"mx-auto max-w-[640px] overflow-hidden rounded-2xl border border-white/10 bg-black\">"
+        },
+        {
+          "rule": "nowrap",
+          "weight": 1,
+          "line": 336,
+          "value": "whitespace-nowrap",
+          "source": "<div className=\"ml-auto shrink-0 whitespace-nowrap text-right\">"
+        },
+        {
+          "rule": "unscoped-grid",
+          "weight": 2,
+          "line": 442,
+          "value": "grid-cols-2",
+          "source": "<div className=\"grid grid-cols-2 gap-2 rounded-xl border border-white/10 bg-[#0b0b0b] p-1\">"
+        }
+      ]
+    },
+    {
+      "path": "src/components/auth-modal.tsx",
+      "bytes": 11305,
+      "score": 8,
+      "findings": [
+        {
+          "rule": "fixed-width",
+          "weight": 3,
+          "line": 103,
+          "value": "max-w-[460px]",
+          "source": "className=\"relative my-auto w-full max-w-[460px] overflow-hidden rounded-[28px] border border-white/12 bg-[#080808] shadow-[0_30px_100px_rgba(0,0,0,.8)]\""
+        },
+        {
+          "rule": "overflow-hidden",
+          "weight": 1,
+          "line": 103,
+          "value": "overflow-hidden",
+          "source": "className=\"relative my-auto w-full max-w-[460px] overflow-hidden rounded-[28px] border border-white/12 bg-[#080808] shadow-[0_30px_100px_rgba(0,0,0,.8)]\""
+        },
+        {
+          "rule": "unscoped-grid",
+          "weight": 2,
+          "line": 130,
+          "value": "grid-cols-2",
+          "source": "<div className=\"mt-7 grid grid-cols-2 rounded-xl border border-white/8 bg-white/[.035] p-1\">"
+        },
+        {
+          "rule": "unscoped-grid",
+          "weight": 2,
+          "line": 155,
+          "value": "grid-cols-2",
+          "source": "<div className=\"mt-6 grid grid-cols-2 gap-2\">"
+        }
+      ]
+    },
+    {
+      "path": "src/components/trade-share-composer.tsx",
+      "bytes": 28375,
+      "score": 7,
+      "findings": [
+        {
+          "rule": "overflow-hidden",
+          "weight": 1,
+          "line": 495,
+          "value": "overflow-hidden",
+          "source": "className=\"max-h-[95dvh] overflow-hidden border border-[#2a2a2a] bg-[#0b0b0b] p-0 shadow-2xl shadow-black/80 sm:max-w-lg\""
+        },
+        {
+          "rule": "overflow-hidden",
+          "weight": 1,
+          "line": 558,
+          "value": "overflow-hidden",
+          "source": "<div className={`mt-3 overflow-hidden rounded-2xl border ${win ? \"border-emerald-500/25\" : \"border-rose-500/25\"} bg-[#161616]`}>"
+        },
+        {
+          "rule": "overflow-hidden",
+          "weight": 1,
+          "line": 584,
+          "value": "overflow-hidden",
+          "source": "<div key={i} className=\"aspect-square overflow-hidden bg-black\">"
+        },
+        {
+          "rule": "fixed-width",
+          "weight": 3,
+          "line": 605,
+          "value": "max-w-[260px]",
+          "source": "<div className={`relative mx-auto overflow-hidden rounded-xl bg-[#111] ${activeTab === \"story\" ? \"aspect-[9/16] max-w-[164px]\" : \"aspect-square max-w-[260px]\"}`}>"
+        },
+        {
+          "rule": "overflow-hidden",
+          "weight": 1,
+          "line": 605,
+          "value": "overflow-hidden",
+          "source": "<div className={`relative mx-auto overflow-hidden rounded-xl bg-[#111] ${activeTab === \"story\" ? \"aspect-[9/16] max-w-[164px]\" : \"aspect-square max-w-[260px]\"}`}>"
+        }
+      ]
+    },
+    {
+      "path": "src/components/account-settings.tsx",
+      "bytes": 16848,
+      "score": 7,
+      "findings": [
+        {
+          "rule": "fixed-width",
+          "weight": 3,
+          "line": 193,
+          "value": "max-w-[1280px]",
+          "source": "<div className={cn(\"mx-auto w-full max-w-[1280px] space-y-4 p-3 pb-24 sm:p-5 sm:pb-8 lg:p-7\", isSwitching && \"opacity-80\")}>"
+        },
+        {
+          "rule": "unscoped-grid",
+          "weight": 2,
+          "line": 219,
+          "value": "grid-cols-2",
+          "source": "<div className=\"mt-4 grid grid-cols-2 gap-2 rounded-xl border border-white/8 bg-black p-1\">"
+        },
+        {
+          "rule": "unscoped-grid",
+          "weight": 2,
+          "line": 225,
+          "value": "grid-cols-2",
+          "source": "<section className=\"grid grid-cols-2 gap-2 sm:grid-cols-4\">"
+        }
+      ]
+    },
+    {
+      "path": "src/features/trading-dashboard/components/dashboard-overview-polished.tsx",
+      "bytes": 29923,
+      "score": 6,
+      "findings": [
+        {
+          "rule": "overflow-hidden",
+          "weight": 1,
+          "line": 132,
+          "value": "overflow-hidden",
+          "source": "\"flex min-h-0 flex-col gap-0 overflow-hidden rounded-2xl border-white/10 bg-[#080808] py-0 shadow-none\""
+        },
+        {
+          "rule": "overflow-hidden",
+          "weight": 1,
+          "line": 249,
+          "value": "overflow-hidden",
+          "source": "className=\"h-[62px] overflow-hidden rounded-xl border border-white/10 bg-[#0a0a0a] px-3 py-2.5 transition hover:border-white/20 hover:bg-[#0d0d0d]\""
+        },
+        {
+          "rule": "unscoped-grid",
+          "weight": 2,
+          "line": 582,
+          "value": "grid-cols-2",
+          "source": "<div className=\"grid grid-cols-2 gap-3 xl:h-[392px] xl:grid-rows-2\">"
+        },
+        {
+          "rule": "overflow-hidden",
+          "weight": 1,
+          "line": 711,
+          "value": "overflow-hidden",
+          "source": "<CardContent className=\"min-h-0 flex-1 overflow-hidden p-2\">"
+        },
+        {
+          "rule": "overflow-hidden",
+          "weight": 1,
+          "line": 801,
+          "value": "overflow-hidden",
+          "source": "<CardContent className=\"min-h-0 flex-1 overflow-hidden p-2\">"
+        }
+      ]
+    },
+    {
+      "path": "src/features/trades/components/trades-archive.tsx",
+      "bytes": 16801,
+      "score": 6,
+      "findings": [
+        {
+          "rule": "overflow-hidden",
+          "weight": 1,
+          "line": 84,
+          "value": "overflow-hidden",
+          "source": "<button type=\"button\" onClick={onOpen} className=\"group overflow-hidden rounded-xl border border-white/8 bg-[#080808] text-left transition hover:border-white/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/25\">"
+        },
+        {
+          "rule": "overflow-hidden",
+          "weight": 1,
+          "line": 86,
+          "value": "overflow-hidden",
+          "source": "<div className=\"relative aspect-[16/10] overflow-hidden bg-[#101010]\">"
+        },
+        {
+          "rule": "unscoped-grid",
+          "weight": 2,
+          "line": 158,
+          "value": "grid-cols-2",
+          "source": "<div className=\"grid grid-cols-2 gap-2 sm:grid-cols-4\">"
+        },
+        {
+          "rule": "unscoped-grid",
+          "weight": 2,
+          "line": 165,
+          "value": "grid-cols-3",
+          "source": "<TabsList className=\"grid w-full grid-cols-3 bg-[#0b0b0b] sm:w-fit\">"
+        }
+      ]
+    },
+    {
+      "path": "src/features/trading-dashboard/components/dashboard-overview-responsive.tsx",
+      "bytes": 30001,
+      "score": 4,
+      "findings": [
+        {
+          "rule": "overflow-hidden",
+          "weight": 1,
+          "line": 138,
+          "value": "overflow-hidden",
+          "source": "\"flex min-h-0 flex-col gap-0 overflow-hidden rounded-xl border-white/10 bg-[#080808] py-0 shadow-none sm:rounded-2xl\""
+        },
+        {
+          "rule": "overflow-hidden",
+          "weight": 1,
+          "line": 239,
+          "value": "overflow-hidden",
+          "source": "className=\"h-[64px] overflow-hidden rounded-xl border border-white/10 bg-[#0a0a0a] px-3 py-2.5 transition hover:border-white/20 hover:bg-[#0d0d0d]\""
+        },
+        {
+          "rule": "overflow-hidden",
+          "weight": 1,
+          "line": 687,
+          "value": "overflow-hidden",
+          "source": "<CardContent className=\"min-h-0 flex-1 overflow-hidden p-2\">"
+        },
+        {
+          "rule": "overflow-hidden",
+          "weight": 1,
+          "line": 777,
+          "value": "overflow-hidden",
+          "source": "<CardContent className=\"min-h-0 flex-1 overflow-hidden p-2\">"
+        }
+      ]
+    },
+    {
+      "path": "src/components/journal/journal-gallery.tsx",
+      "bytes": 5914,
+      "score": 4,
+      "findings": [
+        {
+          "rule": "unscoped-grid",
+          "weight": 2,
+          "line": 50,
+          "value": "grid-cols-2",
+          "source": "<div className=\"grid grid-cols-2 gap-2 sm:ml-auto sm:flex\">"
+        },
+        {
+          "rule": "overflow-hidden",
+          "weight": 1,
+          "line": 66,
+          "value": "overflow-hidden",
+          "source": "className=\"group overflow-hidden rounded-[1rem] border border-white/8 bg-[#050505] text-left transition hover:border-white/20 hover:bg-[#0d0d0d]\""
+        },
+        {
+          "rule": "overflow-hidden",
+          "weight": 1,
+          "line": 69,
+          "value": "overflow-hidden",
+          "source": "<div className=\"h-40 overflow-hidden border-b border-white/8 bg-black\">"
+        }
+      ]
+    },
+    {
+      "path": "src/components/profile/profile-header.tsx",
+      "bytes": 6549,
+      "score": 4,
+      "findings": [
+        {
+          "rule": "overflow-hidden",
+          "weight": 1,
+          "line": 42,
+          "value": "overflow-hidden",
+          "source": "<div className=\"relative h-20 overflow-hidden bg-[linear-gradient(135deg,#111111,#202020)] sm:h-28\">"
+        },
+        {
+          "rule": "overflow-hidden",
+          "weight": 1,
+          "line": 81,
+          "value": "overflow-hidden",
+          "source": "<div className=\"grid grid-cols-4 divide-x divide-border overflow-hidden rounded-lg border border-border bg-[#111111]\">"
+        },
+        {
+          "rule": "unscoped-grid",
+          "weight": 2,
+          "line": 81,
+          "value": "grid-cols-4",
+          "source": "<div className=\"grid grid-cols-4 divide-x divide-border overflow-hidden rounded-lg border border-border bg-[#111111]\">"
+        }
+      ]
+    },
+    {
+      "path": "src/components/chat/chat-page.tsx",
+      "bytes": 13706,
+      "score": 4,
+      "findings": [
+        {
+          "rule": "overflow-hidden",
+          "weight": 1,
+          "line": 365,
+          "value": "overflow-hidden",
+          "source": "className=\"relative flex h-dvh min-h-0 overflow-hidden bg-[#090909] lg:h-[calc(100dvh-2rem)]\""
+        },
+        {
+          "rule": "fixed-width",
+          "weight": 3,
+          "line": 367,
+          "value": "w-[264px]",
+          "source": "<aside className=\"hidden w-[264px] shrink-0 border-r border-black/35 lg:block\">"
+        }
+      ]
+    },
+    {
+      "path": "src/components/chat/message-bubble.tsx",
+      "bytes": 8338,
+      "score": 4,
+      "findings": [
+        {
+          "rule": "fixed-width",
+          "weight": 3,
+          "line": 147,
+          "value": "max-w-[860px]",
+          "source": "<p className=\"mt-0.5 max-w-[860px] whitespace-pre-wrap break-words text-[14px] leading-[1.45] text-zinc-300\">"
+        },
+        {
+          "rule": "overflow-hidden",
+          "weight": 1,
+          "line": 174,
+          "value": "overflow-hidden",
+          "source": "<div className=\"absolute -top-3 right-3 hidden items-center overflow-hidden rounded-md border border-white/[.08] bg-[#24262b] shadow-xl group-hover:flex\">"
+        }
+      ]
+    },
+    {
+      "path": "src/components/chat/message-list.tsx",
+      "bytes": 7297,
+      "score": 4,
+      "findings": [
+        {
+          "rule": "overflow-hidden",
+          "weight": 1,
+          "line": 121,
+          "value": "overflow-hidden",
+          "source": "<div className=\"relative min-h-0 flex-1 overflow-hidden bg-[#15171a]\">"
+        },
+        {
+          "rule": "fixed-width",
+          "weight": 3,
+          "line": 127,
+          "value": "max-w-[1120px]",
+          "source": "<div className=\"mx-auto w-full max-w-[1120px] pb-3\">"
+        }
+      ]
+    },
+    {
+      "path": "src/components/journal/journal-account-list.tsx",
+      "bytes": 10158,
+      "score": 4,
+      "findings": [
+        {
+          "rule": "fixed-width",
+          "weight": 3,
+          "line": 58,
+          "value": "max-w-[1320px]",
+          "source": "<div className=\"animate-page-in mx-auto max-w-[1320px] space-y-3 p-3 sm:p-4 lg:p-5\">"
+        },
+        {
+          "rule": "overflow-hidden",
+          "weight": 1,
+          "line": 200,
+          "value": "overflow-hidden",
+          "source": "className={`group relative cursor-pointer overflow-hidden rounded-2xl border transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/30 ${"
+        }
+      ]
+    },
+    {
+      "path": "src/components/sidebar.tsx",
+      "bytes": 26734,
+      "score": 4,
+      "findings": [
+        {
+          "rule": "overflow-hidden",
+          "weight": 1,
+          "line": 91,
+          "value": "overflow-hidden",
+          "source": "className={`${mobile ? \"size-10\" : \"h-9 w-9\"} relative grid shrink-0 place-items-center overflow-hidden rounded-xl border border-white/10 bg-[#171717] shadow-[0_10px_24px_rgba(0,0,0,.32)]`}"
+        },
+        {
+          "rule": "fixed-width",
+          "weight": 3,
+          "line": 423,
+          "value": "w-[238px]",
+          "source": "<aside className=\"fixed left-[max(1rem,calc((100vw-1860px)/2+1rem))] top-3 z-40 hidden h-[calc(100dvh-1.5rem)] w-[238px] shrink-0 flex-col rounded-[1rem] border border-white/8 bg-[#000000] p-3 shadow-[inset_0_1px_0_rgba(255,255,255,.03)] lg"
+        }
+      ]
+    },
+    {
+      "path": "src/components/workspace-app-router-shell-v2.tsx",
+      "bytes": 8644,
+      "score": 4,
+      "findings": [
+        {
+          "rule": "overflow-hidden",
+          "weight": 1,
+          "line": 242,
+          "value": "overflow-hidden",
+          "source": "<div className=\"workspace-shell flex h-dvh w-full overflow-hidden bg-black p-0 text-foreground\">"
+        },
+        {
+          "rule": "fixed-width",
+          "weight": 3,
+          "line": 250,
+          "value": "w-[238px]",
+          "source": "className=\"hidden w-[238px] shrink-0 lg:block\""
+        }
+      ]
+    },
+    {
+      "path": "src/components/free-user-start.tsx",
+      "bytes": 7606,
+      "score": 3,
+      "findings": [
+        {
+          "rule": "overflow-hidden",
+          "weight": 1,
+          "line": 144,
+          "value": "overflow-hidden",
+          "source": "<section className=\"relative overflow-hidden rounded-[28px] border border-white/10 bg-[#070707] p-3 shadow-[0_30px_100px_rgba(0,0,0,.6)] sm:p-4\">"
+        },
+        {
+          "rule": "unscoped-grid",
+          "weight": 2,
+          "line": 156,
+          "value": "grid-cols-3",
+          "source": "<div className=\"grid grid-cols-3 gap-2 py-3\">"
+        }
+      ]
+    },
+    {
+      "path": "src/components/social-actions-v2.tsx",
+      "bytes": 24051,
+      "score": 3,
+      "findings": [
+        {
+          "rule": "overflow-hidden",
+          "weight": 1,
+          "line": 132,
+          "value": "overflow-hidden",
+          "source": "<section className=\"relative z-10 flex min-h-0 max-h-[calc(100dvh-1rem)] w-full max-w-xl flex-col overflow-hidden rounded-[24px] border border-white/10 bg-[#050505] text-white shadow-2xl shadow-black/80 sm:h-[min(92dvh,760px)] sm:max-h-[cal"
+        },
+        {
+          "rule": "unscoped-grid",
+          "weight": 2,
+          "line": 479,
+          "value": "grid-cols-2",
+          "source": "<div className=\"mt-4 grid grid-cols-2 gap-2 sm:flex\">"
+        }
+      ]
+    },
+    {
+      "path": "src/features/trading-dashboard/components/dashboard-overview-mobile.tsx",
+      "bytes": 18856,
+      "score": 3,
+      "findings": [
+        {
+          "rule": "overflow-hidden",
+          "weight": 1,
+          "line": 70,
+          "value": "overflow-hidden",
+          "source": "\"gap-0 overflow-hidden rounded-[18px] border-white/10 bg-[#080808] py-0 shadow-none\""
+        },
+        {
+          "rule": "unscoped-grid",
+          "weight": 2,
+          "line": 299,
+          "value": "grid-cols-2",
+          "source": "<section className=\"grid grid-cols-2 gap-2.5\">"
+        }
+      ]
+    },
+    {
+      "path": "src/components/app-loader.tsx",
+      "bytes": 2401,
+      "score": 3,
+      "findings": [
+        {
+          "rule": "fixed-width",
+          "weight": 3,
+          "line": 46,
+          "value": "max-w-[220px]",
+          "source": "<div className=\"flex w-full max-w-[220px] flex-col items-center\">"
+        }
+      ]
+    },
+    {
+      "path": "src/components/chat/member-panel.tsx",
+      "bytes": 5943,
+      "score": 3,
+      "findings": [
+        {
+          "rule": "fixed-width",
+          "weight": 3,
+          "line": 92,
+          "value": "w-[236px]",
+          "source": "<aside className=\"flex h-full min-h-0 w-[236px] shrink-0 flex-col border-l border-white/[.065] bg-[#111214] text-zinc-300\">"
+        }
+      ]
+    },
+    {
+      "path": "src/components/chat/message-composer.tsx",
+      "bytes": 4345,
+      "score": 3,
+      "findings": [
+        {
+          "rule": "fixed-width",
+          "weight": 3,
+          "line": 59,
+          "value": "max-w-[1120px]",
+          "source": "<div className=\"mx-auto w-full max-w-[1120px]\">"
+        }
+      ]
+    },
+    {
+      "path": "src/components/notification-listener.tsx",
+      "bytes": 8961,
+      "score": 3,
+      "findings": [
+        {
+          "rule": "fixed-width",
+          "weight": 3,
+          "line": 228,
+          "value": "max-w-[280px]",
+          "source": "<div className=\"fixed bottom-5 right-3 z-30 hidden max-w-[280px] rounded-2xl border border-white/10 bg-[#080808] p-3 text-xs text-slate-200 shadow-2xl shadow-slate-950/40 sm:block\">"
+        }
+      ]
+    },
+    {
+      "path": "src/components/page-skeleton.tsx",
+      "bytes": 1390,
+      "score": 3,
+      "findings": [
+        {
+          "rule": "fixed-width",
+          "weight": 3,
+          "line": 10,
+          "value": "max-w-[1680px]",
+          "source": "className=\"mx-auto w-full max-w-[1680px] space-y-4 px-3 py-4 sm:px-5 sm:py-5 lg:px-7 lg:py-6\""
+        }
+      ]
+    },
+    {
+      "path": "src/components/workspace-topbar.tsx",
+      "bytes": 7872,
+      "score": 3,
+      "findings": [
+        {
+          "rule": "fixed-width",
+          "weight": 3,
+          "line": 114,
+          "value": "max-w-[220px]",
+          "source": "<span className=\"hidden max-w-[220px] items-center gap-2 rounded-full border border-white/10 bg-white/[0.045] px-2.5 py-1 text-[10px] font-semibold text-zinc-300 lg:inline-flex\">"
+        }
+      ]
+    },
+    {
+      "path": "src/components/floating-add-trade-button.tsx",
+      "bytes": 3189,
+      "score": 2,
+      "findings": [
+        {
+          "rule": "overflow-hidden",
+          "weight": 1,
+          "line": 17,
+          "value": "overflow-hidden",
+          "source": "\"tw-floating-add-trade fixed bottom-5 right-5 z-[70] grid size-[3.45rem] place-items-center overflow-hidden rounded-[1rem]\","
+        },
+        {
+          "rule": "fixed-position",
+          "weight": 1,
+          "line": 17,
+          "value": "fixed",
+          "source": "\"tw-floating-add-trade fixed bottom-5 right-5 z-[70] grid size-[3.45rem] place-items-center overflow-hidden rounded-[1rem]\","
+        }
+      ]
+    },
+    {
+      "path": "src/components/ui/badge.tsx",
+      "bytes": 1865,
+      "score": 2,
+      "findings": [
+        {
+          "rule": "overflow-hidden",
+          "weight": 1,
+          "line": 8,
+          "value": "overflow-hidden",
+          "source": "\"group/badge inline-flex h-5 w-fit shrink-0 items-center justify-center gap-1 overflow-hidden rounded-4xl border border-transparent px-2 py-0.5 text-xs font-medium whitespace-nowrap transition-all focus-visible:border-ring focus-visible:rin"
+        },
+        {
+          "rule": "nowrap",
+          "weight": 1,
+          "line": 8,
+          "value": "whitespace-nowrap",
+          "source": "\"group/badge inline-flex h-5 w-fit shrink-0 items-center justify-center gap-1 overflow-hidden rounded-4xl border border-transparent px-2 py-0.5 text-xs font-medium whitespace-nowrap transition-all focus-visible:border-ring focus-visible:rin"
+        }
+      ]
+    },
+    {
+      "path": "src/components/user-settings-dialog.tsx",
+      "bytes": 17731,
+      "score": 2,
+      "findings": [
+        {
+          "rule": "overflow-hidden",
+          "weight": 1,
+          "line": 135,
+          "value": "overflow-hidden",
+          "source": "className=\"inset-0 z-[2147483000] flex h-dvh max-h-dvh w-full max-w-none flex-col gap-0 overflow-hidden rounded-none border-white/10 bg-[#050505] p-0 sm:inset-x-auto sm:bottom-auto sm:left-1/2 sm:top-1/2 sm:h-[min(820px,92dvh)] sm:max-h-[92"
+        },
+        {
+          "rule": "overflow-hidden",
+          "weight": 1,
+          "line": 147,
+          "value": "overflow-hidden",
+          "source": "<div className=\"flex min-h-0 flex-1 flex-col overflow-hidden md:grid md:grid-cols-[230px_minmax(0,1fr)]\">"
+        }
+      ]
+    },
+    {
+      "path": "src/features/community/components/community-sidebar.tsx",
+      "bytes": 11349,
+      "score": 2,
+      "findings": [
+        {
+          "rule": "overflow-hidden",
+          "weight": 1,
+          "line": 112,
+          "value": "overflow-hidden",
+          "source": "className={`fixed inset-y-0 left-0 z-40 hidden flex-col overflow-hidden border-r border-white/[.075] bg-[#030303] transition-[width] duration-200 ease-out xl:flex ${"
+        },
+        {
+          "rule": "overflow-hidden",
+          "weight": 1,
+          "line": 173,
+          "value": "overflow-hidden",
+          "source": "<div className=\"relative mt-2 overflow-hidden rounded-2xl border border-white/[.085] bg-[#080808] p-3 shadow-[0_16px_35px_rgba(0,0,0,.22)]\">"
+        }
+      ]
+    },
+    {
+      "path": "src/components/admin-panel.tsx",
+      "bytes": 23274,
+      "score": 2,
+      "findings": [
+        {
+          "rule": "unscoped-grid",
+          "weight": 2,
+          "line": 348,
+          "value": "grid-cols-3",
+          "source": "<div className=\"grid grid-cols-3 gap-1.5 rounded-2xl border border-white/8 bg-black/25 p-1.5\">"
+        }
+      ]
+    },
+    {
+      "path": "src/components/tradovate-csv-settings.tsx",
+      "bytes": 7700,
+      "score": 2,
+      "findings": [
+        {
+          "rule": "unscoped-grid",
+          "weight": 2,
+          "line": 164,
+          "value": "grid-cols-2",
+          "source": "<div className=\"mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4\">"
+        }
+      ]
+    },
+    {
+      "path": "src/components/feed/post-composer.tsx",
+      "bytes": 7182,
+      "score": 1,
+      "findings": [
+        {
+          "rule": "overflow-hidden",
+          "weight": 1,
+          "line": 59,
+          "value": "overflow-hidden",
+          "source": "<DialogContent className=\"max-h-[88dvh] overflow-hidden border-border bg-[#171717] p-0 sm:max-w-lg\">"
+        }
+      ]
+    },
+    {
+      "path": "src/components/platform-logo-badge.tsx",
+      "bytes": 2712,
+      "score": 1,
+      "findings": [
+        {
+          "rule": "overflow-hidden",
+          "weight": 1,
+          "line": 49,
+          "value": "overflow-hidden",
+          "source": "\"grid shrink-0 place-items-center overflow-hidden rounded-xl border border-white/10 font-black tracking-[0.12em] shadow-[inset_0_1px_0_rgba(255,255,255,.05)]\","
+        }
+      ]
+    },
+    {
+      "path": "src/components/pricing.tsx",
+      "bytes": 15643,
+      "score": 1,
+      "findings": [
+        {
+          "rule": "overflow-hidden",
+          "weight": 1,
+          "line": 380,
+          "value": "overflow-hidden",
+          "source": "<Card className={`relative overflow-hidden py-0 ${highlighted ? \"border-amber-300/25 bg-[#0c0b08]\" : \"border-white/10 bg-[#0b0b0b]\"}`}>"
+        }
+      ]
+    },
+    {
+      "path": "src/components/pro-ai-coach-launcher.tsx",
+      "bytes": 14948,
+      "score": 1,
+      "findings": [
+        {
+          "rule": "overflow-hidden",
+          "weight": 1,
+          "line": 246,
+          "value": "overflow-hidden",
+          "source": "<DialogContent className=\"flex h-[min(92dvh,760px)] w-[calc(100vw-1rem)] flex-col gap-0 overflow-hidden rounded-[24px] border-white/10 bg-[#070707] p-0 sm:max-w-[760px] sm:rounded-[28px]\">"
+        }
+      ]
+    },
+    {
+      "path": "src/components/profile/profile-achievement-dialogs.tsx",
+      "bytes": 4862,
+      "score": 1,
+      "findings": [
+        {
+          "rule": "overflow-hidden",
+          "weight": 1,
+          "line": 137,
+          "value": "overflow-hidden",
+          "source": "<DialogContent className=\"max-h-[96dvh] max-w-[min(1100px,calc(100vw-1rem))] overflow-hidden bg-black p-0 sm:max-w-[min(1100px,calc(100vw-2rem))]\">"
+        }
+      ]
+    },
+    {
+      "path": "src/components/profile/profile-achievements.tsx",
+      "bytes": 3115,
+      "score": 1,
+      "findings": [
+        {
+          "rule": "overflow-hidden",
+          "weight": 1,
+          "line": 52,
+          "value": "overflow-hidden",
+          "source": "className=\"group relative w-36 shrink-0 overflow-hidden rounded-lg border border-border bg-[#111111] sm:w-40\""
+        }
+      ]
+    },
+    {
+      "path": "src/components/profile/profile-connections-dialog.tsx",
+      "bytes": 4710,
+      "score": 1,
+      "findings": [
+        {
+          "rule": "overflow-hidden",
+          "weight": 1,
+          "line": 34,
+          "value": "overflow-hidden",
+          "source": "<section className=\"relative z-10 w-full max-w-xl overflow-hidden rounded-[30px] border border-white/10 bg-[#171717]/98 text-white shadow-2xl shadow-black/80\">"
+        }
+      ]
+    },
+    {
+      "path": "src/components/profile/profile-edit-dialog.tsx",
+      "bytes": 10857,
+      "score": 1,
+      "findings": [
+        {
+          "rule": "overflow-hidden",
+          "weight": 1,
+          "line": 74,
+          "value": "overflow-hidden",
+          "source": "<div className=\"relative h-36 overflow-hidden bg-[#080808]\">"
+        }
+      ]
+    },
+    {
+      "path": "src/components/tailwind/auth-tailwind-classes.ts",
+      "bytes": 32620,
+      "score": 1,
+      "findings": [
+        {
+          "rule": "overflow-hidden",
+          "weight": 1,
+          "line": 4,
+          "value": "overflow-hidden",
+          "source": "\"auth3-shell relative min-h-dvh overflow-hidden bg-black text-[#f5f5f5]\","
+        }
+      ]
+    },
+    {
+      "path": "src/components/trader-avatar.tsx",
+      "bytes": 1262,
+      "score": 1,
+      "findings": [
+        {
+          "rule": "overflow-hidden",
+          "weight": 1,
+          "line": 37,
+          "value": "overflow-hidden",
+          "source": "\"relative inline-flex shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-gradient-to-br from-zinc-100 via-zinc-500 to-zinc-900 font-black text-white shadow-inner shadow-white/10\","
+        }
+      ]
+    },
+    {
+      "path": "src/components/tradingview-chart.tsx",
+      "bytes": 2280,
+      "score": 1,
+      "findings": [
+        {
+          "rule": "overflow-hidden",
+          "weight": 1,
+          "line": 46,
+          "value": "overflow-hidden",
+          "source": "<div className={`relative overflow-hidden bg-[#050505] ${className}`}>"
+        }
+      ]
+    },
+    {
+      "path": "src/components/ui/alert-dialog.tsx",
+      "bytes": 5646,
+      "score": 1,
+      "findings": [
+        {
+          "rule": "fixed-position",
+          "weight": 1,
+          "line": 61,
+          "value": "fixed",
+          "source": "\"group/alert-dialog-content fixed top-1/2 left-1/2 z-[10011] grid w-full -translate-x-1/2 -translate-y-1/2 gap-4 rounded-xl border border-white/8 bg-[#050505] p-4 text-popover-foreground ring-1 ring-foreground/10 duration-100 outline-none d"
+        }
+      ]
+    },
+    {
+      "path": "src/components/ui/button.tsx",
+      "bytes": 3060,
+      "score": 1,
+      "findings": [
+        {
+          "rule": "nowrap",
+          "weight": 1,
+          "line": 8,
+          "value": "whitespace-nowrap",
+          "source": "\"group/button inline-flex shrink-0 items-center justify-center rounded-2xl border border-transparent bg-clip-padding text-sm font-semibold whitespace-nowrap shadow-sm transition-all duration-150 outline-none select-none focus-visible:border"
+        }
+      ]
+    },
+    {
+      "path": "src/components/ui/card.tsx",
+      "bytes": 2772,
+      "score": 1,
+      "findings": [
+        {
+          "rule": "overflow-hidden",
+          "weight": 1,
+          "line": 15,
+          "value": "overflow-hidden",
+          "source": "\"group/card flex flex-col gap-(--card-spacing) overflow-hidden rounded-[1.15rem] border border-white/8 bg-[#17181b] py-(--card-spacing) text-sm text-card-foreground shadow-[0_12px_36px_rgba(0,0,0,.24),inset_0_1px_0_rgba(255,255,255,.028)] ["
+        }
+      ]
+    },
+    {
+      "path": "src/components/ui/dropdown-menu.tsx",
+      "bytes": 8844,
+      "score": 1,
+      "findings": [
+        {
+          "rule": "overflow-hidden",
+          "weight": 1,
+          "line": 245,
+          "value": "overflow-hidden",
+          "source": "className={cn(\"z-50 min-w-[96px] origin-(--radix-dropdown-menu-content-transform-origin) overflow-hidden rounded-2xl border border-white/10 bg-[#050505] p-1 text-popover-foreground shadow-[0_20px_60px_rgba(0,0,0,.65),inset_0_1px_0_rgba(255,"
+        }
+      ]
+    },
+    {
+      "path": "src/components/ui/select.tsx",
+      "bytes": 6678,
+      "score": 1,
+      "findings": [
+        {
+          "rule": "nowrap",
+          "weight": 1,
+          "line": 47,
+          "value": "whitespace-nowrap",
+          "source": "\"flex w-full min-w-0 items-center justify-between gap-2 rounded-[1rem] border border-white/8 bg-[#141518] px-3.5 py-2 text-sm font-semibold text-foreground whitespace-nowrap shadow-[inset_0_1px_0_rgba(255,255,255,.03)] transition-colors out"
+        }
+      ]
+    },
+    {
+      "path": "src/components/ui/table.tsx",
+      "bytes": 1580,
+      "score": 1,
+      "findings": [
+        {
+          "rule": "nowrap",
+          "weight": 1,
+          "line": 24,
+          "value": "whitespace-nowrap",
+          "source": "return <th data-slot=\"table-head\" className={cn(\"h-10 whitespace-nowrap px-3 text-left align-middle text-[10px] font-semibold uppercase tracking-[0.1em] text-zinc-500\", className)} {...props} />"
+        }
+      ]
+    },
+    {
+      "path": "src/components/ui/tabs.tsx",
+      "bytes": 3711,
+      "score": 1,
+      "findings": [
+        {
+          "rule": "nowrap",
+          "weight": 1,
+          "line": 66,
+          "value": "whitespace-nowrap",
+          "source": "\"relative inline-flex min-h-8 flex-1 items-center justify-center gap-1.5 rounded-md border border-transparent px-3 py-1.5 text-sm font-medium whitespace-nowrap text-foreground/60 transition-colors group-data-vertical/tabs:w-full group-data-"
+        }
+      ]
+    },
+    {
+      "path": "src/components/workspace-boot-loader.tsx",
+      "bytes": 3279,
+      "score": 1,
+      "findings": [
+        {
+          "rule": "overflow-hidden",
+          "weight": 1,
+          "line": 96,
+          "value": "overflow-hidden",
+          "source": "<div className=\"h-[3px] w-40 overflow-hidden rounded-full bg-white/10\">"
+        }
+      ]
+    }
+  ]
+}
