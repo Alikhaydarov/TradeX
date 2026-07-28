@@ -18,7 +18,6 @@ import { PremiumUpsellDialog } from "./premium-upsell-dialog";
 import { pathFromSection, sectionFromPath } from "./section-config";
 import { Sidebar } from "./sidebar";
 import type { Section } from "./types";
-import { Spinner } from "./ui/spinner";
 import { WorkspaceBootLoader } from "./workspace-boot-loader";
 import { WorkspacePreferencesProvider } from "./workspace-preferences-context";
 import { WorkspaceTopbar } from "./workspace-topbar";
@@ -101,7 +100,6 @@ function WorkspaceAppRouterShellInner({ children }: { children: ReactNode }) {
   const [authMode, setAuthMode] = useState<"login" | "register">("login");
   const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
   const [notificationsMounted, setNotificationsMounted] = useState(false);
-  const [profileOpening, setProfileOpening] = useState(false);
   const workspaceMainRef = useRef<HTMLElement>(null);
   const { user } = useAuth();
 
@@ -116,10 +114,6 @@ function WorkspaceAppRouterShellInner({ children }: { children: ReactNode }) {
   };
 
   useEffect(() => {
-    const handleOpenProfile = () => setProfileOpening(true);
-    const handleProfileReady = () => {
-      window.setTimeout(() => setProfileOpening(false), 40);
-    };
     const handleOpenAuth = (event: Event) => {
       const detail = (event as CustomEvent<{ mode?: "login" | "register" }>)
         .detail;
@@ -127,12 +121,8 @@ function WorkspaceAppRouterShellInner({ children }: { children: ReactNode }) {
       else openLogin();
     };
 
-    window.addEventListener("tradeup:open-profile", handleOpenProfile);
-    window.addEventListener("tradeup:profile-ready", handleProfileReady);
     window.addEventListener("tradeup:open-auth", handleOpenAuth);
     return () => {
-      window.removeEventListener("tradeup:open-profile", handleOpenProfile);
-      window.removeEventListener("tradeup:profile-ready", handleProfileReady);
       window.removeEventListener("tradeup:open-auth", handleOpenAuth);
     };
   }, []);
@@ -140,12 +130,6 @@ function WorkspaceAppRouterShellInner({ children }: { children: ReactNode }) {
   useEffect(() => {
     workspaceMainRef.current?.scrollTo({ top: 0, behavior: "instant" });
   }, [pathname]);
-
-  useEffect(() => {
-    if (!profileOpening) return;
-    const timer = window.setTimeout(() => setProfileOpening(false), 180);
-    return () => window.clearTimeout(timer);
-  }, [profileOpening]);
 
   useEffect(() => {
     const timer = window.setTimeout(() => setNotificationsMounted(true), 800);
@@ -285,15 +269,6 @@ function WorkspaceAppRouterShellInner({ children }: { children: ReactNode }) {
           </button>
         ) : null}
       </ActiveAccountProvider>
-      {profileOpening ? (
-        <div
-          className="pointer-events-none fixed right-3 top-3 z-[2147483646] flex items-center gap-2 rounded-lg border border-white/10 bg-[#111]/95 px-3 py-2 text-xs font-semibold text-zinc-200 shadow-xl"
-          role="status"
-          aria-live="polite"
-        >
-          <Spinner className="size-3.5" /> Opening profile
-        </div>
-      ) : null}
       {notificationsMounted ? <NotificationListener /> : null}
       <PremiumUpsellDialog />
       <UserSettingsDialog />
