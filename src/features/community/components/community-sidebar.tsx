@@ -78,6 +78,11 @@ export function CommunitySidebar({
 
   useEffect(() => {
     onCollapsedChange?.(collapsed);
+    try {
+      window.localStorage.setItem(STORAGE_KEY, collapsed ? "1" : "0");
+    } catch {
+      // Ignore unavailable storage.
+    }
   }, [collapsed, onCollapsedChange]);
 
   useEffect(() => {
