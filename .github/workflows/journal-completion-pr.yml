@@ -6,6 +6,8 @@ on:
     paths:
       - "docs/journal-completion-request.md"
       - "tools/apply-journal-completion.mjs"
+      - "tools/fix-final-plan-blockers.mjs"
+      - "src/components/feed/**"
       - "src/components/journal-v2.tsx"
       - "src/components/journal/**"
       - ".github/workflows/journal-completion-pr.yml"
@@ -45,6 +47,13 @@ jobs:
         with:
           node-version: 22
           cache: npm
+
+      - name: Apply feed and Journal blocker fixes
+        if: steps.pending.outputs.enabled == 'true'
+        run: |
+          if [ -f tools/fix-final-plan-blockers.mjs ]; then
+            node tools/fix-final-plan-blockers.mjs
+          fi
 
       - name: Apply Journal modularization
         if: steps.pending.outputs.enabled == 'true'
@@ -92,5 +101,5 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add -A
-          git commit -m "refactor: complete Journal module architecture"
+          git commit -m "refactor: complete remaining Feed and Journal architecture"
           git push origin HEAD:${{ github.head_ref }}
