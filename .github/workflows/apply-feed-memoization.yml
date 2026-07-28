@@ -1,0 +1,48 @@
+name: Apply feed memoization
+
+on:
+  push:
+    branches:
+      - agent/ui-performance-audit-1
+    paths:
+      - "tools/apply-feed-memoization.mjs"
+      - ".github/workflows/apply-feed-memoization.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  migrate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Checkout branch
+        uses: actions/checkout@v4
+        with:
+          ref: agent/ui-performance-audit-1
+          fetch-depth: 0
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Apply feed memoization
+        run: node tools/apply-feed-memoization.mjs
+      - name: Install dependencies
+        run: npm ci
+      - name: Tailwind ownership guard
+        run: npm run check:ui-parity
+      - name: Lint
+        run: npm run lint
+      - name: Production build
+        run: npm run build
+      - name: Commit validated migration
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          if git diff --cached --quiet; then
+            exit 0
+          fi
+          git commit -m "perf: memoize feed post cards"
+          git push origin HEAD:agent/ui-performance-audit-1
