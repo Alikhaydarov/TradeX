@@ -15,6 +15,7 @@ const TradesArchive = dynamic(
 );
 
 export type JournalTradeRange = TradeRange;
+type JournalSort = "newest" | "oldest";
 
 export function JournalFilters({
   trades,
@@ -39,7 +40,7 @@ export function JournalFilters({
   range: TradeRange;
   customStart: string;
   customEnd: string;
-  sort: "newest" | "oldest" | "highest" | "lowest";
+  sort: JournalSort;
   winRate: number;
   averageR: number;
   formatPnl: (value: number) => string;
@@ -47,7 +48,7 @@ export function JournalFilters({
   onRangeChange: (value: TradeRange) => void;
   onCustomStartChange: (value: string) => void;
   onCustomEndChange: (value: string) => void;
-  onSortChange: (value: "newest" | "oldest" | "highest" | "lowest") => void;
+  onSortChange: (value: JournalSort) => void;
   onOpenTrade: (trade: JournalEntry) => void;
   onAddTrade: () => void;
 }) {
@@ -58,7 +59,7 @@ export function JournalFilters({
       range={range}
       customStart={customStart}
       customEnd={customEnd}
-      sort={sort}
+      sort={sort === "oldest" ? "entryDate" : "exitDate"}
       winRate={winRate}
       averageR={averageR}
       formatPnl={formatPnl}
@@ -66,7 +67,9 @@ export function JournalFilters({
       onRangeChange={onRangeChange}
       onCustomStartChange={onCustomStartChange}
       onCustomEndChange={onCustomEndChange}
-      onSortChange={onSortChange}
+      onSortChange={(value) =>
+        onSortChange(value === "entryDate" ? "oldest" : "newest")
+      }
       onOpenTrade={onOpenTrade}
       onAddTrade={onAddTrade}
     />
