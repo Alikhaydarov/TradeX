@@ -7,6 +7,7 @@ import {
   unlinkSync,
   writeFileSync,
 } from "node:fs";
+import { createHash } from "node:crypto";
 import { dirname, join } from "node:path";
 import { gunzipSync } from "node:zlib";
 
@@ -22,6 +23,9 @@ if (chunks.length !== 11) {
 const encoded = chunks
   .map((name) => readFileSync(join(payloadDir, name), "utf8").trim())
   .join("");
+const payloadHash = createHash("sha256").update(encoded).digest("hex");
+console.log(`i18n payload: ${encoded.length} base64 chars, sha256 ${payloadHash}`);
+
 const decoded = gunzipSync(Buffer.from(encoded, "base64")).toString("utf8");
 const files = JSON.parse(decoded);
 
@@ -35,7 +39,7 @@ for (const [path, content] of Object.entries(files)) {
   }
   mkdirSync(dirname(path), { recursive: true });
   writeFileSync(path, content);
-  console.log(`wrote ${path}`);
+  console.log(`wrote ${path} (${content.length} chars)`);
 }
 
 rmSync(payloadDir, { recursive: true, force: true });
