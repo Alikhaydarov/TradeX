@@ -1,11 +1,5 @@
 "use client";
 
-import Dialog from "@mui/material/Dialog";
-import Switch from "@mui/material/Switch";
-import Tab from "@mui/material/Tab";
-import Tabs from "@mui/material/Tabs";
-import useMediaQuery from "@mui/material/useMediaQuery";
-import { useTheme } from "@mui/material/styles";
 import {
   Check,
   CreditCard,
@@ -24,15 +18,15 @@ import { useLanguage, type Locale } from "@/lib/i18n";
 import { USERNAME_MAX_LENGTH, validateUsername } from "@/lib/username";
 import { useAuth } from "./auth-context";
 import { Button } from "./ui/button";
-import { Dialog as SmallDialog, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog";
 import { Input } from "./ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
 import { Separator } from "./ui/separator";
+import { Switch } from "./ui/switch";
 import { Spinner } from "./ui/spinner";
 import { TraderAvatar } from "./trader-avatar";
 import { usePremiumStatus } from "./use-premium-status";
 import { useWorkspacePreferences } from "./workspace-preferences-context";
-import { MaterialProvider } from "./material-provider";
 
 type SettingsSection = "basic" | "security" | "billing" | "customization" | "symbols";
 
@@ -66,12 +60,10 @@ async function openBillingPortal() {
 }
 
 export function UserSettingsDialog() {
-  return <MaterialProvider><SettingsContent /></MaterialProvider>;
+  return <SettingsContent />;
 }
 
 function SettingsContent() {
-  const theme = useTheme();
-  const desktop = useMediaQuery(theme.breakpoints.up("md"), { noSsr: true });
   const { user } = useAuth();
   const { locale, setLocale } = useLanguage();
   const { status: premium } = usePremiumStatus(Boolean(user));
@@ -137,27 +129,12 @@ function SettingsContent() {
 
   return (
     <>
-      <Dialog
-        open={settingsOpen}
-        onClose={() => setSettingsOpen(false)}
-        fullScreen={!desktop}
-        fullWidth
-        maxWidth="lg"
-        sx={{ zIndex: 2147483000 }}
-        slotProps={{
-          paper: {
-            sx: {
-              height: { xs: "100dvh", md: "min(820px, 92dvh)" },
-              maxHeight: { xs: "100dvh", md: "92dvh" },
-              border: "1px solid rgba(255,255,255,.1)",
-              borderRadius: { xs: 0, md: "24px" },
-              overflow: "hidden",
-              backgroundColor: "#050505",
-            },
-          },
-        }}
-      >
-        <header className="flex shrink-0 items-start justify-between gap-4 border-b border-white/8 px-4 py-4 sm:px-6 sm:py-5">
+      <Dialog open={settingsOpen} onOpenChange={setSettingsOpen}>
+        <DialogContent
+          showCloseButton={false}
+          className="z-[2147483000] flex h-[100dvh] max-h-[100dvh] w-screen max-w-none flex-col gap-0 overflow-hidden rounded-none border-white/10 bg-[#050505] p-0 sm:h-[min(820px,92dvh)] sm:max-h-[92dvh] sm:max-w-6xl sm:rounded-[24px]"
+        >
+          <header className="flex shrink-0 items-start justify-between gap-4 border-b border-white/8 px-4 py-4 sm:px-6 sm:py-5">
           <div>
             <h2 className="text-lg font-black text-white sm:text-xl">Settings</h2>
             <p className="mt-1 text-xs text-zinc-500 sm:text-sm">Profile, security and workspace preferences.</p>
@@ -169,20 +146,29 @@ function SettingsContent() {
 
         <div className="flex min-h-0 flex-1 flex-col overflow-hidden md:grid md:grid-cols-[230px_minmax(0,1fr)]">
           <nav aria-label="Settings sections" className="shrink-0 border-b border-white/8 bg-black p-2 md:border-b-0 md:border-r md:p-4">
-            <Tabs
-              value={section}
-              onChange={(_, value: SettingsSection) => { setSection(value); setMessage(""); }}
-              orientation={desktop ? "vertical" : "horizontal"}
-              variant="scrollable"
-              scrollButtons="auto"
-              allowScrollButtonsMobile
-              aria-label="Settings sections"
-              sx={{ minHeight: 44, "& .MuiTabs-flexContainer": { gap: { xs: 0.5, md: 0.75 } }, "& .MuiTab-root": { minWidth: { xs: "auto", md: "100%" }, px: { xs: 1.5, md: 2 } } }}
-            >
-              {SECTIONS.map(({ id, label, icon: Icon }) => (
-                <Tab key={id} value={id} label={<span className="flex items-center gap-2 whitespace-nowrap"><Icon size={16} />{label}</span>} />
-              ))}
-            </Tabs>
+            <div className="flex gap-1 overflow-x-auto md:flex-col md:overflow-visible">
+              {SECTIONS.map(({ id, label, icon: Icon }) => {
+                const selected = section === id;
+                return (
+                  <button
+                    key={id}
+                    type="button"
+                    onClick={() => {
+                      setSection(id);
+                      setMessage("");
+                    }}
+                    className={`flex min-h-11 shrink-0 items-center gap-2 rounded-xl px-3 text-sm font-bold transition md:w-full ${
+                      selected
+                        ? "bg-white/8 text-white"
+                        : "text-zinc-400 hover:bg-white/[.04] hover:text-white"
+                    }`}
+                  >
+                    <Icon size={16} />
+                    <span className="whitespace-nowrap">{label}</span>
+                  </button>
+                );
+              })}
+            </div>
           </nav>
 
           <main className="min-h-0 overflow-y-auto overscroll-contain p-3 pb-[max(1rem,env(safe-area-inset-bottom))] sm:p-6">
@@ -220,7 +206,7 @@ function SettingsContent() {
                   <InfoCard icon={ShieldCheck} label="Account email" value={email || "Not available"} />
                 </div>
                 <SettingRow title="Hide personal info" description="Masks your username, email and account identifiers during streams or screenshots.">
-                  <Switch checked={hidePersonalInfo} onChange={(_, checked) => setHidePersonalInfo(checked)} slotProps={{ input: { "aria-label": "Hide personal information" } }} />
+                  <Switch checked={hidePersonalInfo} onCheckedChange={setHidePersonalInfo} aria-label="Hide personal information" />
                 </SettingRow>
                 <p className="rounded-2xl border border-sky-500/15 bg-sky-500/5 px-4 py-3 text-xs leading-5 text-sky-200/70">
                   Password and provider security are managed by your verified sign-in provider. Unsupported in-app password and account deletion controls were removed to prevent misleading actions.
@@ -242,7 +228,7 @@ function SettingsContent() {
             {!loading && section === "customization" ? (
               <Panel title="Appearance" description="Tune the workspace for focus, screenshots and streaming.">
                 <SettingRow title="Hide personal info" description="Mask personal values throughout the workspace.">
-                  <Switch checked={hidePersonalInfo} onChange={(_, checked) => setHidePersonalInfo(checked)} slotProps={{ input: { "aria-label": "Hide personal information" } }} />
+                  <Switch checked={hidePersonalInfo} onCheckedChange={setHidePersonalInfo} aria-label="Hide personal information" />
                 </SettingRow>
                 <div className="grid gap-4 sm:grid-cols-2">
                   <Field label="Language">
@@ -263,15 +249,16 @@ function SettingsContent() {
             ) : null}
           </main>
         </div>
+        </DialogContent>
       </Dialog>
 
-      <SmallDialog open={symbolModalOpen} onOpenChange={setSymbolModalOpen}>
+      <Dialog open={symbolModalOpen} onOpenChange={setSymbolModalOpen}>
         <DialogContent className="border-white/10 bg-[#050505] sm:max-w-md">
           <DialogHeader><DialogTitle className="text-white">Add custom symbol</DialogTitle></DialogHeader>
           <Field label="Symbol name"><Input value={symbolDraft} maxLength={16} autoCapitalize="characters" spellCheck={false} onChange={(event) => setSymbolDraft(event.target.value.toUpperCase().replace(/[^A-Z0-9._-]/g, ""))} placeholder="Example: MNQ" /></Field>
           <div className="flex justify-end gap-3"><Button type="button" variant="outline" onClick={() => setSymbolModalOpen(false)}>Cancel</Button><Button type="button" disabled={!symbolDraft.trim()} className="bg-white text-black hover:bg-zinc-200" onClick={() => { addCustomSymbol(symbolDraft); setSymbolDraft(""); setSymbolModalOpen(false); }}>Save</Button></div>
         </DialogContent>
-      </SmallDialog>
+      </Dialog>
     </>
   );
 }

@@ -4,7 +4,6 @@ import { DM_Sans } from "next/font/google";
 
 import { AuthProvider } from "@/components/auth-context";
 import { APP_ROOT_TAILWIND_CLASS } from "@/components/tailwind/app-tailwind-classes";
-import { AppRouterCacheProvider } from "@mui/material-nextjs/v16-appRouter";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
 import { getSupabaseServerClient } from "@/lib/supabase/server";
 import "./globals.css";
@@ -25,9 +24,6 @@ const appFontVariables = {
 const appTypographyClass = [
   "font-sans antialiased [font-synthesis:none] [text-rendering:optimizeLegibility]",
   "[&_.font-heading]:font-sans [&_.font-mono]:font-sans [&_.font-mono]:tabular-nums [&_.font-mono]:tracking-[-0.015em]",
-  "[&_.MuiTypography-root]:font-sans [&_.MuiButton-root]:font-sans [&_.MuiInputBase-root]:font-sans",
-  "[&_.MuiFormLabel-root]:font-sans [&_.MuiChip-root]:font-sans [&_.MuiTooltip-tooltip]:font-sans",
-  "[&_.MuiMenuItem-root]:font-sans [&_.MuiTab-root]:font-sans [&_.MuiTableCell-root]:font-sans",
   "[&_.recharts-text]:font-sans [&_.recharts-cartesian-axis-tick-value]:font-sans [&_.recharts-tooltip-wrapper]:font-sans",
 ].join(" ");
 
@@ -54,14 +50,12 @@ export default async function RootLayout({
       style={appFontVariables}
     >
       <body className={`${appTypographyClass} ${APP_ROOT_TAILWIND_CLASS}`}>
-        <AppRouterCacheProvider options={{ enableCssLayer: true }}>
-          <AuthProvider
+        <AuthProvider
             initialUser={data.user}
             initialConfigured={configured}
           >
             {children}
           </AuthProvider>
-        </AppRouterCacheProvider>
       </body>
     </html>
   );
