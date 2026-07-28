@@ -28,10 +28,32 @@ jobs:
           fetch-depth: 0
 
       - name: Install locale architecture
+        id: install
+        shell: bash
         run: |
+          set +e
           if [ -f tools/apply-full-i18n.mjs ]; then
-            node tools/apply-full-i18n.mjs
+            node tools/apply-full-i18n.mjs > i18n-install.log 2>&1
+            status=$?
+          else
+            echo "Installer already applied." > i18n-install.log
+            status=0
           fi
+          cat i18n-install.log
+          echo "status=$status" >> "$GITHUB_OUTPUT"
+          exit 0
+
+      - name: Upload installer diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: i18n-install-log
+          path: i18n-install.log
+          if-no-files-found: error
+
+      - name: Fail when installer failed
+        if: steps.install.outputs.status != '0'
+        run: exit 1
 
       - uses: actions/setup-node@v4
         with:
