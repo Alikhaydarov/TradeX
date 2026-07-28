@@ -6,7 +6,7 @@ on:
     paths:
       - "docs/journal-completion-request.md"
       - "tools/apply-journal-completion.mjs"
-      - "tools/fix-final-plan-blockers.mjs"
+      - "tools/fix-feed-edit-typo.mjs"
       - "src/components/feed/**"
       - "src/components/journal-v2.tsx"
       - "src/components/journal/**"
@@ -48,11 +48,11 @@ jobs:
           node-version: 22
           cache: npm
 
-      - name: Apply feed and Journal blocker fixes
+      - name: Apply final feed typo fix
         if: steps.pending.outputs.enabled == 'true'
         run: |
-          if [ -f tools/fix-final-plan-blockers.mjs ]; then
-            node tools/fix-final-plan-blockers.mjs
+          if [ -f tools/fix-feed-edit-typo.mjs ]; then
+            node tools/fix-feed-edit-typo.mjs
           fi
 
       - name: Apply Journal modularization
