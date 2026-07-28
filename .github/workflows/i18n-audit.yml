@@ -8,6 +8,7 @@ on:
       - "src/**"
       - ".i18n-payload/**"
       - "tools/apply-full-i18n.mjs"
+      - "tools/finalize-i18n-selectors.mjs"
       - "tools/audit-i18n.mjs"
       - ".github/workflows/i18n-audit.yml"
       - "package.json"
@@ -27,17 +28,20 @@ jobs:
           ref: agent/full-i18n-en-uz-ru-ko
           fetch-depth: 0
 
-      - name: Install locale architecture
+      - name: Install and finalize locale architecture
         id: install
         shell: bash
         run: |
           set +e
+          : > i18n-install.log
+          status=0
           if [ -f tools/apply-full-i18n.mjs ]; then
-            node tools/apply-full-i18n.mjs > i18n-install.log 2>&1
-            status=$?
+            node tools/apply-full-i18n.mjs >> i18n-install.log 2>&1 || status=$?
           else
-            echo "Installer already applied." > i18n-install.log
-            status=0
+            echo "Catalog installer already applied." >> i18n-install.log
+          fi
+          if [ "$status" -eq 0 ] && [ -f tools/finalize-i18n-selectors.mjs ]; then
+            node tools/finalize-i18n-selectors.mjs >> i18n-install.log 2>&1 || status=$?
           fi
           cat i18n-install.log
           echo "status=$status" >> "$GITHUB_OUTPUT"
@@ -63,7 +67,7 @@ jobs:
           if git diff --cached --quiet; then
             exit 0
           fi
-          git commit -m "feat: generate complete EN UZ RU KO locale catalogs"
+          git commit -m "feat: finalize EN UZ RU KO locale selectors"
           git push origin HEAD:agent/full-i18n-en-uz-ru-ko
 
       - uses: actions/setup-node@v4
