@@ -34,12 +34,14 @@ const report = {
     directImgTags: 0,
     suspenseUsages: 0,
     dynamicCalls: 0,
+    reactMemoUsages: 0,
   },
   imports: Object.fromEntries(Object.keys(libraryPatterns).map((key) => [key, []])),
   largeFiles: [],
   clientFiles: [],
   directImgFiles: [],
   dynamicFiles: [],
+  memoizedFiles: [],
 };
 
 for (const file of files) {
@@ -50,11 +52,13 @@ for (const file of files) {
   const directImgs = (content.match(/<img\b/g) || []).length;
   const suspense = (content.match(/<Suspense\b|\bSuspense\s*[,}]/g) || []).length;
   const dynamicCalls = (content.match(/\bdynamic\s*\(/g) || []).length;
+  const memoUsages = (content.match(/\bmemo\s*\(|\bReact\.memo\s*\(/g) || []).length;
 
   report.totals.sourceLines += lines;
   report.totals.directImgTags += directImgs;
   report.totals.suspenseUsages += suspense;
   report.totals.dynamicCalls += dynamicCalls;
+  report.totals.reactMemoUsages += memoUsages;
 
   if (lines >= 300) report.largeFiles.push({ path, lines, bytes: statSync(file).size });
   if (isClient) {
@@ -63,6 +67,7 @@ for (const file of files) {
   }
   if (directImgs) report.directImgFiles.push({ path, count: directImgs });
   if (dynamicCalls) report.dynamicFiles.push({ path, count: dynamicCalls });
+  if (memoUsages) report.memoizedFiles.push({ path, count: memoUsages });
 
   for (const [library, pattern] of Object.entries(libraryPatterns)) {
     pattern.lastIndex = 0;
@@ -72,6 +77,7 @@ for (const file of files) {
 
 report.largeFiles.sort((a, b) => b.lines - a.lines);
 report.clientFiles.sort((a, b) => b.lines - a.lines);
+report.memoizedFiles.sort((a, b) => b.count - a.count || a.path.localeCompare(b.path));
 
 writeFileSync(
   join(ROOT, "ui-performance-audit.json"),
@@ -83,6 +89,7 @@ console.log(`Source files: ${report.totals.sourceFiles}`);
 console.log(`Client files: ${report.totals.clientFiles}`);
 console.log(`Large files (>=300 lines): ${report.largeFiles.length}`);
 console.log(`Direct <img> tags: ${report.totals.directImgTags}`);
+console.log(`React.memo usages: ${report.totals.reactMemoUsages}`);
 for (const [library, paths] of Object.entries(report.imports)) {
   console.log(`${library}: ${paths.length}`);
 }
