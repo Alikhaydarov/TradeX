@@ -99,7 +99,7 @@ replaceRequired(
     }
     setTradeOpen(true);
   }, [activeAccountId, mode, router, setError]);
-`,
+ `,
   "journal data lifecycle",
 );
 
@@ -124,7 +124,7 @@ source = source.replace(
   biblePattern,
   `$1
               <JournalGallery
-                trades={bibleEntries}
+                trades={bibleTrades}
                 onOpenTrade={openTrade}
               />$2`,
 );
