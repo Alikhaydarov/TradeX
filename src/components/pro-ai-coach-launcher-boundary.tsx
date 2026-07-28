@@ -1,5 +1,7 @@
 "use client";
 
+import { usePathname } from "next/navigation";
+
 import { ProAiCoachLauncher } from "./pro-ai-coach-launcher";
 
 const AI_LAUNCHER_PARITY = [
@@ -22,9 +24,11 @@ const AI_LAUNCHER_PARITY = [
 ].join(" ");
 
 export function ProAiCoachLauncherBoundary() {
+  const pathname = usePathname();
+
   return (
     <div className={AI_LAUNCHER_PARITY}>
-      <ProAiCoachLauncher />
+      <ProAiCoachLauncher key={pathname} />
     </div>
   );
 }
