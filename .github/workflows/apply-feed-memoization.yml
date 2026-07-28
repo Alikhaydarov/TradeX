@@ -7,6 +7,12 @@ on:
     paths:
       - "tools/apply-feed-memoization.mjs"
       - ".github/workflows/apply-feed-memoization.yml"
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "tools/apply-feed-memoization.mjs"
+      - ".github/workflows/apply-feed-memoization.yml"
 
 permissions:
   contents: write
@@ -37,6 +43,7 @@ jobs:
       - name: Production build
         run: npm run build
       - name: Commit validated migration
+        if: github.event_name == 'push'
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
