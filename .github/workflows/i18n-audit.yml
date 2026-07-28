@@ -6,10 +6,9 @@ on:
       - main
     paths:
       - "src/**"
-      - ".i18n-payload/**"
-      - "tools/apply-full-i18n.mjs"
       - "tools/finalize-i18n-selectors.mjs"
       - "tools/audit-i18n.mjs"
+      - "tools/check-i18n-coverage.mjs"
       - ".github/workflows/i18n-audit.yml"
       - "package.json"
       - "package-lock.json"
@@ -28,26 +27,23 @@ jobs:
           ref: agent/full-i18n-en-uz-ru-ko
           fetch-depth: 0
 
-      - name: Install and finalize locale architecture
+      - name: Finalize locale selectors
         id: install
         shell: bash
         run: |
           set +e
           : > i18n-install.log
           status=0
-          if [ -f tools/apply-full-i18n.mjs ]; then
-            node tools/apply-full-i18n.mjs >> i18n-install.log 2>&1 || status=$?
-          else
-            echo "Catalog installer already applied." >> i18n-install.log
-          fi
-          if [ "$status" -eq 0 ] && [ -f tools/finalize-i18n-selectors.mjs ]; then
+          if [ -f tools/finalize-i18n-selectors.mjs ]; then
             node tools/finalize-i18n-selectors.mjs >> i18n-install.log 2>&1 || status=$?
+          else
+            echo "Locale selectors already finalized." >> i18n-install.log
           fi
           cat i18n-install.log
           echo "status=$status" >> "$GITHUB_OUTPUT"
           exit 0
 
-      - name: Upload installer diagnostics
+      - name: Upload migration diagnostics
         if: always()
         uses: actions/upload-artifact@v4
         with:
@@ -55,11 +51,11 @@ jobs:
           path: i18n-install.log
           if-no-files-found: error
 
-      - name: Fail when installer failed
+      - name: Fail when selector migration failed
         if: steps.install.outputs.status != '0'
         run: exit 1
 
-      - name: Commit generated locale architecture
+      - name: Commit selector migration
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
@@ -76,6 +72,9 @@ jobs:
           cache: npm
 
       - run: npm ci
+
+      - name: Verify complete localization coverage
+        run: npm run check:i18n
 
       - name: Verify Tailwind-only ownership
         run: npm run check:ui-parity
