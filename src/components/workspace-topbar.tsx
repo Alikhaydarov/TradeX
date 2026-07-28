@@ -89,13 +89,7 @@ export function WorkspaceTopbar({ section }: { section: Section }) {
       role="banner"
       className="tw-app-topbar sticky top-0 z-[70] shrink-0 border-b border-white/10 bg-black/95 px-3 py-2.5 backdrop-blur-xl supports-[backdrop-filter]:bg-black/88 lg:flex lg:min-h-[72px] lg:items-center lg:gap-5 lg:px-6 lg:py-3"
     >
-      <div
-        className={`grid min-w-0 items-center gap-2 lg:flex lg:flex-1 lg:gap-5 ${
-          isHome
-            ? "grid-cols-[40px_minmax(0,1fr)_auto_auto]"
-            : "grid-cols-[40px_minmax(0,1fr)_auto]"
-        }`}
-      >
+      <div className="flex min-w-0 items-center gap-2 lg:flex-1 lg:gap-5">
         <button
           type="button"
           onClick={openMobileDrawer}
@@ -105,7 +99,7 @@ export function WorkspaceTopbar({ section }: { section: Section }) {
           <Menu size={18} strokeWidth={2} />
         </button>
 
-        <div className="min-w-0 lg:flex-1">
+        <div className="min-w-0 flex-1">
           <div className="flex min-w-0 items-center gap-2.5">
             <h1 className="truncate text-[15px] font-bold leading-tight tracking-[-0.025em] text-white lg:text-[16px]">
               {page}
