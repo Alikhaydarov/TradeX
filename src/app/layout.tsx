@@ -1,9 +1,17 @@
 import type { Metadata } from "next";
-import type { CSSProperties } from "react";
 import { DM_Sans } from "next/font/google";
+import { cookies } from "next/headers";
+import type { CSSProperties } from "react";
 
 import { AuthProvider } from "@/components/auth-context";
+import { LegacyI18nBoundary } from "@/components/legacy-i18n-boundary";
 import { APP_ROOT_TAILWIND_CLASS } from "@/components/tailwind/app-tailwind-classes";
+import {
+  localeCookieName,
+  localeTags,
+  normalizeLocale,
+} from "@/lib/i18n-config";
+import { I18nProvider } from "@/lib/i18n";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
 import { getSupabaseServerClient } from "@/lib/supabase/server";
 import "./globals.css";
@@ -42,20 +50,30 @@ export default async function RootLayout({
   const { data } = supabase
     ? await supabase.auth.getUser()
     : { data: { user: null } };
+  const cookieStore = await cookies();
+  const initialLocale = normalizeLocale(
+    cookieStore.get(localeCookieName)?.value,
+  );
 
   return (
     <html
-      lang="en"
+      lang={localeTags[initialLocale]}
+      dir="ltr"
+      data-locale={initialLocale}
       className={`dark ${dmSans.variable}`}
       style={appFontVariables}
     >
       <body className={`${appTypographyClass} ${APP_ROOT_TAILWIND_CLASS}`}>
-        <AuthProvider
-          initialUser={data.user}
-          initialConfigured={configured}
-        >
-          {children}
-        </AuthProvider>
+        <I18nProvider initialLocale={initialLocale}>
+          <LegacyI18nBoundary>
+            <AuthProvider
+              initialUser={data.user}
+              initialConfigured={configured}
+            >
+              {children}
+            </AuthProvider>
+          </LegacyI18nBoundary>
+        </I18nProvider>
       </body>
     </html>
   );
