@@ -138,7 +138,7 @@ export function NotificationListener() {
 
     const notify = (item: AppNotification) => {
       const ai = isAiNotification(item.type);
-      const actorName = ai ? "TradeWay AI" : item.actor?.fullName || "TradeWay";
+      const actorName = ai ? "Tradoxy AI" : item.actor?.fullName || "Tradoxy";
       const body = shortText(item.message);
       setToast({ title: actorName, body, type: item.type });
       window.setTimeout(() => setToast(null), 5200);
@@ -229,7 +229,7 @@ export function NotificationListener() {
           <div className="flex gap-2 pr-7">
             <Bell size={16} className="mt-0.5 shrink-0 text-zinc-300" />
             <div>
-              <p className="font-bold">TradeWay notifications yoqilsinmi?</p>
+              <p className="font-bold">Tradoxy notifications yoqilsinmi?</p>
               <p className="mt-1 leading-5 text-slate-400">Yangi xabar, risk warning yoki Pro AI insight kelsa notification chiqadi.</p>
             </div>
           </div>

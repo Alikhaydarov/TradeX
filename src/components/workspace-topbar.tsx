@@ -114,7 +114,7 @@ export function WorkspaceTopbar({ section }: { section: Section }) {
           <p className="mt-1 truncate text-[10px] font-medium text-zinc-500 lg:text-[11px]">
             {isAccountScoped
               ? "Trading performance workspace"
-              : "TradeWay workspace"}
+              : "Tradoxy workspace"}
           </p>
         </div>
 

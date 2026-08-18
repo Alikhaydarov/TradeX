@@ -2054,7 +2054,7 @@ function Workspace(p: {
                     <div className="flex items-center justify-between border-b border-white/8 px-4 py-3">
                       <div>
                         <h3 className="text-[14px] font-black text-white">
-                          TradeWay Profitability Score
+                          Tradoxy Profitability Score
                         </h3>
                         <p className="mt-1 text-[11px] text-zinc-500">
                           {trades.length < 5

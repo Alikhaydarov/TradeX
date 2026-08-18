@@ -86,7 +86,7 @@ function GroupLabel({ children }: { children: string }) {
   );
 }
 
-function TradeWayBrand({ mobile = false }: { mobile?: boolean }) {
+function TradoxyBrand({ mobile = false }: { mobile?: boolean }) {
   const size = mobile ? 40 : 36;
 
   return (
@@ -95,7 +95,7 @@ function TradeWayBrand({ mobile = false }: { mobile?: boolean }) {
     >
       <Image
         src="/tradox-logo.webp"
-        alt="TradeWay"
+        alt="Tradoxy"
         width={size}
         height={size}
         sizes={`${size}px`}
@@ -450,13 +450,13 @@ export function Sidebar({
         <button
           onClick={() => onChange("feed")}
           className="flex items-center gap-3 rounded-2xl px-2 py-1.5 text-left transition-colors hover:bg-[#080808]"
-          aria-label="TradeWay home"
+          aria-label="Tradoxy home"
         >
-          <TradeWayBrand />
+          <TradoxyBrand />
           <span className="min-w-0">
             <span className="flex items-center gap-2">
               <strong className="block truncate text-[13px] tracking-tight">
-                TradeWay
+                Tradoxy
               </strong>
               <span
                 className={`rounded-full px-2 py-0.5 text-[10px] font-black ${premium.isPremium ? "bg-[#0b1c12] text-emerald-300" : "bg-[#0a0a0a] text-zinc-400"}`}
@@ -589,13 +589,13 @@ export function Sidebar({
                     onChange("feed");
                   }}
                   className="flex min-w-0 items-center gap-3 rounded-xl text-left"
-                  aria-label="TradeWay home"
+                  aria-label="Tradoxy home"
                 >
-                  <TradeWayBrand mobile />
+                  <TradoxyBrand mobile />
                   <div className="min-w-0">
                     <span className="flex items-center gap-2">
                       <strong className="block truncate text-base leading-tight text-white">
-                        TradeWay
+                        Tradoxy
                       </strong>
                       <span
                         className={`rounded-full px-2 py-0.5 text-[10px] font-black ${premium.isPremium ? "bg-[#0b1c12] text-emerald-300" : "bg-[#0a0a0a] text-zinc-400"}`}

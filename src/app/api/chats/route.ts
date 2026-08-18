@@ -24,6 +24,9 @@ interface ProfileRecord {
   avatar_url: string | null;
 }
 
+const COMMUNITY_NAME = "Tradoxy Community";
+const LEGACY_COMMUNITY_NAME = "TradeWay Community";
+
 function initials(value: string) {
   const letters = value
     .split(/\s+/)
@@ -42,7 +45,7 @@ function mapChat(group: GroupRecord, members: MemberRecord[], profiles: ProfileR
     description: group.description,
     avatar: group.avatar,
     isPrivate: Boolean(group.is_private),
-    isCommunity: group.name === "TradeWay Community",
+    isCommunity: group.name === COMMUNITY_NAME || group.name === LEGACY_COMMUNITY_NAME,
     createdAt: group.created_at,
     members: members.map((member) => {
       const profile = profilesById.get(member.user_id);
@@ -107,22 +110,34 @@ async function loadChats(auth: NonNullable<Awaited<ReturnType<typeof authenticat
 }
 
 async function ensureCommunity(auth: NonNullable<Awaited<ReturnType<typeof authenticateRequest>>>) {
-  const communityName = "TradeWay Community";
   const { data: existingCommunity, error: communityError } = await auth.supabase
     .from("groups")
-    .select("id")
-    .eq("name", communityName)
-    .maybeSingle<{ id: string }>();
+    .select("id, name")
+    .in("name", [COMMUNITY_NAME, LEGACY_COMMUNITY_NAME])
+    .limit(1)
+    .maybeSingle<{ id: string; name: string }>();
 
   if (communityError) throw new Error(communityError.message);
 
-  let community = existingCommunity;
+  let community = existingCommunity ? { id: existingCommunity.id } : null;
+  if (existingCommunity?.name === LEGACY_COMMUNITY_NAME) {
+    const { error: renameError } = await auth.supabase
+      .from("groups")
+      .update({
+        name: COMMUNITY_NAME,
+        description: "Official announcements, platform updates and conversations for every Tradoxy trader.",
+      })
+      .eq("id", existingCommunity.id);
+
+    if (renameError) throw new Error(renameError.message);
+  }
+
   if (!community) {
     const created = await auth.supabase
       .from("groups")
       .insert({
-        name: communityName,
-        description: "Official announcements, platform updates and conversations for every TradeWay trader.",
+        name: COMMUNITY_NAME,
+        description: "Official announcements, platform updates and conversations for every Tradoxy trader.",
         avatar: "TW",
         owner_id: auth.user.id,
         is_private: false,
@@ -134,7 +149,7 @@ async function ensureCommunity(auth: NonNullable<Awaited<ReturnType<typeof authe
       const existing = await auth.supabase
         .from("groups")
         .select("id")
-        .eq("name", communityName)
+        .eq("name", COMMUNITY_NAME)
         .single<{ id: string }>();
       if (existing.error) throw new Error(created.error.message);
       community = existing.data;

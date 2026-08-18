@@ -20,7 +20,7 @@ export async function generateMetadata({
 }: CommunitySectionPageProps): Promise<Metadata> {
   const { section } = await params;
   return {
-    title: `${TITLES[section] ?? "Community"} | TradeWay`,
+    title: `${TITLES[section] ?? "Community"} | Tradoxy`,
   };
 }
 

@@ -715,7 +715,7 @@ function TradeReviewImage({
       {generatedUrl ? (
         <MediaImage
           src={generatedUrl}
-          alt={`${trade.symbol} TradeWay review image`}
+          alt={`${trade.symbol} Tradoxy review image`}
           className="aspect-square w-full bg-[#0b0b0b] object-contain"
         />
       ) : (

@@ -117,7 +117,7 @@ export async function POST(request: Request) {
   if (!premium.isPremium && (connectorRequested || PREMIUM_PLATFORMS.has(String(payload.platform || "").toLowerCase()))) {
     return Response.json(
       {
-        error: "Automatic account connections are available only on TradeWay Premium.",
+        error: "Automatic account connections are available only on Tradoxy Premium.",
         upgradeUrl: "/pricing",
       },
       { status: 403 },

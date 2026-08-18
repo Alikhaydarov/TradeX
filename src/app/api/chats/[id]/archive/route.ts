@@ -16,7 +16,9 @@ export async function POST(
     .eq("id", id)
     .maybeSingle<{ name: string }>();
 
-  if (group?.name === "TradeWay Community") return badRequest("The TradeWay Community cannot be hidden.");
+  if (["Tradoxy Community", "TradeWay Community"].includes(group?.name ?? "")) {
+    return badRequest("The Tradoxy Community cannot be hidden.");
+  }
 
   const { error } = await auth.supabase.rpc("archive_chat", {
     target_group_id: id,

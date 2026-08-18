@@ -520,7 +520,7 @@ export function TradeShareComposer({ trade, onClose }: TradeShareComposerProps) 
           <div className="flex flex-col items-center justify-center gap-4 py-14 text-center">
             <span className="text-5xl">🚀</span>
             <h3 className="text-lg font-bold text-[#f1f1f1]">Post ulashildi!</h3>
-            <p className="text-sm text-[#8a8a8a]">TradeWay feedida chiqdi.</p>
+            <p className="text-sm text-[#8a8a8a]">Tradoxy feedida chiqdi.</p>
             {storyCardUrl && (
               <button type="button" onClick={downloadStory}
                 className="mt-2 flex items-center gap-2 rounded-full border border-[#2a2a2a] px-5 py-2.5 text-sm font-semibold text-[#f1f1f1] transition hover:bg-[#1a1a1a]">

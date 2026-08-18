@@ -11,7 +11,7 @@ export async function generateMetadata({
 }: EconomicCalendarMonthPageProps): Promise<Metadata> {
   const { year, month } = await params;
   return {
-    title: `Economic Calendar ${year}/${month} | TradeWay`,
+    title: `Economic Calendar ${year}/${month} | Tradoxy`,
   };
 }
 

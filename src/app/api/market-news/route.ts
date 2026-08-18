@@ -40,7 +40,7 @@ async function fetchForexFactoryCalendar() {
   const response = await fetch(FOREX_FACTORY_URL, {
     headers: {
       Accept: "application/json",
-      "User-Agent": "TradeWay/1.0 economic-calendar",
+      "User-Agent": "Tradoxy/1.0 economic-calendar",
     },
     next: { revalidate: 3600 },
   });

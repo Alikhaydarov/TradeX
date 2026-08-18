@@ -106,7 +106,7 @@ export function AuthModal({
         <div className="p-5 sm:p-7">
           <div className="flex items-center">
             <span className="grid size-9 place-items-center rounded-xl border border-white/15 bg-white text-xs font-black text-black">TD</span>
-            <span className="ml-3 text-sm font-bold tracking-tight">TradeWay</span>
+            <span className="ml-3 text-sm font-bold tracking-tight">Tradoxy</span>
             <button onClick={onClose} className="ml-auto grid size-9 place-items-center rounded-full text-zinc-500 transition hover:bg-white/8 hover:text-white" aria-label="Close">
               <X size={19} />
             </button>
@@ -122,7 +122,7 @@ export function AuthModal({
                 We sent a secure confirmation link to <strong className="text-zinc-200">{confirmationEmail}</strong>.
               </p>
               <button onClick={onClose} className="mt-7 rounded-full bg-white px-6 py-2.5 text-sm font-bold text-black transition hover:bg-zinc-200">
-                Back to TradeWay
+                Back to Tradoxy
               </button>
             </div>
           ) : (

@@ -73,10 +73,10 @@ const paidPlans: BillingPlan[] = [
     id: "pro",
     name: "Pro",
     price: "$25/mo",
-    tagline: "The complete TradeWay workspace with account-scoped artificial intelligence.",
+    tagline: "The complete Tradoxy workspace with account-scoped artificial intelligence.",
     features: [
       "Everything included in Standard",
-      "Multilingual TradeWay AI chat",
+      "Multilingual Tradoxy AI chat",
       "Account reports from journal data",
       "Smart risk, psychology and news notifications",
     ],
@@ -160,7 +160,7 @@ export function Pricing({ onLogin }: { onLogin?: () => void } = {}) {
   const activeFeatures = [
     { label: "Verified badge", active: Boolean(premium?.isVerified) },
     { label: "Account Auto Sync", active: Boolean(premium?.autoSyncEnabled) },
-    { label: "TradeWay AI chat", active: Boolean(premium?.aiEnabled) },
+    { label: "Tradoxy AI chat", active: Boolean(premium?.aiEnabled) },
     { label: "AI smart notifications", active: Boolean(premium?.traderoxEnabled) },
   ];
 
@@ -216,16 +216,16 @@ export function Pricing({ onLogin }: { onLogin?: () => void } = {}) {
           <div className="grid gap-6 lg:grid-cols-[1.1fr_.9fr] lg:items-end">
             <div>
               <Badge className="rounded-full bg-white text-black hover:bg-white">
-                <Crown className="size-3.5" /> TradeWay plans
+                <Crown className="size-3.5" /> Tradoxy plans
               </Badge>
               <h1 className="mt-4 max-w-2xl text-3xl font-semibold tracking-[-0.04em] text-white sm:text-5xl">
                 Choose the tools your trading workflow actually needs.
               </h1>
               <p className="mt-4 max-w-2xl text-sm leading-6 text-zinc-400">
-                Standard unlocks verification and account sync. Pro adds TradeWay AI chat, account reports and smart notifications generated from the selected journal account.
+                Standard unlocks verification and account sync. Pro adds Tradoxy AI chat, account reports and smart notifications generated from the selected journal account.
               </p>
               <div className="mt-5 flex flex-wrap gap-2">
-                {["Verified badge", "Account imports", "TradeWay AI on Pro", "Server-side access control"].map((item) => (
+                {["Verified badge", "Account imports", "Tradoxy AI on Pro", "Server-side access control"].map((item) => (
                   <span key={item} className="rounded-full border border-white/10 bg-[#0d0d0d] px-3 py-2 text-xs font-semibold text-zinc-300">
                     {item}
                   </span>
@@ -333,7 +333,7 @@ export function Pricing({ onLogin }: { onLogin?: () => void } = {}) {
         <section className="mt-4 grid gap-3 md:grid-cols-3">
           {[
             [ShieldCheck, "Verified workspace", "Standard and Pro unlock verified proof and expanded account tools."],
-            [BrainCircuit, "TradeWay AI", "Only Pro can use multilingual account chat, reports and smart notifications."],
+            [BrainCircuit, "Tradoxy AI", "Only Pro can use multilingual account chat, reports and smart notifications."],
             [Sparkles, "Backend protected", "AI routes verify the active Pro plan even when somebody bypasses the interface."],
           ].map(([Icon, title, body]) => {
             const ItemIcon = Icon as typeof BrainCircuit;
@@ -384,7 +384,7 @@ function PlanCard({
           <div>
             <div className="flex items-center gap-2">
               <CardTitle className="text-white">{name}</CardTitle>
-              {highlighted ? <Badge variant="secondary" className="rounded-full bg-amber-300/15 text-amber-200">TradeWay AI</Badge> : null}
+              {highlighted ? <Badge variant="secondary" className="rounded-full bg-amber-300/15 text-amber-200">Tradoxy AI</Badge> : null}
             </div>
             <CardDescription className="mt-2 text-zinc-400">{tagline}</CardDescription>
           </div>

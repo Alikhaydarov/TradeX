@@ -135,13 +135,13 @@ export function PremiumUpsellDialog() {
         <div className="rounded-[28px] bg-black p-6">
           <DialogHeader className="space-y-3 text-left">
             <Badge className="w-fit rounded-full bg-white text-black hover:bg-white">
-              <Crown className="size-3.5" /> TradeWay plans
+              <Crown className="size-3.5" /> Tradoxy plans
             </Badge>
             <DialogTitle className="text-3xl font-black tracking-tight text-white">
-              Upgrade your TradeWay workspace
+              Upgrade your Tradoxy workspace
             </DialogTitle>
             <p className="max-w-md text-sm leading-6 text-zinc-400">
-              Standard unlocks verification and account sync. Pro adds TradeWay AI chat, account reports and smart notifications.
+              Standard unlocks verification and account sync. Pro adds Tradoxy AI chat, account reports and smart notifications.
             </p>
           </DialogHeader>
 
@@ -155,7 +155,7 @@ export function PremiumUpsellDialog() {
                 <p className="mt-3 text-xs leading-5 text-zinc-500">
                   {plan.id === "standard"
                     ? "Verified profile, multiple accounts, MT5 history sync and core analytics."
-                    : "Everything in Standard plus multilingual TradeWay AI chat, account reports and smart risk notifications."}
+                    : "Everything in Standard plus multilingual Tradoxy AI chat, account reports and smart risk notifications."}
                 </p>
                 <Button
                   className="mt-4 h-10 w-full rounded-2xl bg-white text-black hover:bg-zinc-200"

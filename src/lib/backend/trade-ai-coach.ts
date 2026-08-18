@@ -319,7 +319,7 @@ export async function buildAiCoachReport(trades: CoachTrade[]): Promise<TradeCoa
           {
             role: "system",
             content:
-              "You are TradeWay AI Coach. Return only compact JSON. Be direct, strict, practical and useful for trader discipline. Do not give financial advice or trade signals; focus on risk, discipline, journaling, psychology, execution quality, warnings, routines, and next actions. Use Uzbek Latin when possible.",
+              "You are Tradoxy AI Coach. Return only compact JSON. Be direct, strict, practical and useful for trader discipline. Do not give financial advice or trade signals; focus on risk, discipline, journaling, psychology, execution quality, warnings, routines, and next actions. Use Uzbek Latin when possible.",
           },
           {
             role: "user",

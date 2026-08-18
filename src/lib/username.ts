@@ -65,7 +65,7 @@ export function validateUsername(input: string): UsernameValidation {
     return { valid: false, value, error: "Usernames cannot end with or repeat underscores." };
   }
   if (reservedNameSet.has(value) || protectedPrefixes.some((prefix) => value.startsWith(`${prefix}_`))) {
-    return { valid: false, value, error: "This username is reserved by TradeWay." };
+    return { valid: false, value, error: "This username is reserved by Tradoxy." };
   }
 
   return { valid: true, value, error: null };

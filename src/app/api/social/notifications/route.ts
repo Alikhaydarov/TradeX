@@ -121,7 +121,7 @@ export async function GET(request: Request) {
         ? {
             id: "tradox-ai",
             username: "",
-            fullName: "TradeWay AI",
+            fullName: "Tradoxy AI",
             avatarUrl: null,
             isVerified: true,
           }

@@ -146,7 +146,7 @@ async function rewriteSignals(signals: Signal[]) {
           {
             role: "system",
             content:
-              "You write concise TradeWay AI trading-journal notifications. Return a valid JSON array only. Preserve every supplied key exactly. Each item must be {key,message}. Keep each message under 220 characters. Do not give market direction, signals, profit promises or instructions to increase risk. Keep all supplied numbers accurate. Use a calm professional tone.",
+              "You write concise Tradoxy AI trading-journal notifications. Return a valid JSON array only. Preserve every supplied key exactly. Each item must be {key,message}. Keep each message under 220 characters. Do not give market direction, signals, profit promises or instructions to increase risk. Keep all supplied numbers accurate. Use a calm professional tone.",
           },
           {
             role: "user",
@@ -182,7 +182,7 @@ async function upcomingNewsSignal(): Promise<Signal | null> {
     const response = await fetch(FOREX_FACTORY_URL, {
       headers: {
         Accept: "application/json",
-        "User-Agent": "TradeWay/1.0 smart-notifications",
+        "User-Agent": "Tradoxy/1.0 smart-notifications",
       },
       next: { revalidate: 3600 },
     });
@@ -463,6 +463,6 @@ export async function POST(request: Request) {
 
     return Response.json({ created, evaluated: (accounts ?? []).length, model: process.env.GROQ_API_KEY ? MODEL : null });
   } catch (error) {
-    return serverError(error instanceof Error ? error.message : "TradeWay AI notification sync failed.");
+    return serverError(error instanceof Error ? error.message : "Tradoxy AI notification sync failed.");
   }
 }

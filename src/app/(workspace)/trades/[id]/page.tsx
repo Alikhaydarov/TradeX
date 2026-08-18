@@ -7,7 +7,7 @@ type TradeDetailPageProps = {
 };
 
 export const metadata: Metadata = {
-  title: "Trade Detail | TradeWay",
+  title: "Trade Detail | Tradoxy",
 };
 
 export default async function TradeDetailPage({ params }: TradeDetailPageProps) {

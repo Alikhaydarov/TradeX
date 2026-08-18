@@ -194,7 +194,7 @@ export function AdminPanel({ onLogin }: { onLogin: () => void }) {
       <header className="sticky top-0 z-20 flex items-center border-b border-white/8 bg-[linear-gradient(90deg,rgba(14,165,233,.08),rgba(17,17,17,.96)_35%,rgba(245,158,11,.06))] px-3 py-3 backdrop-blur-xl sm:px-5 sm:py-4">
         <div>
           <p className="text-[10px] font-bold uppercase tracking-[.22em] text-zinc-500">Superadmin</p>
-          <h1 className="mt-1 text-xl font-black tracking-tight text-white sm:text-2xl">TradeWay access console</h1>
+          <h1 className="mt-1 text-xl font-black tracking-tight text-white sm:text-2xl">Tradoxy access console</h1>
         </div>
         <span className="ml-auto flex items-center gap-1.5 rounded-full border border-emerald-400/15 bg-emerald-400/10 px-3 py-1.5 text-[10px] font-bold text-emerald-200">
           <ShieldCheck size={12} /> ROOT ACCESS

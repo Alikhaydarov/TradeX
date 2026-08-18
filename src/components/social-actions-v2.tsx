@@ -452,7 +452,7 @@ function NotificationsDialog({
                 <div className="flex gap-3">
                   <div className="relative shrink-0">
                     <TraderAvatar
-                      name={item.actor?.fullName ?? "TradeWay"}
+                      name={item.actor?.fullName ?? "Tradoxy"}
                       value={item.actor?.avatarUrl ?? null}
                       className="h-12 w-12 text-xs"
                     />
@@ -511,7 +511,7 @@ function NotificationsDialog({
             >
               <div className="relative">
                 <TraderAvatar
-                  name={item.actor?.fullName ?? "TradeWay"}
+                  name={item.actor?.fullName ?? "Tradoxy"}
                   value={item.actor?.avatarUrl ?? null}
                   className="h-12 w-12 shrink-0 text-xs"
                 />
@@ -524,7 +524,7 @@ function NotificationsDialog({
               <span className="min-w-0 flex-1">
                 <span className="flex min-w-0 items-center gap-1.5">
                   <span className="truncate text-[15px] font-black text-white">
-                    {item.actor?.fullName ?? "TradeWay"}
+                    {item.actor?.fullName ?? "Tradoxy"}
                   </span>
                   {!item.isRead ? (
                     <span className="size-2 rounded-full bg-white" />

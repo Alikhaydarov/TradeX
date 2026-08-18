@@ -21,7 +21,7 @@ import type { Section } from "./types";
 import { WorkspaceBootLoader } from "./workspace-boot-loader";
 import { WorkspacePreferencesProvider } from "./workspace-preferences-context";
 import { WorkspaceTopbar } from "./workspace-topbar";
-import { TradeWayLoginLanding } from "./tradeway-login-landing";
+import { TradoxyLoginLanding } from "./tradeway-login-landing";
 
 const UserSettingsDialog = dynamic(
   () =>
@@ -59,7 +59,7 @@ function AuthGate({
   onLogin: () => void;
   onRegister: () => void;
 }) {
-  return <TradeWayLoginLanding onLogin={onLogin} onRegister={onRegister} />;
+  return <TradoxyLoginLanding onLogin={onLogin} onRegister={onRegister} />;
 }
 
 function CommunityRail({

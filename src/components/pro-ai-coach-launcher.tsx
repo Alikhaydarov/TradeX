@@ -202,7 +202,7 @@ export function ProAiCoachLauncher() {
       setMessages((current) => [...current, response.message]);
     } catch (caught) {
       setChatError(
-        caught instanceof Error ? caught.message : "TradeWay AI could not answer.",
+        caught instanceof Error ? caught.message : "Tradoxy AI could not answer.",
       );
     } finally {
       setSending(false);
@@ -237,9 +237,9 @@ export function ProAiCoachLauncher() {
         type="button"
         onClick={() => setOpen(true)}
         className="fixed bottom-24 right-4 z-[80] h-11 rounded-full border border-white/10 bg-white px-4 text-black shadow-[0_16px_45px_rgba(0,0,0,.55)] transition hover:-translate-y-0.5 hover:bg-zinc-200 sm:bottom-6 sm:right-6"
-        aria-label="Open TradeWay AI"
+        aria-label="Open Tradoxy AI"
       >
-        <Sparkles className="size-4" /> TradeWay AI
+        <Sparkles className="size-4" /> Tradoxy AI
       </Button>
 
       <Dialog open={open} onOpenChange={setOpen}>
@@ -251,7 +251,7 @@ export function ProAiCoachLauncher() {
               </span>
               <div className="min-w-0 flex-1">
                 <DialogTitle className="text-base font-semibold tracking-[-0.02em] text-white sm:text-lg">
-                  TradeWay AI
+                  Tradoxy AI
                 </DialogTitle>
                 <p className="mt-0.5 truncate text-[11px] text-zinc-500">
                   {selectedAccount
@@ -342,7 +342,7 @@ export function ProAiCoachLauncher() {
                   Ask about your trading
                 </h3>
                 <p className="mx-auto mt-1 max-w-sm text-xs leading-5 text-zinc-600">
-                  TradeWay AI answers from the selected account’s journal and performance data.
+                  Tradoxy AI answers from the selected account’s journal and performance data.
                 </p>
 
                 <div className="mx-auto mt-6 flex max-w-lg flex-wrap justify-center gap-2">
@@ -386,7 +386,7 @@ export function ProAiCoachLauncher() {
                   }
                 }}
                 className="max-h-36 min-h-10 flex-1 resize-none border-0 bg-transparent px-3 py-2 text-[16px] leading-6 text-white shadow-none focus-visible:ring-0 sm:text-sm"
-                placeholder="Message TradeWay AI…"
+                placeholder="Message Tradoxy AI…"
               />
               <Button
                 type="submit"

@@ -179,7 +179,7 @@ export function Mt5Settings({ account, onSynced }: { account: PropAccount; onSyn
         </div>
         <p className="mt-2 text-[11px] leading-5 text-zinc-500">
           {connectorStatus?.reachable
-            ? "TradeWay VPS worker is reachable. Auto sync should continue without manually pressing Start."
+            ? "Tradoxy VPS worker is reachable. Auto sync should continue without manually pressing Start."
             : "Connector service is unavailable right now. Try again later or contact support."}
         </p>
       </div>
