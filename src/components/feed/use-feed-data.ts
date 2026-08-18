@@ -643,7 +643,7 @@ export function useFeedData(onLogin: () => void) {
     try {
       if (navigator.share) {
         await navigator.share({
-          title: `${post.name} - Tradox`,
+          title: `${post.name} - TradeWay`,
           text: post.text.slice(0, 120),
           url,
         });

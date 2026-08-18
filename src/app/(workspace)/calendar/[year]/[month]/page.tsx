@@ -16,7 +16,7 @@ export async function generateMetadata({
   params,
 }: CalendarMonthPageProps): Promise<Metadata> {
   const { year, month } = await params;
-  return { title: `${year}-${month.padStart(2, "0")} Calendar | Tradox` };
+  return { title: `${year}-${month.padStart(2, "0")} Calendar | TradeWay` };
 }
 
 export default async function CalendarMonthPage({

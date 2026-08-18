@@ -245,7 +245,7 @@ export function PostCard({
                     src={url}
                     alt={
                       index === post.imageUrls!.length - 1
-                        ? `${post.symbol} Tradox share card`
+                        ? `${post.symbol} TradeWay share card`
                         : `${post.symbol} trade screenshot ${index + 1}`
                     }
                     className="h-full w-full object-cover transition-transform duration-200 group-hover:scale-[1.03]"

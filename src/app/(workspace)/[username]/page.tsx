@@ -10,7 +10,7 @@ export async function generateMetadata({
   params,
 }: UsernameProfilePageProps): Promise<Metadata> {
   const { username } = await params;
-  return { title: `@${decodeURIComponent(username)} | Tradox` };
+  return { title: `@${decodeURIComponent(username)} | TradeWay` };
 }
 
 export default async function UsernameProfilePage({

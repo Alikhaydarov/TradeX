@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import { AnalyticsRouteContent } from "@/components/routes/workspace-route-content";
 
 export const metadata: Metadata = {
-  title: "Analytics | Tradox",
+  title: "Analytics | TradeWay",
 };
 
 export default function AnalyticsPage() {

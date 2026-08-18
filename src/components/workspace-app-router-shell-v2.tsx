@@ -31,6 +31,16 @@ const UserSettingsDialog = dynamic(
   { ssr: false },
 );
 
+const CORE_WORKSPACE_ROUTES = [
+  "/",
+  "/dashboard",
+  "/calendar",
+  "/trades",
+  "/analytics",
+  "/accounts",
+  "/profile",
+];
+
 function communityRouteFromPath(pathname: string) {
   const match = pathname.match(
     /^\/community\/([^/]+)(?:\/(overview|analytics|leaderboard|members|chat))?\/?$/,
@@ -70,7 +80,7 @@ function CommunityRail({
   }, [active]);
 
   return (
-    <div className="contents [&>aside]:!left-[238px]">
+    <div className="contents [&>aside]:!left-[252px]">
       <CommunitySidebar
         communityId={communityId}
         active={active}
@@ -144,6 +154,28 @@ function WorkspaceAppRouterShellInner({ children }: { children: ReactNode }) {
     const timer = window.setTimeout(() => setNotificationsMounted(true), 800);
     return () => window.clearTimeout(timer);
   }, []);
+
+  useEffect(() => {
+    if (!user) return;
+
+    const prefetch = () => {
+      CORE_WORKSPACE_ROUTES.forEach((route) => router.prefetch(route));
+    };
+
+    const idleWindow = window as Window & {
+      requestIdleCallback?: (callback: () => void, options?: { timeout: number }) => number;
+      cancelIdleCallback?: (handle: number) => void;
+    };
+    const idleHandle = idleWindow.requestIdleCallback?.(prefetch, { timeout: 1200 });
+    const timeoutHandle = idleHandle === undefined
+      ? window.setTimeout(prefetch, 350)
+      : undefined;
+
+    return () => {
+      if (idleHandle !== undefined) idleWindow.cancelIdleCallback?.(idleHandle);
+      if (timeoutHandle !== undefined) window.clearTimeout(timeoutHandle);
+    };
+  }, [router, user]);
 
   useEffect(() => {
     if (!user) {
@@ -247,7 +279,7 @@ function WorkspaceAppRouterShellInner({ children }: { children: ReactNode }) {
             user={user}
           />
           <div
-            className="hidden w-[238px] shrink-0 lg:block"
+            className="hidden w-[252px] shrink-0 lg:block"
             aria-hidden="true"
           />
           {communityRoute ? (
