@@ -39,8 +39,8 @@ type JournalCacheEntry = {
   etag?: string;
 };
 
-const JOURNAL_CACHE_TTL_MS = 5_000;
-const JOURNAL_REFRESH_MS = 30_000;
+const JOURNAL_CACHE_TTL_MS = 30_000;
+const JOURNAL_REFRESH_MS = 15_000;
 const journalCache = new Map<string, JournalCacheEntry>();
 
 function parseTradeImages(value?: string | null) {
@@ -102,14 +102,16 @@ export function useJournalData({
   accountId: string | null;
   accountsLoading: boolean;
 }) {
-  const [entries, setEntries] = useState<JournalEntry[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const requestVersion = useRef(0);
-
   const cacheKey = userId
     ? `${userId}:${mode}:${accountId || "all"}`
     : "";
+  const cachedEntries = cacheKey ? journalCache.get(cacheKey) : undefined;
+  const [entries, setEntries] = useState<JournalEntry[]>(
+    () => cachedEntries?.entries ?? [],
+  );
+  const [loading, setLoading] = useState(() => !cachedEntries);
+  const [error, setError] = useState<string | null>(null);
+  const requestVersion = useRef(0);
 
   const invalidate = useCallback(() => {
     if (cacheKey) journalCache.delete(cacheKey);
@@ -198,6 +200,18 @@ export function useJournalData({
     },
     [accountId, accountsLoading, cacheKey, mode, userId],
   );
+
+  useEffect(() => {
+    const cached = cacheKey ? journalCache.get(cacheKey) : undefined;
+    if (cached) {
+      setEntries(cached.entries);
+      setLoading(false);
+      return;
+    }
+
+    setEntries([]);
+    setLoading(Boolean(userId));
+  }, [cacheKey, userId]);
 
   useEffect(() => {
     void loadEntries();

@@ -1,18 +1,8 @@
 "use client";
 
-import dynamic from "next/dynamic";
-
 import type { TradeRange } from "@/features/trades/components/trades-archive";
+import { TradesArchive } from "@/features/trades/components/trades-archive";
 import type { JournalEntry } from "../types";
-import { PageSkeleton } from "../page-skeleton";
-
-const TradesArchive = dynamic(
-  () =>
-    import("@/features/trades/components/trades-archive").then(
-      (module) => module.TradesArchive,
-    ),
-  { loading: () => <PageSkeleton label="Loading trades" /> },
-);
 
 export type JournalTradeRange = TradeRange;
 type JournalSort = "newest" | "oldest";

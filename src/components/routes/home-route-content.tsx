@@ -1,14 +1,7 @@
 "use client";
 
-import dynamic from "next/dynamic";
-
 import { FreeUserStart } from "../free-user-start";
-import { WorkspaceSectionSkeleton } from "../workspace-section-skeleton";
-
-const FeedV3 = dynamic(
-  () => import("../feed/feed-page").then((module) => module.FeedPage),
-  { ssr: false, loading: () => <WorkspaceSectionSkeleton /> },
-);
+import { FeedPage } from "../feed/feed-page";
 
 function openLogin() {
   window.dispatchEvent(
@@ -19,7 +12,7 @@ function openLogin() {
 export function HomeRouteContent() {
   return (
     <FreeUserStart>
-      <FeedV3 onLogin={openLogin} />
+      <FeedPage onLogin={openLogin} />
     </FreeUserStart>
   );
 }

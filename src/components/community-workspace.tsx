@@ -1,17 +1,10 @@
 "use client";
-
-import dynamic from "next/dynamic";
 import { usePathname } from "next/navigation";
 
-import { WorkspaceSectionSkeleton } from "./workspace-section-skeleton";
+import { ChatPage } from "@/components/chat/chat-page";
 import { CommunityDetailPremium } from "@/features/community/components/community-detail-premium";
 import { CommunityHubPremium } from "@/features/community/components/community-hub-premium";
 import type { CommunitySection } from "@/features/community/components/community-sidebar";
-
-const ChatPage = dynamic(
-  () => import("@/components/chat/chat-page").then((module) => module.ChatPage),
-  { ssr: false, loading: () => <WorkspaceSectionSkeleton /> },
-);
 
 const VALID_TABS = new Set<CommunitySection>([
   "overview",
