@@ -213,7 +213,7 @@ function tone(value: number) {
 function resultSurface(value: number) {
   if (value > 0) return "border-emerald-400/25 bg-emerald-400/[.07]";
   if (value < 0) return "border-rose-400/25 bg-rose-400/[.07]";
-  return "border-white/8 bg-[#090909]";
+  return "border-white/8 bg-[#0a0a0a]";
 }
 
 function isTodayDate(year: number, month: number, day: number) {
@@ -414,7 +414,7 @@ export function CalendarWorkspaceV3() {
     <>
       <div className="mx-auto max-w-[1420px] space-y-3 p-3 sm:p-4 lg:p-5">
         <div className="flex justify-center">
-          <div className="inline-flex rounded-xl border border-white/8 bg-[#080808] p-1">
+          <div className="inline-flex rounded-xl border border-white/8 bg-[#0a0a0a] p-1">
             <button type="button" onClick={() => switchMode("journal")} className={`rounded-lg px-4 py-1.5 text-xs font-semibold transition ${route.mode === "journal" ? "bg-white/[.10] text-white" : "text-zinc-500 hover:text-zinc-300"}`}>Journal</button>
             <button type="button" onClick={() => switchMode("economic")} className={`rounded-lg px-4 py-1.5 text-xs font-semibold transition ${route.mode === "economic" ? "bg-white/[.10] text-white" : "text-zinc-500 hover:text-zinc-300"}`}>Economic Calendar</button>
           </div>
@@ -498,7 +498,7 @@ function YearOverview({
 
   return (
     <div className="space-y-3">
-      <Card className="gap-0 border-white/8 bg-[#070707] shadow-none">
+      <Card className="gap-0 border-white/8 bg-[#0a0a0a] shadow-none">
         <CardHeader className="border-b border-white/8 px-4 py-4">
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0">
@@ -506,7 +506,7 @@ function YearOverview({
               <p className="mt-1 text-sm text-zinc-500">Select a month to view its performance</p>
             </div>
             <Select value={yearFilter} onValueChange={onYearFilter}>
-              <SelectTrigger className="h-11 w-[138px] rounded-xl border-white/10 bg-[#171717] text-sm">
+              <SelectTrigger className="h-11 w-[138px] rounded-xl border-white/10 bg-[#101010] text-sm">
                 <SelectValue placeholder="All years" />
               </SelectTrigger>
               <SelectContent>
@@ -547,7 +547,7 @@ function YearOverview({
         </CardContent>
       </Card>
 
-      <Card className="gap-0 border-white/8 bg-[#070707] shadow-none">
+      <Card className="gap-0 border-white/8 bg-[#0a0a0a] shadow-none">
         <CardHeader className="px-4 py-4">
           <h2 className="text-xl font-semibold text-white">Account Balance</h2>
           <p className="mt-1 text-sm text-zinc-500">{accountName} · equity curve of selected year</p>
@@ -564,7 +564,7 @@ function YearOverview({
               <CartesianGrid stroke="rgba(255,255,255,.05)" vertical={false} />
               <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: "#71717a" }} />
               <YAxis hide />
-              <Tooltip formatter={(value) => cash.format(Number(value))} contentStyle={{ background: "#0b0b0b", border: "1px solid rgba(255,255,255,.1)", borderRadius: 12 }} />
+              <Tooltip formatter={(value) => cash.format(Number(value))} contentStyle={{ background: "#0a0a0a", border: "1px solid rgba(255,255,255,.1)", borderRadius: 12 }} />
               <Area type="monotone" dataKey="balance" stroke="#22c55e" strokeWidth={2} fill="url(#calendarYearCurve)" dot={false} />
             </AreaChart>
           </ResponsiveContainer>
@@ -603,7 +603,7 @@ function MonthlyCalendar({
 }) {
   const isJournal = route.mode === "journal";
   return (
-    <Card className="gap-0 overflow-hidden border-white/8 bg-[#070707] py-0 shadow-none">
+    <Card className="gap-0 overflow-hidden border-white/8 bg-[#0a0a0a] py-0 shadow-none">
       <CardHeader className="border-b border-white/8 px-3 py-3 sm:px-5 sm:py-4">
         <div className="hidden items-center md:grid md:grid-cols-[1fr_auto_1fr]">
           <div className="flex min-w-0 items-center gap-2.5">
@@ -621,7 +621,7 @@ function MonthlyCalendar({
 
         <div className="md:hidden">
           {isJournal ? (
-            <div className="grid grid-cols-2 gap-2 rounded-2xl border border-white/8 bg-[#090909] px-3 py-4 min-[480px]:grid-cols-4">
+            <div className="grid grid-cols-2 gap-2 rounded-2xl border border-white/8 bg-[#0a0a0a] px-3 py-4 min-[480px]:grid-cols-4">
               <CompactStat label="Total trades" value={String(stats.total)} />
               <CompactStat label="Realized RR" value={stats.total ? `${stats.realizedR.toFixed(2)}R` : "—"} />
               <CompactStat label="Trade Winrate" value={`${stats.winRate}%`} />
@@ -773,7 +773,7 @@ function DesktopDayCell({
   const hasData = mode === "journal" ? entries.length > 0 : events.length > 0;
 
   return (
-    <button type="button" onClick={() => onOpenDay(day)} className={`relative min-h-[96px] overflow-hidden rounded-xl border p-2 text-left transition hover:border-white/20 hover:bg-white/[.03] ${mode === "journal" && entries.length ? resultSurface(pnl) : "border-white/8 bg-[#090909]"}`}>
+    <button type="button" onClick={() => onOpenDay(day)} className={`relative min-h-[96px] overflow-hidden rounded-xl border p-2 text-left transition hover:border-white/20 hover:bg-white/[.03] ${mode === "journal" && entries.length ? resultSurface(pnl) : "border-white/8 bg-[#0a0a0a]"}`}>
       <div className="flex items-start justify-between gap-2">
         <div>
           <span className={`text-xs font-semibold ${weekend ? "text-zinc-600" : "text-zinc-300"}`}>{day}</span>
@@ -822,7 +822,7 @@ function MobileMonthGrid({
   onOpenDay: (day: number) => void;
 }) {
   return (
-    <div className="rounded-[1.75rem] border border-white/10 bg-[#090909] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,.025)]">
+    <div className="rounded-[1.75rem] border border-white/10 bg-[#0a0a0a] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,.025)]">
       <div className="grid grid-cols-7 gap-2">
         {MOBILE_WEEKDAYS.map((day, index) => <div key={`${day}-${index}`} className={`grid aspect-square place-items-center rounded-xl border border-white/8 bg-black text-base font-semibold ${index >= 5 ? "text-zinc-600" : "text-zinc-200"}`}>{day}</div>)}
         {weeks.flat().map((day, index) => {
@@ -833,7 +833,7 @@ function MobileMonthGrid({
           const count = mode === "journal" ? entries.length : events.length;
           const today = isTodayDate(year, month, day);
           return (
-            <button key={day} type="button" onClick={() => onOpenDay(day)} className={`relative grid aspect-square place-items-center rounded-xl border text-lg font-medium transition active:scale-95 ${count && mode === "journal" ? resultSurface(pnl) : "border-white/10 bg-[#0b0b0b] text-zinc-300"}`}>
+            <button key={day} type="button" onClick={() => onOpenDay(day)} className={`relative grid aspect-square place-items-center rounded-xl border text-lg font-medium transition active:scale-95 ${count && mode === "journal" ? resultSurface(pnl) : "border-white/10 bg-[#0a0a0a] text-zinc-300"}`}>
               <span>{day}</span>
               {count ? <span className={`absolute bottom-1.5 size-1.5 rounded-full ${mode === "economic" || pnl >= 0 ? "bg-emerald-400" : "bg-rose-400"}`} /> : null}
               {today ? <span className="absolute -bottom-1 left-1/2 h-0.5 w-6 -translate-x-1/2 rounded-full bg-emerald-400" /> : null}
@@ -872,7 +872,7 @@ function DayDetailsDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[85dvh] w-[calc(100vw-1.5rem)] max-w-xl overflow-hidden rounded-2xl border-white/10 bg-[#080808] p-0 shadow-2xl">
+      <DialogContent className="max-h-[85dvh] w-[calc(100vw-1.5rem)] max-w-xl overflow-hidden rounded-2xl border-white/10 bg-[#0a0a0a] p-0 shadow-2xl">
         <DialogHeader className="border-b border-white/8 px-5 py-4 text-left">
           <DialogTitle className="text-base font-semibold text-white">{title}</DialogTitle>
           <DialogDescription className="text-xs text-zinc-500">{mode === "journal" ? `${entries.length} trade${entries.length === 1 ? "" : "s"} · ${cash.format(dayPnl)}` : `${events.length} high-impact event${events.length === 1 ? "" : "s"}`}</DialogDescription>
@@ -907,7 +907,7 @@ function DayDetailsDialog({
 
 function EmptyDayState({ label }: { label: string }) {
   return (
-    <div className="grid min-h-40 place-items-center rounded-xl border border-dashed border-white/10 bg-[#0b0b0b] px-5 text-center">
+    <div className="grid min-h-40 place-items-center rounded-xl border border-dashed border-white/10 bg-[#0a0a0a] px-5 text-center">
       <div><CalendarDays className="mx-auto size-5 text-zinc-600" /><p className="mt-3 text-sm text-zinc-500">{label}</p></div>
     </div>
   );

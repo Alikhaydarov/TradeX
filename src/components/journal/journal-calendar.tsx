@@ -1,16 +1,6 @@
 "use client";
 
-import dynamic from "next/dynamic";
-
-import { WorkspaceSectionSkeleton } from "../workspace-section-skeleton";
-
-const CalendarWorkspaceV2 = dynamic(
-  () =>
-    import("../calendar-workspace-v2").then(
-      (module) => module.CalendarWorkspaceV2,
-    ),
-  { ssr: false, loading: () => <WorkspaceSectionSkeleton /> },
-);
+import { CalendarWorkspaceV2 } from "../calendar-workspace-v2";
 
 const CALENDAR_TAILWIND_CONTRACT = [
   "contents",

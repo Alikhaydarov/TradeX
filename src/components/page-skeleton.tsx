@@ -23,7 +23,7 @@ export function PageSkeleton({
         {Array.from({ length: 4 }, (_, index) => (
           <div
             key={index}
-            className="rounded-xl border border-white/[0.07] bg-[#090909] p-4"
+            className="rounded-xl border border-white/[0.07] bg-[#0a0a0a] p-4"
           >
             <Skeleton className="h-3 w-20 bg-white/[0.05]" />
             <Skeleton className="mt-3 h-7 w-28 bg-white/[0.08]" />
@@ -31,7 +31,7 @@ export function PageSkeleton({
           </div>
         ))}
       </div>
-      <div className="rounded-xl border border-white/[0.07] bg-[#090909] p-4 sm:p-5">
+      <div className="rounded-xl border border-white/[0.07] bg-[#0a0a0a] p-4 sm:p-5">
         <Skeleton className="h-4 w-36 bg-white/[0.07]" />
         <Skeleton className="mt-4 h-[260px] w-full bg-white/[0.035] sm:h-[340px]" />
       </div>
