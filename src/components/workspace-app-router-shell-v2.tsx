@@ -15,6 +15,7 @@ import { AuthModal } from "./auth-modal";
 import { useAuth } from "./auth-context";
 import { NotificationListener } from "./notification-listener";
 import { PremiumUpsellDialog } from "./premium-upsell-dialog";
+import { preloadWorkspaceRoute } from "./routes/workspace-route-content";
 import { pathFromSection, sectionFromPath } from "./section-config";
 import { Sidebar } from "./sidebar";
 import type { Section } from "./types";
@@ -159,7 +160,10 @@ function WorkspaceAppRouterShellInner({ children }: { children: ReactNode }) {
     if (!user) return;
 
     const prefetch = () => {
-      CORE_WORKSPACE_ROUTES.forEach((route) => router.prefetch(route));
+      CORE_WORKSPACE_ROUTES.forEach((route) => {
+        router.prefetch(route);
+        preloadWorkspaceRoute(route);
+      });
     };
 
     const idleWindow = window as Window & {
@@ -217,13 +221,19 @@ function WorkspaceAppRouterShellInner({ children }: { children: ReactNode }) {
     ) {
       return;
     }
-    router.push(pathFromSection(nextSection));
+    const target = pathFromSection(nextSection);
+    router.prefetch(target);
+    preloadWorkspaceRoute(target);
+    router.push(target);
     workspaceMainRef.current?.scrollTo({ top: 0, behavior: "instant" });
   };
 
   const openCommunitySection = (next: CommunitySection) => {
     if (!communityRoute) return;
-    router.push(`/community/${communityRoute.communityId}/${next}`);
+    const target = `/community/${communityRoute.communityId}/${next}`;
+    router.prefetch(target);
+    preloadWorkspaceRoute(target);
+    router.push(target);
     workspaceMainRef.current?.scrollTo({ top: 0, behavior: "instant" });
   };
 

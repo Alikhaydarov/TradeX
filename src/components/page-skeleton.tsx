@@ -7,7 +7,7 @@ export function PageSkeleton({
 }) {
   return (
     <div
-      className="mx-auto w-full max-w-[1680px] space-y-4 px-3 py-4 sm:px-5 sm:py-5 lg:px-7 lg:py-6"
+      className="mx-auto w-full max-w-[1680px] animate-in fade-in duration-150 space-y-4 px-3 py-4 sm:px-5 sm:py-5 lg:px-7 lg:py-6"
       aria-busy="true"
       aria-label={label}
       role="status"

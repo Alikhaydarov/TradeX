@@ -5,81 +5,127 @@ import { useRouter } from "next/navigation";
 
 import { WorkspaceSectionSkeleton } from "../workspace-section-skeleton";
 
+const loadJournalAccounts = () =>
+  import("../journal/journal-accounts").then(
+    (module) => module.JournalAccounts,
+  );
+
+const loadJournalStats = () =>
+  import("../journal/journal-stats").then((module) => module.JournalStats);
+
+const loadJournalTradeList = () =>
+  import("../journal/journal-trade-list").then(
+    (module) => module.JournalTradeList,
+  );
+
+const loadJournalAnalytics = () =>
+  import("../journal/journal-analytics").then(
+    (module) => module.JournalAnalytics,
+  );
+
+const loadJournalCalendar = () =>
+  import("../journal/journal-calendar").then(
+    (module) => module.JournalCalendar,
+  );
+
+const loadAccountSettings = () =>
+  import("../account-settings").then((module) => module.AccountSettings);
+
+const loadProfilePage = () =>
+  import("../profile/profile-page").then((module) => module.ProfilePage);
+
+const loadCommunityWorkspace = () =>
+  import("../community-workspace").then(
+    (module) => module.CommunityWorkspace,
+  );
+
+const loadPricing = () => import("../pricing").then((module) => module.Pricing);
+
+const loadAdminPanel = () =>
+  import("../admin-panel").then((module) => module.AdminPanel);
+
+const loadTradeDetailPage = () =>
+  import("@/features/trades/components/trade-detail-page").then(
+    (module) => module.TradeDetailPage,
+  );
+
 const JournalAccounts = dynamic(
-  () =>
-    import("../journal/journal-accounts").then(
-      (module) => module.JournalAccounts,
-    ),
+  loadJournalAccounts,
   { ssr: false, loading: () => <WorkspaceSectionSkeleton /> },
 );
 
 const JournalStats = dynamic(
-  () =>
-    import("../journal/journal-stats").then((module) => module.JournalStats),
+  loadJournalStats,
   { ssr: false, loading: () => <WorkspaceSectionSkeleton /> },
 );
 
 const JournalTradeList = dynamic(
-  () =>
-    import("../journal/journal-trade-list").then(
-      (module) => module.JournalTradeList,
-    ),
+  loadJournalTradeList,
   { ssr: false, loading: () => <WorkspaceSectionSkeleton /> },
 );
 
 const JournalAnalytics = dynamic(
-  () =>
-    import("../journal/journal-analytics").then(
-      (module) => module.JournalAnalytics,
-    ),
+  loadJournalAnalytics,
   { ssr: false, loading: () => <WorkspaceSectionSkeleton /> },
 );
 
 const JournalCalendar = dynamic(
-  () =>
-    import("../journal/journal-calendar").then(
-      (module) => module.JournalCalendar,
-    ),
+  loadJournalCalendar,
   { ssr: false, loading: () => <WorkspaceSectionSkeleton /> },
 );
 
 const AccountSettings = dynamic(
-  () =>
-    import("../account-settings").then((module) => module.AccountSettings),
+  loadAccountSettings,
   { ssr: false, loading: () => <WorkspaceSectionSkeleton /> },
 );
 
 const Account = dynamic(
-  () =>
-    import("../profile/profile-page").then((module) => module.ProfilePage),
+  loadProfilePage,
   { ssr: false, loading: () => <WorkspaceSectionSkeleton /> },
 );
 
 const CommunityWorkspace = dynamic(
-  () =>
-    import("../community-workspace").then(
-      (module) => module.CommunityWorkspace,
-    ),
+  loadCommunityWorkspace,
   { ssr: false, loading: () => <WorkspaceSectionSkeleton /> },
 );
 
 const Pricing = dynamic(
-  () => import("../pricing").then((module) => module.Pricing),
+  loadPricing,
   { ssr: false, loading: () => <WorkspaceSectionSkeleton /> },
 );
 
 const AdminPanel = dynamic(
-  () => import("../admin-panel").then((module) => module.AdminPanel),
+  loadAdminPanel,
   { ssr: false, loading: () => <WorkspaceSectionSkeleton /> },
 );
 
 const TradeDetailPage = dynamic(
-  () =>
-    import("@/features/trades/components/trade-detail-page").then(
-      (module) => module.TradeDetailPage,
-    ),
+  loadTradeDetailPage,
   { ssr: false, loading: () => <WorkspaceSectionSkeleton /> },
 );
+
+function warm(loader: () => Promise<unknown>) {
+  void loader().catch(() => undefined);
+}
+
+/** Warm route chunks before navigation so workspace changes feel instant. */
+export function preloadWorkspaceRoute(pathname: string) {
+  if (pathname === "/accounts") return warm(loadJournalAccounts);
+  if (pathname === "/dashboard") return warm(loadJournalStats);
+  if (pathname === "/trades") return warm(loadJournalTradeList);
+  if (pathname === "/analytics") return warm(loadJournalAnalytics);
+  if (pathname.startsWith("/calendar")) return warm(loadJournalCalendar);
+  if (pathname === "/settings") return warm(loadAccountSettings);
+  if (pathname === "/profile" || /^\/[^/]+$/.test(pathname)) {
+    return warm(loadProfilePage);
+  }
+  if (pathname.startsWith("/community")) return warm(loadCommunityWorkspace);
+  if (pathname === "/pricing") return warm(loadPricing);
+  if (pathname === "/superadmin" || pathname === "/admin") {
+    return warm(loadAdminPanel);
+  }
+  if (pathname.startsWith("/trades/")) return warm(loadTradeDetailPage);
+}
 
 function openLogin() {
   window.dispatchEvent(
