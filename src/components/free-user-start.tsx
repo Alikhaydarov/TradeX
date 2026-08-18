@@ -67,7 +67,7 @@ export function FreeUserStart({ children }: { children: ReactNode }) {
               Welcome, {firstName}. Build your trading record.
             </h1>
             <p className="mt-4 max-w-lg text-sm leading-6 text-zinc-500 sm:text-base">
-              Start with one account. Tradox will turn your trades into a clear
+              Start with one account. TradeWay will turn your trades into a clear
               journal, calendar and performance review.
             </p>
             <Button

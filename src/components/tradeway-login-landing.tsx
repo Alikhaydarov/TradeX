@@ -122,7 +122,7 @@ export function TradeWayLoginLanding({
     <main ref={shellRef} className={AUTH_LANDING_TAILWIND_CLASS}>
       <div className="auth3-noise" aria-hidden="true" />
       <nav className="auth3-nav">
-        <Link href="/" className="auth3-logo" aria-label="Tradox home"><b>TD</b><span>Tradox</span></Link>
+        <Link href="/" className="auth3-logo" aria-label="TradeWay home"><b>TD</b><span>TradeWay</span></Link>
         <div className="auth3-navlinks">
           <a href="#workflow">Product</a>
           <Link href="/pricing">Pricing</Link>
@@ -200,7 +200,7 @@ export function TradeWayLoginLanding({
       <section className="auth3-integrations" id="integrations">
         <div className="auth3-integration-copy" data-reveal>
           <span>ONE WORKSPACE, EVERY ACCOUNT</span>
-          <h2>Your platforms stay yours.<br />Tradox makes them useful.</h2>
+          <h2>Your platforms stay yours.<br />TradeWay makes them useful.</h2>
           <p>Bring results from the tools you already trade with into one clear review workflow. Compare accounts, understand execution and keep your journal attached to the numbers.</p>
           <div className="auth3-integration-points">
             <span><Check size={14} /> Unified performance view</span>
@@ -228,7 +228,7 @@ export function TradeWayLoginLanding({
         <button onClick={onRegister}>Create your workspace <ArrowRight size={18} /></button>
       </section>
 
-      <footer className="auth3-footer"><Link href="/" className="auth3-logo"><b>TD</b><span>Tradox</span></Link><p>Trading clarity, one session at a time.</p><span>© 2026 Tradox</span></footer>
+      <footer className="auth3-footer"><Link href="/" className="auth3-logo"><b>TD</b><span>TradeWay</span></Link><p>Trading clarity, one session at a time.</p><span>© 2026 TradeWay</span></footer>
     </main>
   );
 }

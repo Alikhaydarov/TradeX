@@ -72,7 +72,7 @@ export function WorkspaceBootLoader() {
     <div
       role="status"
       aria-live="polite"
-      aria-label="Loading Tradox"
+      aria-label="Loading TradeWay"
       className={`fixed inset-0 z-[2147483647] grid place-items-center bg-black transition-opacity duration-200 ${finishing ? "opacity-0" : "opacity-100"}`}
     >
       <div className="flex -translate-y-4 flex-col items-center gap-5">
@@ -84,7 +84,7 @@ export function WorkspaceBootLoader() {
           <div className="relative size-10">
             <Image
               src="/tradox-logo.webp"
-              alt="Tradox"
+              alt="TradeWay"
               fill
               sizes="40px"
               priority
@@ -99,7 +99,7 @@ export function WorkspaceBootLoader() {
             style={{ width: `${progress}%` }}
           />
         </div>
-        <span className="sr-only">Loading your Tradox workspace</span>
+        <span className="sr-only">Loading your TradeWay workspace</span>
       </div>
     </div>
   );

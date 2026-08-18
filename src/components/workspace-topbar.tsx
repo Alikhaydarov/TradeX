@@ -87,7 +87,7 @@ export function WorkspaceTopbar({ section }: { section: Section }) {
   return (
     <header
       role="banner"
-      className="tw-app-topbar sticky top-0 z-[70] shrink-0 border-b border-white/10 bg-black/95 px-3 py-2.5 backdrop-blur-xl supports-[backdrop-filter]:bg-black/88 lg:flex lg:min-h-[72px] lg:items-center lg:gap-5 lg:px-6 lg:py-3"
+      className="tw-app-topbar sticky top-0 z-[70] shrink-0 border-b border-white/10 bg-black px-3 py-2.5 lg:flex lg:min-h-[60px] lg:items-center lg:gap-5 lg:px-6 lg:py-2"
     >
       <div className="flex min-w-0 items-center gap-2 lg:flex-1 lg:gap-5">
         <button
@@ -114,7 +114,7 @@ export function WorkspaceTopbar({ section }: { section: Section }) {
           <p className="mt-1 truncate text-[10px] font-medium text-zinc-500 lg:text-[11px]">
             {isAccountScoped
               ? "Trading performance workspace"
-              : "Tradox workspace"}
+              : "TradeWay workspace"}
           </p>
         </div>
 

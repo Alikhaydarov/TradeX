@@ -364,9 +364,9 @@ export function JournalV2({
   useEffect(() => {
     if (!user) return;
     const handleOpenTrade = () => openTradeComposer();
-    window.addEventListener("tradox:add-trade", handleOpenTrade);
+    window.addEventListener("tradeway:add-trade", handleOpenTrade);
     return () =>
-      window.removeEventListener("tradox:add-trade", handleOpenTrade);
+      window.removeEventListener("tradeway:add-trade", handleOpenTrade);
   }, [openTradeComposer, user]);
 
   const account = accounts.find((a) => a.id === activeAccountId) || null;

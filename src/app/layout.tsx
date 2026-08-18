@@ -28,10 +28,10 @@ const appTypographyClass = [
 ].join(" ");
 
 export const metadata: Metadata = {
-  title: "Tradox",
+  title: "TradeWay",
   description:
-    "Tradox: trading feed, private chats, journal and analytics workspace.",
-  applicationName: "Tradox",
+    "TradeWay: trading feed, private chats, journal and analytics workspace.",
+  applicationName: "TradeWay",
 };
 
 export default async function RootLayout({

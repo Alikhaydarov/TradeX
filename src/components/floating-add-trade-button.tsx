@@ -23,7 +23,7 @@ const BUTTON_CLASS = [
   "hover:-translate-y-0.5 hover:scale-[1.035] hover:brightness-[1.08] hover:shadow-[0_22px_58px_rgba(34,197,94,0.34),0_8px_22px_rgba(0,0,0,0.56),inset_0_1px_0_rgba(255,255,255,0.36)]",
   "active:scale-[0.94]",
   "[&_svg]:size-[1.7rem] [&_svg]:transition-transform [&_svg]:duration-[180ms] hover:[&_svg]:rotate-90",
-  "lg:bottom-[1.8rem] lg:right-[1.8rem]",
+  "lg:hidden",
 ].join(" ");
 
 function isVisibleEnough(element: HTMLElement) {
@@ -69,8 +69,8 @@ export function FloatingAddTradeButton() {
 
   useEffect(() => {
     if (!user) return;
-    window.addEventListener("tradox:add-trade", openAddTrade);
-    return () => window.removeEventListener("tradox:add-trade", openAddTrade);
+    window.addEventListener("tradeway:add-trade", openAddTrade);
+    return () => window.removeEventListener("tradeway:add-trade", openAddTrade);
   }, [openAddTrade, user]);
 
   if (!user) return null;

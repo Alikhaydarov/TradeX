@@ -322,7 +322,7 @@ function SettingsContent() {
                 {!loading && section === "basic" ? (
                   <Panel
                     title="Your account"
-                    description="Public identity shown across Tradox."
+                    description="Public identity shown across TradeWay."
                   >
                     <div className="flex flex-col gap-4 rounded-2xl border border-white/8 bg-[#090909] p-4 sm:flex-row sm:items-center">
                       <TraderAvatar
@@ -515,7 +515,7 @@ function SettingsContent() {
                         <div className="flex h-10 items-center rounded-xl border border-white/8 bg-[#080808] px-3 text-sm font-medium text-zinc-300">
                           DM Sans
                           <span className="ml-auto text-[10px] text-zinc-600">
-                            Tradox default
+                            TradeWay default
                           </span>
                         </div>
                       </Field>
