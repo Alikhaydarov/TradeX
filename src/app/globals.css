@@ -59,21 +59,21 @@
 .dark {
   --background: #000000;
   --foreground: #f7f7fa;
-  --card: #0b0b0b;
+  --card: #0a0a0a;
   --card-foreground: #f8f8f8;
-  --popover: #0b0b0b;
+  --popover: #101010;
   --popover-foreground: #f8f8f8;
   --primary: #ffffff;
   --primary-foreground: #060606;
-  --secondary: rgba(255, 255, 255, 0.06);
+  --secondary: #101010;
   --secondary-foreground: #f4f4f5;
-  --muted: rgba(255, 255, 255, 0.05);
+  --muted: #101010;
   --muted-foreground: rgba(255, 255, 255, 0.62);
-  --accent: rgba(255, 255, 255, 0.08);
+  --accent: #181818;
   --accent-foreground: #ffffff;
   --destructive: oklch(0.704 0.191 22.216);
   --border: rgba(255, 255, 255, 0.08);
-  --input: rgba(255, 255, 255, 0.08);
+  --input: #101010;
   --ring: rgba(255, 255, 255, 0.68);
   --chart-1: oklch(0.87 0 0);
   --chart-2: oklch(0.64 0 0);
@@ -81,7 +81,7 @@
   --chart-4: oklch(0.38 0 0);
   --chart-5: oklch(0.28 0 0);
   --radius: 0.95rem;
-  --sidebar: #080808;
+  --sidebar: #000000;
   --sidebar-foreground: #f8f8f8;
   --sidebar-primary: #ffffff;
   --sidebar-primary-foreground: #020202;
