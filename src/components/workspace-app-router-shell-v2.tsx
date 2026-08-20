@@ -13,6 +13,7 @@ import {
 import { ActiveAccountProvider } from "./active-account-context";
 import { AuthModal } from "./auth-modal";
 import { useAuth } from "./auth-context";
+import { TradeComposerProvider } from "./journal/trade-composer-context";
 import { NotificationListener } from "./notification-listener";
 import { PremiumUpsellDialog } from "./premium-upsell-dialog";
 import { pathFromSection, sectionFromPath } from "./section-config";
@@ -274,46 +275,48 @@ function WorkspaceAppRouterShellInner({ children }: { children: ReactNode }) {
   return (
     <>
       <ActiveAccountProvider>
-        <div
-          className={`${WORKSPACE_TAILWIND_CLASS} workspace-shell flex h-dvh w-full overflow-hidden bg-xcanvas p-0 text-foreground`}
-        >
-          <Sidebar
-            active={section}
-            onChange={changeSection}
-            onLogin={openLogin}
-            user={user}
-          />
+        <TradeComposerProvider>
           <div
-            className="hidden w-[252px] shrink-0 lg:block"
-            aria-hidden="true"
-          />
-          {communityRoute ? (
-            <CommunityRail
-              communityId={communityRoute.communityId}
-              active={communityRoute.tab}
-              onNavigate={openCommunitySection}
-              onBack={closeCommunityWorkspace}
+            className={`${WORKSPACE_TAILWIND_CLASS} workspace-shell flex h-dvh w-full overflow-hidden bg-xcanvas p-0 text-foreground`}
+          >
+            <Sidebar
+              active={section}
+              onChange={changeSection}
+              onLogin={openLogin}
+              user={user}
             />
+            <div
+              className="hidden w-[252px] shrink-0 lg:block"
+              aria-hidden="true"
+            />
+            {communityRoute ? (
+              <CommunityRail
+                communityId={communityRoute.communityId}
+                active={communityRoute.tab}
+                onNavigate={openCommunitySection}
+                onBack={closeCommunityWorkspace}
+              />
+            ) : null}
+            <main
+              ref={workspaceMainRef}
+              data-workspace-main
+              className="workspace-main h-dvh min-w-0 flex-1 overscroll-contain overflow-y-auto overflow-x-hidden bg-xcanvas pb-[max(env(safe-area-inset-bottom),0.5rem)] lg:pb-0"
+            >
+              {!communityRoute ? <WorkspaceTopbar section={section} /> : null}
+              <section className="min-h-full">{routeContent}</section>
+            </main>
+          </div>
+          {communityRoute && communityRoute.tab !== "chat" ? (
+            <button
+              type="button"
+              onClick={() => openCommunitySection("chat")}
+              className="fixed bottom-[max(1rem,env(safe-area-inset-bottom))] right-3 z-[90] inline-flex h-10 items-center gap-2 rounded-xl border border-white/10 bg-white px-3 text-[11px] font-bold text-black shadow-2xl lg:hidden"
+              aria-label="Open community chat"
+            >
+              <MessageCircle size={15} /> Chat
+            </button>
           ) : null}
-          <main
-            ref={workspaceMainRef}
-            data-workspace-main
-            className="workspace-main h-dvh min-w-0 flex-1 overscroll-contain overflow-y-auto overflow-x-hidden bg-xcanvas pb-[max(env(safe-area-inset-bottom),0.5rem)] lg:pb-0"
-          >
-            {!communityRoute ? <WorkspaceTopbar section={section} /> : null}
-            <section className="min-h-full">{routeContent}</section>
-          </main>
-        </div>
-        {communityRoute && communityRoute.tab !== "chat" ? (
-          <button
-            type="button"
-            onClick={() => openCommunitySection("chat")}
-            className="fixed bottom-[max(1rem,env(safe-area-inset-bottom))] right-3 z-[90] inline-flex h-10 items-center gap-2 rounded-xl border border-white/10 bg-white px-3 text-[11px] font-bold text-black shadow-2xl lg:hidden"
-            aria-label="Open community chat"
-          >
-            <MessageCircle size={15} /> Chat
-          </button>
-        ) : null}
+        </TradeComposerProvider>
       </ActiveAccountProvider>
       {notificationsMounted ? <NotificationListener /> : null}
       <PremiumUpsellDialog />
