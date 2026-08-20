@@ -18,6 +18,7 @@ import { PremiumUpsellDialog } from "./premium-upsell-dialog";
 import { preloadWorkspaceRoute } from "./routes/workspace-route-content";
 import { pathFromSection, sectionFromPath } from "./section-config";
 import { Sidebar } from "./sidebar";
+import { WORKSPACE_TAILWIND_CLASS } from "./tailwind/app-tailwind-classes";
 import type { Section } from "./types";
 import { WorkspaceBootLoader } from "./workspace-boot-loader";
 import { WorkspacePreferencesProvider } from "./workspace-preferences-context";
@@ -281,7 +282,9 @@ function WorkspaceAppRouterShellInner({ children }: { children: ReactNode }) {
     <>
       <ActiveAccountProvider>
         <WorkspaceBootLoader />
-        <div className="workspace-shell flex h-dvh w-full overflow-hidden bg-black p-0 text-foreground">
+        <div
+          className={`${WORKSPACE_TAILWIND_CLASS} workspace-shell flex h-dvh w-full overflow-hidden bg-xcanvas p-0 text-foreground`}
+        >
           <Sidebar
             active={section}
             onChange={changeSection}
@@ -303,7 +306,7 @@ function WorkspaceAppRouterShellInner({ children }: { children: ReactNode }) {
           <main
             ref={workspaceMainRef}
             data-workspace-main
-            className="workspace-main h-dvh min-w-0 flex-1 overscroll-contain overflow-y-auto overflow-x-hidden bg-black pb-[max(env(safe-area-inset-bottom),0.5rem)] lg:pb-0"
+            className="workspace-main h-dvh min-w-0 flex-1 overscroll-contain overflow-y-auto overflow-x-hidden bg-xcanvas pb-[max(env(safe-area-inset-bottom),0.5rem)] lg:pb-0"
           >
             {!communityRoute ? <WorkspaceTopbar section={section} /> : null}
             <section className="min-h-full">{routeContent}</section>
