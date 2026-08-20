@@ -4,9 +4,32 @@ interface RequestOptions {
   method?: HttpMethod;
   body?: BodyInit | null;
   headers?: Record<string, string>;
+  /**
+   * Serve a previously fetched response for this many milliseconds before
+   * hitting the network again. Anything older than the window is refetched.
+   * Only applies to GET requests; 0 (the default) keeps the previous
+   * always-network behaviour.
+   */
+  cacheMs?: number;
 }
 
 const inFlightGets = new Map<string, Promise<unknown>>();
+
+interface CacheEntry {
+  value: unknown;
+  storedAt: number;
+}
+
+const getCache = new Map<string, CacheEntry>();
+
+/**
+ * Every mutation invalidates the read cache. This is deliberately blunt: the
+ * cache windows are short, and a stale list after a write is a much worse bug
+ * than one extra fetch.
+ */
+export function invalidateApiCache() {
+  getCache.clear();
+}
 
 export async function apiRequest<T = unknown>(
   url: string,
@@ -16,7 +39,7 @@ export async function apiRequest<T = unknown>(
     throw new Error("API requests must use a same-origin path.");
   }
 
-  const { method = "GET", body, headers = {} } = options;
+  const { method = "GET", body, headers = {}, cacheMs = 0 } = options;
   const isFormData = typeof FormData !== "undefined" && body instanceof FormData;
 
   const requestHeaders = {
@@ -27,19 +50,30 @@ export async function apiRequest<T = unknown>(
   const key = `${url}:${JSON.stringify(requestHeaders)}`;
 
   if (method === "GET") {
+    if (cacheMs > 0) {
+      const cached = getCache.get(key);
+      if (cached && Date.now() - cached.storedAt < cacheMs) {
+        return cached.value as T;
+      }
+    }
+
     const pending = inFlightGets.get(key);
     if (pending) return pending as Promise<T>;
 
     const request = performRequest<T>(url, method, body, requestHeaders);
     inFlightGets.set(key, request);
     try {
-      return await request;
+      const value = await request;
+      if (cacheMs > 0) getCache.set(key, { value, storedAt: Date.now() });
+      return value;
     } finally {
       inFlightGets.delete(key);
     }
   }
 
-  return performRequest<T>(url, method, body, requestHeaders);
+  const result = await performRequest<T>(url, method, body, requestHeaders);
+  invalidateApiCache();
+  return result;
 }
 
 async function performRequest<T>(

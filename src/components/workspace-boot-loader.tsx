@@ -10,16 +10,15 @@ import { Spinner } from "./ui/spinner";
 export function WorkspaceBootLoader() {
   const { loading: accountsLoading } = useActiveAccountStore();
   const [profileReady, setProfileReady] = useState(false);
-  const [minimumElapsed, setMinimumElapsed] = useState(false);
   const [forceReady, setForceReady] = useState(false);
   const [finishing, setFinishing] = useState(false);
   const [visible, setVisible] = useState(true);
 
   useEffect(() => {
     let active = true;
-    const minimumTimer = window.setTimeout(() => {
-      if (active) setMinimumElapsed(true);
-    }, 650);
+    // There used to be a 650ms minimum display time here, which meant a warm
+    // load that already had its data still sat behind the splash. The loader
+    // now disappears the moment the workspace is actually ready.
     const maximumTimer = window.setTimeout(() => {
       if (active) setForceReady(true);
     }, 3500);
@@ -32,12 +31,11 @@ export function WorkspaceBootLoader() {
 
     return () => {
       active = false;
-      window.clearTimeout(minimumTimer);
       window.clearTimeout(maximumTimer);
     };
   }, []);
 
-  const ready = forceReady || (!accountsLoading && profileReady && minimumElapsed);
+  const ready = forceReady || (!accountsLoading && profileReady);
 
   useEffect(() => {
     if (!ready || !visible) return;
@@ -59,12 +57,9 @@ export function WorkspaceBootLoader() {
     if (finishing || forceReady) return 100;
     return Math.min(
       92,
-      18 +
-        (accountsLoading ? 0 : 40) +
-        (profileReady ? 28 : 0) +
-        (minimumElapsed ? 12 : 0),
+      18 + (accountsLoading ? 0 : 45) + (profileReady ? 29 : 0),
     );
-  }, [accountsLoading, finishing, forceReady, minimumElapsed, profileReady]);
+  }, [accountsLoading, finishing, forceReady, profileReady]);
 
   if (!visible) return null;
 

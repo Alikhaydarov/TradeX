@@ -2,7 +2,7 @@
 
 import type { ComponentProps } from "react";
 
-import { Journal as LegacyJournal } from "../journal";
+import { JournalV2 as LegacyJournal } from "../journal-v2";
 
 export type JournalWorkspaceProps = ComponentProps<typeof LegacyJournal>;
 

@@ -3,6 +3,7 @@
 import type { ComponentProps } from "react"
 import { useCallback, useEffect, useMemo, useState } from "react"
 
+import { LG_BREAKPOINT_QUERY, useMediaQuery } from "@/lib/use-media-query"
 import { DASHBOARD_MOBILE_TAILWIND_CLASS } from "./dashboard-overview-mobile-tailwind"
 import { DashboardOverviewMobile } from "./dashboard-overview-mobile"
 import { DashboardOverviewResponsive } from "./dashboard-overview-responsive"
@@ -51,6 +52,7 @@ function calculateStats(entries: JournalStatsRow[]): SyncedStats {
 
 export function DashboardOverview(props: DashboardOverviewProps) {
   const [synced, setSynced] = useState<SyncedStats | null>(null)
+  const isDesktop = useMediaQuery(LG_BREAKPOINT_QUERY)
 
   const loadStats = useCallback(async () => {
     try {
@@ -101,14 +103,17 @@ export function DashboardOverview(props: DashboardOverviewProps) {
     [props, synced],
   )
 
+  // Both trees used to be rendered and one hidden with `lg:hidden`. That mounted
+  // two complete dashboards - including two independent sets of recharts charts -
+  // on every render, and CSS only hid the one you were not looking at. Matching
+  // the breakpoint in JS means exactly one of them is ever mounted.
+  if (isDesktop) {
+    return <DashboardOverviewResponsive {...dashboardProps} />
+  }
+
   return (
-    <>
-      <div className={`${DASHBOARD_MOBILE_TAILWIND_CLASS} lg:hidden`}>
-        <DashboardOverviewMobile {...dashboardProps} />
-      </div>
-      <div className="hidden lg:block">
-        <DashboardOverviewResponsive {...dashboardProps} />
-      </div>
-    </>
+    <div className={DASHBOARD_MOBILE_TAILWIND_CLASS}>
+      <DashboardOverviewMobile {...dashboardProps} />
+    </div>
   )
 }

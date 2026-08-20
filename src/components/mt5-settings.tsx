@@ -67,13 +67,26 @@ export function Mt5Settings({ account, onSynced }: { account: PropAccount; onSyn
   useEffect(() => {
     if (!connection) return undefined;
     const refresh = () => {
-      if (document.visibilityState === "visible") void Promise.all([onSynced(), loadConnection()]);
+      if (document.hidden) return;
+      void Promise.all([onSynced(), loadConnection()]);
     };
-    const id = window.setInterval(refresh, 30_000);
-    document.addEventListener("visibilitychange", refresh);
+    // 30s was fast enough to feel like a live view but slow enough that a
+    // background tab still fired it twice a minute. The timer is now torn down
+    // while hidden and restarted (with one immediate refresh) on return.
+    let id = document.hidden ? null : window.setInterval(refresh, 30_000);
+    const onVisibility = () => {
+      if (document.hidden) {
+        if (id !== null) window.clearInterval(id);
+        id = null;
+        return;
+      }
+      refresh();
+      if (id === null) id = window.setInterval(refresh, 30_000);
+    };
+    document.addEventListener("visibilitychange", onVisibility);
     return () => {
-      window.clearInterval(id);
-      document.removeEventListener("visibilitychange", refresh);
+      if (id !== null) window.clearInterval(id);
+      document.removeEventListener("visibilitychange", onVisibility);
     };
   }, [connection, onSynced, loadConnection]);
 

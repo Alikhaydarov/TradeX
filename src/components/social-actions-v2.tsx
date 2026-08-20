@@ -14,6 +14,7 @@ import {
 import { useEffect, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { apiRequest } from "@/lib/api-client";
+import { useVisibleInterval } from "@/lib/use-visible-interval";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { TraderAvatar } from "./trader-avatar";
@@ -571,20 +572,15 @@ export function SocialActions({
   };
 
   useEffect(() => {
-    const refresh = () => {
-      if (document.visibilityState === "visible") loadUnread();
-    };
     const timer = window.setTimeout(loadUnread, 400);
-    const interval = window.setInterval(refresh, 20000);
-    window.addEventListener("focus", refresh);
-    document.addEventListener("visibilitychange", refresh);
-    return () => {
-      window.clearTimeout(timer);
-      window.clearInterval(interval);
-      window.removeEventListener("focus", refresh);
-      document.removeEventListener("visibilitychange", refresh);
-    };
+    return () => window.clearTimeout(timer);
   }, []);
+
+  // The old version kept a 20s interval running in background tabs and also
+  // refetched on both `focus` and `visibilitychange`, so returning to the tab
+  // fired the same request two or three times. useVisibleInterval stops the
+  // timer while hidden and refetches exactly once on return.
+  useVisibleInterval(loadUnread, 30_000);
 
   useEffect(() => {
     const openSearch = (event: KeyboardEvent) => {

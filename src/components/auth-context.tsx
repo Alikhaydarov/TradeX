@@ -67,10 +67,20 @@ export function AuthProvider({
   const [loading] = useState(false);
 
   useEffect(() => {
+    // The server already resolved auth during SSR and handed it to us as
+    // initialUser/initialConfigured. Re-fetching /api/auth/me and /api/health
+    // on every mount added two blocking round-trips per page load for a result
+    // we already had, so we only fall back to the network when the server did
+    // not give us a user.
+    if (initialUser) {
+      writeCachedUser(initialUser);
+      return;
+    }
+
     let active = true;
     let cacheTimer: number | null = null;
     const cached = readCachedUser();
-    if (!initialUser && cached) {
+    if (cached) {
       cacheTimer = window.setTimeout(() => {
         if (active) setUser(cached);
       }, 0);
@@ -88,19 +98,21 @@ export function AuthProvider({
         writeCachedUser(null);
       });
 
-    apiRequest<{ ok: boolean }>("/api/health")
-      .then((health) => {
-        if (active) setConfigured(health.ok);
-      })
-      .catch(() => {
-        if (active) setConfigured(false);
-      });
+    if (!initialConfigured) {
+      apiRequest<{ ok: boolean }>("/api/health")
+        .then((health) => {
+          if (active) setConfigured(health.ok);
+        })
+        .catch(() => {
+          if (active) setConfigured(false);
+        });
+    }
 
     return () => {
       active = false;
       if (cacheTimer) window.clearTimeout(cacheTimer);
     };
-  }, [initialUser]);
+  }, [initialConfigured, initialUser]);
 
   const value = useMemo<AuthContextValue>(
     () => ({

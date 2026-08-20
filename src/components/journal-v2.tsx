@@ -6,10 +6,8 @@ import {
   CalendarDays,
   ChevronLeft,
   ChevronRight,
-  Plus,
   ShieldCheck,
   Target,
-  Trash2,
   TrendingDown,
   TrendingUp,
   X,
@@ -41,27 +39,9 @@ import {
   type JournalEntryRow,
   useJournalData,
 } from "./journal/use-journal-data";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "./ui/alert-dialog";
 import { useRouter } from "next/navigation";
 import { Button } from "./ui/button";
 import { Card, CardContent } from "./ui/card";
-import { Checkbox } from "./ui/checkbox";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "./ui/dropdown-menu";
 import {
   Dialog,
   DialogContent,
@@ -69,7 +49,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "./ui/dialog";
-import { Input } from "./ui/input";
 import {
   Select,
   SelectContent,
@@ -77,7 +56,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "./ui/select";
-import { Textarea } from "./ui/textarea";
 import { Tabs, TabsContent } from "./ui/tabs";
 import { Spinner } from "./ui/spinner";
 import { Skeleton } from "./ui/skeleton";
@@ -88,7 +66,6 @@ import { PropAccountDialog } from "./prop-account-dialog";
 import { PropFirmLogo } from "./prop-firm-logo";
 import { Mt5Settings } from "./mt5-settings";
 import { TradeReviewModal } from "./trade-review-modal";
-import { TradingViewChart } from "./tradingview-chart";
 import { useWorkspacePreferences } from "./workspace-preferences-context";
 import type { JournalEntry, OpenPosition, PropAccount } from "./types";
 
@@ -318,7 +295,7 @@ export function JournalV2({
     if (params.get("new") !== "1") return;
     setAccountOpen(true);
     router.replace("/accounts");
-  }, [mode]);
+  }, [mode, router]);
 
   const requestAccountId = mode === "workspace" ? activeAccountId : null;
   const {
