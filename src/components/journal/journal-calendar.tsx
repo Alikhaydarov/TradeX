@@ -1,6 +1,6 @@
 "use client";
 
-import { CalendarWorkspaceV2 } from "../calendar-workspace-v2";
+import { CalendarWorkspaceV3 } from "../calendar-workspace-v3";
 
 const CALENDAR_TAILWIND_CONTRACT = [
   "contents",
@@ -11,7 +11,7 @@ const CALENDAR_TAILWIND_CONTRACT = [
 export function JournalCalendar() {
   return (
     <div className={CALENDAR_TAILWIND_CONTRACT}>
-      <CalendarWorkspaceV2 />
+      <CalendarWorkspaceV3 />
     </div>
   );
 }
