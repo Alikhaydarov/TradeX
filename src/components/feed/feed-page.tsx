@@ -1,8 +1,14 @@
 "use client";
 
 import dynamic from "next/dynamic";
+import { useRouter } from "next/navigation";
 import { Check, X } from "lucide-react";
+import { useCallback } from "react";
 
+import {
+  fetchProfileData,
+  profileDataKey,
+} from "../profile/profile-data-store";
 import { SkeletonBlock, XSpinner } from "../app-loader";
 import { MediaImage } from "../media-image";
 import { Button } from "../ui/button";
@@ -48,7 +54,23 @@ function FeedSkeleton() {
 }
 
 export function FeedPage({ onLogin }: FeedPageProps) {
+  const router = useRouter();
   const feed = useFeedData(onLogin);
+
+  const prefetchProfile = useCallback(
+    (username: string) => {
+      const clean = username.replace(/^@/, "").trim().toLowerCase();
+      if (!clean) return;
+      router.prefetch(`/${encodeURIComponent(clean)}`);
+      if (!feed.user?.id) return;
+      const key = profileDataKey(feed.user.id, clean);
+      void fetchProfileData({
+        key,
+        profileUsername: clean,
+      }).catch(() => undefined);
+    },
+    [feed.user?.id, router],
+  );
 
   return (
     <div className="min-h-full bg-xcanvas pb-10">
@@ -91,6 +113,7 @@ export function FeedPage({ onLogin }: FeedPageProps) {
                 savingReply={feed.savingReply === post.id}
                 observePost={feed.observePost}
                 onOpenProfile={feed.openProfile}
+                onPrefetchProfile={prefetchProfile}
                 onShare={feed.sharePost}
                 onToggleBookmark={feed.toggleBookmark}
                 onEdit={feed.openEditPost}
