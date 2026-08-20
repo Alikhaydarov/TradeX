@@ -22,15 +22,15 @@ export function ProfileAchievements({
   if (!achievements.length && !isOwnProfile) return null;
 
   return (
-    <section className="mt-2 border-y border-border bg-card px-4 py-3 sm:rounded-lg sm:border">
-      <div className="flex items-center gap-2">
-        <span className="grid size-8 place-items-center rounded-lg border border-amber-300/15 bg-amber-300/[.06] text-amber-200">
-          <Award size={15} />
+    <section className="mt-3 border-y border-xborder bg-xsurface px-4 py-4 sm:rounded-2xl sm:border sm:px-5">
+      <div className="flex items-center gap-3">
+        <span className="grid size-9 place-items-center rounded-xl border border-amber-300/15 bg-amber-300/[.055] text-amber-200">
+          <Award size={16} />
         </span>
         <div className="min-w-0">
-          <h3 className="text-sm font-black">Achievements</h3>
-          <p className="truncate text-[10px] text-muted-foreground">
-            {achievements.length} certificates
+          <h3 className="text-sm font-black text-white">Achievements</h3>
+          <p className="truncate text-[10px] text-xmuted">
+            {achievements.length} certificate{achievements.length === 1 ? "" : "s"}
           </p>
         </div>
         {isOwnProfile ? (
@@ -38,18 +38,19 @@ export function ProfileAchievements({
             onClick={onAdd}
             variant="ghost"
             size="sm"
-            className="ml-auto"
+            className="ml-auto rounded-xl border border-xborder bg-xpanel hover:bg-xraised"
           >
             <Plus size={14} /> Add
           </Button>
         ) : null}
       </div>
+
       {achievements.length ? (
-        <div className="mt-3 flex gap-2 overflow-x-auto pb-1">
+        <div className="mt-4 flex gap-3 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           {achievements.map((item) => (
             <article
               key={item.id}
-              className="group relative w-36 shrink-0 overflow-hidden rounded-lg border border-border bg-[#111111] sm:w-40"
+              className="group relative w-40 shrink-0 overflow-hidden rounded-xl border border-xborder bg-xpanel transition hover:border-xborder-strong hover:bg-xraised sm:w-44"
             >
               <button
                 type="button"
@@ -61,9 +62,9 @@ export function ProfileAchievements({
                   alt={item.title}
                   className="aspect-[16/10] w-full object-cover"
                 />
-                <div className="p-2.5">
+                <div className="p-3">
                   <span
-                    className={`text-[9px] font-black uppercase ${
+                    className={`text-[9px] font-black uppercase tracking-[.12em] ${
                       item.achievement_type === "payout"
                         ? "text-emerald-300"
                         : "text-amber-200"
@@ -71,7 +72,7 @@ export function ProfileAchievements({
                   >
                     {item.achievement_type}
                   </span>
-                  <h4 className="mt-1 truncate text-xs font-bold">
+                  <h4 className="mt-1.5 truncate text-xs font-bold text-white">
                     {item.title}
                   </h4>
                 </div>
@@ -79,7 +80,7 @@ export function ProfileAchievements({
               {isOwnProfile ? (
                 <button
                   onClick={() => onRemove(item.id)}
-                  className="absolute right-2 top-2 grid size-8 place-items-center rounded-lg bg-black text-zinc-300 opacity-100 sm:opacity-0 sm:group-hover:opacity-100"
+                  className="absolute right-2 top-2 grid size-8 place-items-center rounded-lg border border-white/10 bg-black/75 text-zinc-300 opacity-100 backdrop-blur transition hover:text-rose-300 sm:opacity-0 sm:group-hover:opacity-100"
                   aria-label="Remove achievement"
                 >
                   <Trash2 size={14} />
