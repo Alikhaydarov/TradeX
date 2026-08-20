@@ -39,7 +39,7 @@ import {
   type JournalEntryRow,
   useJournalData,
 } from "./journal/use-journal-data";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { Button } from "./ui/button";
 import { Card, CardContent } from "./ui/card";
 import {
@@ -168,9 +168,8 @@ const accountFrom = (a: AccountRow): PropAccount => ({
 const entryFrom = journalEntryFromRow;
 const monthId = (d: Date) =>
   `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
-function calendarMonthFromPath() {
-  if (typeof window === "undefined") return null;
-  const match = window.location.pathname.match(/^\/calendar\/(\d{4})\/(1[0-2]|[1-9])$/);
+function calendarMonthFromPath(pathname: string) {
+  const match = pathname.match(/^\/calendar\/(\d{4})\/(1[0-2]|[1-9])$/);
   if (!match) return null;
   const year = Number(match[1]);
   const month = Number(match[2]) - 1;
@@ -266,6 +265,7 @@ export function JournalV2({
 }) {
   const { user } = useAuth();
   const router = useRouter();
+  const pathname = usePathname();
   const {
     accounts,
     activeAccountId,
@@ -274,8 +274,8 @@ export function JournalV2({
     refreshAccounts,
     loading: accountsLoading,
   } = useActiveAccountStore();
-  const [month, setMonth] = useState(() => calendarMonthFromPath() || new Date());
-  const [calendarView, setCalendarView] = useState<"year" | "month">(() => calendarMonthFromPath() ? "month" : "year");
+  const [month, setMonth] = useState(() => calendarMonthFromPath(pathname) || new Date());
+  const [calendarView, setCalendarView] = useState<"year" | "month">(() => calendarMonthFromPath(pathname) ? "month" : "year");
   const [accountOpen, setAccountOpen] = useState(false);
   const [tradeOpen, setTradeOpen] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -323,20 +323,16 @@ export function JournalV2({
   }, [activeAccountId, mode, router, setError]);
  
   useEffect(() => {
-    const syncCalendarRoute = () => {
-      const routeMonth = calendarMonthFromPath();
-      if (routeMonth) {
-        setMonth(routeMonth);
-        setCalendarView("month");
-      } else if (window.location.pathname === "/calendar") {
-        setCalendarView("year");
-      }
-    };
-
-    syncCalendarRoute();
-    window.addEventListener("popstate", syncCalendarRoute);
-    return () => window.removeEventListener("popstate", syncCalendarRoute);
-  }, [forcedTab]);
+    // usePathname already re-renders on back/forward, so the popstate listener
+    // this used to register was a second, redundant source of the same event.
+    const routeMonth = calendarMonthFromPath(pathname);
+    if (routeMonth) {
+      setMonth(routeMonth);
+      setCalendarView("month");
+    } else if (pathname === "/calendar") {
+      setCalendarView("year");
+    }
+  }, [forcedTab, pathname]);
 
   useEffect(() => {
     if (!user) return;
@@ -1093,6 +1089,7 @@ function Workspace(p: {
     forcedTab,
   } = p;
   const router = useRouter();
+  const pathname = usePathname();
   const { pnlMode, tradeSort, setTradeSort, formatPnl } =
     useWorkspacePreferences();
   const [selectedTrade, setSelectedTrade] = useState<JournalEntry | null>(null);
@@ -1300,12 +1297,12 @@ function Workspace(p: {
   }, [activeTab, loadCoach, loadOpenPositions, trades.length]);
 
   useEffect(() => {
-    if (!window.location.pathname.startsWith("/trades/")) return;
-    const tradeId = window.location.pathname.split("/")[2];
+    if (!pathname.startsWith("/trades/")) return;
+    const tradeId = pathname.split("/")[2];
     if (!tradeId) return;
     const nextTrade = trades.find((trade) => trade.id === tradeId) || null;
     setSelectedTrade(nextTrade);
-  }, [trades]);
+  }, [pathname, trades]);
 
   return (
     <div className="animate-page-in mx-auto max-w-[1540px]">

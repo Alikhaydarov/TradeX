@@ -20,6 +20,7 @@ import { pathFromSection, sectionFromPath } from "./section-config";
 import { Sidebar } from "./sidebar";
 import type { WorkspaceBootstrap } from "@/lib/server/workspace-bootstrap";
 import type { Section } from "./types";
+import { JournalSeedProvider } from "./journal/journal-seed-context";
 import { WorkspaceBootLoader } from "./workspace-boot-loader";
 import { WorkspacePreferencesProvider } from "./workspace-preferences-context";
 import { WorkspaceTopbar } from "./workspace-topbar";
@@ -298,45 +299,47 @@ function WorkspaceAppRouterShellInner({
   return (
     <>
       <ActiveAccountProvider initialAccounts={bootstrap?.accounts}>
-        {bootstrap ? null : <WorkspaceBootLoader />}
-        <div className="workspace-shell flex h-dvh w-full overflow-hidden bg-black p-0 text-foreground">
-          <Sidebar
-            active={section}
-            onChange={changeSection}
-            onLogin={openLogin}
-            user={user}
-          />
-          <div
-            className="hidden w-[252px] shrink-0 lg:block"
-            aria-hidden="true"
-          />
-          {communityRoute ? (
-            <CommunityRail
-              communityId={communityRoute.communityId}
-              active={communityRoute.tab}
-              onNavigate={openCommunitySection}
-              onBack={closeCommunityWorkspace}
+        <JournalSeedProvider entries={bootstrap?.journalEntries}>
+          {bootstrap ? null : <WorkspaceBootLoader />}
+          <div className="workspace-shell flex h-dvh w-full overflow-hidden bg-black p-0 text-foreground">
+            <Sidebar
+              active={section}
+              onChange={changeSection}
+              onLogin={openLogin}
+              user={user}
             />
+            <div
+              className="hidden w-[252px] shrink-0 lg:block"
+              aria-hidden="true"
+            />
+            {communityRoute ? (
+              <CommunityRail
+                communityId={communityRoute.communityId}
+                active={communityRoute.tab}
+                onNavigate={openCommunitySection}
+                onBack={closeCommunityWorkspace}
+              />
+            ) : null}
+            <main
+              ref={workspaceMainRef}
+              data-workspace-main
+              className="workspace-main h-dvh min-w-0 flex-1 overscroll-contain overflow-y-auto overflow-x-hidden bg-black pb-[max(env(safe-area-inset-bottom),0.5rem)] lg:pb-0"
+            >
+              {!communityRoute ? <WorkspaceTopbar section={section} /> : null}
+              <section className="min-h-full">{routeContent}</section>
+            </main>
+          </div>
+          {communityRoute && communityRoute.tab !== "chat" ? (
+            <button
+              type="button"
+              onClick={() => openCommunitySection("chat")}
+              className="fixed bottom-[max(1rem,env(safe-area-inset-bottom))] right-3 z-[90] inline-flex h-10 items-center gap-2 rounded-xl border border-white/10 bg-white px-3 text-[11px] font-bold text-black shadow-2xl lg:hidden"
+              aria-label="Open community chat"
+            >
+              <MessageCircle size={15} /> Chat
+            </button>
           ) : null}
-          <main
-            ref={workspaceMainRef}
-            data-workspace-main
-            className="workspace-main h-dvh min-w-0 flex-1 overscroll-contain overflow-y-auto overflow-x-hidden bg-black pb-[max(env(safe-area-inset-bottom),0.5rem)] lg:pb-0"
-          >
-            {!communityRoute ? <WorkspaceTopbar section={section} /> : null}
-            <section className="min-h-full">{routeContent}</section>
-          </main>
-        </div>
-        {communityRoute && communityRoute.tab !== "chat" ? (
-          <button
-            type="button"
-            onClick={() => openCommunitySection("chat")}
-            className="fixed bottom-[max(1rem,env(safe-area-inset-bottom))] right-3 z-[90] inline-flex h-10 items-center gap-2 rounded-xl border border-white/10 bg-white px-3 text-[11px] font-bold text-black shadow-2xl lg:hidden"
-            aria-label="Open community chat"
-          >
-            <MessageCircle size={15} /> Chat
-          </button>
-        ) : null}
+        </JournalSeedProvider>
       </ActiveAccountProvider>
       {notificationsMounted ? <NotificationListener /> : null}
       <PremiumUpsellDialog />
