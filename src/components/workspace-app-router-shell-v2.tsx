@@ -8,7 +8,6 @@ import { useEffect, useRef, useState, type ReactNode } from "react";
 import type { CommunitySection } from "@/features/community/components/community-sidebar";
 import { apiRequest } from "@/lib/api-client";
 import { ActiveAccountProvider } from "./active-account-context";
-import { AuthModal } from "./auth-modal";
 import { useAuth } from "./auth-context";
 import { TradeComposerProvider } from "./journal/trade-composer-context";
 import { WorkspaceJournalPrefetch } from "./journal/workspace-journal-prefetch";
@@ -18,8 +17,16 @@ import { Sidebar } from "./sidebar";
 import { WORKSPACE_TAILWIND_CLASS } from "./tailwind/app-tailwind-classes";
 import { TradoxyLoginLanding } from "./tradeway-login-landing";
 import type { Section } from "./types";
-import { WorkspacePreferencesProvider } from "./workspace-preferences-context";
+import {
+  useWorkspacePreferences,
+  WorkspacePreferencesProvider,
+} from "./workspace-preferences-context";
 import { WorkspaceTopbar } from "./workspace-topbar";
+
+const AuthModal = dynamic(
+  () => import("./auth-modal").then((module) => module.AuthModal),
+  { ssr: false },
+);
 
 const CommunitySidebar = dynamic(
   () =>
@@ -143,8 +150,10 @@ function WorkspaceAppRouterShellInner({ children }: { children: ReactNode }) {
   const [authMode, setAuthMode] = useState<"login" | "register">("login");
   const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
   const [notificationsMounted, setNotificationsMounted] = useState(false);
+  const [upsellMounted, setUpsellMounted] = useState(false);
   const workspaceMainRef = useRef<HTMLElement>(null);
   const { user } = useAuth();
+  const { settingsOpen } = useWorkspacePreferences();
 
   const openLogin = () => {
     setAuthMode("login");
@@ -174,8 +183,15 @@ function WorkspaceAppRouterShellInner({ children }: { children: ReactNode }) {
   }, [pathname]);
 
   useEffect(() => {
-    const timer = window.setTimeout(() => setNotificationsMounted(true), 800);
-    return () => window.clearTimeout(timer);
+    const notificationTimer = window.setTimeout(
+      () => setNotificationsMounted(true),
+      800,
+    );
+    const upsellTimer = window.setTimeout(() => setUpsellMounted(true), 1600);
+    return () => {
+      window.clearTimeout(notificationTimer);
+      window.clearTimeout(upsellTimer);
+    };
   }, []);
 
   useEffect(() => {
@@ -265,15 +281,19 @@ function WorkspaceAppRouterShellInner({ children }: { children: ReactNode }) {
     workspaceMainRef.current?.scrollTo({ top: 0, behavior: "instant" });
   };
 
+  const authDialog = authOpen ? (
+    <AuthModal
+      open={authOpen}
+      onClose={() => setAuthOpen(false)}
+      initialMode={authMode}
+    />
+  ) : null;
+
   if (!user && section === "pricing") {
     return (
       <>
         {children}
-        <AuthModal
-          open={authOpen}
-          onClose={() => setAuthOpen(false)}
-          initialMode={authMode}
-        />
+        {authDialog}
       </>
     );
   }
@@ -282,11 +302,7 @@ function WorkspaceAppRouterShellInner({ children }: { children: ReactNode }) {
     return (
       <>
         <AuthGate onLogin={openLogin} onRegister={openRegister} />
-        <AuthModal
-          open={authOpen}
-          onClose={() => setAuthOpen(false)}
-          initialMode={authMode}
-        />
+        {authDialog}
       </>
     );
   }
@@ -349,13 +365,9 @@ function WorkspaceAppRouterShellInner({ children }: { children: ReactNode }) {
         </TradeComposerProvider>
       </ActiveAccountProvider>
       {notificationsMounted ? <NotificationListener /> : null}
-      <PremiumUpsellDialog />
-      <UserSettingsDialog />
-      <AuthModal
-        open={authOpen}
-        onClose={() => setAuthOpen(false)}
-        initialMode={authMode}
-      />
+      {upsellMounted ? <PremiumUpsellDialog /> : null}
+      {settingsOpen ? <UserSettingsDialog /> : null}
+      {authDialog}
     </>
   );
 }
