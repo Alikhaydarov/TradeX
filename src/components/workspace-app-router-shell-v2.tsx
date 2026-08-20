@@ -20,7 +20,6 @@ import { pathFromSection, sectionFromPath } from "./section-config";
 import { Sidebar } from "./sidebar";
 import { WORKSPACE_TAILWIND_CLASS } from "./tailwind/app-tailwind-classes";
 import type { Section } from "./types";
-import { WorkspaceBootLoader } from "./workspace-boot-loader";
 import { WorkspacePreferencesProvider } from "./workspace-preferences-context";
 import { WorkspaceTopbar } from "./workspace-topbar";
 import { TradoxyLoginLanding } from "./tradeway-login-landing";
@@ -281,7 +280,6 @@ function WorkspaceAppRouterShellInner({ children }: { children: ReactNode }) {
   return (
     <>
       <ActiveAccountProvider>
-        <WorkspaceBootLoader />
         <div
           className={`${WORKSPACE_TAILWIND_CLASS} workspace-shell flex h-dvh w-full overflow-hidden bg-xcanvas p-0 text-foreground`}
         >
