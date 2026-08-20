@@ -19,13 +19,13 @@ import {
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
+import { TradeDetailSkeleton } from "@/components/skeletons/route-skeletons";
 import { MediaImage } from "@/components/media-image";
 import { TradingViewChart } from "@/components/tradingview-chart";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
-import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
 
 const money = new Intl.NumberFormat("en-US", {
@@ -217,25 +217,6 @@ function DetailItem({ label, value, tone }: { label: string; value: string; tone
   );
 }
 
-function PageSkeleton() {
-  return (
-    <div className="mx-auto max-w-[1540px] space-y-4 p-3 pb-24 sm:p-4 lg:p-5">
-      <Skeleton className="h-24 rounded-2xl bg-white/[.055]" />
-      <div className="grid gap-4 xl:grid-cols-[minmax(0,1.16fr)_minmax(340px,.84fr)]">
-        <div className="space-y-4">
-          <Skeleton className="h-80 rounded-2xl bg-white/[.055]" />
-          <Skeleton className="h-56 rounded-2xl bg-white/[.055]" />
-        </div>
-        <div className="space-y-4">
-          <Skeleton className="h-80 rounded-2xl bg-white/[.055]" />
-          <Skeleton className="h-56 rounded-2xl bg-white/[.055]" />
-        </div>
-      </div>
-      <Skeleton className="h-[420px] rounded-2xl bg-white/[.055]" />
-    </div>
-  );
-}
-
 export function TradeDetailPage({ tradeId, onBack }: { tradeId: string; onBack: () => void }) {
   const [trade, setTrade] = useState<TradeModel | null>(null);
   const [draft, setDraft] = useState<EditableTrade | null>(null);
@@ -420,7 +401,7 @@ export function TradeDetailPage({ tradeId, onBack }: { tradeId: string; onBack: 
     await copyLink();
   };
 
-  if (loading) return <PageSkeleton />;
+  if (loading) return <TradeDetailSkeleton />;
 
   if (!trade || !draft) {
     return (
