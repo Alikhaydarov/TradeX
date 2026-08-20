@@ -1,8 +1,18 @@
 "use client";
 
-import { Check, CornerUpLeft, Pencil, SmilePlus, Trash2, X } from "lucide-react";
+import {
+  Check,
+  CornerUpLeft,
+  Pencil,
+  SmilePlus,
+  Trash2,
+  X,
+} from "lucide-react";
 import { useState } from "react";
-import type { ChatMessage, ChatReplyPreview } from "@/features/community-chat/types";
+import type {
+  ChatMessage,
+  ChatReplyPreview,
+} from "@/features/community-chat/types";
 import { TraderAvatar } from "@/components/trader-avatar";
 import { VerifiedBadge } from "@/components/verified-badge";
 import { Button } from "@/components/ui/button";
@@ -14,7 +24,10 @@ function timeLabel(value: string) {
   const date = new Date(value);
   return Number.isNaN(date.getTime())
     ? ""
-    : date.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
+    : date.toLocaleTimeString("en-US", {
+        hour: "numeric",
+        minute: "2-digit",
+      });
 }
 
 export function MessageBubble({
@@ -70,7 +83,7 @@ export function MessageBubble({
 
   return (
     <article
-      className={`group relative flex gap-3 px-3 transition hover:bg-[#1d1f23] sm:px-4 ${
+      className={`group relative flex gap-3 px-3 transition hover:bg-xpanel/55 sm:px-4 ${
         compact ? "py-0.5" : "mt-2 py-1.5"
       } ${message.failed ? "bg-rose-400/[.025]" : ""}`}
     >
@@ -79,10 +92,10 @@ export function MessageBubble({
           <TraderAvatar
             name={message.sender.fullName}
             value={message.sender.avatarUrl}
-            className="size-10 rounded-full border border-white/[.07] text-[10px]"
+            className="size-10 rounded-full border border-xborder text-[10px]"
           />
         ) : (
-          <span className="block pt-1 text-center text-[8px] text-transparent transition group-hover:text-zinc-600">
+          <span className="block pt-1 text-center text-[8px] text-transparent transition group-hover:text-xmuted">
             {timeLabel(message.createdAt)}
           </span>
         )}
@@ -95,21 +108,35 @@ export function MessageBubble({
               {message.sender.fullName}
             </span>
             {message.sender.isVerified ? <VerifiedBadge size={12} /> : null}
-            <span className="text-[9px] text-zinc-600">{timeLabel(message.createdAt)}</span>
-            {message.editedAt ? <span className="text-[9px] text-zinc-600">(edited)</span> : null}
-            {message.pending ? <span className="text-[9px] text-zinc-500">sending…</span> : null}
-            {message.failed ? <span className="text-[9px] font-semibold text-rose-400">failed to send</span> : null}
+            <span className="text-[9px] text-xmuted">
+              {timeLabel(message.createdAt)}
+            </span>
+            {message.editedAt ? (
+              <span className="text-[9px] text-xmuted">(edited)</span>
+            ) : null}
+            {message.pending ? (
+              <span className="text-[9px] text-xmuted">sending…</span>
+            ) : null}
+            {message.failed ? (
+              <span className="text-[9px] font-semibold text-rose-400">
+                failed to send
+              </span>
+            ) : null}
           </div>
         ) : null}
 
         {message.reply ? (
           <button
             type="button"
-            className="mt-1 flex max-w-full items-center gap-1.5 border-l-2 border-l-zinc-500 pl-2 text-left"
+            className="mt-1 flex max-w-full items-center gap-1.5 border-l-2 border-l-xborder-strong pl-2 text-left"
           >
-            <CornerUpLeft size={11} className="shrink-0 text-zinc-500" />
-            <span className="shrink-0 text-[10px] font-semibold text-zinc-400">{message.reply.senderName}</span>
-            <span className="truncate text-[10px] text-zinc-600">{message.reply.content}</span>
+            <CornerUpLeft size={11} className="shrink-0 text-xmuted" />
+            <span className="shrink-0 text-[10px] font-semibold text-xmuted-strong">
+              {message.reply.senderName}
+            </span>
+            <span className="truncate text-[10px] text-xmuted">
+              {message.reply.content}
+            </span>
           </button>
         ) : null}
 
@@ -129,22 +156,35 @@ export function MessageBubble({
                 }
               }}
               autoFocus
-              className="min-h-16 resize-none rounded-md border-white/[.08] bg-[#272a2f] text-[13px] leading-5"
+              className="min-h-16 resize-none rounded-lg border-xborder bg-xpanel text-[13px] leading-5 focus-visible:border-xborder-strong"
             />
-            <div className="flex items-center gap-1.5 text-[9px] text-zinc-600">
+            <div className="flex items-center gap-1.5 text-[9px] text-xmuted">
               Esc to cancel · Enter to save
-              <Button type="button" size="sm" onClick={() => void save()} disabled={busy} className="ml-auto h-7 px-2 text-[10px]">
+              <Button
+                type="button"
+                size="sm"
+                onClick={() => void save()}
+                disabled={busy}
+                className="ml-auto h-7 px-2 text-[10px]"
+              >
                 <Check size={12} /> Save
               </Button>
-              <Button type="button" size="icon-sm" variant="ghost" onClick={() => setEditing(false)}>
+              <Button
+                type="button"
+                size="icon-sm"
+                variant="ghost"
+                onClick={() => setEditing(false)}
+              >
                 <X size={12} />
               </Button>
             </div>
           </div>
         ) : message.deletedAt ? (
-          <p className="mt-0.5 text-[13px] italic text-zinc-600">Message deleted</p>
+          <p className="mt-0.5 text-[13px] italic text-xmuted">
+            Message deleted
+          </p>
         ) : (
-          <p className="mt-0.5 max-w-[860px] whitespace-pre-wrap break-words text-[14px] leading-[1.45] text-zinc-300">
+          <p className="mt-0.5 max-w-[860px] whitespace-pre-wrap break-words text-[14px] leading-[1.48] text-zinc-300">
             {message.content}
           </p>
         )}
@@ -156,10 +196,10 @@ export function MessageBubble({
                 key={reaction.emoji}
                 type="button"
                 onClick={() => void onReact(message.id, reaction.emoji)}
-                className={`inline-flex h-6 items-center gap-1 rounded-md border px-1.5 text-[10px] transition ${
+                className={`inline-flex h-6 items-center gap-1 rounded-lg border px-1.5 text-[10px] transition ${
                   reaction.reactedByMe
-                    ? "border-indigo-400/35 bg-indigo-400/[.12] text-indigo-200"
-                    : "border-white/[.07] bg-[#202226] text-zinc-400 hover:border-white/[.12] hover:text-zinc-100"
+                    ? "border-sky-400/25 bg-sky-400/[.09] text-sky-200"
+                    : "border-xborder bg-xpanel text-xmuted-strong hover:border-xborder-strong hover:bg-xraised hover:text-zinc-100"
                 }`}
               >
                 <span>{reaction.emoji}</span>
@@ -171,16 +211,18 @@ export function MessageBubble({
       </div>
 
       {!message.deletedAt && !message.pending ? (
-        <div className="absolute -top-3 right-3 hidden items-center overflow-hidden rounded-md border border-white/[.08] bg-[#24262b] shadow-xl group-hover:flex">
+        <div className="absolute -top-3 right-3 hidden items-center overflow-hidden rounded-lg border border-xborder bg-xraised shadow-xl group-hover:flex">
           <button
             type="button"
-            onClick={() => onReply({
-              id: message.id,
-              content: message.content,
-              senderName: message.sender.fullName,
-              deleted: false,
-            })}
-            className="grid size-8 place-items-center text-zinc-400 hover:bg-white/[.06] hover:text-white"
+            onClick={() =>
+              onReply({
+                id: message.id,
+                content: message.content,
+                senderName: message.sender.fullName,
+                deleted: false,
+              })
+            }
+            className="grid size-8 place-items-center text-xmuted-strong hover:bg-xpanel hover:text-white"
             aria-label="Reply"
           >
             <CornerUpLeft size={13} />
@@ -190,18 +232,20 @@ export function MessageBubble({
               key={emoji}
               type="button"
               onClick={() => void onReact(message.id, emoji)}
-              className="grid size-8 place-items-center text-[12px] hover:bg-white/[.06]"
+              className="grid size-8 place-items-center text-[12px] hover:bg-xpanel"
               aria-label={`React ${emoji}`}
             >
               {emoji}
             </button>
           ))}
-          <span className="grid size-8 place-items-center text-zinc-500"><SmilePlus size={13} /></span>
+          <span className="grid size-8 place-items-center text-xmuted">
+            <SmilePlus size={13} />
+          </span>
           {mine ? (
             <button
               type="button"
               onClick={() => setEditing(true)}
-              className="grid size-8 place-items-center text-zinc-400 hover:bg-white/[.06] hover:text-white"
+              className="grid size-8 place-items-center text-xmuted-strong hover:bg-xpanel hover:text-white"
               aria-label="Edit"
             >
               <Pencil size={13} />
@@ -211,7 +255,7 @@ export function MessageBubble({
             <button
               type="button"
               onClick={() => void remove()}
-              className="grid size-8 place-items-center text-zinc-400 hover:bg-rose-400/10 hover:text-rose-300"
+              className="grid size-8 place-items-center text-xmuted-strong hover:bg-rose-400/10 hover:text-rose-300"
               aria-label="Delete"
             >
               <Trash2 size={13} />

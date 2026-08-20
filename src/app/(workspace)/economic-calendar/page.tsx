@@ -1,11 +1,11 @@
 import type { Metadata } from "next";
 
-import { CalendarRouteContent } from "@/components/routes/workspace-route-content";
+import { JournalCalendar } from "@/components/journal/journal-calendar";
 
 export const metadata: Metadata = {
   title: "Economic Calendar | Tradoxy",
 };
 
 export default function EconomicCalendarPage() {
-  return <CalendarRouteContent />;
+  return <JournalCalendar />;
 }

@@ -1,8 +1,7 @@
 "use client";
 
-import { JournalWorkspace } from "./journal-workspace";
-import { openJournalLogin } from "./journal-auth";
+import { AccountsRouteController } from "@/features/accounts/components/accounts-route-controller";
 
 export function JournalAccounts() {
-  return <JournalWorkspace onLogin={openJournalLogin} mode="accounts" />;
+  return <AccountsRouteController />;
 }

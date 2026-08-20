@@ -3,11 +3,19 @@
 import { useEffect, useRef, useState } from "react";
 
 import { apiRequest } from "@/lib/api-client";
-import { hasVerifiedPremiumAccess } from "@/lib/premium-plan";
-import { toSocialPost, type SocialPostRecord } from "@/lib/social-format";
 import { validateUsername } from "@/lib/username";
 import { useAuth } from "../auth-context";
 import type { Post, Profile } from "../types";
+import {
+  EMPTY_PROFILE_STATS,
+  fetchProfileData,
+  getCachedProfileData,
+  hasFreshProfileData,
+  mutateCachedProfileData,
+  profileDataKey,
+  profileFromRecord,
+  type ProfileRecord,
+} from "./profile-data-store";
 import type {
   Achievement,
   ConnectionUser,
@@ -16,73 +24,27 @@ import type {
   TradingStats,
 } from "./profile-types";
 
-interface ProfileRecord {
-  id: string;
-  username: string;
-  full_name: string;
-  avatar_url: string | null;
-  banner_url?: string | null;
-  bio: string;
-  trading_style: string;
-  location: string;
-  followersCount?: number;
-  followingCount?: number;
-  isFollowing?: boolean;
-  is_verified?: boolean | null;
-  plan?: string | null;
-  premium_until?: string | null;
-  ai_enabled?: boolean | null;
-  auto_sync_enabled?: boolean | null;
-  stats_visible?: boolean | null;
-}
-
-type PostRecord = SocialPostRecord;
-
-const EMPTY_STATS: TradingStats = {
-  trades: 0,
-  winRate: 0,
-  netPnl: 0,
-  averageR: 0,
-};
-
-function toProfile(data: ProfileRecord): ProfileView {
-  const rawPlan = data.plan?.toLowerCase();
-  const plan =
-    rawPlan === "standard"
-      ? "standard"
-      : rawPlan === "pro" || rawPlan === "premium"
-        ? "pro"
-        : "free";
-
-  return {
-    id: data.id,
-    username: data.username,
-    fullName: data.full_name,
-    avatarUrl: data.avatar_url,
-    bannerUrl: data.banner_url ?? null,
-    bio: data.bio ?? "",
-    tradingStyle: data.trading_style ?? "Price Action",
-    location: data.location ?? "",
-    followersCount: data.followersCount ?? 0,
-    followingCount: data.followingCount ?? 0,
-    isVerified: hasVerifiedPremiumAccess(data),
-    plan,
-    isFollowing: Boolean(data.isFollowing),
-    statsVisible: data.stats_visible !== false,
-  };
-}
-
 export function useProfileController(profileUsername?: string) {
   const { user, configured, signOut } = useAuth();
-  const [profile, setProfile] = useState<ProfileView | null>(null);
+  const initialKey = user ? profileDataKey(user.id, profileUsername) : "";
+  const initialCached = initialKey ? getCachedProfileData(initialKey) : null;
+  const [profile, setProfile] = useState<ProfileView | null>(
+    () => initialCached?.profile ?? null,
+  );
   const [draftProfile, setDraftProfile] = useState<Profile | null>(null);
-  const [posts, setPosts] = useState<Post[]>([]);
-  const [achievements, setAchievements] = useState<Achievement[]>([]);
+  const [posts, setPosts] = useState<Post[]>(() => initialCached?.posts ?? []);
+  const [achievements, setAchievements] = useState<Achievement[]>(
+    () => initialCached?.achievements ?? [],
+  );
   const [viewingAchievement, setViewingAchievement] =
     useState<Achievement | null>(null);
-  const [stats, setStats] = useState<TradingStats>(EMPTY_STATS);
+  const [stats, setStats] = useState<TradingStats>(
+    () => initialCached?.stats ?? EMPTY_PROFILE_STATS,
+  );
   const [activeTab, setActiveTab] = useState<ProfileTab>("posts");
-  const [loadingProfile, setLoadingProfile] = useState(true);
+  const [loadingProfile, setLoadingProfile] = useState(
+    () => Boolean(user && !initialCached),
+  );
   const [editOpen, setEditOpen] = useState(false);
   const [saved, setSaved] = useState(false);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
@@ -109,43 +71,49 @@ export function useProfileController(profileUsername?: string) {
   const viewObserver = useRef<IntersectionObserver | null>(null);
   const avatarInputRef = useRef<HTMLInputElement | null>(null);
   const bannerInputRef = useRef<HTMLInputElement | null>(null);
+  const cacheKey = user ? profileDataKey(user.id, profileUsername) : "";
 
   useEffect(() => () => viewObserver.current?.disconnect(), []);
 
   useEffect(() => {
     if (!user) {
-      const timer = window.setTimeout(() => setLoadingProfile(false), 0);
-      return () => window.clearTimeout(timer);
+      setProfile(null);
+      setPosts([]);
+      setAchievements([]);
+      setStats(EMPTY_PROFILE_STATS);
+      setLoadingProfile(false);
+      return;
+    }
+
+    const key = profileDataKey(user.id, profileUsername);
+    const cached = getCachedProfileData(key);
+    if (cached) {
+      setProfile(cached.profile);
+      setPosts(cached.posts);
+      setAchievements(cached.achievements);
+      setStats(cached.stats);
+      setLoadingProfile(false);
+      if (hasFreshProfileData(key)) {
+        window.dispatchEvent(new Event("tradeup:profile-ready"));
+        return;
+      }
+    } else {
+      setProfile(null);
+      setPosts([]);
+      setAchievements([]);
+      setStats(EMPTY_PROFILE_STATS);
+      setLoadingProfile(true);
     }
 
     let active = true;
-    const startTimer = window.setTimeout(() => {
-      if (!active) return;
-      setLoadingProfile(true);
-      setError(null);
-    }, 0);
-
-    const request = profileUsername
-      ? apiRequest<{
-          profile: ProfileRecord;
-          posts: PostRecord[];
-          achievements?: Achievement[];
-          stats?: TradingStats;
-        }>(`/api/profile/${profileUsername}`)
-      : apiRequest<{
-          profile: ProfileRecord;
-          posts: PostRecord[];
-          achievements?: Achievement[];
-          stats?: TradingStats;
-        }>("/api/profile");
-
-    request
+    setError(null);
+    void fetchProfileData({ key, profileUsername })
       .then((data) => {
         if (!active) return;
-        setProfile(toProfile(data.profile));
-        setPosts(data.posts.map((post) => toSocialPost(post)));
-        setAchievements(data.achievements ?? []);
-        setStats(data.stats ?? EMPTY_STATS);
+        setProfile(data.profile);
+        setPosts(data.posts);
+        setAchievements(data.achievements);
+        setStats(data.stats);
       })
       .catch((nextError) => {
         if (active) {
@@ -164,7 +132,6 @@ export function useProfileController(profileUsername?: string) {
 
     return () => {
       active = false;
-      window.clearTimeout(startTimer);
     };
   }, [profileUsername, user]);
 
@@ -222,6 +189,12 @@ export function useProfileController(profileUsername?: string) {
         },
       );
       setAchievements((current) => [achievement, ...current]);
+      if (cacheKey) {
+        mutateCachedProfileData(cacheKey, (current) => ({
+          ...current,
+          achievements: [achievement, ...current.achievements],
+        }));
+      }
       setAchievementOpen(false);
       setAchievementTitle("");
       setAchievementIssuer("");
@@ -247,6 +220,12 @@ export function useProfileController(profileUsername?: string) {
       setAchievements((current) =>
         current.filter((item) => item.id !== id),
       );
+      if (cacheKey) {
+        mutateCachedProfileData(cacheKey, (current) => ({
+          ...current,
+          achievements: current.achievements.filter((item) => item.id !== id),
+        }));
+      }
     } catch (nextError) {
       setError(
         nextError instanceof Error
@@ -270,7 +249,14 @@ export function useProfileController(profileUsername?: string) {
         "/api/profile",
         { method: "PATCH", body: JSON.stringify(draftProfile) },
       );
-      setProfile(toProfile(data));
+      const nextProfile = profileFromRecord(data);
+      setProfile(nextProfile);
+      if (cacheKey) {
+        mutateCachedProfileData(cacheKey, (current) => ({
+          ...current,
+          profile: nextProfile,
+        }));
+      }
       setSaved(true);
       window.setTimeout(() => setSaved(false), 1800);
       setEditOpen(false);
@@ -315,6 +301,17 @@ export function useProfileController(profileUsername?: string) {
             : post,
         ),
       );
+      if (cacheKey) {
+        mutateCachedProfileData(cacheKey, (current) => ({
+          ...current,
+          profile: { ...current.profile, avatarUrl: payload.avatarUrl ?? null },
+          posts: current.posts.map((post) =>
+            post.userId === user.id
+              ? { ...post, avatar: payload.avatarUrl || post.avatar }
+              : post,
+          ),
+        }));
+      }
       setSaved(true);
       window.setTimeout(() => setSaved(false), 1800);
     } catch (nextError) {
@@ -352,6 +349,12 @@ export function useProfileController(profileUsername?: string) {
       };
       setDraftProfile(nextProfile);
       setProfile(nextProfile);
+      if (cacheKey) {
+        mutateCachedProfileData(cacheKey, (current) => ({
+          ...current,
+          profile: { ...current.profile, bannerUrl: payload.bannerUrl ?? null },
+        }));
+      }
       setSaved(true);
       window.setTimeout(() => setSaved(false), 1800);
     } catch (nextError) {
@@ -376,11 +379,18 @@ export function useProfileController(profileUsername?: string) {
         method: "POST",
         body: JSON.stringify({ targetUserId: profile.id }),
       });
-      setProfile({
+      const nextProfile = {
         ...profile,
         isFollowing: response.following,
         followersCount: response.followersCount,
-      });
+      };
+      setProfile(nextProfile);
+      if (cacheKey) {
+        mutateCachedProfileData(cacheKey, (current) => ({
+          ...current,
+          profile: nextProfile,
+        }));
+      }
     } catch (nextError) {
       setError(
         nextError instanceof Error ? nextError.message : "Follow failed.",
@@ -434,11 +444,18 @@ export function useProfileController(profileUsername?: string) {
         ),
       );
       if (profile && target.id === profile.id) {
-        setProfile({
+        const nextProfile = {
           ...profile,
           isFollowing: response.following,
           followersCount: response.followersCount,
-        });
+        };
+        setProfile(nextProfile);
+        if (cacheKey) {
+          mutateCachedProfileData(cacheKey, (current) => ({
+            ...current,
+            profile: nextProfile,
+          }));
+        }
       }
     } catch (nextError) {
       setError(
@@ -468,6 +485,16 @@ export function useProfileController(profileUsername?: string) {
               : item,
           ),
         );
+        if (cacheKey) {
+          mutateCachedProfileData(cacheKey, (current) => ({
+            ...current,
+            posts: current.posts.map((item) =>
+              item.id === postId
+                ? { ...item, views: response.views as number }
+                : item,
+            ),
+          }));
+        }
       })
       .catch(() => undefined);
   };

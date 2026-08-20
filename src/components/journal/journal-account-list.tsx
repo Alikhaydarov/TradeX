@@ -55,19 +55,22 @@ export function JournalAccountList({
   const portfolioValue = startingCapital + netPnl;
 
   return (
-    <div className="animate-page-in mx-auto max-w-[1320px] space-y-3 p-3 sm:p-4 lg:p-5">
-      <div className="flex items-center justify-between gap-3">
-        <div>
-          <h1 className="text-xl font-black text-white sm:text-2xl">
+    <div className="animate-page-in mx-auto max-w-[1320px] space-y-4 p-3 sm:p-4 lg:p-6">
+      <div className="flex items-end justify-between gap-3">
+        <div className="min-w-0">
+          <p className="text-[9px] font-bold uppercase tracking-[0.18em] text-xmuted">
+            Trading capital
+          </p>
+          <h1 className="mt-1 text-xl font-black tracking-[-0.03em] text-white sm:text-2xl">
             Accounts
           </h1>
-          <p className="mt-0.5 text-xs text-zinc-600">
-            Your trading journals in one place.
+          <p className="mt-1 text-xs text-xmuted">
+            Manage journals, balances and account performance in one place.
           </p>
         </div>
         <Button
           onClick={onAdd}
-          className="h-9 shrink-0 rounded-xl bg-white px-3 text-xs font-bold text-black hover:bg-zinc-200 sm:px-4 sm:text-sm"
+          className="h-10 shrink-0 rounded-xl px-3 text-xs font-bold sm:px-4 sm:text-sm"
         >
           <Plus size={15} />{" "}
           <span className="hidden sm:inline">Add account</span>
@@ -76,31 +79,49 @@ export function JournalAccountList({
       </div>
 
       {summaries.length ? (
-        <section>
-          <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-white/10 bg-[#060606] px-4 py-3">
+        <section className="overflow-hidden rounded-2xl border border-xborder bg-xsurface shadow-[inset_0_1px_0_rgba(255,255,255,.025)]">
+          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-xborder px-4 py-3.5 sm:px-5">
             <div>
-              <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-zinc-600">
+              <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-xmuted">
+                Portfolio overview
+              </p>
+              <p className="mt-1 text-[11px] text-xmuted-strong">
+                {summaries.length} {summaries.length === 1 ? "account" : "accounts"} connected
+              </p>
+            </div>
+            <span className="inline-flex items-center gap-2 rounded-full border border-xborder bg-xpanel px-2.5 py-1 text-[10px] font-semibold text-zinc-300">
+              <span className="size-1.5 rounded-full bg-xpositive" /> Live journal
+            </span>
+          </div>
+
+          <div className="grid divide-y divide-x-0 divide-xborder sm:grid-cols-3 sm:divide-x sm:divide-y-0">
+            <div className="px-4 py-4 sm:px-5">
+              <p className="text-[9px] font-bold uppercase tracking-[0.16em] text-xmuted">
                 Portfolio value
               </p>
-              <p className="mt-1 font-mono text-xl font-black tracking-tight text-white sm:text-2xl">
+              <p className="mt-1.5 font-mono text-xl font-black tracking-tight text-white sm:text-2xl">
                 {cash.format(portfolioValue)}
               </p>
             </div>
-            <div className="text-right">
-              <span
-                className={`rounded-lg px-2 py-1 font-mono text-xs font-bold ${
-                  netPnl >= 0
-                    ? "bg-emerald-400/10 text-emerald-300"
-                    : "bg-rose-400/10 text-rose-300"
+            <div className="px-4 py-4 sm:px-5">
+              <p className="text-[9px] font-bold uppercase tracking-[0.16em] text-xmuted">
+                Net P&amp;L
+              </p>
+              <p
+                className={`mt-1.5 font-mono text-xl font-black tracking-tight ${
+                  netPnl >= 0 ? "text-xpositive" : "text-xnegative"
                 }`}
               >
                 {netPnl >= 0 ? "+" : ""}
                 {cash.format(netPnl)}
-              </span>
-              <p className="mt-1.5 text-[10px] text-zinc-600">
-                {summaries.length}{" "}
-                {summaries.length === 1 ? "account" : "accounts"} ·{" "}
-                {cash.format(startingCapital)} capital
+              </p>
+            </div>
+            <div className="px-4 py-4 sm:px-5">
+              <p className="text-[9px] font-bold uppercase tracking-[0.16em] text-xmuted">
+                Starting capital
+              </p>
+              <p className="mt-1.5 font-mono text-xl font-black tracking-tight text-zinc-200 sm:text-2xl">
+                {cash.format(startingCapital)}
               </p>
             </div>
           </div>
@@ -108,22 +129,19 @@ export function JournalAccountList({
       ) : null}
 
       {!summaries.length ? (
-        <div className="grid min-h-80 place-items-center rounded-[24px] border border-dashed border-white/12 bg-[#050505] px-5 text-center">
+        <div className="grid min-h-80 place-items-center rounded-[24px] border border-dashed border-xborder-strong bg-xsurface px-5 text-center">
           <div>
-            <div className="mx-auto grid size-14 place-items-center rounded-2xl border border-white/8 bg-[#0d0d0d]">
+            <div className="mx-auto grid size-14 place-items-center rounded-2xl border border-xborder bg-xpanel">
               <WalletCards size={24} className="text-zinc-300" />
             </div>
-            <h2 className="mt-4 text-xl font-black text-white">
+            <h2 className="mt-4 text-xl font-black tracking-[-0.025em] text-white">
               Create your first journal
             </h2>
-            <p className="mx-auto mt-2 max-w-sm text-sm leading-6 text-zinc-500">
+            <p className="mx-auto mt-2 max-w-sm text-sm leading-6 text-xmuted-strong">
               Add an account name and starting balance. You can begin logging
               trades immediately.
             </p>
-            <Button
-              onClick={onAdd}
-              className="mt-5 h-11 rounded-xl bg-white px-5 text-black hover:bg-zinc-200"
-            >
+            <Button onClick={onAdd} className="mt-5 h-11 rounded-xl px-5">
               <Plus size={16} /> Add account
             </Button>
           </div>
@@ -143,13 +161,13 @@ export function JournalAccountList({
           <button
             type="button"
             onClick={onAdd}
-            className="group grid min-h-[172px] place-items-center rounded-2xl border border-dashed border-white/12 bg-[#030303] p-4 text-center transition hover:border-white/25 hover:bg-[#070707]"
+            className="group grid min-h-[184px] place-items-center rounded-2xl border border-dashed border-xborder bg-xsurface p-4 text-center transition duration-200 hover:-translate-y-px hover:border-xborder-strong hover:bg-xpanel"
           >
             <span>
-              <span className="mx-auto grid size-9 place-items-center rounded-xl border border-white/10 bg-[#0d0d0d] text-zinc-500 transition group-hover:text-white">
+              <span className="mx-auto grid size-10 place-items-center rounded-xl border border-xborder bg-xpanel text-xmuted transition group-hover:border-xborder-strong group-hover:bg-xcard group-hover:text-white">
                 <Plus size={17} />
               </span>
-              <span className="mt-2.5 block text-sm font-bold text-zinc-500 transition group-hover:text-zinc-200">
+              <span className="mt-2.5 block text-sm font-bold text-xmuted-strong transition group-hover:text-zinc-100">
                 Add account
               </span>
             </span>
@@ -176,13 +194,20 @@ function JournalAccountCard({
   compact?: boolean;
 }) {
   const statusColor: Record<string, string> = {
-    Processing: "text-sky-300 bg-[#091119] border-sky-400/20",
-    Active: "text-emerald-300 bg-[#0b1c12] border-emerald-400/20",
-    Passed: "text-zinc-300 bg-[#0a0a0a] border-white/15",
-    Failed: "text-rose-300 bg-[#1a0d10] border-rose-400/20",
-    Paused: "text-amber-400 bg-[#1a1407] border-amber-400/20",
+    Processing: "text-sky-300 bg-sky-400/8 border-sky-400/20",
+    Active: "text-xpositive bg-emerald-400/8 border-emerald-400/20",
+    Passed: "text-zinc-300 bg-white/[.04] border-xborder-strong",
+    Failed: "text-xnegative bg-rose-400/8 border-rose-400/20",
+    Paused: "text-xwarning bg-amber-400/8 border-amber-400/20",
   };
-  const pnlTone = summary.pnl >= 0 ? "text-emerald-300" : "text-rose-300";
+  const statusDot: Record<string, string> = {
+    Processing: "bg-sky-400",
+    Active: "bg-xpositive",
+    Passed: "bg-zinc-300",
+    Failed: "bg-xnegative",
+    Paused: "bg-xwarning",
+  };
+  const pnlTone = summary.pnl >= 0 ? "text-xpositive" : "text-xnegative";
   const sourceLabel =
     summary.account.importSource === "mt5_bridge" ? "MT5 sync" : "Manual";
   const currentBalance = summary.account.accountSize + summary.pnl;
@@ -198,30 +223,34 @@ function JournalAccountCard({
         }
       }}
       className={`group relative cursor-pointer overflow-hidden rounded-2xl border transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/30 ${
-        compact ? "min-h-[150px]" : "min-h-[172px]"
+        compact ? "min-h-[150px]" : "min-h-[184px]"
       } ${
         active
-          ? "border-white/20 bg-[#080808] shadow-[0_12px_32px_rgba(0,0,0,.3)]"
-          : "border-white/10 bg-[#050505] hover:border-white/20 hover:bg-[#080808]"
+          ? "border-xborder-strong bg-xpanel shadow-[inset_3px_0_0_#34d399,0_16px_38px_rgba(0,0,0,.26)]"
+          : "border-xborder bg-xsurface shadow-[inset_0_1px_0_rgba(255,255,255,.02)] hover:-translate-y-px hover:border-xborder-strong hover:bg-xpanel"
       }`}
     >
-      <div className="p-3.5">
+      <div className="p-3.5 sm:p-4">
         <div className="flex items-start gap-3">
           <div className="min-w-0 flex-1 space-y-1">
             <div className="flex min-w-0 items-center gap-2">
-              <span className="size-2 shrink-0 rounded-full bg-emerald-400 shadow-[0_0_12px_rgba(52,211,153,.45)]" />
-              <p className="truncate text-[15px] font-bold text-white">
+              <span
+                className={`size-2 shrink-0 rounded-full ${
+                  statusDot[summary.account.status] || statusDot.Active
+                }`}
+              />
+              <p className="truncate text-[15px] font-bold tracking-[-0.02em] text-white">
                 {summary.account.name}
               </p>
             </div>
-            <p className="truncate text-[11px] text-zinc-600">
+            <p className="truncate text-[11px] text-xmuted">
               {sourceLabel} ·{" "}
               {summary.account.accountType === "real"
                 ? "Personal"
                 : summary.account.firm || "Prop account"}
             </p>
           </div>
-          <div className="flex shrink-0 items-center gap-2">
+          <div className="flex shrink-0 items-center gap-1.5">
             <span
               className={`rounded-md border px-1.5 py-0.5 text-[9px] font-semibold ${
                 statusColor[summary.account.status] || statusColor.Active
@@ -242,7 +271,7 @@ function JournalAccountCard({
               </DropdownMenuTrigger>
               <DropdownMenuContent
                 align="end"
-                className="border-white/10 bg-[#0a0a0a]"
+                className="border-xborder-strong bg-xcard"
                 onClick={(event) => event.stopPropagation()}
               >
                 <DropdownMenuItem
@@ -257,12 +286,12 @@ function JournalAccountCard({
           </div>
         </div>
 
-        <div className="mt-3.5">
-          <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-zinc-600">
+        <div className="mt-4">
+          <p className="text-[9px] font-bold uppercase tracking-[0.17em] text-xmuted">
             Current balance
           </p>
-          <div className="mt-1 flex items-end justify-between gap-2">
-            <p className="font-mono text-xl font-black text-white">
+          <div className="mt-1.5 flex items-end justify-between gap-2">
+            <p className="font-mono text-[21px] font-black tracking-[-0.035em] text-white">
               {cash.format(currentBalance)}
             </p>
             <p className={`font-mono text-xs font-bold ${pnlTone}`}>
@@ -272,15 +301,15 @@ function JournalAccountCard({
           </div>
         </div>
 
-        <div className="mt-3.5 flex items-center justify-between gap-3 border-t border-white/8 pt-2.5">
-          <div className="flex min-w-0 items-center gap-3 text-[11px] text-zinc-500">
+        <div className="mt-4 flex items-center justify-between gap-3 border-t border-xborder pt-3">
+          <div className="flex min-w-0 items-center gap-3 text-[10px] font-medium text-xmuted-strong">
             <span>{summary.trades} trades</span>
-            <span className="text-zinc-800">/</span>
+            <span className="text-zinc-700">/</span>
             <span>{summary.winRate}% win rate</span>
           </div>
           <ChevronRight
             size={16}
-            className="text-zinc-600 transition-transform group-hover:translate-x-0.5"
+            className="text-xmuted transition-transform group-hover:translate-x-0.5 group-hover:text-zinc-200"
           />
         </div>
       </div>

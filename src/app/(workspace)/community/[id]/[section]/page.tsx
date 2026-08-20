@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
-import { CommunityRouteContent } from "@/components/routes/workspace-route-content";
+import { CommunityRouteContent } from "@/components/routes/community-route-content";
 
 type CommunitySectionPageProps = {
   params: Promise<{ id: string; section: string }>;

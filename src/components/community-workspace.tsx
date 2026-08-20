@@ -1,10 +1,30 @@
 "use client";
+
+import dynamic from "next/dynamic";
 import { usePathname } from "next/navigation";
 
-import { ChatPage } from "@/components/chat/chat-page";
-import { CommunityDetailPremium } from "@/features/community/components/community-detail-premium";
-import { CommunityHubPremium } from "@/features/community/components/community-hub-premium";
 import type { CommunitySection } from "@/features/community/components/community-sidebar";
+
+const CommunityHubPremium = dynamic(
+  () =>
+    import("@/features/community/components/community-hub-premium").then(
+      (module) => module.CommunityHubPremium,
+    ),
+  { ssr: false, loading: () => <CommunityRouteSkeleton compact /> },
+);
+
+const CommunityDetailPremium = dynamic(
+  () =>
+    import("@/features/community/components/community-detail-premium").then(
+      (module) => module.CommunityDetailPremium,
+    ),
+  { ssr: false, loading: () => <CommunityRouteSkeleton /> },
+);
+
+const ChatPage = dynamic(
+  () => import("@/components/chat/chat-page").then((module) => module.ChatPage),
+  { ssr: false, loading: () => <CommunityRouteSkeleton /> },
+);
 
 const VALID_TABS = new Set<CommunitySection>([
   "overview",
@@ -24,6 +44,22 @@ function communityRoute(pathname: string) {
     communityId: decodeURIComponent(match[1]),
     tab: VALID_TABS.has(tab) ? tab : "overview",
   };
+}
+
+function CommunityRouteSkeleton({ compact = false }: { compact?: boolean }) {
+  return (
+    <div className="mx-auto w-full max-w-[1320px] space-y-3 p-3 pb-24 sm:p-4 lg:p-5" role="status" aria-label="Loading community">
+      <div className="h-20 animate-pulse rounded-2xl border border-xborder bg-xsurface" />
+      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+        {Array.from({ length: compact ? 3 : 6 }, (_, index) => (
+          <div
+            key={index}
+            className="h-44 animate-pulse rounded-2xl border border-xborder bg-xpanel"
+          />
+        ))}
+      </div>
+    </div>
+  );
 }
 
 export function CommunityWorkspace() {

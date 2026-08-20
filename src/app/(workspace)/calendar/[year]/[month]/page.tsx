@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
-import { CalendarRouteContent } from "@/components/routes/workspace-route-content";
+import { JournalCalendar } from "@/components/journal/journal-calendar";
 
 type CalendarMonthPageProps = {
   params: Promise<{ year: string; month: string }>;
@@ -26,5 +26,5 @@ export default async function CalendarMonthPage({
   if (!validDatePart(year, 2000, 2100) || !validDatePart(month, 1, 12)) {
     notFound();
   }
-  return <CalendarRouteContent />;
+  return <JournalCalendar />;
 }

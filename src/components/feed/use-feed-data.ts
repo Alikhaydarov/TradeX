@@ -10,16 +10,18 @@ import {
 } from "react";
 
 import { apiRequest } from "@/lib/api-client";
-import {
-  parseTradeImages,
-  toSocialPost,
-  type SocialPostRecord,
-} from "@/lib/social-format";
+import { parseTradeImages } from "@/lib/social-format";
 import { useAuth } from "../auth-context";
 import type { JournalEntry, Post, PostReply } from "../types";
 import { usePremiumStatus } from "../use-premium-status";
-
-type PostRecord = SocialPostRecord;
+import {
+  feedDataKey,
+  fetchFeedPosts,
+  getCachedFeedPosts,
+  hasFreshFeedPosts,
+  markFeedStale,
+  setCachedFeedPosts,
+} from "./feed-data-store";
 
 interface FeedTradeRow {
   id: string;
@@ -88,9 +90,11 @@ export function useFeedData(onLogin: () => void) {
   const router = useRouter();
   const { user } = useAuth();
   const { status: premiumStatus } = usePremiumStatus(Boolean(user));
+  const feedKey = feedDataKey(user?.id);
+  const initialPosts = getCachedFeedPosts(feedKey);
 
-  const [posts, setPosts] = useState<Post[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [posts, setPosts] = useState<Post[]>(() => initialPosts ?? []);
+  const [loading, setLoading] = useState(() => !initialPosts);
   const [actingId, setActingId] = useState<string | null>(null);
   const [openReplies, setOpenReplies] = useState<string | null>(null);
   const [repliesByPost, setRepliesByPost] = useState<
@@ -114,33 +118,40 @@ export function useFeedData(onLogin: () => void) {
   const viewed = useRef(new Set<string>());
   const pendingViews = useRef(new Set<string>());
   const observer = useRef<IntersectionObserver | null>(null);
+  const postsKeyRef = useRef(feedKey);
+  const postsRef = useRef<Post[]>(initialPosts ?? []);
 
-  const loadPosts = useCallback(() => {
-    setLoading(true);
-    setError(null);
-    return apiRequest<{
-      posts: PostRecord[];
-      likedPostIds: string[];
-      bookmarkedPostIds: string[];
-      repostedPostIds: string[];
-    }>("/api/feed-posts")
-      .then((data) => {
-        const liked = new Set(data.likedPostIds);
-        const bookmarked = new Set(data.bookmarkedPostIds);
-        const reposted = new Set(data.repostedPostIds);
-        setPosts(
-          data.posts.map((post) =>
-            toSocialPost(post, {
-              liked: liked.has(post.id),
-              bookmarked: bookmarked.has(post.id),
-              reposted: reposted.has(post.id),
-            }),
-          ),
-        );
-      })
-      .catch((nextError: Error) => setError(nextError.message))
-      .finally(() => setLoading(false));
-  }, []);
+  const loadPosts = useCallback(
+    (force = false) => {
+      const cached = getCachedFeedPosts(feedKey);
+      if (cached) {
+        postsKeyRef.current = feedKey;
+        postsRef.current = cached;
+        setPosts(cached);
+        setLoading(false);
+        if (!force && hasFreshFeedPosts(feedKey)) {
+          return Promise.resolve(cached);
+        }
+      } else if (!postsRef.current.length) {
+        setLoading(true);
+      }
+
+      setError(null);
+      return fetchFeedPosts({ key: feedKey, force })
+        .then((nextPosts) => {
+          postsKeyRef.current = feedKey;
+          postsRef.current = nextPosts;
+          setPosts(nextPosts);
+          return nextPosts;
+        })
+        .catch((nextError: Error) => {
+          setError(nextError.message);
+          return cached ?? postsRef.current;
+        })
+        .finally(() => setLoading(false));
+    },
+    [feedKey],
+  );
 
   const loadShareTrades = useCallback(() => {
     if (!user) return Promise.resolve();
@@ -197,9 +208,15 @@ export function useFeedData(onLogin: () => void) {
     );
   }, [shareTrades, shareAccountFilter, tradePickerQuery]);
 
- useEffect(() => {
+  useEffect(() => {
     void loadPosts();
-  }, [loadPosts, user]);
+  }, [loadPosts]);
+
+  useEffect(() => {
+    postsRef.current = posts;
+    if (loading || postsKeyRef.current !== feedKey) return;
+    setCachedFeedPosts(feedKey, posts);
+  }, [feedKey, loading, posts]);
 
   useEffect(() => {
     if (!posts.length) return;
@@ -427,14 +444,11 @@ export function useFeedData(onLogin: () => void) {
         return;
       }
       const reposted = !post.reposted;
-      const reposts = Math.max(
-        0,
-        post.reposts + (reposted ? 1 : -1),
-      );
+      const reposts = Math.max(0, post.reposts + (reposted ? 1 : -1));
       setPosts((current) =>
         current.map((item) =>
           item.id === post.id ? { ...item, reposted, reposts } : item,
-      ),
+        ),
       );
       try {
         const state = await apiRequest<{
@@ -561,14 +575,10 @@ export function useFeedData(onLogin: () => void) {
         postId: post.id,
         userId: user.id,
         name: String(
-          user.user_metadata.full_name ??
-            user.user_metadata.name ??
-            "You",
+          user.user_metadata.full_name ?? user.user_metadata.name ?? "You",
         ),
         username: String(
-          user.user_metadata.user_name ??
-            user.email?.split("@")[0] ??
-            "you",
+          user.user_metadata.user_name ?? user.email?.split("@")[0] ?? "you",
         ),
         avatar:
           typeof user.user_metadata.avatar_url === "string"
@@ -588,10 +598,8 @@ export function useFeedData(onLogin: () => void) {
       }));
       setPosts((current) =>
         current.map((item) =>
-          item.id === post.id
-            ? { ...item, replies: item.replies + 1 }
-            : item,
-      ),
+          item.id === post.id ? { ...item, replies: item.replies + 1 } : item,
+        ),
       );
 
       try {
@@ -609,10 +617,7 @@ export function useFeedData(onLogin: () => void) {
           ),
         }));
       } catch (nextError) {
-        setReplyDrafts((current) => ({
-          ...current,
-          [post.id]: content,
-        }));
+        setReplyDrafts((current) => ({ ...current, [post.id]: content }));
         setRepliesByPost((current) => ({
           ...current,
           [post.id]: (current[post.id] ?? []).filter(
@@ -651,9 +656,7 @@ export function useFeedData(onLogin: () => void) {
         await navigator.clipboard.writeText(url);
       }
     } catch (nextError) {
-      if (nextError instanceof Error && nextError.name === "AbortError") {
-        return;
-      }
+      if (nextError instanceof Error && nextError.name === "AbortError") return;
       setError("Post link could not be shared.");
     }
   }, []);
@@ -698,8 +701,9 @@ export function useFeedData(onLogin: () => void) {
 
   const closeShareComposer = useCallback(() => {
     setShareTarget(null);
-    void loadPosts();
-  }, [loadPosts]);
+    markFeedStale(feedKey);
+    void loadPosts(true);
+  }, [feedKey, loadPosts]);
 
   return {
     user,

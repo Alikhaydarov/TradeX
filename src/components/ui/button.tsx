@@ -9,13 +9,14 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        default: "bg-white text-[#020202] shadow-[0_12px_32px_rgba(255,255,255,.08)] hover:bg-zinc-200",
+        default:
+          "bg-white text-[#020202] shadow-[0_12px_32px_rgba(255,255,255,.08)] hover:bg-zinc-200",
         outline:
-          "border-white/10 bg-[#0a0a0a] text-foreground shadow-[inset_0_1px_0_rgba(255,255,255,.04)] hover:border-white/18 hover:bg-[#141414] aria-expanded:bg-[#141414]",
+          "border-xborder bg-xsurface text-foreground shadow-[inset_0_1px_0_rgba(255,255,255,.025)] hover:border-xborder-strong hover:bg-xpanel aria-expanded:border-xborder-strong aria-expanded:bg-xpanel",
         secondary:
-          "border border-white/10 bg-[#101010] text-secondary-foreground hover:bg-[#141414] aria-expanded:bg-[#141414] aria-expanded:text-secondary-foreground",
+          "border border-xborder bg-xpanel text-secondary-foreground hover:border-xborder-strong hover:bg-xcard aria-expanded:bg-xcard aria-expanded:text-secondary-foreground",
         ghost:
-          "hover:bg-white/[.065] hover:text-foreground aria-expanded:bg-white/[.07] aria-expanded:text-foreground dark:hover:bg-white/[.06]",
+          "text-xmuted-strong hover:bg-white/[.065] hover:text-foreground aria-expanded:bg-white/[.07] aria-expanded:text-foreground dark:hover:bg-white/[.06]",
         destructive:
           "border border-destructive/20 bg-destructive/10 text-destructive hover:bg-destructive/20 focus-visible:border-destructive/40 focus-visible:ring-destructive/20 dark:bg-destructive/20 dark:hover:bg-destructive/30 dark:focus-visible:ring-destructive/40",
         link: "text-primary underline-offset-4 hover:underline",

@@ -1,11 +1,11 @@
 import type { Metadata } from "next";
 
-import { AnalyticsRouteContent } from "@/components/routes/workspace-route-content";
+import { JournalAnalytics } from "@/components/journal/journal-analytics";
 
 export const metadata: Metadata = {
   title: "Analytics | Tradoxy",
 };
 
 export default function AnalyticsPage() {
-  return <AnalyticsRouteContent />;
+  return <JournalAnalytics />;
 }

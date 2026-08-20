@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 
-import { CalendarRouteContent } from "@/components/routes/workspace-route-content";
+import { JournalCalendar } from "@/components/journal/journal-calendar";
 
 type EconomicCalendarMonthPageProps = {
   params: Promise<{ year: string; month: string }>;
@@ -16,5 +16,5 @@ export async function generateMetadata({
 }
 
 export default function EconomicCalendarMonthPage() {
-  return <CalendarRouteContent />;
+  return <JournalCalendar />;
 }

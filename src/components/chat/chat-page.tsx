@@ -5,6 +5,11 @@ import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 
 import { Button } from "@/components/ui/button";
+import {
+  fetchChatContext,
+  getCachedChatContext,
+  setCachedChatContext,
+} from "@/features/community-chat/chat-context-store";
 import { useRealtimeChannel } from "@/features/community-chat/hooks/use-realtime-channel";
 import type {
   ChatChannel,
@@ -13,6 +18,10 @@ import type {
   ChatProfile,
   ChatReplyPreview,
 } from "@/features/community-chat/types";
+import {
+  fetchCommunityDetail,
+  getCachedCommunityDetail,
+} from "@/features/community/community-data-store";
 import { ChatHeader } from "./chat-header";
 import { ChatSidebar, type SelectedChatRoom } from "./chat-sidebar";
 import { MemberPanel } from "./member-panel";
@@ -46,6 +55,12 @@ function memberProfile(
   };
 }
 
+function membersFromPayload(payload?: CommunityMemberPayload | null) {
+  return (payload?.members ?? [])
+    .map(memberProfile)
+    .filter((profile): profile is ChatProfile => Boolean(profile));
+}
+
 function roomFromUrl(): SelectedChatRoom | null {
   if (typeof window === "undefined") return null;
   const params = new URLSearchParams(window.location.search);
@@ -60,6 +75,22 @@ function roomHref(communityId: string, room: SelectedChatRoom) {
   const params = new URLSearchParams();
   params.set(room.kind === "channel" ? "channel" : "dm", room.id);
   return `/community/${communityId}/chat?${params.toString()}`;
+}
+
+function initialRoom(context: ChatContextPayload): SelectedChatRoom | null {
+  const requested = roomFromUrl();
+  const validRequested =
+    requested &&
+    (requested.kind === "channel"
+      ? context.channels.some((channel) => channel.id === requested.id)
+      : context.dms.some((dm) => dm.id === requested.id));
+
+  if (validRequested) return requested;
+  if (context.channels[0]) {
+    return { kind: "channel", id: context.channels[0].id };
+  }
+  if (context.dms[0]) return { kind: "dm", id: context.dms[0].id };
+  return null;
 }
 
 function ChatRoomPanel({
@@ -113,7 +144,7 @@ function ChatRoomPanel({
   };
 
   return (
-    <div className="flex h-full min-h-0 bg-[#090909]">
+    <div className="flex h-full min-h-0 bg-xcanvas">
       <div className="flex min-h-0 min-w-0 flex-1 flex-col">
         <ChatHeader
           roomKind={room.kind}
@@ -144,9 +175,7 @@ function ChatRoomPanel({
           onEdit={(messageId, content) =>
             realtime.editMessage(messageId, content).then(() => undefined)
           }
-          onDelete={(messageId) =>
-            run(() => realtime.deleteMessage(messageId))
-          }
+          onDelete={(messageId) => run(() => realtime.deleteMessage(messageId))}
           onReact={(messageId, emoji) =>
             run(() => realtime.react(messageId, emoji))
           }
@@ -177,10 +206,20 @@ function ChatRoomPanel({
 
 export function ChatPage({ communityId }: { communityId: string }) {
   const router = useRouter();
-  const [context, setContext] = useState<ChatContextPayload | null>(null);
-  const [members, setMembers] = useState<ChatProfile[]>([]);
-  const [selected, setSelected] = useState<SelectedChatRoom | null>(null);
-  const [loading, setLoading] = useState(true);
+  const cachedContext = getCachedChatContext(communityId);
+  const cachedMembers = getCachedCommunityDetail<CommunityMemberPayload>(
+    communityId,
+  );
+  const [context, setContext] = useState<ChatContextPayload | null>(
+    () => cachedContext,
+  );
+  const [members, setMembers] = useState<ChatProfile[]>(() =>
+    membersFromPayload(cachedMembers),
+  );
+  const [selected, setSelected] = useState<SelectedChatRoom | null>(() =>
+    cachedContext ? initialRoom(cachedContext) : null,
+  );
+  const [loading, setLoading] = useState(() => !cachedContext);
   const [error, setError] = useState("");
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
 
@@ -193,56 +232,31 @@ export function ChatPage({ communityId }: { communityId: string }) {
   );
 
   const load = useCallback(async () => {
-    setLoading(true);
+    const currentContext = getCachedChatContext(communityId);
+    const currentMembers = getCachedCommunityDetail<CommunityMemberPayload>(
+      communityId,
+    );
+    if (currentContext) {
+      setContext(currentContext);
+      setSelected((current) => current ?? initialRoom(currentContext));
+      setLoading(false);
+    } else {
+      setLoading(true);
+    }
+    if (currentMembers) setMembers(membersFromPayload(currentMembers));
     setError("");
+
     try {
-      const [contextResponse, membersResponse] = await Promise.all([
-        fetch(
-          `/api/community-chat/context?communityId=${encodeURIComponent(communityId)}`,
-          { cache: "no-store", credentials: "same-origin" },
-        ),
-        fetch(`/api/communities/${encodeURIComponent(communityId)}`, {
-          cache: "no-store",
-          credentials: "same-origin",
-        }),
+      const [contextPayload, memberPayload] = await Promise.all([
+        fetchChatContext({ communityId }),
+        fetchCommunityDetail<CommunityMemberPayload>({ communityId }),
       ]);
-      const contextPayload = (await contextResponse
-        .json()
-        .catch(() => null)) as (ChatContextPayload & { error?: string }) | null;
-      const memberPayload = (await membersResponse
-        .json()
-        .catch(() => null)) as
-        | (CommunityMemberPayload & { error?: string })
-        | null;
-      if (!contextResponse.ok || !contextPayload) {
-        throw new Error(
-          contextPayload?.error || "Community chat could not be loaded.",
-        );
-      }
-
       setContext(contextPayload);
-      setMembers(
-        (memberPayload?.members ?? [])
-          .map(memberProfile)
-          .filter((profile): profile is ChatProfile => Boolean(profile)),
-      );
+      setMembers(membersFromPayload(memberPayload));
 
-      const requested = roomFromUrl();
-      const validRequested =
-        requested &&
-        (requested.kind === "channel"
-          ? contextPayload.channels.some(
-              (channel) => channel.id === requested.id,
-            )
-          : contextPayload.dms.some((dm) => dm.id === requested.id));
-      const fallback: SelectedChatRoom | null = contextPayload.channels[0]
-        ? { kind: "channel", id: contextPayload.channels[0].id }
-        : contextPayload.dms[0]
-          ? { kind: "dm", id: contextPayload.dms[0].id }
-          : null;
-      const next = validRequested ? requested : fallback;
+      const next = selected ?? initialRoom(contextPayload);
       setSelected(next);
-      if (next) {
+      if (next && !selected) {
         router.replace(roomHref(communityId, next), { scroll: false });
       }
     } catch (nextError) {
@@ -254,11 +268,23 @@ export function ChatPage({ communityId }: { communityId: string }) {
     } finally {
       setLoading(false);
     }
-  }, [communityId, router]);
+  }, [communityId, router, selected]);
 
   useEffect(() => {
     void load();
   }, [load]);
+
+  const updateContext = useCallback(
+    (updater: (current: ChatContextPayload) => ChatContextPayload) => {
+      setContext((current) => {
+        if (!current) return current;
+        const next = updater(current);
+        setCachedChatContext(communityId, next);
+        return next;
+      });
+    },
+    [communityId],
+  );
 
   const createChannel = async (name: string, isPremiumOnly: boolean) => {
     const response = await fetch("/api/community-chat/channels", {
@@ -274,11 +300,10 @@ export function ChatPage({ communityId }: { communityId: string }) {
     if (!response.ok || !payload?.channel) {
       throw new Error(payload?.error || "Channel could not be created.");
     }
-    setContext((current) =>
-      current
-        ? { ...current, channels: [...current.channels, payload.channel!] }
-        : current,
-    );
+    updateContext((current) => ({
+      ...current,
+      channels: [...current.channels, payload.channel!],
+    }));
     chooseRoom({ kind: "channel", id: payload.channel.id });
   };
 
@@ -296,8 +321,7 @@ export function ChatPage({ communityId }: { communityId: string }) {
     if (!response.ok || !payload?.thread) {
       throw new Error(payload?.error || "Direct message could not be opened.");
     }
-    setContext((current) => {
-      if (!current) return current;
+    updateContext((current) => {
       const exists = current.dms.some((dm) => dm.id === payload.thread!.id);
       return {
         ...current,
@@ -328,24 +352,29 @@ export function ChatPage({ communityId }: { communityId: string }) {
     />
   ) : null;
 
-  if (loading) {
+  if (loading && !context) {
     return (
-      <div className="grid h-full min-h-0 place-items-center bg-[#090909] text-zinc-500">
-        <LoaderCircle size={22} className="animate-spin" />
+      <div className="grid h-full min-h-[65dvh] place-items-center bg-xcanvas text-xmuted">
+        <div className="text-center">
+          <LoaderCircle size={22} className="mx-auto animate-spin" />
+          <p className="mt-2 text-[10px] font-semibold uppercase tracking-[.16em]">
+            Opening chat
+          </p>
+        </div>
       </div>
     );
   }
 
   if (!context) {
     return (
-      <div className="grid h-full min-h-0 place-items-center bg-[#090909] p-4 text-center">
-        <div className="max-w-sm rounded-xl border border-white/[.07] bg-[#111214] p-5">
-          <MessageCircle size={22} className="mx-auto text-zinc-600" />
+      <div className="grid h-full min-h-[65dvh] place-items-center bg-xcanvas p-4 text-center">
+        <div className="max-w-sm rounded-2xl border border-xborder bg-xsurface p-5">
+          <MessageCircle size={22} className="mx-auto text-xmuted" />
           <h1 className="mt-3 text-sm font-bold text-white">
             Chat unavailable
           </h1>
-          <p className="mt-1 text-[11px] leading-5 text-zinc-500">
-            {error || "Apply the community chat migration and try again."}
+          <p className="mt-1 text-[11px] leading-5 text-xmuted">
+            {error || "Community chat could not be loaded."}
           </p>
           <Button
             type="button"
@@ -362,9 +391,9 @@ export function ChatPage({ communityId }: { communityId: string }) {
   return (
     <div
       data-community-chat
-      className="relative flex h-dvh min-h-0 overflow-hidden bg-[#090909] lg:h-[calc(100dvh-2rem)]"
+      className="relative flex h-dvh min-h-0 overflow-hidden bg-xcanvas lg:h-[calc(100dvh-2rem)]"
     >
-      <aside className="hidden w-[264px] shrink-0 border-r border-black/35 lg:block">
+      <aside className="hidden w-[264px] shrink-0 border-r border-xborder lg:block">
         {sidebar}
       </aside>
       <main className="min-h-0 min-w-0 flex-1">
@@ -377,10 +406,10 @@ export function ChatPage({ communityId }: { communityId: string }) {
             onOpenSidebar={() => setMobileSidebarOpen(true)}
           />
         ) : (
-          <div className="grid h-full place-items-center bg-[#090909] text-center">
+          <div className="grid h-full place-items-center bg-xcanvas text-center">
             <div>
-              <MessageCircle size={28} className="mx-auto text-zinc-600" />
-              <p className="mt-2 text-xs text-zinc-500">
+              <MessageCircle size={28} className="mx-auto text-xmuted" />
+              <p className="mt-2 text-xs text-xmuted">
                 Create or select a channel to start chatting.
               </p>
               <Button
@@ -404,7 +433,7 @@ export function ChatPage({ communityId }: { communityId: string }) {
             onClick={() => setMobileSidebarOpen(false)}
             aria-label="Close sidebar"
           />
-          <aside className="absolute inset-y-0 left-0 w-[min(280px,88vw)] border-r border-black/40 bg-[#111214] shadow-2xl">
+          <aside className="absolute inset-y-0 left-0 w-[min(280px,88vw)] border-r border-xborder bg-xsurface shadow-2xl">
             {sidebar}
           </aside>
         </div>

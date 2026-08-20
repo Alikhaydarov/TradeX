@@ -1,14 +1,7 @@
 "use client";
 
-import { JournalWorkspace } from "./journal-workspace";
-import { openJournalLogin } from "./journal-auth";
+import { TradesRouteController } from "@/features/trades/components/trades-route-controller";
 
 export function JournalTradeList() {
-  return (
-    <JournalWorkspace
-      onLogin={openJournalLogin}
-      mode="workspace"
-      forcedTab="trades"
-    />
-  );
+  return <TradesRouteController />;
 }

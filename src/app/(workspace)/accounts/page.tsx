@@ -1,11 +1,11 @@
 import type { Metadata } from "next";
 
-import { AccountsRouteContent } from "@/components/routes/workspace-route-content";
+import { JournalAccounts } from "@/components/journal/journal-accounts";
 
 export const metadata: Metadata = {
   title: "Accounts | Tradoxy",
 };
 
 export default function AccountsPage() {
-  return <AccountsRouteContent />;
+  return <JournalAccounts />;
 }

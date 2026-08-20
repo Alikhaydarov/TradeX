@@ -1,11 +1,11 @@
 import type { Metadata } from "next";
 
-import { TradesRouteContent } from "@/components/routes/workspace-route-content";
+import { JournalTradeList } from "@/components/journal/journal-trade-list";
 
 export const metadata: Metadata = {
   title: "Trades | Tradoxy",
 };
 
 export default function TradesPage() {
-  return <TradesRouteContent />;
+  return <JournalTradeList />;
 }

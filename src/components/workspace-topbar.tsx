@@ -58,7 +58,7 @@ function PostTradeButton({ compact = false }: { compact?: boolean }) {
     <button
       type="button"
       onClick={dispatchPostTrade}
-      className={`inline-flex h-10 shrink-0 items-center justify-center rounded-lg bg-white font-bold text-black shadow-[0_8px_22px_rgba(255,255,255,.08)] transition hover:-translate-y-0.5 hover:bg-zinc-100 active:translate-y-0 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40 ${compact ? "w-10 px-0" : "gap-2 px-4 text-[12px]"}`}
+      className={`inline-flex h-10 shrink-0 items-center justify-center rounded-xl bg-white font-bold text-black shadow-[0_8px_24px_rgba(255,255,255,.08)] transition duration-200 hover:-translate-y-0.5 hover:bg-zinc-100 active:translate-y-0 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40 ${compact ? "w-10 px-0" : "gap-2 px-4 text-[12px]"}`}
       aria-label="Post trade"
       title="Post trade"
     >
@@ -87,13 +87,13 @@ export function WorkspaceTopbar({ section }: { section: Section }) {
   return (
     <header
       role="banner"
-      className="tw-app-topbar sticky top-0 z-[70] shrink-0 border-b border-white/10 bg-black px-3 py-2.5 lg:flex lg:min-h-[60px] lg:items-center lg:gap-5 lg:px-6 lg:py-2"
+      className="tw-app-topbar sticky top-0 z-[70] shrink-0 border-b border-xborder bg-xcanvas/90 px-3 py-2.5 backdrop-blur-xl lg:flex lg:min-h-[64px] lg:items-center lg:gap-5 lg:px-6 lg:py-2"
     >
-      <div className="flex min-w-0 items-center gap-2 lg:flex-1 lg:gap-5">
+      <div className="flex min-w-0 items-center gap-2.5 lg:flex-1 lg:gap-5">
         <button
           type="button"
           onClick={openMobileDrawer}
-          className="grid size-10 shrink-0 place-items-center rounded-lg border border-white/12 bg-[#0c0c0c] text-zinc-100 transition hover:border-white/20 hover:bg-[#151515] active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/30 lg:hidden"
+          className="grid size-10 shrink-0 place-items-center rounded-xl border border-xborder bg-xsurface text-zinc-100 transition hover:border-xborder-strong hover:bg-xpanel active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/30 lg:hidden"
           aria-label="Open mobile menu"
         >
           <Menu size={18} strokeWidth={2} />
@@ -101,23 +101,28 @@ export function WorkspaceTopbar({ section }: { section: Section }) {
 
         <div className="min-w-0 flex-1">
           <div className="flex min-w-0 items-center gap-2.5">
-            <h1 className="truncate text-[15px] font-bold leading-tight tracking-[-0.025em] text-white lg:text-[16px]">
-              {page}
-            </h1>
+            <div className="min-w-0">
+              <p className="hidden text-[9px] font-bold uppercase tracking-[0.18em] text-xmuted lg:block">
+                Tradoxy workspace
+              </p>
+              <h1 className="truncate text-[15px] font-bold leading-tight tracking-[-0.025em] text-white lg:mt-0.5 lg:text-[17px]">
+                {page}
+              </h1>
+            </div>
+
             {isAccountScoped ? (
-              <span className="hidden max-w-[220px] items-center gap-2 rounded-full border border-white/10 bg-white/[0.045] px-2.5 py-1 text-[10px] font-semibold text-zinc-300 lg:inline-flex">
-                <span className="size-1.5 shrink-0 rounded-full bg-emerald-400 shadow-[0_0_10px_rgba(52,211,153,.6)]" />
+              <span className="hidden max-w-[230px] items-center gap-2 rounded-full border border-xborder bg-xsurface px-2.5 py-1 text-[10px] font-semibold text-zinc-300 lg:inline-flex">
+                <span className="size-1.5 shrink-0 rounded-full bg-xpositive shadow-[0_0_10px_rgba(52,211,153,.55)]" />
                 <span className="truncate">{workspace}</span>
               </span>
             ) : null}
           </div>
-          <p className="mt-1 truncate text-[10px] font-medium text-zinc-500 lg:text-[11px]">
-            {isAccountScoped
-              ? "Trading performance workspace"
-              : "Tradoxy workspace"}
+          <p className="mt-1 truncate text-[10px] font-medium text-xmuted lg:hidden">
+            {isAccountScoped ? workspace : "Tradoxy workspace"}
           </p>
         </div>
 
+        <div className="hidden h-7 w-px shrink-0 bg-xborder lg:block" />
         <SocialActions compact expandedSearch />
 
         {isHome ? (
@@ -137,14 +142,17 @@ export function WorkspaceTopbar({ section }: { section: Section }) {
       </div>
 
       {isAccountScoped ? (
-        <div className="mt-2.5 flex items-center gap-2.5 border-t border-white/8 pt-2.5 lg:hidden">
+        <div className="mt-2.5 flex items-center gap-2.5 rounded-xl border border-xborder bg-xsurface px-3 py-2.5 lg:hidden">
           <div className="min-w-0 flex-1">
-            <p className="truncate text-[9px] font-semibold uppercase tracking-[0.14em] text-zinc-500">
+            <p className="truncate text-[9px] font-semibold uppercase tracking-[0.14em] text-xmuted">
               Active account
             </p>
-            <p className="mt-0.5 truncate text-xs font-semibold text-zinc-200">
-              {workspace}
-            </p>
+            <div className="mt-1 flex min-w-0 items-center gap-2">
+              <span className="size-1.5 shrink-0 rounded-full bg-xpositive" />
+              <p className="truncate text-xs font-semibold text-zinc-200">
+                {workspace}
+              </p>
+            </div>
           </div>
           <PnlModeMenu
             pnlMode={pnlMode}
@@ -186,7 +194,7 @@ function PnlModeMenu({
       <DropdownMenuTrigger asChild>
         <button
           type="button"
-          className="inline-flex size-10 items-center justify-center rounded-lg border border-white/12 bg-[#0c0c0c] text-zinc-100 shadow-[inset_0_1px_0_rgba(255,255,255,.035)] transition hover:border-white/20 hover:bg-[#151515] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/30"
+          className="inline-flex size-10 items-center justify-center rounded-xl border border-xborder bg-xsurface text-zinc-100 shadow-[inset_0_1px_0_rgba(255,255,255,.025)] transition hover:border-xborder-strong hover:bg-xpanel focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/30"
           data-compact={compact ? "true" : "false"}
           aria-label={`P&L display: ${pnlLabel}`}
           title={pnlLabel}
@@ -197,7 +205,7 @@ function PnlModeMenu({
       </DropdownMenuTrigger>
       <DropdownMenuContent
         align="end"
-        className="w-52 border-white/12 bg-[#080808] p-1.5"
+        className="w-52 border-xborder-strong bg-xcard p-1.5"
       >
         {items.map((item) => (
           <DropdownMenuItem
@@ -210,7 +218,7 @@ function PnlModeMenu({
               {item.label}
             </span>
             {pnlMode === item.value ? (
-              <span className="rounded-full bg-emerald-500/12 px-2 py-0.5 text-[9px] font-black uppercase tracking-wide text-emerald-300">
+              <span className="rounded-full bg-emerald-500/12 px-2 py-0.5 text-[9px] font-black uppercase tracking-wide text-xpositive">
                 Active
               </span>
             ) : null}

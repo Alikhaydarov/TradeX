@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 
-import { CommunityRouteContent } from "@/components/routes/workspace-route-content";
+import { CommunityRouteContent } from "@/components/routes/community-route-content";
 
 export const metadata: Metadata = {
   title: "Community Overview | Tradoxy",

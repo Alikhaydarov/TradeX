@@ -1,14 +1,7 @@
 "use client";
 
-import { JournalWorkspace } from "./journal-workspace";
-import { openJournalLogin } from "./journal-auth";
+import { DashboardRouteController } from "@/features/trading-dashboard/components/dashboard-route-controller";
 
 export function JournalStats() {
-  return (
-    <JournalWorkspace
-      onLogin={openJournalLogin}
-      mode="workspace"
-      forcedTab="overview"
-    />
-  );
+  return <DashboardRouteController />;
 }
