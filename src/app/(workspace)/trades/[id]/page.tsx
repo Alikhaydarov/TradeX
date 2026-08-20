@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 
-import { TradeDetailRouteContent } from "@/components/routes/workspace-route-content";
+import { TradeDetailRouteContent } from "@/components/routes/trade-detail-route-content";
 
 type TradeDetailPageProps = {
   params: Promise<{ id: string }>;
