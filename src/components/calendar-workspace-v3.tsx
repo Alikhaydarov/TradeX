@@ -128,13 +128,10 @@ const countryCurrency: Record<string, string> = {
   china: "CNY",
 };
 
-function currentRoute(): RouteState {
+function currentRoute(pathname: string): RouteState {
   const now = new Date();
-  if (typeof window === "undefined") {
-    return { mode: "journal", year: now.getFullYear(), month: now.getMonth(), monthly: false };
-  }
 
-  const economic = window.location.pathname.match(/^\/economic-calendar\/(\d{4})\/(\d{1,2})/);
+  const economic = pathname.match(/^\/economic-calendar\/(\d{4})\/(\d{1,2})/);
   if (economic) {
     return {
       mode: "economic",
@@ -144,7 +141,7 @@ function currentRoute(): RouteState {
     };
   }
 
-  const journal = window.location.pathname.match(/^\/calendar\/(\d{4})\/(\d{1,2})/);
+  const journal = pathname.match(/^\/calendar\/(\d{4})\/(\d{1,2})/);
   if (journal) {
     return {
       mode: "journal",
@@ -236,7 +233,7 @@ export function CalendarWorkspaceV3() {
   const { accounts, activeAccountId, loading: accountsLoading } = useActiveAccountStore();
   const activeAccount = accounts.find((account) => account.id === activeAccountId) || null;
 
-  const [route, setRoute] = useState<RouteState>(currentRoute);
+  const [route, setRoute] = useState<RouteState>(() => currentRoute(pathname));
   const [entries, setEntries] = useState<CalendarEntry[]>([]);
   const [entriesLoading, setEntriesLoading] = useState(true);
   const [news, setNews] = useState<MarketNewsEvent[]>([]);
@@ -247,7 +244,7 @@ export function CalendarWorkspaceV3() {
   const [yearFilter, setYearFilter] = useState<string>("all");
 
   useEffect(() => {
-    setRoute(currentRoute());
+    setRoute(currentRoute(pathname));
     setDayDialogOpen(false);
   }, [pathname]);
 

@@ -63,57 +63,57 @@ const loadTradeDetailPage = () =>
 
 const JournalAccounts = dynamic(
   loadJournalAccounts,
-  { ssr: false, loading: () => <AccountsSkeleton /> },
+  { loading: () => <AccountsSkeleton /> },
 );
 
 const JournalStats = dynamic(
   loadJournalStats,
-  { ssr: false, loading: () => <StatsSkeleton /> },
+  { loading: () => <StatsSkeleton /> },
 );
 
 const JournalTradeList = dynamic(
   loadJournalTradeList,
-  { ssr: false, loading: () => <TradesSkeleton /> },
+  { loading: () => <TradesSkeleton /> },
 );
 
 const JournalAnalytics = dynamic(
   loadJournalAnalytics,
-  { ssr: false, loading: () => <AnalyticsSkeleton /> },
+  { loading: () => <AnalyticsSkeleton /> },
 );
 
 const JournalCalendar = dynamic(
   loadJournalCalendar,
-  { ssr: false, loading: () => <CalendarSkeleton /> },
+  { loading: () => <CalendarSkeleton /> },
 );
 
 const AccountSettings = dynamic(
   loadAccountSettings,
-  { ssr: false, loading: () => <SettingsSkeleton /> },
+  { loading: () => <SettingsSkeleton /> },
 );
 
 const Account = dynamic(
   loadProfilePage,
-  { ssr: false, loading: () => <ProfileSkeleton /> },
+  { loading: () => <ProfileSkeleton /> },
 );
 
 const CommunityWorkspace = dynamic(
   loadCommunityWorkspace,
-  { ssr: false, loading: () => <CommunitySkeleton /> },
+  { loading: () => <CommunitySkeleton /> },
 );
 
 const Pricing = dynamic(
   loadPricing,
-  { ssr: false, loading: () => <PricingSkeleton /> },
+  { loading: () => <PricingSkeleton /> },
 );
 
 const AdminPanel = dynamic(
   loadAdminPanel,
-  { ssr: false, loading: () => <TableSkeleton /> },
+  { loading: () => <TableSkeleton /> },
 );
 
 const TradeDetailPage = dynamic(
   loadTradeDetailPage,
-  { ssr: false, loading: () => <TradeDetailSkeleton /> },
+  { loading: () => <TradeDetailSkeleton /> },
 );
 
 function warm(loader: () => Promise<unknown>) {

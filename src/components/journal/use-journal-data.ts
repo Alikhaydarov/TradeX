@@ -4,35 +4,12 @@ import { useVisibleInterval } from "@/lib/use-visible-interval";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import type { JournalEntry } from "../types";
+import { useJournalSeed } from "./journal-seed-context";
+import { journalEntryFromRow, type JournalEntryRow } from "@/lib/journal-entry";
 
-export type JournalEntryRow = {
-  id: string;
-  prop_account_id?: string | null;
-  symbol: string;
-  side: "Long" | "Short";
-  entry_price: string;
-  exit_price: string;
-  quantity: string;
-  fees: string;
-  pnl: string;
-  note: string;
-  traded_at: string;
-  account_name?: string;
-  market_type?: string;
-  setup?: string;
-  emotion?: string;
-  risk_amount?: string;
-  result_r?: string;
-  risk_percent?: string;
-  session?: string;
-  following_plan?: boolean;
-  error_made?: boolean;
-  mistake_type?: string;
-  review_completed?: boolean;
-  to_trading_bible?: boolean;
-  image_url?: string | null;
-  tags?: string[];
-};
+export { journalEntryFromRow };
+export type { JournalEntryRow };
+
 
 type JournalCacheEntry = {
   entries: JournalEntry[];
@@ -47,52 +24,32 @@ const JOURNAL_CACHE_TTL_MS = 30_000;
 const JOURNAL_REFRESH_MS = 45_000;
 const journalCache = new Map<string, JournalCacheEntry>();
 
-function parseTradeImages(value?: string | null) {
-  if (!value) return [];
-  try {
-    const parsed = JSON.parse(value);
-    return Array.isArray(parsed)
-      ? parsed
-          .filter((item): item is string => typeof item === "string")
-          .slice(0, 3)
-      : [value];
-  } catch {
-    return [value];
-  }
-}
+/**
+ * Populate a cold cache slot from the entries the server already resolved.
+ *
+ * `fetchedAt: 0` is deliberate: the slot reads as stale, so the hook paints the
+ * seeded rows immediately and still revalidates in the background. That gives a
+ * first paint with real data instead of a skeleton, without letting the seed go
+ * stale if the user leaves the tab open.
+ */
+function seedFromBootstrap(
+  cacheKey: string,
+  mode: "accounts" | "workspace",
+  accountId: string | null,
+  seed: JournalEntry[] | null,
+): JournalCacheEntry | undefined {
+  if (!cacheKey || !seed || journalCache.has(cacheKey)) return undefined;
+  if (mode === "workspace" && !accountId) return undefined;
 
-export function journalEntryFromRow(entry: JournalEntryRow): JournalEntry {
-  const imageUrls = parseTradeImages(entry.image_url);
-  return {
-    id: entry.id,
-    propAccountId: entry.prop_account_id,
-    symbol: entry.symbol,
-    side: entry.side,
-    entry: Number(entry.entry_price),
-    exit: Number(entry.exit_price),
-    quantity: Number(entry.quantity),
-    fees: Number(entry.fees),
-    pnl: Number(entry.pnl),
-    note: entry.note,
-    rawDate: entry.traded_at,
-    date: new Date(`${entry.traded_at}T00:00:00`).toLocaleDateString("uz-UZ"),
-    accountName: entry.account_name,
-    marketType: entry.market_type,
-    setup: entry.setup || "",
-    emotion: entry.emotion || "Neutral",
-    riskAmount: Number(entry.risk_amount || 0),
-    resultR: Number(entry.result_r || 0),
-    riskPercent: entry.risk_percent || "1.0%",
-    session: entry.session || "",
-    followingPlan: entry.following_plan ?? true,
-    errorMade: entry.error_made ?? false,
-    mistakeType: entry.mistake_type || "",
-    reviewCompleted: entry.review_completed ?? false,
-    toTradingBible: entry.to_trading_bible ?? false,
-    imageUrl: imageUrls[0] ?? null,
-    imageUrls,
-    tags: entry.tags || [],
+  const entry: JournalCacheEntry = {
+    entries:
+      mode === "workspace"
+        ? seed.filter((item) => item.propAccountId === accountId)
+        : seed,
+    fetchedAt: 0,
   };
+  journalCache.set(cacheKey, entry);
+  return entry;
 }
 
 export function useJournalData({
@@ -106,10 +63,14 @@ export function useJournalData({
   accountId: string | null;
   accountsLoading: boolean;
 }) {
+  const seed = useJournalSeed();
   const cacheKey = userId
     ? `${userId}:${mode}:${accountId || "all"}`
     : "";
-  const cachedEntries = cacheKey ? journalCache.get(cacheKey) : undefined;
+  const cachedEntries = cacheKey
+    ? journalCache.get(cacheKey) ??
+      seedFromBootstrap(cacheKey, mode, accountId, seed)
+    : undefined;
   const [entries, setEntries] = useState<JournalEntry[]>(
     () => cachedEntries?.entries ?? [],
   );
@@ -206,7 +167,10 @@ export function useJournalData({
   );
 
   useEffect(() => {
-    const cached = cacheKey ? journalCache.get(cacheKey) : undefined;
+    const cached = cacheKey
+      ? journalCache.get(cacheKey) ??
+        seedFromBootstrap(cacheKey, mode, accountId, seed)
+      : undefined;
     if (cached) {
       setEntries(cached.entries);
       setLoading(false);
@@ -215,7 +179,7 @@ export function useJournalData({
 
     setEntries([]);
     setLoading(Boolean(userId));
-  }, [cacheKey, userId]);
+  }, [accountId, cacheKey, mode, seed, userId]);
 
   useEffect(() => {
     void loadEntries();
