@@ -300,7 +300,6 @@ function dateOnly(value: string) {
 
   const year = third.length === 2 ? `20${third}` : third;
   const firstNumber = Number(first);
-  const secondNumber = Number(second);
   const month = firstNumber > 12 ? second : first;
   const day = firstNumber > 12 ? first : second;
   return `${year}-${month.padStart(2, "0")}-${day.padStart(2, "0")}`;

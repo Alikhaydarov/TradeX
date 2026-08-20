@@ -114,7 +114,10 @@ export function NotificationListener() {
       })
       .catch(() => undefined);
 
-    const timer = window.setInterval(() => void syncSmartNotifications(), 15 * 60 * 1000);
+    const timer = window.setInterval(() => {
+      if (document.hidden) return;
+      void syncSmartNotifications();
+    }, 15 * 60 * 1000);
     const onVisible = () => {
       if (!document.hidden) void syncSmartNotifications();
     };
@@ -189,7 +192,12 @@ export function NotificationListener() {
     };
 
     void poll();
-    const timer = window.setInterval(() => void poll(), 45000);
+    // This poller previously ran in background tabs too, so an idle open tab
+    // kept hitting /api/social/notifications every 45s forever.
+    const timer = window.setInterval(() => {
+      if (document.hidden) return;
+      void poll();
+    }, 45000);
 
     return () => {
       active = false;

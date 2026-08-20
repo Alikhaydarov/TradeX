@@ -25,9 +25,12 @@ import {
 } from "@/components/ui/card"
 import { apiRequest } from "@/lib/api-client"
 
-import { DashboardOverviewPolished } from "./dashboard-overview-polished"
+// Type-only. This used to be a value import of the (now deleted) polished
+// dashboard, which dragged 866 unused lines into the mobile bundle just to
+// read its props off a `ComponentProps` lookup.
+import type { DashboardOverviewResponsive } from "./dashboard-overview-responsive"
 
-type DashboardOverviewMobileProps = ComponentProps<typeof DashboardOverviewPolished>
+type DashboardOverviewMobileProps = ComponentProps<typeof DashboardOverviewResponsive>
 
 type MarketNewsEvent = {
   id: string
