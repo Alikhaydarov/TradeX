@@ -153,7 +153,7 @@ export function ProfileEditDialog({
               <div className="grid gap-2">
                 <Label htmlFor="profile-username">Username</Label>
                 <div className="relative">
-                  <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-sm text-slate-500">
+                  <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-sm text-zinc-500">
                     @
                   </span>
                   <Input
@@ -169,7 +169,7 @@ export function ProfileEditDialog({
                 <p
                   className={`text-xs ${
                     validateUsername(profile.username).valid
-                      ? "text-slate-500"
+                      ? "text-zinc-500"
                       : "text-rose-300"
                   }`}
                 >
@@ -212,7 +212,7 @@ export function ProfileEditDialog({
                 <Label htmlFor="profile-location">Location</Label>
                 <div className="relative">
                   <MapPin
-                    className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-500"
+                    className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-zinc-500"
                     size={16}
                   />
                   <Input
@@ -238,7 +238,7 @@ export function ProfileEditDialog({
                   className="min-h-28"
                   placeholder="Write something about your trading journey..."
                 />
-                <span className="text-right text-[11px] text-slate-600">
+                <span className="text-right text-[11px] text-zinc-600">
                   {profile.bio.length}/160
                 </span>
               </div>

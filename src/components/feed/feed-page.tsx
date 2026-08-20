@@ -1,11 +1,35 @@
 "use client";
 
-import { Check, X } from "lucide-react";
+import { Check, Newspaper, X } from "lucide-react";
 
 import { SkeletonBlock, XSpinner } from "../app-loader";
 import { MediaImage } from "../media-image";
 import { SocialActions } from "../social-actions-v2";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "../ui/alert-dialog";
 import { Button } from "../ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "../ui/dialog";
+import {
+  Empty,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from "../ui/empty";
 import { Textarea } from "../ui/textarea";
 import { MemoizedPostCard as PostCard } from "./post-card";
 import { PostComposer } from "./post-composer";
@@ -17,23 +41,31 @@ export type FeedPageProps = {
 
 function FeedSkeleton() {
   return (
-    <div className="mt-3 overflow-hidden rounded-[1.3rem] border border-white/8 bg-[#17181b]">
+    <div className="mt-3 space-y-3">
       {Array.from({ length: 4 }).map((_, index) => (
         <div
           key={index}
-          className="border-b border-white/8 p-4 last:border-b-0 sm:p-5"
+          className="rounded-2xl border border-white/8 bg-[#0a0a0a] px-3 py-4 sm:px-5 sm:py-5"
         >
-          <div className="flex gap-3">
-            <SkeletonBlock className="h-11 w-11 shrink-0 rounded-full" />
+          <div className="flex gap-3.5">
+            <SkeletonBlock className="size-11 shrink-0 rounded-full sm:size-12" />
             <div className="min-w-0 flex-1">
               <SkeletonBlock className="h-4 w-36" />
               <SkeletonBlock className="mt-2 h-3 w-24" />
-              <SkeletonBlock className="mt-4 h-4 w-full" />
+              <SkeletonBlock className="mt-3 h-11 w-full rounded-xl" />
+              <SkeletonBlock className="mt-3 h-4 w-full" />
               <SkeletonBlock className="mt-2 h-4 w-4/5" />
-              <div className="mt-4 flex gap-4">
-                <SkeletonBlock className="h-4 w-12" />
-                <SkeletonBlock className="h-4 w-12" />
-                <SkeletonBlock className="h-4 w-12" />
+              <SkeletonBlock className="mt-3 aspect-[16/10] w-full rounded-xl" />
+              <div className="mt-3 flex items-center justify-between">
+                <div className="flex gap-1">
+                  <SkeletonBlock className="h-9 w-14 rounded-lg" />
+                  <SkeletonBlock className="h-9 w-14 rounded-lg" />
+                  <SkeletonBlock className="h-9 w-14 rounded-lg" />
+                </div>
+                <div className="flex gap-1">
+                  <SkeletonBlock className="h-9 w-14 rounded-lg" />
+                  <SkeletonBlock className="h-9 w-9 rounded-lg" />
+                </div>
               </div>
             </div>
           </div>
@@ -48,10 +80,10 @@ export function FeedPage({ onLogin }: FeedPageProps) {
 
   return (
     <div className="min-h-full">
-      <header className="sticky top-0 z-20 border-b border-white/8 bg-[#111214]/96 px-3 py-3 sm:px-6">
+      <header className="sticky top-0 z-20 border-b border-white/8 bg-black/90 px-3 py-3 backdrop-blur-sm sm:px-6">
         <div className="mx-auto flex max-w-4xl items-center gap-3">
           <div className="min-w-0 flex-1">
-            <h1 className="text-lg font-black tracking-tight">Trade feed</h1>
+            <h1 className="text-lg font-bold tracking-tight">Trade feed</h1>
             <p className="mt-0.5 text-[10px] text-zinc-500">
               Shared trade reviews only
             </p>
@@ -68,7 +100,7 @@ export function FeedPage({ onLogin }: FeedPageProps) {
 
       <div className="mx-auto max-w-4xl px-3 py-4 sm:px-5 sm:py-5">
         <div className="flex items-center px-1">
-          <h2 className="text-xs font-black uppercase tracking-[.18em] text-zinc-500">
+          <h2 className="text-xs font-semibold uppercase tracking-[.18em] text-zinc-500">
             Community tape
           </h2>
           <span className="ml-auto text-[10px] text-zinc-600">
@@ -108,9 +140,18 @@ export function FeedPage({ onLogin }: FeedPageProps) {
             ))}
 
             {!feed.posts.length ? (
-              <div className="rounded-[1.25rem] border border-white/8 bg-[#17181b] p-10 text-center text-sm text-slate-500">
-                No trades shared yet.
-              </div>
+              <Empty className="rounded-2xl py-14">
+                <EmptyHeader>
+                  <EmptyMedia>
+                    <Newspaper size={18} />
+                  </EmptyMedia>
+                  <EmptyTitle>No trades shared yet</EmptyTitle>
+                  <EmptyDescription>
+                    Reviewed trades your community shares will show up here.
+                    Share one from your journal to start the tape.
+                  </EmptyDescription>
+                </EmptyHeader>
+              </Empty>
             ) : null}
           </div>
         )}
@@ -157,112 +198,95 @@ export function FeedPage({ onLogin }: FeedPageProps) {
         onCloseShare={feed.closeShareComposer}
       />
 
-      {feed.deleteTarget ? (
-        <div className="fixed inset-0 z-[99999] flex h-[100dvh] w-screen items-center justify-center overflow-hidden bg-black/75 p-4 backdrop-blur-md">
-          <div
-            className="absolute inset-0"
-            aria-hidden="true"
-            onClick={() =>
-              feed.actingId
-                ? undefined
-                : feed.setDeleteTarget(null)
-            }
-          />
-          <div
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="delete-post-title"
-            className="relative z-10 w-full max-w-[340px] rounded-[30px] border border-white/10 bg-[#171717]/95 p-7 text-white shadow-2xl shadow-black/70"
-          >
-            <h3
-              id="delete-post-title"
-              className="text-xl font-black leading-6 tracking-tight"
+      <AlertDialog
+        open={Boolean(feed.deleteTarget)}
+        onOpenChange={(open) => {
+          if (!open && !feed.actingId) feed.setDeleteTarget(null);
+        }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete post?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This can&apos;t be undone. The post will be removed from the
+              timeline and from your profile.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel
+              disabled={Boolean(
+                feed.deleteTarget && feed.actingId === feed.deleteTarget.id,
+              )}
             >
-              Delete post?
-            </h3>
-            <p className="mt-2 text-[14px] leading-5 text-slate-400">
-              This can&apos;t be undone. This post will be removed from
-              the timeline and your profile.
-            </p>
-
-            <button
-              type="button"
-              onClick={() => void feed.archivePost()}
-              disabled={feed.actingId === feed.deleteTarget.id}
-              className="mt-6 flex h-12 w-full items-center justify-center rounded-full bg-[#f4212e] text-[15px] font-black text-white transition hover:bg-[#dc1f2b] disabled:cursor-not-allowed disabled:opacity-70"
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-rose-600 text-white hover:bg-rose-500"
+              disabled={Boolean(
+                feed.deleteTarget && feed.actingId === feed.deleteTarget.id,
+              )}
+              onClick={(event) => {
+                event.preventDefault();
+                void feed.archivePost();
+              }}
             >
-              {feed.actingId === feed.deleteTarget.id ? (
-                <span className="inline-flex items-center gap-2">
+              {feed.deleteTarget && feed.actingId === feed.deleteTarget.id ? (
+                <>
                   <XSpinner size="sm" /> Deleting
-                </span>
+                </>
               ) : (
                 "Delete"
               )}
-            </button>
-            <button
-              type="button"
-              onClick={() => feed.setDeleteTarget(null)}
-              disabled={feed.actingId === feed.deleteTarget.id}
-              className="mt-3 h-12 w-full rounded-full border border-[#536471] bg-transparent text-[15px] font-black text-white transition hover:bg-white/[.06] disabled:cursor-not-allowed disabled:opacity-70"
-            >
-              Cancel
-            </button>
-          </div>
-        </div>
-      ) : null}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
-      {feed.editingPost ? (
-        <div className="fixed inset-0 z-[99999] flex items-center justify-center bg-black/75 p-3 backdrop-blur-md">
-          <button
-            type="button"
-            className="absolute inset-0"
-            onClick={() => feed.setEditingPost(null)}
-            aria-label="Close edit dialog"
+      <Dialog
+        open={Boolean(feed.editingPost)}
+        onOpenChange={(open) => {
+          if (!open) feed.setEditingPost(null);
+        }}
+      >
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Edit post</DialogTitle>
+            <DialogDescription>
+              Edits are visible to everyone who can see this post.
+            </DialogDescription>
+          </DialogHeader>
+          <Textarea
+            autoFocus
+            value={feed.editingText}
+            onChange={(event) => feed.setEditingText(event.target.value)}
+            maxLength={280}
+            className="min-h-32"
           />
-          <div className="relative z-10 w-full max-w-lg rounded-2xl border border-white/10 bg-[#171717] p-4 shadow-2xl sm:p-5">
-            <div className="flex items-center gap-3">
-              <h3 className="font-black">Edit post</h3>
-              <Button
-                variant="ghost"
-                size="icon-sm"
-                className="ml-auto"
-                onClick={() => feed.setEditingPost(null)}
-              >
-                <X size={16} />
-              </Button>
-            </div>
-            <Textarea
-              autoFocus
-              value={feed.editingText}
-              onChange={(event) =>
-                feed.setEditingText(event.target.value)
+          <div className="flex items-center gap-3">
+            <span className="text-xs tabular-nums text-zinc-500">
+              {feed.editingText.length}/280
+            </span>
+            <Button
+              className="ml-auto"
+              disabled={
+                !feed.editingText.trim() ||
+                Boolean(
+                  feed.editingPost && feed.actingId === feed.editingPost.id,
+                )
               }
-              maxLength={280}
-              className="mt-4 min-h-32"
-            />
-            <div className="mt-3 flex items-center">
-              <span className="text-xs text-slate-500">
-                {feed.editingText.length}/280
-              </span>
-              <Button
-                className="ml-auto"
-                disabled={
-                  !feed.editingText.trim() ||
-                  feed.actingId === feed.editingPost.id
-                }
-                onClick={() => void feed.savePostEdit()}
-              >
-                {feed.actingId === feed.editingPost.id ? (
-                  <XSpinner size="sm" />
-                ) : (
-                  <Check size={16} />
-                )}
-                Save changes
-              </Button>
-            </div>
+              onClick={() => void feed.savePostEdit()}
+            >
+              {feed.editingPost && feed.actingId === feed.editingPost.id ? (
+                <XSpinner size="sm" />
+              ) : (
+                <Check size={16} />
+              )}
+              Save changes
+            </Button>
           </div>
-        </div>
-      ) : null}
+        </DialogContent>
+      </Dialog>
+
     </div>
   );
 }

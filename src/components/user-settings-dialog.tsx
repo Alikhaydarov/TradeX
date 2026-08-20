@@ -629,7 +629,7 @@ function SettingsOverview({
 }) {
   return (
     <main className="mx-auto w-full max-w-3xl px-4 py-4 sm:px-6 sm:py-6">
-      <label className="flex h-14 items-center gap-3 rounded-full bg-[#17181b] px-5 text-zinc-500 ring-1 ring-white/[.025] focus-within:ring-white/10 sm:h-16">
+      <label className="flex h-14 items-center gap-3 rounded-full bg-[#0a0a0a] px-5 text-zinc-500 ring-1 ring-white/[.025] focus-within:ring-white/10 sm:h-16">
         <Search size={25} strokeWidth={1.8} className="shrink-0" />
         <input
           type="search"

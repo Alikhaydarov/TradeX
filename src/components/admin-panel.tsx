@@ -5,7 +5,7 @@ import { useEffect, useMemo, useState } from "react";
 import { apiRequest } from "@/lib/api-client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { AppLoader } from "./app-loader";
+import { SkeletonBlock } from "./app-loader";
 import { TraderAvatar } from "./trader-avatar";
 import { VerifiedBadge } from "./verified-badge";
 import type { AdminUser } from "./types";
@@ -209,9 +209,34 @@ export function AdminPanel({ onLogin }: { onLogin: () => void }) {
         ) : null}
 
         {loading ? (
-          <AppLoader label="Loading superadmin directory" />
+          <section
+            role="status"
+            aria-label="Loading superadmin directory"
+            className="rounded-3xl border border-white/8 bg-[#0a0a0a] p-3 shadow-2xl shadow-black/25 sm:p-4"
+          >
+            <div className="flex flex-col gap-3 xl:flex-row xl:items-center">
+              <div className="space-y-2">
+                <SkeletonBlock className="h-4 w-48" />
+                <SkeletonBlock className="h-3 w-72" />
+              </div>
+              <SkeletonBlock className="h-11 xl:ml-auto xl:w-80" />
+            </div>
+            <div className="mt-4 space-y-1">
+              {Array.from({ length: 8 }, (_, index) => (
+                <div key={index} className="flex items-center gap-3 rounded-xl p-3">
+                  <SkeletonBlock className="size-9 shrink-0 rounded-full" />
+                  <div className="min-w-0 flex-1">
+                    <SkeletonBlock className="h-3 w-40" />
+                    <SkeletonBlock className="mt-2 h-3 w-56" />
+                  </div>
+                  <SkeletonBlock className="hidden h-6 w-20 rounded-full sm:block" />
+                  <SkeletonBlock className="h-8 w-8 rounded-lg" />
+                </div>
+              ))}
+            </div>
+          </section>
         ) : (
-          <section className="rounded-3xl border border-white/8 bg-[#141414] p-3 shadow-2xl shadow-black/25 sm:p-4">
+          <section className="rounded-3xl border border-white/8 bg-[#0a0a0a] p-3 shadow-2xl shadow-black/25 sm:p-4">
             <div className="flex flex-col gap-3 xl:flex-row xl:items-center">
               <div>
                 <h2 className="text-base font-black text-white">Users, plans and roles</h2>

@@ -3,7 +3,7 @@
 import { Search } from "lucide-react";
 
 import { useLanguage } from "@/lib/i18n";
-import { XSpinner } from "../app-loader";
+import { SkeletonBlock } from "../app-loader";
 import { InstrumentBadge } from "../instrument-badge";
 import { TradeShareComposer } from "../trade-share-composer";
 import type { JournalEntry } from "../types";
@@ -102,10 +102,20 @@ export function PostComposer({
 
           <div className="max-h-[55dvh] overflow-y-auto p-2">
             {loading ? (
-              <div className="grid min-h-48 place-items-center text-sm text-zinc-500">
-                <span className="inline-flex items-center gap-2">
-                  <XSpinner size="sm" /> Loading trades
-                </span>
+              <div className="space-y-1" role="status" aria-label="Loading trades">
+                {Array.from({ length: 6 }, (_, index) => (
+                  <div
+                    key={index}
+                    className="flex min-h-11 items-center gap-3 rounded-lg px-3 py-3"
+                  >
+                    <SkeletonBlock className="size-8 shrink-0 rounded-xl" />
+                    <div className="min-w-0 flex-1">
+                      <SkeletonBlock className="h-3 w-28" />
+                      <SkeletonBlock className="mt-2 h-3 w-20" />
+                    </div>
+                    <SkeletonBlock className="h-4 w-16 shrink-0" />
+                  </div>
+                ))}
               </div>
             ) : trades.length ? (
               <div className="space-y-1">

@@ -35,6 +35,105 @@ import {
 import { Textarea } from "../ui/textarea";
 import { VerifiedBadge } from "../verified-badge";
 
+const FOCUS_RING =
+  "outline-none focus-visible:ring-2 focus-visible:ring-white/25 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0a0a0a]";
+
+/**
+ * Screenshots of charts are wide. The grid below keeps every arrangement inside
+ * one landscape frame instead of the square `object-cover` boxes this used to
+ * render, which cropped the top and bottom off almost every chart posted.
+ */
+function PostMedia({
+  urls,
+  symbol,
+  onOpenMedia,
+}: {
+  urls: string[];
+  symbol?: string;
+  onOpenMedia: (url: string) => void;
+}) {
+  const shown = urls.slice(0, 4);
+  const extra = urls.length - shown.length;
+
+  const frame =
+    shown.length === 1
+      ? "aspect-[16/10]"
+      : shown.length === 2
+        ? "aspect-[16/9] grid-cols-2"
+        : shown.length === 3
+          ? "aspect-[16/10] grid-cols-2 grid-rows-2"
+          : "aspect-[16/10] grid-cols-2 grid-rows-2";
+
+  return (
+    <div
+      className={`mt-3 grid gap-px overflow-hidden rounded-xl border border-white/8 bg-white/8 ${frame}`}
+    >
+      {shown.map((url, index) => (
+        <button
+          key={url}
+          type="button"
+          onClick={() => onOpenMedia(url)}
+          className={`group relative h-full w-full overflow-hidden bg-black ${FOCUS_RING} ${
+            shown.length === 3 && index === 0 ? "row-span-2" : ""
+          }`}
+          aria-label={`Open image ${index + 1} of ${urls.length}`}
+        >
+          <MediaImage
+            src={url}
+            alt={
+              symbol
+                ? `${symbol} trade screenshot ${index + 1}`
+                : `Trade screenshot ${index + 1}`
+            }
+            className="h-full w-full object-cover transition-transform duration-200 group-hover:scale-[1.02]"
+          />
+          {extra > 0 && index === shown.length - 1 ? (
+            <span className="absolute inset-0 grid place-items-center bg-black/60 text-lg font-semibold text-white">
+              +{extra}
+            </span>
+          ) : null}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+function ActionButton({
+  label,
+  count,
+  active,
+  tone = "neutral",
+  onClick,
+  children,
+}: {
+  label: string;
+  count?: number;
+  active?: boolean;
+  tone?: "neutral" | "positive" | "negative";
+  onClick: () => void;
+  children: React.ReactNode;
+}) {
+  const toneClass =
+    tone === "positive"
+      ? `hover:bg-emerald-400/10 hover:text-emerald-300 ${active ? "bg-emerald-400/10 text-emerald-300" : ""}`
+      : tone === "negative"
+        ? `hover:bg-rose-400/10 hover:text-rose-300 ${active ? "bg-rose-400/10 text-rose-300" : ""}`
+        : `hover:bg-white/[.06] hover:text-zinc-100 ${active ? "bg-white/[.06] text-zinc-100" : ""}`;
+
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-label={label}
+      aria-pressed={active}
+      className={`inline-flex h-9 items-center justify-center gap-1.5 rounded-lg px-2.5 text-[11px] font-medium tabular-nums transition-colors ${toneClass} ${FOCUS_RING}`}
+    >
+      {children}
+      {count !== undefined ? formatCount(count) : null}
+    </button>
+  );
+}
+
 export function PostCard({
   post,
   userId,
@@ -82,23 +181,29 @@ export function PostCard({
 }) {
   const ownsPost = post.userId === userId;
   const canManage = ownsPost || isAdmin;
+  const images = post.imageUrls?.length
+    ? post.imageUrls
+    : post.imageUrl
+      ? [post.imageUrl]
+      : [];
 
   return (
     <article
       id={`post-${post.id}`}
       ref={(node) => observePost(node, post.id)}
-      className="rounded-[1.25rem] border border-white/8 bg-[#17181b] px-3 py-4 transition-colors hover:bg-[#191a1e] sm:px-5 sm:py-5"
+      className="rounded-2xl border border-white/8 bg-[#0a0a0a] px-3 py-4 shadow-[inset_0_1px_0_rgba(255,255,255,.025)] transition-colors hover:border-white/12 hover:bg-[#0e0e0e] sm:px-5 sm:py-5"
     >
       <div className="flex gap-3.5">
         <button
           type="button"
           onClick={() => onOpenProfile(post.handle)}
-          className="h-11 w-11 shrink-0 rounded-full sm:h-12 sm:w-12"
+          className={`size-11 shrink-0 rounded-full sm:size-12 ${FOCUS_RING}`}
+          aria-label={`Open ${post.name}'s profile`}
         >
           <TraderAvatar
             name={post.name}
             value={post.avatar}
-            className="h-11 w-11 rounded-full text-xs ring-1 ring-white/10 sm:h-12 sm:w-12"
+            className="size-11 rounded-full text-xs ring-1 ring-white/10 sm:size-12"
           />
         </button>
 
@@ -108,13 +213,15 @@ export function PostCard({
               <button
                 type="button"
                 onClick={() => onOpenProfile(post.handle)}
-                className="flex max-w-full items-center gap-1 truncate text-left text-[15px] font-black tracking-tight hover:underline"
+                className={`flex max-w-full items-center gap-1 truncate rounded text-left text-[15px] font-bold tracking-tight hover:underline ${FOCUS_RING}`}
               >
                 {post.name}
                 {post.isVerified ? <VerifiedBadge size={16} /> : null}
               </button>
-              <p className="truncate text-[11px] text-slate-500">
-                {post.handle} / {post.time}
+              <p className="truncate text-[11px] text-zinc-500">
+                {post.handle}
+                <span className="px-1 text-zinc-700">·</span>
+                {post.time}
               </p>
             </div>
 
@@ -122,7 +229,7 @@ export function PostCard({
               <DropdownMenuTrigger asChild>
                 <button
                   type="button"
-                  className="grid size-9 shrink-0 place-items-center rounded-xl border border-white/0 text-zinc-600 transition-colors hover:border-white/8 hover:bg-white/[.04] hover:text-zinc-200"
+                  className={`grid size-9 shrink-0 place-items-center rounded-lg text-zinc-600 transition-colors hover:bg-white/[.06] hover:text-zinc-200 ${FOCUS_RING}`}
                   aria-label="Post options"
                 >
                   <MoreHorizontal size={18} />
@@ -158,11 +265,7 @@ export function PostCard({
                     disabled={acting}
                     className="min-h-9 px-2.5"
                   >
-                    {acting ? (
-                      <XSpinner size="sm" />
-                    ) : (
-                      <Trash2 />
-                    )}
+                    {acting ? <XSpinner size="sm" /> : <Trash2 />}
                     Delete post
                   </DropdownMenuItem>
                 ) : null}
@@ -171,14 +274,14 @@ export function PostCard({
           </div>
 
           {post.symbol ? (
-            <div className="mt-3 flex flex-wrap items-center gap-2 rounded-[1rem] border border-white/8 bg-black/14 px-3 py-2.5">
+            <div className="mt-3 flex flex-wrap items-center gap-2 rounded-xl border border-white/8 bg-white/[.02] px-3 py-2.5">
               <InstrumentBadge
                 symbol={post.symbol}
                 compact
-                className="mr-auto rounded-xl bg-white/[.03]"
+                className="mr-auto rounded-lg bg-white/[.03]"
               />
               <span
-                className={`rounded-md px-2 py-1 text-[9px] font-black ${
+                className={`rounded-md px-2 py-1 text-[9px] font-bold tracking-wide ${
                   post.side === "LONG"
                     ? "bg-emerald-300/10 text-emerald-300"
                     : "bg-rose-300/10 text-rose-300"
@@ -187,7 +290,7 @@ export function PostCard({
                 {post.side}
               </span>
               <span
-                className={`rounded-md px-2 py-1 text-[9px] font-black ${
+                className={`rounded-md px-2 py-1 text-[9px] font-bold tracking-wide ${
                   post.result === "WIN"
                     ? "bg-emerald-300/10 text-emerald-300"
                     : post.result === "LOSS"
@@ -199,17 +302,15 @@ export function PostCard({
               </span>
               {typeof post.pnl === "number" ? (
                 <strong
-                  className={
-                    post.pnl >= 0
-                      ? "text-sm text-emerald-300"
-                      : "text-sm text-rose-300"
-                  }
+                  className={`text-sm tabular-nums ${
+                    post.pnl >= 0 ? "text-emerald-300" : "text-rose-300"
+                  }`}
                 >
                   {post.pnl >= 0 ? "+" : ""}${post.pnl.toFixed(2)}
                 </strong>
               ) : null}
               {typeof post.resultR === "number" ? (
-                <span className="text-xs font-bold text-zinc-300">
+                <span className="text-xs font-semibold tabular-nums text-zinc-300">
                   {post.resultR >= 0 ? "+" : ""}
                   {post.resultR.toFixed(2)}R
                 </span>
@@ -218,116 +319,71 @@ export function PostCard({
           ) : null}
 
           {post.text && post.text !== `${post.symbol} trade` ? (
-            <p className="mt-3 whitespace-pre-line text-[15px] leading-6 text-slate-100">
+            <p className="mt-3 whitespace-pre-line text-[15px] leading-6 text-zinc-100">
               {post.text}
             </p>
           ) : null}
 
-          {post.imageUrls?.length ? (
-            <div
-              className={`mt-3 overflow-hidden rounded-xl border border-white/10 ${
-                post.imageUrls.length === 1
-                  ? ""
-                  : post.imageUrls.length === 2 ||
-                      post.imageUrls.length === 4
-                    ? "grid grid-cols-2 gap-px bg-white/10"
-                    : "grid grid-cols-3 gap-px bg-white/10"
-              }`}
-            >
-              {post.imageUrls.slice(0, 4).map((url, index) => (
-                <button
-                  key={url}
-                  type="button"
-                  onClick={() => onOpenMedia(url)}
-                  className="group relative aspect-square w-full overflow-hidden bg-black/90"
-                >
-                  <MediaImage
-                    src={url}
-                    alt={
-                      index === post.imageUrls!.length - 1
-                        ? `${post.symbol} Tradoxy share card`
-                        : `${post.symbol} trade screenshot ${index + 1}`
-                    }
-                    className="h-full w-full object-cover transition-transform duration-200 group-hover:scale-[1.03]"
-                  />
-                </button>
-              ))}
-            </div>
-          ) : post.imageUrl ? (
-            <button
-              type="button"
-              onClick={() => onOpenMedia(post.imageUrl!)}
-              className="group relative mt-3 block aspect-square w-full overflow-hidden rounded-xl border border-white/10 bg-black/90"
-            >
-              <MediaImage
-                src={post.imageUrl}
-                alt="Trade media"
-                className="h-full w-full object-cover transition-transform duration-200 group-hover:scale-[1.03]"
-              />
-            </button>
+          {images.length ? (
+            <PostMedia
+              urls={images}
+              symbol={post.symbol}
+              onOpenMedia={onOpenMedia}
+            />
           ) : null}
 
-          <div className="mt-3 grid grid-cols-5 items-center rounded-xl border border-white/8 bg-black/10 p-0.5 text-zinc-500">
-            <button
-              type="button"
-              onClick={() => onToggleReplies(post)}
-              className={`flex h-11 items-center gap-1.5 rounded-lg text-[11px] transition-colors hover:bg-white/[.04] hover:text-zinc-200 sm:h-9 ${
-                openReplies ? "bg-white/[.05] text-zinc-100" : ""
-              }`}
-              aria-label="Replies"
-            >
-              <MessageCircle size={15} strokeWidth={1.75} />
-              {post.replies}
-            </button>
-            <button
-              type="button"
-              onClick={() => onToggleRepost(post)}
-              className={`flex h-11 items-center gap-1.5 rounded-lg text-[11px] transition-colors hover:bg-emerald-400/[.06] hover:text-emerald-300 sm:h-9 ${
-                post.reposted
-                  ? "bg-emerald-400/[.08] text-emerald-300"
-                  : ""
-              }`}
-              aria-label="Repost"
-            >
-              <Repeat2 size={15} strokeWidth={1.75} />
-              {post.reposts}
-            </button>
-            <button
-              type="button"
-              onClick={() => onToggleLike(post)}
-              className={`flex h-11 items-center gap-1.5 rounded-lg text-[11px] transition-colors hover:bg-rose-400/[.06] hover:text-rose-300 sm:h-9 ${
-                post.liked ? "bg-rose-400/[.08] text-rose-300" : ""
-              }`}
-              aria-label="Like"
-            >
-              <Heart
-                size={15}
-                strokeWidth={1.75}
-                fill={post.liked ? "currentColor" : "none"}
-              />
-              {post.likes}
-            </button>
-            <span
-              className="flex h-11 items-center gap-1.5 rounded-lg text-[11px] sm:h-9"
-              aria-label={`${post.views} views`}
-            >
-              <Eye size={15} strokeWidth={1.75} />
-              {formatCount(post.views)}
-            </span>
-            <button
-              type="button"
-              onClick={() => onShare(post)}
-              className="grid h-11 place-items-center rounded-lg transition-colors hover:bg-white/[.04] hover:text-zinc-200 sm:h-9"
-              aria-label="Share"
-            >
-              <Share2 size={15} strokeWidth={1.75} />
-            </button>
+          <div className="mt-3 flex items-center justify-between gap-1 text-zinc-500">
+            <div className="flex items-center gap-0.5">
+              <ActionButton
+                label="Replies"
+                count={post.replies}
+                active={openReplies}
+                onClick={() => onToggleReplies(post)}
+              >
+                <MessageCircle size={15} strokeWidth={1.75} />
+              </ActionButton>
+              <ActionButton
+                label="Repost"
+                count={post.reposts}
+                active={post.reposted}
+                tone="positive"
+                onClick={() => onToggleRepost(post)}
+              >
+                <Repeat2 size={15} strokeWidth={1.75} />
+              </ActionButton>
+              <ActionButton
+                label="Like"
+                count={post.likes}
+                active={post.liked}
+                tone="negative"
+                onClick={() => onToggleLike(post)}
+              >
+                <Heart
+                  size={15}
+                  strokeWidth={1.75}
+                  fill={post.liked ? "currentColor" : "none"}
+                />
+              </ActionButton>
+            </div>
+
+            <div className="flex items-center gap-0.5">
+              <span
+                className="inline-flex h-9 items-center gap-1.5 px-2.5 text-[11px] tabular-nums"
+                aria-label={`${post.views} views`}
+              >
+                <Eye size={15} strokeWidth={1.75} />
+                {formatCount(post.views)}
+              </span>
+              <ActionButton label="Share" onClick={() => onShare(post)}>
+                <Share2 size={15} strokeWidth={1.75} />
+              </ActionButton>
+            </div>
           </div>
 
           {openReplies ? (
             <div className="mt-4 border-t border-white/8 pt-4">
               {loadingReplies ? (
-                <div className="flex items-center gap-2 py-4 text-xs text-slate-500">
+                <div className="flex items-center gap-2 py-4 text-xs text-zinc-500">
                   <XSpinner size="sm" /> Loading replies
                 </div>
               ) : (
@@ -335,42 +391,42 @@ export function PostCard({
                   {replies.map((reply) => (
                     <div
                       key={reply.id}
-                      className="flex gap-2.5 rounded-[1rem] border border-white/8 bg-black p-3"
+                      className="flex gap-2.5 rounded-xl border border-white/8 bg-white/[.02] p-3"
                     >
                       <TraderAvatar
                         name={reply.name}
                         value={reply.avatar}
-                        className="h-8 w-8 shrink-0 text-[10px]"
+                        className="size-8 shrink-0 rounded-full text-[10px] ring-1 ring-white/10"
                       />
                       <div className="min-w-0 flex-1">
-                        <div className="flex items-center gap-1.5">
-                          <strong className="truncate text-xs">
+                        <div className="flex flex-wrap items-center gap-1.5">
+                          <strong className="truncate text-xs font-semibold">
                             {reply.name}
                           </strong>
                           {reply.isVerified ? (
                             <VerifiedBadge size={14} />
                           ) : null}
-                          <span className="text-[10px] text-slate-600">
+                          <span className="text-[10px] text-zinc-600">
                             @{reply.username}
-                            <span className="px-1 text-zinc-700">/</span>
+                            <span className="px-1 text-zinc-700">·</span>
                             {formatRelativeTime(reply.createdAt)}
                           </span>
                         </div>
-                        <p className="mt-1 whitespace-pre-line text-sm leading-5 text-slate-300">
+                        <p className="mt-1 whitespace-pre-line text-sm leading-5 text-zinc-300">
                           {reply.content}
                         </p>
                       </div>
                     </div>
                   ))}
                   {!replies.length ? (
-                    <p className="py-2 text-xs text-slate-500">
-                      No replies yet.
+                    <p className="py-2 text-xs text-zinc-500">
+                      No replies yet. Be the first.
                     </p>
                   ) : null}
                 </div>
               )}
 
-              <div className="mt-3 flex items-end gap-2 rounded-[1rem] border border-white/8 bg-black p-2 focus-within:border-white/20">
+              <div className="mt-3 flex items-end gap-2 rounded-xl border border-white/8 bg-white/[.02] p-2 transition-colors focus-within:border-white/20">
                 <Textarea
                   value={replyDraft}
                   onChange={(event) =>
@@ -385,14 +441,10 @@ export function PostCard({
                   onClick={() => onAddReply(post)}
                   disabled={!replyDraft.trim() || savingReply}
                   size="icon-sm"
-                  className="h-11 w-11 shrink-0 rounded-xl bg-white text-slate-950 hover:bg-white sm:h-9 sm:w-9"
+                  className="size-11 shrink-0 rounded-lg sm:size-9"
                   aria-label="Send reply"
                 >
-                  {savingReply ? (
-                    <XSpinner size="sm" />
-                  ) : (
-                    <Send size={14} />
-                  )}
+                  {savingReply ? <XSpinner size="sm" /> : <Send size={14} />}
                 </Button>
               </div>
             </div>
