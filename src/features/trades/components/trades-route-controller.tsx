@@ -1,7 +1,7 @@
 "use client";
 
-import { useCallback, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useCallback, useMemo, useState } from "react";
 
 import { useActiveAccountStore } from "@/components/active-account-context";
 import { useAuth } from "@/components/auth-context";
@@ -17,9 +17,11 @@ import {
 } from "@/components/journal/journal-selectors";
 import { useTradeComposer } from "@/components/journal/trade-composer-context";
 import { useJournalData } from "@/components/journal/use-journal-data";
+import type { JournalEntry } from "@/components/types";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useWorkspacePreferences } from "@/components/workspace-preferences-context";
+import { setCachedTradeDetail } from "../trade-detail-data-store";
 
 function TradesRouteSkeleton() {
   return (
@@ -33,6 +35,43 @@ function TradesRouteSkeleton() {
       <Skeleton className="h-[460px] rounded-2xl bg-white/[.045]" />
     </div>
   );
+}
+
+function detailRowFromEntry(trade: JournalEntry) {
+  const images = trade.imageUrls?.length
+    ? trade.imageUrls
+    : trade.imageUrl
+      ? [trade.imageUrl]
+      : [];
+
+  return {
+    id: trade.id,
+    prop_account_id: trade.propAccountId ?? null,
+    symbol: trade.symbol,
+    side: trade.side,
+    entry_price: trade.entry,
+    exit_price: trade.exit,
+    quantity: trade.quantity,
+    fees: trade.fees,
+    pnl: trade.pnl,
+    note: trade.note || "",
+    traded_at: trade.rawDate || "",
+    account_name: trade.accountName || null,
+    market_type: trade.marketType || null,
+    setup: trade.setup || null,
+    emotion: trade.emotion || null,
+    risk_amount: trade.riskAmount ?? 0,
+    result_r: trade.resultR ?? 0,
+    risk_percent: trade.riskPercent || null,
+    session: trade.session || null,
+    following_plan: trade.followingPlan ?? true,
+    error_made: trade.errorMade ?? false,
+    mistake_type: trade.mistakeType || null,
+    review_completed: trade.reviewCompleted ?? false,
+    to_trading_bible: trade.toTradingBible ?? false,
+    image_url: images.length ? JSON.stringify(images) : null,
+    tags: trade.tags || [],
+  };
 }
 
 export function TradesRouteController() {
@@ -108,6 +147,16 @@ export function TradesRouteController() {
     [account, formatPnl],
   );
 
+  const openTrade = useCallback(
+    (trade: JournalEntry) => {
+      const path = `/trades/${encodeURIComponent(trade.id)}`;
+      setCachedTradeDetail(trade.id, detailRowFromEntry(trade));
+      router.prefetch(path);
+      router.push(path);
+    },
+    [router],
+  );
+
   if (accountsLoading || (journalLoading && !entries.length)) {
     return <TradesRouteSkeleton />;
   }
@@ -116,7 +165,9 @@ export function TradesRouteController() {
     return (
       <div className="grid min-h-[60vh] place-items-center p-4 text-center">
         <div className="max-w-md">
-          <h2 className="text-xl font-black text-white">Select a trading account</h2>
+          <h2 className="text-xl font-black text-white">
+            Select a trading account
+          </h2>
           <p className="mt-2 text-sm leading-6 text-zinc-500">
             Trades are scoped to the active account so filters and journal stats stay consistent.
           </p>
@@ -152,7 +203,7 @@ export function TradesRouteController() {
         onSortChange={(value) =>
           setTradeSort(value === "oldest" ? "entryDate" : "exitDate")
         }
-        onOpenTrade={(trade) => router.push(`/trades/${trade.id}`)}
+        onOpenTrade={openTrade}
         onAddTrade={openTradeComposer}
       />
     </div>
