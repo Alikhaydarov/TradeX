@@ -1,5 +1,6 @@
 "use client";
 
+import { useVisibleInterval } from "@/lib/use-visible-interval";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import type { JournalEntry } from "../types";
@@ -40,7 +41,10 @@ type JournalCacheEntry = {
 };
 
 const JOURNAL_CACHE_TTL_MS = 30_000;
-const JOURNAL_REFRESH_MS = 15_000;
+// 15s meant a full journal refetch (and a recharts recompute) four times a
+// minute while the user was reading. 45s with an immediate refetch on tab
+// return keeps the data fresh without the periodic stutter.
+const JOURNAL_REFRESH_MS = 45_000;
 const journalCache = new Map<string, JournalCacheEntry>();
 
 function parseTradeImages(value?: string | null) {
@@ -217,22 +221,12 @@ export function useJournalData({
     void loadEntries();
   }, [loadEntries]);
 
-  useEffect(() => {
+  const refreshEntries = useCallback(() => {
     if (!userId) return;
-    const refresh = () => {
-      if (document.visibilityState !== "visible") return;
-      void loadEntries(true);
-    };
-
-    const interval = window.setInterval(refresh, JOURNAL_REFRESH_MS);
-    window.addEventListener("focus", refresh);
-    document.addEventListener("visibilitychange", refresh);
-    return () => {
-      window.clearInterval(interval);
-      window.removeEventListener("focus", refresh);
-      document.removeEventListener("visibilitychange", refresh);
-    };
+    void loadEntries(true);
   }, [loadEntries, userId]);
+
+  useVisibleInterval(refreshEntries, userId ? JOURNAL_REFRESH_MS : 0);
 
   const reload = useCallback(async () => {
     invalidate();

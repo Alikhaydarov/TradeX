@@ -3,6 +3,9 @@ import { authenticateRequest, badRequest, serverError, unauthorized } from "@/li
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
+const JOURNAL_DEFAULT_LIMIT = 500;
+const JOURNAL_MAX_LIMIT = 2000;
+
 interface JournalPayload {
   propAccountId?: string;
   symbol?: string;
@@ -32,7 +35,15 @@ interface JournalPayload {
 export async function GET(request: Request) {
   const auth = await authenticateRequest(request);
   if (!auth) return unauthorized();
-  const accountId = new URL(request.url).searchParams.get("accountId");
+  const params = new URL(request.url).searchParams;
+  const accountId = params.get("accountId");
+  // The list query used to be unbounded and silently relied on PostgREST's
+  // default row ceiling. Bounding it here keeps the payload (and the client
+  // render cost) predictable as journals grow.
+  const requestedLimit = Number.parseInt(params.get("limit") ?? "", 10);
+  const limit = Number.isFinite(requestedLimit)
+    ? Math.min(Math.max(requestedLimit, 1), JOURNAL_MAX_LIMIT)
+    : JOURNAL_DEFAULT_LIMIT;
 
   let versionQuery = auth.supabase
     .from("journal_entries")
@@ -61,7 +72,8 @@ export async function GET(request: Request) {
     .select("*")
     .eq("user_id", auth.user.id)
     .order("traded_at", { ascending: false })
-    .order("created_at", { ascending: false });
+    .order("created_at", { ascending: false })
+    .limit(limit);
   if (accountId) query = query.eq("prop_account_id", accountId);
   const { data, error } = await query;
   if (error) return serverError(error.message);
