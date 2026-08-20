@@ -10,11 +10,6 @@ const AccountSettings = dynamic(
   { ssr: false, loading: () => <WorkspaceSectionSkeleton /> },
 );
 
-const Account = dynamic(
-  () => import("../profile/profile-page").then((module) => module.ProfilePage),
-  { ssr: false, loading: () => <WorkspaceSectionSkeleton /> },
-);
-
 const CommunityWorkspace = dynamic(
   () =>
     import("../community-workspace").then(
@@ -49,10 +44,6 @@ function openLogin() {
 
 export function SettingsRouteContent() {
   return <AccountSettings onLogin={openLogin} />;
-}
-
-export function ProfileRouteContent({ username }: { username?: string }) {
-  return <Account onLogin={openLogin} profileUsername={username} />;
 }
 
 export function CommunityRouteContent() {
