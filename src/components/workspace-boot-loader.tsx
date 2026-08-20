@@ -1,11 +1,11 @@
 "use client";
 
-import Image from "next/image";
 import { useEffect, useMemo, useState } from "react";
 
 import { apiRequest } from "@/lib/api-client";
 import { useActiveAccountStore } from "./active-account-context";
 import { Spinner } from "./ui/spinner";
+import { TradoxyMark } from "./tradoxy-mark";
 
 export function WorkspaceBootLoader() {
   const { loading: accountsLoading } = useActiveAccountStore();
@@ -76,16 +76,7 @@ export function WorkspaceBootLoader() {
             className="absolute inset-0 size-16 text-white/35"
             strokeWidth={1.25}
           />
-          <div className="relative size-10">
-            <Image
-              src="/tradox-logo.webp"
-              alt="Tradoxy"
-              fill
-              sizes="40px"
-              priority
-              className="object-contain p-1"
-            />
-          </div>
+          <TradoxyMark className="relative size-6 text-white" />
         </div>
 
         <div className="h-[3px] w-40 overflow-hidden rounded-full bg-white/10">

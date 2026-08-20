@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 
 import { AUTH_LANDING_TAILWIND_CLASS } from "./tailwind/auth-tailwind-classes";
+import { TradoxyMark } from "./tradoxy-mark";
 
 const PLATFORMS = [
   { name: "Tradovate", logo: "/platforms/tradovate.png", note: "Futures" },
@@ -122,7 +123,7 @@ export function TradoxyLoginLanding({
     <main ref={shellRef} className={AUTH_LANDING_TAILWIND_CLASS}>
       <div className="auth3-noise" aria-hidden="true" />
       <nav className="auth3-nav">
-        <Link href="/" className="auth3-logo" aria-label="Tradoxy home"><b>TD</b><span>Tradoxy</span></Link>
+        <Link href="/" className="auth3-logo" aria-label="Tradoxy home"><b><TradoxyMark className="size-4 text-black" /></b><span>Tradoxy</span></Link>
         <div className="auth3-navlinks">
           <a href="#workflow">Product</a>
           <Link href="/pricing">Pricing</Link>
@@ -228,7 +229,7 @@ export function TradoxyLoginLanding({
         <button onClick={onRegister}>Create your workspace <ArrowRight size={18} /></button>
       </section>
 
-      <footer className="auth3-footer"><Link href="/" className="auth3-logo"><b>TD</b><span>Tradoxy</span></Link><p>Trading clarity, one session at a time.</p><span>© 2026 Tradoxy</span></footer>
+      <footer className="auth3-footer"><Link href="/" className="auth3-logo"><b><TradoxyMark className="size-4 text-black" /></b><span>Tradoxy</span></Link><p>Trading clarity, one session at a time.</p><span>© 2026 Tradoxy</span></footer>
     </main>
   );
 }
