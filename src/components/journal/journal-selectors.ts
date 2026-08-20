@@ -1,6 +1,8 @@
 import type { PropAccount } from "../types";
 import type { StoredJournalEntry } from "./journal-data-store";
 
+export type JournalRange = "daily" | "monthly" | "quarter" | "yearly" | "custom";
+
 export function monthKey(date: Date) {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
 }
@@ -11,6 +13,35 @@ export function selectMonthEntries(
 ) {
   const key = monthKey(month);
   return entries.filter((entry) => entry.rawDate.startsWith(key));
+}
+
+export function filterJournalEntries(
+  entries: StoredJournalEntry[],
+  range: JournalRange,
+  anchor: Date,
+  customStart: string,
+  customEnd: string,
+) {
+  if (range === "daily") {
+    const today = new Date().toISOString().slice(0, 10);
+    return entries.filter((entry) => entry.rawDate === today);
+  }
+  if (range === "monthly") return selectMonthEntries(entries, anchor);
+  if (range === "quarter") {
+    const start = new Date(anchor.getFullYear(), anchor.getMonth() - 2, 1);
+    const end = new Date(anchor.getFullYear(), anchor.getMonth() + 1, 0);
+    return entries.filter((entry) => {
+      const date = new Date(`${entry.rawDate}T00:00:00`);
+      return date >= start && date <= end;
+    });
+  }
+  if (range === "yearly") {
+    const year = String(anchor.getFullYear());
+    return entries.filter((entry) => entry.rawDate.startsWith(year));
+  }
+  return entries.filter(
+    (entry) => entry.rawDate >= customStart && entry.rawDate <= customEnd,
+  );
 }
 
 export function buildJournalStats(entries: StoredJournalEntry[]) {
@@ -156,5 +187,11 @@ export function buildWeeklyStrip(
 export function sortTradesNewest(entries: StoredJournalEntry[]) {
   return [...entries].sort((left, right) =>
     right.rawDate.localeCompare(left.rawDate),
+  );
+}
+
+export function sortTradesOldest(entries: StoredJournalEntry[]) {
+  return [...entries].sort((left, right) =>
+    left.rawDate.localeCompare(right.rawDate),
   );
 }
