@@ -44,6 +44,7 @@ export function PostCard({
   savingReply,
   observePost,
   onOpenProfile,
+  onPrefetchProfile,
   onShare,
   onToggleBookmark,
   onEdit,
@@ -66,6 +67,7 @@ export function PostCard({
   savingReply: boolean;
   observePost: (node: HTMLElement | null, postId: string) => void;
   onOpenProfile: (username: string) => void;
+  onPrefetchProfile: (username: string) => void;
   onShare: (post: Post) => void;
   onToggleBookmark: (post: Post) => void;
   onEdit: (post: Post) => void;
@@ -79,6 +81,7 @@ export function PostCard({
 }) {
   const ownsPost = post.userId === userId;
   const canManage = ownsPost || isAdmin;
+  const warmProfile = () => onPrefetchProfile(post.handle);
 
   return (
     <article
@@ -89,6 +92,9 @@ export function PostCard({
       <div className="flex gap-3">
         <button
           type="button"
+          onMouseEnter={warmProfile}
+          onFocus={warmProfile}
+          onPointerDown={warmProfile}
           onClick={() => onOpenProfile(post.handle)}
           className="h-10 w-10 shrink-0 rounded-full sm:h-11 sm:w-11"
         >
@@ -105,6 +111,9 @@ export function PostCard({
               <div className="flex min-w-0 flex-wrap items-center gap-x-1.5 gap-y-0.5">
                 <button
                   type="button"
+                  onMouseEnter={warmProfile}
+                  onFocus={warmProfile}
+                  onPointerDown={warmProfile}
                   onClick={() => onOpenProfile(post.handle)}
                   className="max-w-full truncate text-left text-sm font-black tracking-tight text-white hover:underline"
                 >
@@ -113,6 +122,8 @@ export function PostCard({
                 {post.isVerified ? <VerifiedBadge size={15} /> : null}
                 <button
                   type="button"
+                  onMouseEnter={warmProfile}
+                  onFocus={warmProfile}
                   onClick={() => onOpenProfile(post.handle)}
                   className="truncate text-xs text-xmuted hover:text-zinc-300"
                 >
@@ -175,7 +186,8 @@ export function PostCard({
             <div className="relative mt-3 overflow-hidden rounded-xl border border-xborder bg-xpanel px-3 py-2.5">
               <span
                 className={`absolute inset-y-0 left-0 w-0.5 ${
-                  post.result === "LOSS" || post.pnl && post.pnl < 0
+                  post.result === "LOSS" ||
+                  (typeof post.pnl === "number" && post.pnl < 0)
                     ? "bg-rose-400/70"
                     : "bg-emerald-400/70"
                 }`}
