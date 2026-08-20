@@ -1,11 +1,11 @@
 import type { Metadata } from "next";
 
-import { DashboardRouteContent } from "@/components/routes/workspace-route-content";
+import { JournalStats } from "@/components/journal/journal-stats";
 
 export const metadata: Metadata = {
   title: "Dashboard | Tradoxy",
 };
 
 export default function DashboardPage() {
-  return <DashboardRouteContent />;
+  return <JournalStats />;
 }
