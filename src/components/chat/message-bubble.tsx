@@ -1,7 +1,7 @@
 "use client";
 
 import { Check, CornerUpLeft, Pencil, SmilePlus, Trash2, X } from "lucide-react";
-import { useState } from "react";
+import { memo, useState } from "react";
 import type { ChatMessage, ChatReplyPreview } from "@/features/community-chat/types";
 import { TraderAvatar } from "@/components/trader-avatar";
 import { VerifiedBadge } from "@/components/verified-badge";
@@ -17,7 +17,7 @@ function timeLabel(value: string) {
     : date.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
 }
 
-export function MessageBubble({
+function MessageBubbleImpl({
   message,
   currentUserId,
   canModerate,
@@ -222,3 +222,11 @@ export function MessageBubble({
     </article>
   );
 }
+
+/**
+ * Memoized because the chat list re-renders on every presence tick, typing
+ * event and incoming message. Without this, a room with a few hundred messages
+ * re-rendered every bubble several times a second. This is only effective
+ * while callers keep the callback props stable - see chat-page.tsx.
+ */
+export const MessageBubble = memo(MessageBubbleImpl);

@@ -101,7 +101,7 @@ function ChatRoomPanel({
       : "Conversation";
   const canModerate = context.isOwner || context.role === "admin";
 
-  const run = async (task: () => Promise<void>) => {
+  const run = useCallback(async (task: () => Promise<void>) => {
     setActionError("");
     try {
       await task();
@@ -110,7 +110,27 @@ function ChatRoomPanel({
         error instanceof Error ? error.message : "Chat action failed.",
       );
     }
-  };
+  }, []);
+
+  // These three were inline arrows, so every ChatPage render handed MessageList
+  // brand-new function identities and defeated the memo on every bubble.
+  const handleEdit = useCallback(
+    (messageId: string, content: string) =>
+      realtime.editMessage(messageId, content).then(() => undefined),
+    [realtime],
+  );
+
+  const handleDelete = useCallback(
+    (messageId: string) => run(() => realtime.deleteMessage(messageId)),
+    [realtime, run],
+  );
+
+  const handleReact = useCallback(
+    (messageId: string, emoji: string) => run(() => realtime.react(messageId, emoji)),
+    [realtime, run],
+  );
+
+  const clearReply = useCallback(() => setReply(null), []);
 
   return (
     <div className="flex h-full min-h-0 bg-[#090909]">
@@ -141,21 +161,15 @@ function ChatRoomPanel({
           onLoadOlder={realtime.loadOlder}
           onRead={realtime.markRead}
           onReply={setReply}
-          onEdit={(messageId, content) =>
-            realtime.editMessage(messageId, content).then(() => undefined)
-          }
-          onDelete={(messageId) =>
-            run(() => realtime.deleteMessage(messageId))
-          }
-          onReact={(messageId, emoji) =>
-            run(() => realtime.react(messageId, emoji))
-          }
+          onEdit={handleEdit}
+          onDelete={handleDelete}
+          onReact={handleReact}
         />
         <MessageInput
           roomLabel={room.kind === "channel" ? `#${roomTitle}` : roomTitle}
           reply={reply}
           rateLimitedUntil={realtime.rateLimitedUntil}
-          onReplyClear={() => setReply(null)}
+          onReplyClear={clearReply}
           onTyping={realtime.setTyping}
           onSend={realtime.sendMessage}
         />
