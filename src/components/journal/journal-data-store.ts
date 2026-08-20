@@ -8,6 +8,8 @@ export type JournalDataScope = {
   accountId: string | null;
 };
 
+export type StoredJournalEntry = JournalEntry & { rawDate: string };
+
 export type JournalEntryRow = {
   id: string;
   prop_account_id?: string | null;
@@ -38,15 +40,15 @@ export type JournalEntryRow = {
 };
 
 type JournalCacheEntry = {
-  entries: JournalEntry[];
+  entries: StoredJournalEntry[];
   fetchedAt: number;
   etag?: string;
 };
 
 const JOURNAL_CACHE_TTL_MS = 60_000;
-const EMPTY_ENTRIES: JournalEntry[] = [];
+const EMPTY_ENTRIES: StoredJournalEntry[] = [];
 const cache = new Map<string, JournalCacheEntry>();
-const inFlight = new Map<string, Promise<JournalEntry[]>>();
+const inFlight = new Map<string, Promise<StoredJournalEntry[]>>();
 const listeners = new Map<string, Set<() => void>>();
 
 function parseTradeImages(value?: string | null) {
@@ -63,7 +65,7 @@ function parseTradeImages(value?: string | null) {
   }
 }
 
-export function journalEntryFromRow(entry: JournalEntryRow): JournalEntry {
+export function journalEntryFromRow(entry: JournalEntryRow): StoredJournalEntry {
   const imageUrls = parseTradeImages(entry.image_url);
   return {
     id: entry.id,
@@ -127,8 +129,8 @@ export function hasJournalCache(scope: JournalDataScope) {
 export function setJournalEntries(
   scope: JournalDataScope,
   next:
-    | JournalEntry[]
-    | ((current: JournalEntry[]) => JournalEntry[]),
+    | StoredJournalEntry[]
+    | ((current: StoredJournalEntry[]) => StoredJournalEntry[]),
 ) {
   const key = journalScopeKey(scope);
   const current = cache.get(key);
