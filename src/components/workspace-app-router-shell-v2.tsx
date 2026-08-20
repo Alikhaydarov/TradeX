@@ -17,6 +17,7 @@ import { TradeComposerProvider } from "./journal/trade-composer-context";
 import { WorkspaceJournalPrefetch } from "./journal/workspace-journal-prefetch";
 import { NotificationListener } from "./notification-listener";
 import { PremiumUpsellDialog } from "./premium-upsell-dialog";
+import { WorkspaceProfilePrefetch } from "./profile/workspace-profile-prefetch";
 import { pathFromSection, sectionFromPath } from "./section-config";
 import { Sidebar } from "./sidebar";
 import { WORKSPACE_TAILWIND_CLASS } from "./tailwind/app-tailwind-classes";
@@ -136,8 +137,7 @@ function WorkspaceAppRouterShellInner({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const handleOpenAuth = (event: Event) => {
-      const detail = (event as CustomEvent<{ mode?: "login" | "register" }>)
-        .detail;
+      const detail = (event as CustomEvent<{ mode?: "login" | "register" }>).detail;
       if (detail?.mode === "register") openRegister();
       else openLogin();
     };
@@ -278,6 +278,7 @@ function WorkspaceAppRouterShellInner({ children }: { children: ReactNode }) {
       <ActiveAccountProvider>
         <TradeComposerProvider>
           <WorkspaceJournalPrefetch />
+          <WorkspaceProfilePrefetch />
           <div
             className={`${WORKSPACE_TAILWIND_CLASS} workspace-shell flex h-dvh w-full overflow-hidden bg-xcanvas p-0 text-foreground`}
           >
