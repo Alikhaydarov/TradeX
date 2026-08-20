@@ -14,6 +14,7 @@ import { ActiveAccountProvider } from "./active-account-context";
 import { AuthModal } from "./auth-modal";
 import { useAuth } from "./auth-context";
 import { TradeComposerProvider } from "./journal/trade-composer-context";
+import { WorkspaceJournalPrefetch } from "./journal/workspace-journal-prefetch";
 import { NotificationListener } from "./notification-listener";
 import { PremiumUpsellDialog } from "./premium-upsell-dialog";
 import { pathFromSection, sectionFromPath } from "./section-config";
@@ -276,6 +277,7 @@ function WorkspaceAppRouterShellInner({ children }: { children: ReactNode }) {
     <>
       <ActiveAccountProvider>
         <TradeComposerProvider>
+          <WorkspaceJournalPrefetch />
           <div
             className={`${WORKSPACE_TAILWIND_CLASS} workspace-shell flex h-dvh w-full overflow-hidden bg-xcanvas p-0 text-foreground`}
           >
