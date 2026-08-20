@@ -10,6 +10,15 @@ import { DashboardOverviewResponsive } from "./dashboard-overview-responsive"
 
 type DashboardOverviewProps = ComponentProps<typeof DashboardOverviewResponsive>
 
+type DashboardOverviewOwnProps = DashboardOverviewProps & {
+  /**
+   * Every entry for this account, unfiltered. The journal already holds exactly
+   * this list, so passing it down lets the account-wide summary be computed
+   * locally instead of refetching /api/journal a second time.
+   */
+  allEntries?: JournalStatsRow[]
+}
+
 type JournalStatsRow = {
   pnl?: string | number | null
 }
@@ -50,9 +59,13 @@ function calculateStats(entries: JournalStatsRow[]): SyncedStats {
   }
 }
 
-export function DashboardOverview(props: DashboardOverviewProps) {
-  const [synced, setSynced] = useState<SyncedStats | null>(null)
+export function DashboardOverview({
+  allEntries,
+  ...props
+}: DashboardOverviewOwnProps) {
+  const [fetched, setFetched] = useState<SyncedStats | null>(null)
   const isDesktop = useMediaQuery(LG_BREAKPOINT_QUERY)
+  const hasProvidedEntries = allEntries !== undefined
 
   const loadStats = useCallback(async () => {
     try {
@@ -65,14 +78,19 @@ export function DashboardOverview(props: DashboardOverviewProps) {
       )
       if (!response.ok) return
       const payload = (await response.json()) as JournalStatsResponse
-      setSynced(calculateStats(payload.entries ?? []))
+      setFetched(calculateStats(payload.entries ?? []))
     } catch {
       // Keep the existing dashboard values if the refresh request fails.
     }
   }, [props.account.id])
 
   useEffect(() => {
-    setSynced(null)
+    // When the parent hands us the account's entries there is nothing to fetch:
+    // this component used to request /api/journal for the same rows the journal
+    // had already loaded, on mount and again on every window focus.
+    if (hasProvidedEntries) return
+
+    setFetched(null)
     void loadStats()
 
     const refresh = () => void loadStats()
@@ -82,7 +100,12 @@ export function DashboardOverview(props: DashboardOverviewProps) {
       window.removeEventListener("focus", refresh)
       window.removeEventListener("tradox:journal-updated", refresh)
     }
-  }, [loadStats])
+  }, [hasProvidedEntries, loadStats])
+
+  const synced = useMemo(
+    () => (allEntries ? calculateStats(allEntries) : fetched),
+    [allEntries, fetched],
+  )
 
   const dashboardProps = useMemo<DashboardOverviewProps>(
     () =>

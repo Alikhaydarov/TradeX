@@ -820,6 +820,7 @@ export function JournalV2({
             mistakes={mistakes}
             planRate={planRate}
             monthCount={monthEntries.length}
+            accountEntries={entries}
             calendar={calendar}
             yearlyCalendar={yearlyCalendar}
             calendarView={calendarView}
@@ -1040,6 +1041,8 @@ function Workspace(p: {
   mistakes: Array<{ name: string; pnl: number; trades: number }>;
   planRate: number;
   monthCount: number;
+  /** Every entry for this account, before any journal filter is applied. */
+  accountEntries: JournalEntry[];
   calendar: Array<{ day: number; trades: JournalEntry[]; pnl: number } | null>;
   yearlyCalendar: Array<{ monthIndex: number; trades: number; pnl: number; wins: number }>;
   calendarView: "year" | "month";
@@ -1593,6 +1596,7 @@ function Workspace(p: {
           {!singleTabMode || activeTab === "overview" ? (
             <TabsContent value="overview">
               <DashboardOverview
+                allEntries={p.accountEntries}
                 account={account}
                 stats={stats}
                 equity={equity}
