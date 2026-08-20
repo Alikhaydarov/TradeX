@@ -119,18 +119,20 @@ export function useFeedData(onLogin: () => void) {
   const pendingViews = useRef(new Set<string>());
   const observer = useRef<IntersectionObserver | null>(null);
   const postsKeyRef = useRef(feedKey);
+  const postsRef = useRef<Post[]>(initialPosts ?? []);
 
   const loadPosts = useCallback(
     (force = false) => {
       const cached = getCachedFeedPosts(feedKey);
       if (cached) {
         postsKeyRef.current = feedKey;
+        postsRef.current = cached;
         setPosts(cached);
         setLoading(false);
         if (!force && hasFreshFeedPosts(feedKey)) {
           return Promise.resolve(cached);
         }
-      } else if (!posts.length) {
+      } else if (!postsRef.current.length) {
         setLoading(true);
       }
 
@@ -138,16 +140,17 @@ export function useFeedData(onLogin: () => void) {
       return fetchFeedPosts({ key: feedKey, force })
         .then((nextPosts) => {
           postsKeyRef.current = feedKey;
+          postsRef.current = nextPosts;
           setPosts(nextPosts);
           return nextPosts;
         })
         .catch((nextError: Error) => {
           setError(nextError.message);
-          return cached ?? posts;
+          return cached ?? postsRef.current;
         })
         .finally(() => setLoading(false));
     },
-    [feedKey, posts],
+    [feedKey],
   );
 
   const loadShareTrades = useCallback(() => {
@@ -210,6 +213,7 @@ export function useFeedData(onLogin: () => void) {
   }, [loadPosts]);
 
   useEffect(() => {
+    postsRef.current = posts;
     if (loading || postsKeyRef.current !== feedKey) return;
     setCachedFeedPosts(feedKey, posts);
   }, [feedKey, loading, posts]);
