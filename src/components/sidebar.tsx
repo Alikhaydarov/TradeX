@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import type { User } from "@supabase/supabase-js";
 import {
@@ -50,6 +49,7 @@ import {
 import { TraderAvatar } from "./trader-avatar";
 import type { PropAccount, Section } from "./types";
 import { pathFromSection } from "./section-config";
+import { TradoxyMark } from "./tradoxy-mark";
 
 function usernameFromUser(user: User | null) {
   const raw = String(
@@ -87,21 +87,11 @@ function GroupLabel({ children }: { children: string }) {
 }
 
 function TradoxyBrand({ mobile = false }: { mobile?: boolean }) {
-  const size = mobile ? 40 : 36;
-
   return (
     <span
-      className={`${mobile ? "size-10" : "h-9 w-9"} relative grid shrink-0 place-items-center overflow-hidden rounded-xl border border-white/10 bg-[#171717] shadow-[0_10px_24px_rgba(0,0,0,.32)]`}
+      className={`${mobile ? "size-10" : "size-9"} relative grid shrink-0 place-items-center overflow-hidden rounded-xl border border-white/10 bg-[#0a0a0a] shadow-[0_10px_24px_rgba(0,0,0,.32)]`}
     >
-      <Image
-        src="/tradox-logo.webp"
-        alt="Tradoxy"
-        width={size}
-        height={size}
-        sizes={`${size}px`}
-        className="h-full w-full object-cover"
-        priority
-      />
+      <TradoxyMark className={mobile ? "size-5" : "size-4.5"} />
     </span>
   );
 }

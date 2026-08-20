@@ -134,11 +134,11 @@ function Modal({
         <header className="flex items-center gap-3 border-b border-white/8 px-4 py-4">
           <div className="min-w-0 flex-1">
             <h2 className="text-xl font-black leading-6">{title}</h2>
-            <p className="mt-1 text-xs text-slate-500">{subtitle}</p>
+            <p className="mt-1 text-xs text-zinc-500">{subtitle}</p>
           </div>
           <button
             onClick={onClose}
-            className="grid h-10 w-10 place-items-center rounded-2xl bg-[#0d0d0d] text-slate-400 transition hover:bg-[#151515] hover:text-white"
+            className="grid h-10 w-10 place-items-center rounded-2xl bg-[#0d0d0d] text-zinc-400 transition hover:bg-[#151515] hover:text-white"
             aria-label="Close"
           >
             <X size={18} />
@@ -290,15 +290,15 @@ function SearchDialog({ onClose }: { onClose: () => void }) {
                   {item.fullName}
                 </span>
               </span>
-              <span className="block truncate text-xs text-slate-500">
+              <span className="block truncate text-xs text-zinc-500">
                 @{item.username}
               </span>
               {item.bio ? (
-                <span className="mt-1 block truncate text-xs text-slate-400">
+                <span className="mt-1 block truncate text-xs text-zinc-400">
                   {item.bio}
                 </span>
               ) : (
-                <span className="mt-1 block truncate text-xs text-slate-600">
+                <span className="mt-1 block truncate text-xs text-zinc-600">
                   {item.tradingStyle || "Trader"}
                 </span>
               )}
@@ -315,7 +315,7 @@ function SearchDialog({ onClose }: { onClose: () => void }) {
           </button>
         ))}
         {!loading && cleanQuery.length >= 2 && !users.length ? (
-          <div className="grid min-h-56 place-items-center px-6 text-center text-sm text-slate-500">
+          <div className="grid min-h-56 place-items-center px-6 text-center text-sm text-zinc-500">
             No matching users found.
           </div>
         ) : null}
@@ -432,10 +432,10 @@ function NotificationsDialog({
           <div className="grid min-h-72 place-items-center px-6 text-center">
             <div>
               <span className="mx-auto grid size-14 place-items-center rounded-2xl border border-white/8 bg-[#0d0d0d]">
-                <Bell className="text-slate-500" size={26} />
+                <Bell className="text-zinc-500" size={26} />
               </span>
               <h3 className="mt-4 text-lg font-black">No notifications yet</h3>
-              <p className="mt-1 max-w-xs text-sm leading-6 text-slate-500">
+              <p className="mt-1 max-w-xs text-sm leading-6 text-zinc-500">
                 Likes, replies, reposts and follows will show up here.
               </p>
             </div>
@@ -531,11 +531,11 @@ function NotificationsDialog({
                     <span className="size-2 rounded-full bg-white" />
                   ) : null}
                 </span>
-                <span className="mt-0.5 block truncate text-xs text-slate-500">
+                <span className="mt-0.5 block truncate text-xs text-zinc-500">
                   {item.actor?.username ? `@${item.actor.username}` : "system"}{" "}
                   - {meta.label} - {ago(item.createdAt)}
                 </span>
-                <span className="mt-1 block line-clamp-2 text-sm leading-5 text-slate-300">
+                <span className="mt-1 block line-clamp-2 text-sm leading-5 text-zinc-300">
                   {item.message}
                 </span>
                 <span className="mt-2 inline-flex rounded-full border border-white/8 px-2 py-1 text-[10px] font-bold text-zinc-500">
@@ -664,7 +664,7 @@ export function SocialActionsCard() {
         </div>
         <div className="min-w-0 flex-1">
           <h2 className="text-sm font-black">People</h2>
-          <p className="text-[10px] text-slate-500">Search and notifications</p>
+          <p className="text-[10px] text-zinc-500">Search and notifications</p>
         </div>
         <SocialActions />
       </div>

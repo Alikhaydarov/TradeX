@@ -71,7 +71,7 @@ export function ProfilePage({ onLogin, profileUsername }: ProfilePageProps) {
 
   if (!controller.profile) {
     return (
-      <div className="grid min-h-[70vh] place-items-center text-slate-500">
+      <div className="grid min-h-[70vh] place-items-center text-zinc-500">
         Profile not found.
       </div>
     );

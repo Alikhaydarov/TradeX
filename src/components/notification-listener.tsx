@@ -233,18 +233,18 @@ export function NotificationListener() {
   return (
     <>
       {permission === "default" && !promptDismissed && (
-        <div className="fixed bottom-5 right-3 z-30 hidden max-w-[280px] rounded-2xl border border-white/10 bg-[#080808] p-3 text-xs text-slate-200 shadow-2xl shadow-slate-950/40 sm:block">
+        <div className="fixed bottom-5 right-3 z-30 hidden max-w-[280px] rounded-2xl border border-white/10 bg-[#080808] p-3 text-xs text-zinc-200 shadow-2xl shadow-slate-950/40 sm:block">
           <div className="flex gap-2 pr-7">
             <Bell size={16} className="mt-0.5 shrink-0 text-zinc-300" />
             <div>
               <p className="font-bold">Tradoxy notifications yoqilsinmi?</p>
-              <p className="mt-1 leading-5 text-slate-400">Yangi xabar, risk warning yoki Pro AI insight kelsa notification chiqadi.</p>
+              <p className="mt-1 leading-5 text-zinc-400">Yangi xabar, risk warning yoki Pro AI insight kelsa notification chiqadi.</p>
             </div>
           </div>
-          <button onClick={dismissPrompt} className="absolute right-2 top-2 grid h-7 w-7 place-items-center rounded-xl text-slate-500 hover:bg-white/[.06] hover:text-white" aria-label="Notification promptni yopish">
+          <button onClick={dismissPrompt} className="absolute right-2 top-2 grid h-7 w-7 place-items-center rounded-xl text-zinc-500 hover:bg-white/[.06] hover:text-white" aria-label="Notification promptni yopish">
             <X size={14} />
           </button>
-          <Button onClick={() => void enableNotifications()} className="mt-3 h-9 w-full rounded-xl bg-white text-xs font-bold text-slate-950 hover:bg-zinc-200">
+          <Button onClick={() => void enableNotifications()} className="mt-3 h-9 w-full rounded-xl bg-white text-xs font-bold text-zinc-950 hover:bg-zinc-200">
             Yoqish
           </Button>
         </div>
@@ -258,9 +258,9 @@ export function NotificationListener() {
             </span>
             <div className="min-w-0 flex-1">
               <p className="truncate text-xs font-black">{toast.title}</p>
-              <p className="mt-1 line-clamp-3 text-xs leading-5 text-slate-300">{toast.body}</p>
+              <p className="mt-1 line-clamp-3 text-xs leading-5 text-zinc-300">{toast.body}</p>
             </div>
-            <button onClick={() => setToast(null)} className="grid h-7 w-7 shrink-0 place-items-center rounded-xl text-slate-500 hover:bg-white/[.06] hover:text-white" aria-label="Yopish">
+            <button onClick={() => setToast(null)} className="grid h-7 w-7 shrink-0 place-items-center rounded-xl text-zinc-500 hover:bg-white/[.06] hover:text-white" aria-label="Yopish">
               <X size={14} />
             </button>
           </div>

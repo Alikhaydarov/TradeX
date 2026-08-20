@@ -37,13 +37,13 @@ export function ProfileConnectionsDialog({
             <h2 className="text-xl font-black leading-6">
               {type === "followers" ? "Followers" : "Following"}
             </h2>
-            <p className="mt-1 truncate text-xs text-slate-500">
+            <p className="mt-1 truncate text-xs text-zinc-500">
               @{profile.username}
             </p>
           </div>
           <button
             onClick={onClose}
-            className="grid h-10 w-10 place-items-center rounded-2xl bg-[#080808] text-slate-400 hover:bg-[#111111] hover:text-white"
+            className="grid h-10 w-10 place-items-center rounded-2xl bg-[#080808] text-zinc-400 hover:bg-[#111111] hover:text-white"
             aria-label="Close"
           >
             <X size={18} />
@@ -58,9 +58,9 @@ export function ProfileConnectionsDialog({
           {!loading && !users.length ? (
             <div className="grid min-h-52 place-items-center px-6 text-center">
               <div>
-                <UserRound className="mx-auto text-slate-600" size={34} />
+                <UserRound className="mx-auto text-zinc-600" size={34} />
                 <h3 className="mt-3 text-lg font-black">No users yet</h3>
-                <p className="mt-1 text-sm text-slate-500">
+                <p className="mt-1 text-sm text-zinc-500">
                   List will appear here.
                 </p>
               </div>
@@ -87,15 +87,15 @@ export function ProfileConnectionsDialog({
                     {item.fullName}
                   </span>
                 </button>
-                <p className="truncate text-xs text-slate-500">
+                <p className="truncate text-xs text-zinc-500">
                   @{item.username}
                 </p>
                 {item.bio ? (
-                  <p className="mt-1 line-clamp-2 text-xs leading-5 text-slate-400">
+                  <p className="mt-1 line-clamp-2 text-xs leading-5 text-zinc-400">
                     {item.bio}
                   </p>
                 ) : null}
-                <p className="mt-1 text-[11px] text-slate-600">
+                <p className="mt-1 text-[11px] text-zinc-600">
                   {formatCount(item.followersCount)} followers
                 </p>
               </div>
@@ -106,7 +106,7 @@ export function ProfileConnectionsDialog({
                   className={`mt-1 h-9 shrink-0 rounded-full px-4 text-xs font-black transition ${
                     item.isFollowing
                       ? "border border-white/12 bg-white/[.04] text-white hover:bg-rose-400/10 hover:text-rose-200"
-                      : "bg-white text-slate-950 hover:bg-slate-200"
+                      : "bg-white text-zinc-950 hover:bg-zinc-200"
                   }`}
                 >
                   {actingId === item.id

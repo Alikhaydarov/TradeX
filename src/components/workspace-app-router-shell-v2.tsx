@@ -18,6 +18,7 @@ import { PremiumUpsellDialog } from "./premium-upsell-dialog";
 import { preloadWorkspaceRoute } from "./routes/workspace-route-content";
 import { pathFromSection, sectionFromPath } from "./section-config";
 import { Sidebar } from "./sidebar";
+import type { WorkspaceBootstrap } from "@/lib/server/workspace-bootstrap";
 import type { Section } from "./types";
 import { WorkspaceBootLoader } from "./workspace-boot-loader";
 import { WorkspacePreferencesProvider } from "./workspace-preferences-context";
@@ -101,24 +102,36 @@ function CommunityRail({
 
 export function WorkspaceAppRouterShellV2({
   children,
+  bootstrap,
 }: {
   children: ReactNode;
+  bootstrap?: WorkspaceBootstrap;
 }) {
   return (
     <WorkspacePreferencesProvider>
-      <WorkspaceAppRouterShellInner>{children}</WorkspaceAppRouterShellInner>
+      <WorkspaceAppRouterShellInner bootstrap={bootstrap}>
+        {children}
+      </WorkspaceAppRouterShellInner>
     </WorkspacePreferencesProvider>
   );
 }
 
-function WorkspaceAppRouterShellInner({ children }: { children: ReactNode }) {
+function WorkspaceAppRouterShellInner({
+  children,
+  bootstrap,
+}: {
+  children: ReactNode;
+  bootstrap?: WorkspaceBootstrap;
+}) {
   const pathname = usePathname();
   const router = useRouter();
   const section = sectionFromPath(pathname);
   const communityRoute = communityRouteFromPath(pathname);
   const [authOpen, setAuthOpen] = useState(false);
   const [authMode, setAuthMode] = useState<"login" | "register">("login");
-  const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
+  const [isAdmin, setIsAdmin] = useState<boolean | null>(
+    () => bootstrap?.isAdmin ?? null,
+  );
   const [notificationsMounted, setNotificationsMounted] = useState(false);
   const workspaceMainRef = useRef<HTMLElement>(null);
   const { user } = useAuth();
@@ -187,6 +200,11 @@ function WorkspaceAppRouterShellInner({ children }: { children: ReactNode }) {
       return () => window.clearTimeout(timer);
     }
 
+    // The server bootstrap already ran `is_admin` for this user, so asking
+    // /api/admin/me on mount would repeat the same RPC over HTTP - and until it
+    // came back the admin route rendered a "Checking admin access..." card.
+    if (bootstrap) return;
+
     let active = true;
     const pendingTimer = window.setTimeout(() => setIsAdmin(null), 0);
     const timer = window.setTimeout(() => {
@@ -204,7 +222,7 @@ function WorkspaceAppRouterShellInner({ children }: { children: ReactNode }) {
       window.clearTimeout(pendingTimer);
       window.clearTimeout(timer);
     };
-  }, [user]);
+  }, [bootstrap, user]);
 
   useEffect(() => {
     if (section === "admin" && user && isAdmin === false) {
@@ -279,8 +297,8 @@ function WorkspaceAppRouterShellInner({ children }: { children: ReactNode }) {
 
   return (
     <>
-      <ActiveAccountProvider>
-        <WorkspaceBootLoader />
+      <ActiveAccountProvider initialAccounts={bootstrap?.accounts}>
+        {bootstrap ? null : <WorkspaceBootLoader />}
         <div className="workspace-shell flex h-dvh w-full overflow-hidden bg-black p-0 text-foreground">
           <Sidebar
             active={section}

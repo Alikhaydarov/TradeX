@@ -10,7 +10,7 @@ import {
 } from "lucide-react";
 
 import { formatCount } from "@/lib/social-format";
-import { XSpinner } from "../app-loader";
+import { SkeletonBlock } from "../app-loader";
 import { InstrumentBadge } from "../instrument-badge";
 import { MediaImage } from "../media-image";
 import { TraderAvatar } from "../trader-avatar";
@@ -31,9 +31,9 @@ function EmptyTab({ tab }: { tab: ProfileTab }) {
   return (
     <div className="grid min-h-64 place-items-center px-8 text-center">
       <div>
-        <ImageIcon className="mx-auto text-slate-600" size={36} />
+        <ImageIcon className="mx-auto text-zinc-600" size={36} />
         <h3 className="mt-4 text-2xl font-black">{title}</h3>
-        <p className="mt-2 text-sm text-slate-500">{description}</p>
+        <p className="mt-2 text-sm text-zinc-500">{description}</p>
       </div>
     </div>
   );
@@ -71,9 +71,9 @@ function ProfilePost({
           <div className="flex min-w-0 flex-wrap items-center gap-x-1.5 gap-y-0.5 text-[13px] leading-5 sm:text-sm">
             <p className="max-w-full truncate font-black text-white">{post.name}</p>
             {post.isVerified ? <VerifiedBadge size={15} /> : null}
-            <p className="truncate text-xs text-slate-500">{post.handle}</p>
-            <span className="text-xs text-slate-700">/</span>
-            <p className="text-xs text-slate-500">{post.time}</p>
+            <p className="truncate text-xs text-zinc-500">{post.handle}</p>
+            <span className="text-xs text-zinc-700">/</span>
+            <p className="text-xs text-zinc-500">{post.time}</p>
           </div>
           {post.symbol ? (
             <div className="mt-3 flex flex-wrap items-center gap-2 rounded-2xl border border-white/8 bg-black px-3 py-2.5 shadow-[inset_0_1px_0_rgba(255,255,255,.04)]">
@@ -108,7 +108,7 @@ function ProfilePost({
             </div>
           ) : null}
           {post.text ? (
-            <p className="mt-2 whitespace-pre-line break-words text-[15px] leading-6 text-slate-50">
+            <p className="mt-2 whitespace-pre-line break-words text-[15px] leading-6 text-zinc-50">
               {post.text}
             </p>
           ) : null}
@@ -162,7 +162,7 @@ function ProfilePost({
               />
             </a>
           ) : null}
-          <div className="mt-3 grid max-w-md grid-cols-5 text-slate-500">
+          <div className="mt-3 grid max-w-md grid-cols-5 text-zinc-500">
             <span className="flex h-8 items-center gap-1.5 rounded-full text-[12px] transition hover:text-zinc-300">
               <MessageCircle size={16} /> {post.replies}
             </span>
@@ -172,7 +172,7 @@ function ProfilePost({
             <span className="flex h-8 items-center gap-1.5 rounded-full text-[12px] transition hover:text-rose-200">
               <Heart size={16} /> {post.likes}
             </span>
-            <span className="flex h-8 items-center gap-1.5 rounded-full text-[12px] transition hover:text-slate-300">
+            <span className="flex h-8 items-center gap-1.5 rounded-full text-[12px] transition hover:text-zinc-300">
               <Eye size={16} /> {formatCount(post.views)}
             </span>
             <span className="flex h-8 items-center gap-1.5 rounded-full text-[12px] transition hover:text-zinc-300">
@@ -227,8 +227,24 @@ export function ProfilePosts({
         })}
       </div>
       {loading ? (
-        <div className="grid min-h-48 place-items-center text-slate-500">
-          <XSpinner size="lg" />
+        <div className="space-y-px" role="status" aria-label="Loading posts">
+          {Array.from({ length: 3 }, (_, index) => (
+            <div key={index} className="border-b border-white/[.055] px-4 py-4">
+              <div className="flex gap-3">
+                <SkeletonBlock className="size-10 shrink-0 rounded-full" />
+                <div className="min-w-0 flex-1">
+                  <SkeletonBlock className="h-3.5 w-36" />
+                  <SkeletonBlock className="mt-2.5 h-3.5 w-full" />
+                  <SkeletonBlock className="mt-2 h-3.5 w-3/5" />
+                  <div className="mt-3 flex gap-4">
+                    <SkeletonBlock className="h-3 w-10" />
+                    <SkeletonBlock className="h-3 w-10" />
+                    <SkeletonBlock className="h-3 w-10" />
+                  </div>
+                </div>
+              </div>
+            </div>
+          ))}
         </div>
       ) : visiblePosts.length ? (
         <div className="relative z-0">

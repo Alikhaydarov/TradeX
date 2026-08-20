@@ -2,28 +2,9 @@
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { apiRequest } from "@/lib/api-client";
+import { accountFromRow, type AccountRow } from "@/lib/workspace-accounts";
 import { useAuth } from "./auth-context";
 import type { PropAccount } from "./types";
-
-type AccountRow = {
-  id: string;
-  name: string;
-  account_type?: "prop" | "real" | null;
-  firm: string;
-  prop_site?: string | null;
-  prop_login?: string | null;
-  import_source?: "manual" | "mt5_bridge" | "ctrader" | "tradovate" | "ninjatrader" | "official_api" | null;
-  platform?: string | null;
-  phase: string;
-  market_type: string;
-  account_size: string;
-  initial_balance: string;
-  profit_target: string;
-  max_drawdown: string;
-  daily_drawdown: string;
-  start_date: string;
-  status: PropAccount["status"];
-};
 
 interface ActiveAccountState {
   accounts: PropAccount[];
@@ -39,32 +20,25 @@ const STORAGE_KEY = "tradeway.active-account-id";
 
 const ActiveAccountContext = createContext<ActiveAccountState | null>(null);
 
-const accountFrom = (a: AccountRow): PropAccount => ({
-  id: a.id,
-  name: a.name,
-  accountType: a.account_type || "prop",
-  firm: a.firm,
-  propSite: a.prop_site || "",
-  propLogin: a.prop_login || "",
-  importSource: a.import_source || "manual",
-  platform: a.platform || "mt5",
-  phase: a.phase,
-  marketType: a.market_type,
-  accountSize: +a.account_size,
-  initialBalance: +a.initial_balance,
-  profitTarget: +a.profit_target,
-  maxDrawdown: +a.max_drawdown,
-  dailyDrawdown: +a.daily_drawdown,
-  startDate: a.start_date,
-  status: a.status,
-});
-
-export function ActiveAccountProvider({ children }: { children: React.ReactNode }) {
+export function ActiveAccountProvider({
+  children,
+  initialAccounts,
+}: {
+  children: React.ReactNode;
+  /**
+   * Accounts already resolved on the server. When present the provider starts
+   * populated and skips its boot-time fetch, which is what lets the workspace
+   * render real content on first paint instead of a spinner.
+   */
+  initialAccounts?: PropAccount[];
+}) {
   const { user } = useAuth();
-  const [accounts, setAccountsState] = useState<PropAccount[]>([]);
+  const [accounts, setAccountsState] = useState<PropAccount[]>(
+    () => initialAccounts ?? [],
+  );
   const [activeAccountId, setActiveAccountId] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
-  const hasLoadedAccounts = useRef(false);
+  const [loading, setLoading] = useState(() => !initialAccounts);
+  const hasLoadedAccounts = useRef(Boolean(initialAccounts));
 
   const setActiveAccount = useCallback((id: string | null) => {
     setActiveAccountId(id);
@@ -97,7 +71,7 @@ export function ActiveAccountProvider({ children }: { children: React.ReactNode 
     if (!hasLoadedAccounts.current) setLoading(true);
     try {
       const response = await apiRequest<{ accounts: AccountRow[] }>("/api/prop-accounts");
-      setAccounts(response.accounts.map(accountFrom));
+      setAccounts(response.accounts.map(accountFromRow));
       hasLoadedAccounts.current = true;
     } finally {
       setLoading(false);
@@ -109,8 +83,19 @@ export function ActiveAccountProvider({ children }: { children: React.ReactNode 
     setActiveAccount(account.id);
   }, [setActiveAccount]);
 
+  const seedPending = useRef(Boolean(initialAccounts));
+
   useEffect(() => {
+    // The server bootstrap already gave us the list, so the first run only has
+    // to seed state (which also restores the remembered active account).
+    // Later runs - a different user, a sign-out - still go to the network.
+    if (seedPending.current) {
+      seedPending.current = false;
+      setAccounts(initialAccounts ?? []);
+      return;
+    }
     void refreshAccounts();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [refreshAccounts]);
 
   const value = useMemo<ActiveAccountState>(() => ({

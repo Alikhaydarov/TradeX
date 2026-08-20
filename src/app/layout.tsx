@@ -27,11 +27,36 @@ const appTypographyClass = [
   "[&_.recharts-text]:font-sans [&_.recharts-cartesian-axis-tick-value]:font-sans [&_.recharts-tooltip-wrapper]:font-sans",
 ].join(" ");
 
+const appUrl =
+  process.env.NEXT_PUBLIC_APP_URL ||
+  (process.env.VERCEL_PROJECT_PRODUCTION_URL
+    ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
+    : "http://localhost:3000");
+
 export const metadata: Metadata = {
-  title: "Tradoxy",
+  // Without a metadataBase the generated Open Graph image resolves to a
+  // relative path, which link previews cannot fetch.
+  metadataBase: new URL(appUrl),
+  title: {
+    default: "Tradoxy",
+    template: "%s | Tradoxy",
+  },
   description:
     "Tradoxy: trading feed, private chats, journal and analytics workspace.",
   applicationName: "Tradoxy",
+  openGraph: {
+    type: "website",
+    siteName: "Tradoxy",
+    title: "Tradoxy",
+    description:
+      "Tradoxy: trading feed, private chats, journal and analytics workspace.",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Tradoxy",
+    description:
+      "Tradoxy: trading feed, private chats, journal and analytics workspace.",
+  },
 };
 
 export default async function RootLayout({

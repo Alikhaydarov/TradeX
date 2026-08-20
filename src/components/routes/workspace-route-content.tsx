@@ -3,7 +3,19 @@
 import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
 
-import { WorkspaceSectionSkeleton } from "../workspace-section-skeleton";
+import {
+  AccountsSkeleton,
+  AnalyticsSkeleton,
+  CalendarSkeleton,
+  CommunitySkeleton,
+  PricingSkeleton,
+  ProfileSkeleton,
+  SettingsSkeleton,
+  StatsSkeleton,
+  TableSkeleton,
+  TradeDetailSkeleton,
+  TradesSkeleton,
+} from "../skeletons/route-skeletons";
 
 const loadJournalAccounts = () =>
   import("../journal/journal-accounts").then(
@@ -51,57 +63,57 @@ const loadTradeDetailPage = () =>
 
 const JournalAccounts = dynamic(
   loadJournalAccounts,
-  { ssr: false, loading: () => <WorkspaceSectionSkeleton /> },
+  { ssr: false, loading: () => <AccountsSkeleton /> },
 );
 
 const JournalStats = dynamic(
   loadJournalStats,
-  { ssr: false, loading: () => <WorkspaceSectionSkeleton /> },
+  { ssr: false, loading: () => <StatsSkeleton /> },
 );
 
 const JournalTradeList = dynamic(
   loadJournalTradeList,
-  { ssr: false, loading: () => <WorkspaceSectionSkeleton /> },
+  { ssr: false, loading: () => <TradesSkeleton /> },
 );
 
 const JournalAnalytics = dynamic(
   loadJournalAnalytics,
-  { ssr: false, loading: () => <WorkspaceSectionSkeleton /> },
+  { ssr: false, loading: () => <AnalyticsSkeleton /> },
 );
 
 const JournalCalendar = dynamic(
   loadJournalCalendar,
-  { ssr: false, loading: () => <WorkspaceSectionSkeleton /> },
+  { ssr: false, loading: () => <CalendarSkeleton /> },
 );
 
 const AccountSettings = dynamic(
   loadAccountSettings,
-  { ssr: false, loading: () => <WorkspaceSectionSkeleton /> },
+  { ssr: false, loading: () => <SettingsSkeleton /> },
 );
 
 const Account = dynamic(
   loadProfilePage,
-  { ssr: false, loading: () => <WorkspaceSectionSkeleton /> },
+  { ssr: false, loading: () => <ProfileSkeleton /> },
 );
 
 const CommunityWorkspace = dynamic(
   loadCommunityWorkspace,
-  { ssr: false, loading: () => <WorkspaceSectionSkeleton /> },
+  { ssr: false, loading: () => <CommunitySkeleton /> },
 );
 
 const Pricing = dynamic(
   loadPricing,
-  { ssr: false, loading: () => <WorkspaceSectionSkeleton /> },
+  { ssr: false, loading: () => <PricingSkeleton /> },
 );
 
 const AdminPanel = dynamic(
   loadAdminPanel,
-  { ssr: false, loading: () => <WorkspaceSectionSkeleton /> },
+  { ssr: false, loading: () => <TableSkeleton /> },
 );
 
 const TradeDetailPage = dynamic(
   loadTradeDetailPage,
-  { ssr: false, loading: () => <WorkspaceSectionSkeleton /> },
+  { ssr: false, loading: () => <TradeDetailSkeleton /> },
 );
 
 function warm(loader: () => Promise<unknown>) {
