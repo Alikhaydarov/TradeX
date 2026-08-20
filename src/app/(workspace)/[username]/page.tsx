@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 
-import { ProfileRouteContent } from "@/components/routes/workspace-route-content";
+import { ProfileRouteContent } from "@/components/routes/profile-route-content";
 
 type UsernameProfilePageProps = {
   params: Promise<{ username: string }>;
