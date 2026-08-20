@@ -9,7 +9,6 @@ import {
   useSyncExternalStore,
 } from "react";
 
-import type { JournalEntry } from "../types";
 import {
   fetchJournalEntries,
   getJournalEntries,
@@ -20,12 +19,17 @@ import {
   subscribeJournal,
   type JournalDataScope,
   type JournalEntryRow,
+  type StoredJournalEntry,
 } from "./journal-data-store";
 
-export { journalEntryFromRow, type JournalEntryRow } from "./journal-data-store";
+export {
+  journalEntryFromRow,
+  type JournalEntryRow,
+  type StoredJournalEntry,
+} from "./journal-data-store";
 
 const JOURNAL_REFRESH_MS = 30_000;
-const EMPTY_ENTRIES: JournalEntry[] = [];
+const EMPTY_ENTRIES: StoredJournalEntry[] = [];
 
 export function useJournalData({
   userId,
@@ -123,7 +127,7 @@ export function useJournalData({
   }, [loadEntries, scope]);
 
   const setEntries = useCallback(
-    (next: SetStateAction<JournalEntry[]>) => {
+    (next: SetStateAction<StoredJournalEntry[]>) => {
       if (!scope) return;
       setJournalEntries(scope, next);
     },
