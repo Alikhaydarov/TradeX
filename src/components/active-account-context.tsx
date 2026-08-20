@@ -59,10 +59,15 @@ const accountFrom = (a: AccountRow): PropAccount => ({
   status: a.status,
 });
 
+function storedActiveAccountId() {
+  if (typeof window === "undefined") return null;
+  return window.localStorage.getItem(STORAGE_KEY);
+}
+
 export function ActiveAccountProvider({ children }: { children: React.ReactNode }) {
   const { user } = useAuth();
   const [accounts, setAccountsState] = useState<PropAccount[]>([]);
-  const [activeAccountId, setActiveAccountId] = useState<string | null>(null);
+  const [activeAccountId, setActiveAccountId] = useState<string | null>(storedActiveAccountId);
   const [loading, setLoading] = useState(true);
   const hasLoadedAccounts = useRef(false);
 
