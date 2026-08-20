@@ -1,30 +1,49 @@
 "use client";
 
+import { MessageCircle } from "lucide-react";
 import dynamic from "next/dynamic";
 import { usePathname, useRouter } from "next/navigation";
-import { MessageCircle } from "lucide-react";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 
+import type { CommunitySection } from "@/features/community/components/community-sidebar";
 import { apiRequest } from "@/lib/api-client";
-import {
-  CommunitySidebar,
-  type CommunitySection,
-} from "@/features/community/components/community-sidebar";
 import { ActiveAccountProvider } from "./active-account-context";
 import { AuthModal } from "./auth-modal";
 import { useAuth } from "./auth-context";
 import { TradeComposerProvider } from "./journal/trade-composer-context";
 import { WorkspaceJournalPrefetch } from "./journal/workspace-journal-prefetch";
-import { NotificationListener } from "./notification-listener";
-import { PremiumUpsellDialog } from "./premium-upsell-dialog";
 import { WorkspaceProfilePrefetch } from "./profile/workspace-profile-prefetch";
 import { pathFromSection, sectionFromPath } from "./section-config";
 import { Sidebar } from "./sidebar";
 import { WORKSPACE_TAILWIND_CLASS } from "./tailwind/app-tailwind-classes";
+import { TradoxyLoginLanding } from "./tradeway-login-landing";
 import type { Section } from "./types";
 import { WorkspacePreferencesProvider } from "./workspace-preferences-context";
 import { WorkspaceTopbar } from "./workspace-topbar";
-import { TradoxyLoginLanding } from "./tradeway-login-landing";
+
+const CommunitySidebar = dynamic(
+  () =>
+    import("@/features/community/components/community-sidebar").then(
+      (module) => module.CommunitySidebar,
+    ),
+  { ssr: false },
+);
+
+const NotificationListener = dynamic(
+  () =>
+    import("./notification-listener").then(
+      (module) => module.NotificationListener,
+    ),
+  { ssr: false },
+);
+
+const PremiumUpsellDialog = dynamic(
+  () =>
+    import("./premium-upsell-dialog").then(
+      (module) => module.PremiumUpsellDialog,
+    ),
+  { ssr: false },
+);
 
 const UserSettingsDialog = dynamic(
   () =>
@@ -42,6 +61,8 @@ const CORE_WORKSPACE_ROUTES = [
   "/analytics",
   "/accounts",
   "/profile",
+  "/settings",
+  "/community",
 ];
 
 function communityRouteFromPath(pathname: string) {
@@ -165,16 +186,22 @@ function WorkspaceAppRouterShellInner({ children }: { children: ReactNode }) {
     };
 
     const idleWindow = window as Window & {
-      requestIdleCallback?: (callback: () => void, options?: { timeout: number }) => number;
+      requestIdleCallback?: (
+        callback: () => void,
+        options?: { timeout: number },
+      ) => number;
       cancelIdleCallback?: (handle: number) => void;
     };
-    const idleHandle = idleWindow.requestIdleCallback?.(prefetch, { timeout: 1200 });
-    const timeoutHandle = idleHandle === undefined
-      ? window.setTimeout(prefetch, 350)
-      : undefined;
+    const idleHandle = idleWindow.requestIdleCallback?.(prefetch, {
+      timeout: 1200,
+    });
+    const timeoutHandle =
+      idleHandle === undefined ? window.setTimeout(prefetch, 350) : undefined;
 
     return () => {
-      if (idleHandle !== undefined) idleWindow.cancelIdleCallback?.(idleHandle);
+      if (idleHandle !== undefined) {
+        idleWindow.cancelIdleCallback?.(idleHandle);
+      }
       if (timeoutHandle !== undefined) window.clearTimeout(timeoutHandle);
     };
   }, [router, user]);
