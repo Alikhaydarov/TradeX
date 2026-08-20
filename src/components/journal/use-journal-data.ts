@@ -39,8 +39,8 @@ type JournalCacheEntry = {
   etag?: string;
 };
 
-const JOURNAL_CACHE_TTL_MS = 30_000;
-const JOURNAL_REFRESH_MS = 15_000;
+const JOURNAL_CACHE_TTL_MS = 60_000;
+const JOURNAL_REFRESH_MS = 30_000;
 const journalCache = new Map<string, JournalCacheEntry>();
 
 function parseTradeImages(value?: string | null) {
@@ -124,7 +124,9 @@ export function useJournalData({
         setLoading(false);
         return;
       }
-      if (mode === "workspace" && accountsLoading) {
+      // If a saved account id is already available, start the journal request
+      // immediately instead of waiting for the account list request to finish.
+      if (mode === "workspace" && accountsLoading && !accountId) {
         if (!silent) setLoading(true);
         return;
       }
