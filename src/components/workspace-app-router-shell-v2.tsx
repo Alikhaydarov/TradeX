@@ -21,6 +21,7 @@ import { Sidebar } from "./sidebar";
 import type { WorkspaceBootstrap } from "@/lib/server/workspace-bootstrap";
 import type { Section } from "./types";
 import { JournalSeedProvider } from "./journal/journal-seed-context";
+import { NavigationProgressProvider, useNavigation } from "./navigation-progress";
 import { WorkspaceBootLoader } from "./workspace-boot-loader";
 import { WorkspacePreferencesProvider } from "./workspace-preferences-context";
 import { WorkspaceTopbar } from "./workspace-topbar";
@@ -110,9 +111,11 @@ export function WorkspaceAppRouterShellV2({
 }) {
   return (
     <WorkspacePreferencesProvider>
-      <WorkspaceAppRouterShellInner bootstrap={bootstrap}>
-        {children}
-      </WorkspaceAppRouterShellInner>
+      <NavigationProgressProvider>
+        <WorkspaceAppRouterShellInner bootstrap={bootstrap}>
+          {children}
+        </WorkspaceAppRouterShellInner>
+      </NavigationProgressProvider>
     </WorkspacePreferencesProvider>
   );
 }
@@ -126,6 +129,7 @@ function WorkspaceAppRouterShellInner({
 }) {
   const pathname = usePathname();
   const router = useRouter();
+  const { navigate } = useNavigation();
   const section = sectionFromPath(pathname);
   const communityRoute = communityRouteFromPath(pathname);
   const [authOpen, setAuthOpen] = useState(false);
@@ -243,7 +247,7 @@ function WorkspaceAppRouterShellInner({
     const target = pathFromSection(nextSection);
     router.prefetch(target);
     preloadWorkspaceRoute(target);
-    router.push(target);
+    navigate(target);
     workspaceMainRef.current?.scrollTo({ top: 0, behavior: "instant" });
   };
 
@@ -252,12 +256,12 @@ function WorkspaceAppRouterShellInner({
     const target = `/community/${communityRoute.communityId}/${next}`;
     router.prefetch(target);
     preloadWorkspaceRoute(target);
-    router.push(target);
+    navigate(target);
     workspaceMainRef.current?.scrollTo({ top: 0, behavior: "instant" });
   };
 
   const closeCommunityWorkspace = () => {
-    router.push("/community");
+    navigate("/community");
     workspaceMainRef.current?.scrollTo({ top: 0, behavior: "instant" });
   };
 

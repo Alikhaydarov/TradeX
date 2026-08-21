@@ -11,15 +11,17 @@ import { ProfileHeader } from "./profile-header";
 import { ProfilePosts } from "./profile-posts";
 import { useProfileController } from "./use-profile-controller";
 import { profilePath } from "@/lib/navigation";
+import type { ProfileSeed } from "./use-profile-controller";
 
 export type ProfilePageProps = {
   onLogin: () => void;
   profileUsername?: string;
+  seed?: ProfileSeed;
 };
 
-export function ProfilePage({ onLogin, profileUsername }: ProfilePageProps) {
+export function ProfilePage({ onLogin, profileUsername, seed }: ProfilePageProps) {
   const router = useRouter();
-  const controller = useProfileController(profileUsername);
+  const controller = useProfileController(profileUsername, seed);
 
   if (!controller.user) {
     return (
@@ -79,7 +81,7 @@ export function ProfilePage({ onLogin, profileUsername }: ProfilePageProps) {
   }
 
   return (
-    <div className="min-h-full bg-surface">
+    <div className="min-h-full bg-black">
       {controller.error ? (
         <div className="mx-auto mt-3 max-w-5xl rounded-2xl border border-rose-300/15 bg-rose-400/10 px-4 py-3 text-sm text-rose-200">
           {controller.error}
