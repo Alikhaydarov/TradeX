@@ -3,19 +3,7 @@
 import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
 
-import {
-  AccountsSkeleton,
-  AnalyticsSkeleton,
-  CalendarSkeleton,
-  CommunitySkeleton,
-  PricingSkeleton,
-  ProfileSkeleton,
-  SettingsSkeleton,
-  StatsSkeleton,
-  TableSkeleton,
-  TradeDetailSkeleton,
-  TradesSkeleton,
-} from "../skeletons/route-skeletons";
+import type { ProfileSeed } from "../profile/use-profile-controller";
 
 const loadJournalAccounts = () =>
   import("../journal/journal-accounts").then(
@@ -61,60 +49,27 @@ const loadTradeDetailPage = () =>
     (module) => module.TradeDetailPage,
   );
 
-const JournalAccounts = dynamic(
-  loadJournalAccounts,
-  { loading: () => <AccountsSkeleton /> },
-);
+const JournalAccounts = dynamic(loadJournalAccounts);
 
-const JournalStats = dynamic(
-  loadJournalStats,
-  { loading: () => <StatsSkeleton /> },
-);
+const JournalStats = dynamic(loadJournalStats);
 
-const JournalTradeList = dynamic(
-  loadJournalTradeList,
-  { loading: () => <TradesSkeleton /> },
-);
+const JournalTradeList = dynamic(loadJournalTradeList);
 
-const JournalAnalytics = dynamic(
-  loadJournalAnalytics,
-  { loading: () => <AnalyticsSkeleton /> },
-);
+const JournalAnalytics = dynamic(loadJournalAnalytics);
 
-const JournalCalendar = dynamic(
-  loadJournalCalendar,
-  { loading: () => <CalendarSkeleton /> },
-);
+const JournalCalendar = dynamic(loadJournalCalendar);
 
-const AccountSettings = dynamic(
-  loadAccountSettings,
-  { loading: () => <SettingsSkeleton /> },
-);
+const AccountSettings = dynamic(loadAccountSettings);
 
-const Account = dynamic(
-  loadProfilePage,
-  { loading: () => <ProfileSkeleton /> },
-);
+const Account = dynamic(loadProfilePage);
 
-const CommunityWorkspace = dynamic(
-  loadCommunityWorkspace,
-  { loading: () => <CommunitySkeleton /> },
-);
+const CommunityWorkspace = dynamic(loadCommunityWorkspace);
 
-const Pricing = dynamic(
-  loadPricing,
-  { loading: () => <PricingSkeleton /> },
-);
+const Pricing = dynamic(loadPricing);
 
-const AdminPanel = dynamic(
-  loadAdminPanel,
-  { loading: () => <TableSkeleton /> },
-);
+const AdminPanel = dynamic(loadAdminPanel);
 
-const TradeDetailPage = dynamic(
-  loadTradeDetailPage,
-  { loading: () => <TradeDetailSkeleton /> },
-);
+const TradeDetailPage = dynamic(loadTradeDetailPage);
 
 function warm(loader: () => Promise<unknown>) {
   void loader().catch(() => undefined);
@@ -169,8 +124,16 @@ export function SettingsRouteContent() {
   return <AccountSettings onLogin={openLogin} />;
 }
 
-export function ProfileRouteContent({ username }: { username?: string }) {
-  return <Account onLogin={openLogin} profileUsername={username} />;
+export function ProfileRouteContent({
+  username,
+  seed,
+}: {
+  username?: string;
+  seed?: ProfileSeed;
+}) {
+  return (
+    <Account onLogin={openLogin} profileUsername={username} seed={seed} />
+  );
 }
 
 export function CommunityRouteContent() {

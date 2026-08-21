@@ -72,17 +72,35 @@ function toProfile(data: ProfileRecord): ProfileView {
   };
 }
 
-export function useProfileController(profileUsername?: string) {
+export interface ProfileSeed {
+  profile: ProfileRecord;
+  posts: PostRecord[];
+  achievements?: Achievement[];
+  stats?: TradingStats;
+}
+
+export function useProfileController(
+  profileUsername?: string,
+  seed?: ProfileSeed,
+) {
   const { user, configured, signOut } = useAuth();
-  const [profile, setProfile] = useState<ProfileView | null>(null);
+  const [profile, setProfile] = useState<ProfileView | null>(
+    () => (seed ? toProfile(seed.profile) : null),
+  );
   const [draftProfile, setDraftProfile] = useState<Profile | null>(null);
-  const [posts, setPosts] = useState<Post[]>([]);
-  const [achievements, setAchievements] = useState<Achievement[]>([]);
+  const [posts, setPosts] = useState<Post[]>(
+    () => (seed ? seed.posts.map((post) => toSocialPost(post)) : []),
+  );
+  const [achievements, setAchievements] = useState<Achievement[]>(
+    () => seed?.achievements ?? [],
+  );
   const [viewingAchievement, setViewingAchievement] =
     useState<Achievement | null>(null);
-  const [stats, setStats] = useState<TradingStats>(EMPTY_STATS);
+  const [stats, setStats] = useState<TradingStats>(
+    () => seed?.stats ?? EMPTY_STATS,
+  );
   const [activeTab, setActiveTab] = useState<ProfileTab>("posts");
-  const [loadingProfile, setLoadingProfile] = useState(true);
+  const [loadingProfile, setLoadingProfile] = useState(!seed);
   const [editOpen, setEditOpen] = useState(false);
   const [saved, setSaved] = useState(false);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
@@ -110,6 +128,8 @@ export function useProfileController(profileUsername?: string) {
   const avatarInputRef = useRef<HTMLInputElement | null>(null);
   const bannerInputRef = useRef<HTMLInputElement | null>(null);
 
+  const seededRef = useRef(Boolean(seed));
+
   useEffect(() => () => viewObserver.current?.disconnect(), []);
 
   useEffect(() => {
@@ -119,9 +139,12 @@ export function useProfileController(profileUsername?: string) {
     }
 
     let active = true;
+    // With a server-resolved seed on screen there is nothing to wait for, so
+    // the refresh runs silently instead of tearing the page back to a skeleton.
     const startTimer = window.setTimeout(() => {
       if (!active) return;
-      setLoadingProfile(true);
+      if (!seededRef.current) setLoadingProfile(true);
+      seededRef.current = false;
       setError(null);
     }, 0);
 
