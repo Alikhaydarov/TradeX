@@ -136,7 +136,7 @@ export function UserSettingsDialog() {
 function SettingsContent() {
   const router = useRouter();
   const { user } = useAuth();
-  const { locale, setLocale } = useLanguage();
+  const { locale, setLocale, languageOptions } = useLanguage();
   const { status: premium } = usePremiumStatus(Boolean(user));
   const {
     settingsOpen,
@@ -506,8 +506,11 @@ function SettingsContent() {
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="en">English</SelectItem>
-                            <SelectItem value="es">Español</SelectItem>
+                            {languageOptions.map((option) => (
+                              <SelectItem key={option.value} value={option.value}>
+                                {option.label}
+                              </SelectItem>
+                            ))}
                           </SelectContent>
                         </Select>
                       </Field>

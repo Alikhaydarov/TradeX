@@ -24,7 +24,7 @@ import {
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { apiRequest } from "@/lib/api-client";
-import { useLanguage } from "@/lib/i18n";
+import { useLanguage, type Locale } from "@/lib/i18n";
 import { useAuth } from "./auth-context";
 import { useActiveAccountStore } from "./active-account-context";
 import { usePremiumStatus } from "./use-premium-status";
@@ -120,7 +120,7 @@ export function Sidebar({
   const [accountQuery, setAccountQuery] = useState("");
   const [logoutConfirmOpen, setLogoutConfirmOpen] = useState(false);
   const [hasCommunityAccess, setHasCommunityAccess] = useState(false);
-  const { t, locale, setLocale } = useLanguage();
+  const { t, locale, setLocale, languageOptions } = useLanguage();
   const { status: premium } = usePremiumStatus(Boolean(user));
   const { signOut } = useAuth();
   const { hidePersonalInfo, maskValue, setSettingsOpen } =
@@ -285,7 +285,7 @@ export function Sidebar({
   const openMobileLogout = () =>
     runMobileAccountAction(() => setLogoutConfirmOpen(true));
   const openMobileLogin = () => runMobileAccountAction(onLogin);
-  const selectMobileLocale = (nextLocale: "en" | "es") => {
+  const selectMobileLocale = (nextLocale: Locale) => {
     setLocale(nextLocale);
     setMobileAccountActionsOpen(false);
   };
@@ -519,30 +519,22 @@ export function Sidebar({
                 <DropdownMenuItem onClick={openPricing} className="px-3 py-2.5">
                   {premium.isPremium ? "Manage subscription" : "View plans"}
                 </DropdownMenuItem>
-                <DropdownMenuItem
-                  onClick={() => setLocale("en")}
-                  className="flex items-center justify-between px-3 py-2.5"
-                >
-                  <span className="flex items-center gap-2">
-                    <Globe size={14} /> English
-                  </span>
-                  {locale === "en" ? (
-                    <span className="text-[10px] font-bold text-zinc-400">
-                      Active
+                {languageOptions.map((option) => (
+                  <DropdownMenuItem
+                    key={option.value}
+                    onClick={() => setLocale(option.value)}
+                    className="flex items-center justify-between px-3 py-2.5"
+                  >
+                    <span className="flex items-center gap-2">
+                      <Globe size={14} /> {option.label}
                     </span>
-                  ) : null}
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  onClick={() => setLocale("es")}
-                  className="flex items-center justify-between px-3 py-2.5"
-                >
-                  <span className="flex items-center gap-2 pl-6">Spanish</span>
-                  {locale === "es" ? (
-                    <span className="text-[10px] font-bold text-zinc-400">
-                      Active
-                    </span>
-                  ) : null}
-                </DropdownMenuItem>
+                    {locale === option.value ? (
+                      <span className="text-[10px] font-bold text-zinc-400">
+                        Active
+                      </span>
+                    ) : null}
+                  </DropdownMenuItem>
+                ))}
                 <DropdownMenuItem
                   onClick={openHelpCenter}
                   className="px-3 py-2.5"
@@ -780,22 +772,19 @@ export function Sidebar({
               </div>
             </div>
             <div className="mt-3 grid grid-cols-2 gap-2">
-              {([
-                ["en", "English"],
-                ["es", "Spanish"],
-              ] as const).map(([value, label]) => (
+              {languageOptions.map((option) => (
                 <button
-                  key={value}
+                  key={option.value}
                   type="button"
-                  onClick={() => selectMobileLocale(value)}
+                  onClick={() => selectMobileLocale(option.value)}
                   className={`flex min-h-11 items-center justify-center gap-2 rounded-xl border px-3 text-xs font-bold transition ${
-                    locale === value
+                    locale === option.value
                       ? "border-white/20 bg-white text-black"
                       : "border-white/10 bg-black text-zinc-300 hover:bg-white/[.05]"
                   }`}
                 >
-                  {locale === value ? <Check size={14} /> : null}
-                  {label}
+                  {locale === option.value ? <Check size={14} /> : null}
+                  {option.label}
                 </button>
               ))}
             </div>

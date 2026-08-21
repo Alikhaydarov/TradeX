@@ -1,66 +1,247 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import {
+  createContext,
+  createElement,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+  type ReactNode,
+} from "react";
 
-export const locales = ["en", "es", "uz", "ru", "ko"] as const;
-export type Locale = typeof locales[number];
+import en from "@/locales/en.json";
+import ko from "@/locales/ko.json";
+import ru from "@/locales/ru.json";
+import uz from "@/locales/uz.json";
+import {
+  defaultLocale,
+  labels,
+  languageOptions,
+  legacyLocaleStorageKey,
+  localeCookieName,
+  locales,
+  localeStorageKey,
+  localeTags,
+  normalizeLocale,
+  type Locale,
+} from "./i18n-config";
 
-const labels: Record<Locale, string> = {
-  en: "English",
-  es: "Español",
-  uz: "O'zbek",
-  ru: "Русский",
-  ko: "한국어",
+export {
+  defaultLocale,
+  labels,
+  languageOptions,
+  localeCookieName,
+  locales,
+  localeTags,
+  normalizeLocale,
+};
+export type { Locale };
+
+const catalogs = { en, uz, ru, ko } as const;
+type Catalog = typeof en;
+export type TranslationKey = Exclude<keyof Catalog, "_legacy">;
+export type TranslationValues = Record<
+  string,
+  string | number | boolean | null | undefined
+>;
+
+function canonicalText(value: string) {
+  return value
+    .replace(/\u00a0/g, " ")
+    .replace(/[‘’]/g, "'")
+    .replace(/[“”]/g, '"')
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+const legacyIndexes = Object.fromEntries(
+  locales.map((locale) => [
+    locale,
+    new Map(
+      Object.entries(catalogs[locale]._legacy).map(([key, value]) => [
+        canonicalText(key),
+        value,
+      ]),
+    ),
+  ]),
+) as Record<Locale, Map<string, string>>;
+
+function interpolate(message: string, values?: TranslationValues) {
+  if (!values) return message;
+  return message.replace(/\{\{?([a-zA-Z0-9_]+)\}?\}/g, (match, key: string) => {
+    const value = values[key];
+    return value === null || value === undefined ? match : String(value);
+  });
+}
+
+function detectClientLocale(initialLocale: Locale): Locale {
+  if (typeof window === "undefined") return initialLocale;
+  const stored =
+    window.localStorage.getItem(localeStorageKey) ??
+    window.localStorage.getItem(legacyLocaleStorageKey);
+  if (stored) return normalizeLocale(stored);
+  return normalizeLocale(window.navigator.language || initialLocale);
+}
+
+function writeLocale(locale: Locale) {
+  if (typeof window === "undefined") return;
+  window.localStorage.setItem(localeStorageKey, locale);
+  window.localStorage.removeItem(legacyLocaleStorageKey);
+  document.cookie = `${localeCookieName}=${locale}; Path=/; Max-Age=31536000; SameSite=Lax`;
+  document.documentElement.lang = localeTags[locale];
+  document.documentElement.dir = "ltr";
+  document.documentElement.dataset.locale = locale;
+}
+
+type I18nContextValue = {
+  locale: Locale;
+  locales: typeof locales;
+  labels: typeof labels;
+  languageOptions: typeof languageOptions;
+  setLocale: (locale: Locale) => void;
+  t: (key: TranslationKey, values?: TranslationValues) => string;
+  translateText: (text: string, values?: TranslationValues) => string;
+  formatNumber: (
+    value: number,
+    options?: Intl.NumberFormatOptions,
+  ) => string;
+  formatDate: (
+    value: Date | number | string,
+    options?: Intl.DateTimeFormatOptions,
+  ) => string;
+  formatRelativeTime: (
+    value: number,
+    unit: Intl.RelativeTimeFormatUnit,
+  ) => string;
 };
 
-const dictionary = {
-  home: { en: "Home", es: "Inicio", uz: "Bosh sahifa", ru: "Главная", ko: "홈" },
-  journal: { en: "Journal", es: "Journal", uz: "Jurnal", ru: "Журнал", ko: "저널" },
-  profile: { en: "Profile", es: "Perfil", uz: "Profil", ru: "Профиль", ko: "프로필" },
-  marketPulse: { en: "Market pulse", es: "Pulso del mercado", uz: "Bozor oqimi", ru: "Пульс рынка", ko: "시장 흐름" },
-  accountsRecords: { en: "Accounts and trade records", es: "Cuentas y registros", uz: "Hisoblar va trade tarixi", ru: "Счета и сделки", ko: "계좌와 거래 기록" },
-  proofSettings: { en: "Proof and settings", es: "Prueba y ajustes", uz: "Proof va sozlamalar", ru: "Доказательства и настройки", ko: "인증 및 설정" },
-  shareTrade: { en: "Share trade", es: "Compartir trade", uz: "Trade ulashish", ru: "Поделиться сделкой", ko: "거래 공유" },
-  shareJournalTrade: { en: "Share a journal trade", es: "Compartir trade del journal", uz: "Jurnaldagi tradeni ulashish", ru: "Поделиться сделкой из журнала", ko: "저널 거래 공유" },
-  reviewedOnly: { en: "Only reviewed trades can be posted.", es: "Solo se pueden publicar trades revisados.", uz: "Faqat review qilingan tradelar post bo'ladi.", ru: "Публикуются только проверенные сделки.", ko: "리뷰된 거래만 게시할 수 있습니다." },
-  pickTrade: { en: "Pick a journal trade. Home feed only accepts real trade posts.", es: "Elige un trade del journal. El feed solo acepta trades reales.", uz: "Jurnaldan trade tanlang. Home feed faqat real trade postlarini qabul qiladi.", ru: "Выберите сделку из журнала. Лента принимает только реальные сделки.", ko: "저널 거래를 선택하세요. 홈 피드는 실제 거래 게시물만 허용합니다." },
-  searchTrade: { en: "Search symbol, setup or note", es: "Buscar símbolo, setup o nota", uz: "Symbol, setup yoki note qidiring", ru: "Поиск символа, сетапа или заметки", ko: "심볼, 셋업 또는 노트 검색" },
-  noTrades: { en: "No journal trades yet", es: "Todavía no hay trades", uz: "Hali journal trade yo'q", ru: "В журнале пока нет сделок", ko: "저널 거래가 아직 없습니다" },
-  addTradeFirst: { en: "Add a trade in Journal first, then share it from Home.", es: "Primero agrega un trade en Journal y luego compártelo desde Home.", uz: "Avval Journal'da trade qo'shing, keyin Home'dan ulashing.", ru: "Сначала добавьте сделку в журнал, затем поделитесь из Home.", ko: "먼저 저널에 거래를 추가한 뒤 홈에서 공유하세요." },
-  openJournal: { en: "Open Journal", es: "Abrir Journal", uz: "Journalni ochish", ru: "Открыть журнал", ko: "저널 열기" },
-} as const;
+const fallbackContext: I18nContextValue = {
+  locale: defaultLocale,
+  locales,
+  labels,
+  languageOptions,
+  setLocale: () => undefined,
+  t: (key, values) => interpolate(String(catalogs.en[key]), values),
+  translateText: (text, values) => interpolate(text, values),
+  formatNumber: (value, options) =>
+    new Intl.NumberFormat(localeTags.en, options).format(value),
+  formatDate: (value, options) =>
+    new Intl.DateTimeFormat(localeTags.en, options).format(
+      value instanceof Date ? value : new Date(value),
+    ),
+  formatRelativeTime: (value, unit) =>
+    new Intl.RelativeTimeFormat(localeTags.en, { numeric: "auto" }).format(
+      value,
+      unit,
+    ),
+};
 
-type TranslationKey = keyof typeof dictionary;
+const I18nContext = createContext<I18nContextValue>(fallbackContext);
 
-function detectLocale(): Locale {
-  if (typeof window === "undefined") return "en";
-  const saved = window.localStorage.getItem("tradeway-locale");
-  if (saved && locales.includes(saved as Locale)) return saved as Locale;
-  const browser = window.navigator.language.toLowerCase();
-  if (browser.startsWith("es")) return "es";
-  if (browser.startsWith("uz")) return "uz";
-  if (browser.startsWith("ru")) return "ru";
-  if (browser.startsWith("ko")) return "ko";
-  return "en";
+export function I18nProvider({
+  initialLocale = defaultLocale,
+  children,
+}: {
+  initialLocale?: Locale;
+  children: ReactNode;
+}) {
+  const normalizedInitial = normalizeLocale(initialLocale);
+  const [locale, setLocaleState] = useState<Locale>(normalizedInitial);
+
+  useEffect(() => {
+    const detected = detectClientLocale(normalizedInitial);
+    setLocaleState(detected);
+    writeLocale(detected);
+  }, [normalizedInitial]);
+
+  useEffect(() => {
+    const syncStorage = (event: StorageEvent) => {
+      if (
+        event.key !== localeStorageKey &&
+        event.key !== legacyLocaleStorageKey
+      ) {
+        return;
+      }
+      const next = normalizeLocale(event.newValue);
+      setLocaleState(next);
+      writeLocale(next);
+    };
+    const syncCustom = (event: Event) => {
+      const next = normalizeLocale(
+        (event as CustomEvent<{ locale?: string }>).detail?.locale ??
+          window.localStorage.getItem(localeStorageKey),
+      );
+      setLocaleState(next);
+      writeLocale(next);
+    };
+    window.addEventListener("storage", syncStorage);
+    window.addEventListener("tradox:locale", syncCustom);
+    window.addEventListener("tradeway:locale", syncCustom);
+    return () => {
+      window.removeEventListener("storage", syncStorage);
+      window.removeEventListener("tradox:locale", syncCustom);
+      window.removeEventListener("tradeway:locale", syncCustom);
+    };
+  }, []);
+
+  const setLocale = useCallback((next: Locale) => {
+    const normalized = normalizeLocale(next);
+    setLocaleState(normalized);
+    writeLocale(normalized);
+    window.dispatchEvent(
+      new CustomEvent("tradox:locale", { detail: { locale: normalized } }),
+    );
+  }, []);
+
+  const t = useCallback(
+    (key: TranslationKey, values?: TranslationValues) => {
+      const message = catalogs[locale][key] ?? catalogs.en[key] ?? String(key);
+      return interpolate(String(message), values);
+    },
+    [locale],
+  );
+
+  const translateText = useCallback(
+    (text: string, values?: TranslationValues) => {
+      const normalized = canonicalText(text);
+      const translated =
+        legacyIndexes[locale].get(normalized) ??
+        legacyIndexes.en.get(normalized) ??
+        text;
+      return interpolate(translated, values);
+    },
+    [locale],
+  );
+
+  const value = useMemo<I18nContextValue>(() => {
+    const tag = localeTags[locale];
+    return {
+      locale,
+      locales,
+      labels,
+      languageOptions,
+      setLocale,
+      t,
+      translateText,
+      formatNumber: (number, options) =>
+        new Intl.NumberFormat(tag, options).format(number),
+      formatDate: (date, options) =>
+        new Intl.DateTimeFormat(tag, options).format(
+          date instanceof Date ? date : new Date(date),
+        ),
+      formatRelativeTime: (number, unit) =>
+        new Intl.RelativeTimeFormat(tag, { numeric: "auto" }).format(
+          number,
+          unit,
+        ),
+    };
+  }, [locale, setLocale, t, translateText]);
+
+  return createElement(I18nContext.Provider, { value }, children);
 }
 
 export function useLanguage() {
-  const [locale, setLocaleState] = useState<Locale>("en");
-
-  useEffect(() => {
-    setLocaleState(detectLocale());
-    const sync = () => setLocaleState(detectLocale());
-    window.addEventListener("tradeway:locale", sync);
-    return () => window.removeEventListener("tradeway:locale", sync);
-  }, []);
-
-  const setLocale = (next: Locale) => {
-    window.localStorage.setItem("tradeway-locale", next);
-    setLocaleState(next);
-    window.dispatchEvent(new Event("tradeway:locale"));
-  };
-
-  const t = (key: TranslationKey) => dictionary[key][locale] ?? dictionary[key].en;
-
-  return { locale, locales, labels, setLocale, t };
+  return useContext(I18nContext);
 }

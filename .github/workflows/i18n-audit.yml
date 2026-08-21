@@ -1,0 +1,106 @@
+name: I18n migration
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "src/**"
+      - "tools/finalize-i18n-selectors.mjs"
+      - "tools/audit-i18n.mjs"
+      - "tools/check-i18n-coverage.mjs"
+      - ".github/workflows/i18n-audit.yml"
+      - "package.json"
+      - "package-lock.json"
+
+permissions:
+  contents: write
+
+jobs:
+  migrate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout PR branch
+        uses: actions/checkout@v4
+        with:
+          ref: agent/full-i18n-en-uz-ru-ko
+          fetch-depth: 0
+
+      - name: Finalize locale selectors
+        id: install
+        shell: bash
+        run: |
+          set +e
+          : > i18n-install.log
+          status=0
+          if [ -f tools/finalize-i18n-selectors.mjs ]; then
+            node tools/finalize-i18n-selectors.mjs >> i18n-install.log 2>&1 || status=$?
+          else
+            echo "Locale selectors already finalized." >> i18n-install.log
+          fi
+          cat i18n-install.log
+          echo "status=$status" >> "$GITHUB_OUTPUT"
+          exit 0
+
+      - name: Upload migration diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: i18n-install-log
+          path: i18n-install.log
+          if-no-files-found: error
+
+      - name: Fail when selector migration failed
+        if: steps.install.outputs.status != '0'
+        run: exit 1
+
+      - name: Commit selector migration
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          if git diff --cached --quiet; then
+            exit 0
+          fi
+          git commit -m "feat: finalize EN UZ RU KO locale selectors"
+          git push origin HEAD:agent/full-i18n-en-uz-ru-ko
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - name: Verify complete localization coverage
+        run: npm run check:i18n
+
+      - name: Verify Tailwind-only ownership
+        run: npm run check:ui-parity
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Production build and capture log
+        id: build
+        shell: bash
+        run: |
+          set +e
+          npm run build > i18n-build.log 2>&1
+          status=$?
+          cat i18n-build.log
+          echo "status=$status" >> "$GITHUB_OUTPUT"
+          exit 0
+
+      - name: Upload build diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: i18n-build-log
+          path: i18n-build.log
+          if-no-files-found: error
+
+      - name: Fail when build failed
+        if: steps.build.outputs.status != '0'
+        run: exit 1
