@@ -138,7 +138,7 @@ export function CommunitySidebar({
             <button
               type="button"
               onClick={onBack}
-              className="grid size-9 place-items-center rounded-xl text-zinc-600 transition hover:bg-white/[.05] hover:text-white"
+              className="grid size-9 place-items-center rounded-xl text-ink-subtle transition hover:bg-white/[.05] hover:text-white"
               aria-label="Back to my communities"
               title="My communities"
             >
@@ -159,7 +159,7 @@ export function CommunitySidebar({
               <button
                 type="button"
                 onClick={onBack}
-                className="flex h-8 min-w-0 flex-1 items-center gap-2 rounded-lg px-2 text-left text-[10px] font-semibold text-zinc-600 transition hover:bg-white/[.04] hover:text-white"
+                className="flex h-8 min-w-0 flex-1 items-center gap-2 rounded-lg px-2 text-left text-[10px] font-semibold text-ink-subtle transition hover:bg-white/[.04] hover:text-white"
               >
                 <ArrowLeft size={13} />
                 <span className="truncate">My communities</span>
@@ -167,7 +167,7 @@ export function CommunitySidebar({
               <button
                 type="button"
                 onClick={() => setCollapsed(true)}
-                className="grid size-8 shrink-0 place-items-center rounded-lg border border-white/7 bg-surface text-zinc-600 transition hover:border-white/15 hover:bg-white/[.05] hover:text-white"
+                className="grid size-8 shrink-0 place-items-center rounded-lg border border-white/7 bg-surface text-ink-subtle transition hover:border-white/15 hover:bg-white/[.05] hover:text-white"
                 aria-label="Collapse community sidebar"
                 title="Collapse sidebar"
               >
@@ -193,12 +193,12 @@ export function CommunitySidebar({
                     </p>
                     <ShieldCheck size={12} className="shrink-0 text-emerald-300" />
                   </div>
-                  <p className="mt-0.5 truncate text-[8px] capitalize text-zinc-600">
+                  <p className="mt-0.5 truncate text-[8px] capitalize text-ink-subtle">
                     {summary?.role || "member"} · {memberCount} members
                   </p>
                 </div>
               </div>
-              <p className="relative mt-2 line-clamp-2 text-[9px] leading-4 text-zinc-600">
+              <p className="relative mt-2 line-clamp-2 text-[10px] leading-4 text-ink-subtle">
                 {community?.description || "Private trading workspace for shared performance."}
               </p>
             </div>
@@ -233,7 +233,7 @@ export function CommunitySidebar({
                 className={`group relative grid size-10 place-items-center rounded-xl border transition ${
                   selected
                     ? "border-emerald-400/25 bg-emerald-400/[.11] text-emerald-200 shadow-[0_8px_24px_rgba(0,0,0,.28)]"
-                    : "border-transparent text-zinc-600 hover:border-white/10 hover:bg-white/[.05] hover:text-zinc-200"
+                    : "border-transparent text-ink-subtle hover:border-white/10 hover:bg-white/[.05] hover:text-zinc-200"
                 }`}
                 aria-label={item.label}
                 title={item.label}
@@ -254,7 +254,7 @@ export function CommunitySidebar({
               className={`group relative flex h-10 w-full items-center gap-2.5 rounded-xl px-2.5 text-left transition ${
                 selected
                   ? "bg-white/[.075] text-white ring-1 ring-white/10"
-                  : "text-zinc-600 hover:bg-white/[.035] hover:text-zinc-200"
+                  : "text-ink-subtle hover:bg-white/[.035] hover:text-zinc-200"
               }`}
             >
               {selected ? (
@@ -264,18 +264,18 @@ export function CommunitySidebar({
                 className={`grid size-7 shrink-0 place-items-center rounded-lg border transition ${
                   selected
                     ? "border-emerald-400/20 bg-emerald-400/[.08] text-emerald-200"
-                    : "border-white/5 bg-surface text-zinc-700 group-hover:text-zinc-400"
+                    : "border-white/5 bg-surface text-ink-faint group-hover:text-ink-soft"
                 }`}
               >
                 <Icon size={14} />
               </span>
               <span className="min-w-0 flex-1">
                 <span className="block truncate text-[11px] font-semibold">{item.label}</span>
-                <span className="mt-0.5 block truncate text-[8px] text-zinc-700">
+                <span className="mt-0.5 block truncate text-[8px] text-ink-faint">
                   {item.description}
                 </span>
               </span>
-              {selected ? <ChevronRight size={12} className="text-zinc-600" /> : null}
+              {selected ? <ChevronRight size={12} className="text-ink-subtle" /> : null}
             </button>
           );
         })}
@@ -295,8 +295,8 @@ export function CommunitySidebar({
               <Radio size={13} />
             </span>
             <div className="min-w-0">
-              <p className="text-[9px] font-semibold text-zinc-300">Community live</p>
-              <p className="mt-0.5 truncate text-[8px] text-zinc-700">
+              <p className="text-[10px] font-semibold text-ink-strong">Community live</p>
+              <p className="mt-0.5 truncate text-[8px] text-ink-faint">
                 Performance and realtime chat
               </p>
             </div>

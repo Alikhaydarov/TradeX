@@ -153,7 +153,7 @@ export function ProfileEditDialog({
               <div className="grid gap-2">
                 <Label htmlFor="profile-username">Username</Label>
                 <div className="relative">
-                  <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-sm text-zinc-500">
+                  <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-sm text-ink-mute">
                     @
                   </span>
                   <Input
@@ -169,7 +169,7 @@ export function ProfileEditDialog({
                 <p
                   className={`text-xs ${
                     validateUsername(profile.username).valid
-                      ? "text-zinc-500"
+                      ? "text-ink-mute"
                       : "text-rose-300"
                   }`}
                 >
@@ -212,7 +212,7 @@ export function ProfileEditDialog({
                 <Label htmlFor="profile-location">Location</Label>
                 <div className="relative">
                   <MapPin
-                    className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-zinc-500"
+                    className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-ink-mute"
                     size={16}
                   />
                   <Input
@@ -238,22 +238,22 @@ export function ProfileEditDialog({
                   className="min-h-28"
                   placeholder="Write something about your trading journey..."
                 />
-                <span className="text-right text-[11px] text-zinc-600">
+                <span className="text-right text-[11px] text-ink-subtle">
                   {profile.bio.length}/160
                 </span>
               </div>
               <div className="flex items-center justify-between gap-3 rounded-xl border border-white/8 bg-surface px-4 py-3">
                 <div className="flex items-center gap-2.5">
                   {profile.statsVisible === false ? (
-                    <EyeOff size={16} className="shrink-0 text-zinc-500" />
+                    <EyeOff size={16} className="shrink-0 text-ink-mute" />
                   ) : (
-                    <Eye size={16} className="shrink-0 text-zinc-400" />
+                    <Eye size={16} className="shrink-0 text-ink-soft" />
                   )}
                   <div>
                     <p className="text-sm font-semibold text-white">
                       Show trading stats
                     </p>
-                    <p className="text-xs text-zinc-500">
+                    <p className="text-xs text-ink-mute">
                       Win rate, P&amp;L, trades va Avg R profilingizda
                       ko&apos;rinsin.
                     </p>

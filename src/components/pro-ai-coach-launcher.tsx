@@ -253,7 +253,7 @@ export function ProAiCoachLauncher() {
                 <DialogTitle className="text-base font-semibold tracking-[-0.02em] text-white sm:text-lg">
                   Tradoxy AI
                 </DialogTitle>
-                <p className="mt-0.5 truncate text-[11px] text-zinc-500">
+                <p className="mt-0.5 truncate text-[11px] text-ink-mute">
                   {selectedAccount
                     ? `Analyzing ${selectedAccount.name}`
                     : "Select an account to start"}
@@ -265,7 +265,7 @@ export function ProAiCoachLauncher() {
                 size="icon-sm"
                 onClick={() => void clearChat()}
                 disabled={!messages.length || clearing}
-                className="shrink-0 text-zinc-600 hover:bg-rose-400/10 hover:text-rose-300"
+                className="shrink-0 text-ink-subtle hover:bg-rose-400/10 hover:text-rose-300"
                 aria-label="Clear chat"
                 title="Clear chat"
               >
@@ -295,7 +295,7 @@ export function ProAiCoachLauncher() {
 
           <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-3 py-4 sm:px-5 sm:py-5">
             {historyLoading ? (
-              <div className="grid h-full place-items-center text-zinc-600">
+              <div className="grid h-full place-items-center text-ink-subtle">
                 <LoaderCircle className="size-5 animate-spin" />
               </div>
             ) : messages.length ? (
@@ -309,7 +309,7 @@ export function ProAiCoachLauncher() {
                     </div>
                   ) : (
                     <div key={message.id} className="flex items-start gap-2.5">
-                      <span className="mt-0.5 grid size-7 shrink-0 place-items-center rounded-xl border border-white/10 bg-surface-raised text-zinc-300">
+                      <span className="mt-0.5 grid size-7 shrink-0 place-items-center rounded-xl border border-white/10 bg-surface-raised text-ink-strong">
                         <Sparkles className="size-3.5" />
                       </span>
                       <article className="max-w-[calc(100%-2.5rem)] rounded-[20px] rounded-tl-md border border-white/8 bg-surface px-4 py-3 text-sm leading-6 text-zinc-200 sm:max-w-[78%]">
@@ -321,7 +321,7 @@ export function ProAiCoachLauncher() {
 
                 {sending ? (
                   <div className="flex items-start gap-2.5">
-                    <span className="grid size-7 shrink-0 place-items-center rounded-xl border border-white/10 bg-surface-raised text-zinc-300">
+                    <span className="grid size-7 shrink-0 place-items-center rounded-xl border border-white/10 bg-surface-raised text-ink-strong">
                       <Sparkles className="size-3.5" />
                     </span>
                     <div className="flex items-center gap-1.5 rounded-[20px] rounded-tl-md border border-white/8 bg-surface px-4 py-3">
@@ -341,7 +341,7 @@ export function ProAiCoachLauncher() {
                 <h3 className="mt-4 text-lg font-semibold tracking-[-0.02em] text-white">
                   Ask about your trading
                 </h3>
-                <p className="mx-auto mt-1 max-w-sm text-xs leading-5 text-zinc-600">
+                <p className="mx-auto mt-1 max-w-sm text-xs leading-5 text-ink-subtle">
                   Tradoxy AI answers from the selected account’s journal and performance data.
                 </p>
 
@@ -352,7 +352,7 @@ export function ProAiCoachLauncher() {
                       type="button"
                       onClick={() => void sendMessage(item)}
                       disabled={!accountId || sending}
-                      className="rounded-full border border-white/10 bg-surface px-3.5 py-2 text-xs text-zinc-400 transition hover:border-white/20 hover:bg-surface-raised hover:text-white disabled:cursor-not-allowed disabled:opacity-40"
+                      className="rounded-full border border-white/10 bg-surface px-3.5 py-2 text-xs text-ink-soft transition hover:border-white/20 hover:bg-surface-raised hover:text-white disabled:cursor-not-allowed disabled:opacity-40"
                     >
                       {item}
                     </button>

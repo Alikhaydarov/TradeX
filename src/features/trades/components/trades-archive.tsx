@@ -85,16 +85,16 @@ function TradeGalleryCard({ trade, formatPnl, onOpen }: { trade: JournalEntry; f
       {trade.imageUrl ? (
         <div className="relative aspect-[16/10] overflow-hidden bg-surface-raised">
           <MediaImage src={trade.imageUrl} alt={`${trade.symbol} trade screenshot`} className="h-full w-full object-contain p-2 transition-transform group-hover:scale-[1.015]" />
-          {screenshotCount > 1 ? <span className="absolute right-2 top-2 rounded-md bg-black/80 px-2 py-1 text-[9px] font-semibold text-zinc-300">{screenshotCount} images</span> : null}
+          {screenshotCount > 1 ? <span className="absolute right-2 top-2 rounded-md bg-black/80 px-2 py-1 text-[10px] font-semibold text-ink-strong">{screenshotCount} images</span> : null}
         </div>
       ) : null}
       <div className="p-3">
         <div className="flex items-center gap-2">
           <InstrumentBadge symbol={trade.symbol} compact className="shrink-0 bg-surface-raised" />
-          <div className="min-w-0 flex-1"><p className="truncate text-[11px] text-zinc-500">{formatDate(trade.rawDate)}</p></div>
+          <div className="min-w-0 flex-1"><p className="truncate text-[11px] text-ink-mute">{formatDate(trade.rawDate)}</p></div>
           <p className={`font-mono text-sm font-semibold ${trade.pnl >= 0 ? "text-emerald-300" : "text-rose-300"}`}>{formatPnl(trade.pnl)}</p>
         </div>
-        <p className="mt-3 truncate text-xs text-zinc-400">{trade.setup || trade.session || "No setup tagged"}</p>
+        <p className="mt-3 truncate text-xs text-ink-soft">{trade.setup || trade.session || "No setup tagged"}</p>
       </div>
     </button>
   )
@@ -104,10 +104,10 @@ function Pagination({ page, pages, total, onPage }: { page: number; pages: numbe
   if (pages <= 1) return null
   return (
     <div className="flex flex-col gap-2 border-t border-white/8 px-3 py-3 sm:flex-row sm:items-center sm:justify-between">
-      <p className="text-xs text-zinc-500">Showing {page * PAGE_SIZE + 1}–{Math.min((page + 1) * PAGE_SIZE, total)} of {total}</p>
+      <p className="text-xs text-ink-mute">Showing {page * PAGE_SIZE + 1}–{Math.min((page + 1) * PAGE_SIZE, total)} of {total}</p>
       <div className="flex items-center gap-2">
         <Button type="button" variant="outline" size="sm" disabled={page === 0} onClick={() => onPage(page - 1)}><ChevronLeft className="size-3.5" /> Previous</Button>
-        <span className="min-w-14 text-center text-xs text-zinc-400">{page + 1} / {pages}</span>
+        <span className="min-w-14 text-center text-xs text-ink-soft">{page + 1} / {pages}</span>
         <Button type="button" variant="outline" size="sm" disabled={page >= pages - 1} onClick={() => onPage(page + 1)}>Next <ChevronRight className="size-3.5" /></Button>
       </div>
     </div>
@@ -141,23 +141,23 @@ export function TradesArchive({
 
         <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-[minmax(220px,1fr)_170px_160px]">
           <div className="relative sm:col-span-2 lg:col-span-1">
-            <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-zinc-500" />
+            <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-ink-mute" />
             <Input type="search" value={query} onChange={(event) => onQueryChange(event.target.value)} className="h-10 pl-9" placeholder="Search symbol, setup or note" autoCapitalize="none" autoCorrect="off" />
           </div>
-          <Select value={range} onValueChange={(value) => onRangeChange(value as TradeRange)}><SelectTrigger className="h-10 w-full"><CalendarRange className="size-4 text-zinc-500" /><SelectValue /></SelectTrigger><SelectContent><SelectItem value="daily">Today</SelectItem><SelectItem value="monthly">This month</SelectItem><SelectItem value="quarter">Last 3 months</SelectItem><SelectItem value="yearly">This year</SelectItem><SelectItem value="custom">Custom range</SelectItem></SelectContent></Select>
-          <Select value={sort} onValueChange={(value) => onSortChange(value as TradeSort)}><SelectTrigger className="h-10 w-full"><SlidersHorizontal className="size-4 text-zinc-500" /><SelectValue /></SelectTrigger><SelectContent><SelectItem value="entryDate">Oldest first</SelectItem><SelectItem value="exitDate">Newest first</SelectItem></SelectContent></Select>
+          <Select value={range} onValueChange={(value) => onRangeChange(value as TradeRange)}><SelectTrigger className="h-10 w-full"><CalendarRange className="size-4 text-ink-mute" /><SelectValue /></SelectTrigger><SelectContent><SelectItem value="daily">Today</SelectItem><SelectItem value="monthly">This month</SelectItem><SelectItem value="quarter">Last 3 months</SelectItem><SelectItem value="yearly">This year</SelectItem><SelectItem value="custom">Custom range</SelectItem></SelectContent></Select>
+          <Select value={sort} onValueChange={(value) => onSortChange(value as TradeSort)}><SelectTrigger className="h-10 w-full"><SlidersHorizontal className="size-4 text-ink-mute" /><SelectValue /></SelectTrigger><SelectContent><SelectItem value="entryDate">Oldest first</SelectItem><SelectItem value="exitDate">Newest first</SelectItem></SelectContent></Select>
         </div>
 
         {range === "custom" ? (
           <div className="grid gap-2 sm:max-w-md sm:grid-cols-2">
-            <label className="text-[10px] font-semibold uppercase tracking-wider text-zinc-500">From<Input type="date" value={customStart} max={customEnd} onChange={(event) => onCustomStartChange(event.target.value)} className="mt-1.5 h-10 text-sm" /></label>
-            <label className="text-[10px] font-semibold uppercase tracking-wider text-zinc-500">To<Input type="date" value={customEnd} min={customStart} onChange={(event) => onCustomEndChange(event.target.value)} className="mt-1.5 h-10 text-sm" /></label>
+            <label className="text-[10px] font-semibold uppercase tracking-wider text-ink-mute">From<Input type="date" value={customStart} max={customEnd} onChange={(event) => onCustomStartChange(event.target.value)} className="mt-1.5 h-10 text-sm" /></label>
+            <label className="text-[10px] font-semibold uppercase tracking-wider text-ink-mute">To<Input type="date" value={customEnd} min={customStart} onChange={(event) => onCustomEndChange(event.target.value)} className="mt-1.5 h-10 text-sm" /></label>
           </div>
-        ) : <p className="text-[11px] text-zinc-600">{rangeNote}</p>}
+        ) : <p className="text-[11px] text-ink-subtle">{rangeNote}</p>}
 
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
           {[{ label: "Trades", value: String(trades.length) }, { label: "Win rate", value: `${winRate}%` }, { label: "Best trade", value: bestTrade ? formatPnl(bestTrade.pnl) : "—" }, { label: "Average R", value: `${averageR.toFixed(2)}R` }].map((item) => (
-            <div key={item.label} className="rounded-lg border border-white/8 bg-white/[.02] px-3 py-2"><p className="text-[9px] uppercase tracking-[0.12em] text-zinc-600">{item.label}</p><p className="mt-1 truncate font-mono text-sm font-semibold text-zinc-200">{item.value}</p></div>
+            <div key={item.label} className="rounded-lg border border-white/8 bg-white/[.02] px-3 py-2"><p className="text-[10px] uppercase tracking-[0.12em] text-ink-subtle">{item.label}</p><p className="mt-1 truncate font-mono text-sm font-semibold text-zinc-200">{item.value}</p></div>
           ))}
         </div>
 
@@ -178,11 +178,11 @@ export function TradesArchive({
                 <TableHeader><TableRow className="hover:bg-transparent"><TableHead>Date</TableHead><TableHead>Instrument</TableHead><TableHead>Side</TableHead><TableHead>Setup / session</TableHead><TableHead>R</TableHead><TableHead className="text-right">P&amp;L</TableHead></TableRow></TableHeader>
                 <TableBody>{pagedTrades.map((trade) => (
                   <TableRow key={trade.id} tabIndex={0} role="button" onClick={() => onOpenTrade(trade)} onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); onOpenTrade(trade) } }} className="cursor-pointer">
-                    <TableCell><p className="font-medium text-zinc-200">{formatDate(trade.rawDate)}</p><p className="mt-0.5 max-w-52 truncate text-[11px] text-zinc-600">{trade.note || "Open review"}</p></TableCell>
+                    <TableCell><p className="font-medium text-zinc-200">{formatDate(trade.rawDate)}</p><p className="mt-0.5 max-w-52 truncate text-[11px] text-ink-subtle">{trade.note || "Open review"}</p></TableCell>
                     <TableCell><InstrumentBadge symbol={trade.symbol} compact className="bg-surface-raised" /></TableCell>
                     <TableCell><span className={`text-xs font-semibold ${trade.side === "Long" ? "text-emerald-300" : "text-rose-300"}`}>{trade.side === "Long" ? "Buy" : "Sell"}</span></TableCell>
-                    <TableCell className="max-w-56 truncate text-zinc-400">{trade.setup || trade.session || "—"}</TableCell>
-                    <TableCell className="font-mono text-zinc-400">{(trade.resultR || 0).toFixed(2)}R</TableCell>
+                    <TableCell className="max-w-56 truncate text-ink-soft">{trade.setup || trade.session || "—"}</TableCell>
+                    <TableCell className="font-mono text-ink-soft">{(trade.resultR || 0).toFixed(2)}R</TableCell>
                     <TableCell className={`text-right font-mono font-semibold ${trade.pnl >= 0 ? "text-emerald-300" : "text-rose-300"}`}>{formatPnl(trade.pnl)}</TableCell>
                   </TableRow>
                 ))}</TableBody>
@@ -191,23 +191,23 @@ export function TradesArchive({
             <div className="divide-y divide-white/8 sm:hidden">{pagedTrades.map((trade) => (
               <button key={trade.id} type="button" onClick={() => onOpenTrade(trade)} className="flex w-full items-center gap-3 px-3 py-3 text-left transition hover:bg-white/[.025] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-white/25">
                 <InstrumentBadge symbol={trade.symbol} compact className="shrink-0 bg-surface-raised" />
-                <div className="min-w-0 flex-1"><span className={`text-[10px] font-semibold ${trade.side === "Long" ? "text-emerald-300" : "text-rose-300"}`}>{trade.side === "Long" ? "Buy" : "Sell"}</span><p className="mt-1 truncate text-[11px] text-zinc-500">{formatDate(trade.rawDate)} · {trade.setup || trade.session || "No setup"}</p></div>
-                <div className="text-right"><p className={`font-mono text-sm font-semibold ${trade.pnl >= 0 ? "text-emerald-300" : "text-rose-300"}`}>{formatPnl(trade.pnl)}</p><p className="mt-1 text-[10px] text-zinc-600">{(trade.resultR || 0).toFixed(2)}R</p></div>
+                <div className="min-w-0 flex-1"><span className={`text-[10px] font-semibold ${trade.side === "Long" ? "text-emerald-300" : "text-rose-300"}`}>{trade.side === "Long" ? "Buy" : "Sell"}</span><p className="mt-1 truncate text-[11px] text-ink-mute">{formatDate(trade.rawDate)} · {trade.setup || trade.session || "No setup"}</p></div>
+                <div className="text-right"><p className={`font-mono text-sm font-semibold ${trade.pnl >= 0 ? "text-emerald-300" : "text-rose-300"}`}>{formatPnl(trade.pnl)}</p><p className="mt-1 text-[10px] text-ink-subtle">{(trade.resultR || 0).toFixed(2)}R</p></div>
               </button>
             ))}</div>
             <div className="hidden gap-2 p-3 sm:grid sm:grid-cols-2 lg:hidden">{pagedTrades.map((trade) => (
               <button key={trade.id} type="button" onClick={() => onOpenTrade(trade)} className="flex w-full items-center gap-3 rounded-xl border border-white/8 bg-surface px-3 py-3 text-left transition hover:border-white/15 hover:bg-white/[.025] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/25">
                 <InstrumentBadge symbol={trade.symbol} compact className="shrink-0 bg-surface-raised" />
-                <div className="min-w-0 flex-1"><span className={`text-[10px] font-semibold ${trade.side === "Long" ? "text-emerald-300" : "text-rose-300"}`}>{trade.side === "Long" ? "Buy" : "Sell"}</span><p className="mt-1 truncate text-[11px] text-zinc-500">{formatDate(trade.rawDate)} · {trade.setup || trade.session || "No setup"}</p></div>
-                <div className="text-right"><p className={`font-mono text-sm font-semibold ${trade.pnl >= 0 ? "text-emerald-300" : "text-rose-300"}`}>{formatPnl(trade.pnl)}</p><p className="mt-1 text-[10px] text-zinc-600">{(trade.resultR || 0).toFixed(2)}R</p></div>
+                <div className="min-w-0 flex-1"><span className={`text-[10px] font-semibold ${trade.side === "Long" ? "text-emerald-300" : "text-rose-300"}`}>{trade.side === "Long" ? "Buy" : "Sell"}</span><p className="mt-1 truncate text-[11px] text-ink-mute">{formatDate(trade.rawDate)} · {trade.setup || trade.session || "No setup"}</p></div>
+                <div className="text-right"><p className={`font-mono text-sm font-semibold ${trade.pnl >= 0 ? "text-emerald-300" : "text-rose-300"}`}>{formatPnl(trade.pnl)}</p><p className="mt-1 text-[10px] text-ink-subtle">{(trade.resultR || 0).toFixed(2)}R</p></div>
               </button>
             ))}</div>
             <Pagination page={page} pages={pages} total={trades.length} onPage={setPage} />
           </>
         ) : view === "gallery" ? (
-          <><div className="space-y-5 p-3 sm:p-4">{galleryGroups.map((group) => <section key={group.key}><div className="mb-3 flex items-center gap-2"><h3 className="text-sm font-semibold text-white">{group.label}</h3><span className="text-xs text-zinc-600">{group.trades.length}</span></div><div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">{group.trades.map((trade) => <TradeGalleryCard key={trade.id} trade={trade} formatPnl={formatPnl} onOpen={() => onOpenTrade(trade)} />)}</div></section>)}</div><Pagination page={page} pages={pages} total={trades.length} onPage={setPage} /></>
+          <><div className="space-y-5 p-3 sm:p-4">{galleryGroups.map((group) => <section key={group.key}><div className="mb-3 flex items-center gap-2"><h3 className="text-sm font-semibold text-white">{group.label}</h3><span className="text-xs text-ink-subtle">{group.trades.length}</span></div><div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">{group.trades.map((trade) => <TradeGalleryCard key={trade.id} trade={trade} formatPnl={formatPnl} onOpen={() => onOpenTrade(trade)} />)}</div></section>)}</div><Pagination page={page} pages={pages} total={trades.length} onPage={setPage} /></>
         ) : weekGroups.length ? (
-          <div className="space-y-5 p-3 sm:p-4">{weekGroups.map((group) => <section key={group.key}><div className="mb-3 flex items-baseline gap-2"><h3 className="text-sm font-semibold text-white">{group.label}</h3><span className="text-xs text-zinc-600">{group.dateLabel} · {group.trades.length} trades</span></div><div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">{group.trades.map((trade) => <TradeGalleryCard key={trade.id} trade={trade} formatPnl={formatPnl} onOpen={() => onOpenTrade(trade)} />)}</div></section>)}</div>
+          <div className="space-y-5 p-3 sm:p-4">{weekGroups.map((group) => <section key={group.key}><div className="mb-3 flex items-baseline gap-2"><h3 className="text-sm font-semibold text-white">{group.label}</h3><span className="text-xs text-ink-subtle">{group.dateLabel} · {group.trades.length} trades</span></div><div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">{group.trades.map((trade) => <TradeGalleryCard key={trade.id} trade={trade} formatPnl={formatPnl} onOpen={() => onOpenTrade(trade)} />)}</div></section>)}</div>
         ) : (
           <Empty className="m-3 min-h-64"><EmptyMedia><CalendarRange className="size-4" /></EmptyMedia><EmptyHeader><EmptyTitle>No trades this week</EmptyTitle><EmptyDescription>Weekly review will appear after the first closed trade.</EmptyDescription></EmptyHeader></Empty>
         )}

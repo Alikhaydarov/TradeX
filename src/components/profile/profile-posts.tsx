@@ -31,9 +31,9 @@ function EmptyTab({ tab }: { tab: ProfileTab }) {
   return (
     <div className="grid min-h-64 place-items-center px-8 text-center">
       <div>
-        <ImageIcon className="mx-auto text-zinc-600" size={36} />
+        <ImageIcon className="mx-auto text-ink-subtle" size={36} />
         <h3 className="mt-4 text-2xl font-black">{title}</h3>
-        <p className="mt-2 text-sm text-zinc-500">{description}</p>
+        <p className="mt-2 text-sm text-ink-mute">{description}</p>
       </div>
     </div>
   );
@@ -71,9 +71,9 @@ function ProfilePost({
           <div className="flex min-w-0 flex-wrap items-center gap-x-1.5 gap-y-0.5 text-[13px] leading-5 sm:text-sm">
             <p className="max-w-full truncate font-black text-white">{post.name}</p>
             {post.isVerified ? <VerifiedBadge size={15} /> : null}
-            <p className="truncate text-xs text-zinc-500">{post.handle}</p>
-            <span className="text-xs text-zinc-700">/</span>
-            <p className="text-xs text-zinc-500">{post.time}</p>
+            <p className="truncate text-xs text-ink-mute">{post.handle}</p>
+            <span className="text-xs text-ink-faint">/</span>
+            <p className="text-xs text-ink-mute">{post.time}</p>
           </div>
           {post.symbol ? (
             <div className="mt-3 flex flex-wrap items-center gap-2 rounded-2xl border border-white/8 bg-black px-3 py-2.5 shadow-[inset_0_1px_0_rgba(255,255,255,.04)]">
@@ -82,14 +82,14 @@ function ProfilePost({
                 compact
                 className="mr-auto rounded-xl bg-surface-raised"
               />
-              <span className="text-[10px] font-black text-zinc-300">{post.side}</span>
+              <span className="text-[10px] font-black text-ink-strong">{post.side}</span>
               <span
                 className={
                   post.result === "WIN"
                     ? "text-[10px] font-black text-emerald-300"
                     : post.result === "LOSS"
                       ? "text-[10px] font-black text-rose-300"
-                      : "text-[10px] font-black text-zinc-300"
+                      : "text-[10px] font-black text-ink-strong"
                 }
               >
                 {post.result}
@@ -113,8 +113,8 @@ function ProfilePost({
             </p>
           ) : null}
           {post.timelineType === "reply" && post.parentPostText ? (
-            <div className="mt-3 rounded-2xl border border-white/8 bg-black px-3 py-3 text-xs text-zinc-400">
-              <div className="mb-1 text-[10px] font-black uppercase tracking-[0.16em] text-zinc-600">
+            <div className="mt-3 rounded-2xl border border-white/8 bg-black px-3 py-3 text-xs text-ink-soft">
+              <div className="mb-1 text-[10px] font-black uppercase tracking-[0.16em] text-ink-subtle">
                 Original post
               </div>
               <p className="line-clamp-3 whitespace-pre-line leading-5">
@@ -162,8 +162,8 @@ function ProfilePost({
               />
             </a>
           ) : null}
-          <div className="mt-3 grid max-w-md grid-cols-5 text-zinc-500">
-            <span className="flex h-8 items-center gap-1.5 rounded-full text-[12px] transition hover:text-zinc-300">
+          <div className="mt-3 grid max-w-md grid-cols-5 text-ink-mute">
+            <span className="flex h-8 items-center gap-1.5 rounded-full text-[12px] transition hover:text-ink-strong">
               <MessageCircle size={16} /> {post.replies}
             </span>
             <span className="flex h-8 items-center gap-1.5 rounded-full text-[12px] transition hover:text-emerald-200">
@@ -172,10 +172,10 @@ function ProfilePost({
             <span className="flex h-8 items-center gap-1.5 rounded-full text-[12px] transition hover:text-rose-200">
               <Heart size={16} /> {post.likes}
             </span>
-            <span className="flex h-8 items-center gap-1.5 rounded-full text-[12px] transition hover:text-zinc-300">
+            <span className="flex h-8 items-center gap-1.5 rounded-full text-[12px] transition hover:text-ink-strong">
               <Eye size={16} /> {formatCount(post.views)}
             </span>
-            <span className="flex h-8 items-center gap-1.5 rounded-full text-[12px] transition hover:text-zinc-300">
+            <span className="flex h-8 items-center gap-1.5 rounded-full text-[12px] transition hover:text-ink-strong">
               <Bookmark size={16} />
             </span>
           </div>
@@ -215,7 +215,7 @@ export function ProfilePosts({
               className={`relative min-w-0 px-2 py-3 text-xs font-black transition-colors ${
                 active
                   ? "text-white"
-                  : "text-zinc-500 hover:bg-white/[.03] hover:text-zinc-300"
+                  : "text-ink-mute hover:bg-white/[.03] hover:text-ink-strong"
               }`}
             >
               {tab.label}

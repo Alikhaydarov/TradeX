@@ -122,7 +122,7 @@ function SectionHeading({
     <div className="flex items-center justify-between gap-3">
       <div className="min-w-0">
         <h2 className="truncate text-[13px] font-bold text-white">{title}</h2>
-        {description ? <p className="mt-0.5 truncate text-[9px] text-zinc-600">{description}</p> : null}
+        {description ? <p className="mt-0.5 truncate text-[10px] text-ink-subtle">{description}</p> : null}
       </div>
       {action}
     </div>
@@ -145,7 +145,7 @@ function StatCard({
       ? "border-emerald-400/12 bg-emerald-400/[.035] text-emerald-300"
       : tone === "warning"
         ? "border-amber-400/12 bg-amber-400/[.035] text-amber-300"
-        : "border-white/[.085] bg-surface text-zinc-500";
+        : "border-white/[.085] bg-surface text-ink-mute";
 
   return (
     <div className={`rounded-xl border p-3 ${toneClass}`}>
@@ -155,7 +155,7 @@ function StatCard({
         </span>
         <p className="text-[18px] font-bold tabular-nums tracking-[-0.035em] text-white">{value}</p>
       </div>
-      <p className="mt-2.5 text-[8px] font-bold uppercase tracking-[0.13em] text-zinc-700">{label}</p>
+      <p className="mt-2.5 text-[8px] font-bold uppercase tracking-[0.13em] text-ink-faint">{label}</p>
     </div>
   );
 }
@@ -163,21 +163,21 @@ function StatCard({
 function ResultRow({ result, rank, expanded = false }: { result: Result; rank: number; expanded?: boolean }) {
   return (
     <div className="grid grid-cols-[32px_minmax(0,1fr)_auto] items-center gap-2.5 rounded-xl border border-white/7 bg-surface px-3 py-2.5 transition hover:border-white/14 hover:bg-surface">
-      <span className={`grid size-8 place-items-center rounded-lg text-[10px] font-black ${rank <= 3 ? "bg-amber-400/10 text-amber-300" : "bg-white/[.04] text-zinc-600"}`}>
+      <span className={`grid size-8 place-items-center rounded-lg text-[10px] font-black ${rank <= 3 ? "bg-amber-400/10 text-amber-300" : "bg-white/[.04] text-ink-subtle"}`}>
         {rank}
       </span>
       <div className="flex min-w-0 items-center gap-2.5">
         <TraderAvatar
           name={result.member?.full_name || result.member?.username || "Trader"}
           value={result.member?.avatar_url}
-          className="size-8 shrink-0 rounded-lg text-[9px]"
+          className="size-8 shrink-0 rounded-lg text-[10px]"
         />
         <div className="min-w-0">
           <div className="flex min-w-0 items-center gap-1.5">
             <p className="truncate text-[11px] font-semibold text-zinc-200">@{result.member?.username || "trader"}</p>
             {result.member?.is_verified ? <VerifiedBadge className="size-3.5" /> : null}
           </div>
-          <p className="mt-0.5 truncate text-[9px] text-zinc-600">
+          <p className="mt-0.5 truncate text-[10px] text-ink-subtle">
             {result.accountName}
             {expanded ? ` · ${result.trades} trades · ${result.winRate}% WR` : result.firm ? ` · ${result.firm}` : ""}
           </p>
@@ -187,7 +187,7 @@ function ResultRow({ result, rank, expanded = false }: { result: Result; rank: n
         <p className={`text-[12px] font-bold tabular-nums ${result.pnlPercent >= 0 ? "text-emerald-300" : "text-rose-300"}`}>
           {result.pnlPercent >= 0 ? "+" : ""}{result.pnlPercent}%
         </p>
-        <p className="mt-0.5 text-[8px] tabular-nums text-zinc-600">
+        <p className="mt-0.5 text-[8px] tabular-nums text-ink-subtle">
           {result.dollarPnl === null ? `${result.winRate}% WR` : money.format(result.dollarPnl)}
         </p>
       </div>
@@ -211,7 +211,7 @@ function AccountSharing({
   return (
     <section className={`${PANEL} flex min-h-0 flex-col overflow-hidden`}>
       <div className="border-b border-white/7 p-3.5">
-        <SectionHeading title="Share accounts" description="Choose what this community can see" action={<WalletCards size={15} className="text-zinc-700" />} />
+        <SectionHeading title="Share accounts" description="Choose what this community can see" action={<WalletCards size={15} className="text-ink-faint" />} />
       </div>
       <div className="min-h-0 flex-1 space-y-2 overflow-y-auto p-3 xl:max-h-[385px]">
         {accounts.map((account) => {
@@ -229,12 +229,12 @@ function AccountSharing({
                 </button>
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-[10px] font-semibold text-zinc-200">{account.name}</p>
-                  <p className="mt-0.5 truncate text-[8px] text-zinc-700">{account.firm || "Independent"}</p>
+                  <p className="mt-0.5 truncate text-[8px] text-ink-faint">{account.firm || "Independent"}</p>
                 </div>
                 <span className={`size-2 rounded-full ${value.enabled ? "bg-emerald-400" : "bg-zinc-800"}`} />
               </div>
               {value.enabled ? (
-                <label className="mt-2.5 flex items-center justify-between border-t border-white/7 pt-2 text-[9px] text-zinc-500">
+                <label className="mt-2.5 flex items-center justify-between border-t border-white/7 pt-2 text-[10px] text-ink-mute">
                   Show dollar P&amp;L
                   <input
                     type="checkbox"
@@ -247,7 +247,7 @@ function AccountSharing({
             </div>
           );
         })}
-        {!accounts.length ? <p className="py-8 text-center text-[10px] text-zinc-700">No trading accounts found.</p> : null}
+        {!accounts.length ? <p className="py-8 text-center text-[10px] text-ink-faint">No trading accounts found.</p> : null}
       </div>
       {accounts.length ? (
         <div className="sticky bottom-0 border-t border-white/7 bg-surface/95 p-3 backdrop-blur">
@@ -369,7 +369,7 @@ export function CommunityDetailPremium({
   if (loading) {
     return (
       <div className="grid min-h-[70dvh] place-items-center">
-        <Spinner className="size-6 text-zinc-500" />
+        <Spinner className="size-6 text-ink-mute" />
       </div>
     );
   }
@@ -379,7 +379,7 @@ export function CommunityDetailPremium({
       <div className="mx-auto grid min-h-[70dvh] max-w-xl place-items-center p-4 text-center">
         <div className={`${PANEL} p-5`}>
           <h1 className="text-base font-bold text-white">Community unavailable</h1>
-          <p className="mt-1 text-[11px] leading-5 text-zinc-600">{error || "The community may have been removed or your invitation is not active."}</p>
+          <p className="mt-1 text-[11px] leading-5 text-ink-subtle">{error || "The community may have been removed or your invitation is not active."}</p>
           <Button type="button" onClick={() => go("/community")} className="mt-4 h-8 rounded-lg text-[10px]">
             <ArrowLeft size={13} /> My communities
           </Button>
@@ -407,7 +407,7 @@ export function CommunityDetailPremium({
             <button
               type="button"
               onClick={() => go("/community")}
-              className="grid size-8 shrink-0 place-items-center rounded-lg border border-white/8 bg-surface text-zinc-600 transition hover:text-white lg:hidden"
+              className="grid size-8 shrink-0 place-items-center rounded-lg border border-white/8 bg-surface text-ink-subtle transition hover:text-white lg:hidden"
               aria-label="Back to communities"
             >
               <ArrowLeft size={14} />
@@ -425,10 +425,10 @@ export function CommunityDetailPremium({
                 <h1 className="truncate text-[15px] font-bold tracking-[-0.025em] text-white sm:text-base">{community.name}</h1>
                 <ShieldCheck size={14} className="shrink-0 text-emerald-300" />
               </div>
-              <p className="mt-0.5 truncate text-[9px] capitalize text-zinc-600">{data.role} · {activeMembers.length} members</p>
+              <p className="mt-0.5 truncate text-[10px] capitalize text-ink-subtle">{data.role} · {activeMembers.length} members</p>
             </div>
           </div>
-          <p className="line-clamp-2 max-w-xl text-[10px] leading-[17px] text-zinc-600 sm:text-right">
+          <p className="line-clamp-2 max-w-xl text-[10px] leading-[17px] text-ink-subtle sm:text-right">
             {community.description || "Private community performance workspace."}
           </p>
         </div>
@@ -443,7 +443,7 @@ export function CommunityDetailPremium({
               key={item.id}
               type="button"
               onClick={() => navigate(item.id)}
-              className={`flex min-w-0 flex-col items-center gap-1 rounded-lg px-1 py-2 text-[8px] font-semibold transition ${selected ? "bg-surface-raised text-white" : "text-zinc-600"}`}
+              className={`flex min-w-0 flex-col items-center gap-1 rounded-lg px-1 py-2 text-[8px] font-semibold transition ${selected ? "bg-surface-raised text-white" : "text-ink-subtle"}`}
             >
               <Icon size={13} />
               <span className="truncate">{item.label}</span>
@@ -469,7 +469,7 @@ export function CommunityDetailPremium({
               <SectionHeading title="Top performance" description="Best shared accounts by return" action={<Trophy size={15} className="text-amber-400/70" />} />
               <div className="mt-3 space-y-1.5">
                 {leaderboard.slice(0, 5).map((result, index) => <ResultRow key={result.accountId} result={result} rank={index + 1} />)}
-                {!leaderboard.length ? <p className="py-8 text-center text-[10px] text-zinc-700">No shared results yet.</p> : null}
+                {!leaderboard.length ? <p className="py-8 text-center text-[10px] text-ink-faint">No shared results yet.</p> : null}
               </div>
             </section>
             <AccountSharing accounts={data.accounts} draft={shareDraft} busy={busy} onChange={setShareDraft} onSave={() => void saveShares()} />
@@ -489,7 +489,7 @@ export function CommunityDetailPremium({
             <SectionHeading title="Account analytics" description="Compact comparison of all shared accounts" />
             <div className="mt-3 overflow-x-auto rounded-xl border border-white/7">
               <table className="w-full min-w-[680px] text-left text-[10px]">
-                <thead className="bg-white/[.025] text-[8px] uppercase tracking-[0.12em] text-zinc-700">
+                <thead className="bg-white/[.025] text-[8px] uppercase tracking-[0.12em] text-ink-faint">
                   <tr className="border-b border-white/7">
                     <th className="px-3 py-2.5 font-semibold">Trader</th>
                     <th className="px-3 py-2.5 font-semibold">Account</th>
@@ -502,11 +502,11 @@ export function CommunityDetailPremium({
                 <tbody>
                   {leaderboard.map((result) => (
                     <tr key={result.accountId} className="border-b border-white/6 transition last:border-0 hover:bg-white/[.025]">
-                      <td className="px-3 py-2.5 text-zinc-300">@{result.member?.username || "trader"}</td>
-                      <td className="px-3 py-2.5 text-zinc-500">{result.accountName}</td>
-                      <td className="px-3 py-2.5 tabular-nums text-zinc-500">{result.trades}</td>
-                      <td className="px-3 py-2.5 tabular-nums text-zinc-500">{result.wins} / {result.losses}</td>
-                      <td className="px-3 py-2.5 tabular-nums text-zinc-300">{result.winRate}%</td>
+                      <td className="px-3 py-2.5 text-ink-strong">@{result.member?.username || "trader"}</td>
+                      <td className="px-3 py-2.5 text-ink-mute">{result.accountName}</td>
+                      <td className="px-3 py-2.5 tabular-nums text-ink-mute">{result.trades}</td>
+                      <td className="px-3 py-2.5 tabular-nums text-ink-mute">{result.wins} / {result.losses}</td>
+                      <td className="px-3 py-2.5 tabular-nums text-ink-strong">{result.winRate}%</td>
                       <td className={`px-3 py-2.5 text-right font-bold tabular-nums ${result.pnlPercent >= 0 ? "text-emerald-300" : "text-rose-300"}`}>
                         {result.pnlPercent >= 0 ? "+" : ""}{result.pnlPercent}%
                       </td>
@@ -514,7 +514,7 @@ export function CommunityDetailPremium({
                   ))}
                 </tbody>
               </table>
-              {!leaderboard.length ? <p className="py-10 text-center text-[10px] text-zinc-700">No analytics data yet.</p> : null}
+              {!leaderboard.length ? <p className="py-10 text-center text-[10px] text-ink-faint">No analytics data yet.</p> : null}
             </div>
           </section>
         </div>
@@ -525,7 +525,7 @@ export function CommunityDetailPremium({
           <SectionHeading title="Leaderboard" description="Ranked by shared account return" action={<Crown size={15} className="text-amber-400/70" />} />
           <div className="mt-3 grid gap-1.5 lg:grid-cols-2">
             {leaderboard.map((result, index) => <ResultRow key={result.accountId} result={result} rank={index + 1} expanded />)}
-            {!leaderboard.length ? <p className="col-span-full py-10 text-center text-[10px] text-zinc-700">No ranked accounts yet.</p> : null}
+            {!leaderboard.length ? <p className="col-span-full py-10 text-center text-[10px] text-ink-faint">No ranked accounts yet.</p> : null}
           </div>
         </section>
       ) : null}
@@ -533,7 +533,7 @@ export function CommunityDetailPremium({
       {activeTab === "members" ? (
         <div className="grid gap-3 xl:grid-cols-[minmax(0,1fr)_320px]">
           <section className={`${PANEL} p-3.5`}>
-            <SectionHeading title="Members" description={`${activeMembers.length} accepted members`} action={<UsersRound size={15} className="text-zinc-700" />} />
+            <SectionHeading title="Members" description={`${activeMembers.length} accepted members`} action={<UsersRound size={15} className="text-ink-faint" />} />
             <div className="mt-3 divide-y divide-white/7">
               {data.members.map((member) => (
                 <div key={member.user_id} className="flex items-center gap-3 py-2.5 first:pt-0 last:pb-0">
@@ -541,7 +541,7 @@ export function CommunityDetailPremium({
                     <TraderAvatar
                       name={member.profile?.full_name || member.profile?.username || "Member"}
                       value={member.profile?.avatar_url}
-                      className="size-8 rounded-lg text-[9px]"
+                      className="size-8 rounded-lg text-[10px]"
                     />
                     <span className={`absolute -bottom-0.5 -right-0.5 size-2.5 rounded-full border-2 border-[#070707] ${member.status === "active" ? "bg-emerald-400" : "bg-amber-400"}`} />
                   </div>
@@ -550,10 +550,10 @@ export function CommunityDetailPremium({
                       <p className="truncate text-[11px] font-semibold text-zinc-200">{member.profile?.full_name || member.profile?.username || "Member"}</p>
                       {member.profile?.is_verified ? <VerifiedBadge className="size-3.5" /> : null}
                     </div>
-                    <p className="mt-0.5 truncate text-[8px] text-zinc-700">@{member.profile?.username || "member"}</p>
+                    <p className="mt-0.5 truncate text-[8px] text-ink-faint">@{member.profile?.username || "member"}</p>
                   </div>
                   <div className="text-right">
-                    <p className="text-[9px] capitalize text-zinc-400">{member.role}</p>
+                    <p className="text-[10px] capitalize text-ink-soft">{member.role}</p>
                     <p className={`mt-0.5 text-[8px] capitalize ${member.status === "active" ? "text-emerald-400" : "text-amber-400"}`}>{member.status}</p>
                   </div>
                 </div>
@@ -563,7 +563,7 @@ export function CommunityDetailPremium({
 
           {data.isOwner ? (
             <section className={`${PANEL} p-3.5`}>
-              <SectionHeading title="Invite followers" description="Select followers, then send invitations" action={<UserPlus size={15} className="text-zinc-700" />} />
+              <SectionHeading title="Invite followers" description="Select followers, then send invitations" action={<UserPlus size={15} className="text-ink-faint" />} />
               <div className="mt-3 max-h-[360px] space-y-1 overflow-y-auto pr-1">
                 {data.followers.map((profile) => {
                   const selected = selectedFollowers.includes(profile.id);
@@ -575,12 +575,12 @@ export function CommunityDetailPremium({
                       className={`flex w-full items-center gap-2 rounded-xl border px-2 py-2 text-left transition ${selected ? "border-white/18 bg-white/[.065]" : "border-white/6 bg-surface hover:border-white/12"}`}
                     >
                       <TraderAvatar name={profile.full_name || profile.username} value={profile.avatar_url} className="size-7 rounded-lg text-[8px]" />
-                      <span className="min-w-0 flex-1 truncate text-[10px] text-zinc-300">@{profile.username}</span>
+                      <span className="min-w-0 flex-1 truncate text-[10px] text-ink-strong">@{profile.username}</span>
                       <span className={`grid size-5 place-items-center rounded-md border ${selected ? "border-white bg-white text-black" : "border-white/10 text-transparent"}`}><Check size={12} /></span>
                     </button>
                   );
                 })}
-                {!data.followers.length ? <p className="py-8 text-center text-[10px] text-zinc-700">No eligible followers.</p> : null}
+                {!data.followers.length ? <p className="py-8 text-center text-[10px] text-ink-faint">No eligible followers.</p> : null}
               </div>
               <Button type="button" disabled={busy || !selectedFollowers.length} onClick={() => void invite()} className="mt-3 h-8 w-full rounded-lg bg-white text-[10px] font-bold text-black hover:bg-zinc-200">
                 {busy ? <Spinner className="size-3.5" /> : <UserPlus size={13} />} Invite {selectedFollowers.length || ""}

@@ -63,7 +63,7 @@ export function ProfileAchievements({
                 />
                 <div className="p-2.5">
                   <span
-                    className={`text-[9px] font-black uppercase ${
+                    className={`text-[10px] font-black uppercase ${
                       item.achievement_type === "payout"
                         ? "text-emerald-300"
                         : "text-amber-200"
@@ -79,7 +79,7 @@ export function ProfileAchievements({
               {isOwnProfile ? (
                 <button
                   onClick={() => onRemove(item.id)}
-                  className="absolute right-2 top-2 grid size-8 place-items-center rounded-lg bg-black text-zinc-300 opacity-100 sm:opacity-0 sm:group-hover:opacity-100"
+                  className="absolute right-2 top-2 grid size-8 place-items-center rounded-lg bg-black text-ink-strong opacity-100 sm:opacity-0 sm:group-hover:opacity-100"
                   aria-label="Remove achievement"
                 >
                   <Trash2 size={14} />

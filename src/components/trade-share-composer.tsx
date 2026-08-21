@@ -574,7 +574,7 @@ export function TradeShareComposer({ trade, onClose }: TradeShareComposerProps) 
                       : null}
                     {trade.session?.trim() ? <span className="text-[11px] text-[#8a8a8a]">{trade.session}</span> : null}
                     <span className="text-[11px] text-[#8a8a8a]">{trade.date}</span>
-                    <span className={`ml-auto rounded px-1.5 py-0.5 text-[9px] font-black ${win ? "bg-emerald-500/15 text-emerald-300" : "bg-rose-500/15 text-rose-300"}`}>
+                    <span className={`ml-auto rounded px-1.5 py-0.5 text-[10px] font-black ${win ? "bg-emerald-500/15 text-emerald-300" : "bg-rose-500/15 text-rose-300"}`}>
                       {trade.pnl > 0 ? "WIN" : trade.pnl < 0 ? "LOSS" : "BE"}
                     </span>
                   </div>
@@ -605,7 +605,7 @@ export function TradeShareComposer({ trade, onClose }: TradeShareComposerProps) 
               <div className={`relative mx-auto overflow-hidden rounded-xl bg-surface-raised ${activeTab === "story" ? "aspect-[9/16] max-w-[164px]" : "aspect-square max-w-[260px]"}`}>
                 {generating ? (
                   <div className="grid h-full place-items-center">
-                    <LoaderCircle size={22} className="animate-spin text-zinc-600" />
+                    <LoaderCircle size={22} className="animate-spin text-ink-subtle" />
                   </div>
                 ) : (
                   <MediaImage src={activeTab === "feed" ? feedCardUrl : storyCardUrl}

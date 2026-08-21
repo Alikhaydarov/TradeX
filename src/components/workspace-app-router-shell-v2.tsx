@@ -293,7 +293,7 @@ function WorkspaceAppRouterShellInner({
 
   const routeContent =
     section === "admin" && isAdmin !== true ? (
-      <div className="grid min-h-[60vh] place-items-center text-sm font-semibold text-zinc-400">
+      <div className="grid min-h-[60vh] place-items-center text-sm font-semibold text-ink-soft">
         Checking admin access...
       </div>
     ) : (

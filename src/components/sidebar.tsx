@@ -80,7 +80,7 @@ const money = new Intl.NumberFormat("en-US", {
 
 function GroupLabel({ children }: { children: string }) {
   return (
-    <p className="px-1.5 pb-1 pt-3 text-[8px] font-medium uppercase tracking-[0.14em] text-zinc-700">
+    <p className="px-1.5 pb-1 pt-3 text-[8px] font-medium uppercase tracking-[0.14em] text-ink-faint">
       {children}
     </p>
   );
@@ -311,11 +311,11 @@ export function Sidebar({
         } ${
           selected
             ? "bg-surface-raised text-white ring-1 ring-white/10"
-            : "text-zinc-400 hover:bg-surface hover:text-white"
+            : "text-ink-soft hover:bg-surface hover:text-white"
         }`}
       >
         <span
-          className={`grid h-7 w-7 place-items-center rounded-lg transition-colors ${selected ? "bg-[#1a1a1a] text-white" : "bg-surface text-zinc-500 group-hover:bg-surface group-hover:text-zinc-300"}`}
+          className={`grid h-7 w-7 place-items-center rounded-lg transition-colors ${selected ? "bg-[#1a1a1a] text-white" : "bg-surface text-ink-mute group-hover:bg-surface group-hover:text-ink-strong"}`}
         >
           <Icon size={15} strokeWidth={selected ? 2.3 : 2} />
         </span>
@@ -349,7 +349,7 @@ export function Sidebar({
               {activeAccount?.name || "Accounts"}
             </p>
             <p
-              className={`${mobile ? "text-xs" : "text-[11px]"} truncate text-zinc-500`}
+              className={`${mobile ? "text-xs" : "text-[11px]"} truncate text-ink-mute`}
             >
               {activeAccount ? activeBalance : "Select trading account"}
             </p>
@@ -358,7 +358,7 @@ export function Sidebar({
         <DropdownMenuTrigger asChild>
           <button
             type="button"
-            className={`${mobile ? "size-9" : "size-8"} grid shrink-0 place-items-center rounded-xl border border-white/8 bg-surface text-zinc-400 transition hover:bg-surface-raised hover:text-white`}
+            className={`${mobile ? "size-9" : "size-8"} grid shrink-0 place-items-center rounded-xl border border-white/8 bg-surface text-ink-soft transition hover:bg-surface-raised hover:text-white`}
             aria-label="Open account switcher"
           >
             <ChevronDown
@@ -383,7 +383,7 @@ export function Sidebar({
             All Accounts
           </button>
         </div>
-        <div className="flex items-center gap-2 border-b border-white/8 px-4 py-3 text-zinc-500">
+        <div className="flex items-center gap-2 border-b border-white/8 px-4 py-3 text-ink-mute">
           <Search size={16} />
           <input
             value={accountQuery}
@@ -391,7 +391,7 @@ export function Sidebar({
             onClick={(event) => event.stopPropagation()}
             onKeyDown={(event) => event.stopPropagation()}
             placeholder="Search account"
-            className="h-8 min-w-0 flex-1 bg-transparent text-sm text-white outline-none placeholder:text-zinc-600"
+            className="h-8 min-w-0 flex-1 bg-transparent text-sm text-white outline-none placeholder:text-ink-subtle"
           />
         </div>
         <div className="max-h-[250px] overflow-y-auto p-2">
@@ -405,7 +405,7 @@ export function Sidebar({
                     event.preventDefault();
                     selectAccount(account.id);
                   }}
-                  className={`flex cursor-pointer items-center gap-3 rounded-xl px-3 py-3 ${selected ? "bg-surface-raised text-white" : "text-zinc-300"}`}
+                  className={`flex cursor-pointer items-center gap-3 rounded-xl px-3 py-3 ${selected ? "bg-surface-raised text-white" : "text-ink-strong"}`}
                 >
                   <span
                     className={`grid size-8 shrink-0 place-items-center rounded-lg text-[10px] font-black ${selected ? "bg-white text-black" : "bg-surface-raised text-white"}`}
@@ -414,18 +414,18 @@ export function Sidebar({
                   </span>
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-sm font-bold">{account.name}</p>
-                    <p className="truncate text-[11px] text-zinc-500">
+                    <p className="truncate text-[11px] text-ink-mute">
                       {account.phase} / {account.marketType}
                     </p>
                   </div>
-                  <span className="shrink-0 font-mono text-xs text-zinc-500">
+                  <span className="shrink-0 font-mono text-xs text-ink-mute">
                     {money.format(account.accountSize)}
                   </span>
                 </DropdownMenuItem>
               );
             })
           ) : (
-            <div className="px-4 py-6 text-center text-sm text-zinc-500">
+            <div className="px-4 py-6 text-center text-sm text-ink-mute">
               No accounts found.
             </div>
           )}
@@ -449,12 +449,12 @@ export function Sidebar({
                 Tradoxy
               </strong>
               <span
-                className={`rounded-full px-2 py-0.5 text-[10px] font-black ${premium.isPremium ? "bg-[#0b1c12] text-emerald-300" : "bg-surface text-zinc-400"}`}
+                className={`rounded-full px-2 py-0.5 text-[10px] font-black ${premium.isPremium ? "bg-[#0b1c12] text-emerald-300" : "bg-surface text-ink-soft"}`}
               >
                 {planLabel}
               </span>
             </span>
-            <small className="text-[10px] text-zinc-500">
+            <small className="text-[10px] text-ink-mute">
               Trading workspace
             </small>
           </span>
@@ -492,7 +492,7 @@ export function Sidebar({
               <span className="flex min-w-0 items-center gap-1">
                 <strong className="truncate text-xs">{visibleName}</strong>
               </span>
-              <small className="block truncate text-[10px] text-zinc-500">
+              <small className="block truncate text-[10px] text-ink-mute">
                 {visibleHandle}
               </small>
             </button>
@@ -500,7 +500,7 @@ export function Sidebar({
               <DropdownMenuTrigger asChild>
                 <button
                   type="button"
-                  className="grid size-8 place-items-center rounded-xl text-zinc-400 transition hover:bg-surface-raised hover:text-white"
+                  className="grid size-8 place-items-center rounded-xl text-ink-soft transition hover:bg-surface-raised hover:text-white"
                 >
                   <MoreHorizontal size={16} />
                 </button>
@@ -527,7 +527,7 @@ export function Sidebar({
                     <Globe size={14} /> English
                   </span>
                   {locale === "en" ? (
-                    <span className="text-[10px] font-bold text-zinc-400">
+                    <span className="text-[10px] font-bold text-ink-soft">
                       Active
                     </span>
                   ) : null}
@@ -538,7 +538,7 @@ export function Sidebar({
                 >
                   <span className="flex items-center gap-2 pl-6">Spanish</span>
                   {locale === "es" ? (
-                    <span className="text-[10px] font-bold text-zinc-400">
+                    <span className="text-[10px] font-bold text-ink-soft">
                       Active
                     </span>
                   ) : null}
@@ -558,7 +558,7 @@ export function Sidebar({
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
-            {!user ? <LogIn size={16} className="text-zinc-500" /> : null}
+            {!user ? <LogIn size={16} className="text-ink-mute" /> : null}
           </div>
         </div>
       </aside>
@@ -588,12 +588,12 @@ export function Sidebar({
                         Tradoxy
                       </strong>
                       <span
-                        className={`rounded-full px-2 py-0.5 text-[10px] font-black ${premium.isPremium ? "bg-[#0b1c12] text-emerald-300" : "bg-surface text-zinc-400"}`}
+                        className={`rounded-full px-2 py-0.5 text-[10px] font-black ${premium.isPremium ? "bg-[#0b1c12] text-emerald-300" : "bg-surface text-ink-soft"}`}
                       >
                         {planLabel}
                       </span>
                     </span>
-                    <small className="text-xs text-zinc-500">
+                    <small className="text-xs text-ink-mute">
                       Trading workspace
                     </small>
                   </div>
@@ -601,7 +601,7 @@ export function Sidebar({
                 <button
                   type="button"
                   onClick={() => setMobileMenuOpen(false)}
-                  className="grid size-9 place-items-center rounded-xl border border-white/10 bg-surface text-zinc-300"
+                  className="grid size-9 place-items-center rounded-xl border border-white/10 bg-surface text-ink-strong"
                   aria-label="Close navigation"
                 >
                   <X size={17} />
@@ -645,21 +645,21 @@ export function Sidebar({
                     <strong className="block truncate text-sm text-white">
                       {visibleName}
                     </strong>
-                    <small className="block truncate text-[11px] text-zinc-500">
+                    <small className="block truncate text-[11px] text-ink-mute">
                       {visibleHandle}
                     </small>
                   </button>
                   <button
                     type="button"
                     onClick={openMobileAccountActions}
-                    className="grid size-10 shrink-0 place-items-center rounded-xl border border-white/8 bg-surface text-zinc-300 transition hover:bg-surface-raised hover:text-white active:scale-95"
+                    className="grid size-10 shrink-0 place-items-center rounded-xl border border-white/8 bg-surface text-ink-strong transition hover:bg-surface-raised hover:text-white active:scale-95"
                     aria-label="Open account settings"
                     aria-haspopup="dialog"
                     aria-expanded={mobileAccountActionsOpen}
                   >
                     <MoreHorizontal size={18} />
                   </button>
-                  {!user ? <LogIn size={16} className="text-zinc-500" /> : null}
+                  {!user ? <LogIn size={16} className="text-ink-mute" /> : null}
                 </div>
               </div>
             </div>
@@ -690,18 +690,18 @@ export function Sidebar({
                 <strong className="truncate text-sm text-white">
                   {visibleName}
                 </strong>
-                <span className="shrink-0 rounded-full bg-emerald-400/10 px-2 py-0.5 text-[9px] font-black text-emerald-300">
+                <span className="shrink-0 rounded-full bg-emerald-400/10 px-2 py-0.5 text-[10px] font-black text-emerald-300">
                   {planLabel}
                 </span>
               </div>
-              <p className="mt-0.5 truncate text-[11px] text-zinc-500">
+              <p className="mt-0.5 truncate text-[11px] text-ink-mute">
                 {visibleHandle}
               </p>
             </div>
             <button
               type="button"
               onClick={() => setMobileAccountActionsOpen(false)}
-              className="grid size-10 shrink-0 place-items-center rounded-xl border border-white/10 bg-black text-zinc-400 transition hover:bg-white/5 hover:text-white"
+              className="grid size-10 shrink-0 place-items-center rounded-xl border border-white/10 bg-black text-ink-soft transition hover:bg-white/5 hover:text-white"
               aria-label="Close account actions"
             >
               <X size={17} />
@@ -719,11 +719,11 @@ export function Sidebar({
               </span>
               <span className="min-w-0 flex-1">
                 <strong className="block text-sm text-white">Settings</strong>
-                <small className="mt-0.5 block truncate text-[11px] text-zinc-500">
+                <small className="mt-0.5 block truncate text-[11px] text-ink-mute">
                   Profile, security and workspace
                 </small>
               </span>
-              <ChevronDown className="-rotate-90 text-zinc-600" size={17} />
+              <ChevronDown className="-rotate-90 text-ink-subtle" size={17} />
             </button>
 
             <div className="mx-3 h-px bg-white/8" />
@@ -740,11 +740,11 @@ export function Sidebar({
                 <strong className="block text-sm text-white">
                   {premium.isPremium ? "Manage subscription" : "View plans"}
                 </strong>
-                <small className="mt-0.5 block truncate text-[11px] text-zinc-500">
+                <small className="mt-0.5 block truncate text-[11px] text-ink-mute">
                   Current plan: {planLabel}
                 </small>
               </span>
-              <ChevronDown className="-rotate-90 text-zinc-600" size={17} />
+              <ChevronDown className="-rotate-90 text-ink-subtle" size={17} />
             </button>
 
             <div className="mx-3 h-px bg-white/8" />
@@ -759,11 +759,11 @@ export function Sidebar({
               </span>
               <span className="min-w-0 flex-1">
                 <strong className="block text-sm text-white">Help Center</strong>
-                <small className="mt-0.5 block truncate text-[11px] text-zinc-500">
+                <small className="mt-0.5 block truncate text-[11px] text-ink-mute">
                   Support and platform information
                 </small>
               </span>
-              <ChevronDown className="-rotate-90 text-zinc-600" size={17} />
+              <ChevronDown className="-rotate-90 text-ink-subtle" size={17} />
             </button>
           </div>
 
@@ -774,7 +774,7 @@ export function Sidebar({
               </span>
               <div className="min-w-0 flex-1">
                 <strong className="block text-sm text-white">Language</strong>
-                <small className="mt-0.5 block text-[11px] text-zinc-500">
+                <small className="mt-0.5 block text-[11px] text-ink-mute">
                   Choose the interface language
                 </small>
               </div>
@@ -791,7 +791,7 @@ export function Sidebar({
                   className={`flex min-h-11 items-center justify-center gap-2 rounded-xl border px-3 text-xs font-bold transition ${
                     locale === value
                       ? "border-white/20 bg-white text-black"
-                      : "border-white/10 bg-black text-zinc-300 hover:bg-white/[.05]"
+                      : "border-white/10 bg-black text-ink-strong hover:bg-white/[.05]"
                   }`}
                 >
                   {locale === value ? <Check size={14} /> : null}
@@ -822,7 +822,7 @@ export function Sidebar({
           <button
             type="button"
             onClick={() => setMobileAccountActionsOpen(false)}
-            className="mt-2 min-h-12 w-full rounded-2xl border border-white/10 bg-black px-4 text-sm font-bold text-zinc-300 transition hover:bg-white/[.05]"
+            className="mt-2 min-h-12 w-full rounded-2xl border border-white/10 bg-black px-4 text-sm font-bold text-ink-strong transition hover:bg-white/[.05]"
           >
             Cancel
           </button>
@@ -835,7 +835,7 @@ export function Sidebar({
             <AlertDialogTitle className="text-white">
               Confirm logout
             </AlertDialogTitle>
-            <AlertDialogDescription className="text-zinc-500">
+            <AlertDialogDescription className="text-ink-mute">
               You&apos;ll be signed out from this browser session.
             </AlertDialogDescription>
           </AlertDialogHeader>
