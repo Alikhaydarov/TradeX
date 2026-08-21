@@ -11,9 +11,11 @@ import {
   Users,
   X,
 } from "lucide-react";
-import { useEffect, useState, type ReactNode } from "react";
+import { useRouter } from "next/navigation";
+import { useCallback, useEffect, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { apiRequest } from "@/lib/api-client";
+import { profilePath } from "@/lib/navigation";
 import { useVisibleInterval } from "@/lib/use-visible-interval";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -65,21 +67,39 @@ function ago(value: string) {
   return `${weeks}w`;
 }
 
-function openProfile(username: string) {
-  const clean = username.replace(/^@/, "").toLowerCase();
-  window.history.pushState(null, "", `/${clean}`);
-  window.dispatchEvent(new Event("tradeup:open-profile"));
-}
+/**
+ * These used to call window.history.pushState directly and then dispatch a
+ * synthetic event to "tell" the app to move.
+ *
+ * The App Router never learned about either. openProfile fired
+ * "tradeup:open-profile", which nothing has listened for since the move off the
+ * single-page shell, so opening a trader from search or notifications only
+ * rewrote the address bar. The rest dispatched a synthetic popstate, which the
+ * router cannot resolve against the null history state pushState left behind,
+ * so it fell back to a full document reload.
+ */
+function useSocialNavigation() {
+  const router = useRouter();
 
-function openFeedPost(postId?: string | null) {
-  window.history.pushState(null, "", postId ? `/#post-${postId}` : "/");
-  window.dispatchEvent(new Event("popstate"));
-  if (!postId) return;
-  window.setTimeout(() => {
-    document
-      .getElementById(`post-${postId}`)
-      ?.scrollIntoView({ behavior: "smooth", block: "center" });
-  }, 280);
+  const toProfile = useCallback(
+    (username: string) => router.push(profilePath(username)),
+    [router],
+  );
+
+  const toFeedPost = useCallback(
+    (postId?: string | null) => {
+      router.push(postId ? `/#post-${postId}` : "/");
+      if (!postId) return;
+      window.setTimeout(() => {
+        document
+          .getElementById(`post-${postId}`)
+          ?.scrollIntoView({ behavior: "smooth", block: "center" });
+      }, 280);
+    },
+    [router],
+  );
+
+  return { toProfile, toFeedPost, push: router.push };
 }
 
 function notificationMeta(type?: string) {
@@ -152,6 +172,7 @@ function Modal({
 }
 
 function SearchDialog({ onClose }: { onClose: () => void }) {
+  const { toProfile } = useSocialNavigation();
   const [query, setQuery] = useState("");
   const [users, setUsers] = useState<SearchUser[]>([]);
   const [loading, setLoading] = useState(false);
@@ -160,7 +181,7 @@ function SearchDialog({ onClose }: { onClose: () => void }) {
 
   const goToProfile = (username: string) => {
     onClose();
-    window.setTimeout(() => openProfile(username), 0);
+    toProfile(username);
   };
 
   useEffect(() => {
@@ -331,6 +352,7 @@ function NotificationsDialog({
   onClose: () => void;
   onRead: () => void;
 }) {
+  const { toProfile, toFeedPost, push } = useSocialNavigation();
   const [items, setItems] = useState<NotificationItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -366,12 +388,12 @@ function NotificationsDialog({
 
   const goActor = (item: NotificationItem) => {
     if (item.entityType === "post" && item.entityId) {
-      openFeedPost(item.entityId);
+      toFeedPost(item.entityId);
       onClose();
       return;
     }
     if (!item.actor?.username) return;
-    openProfile(item.actor.username);
+    toProfile(item.actor.username);
     onClose();
   };
 
@@ -396,8 +418,7 @@ function NotificationsDialog({
       );
       window.dispatchEvent(new Event("tradox:community-membership-changed"));
       if (decision === "accept") {
-        window.history.pushState(null, "", "/community");
-        window.dispatchEvent(new Event("popstate"));
+        push("/community");
         onClose();
       }
     } catch (err) {

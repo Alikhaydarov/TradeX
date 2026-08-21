@@ -22,6 +22,7 @@ import { Spinner } from "./ui/spinner";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
 import type { PropAccount } from "./types";
 import { useWorkspacePreferences } from "./workspace-preferences-context";
+import { useRouter } from "next/navigation";
 
 const Mt5Settings = dynamic(
   () => import("./mt5-settings").then((module) => module.Mt5Settings),
@@ -104,6 +105,7 @@ function connectorMeta(account: PropAccount): ConnectorMeta {
 }
 
 export function AccountSettings({ onLogin: _onLogin }: { onLogin: () => void }) {
+  const router = useRouter();
   void _onLogin;
   const { accounts, activeAccountId, setActiveAccount, setAccounts, refreshAccounts } = useActiveAccountStore();
   const { hidePersonalInfo } = useWorkspacePreferences();
@@ -178,10 +180,7 @@ export function AccountSettings({ onLogin: _onLogin }: { onLogin: () => void }) 
           <WalletCards className="mx-auto text-zinc-400" size={34} />
           <h1 className="mt-4 text-2xl font-black text-white">Select an account first</h1>
           <p className="mt-2 text-sm leading-6 text-zinc-500">Settings are attached to one selected prop or real account.</p>
-          <Button className="mt-5 bg-white text-black hover:bg-zinc-200" onClick={() => {
-            window.history.pushState(null, "", "/accounts");
-            window.dispatchEvent(new Event("popstate"));
-          }}>
+          <Button className="mt-5 bg-white text-black hover:bg-zinc-200" onClick={() => router.push("/accounts")}>
             Open accounts
           </Button>
         </div>

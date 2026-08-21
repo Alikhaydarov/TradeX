@@ -18,6 +18,7 @@ import {
 import { useAuth } from "../auth-context";
 import type { JournalEntry, Post, PostReply } from "../types";
 import { usePremiumStatus } from "../use-premium-status";
+import { profilePath } from "@/lib/navigation";
 
 type PostRecord = SocialPostRecord;
 
@@ -320,9 +321,7 @@ export function useFeedData(onLogin: () => void) {
 
   const openProfile = useCallback(
     (username: string) => {
-      const clean = username.replace(/^@/, "").toLowerCase();
-      router.push(`/${encodeURIComponent(clean)}`);
-      window.dispatchEvent(new Event("tradeup:open-profile"));
+      router.push(profilePath(username));
     },
     [router],
   );

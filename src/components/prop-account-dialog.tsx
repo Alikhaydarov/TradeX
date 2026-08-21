@@ -27,6 +27,7 @@ import { Button } from "./ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog";
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
+import { useRouter } from "next/navigation";
 
 const PROP_FIRMS = ["FTMO", "The5ers", "FundedNext", "FundingPips", "Alpha Capital", "Topstep", "Apex Trader Funding", "Other"];
 const BROKERS = ["Tradovate", "NinjaTrader", "MatchTrader", "Project X", "Exness", "IC Markets", "MetaTrader Broker", "Other"];
@@ -94,6 +95,7 @@ export function PropAccountDialog({
   onOpenChange: (value: boolean) => void;
   onSave: (form: FormData) => Promise<unknown> | unknown;
 }) {
+  const router = useRouter();
   const [step, setStep] = useState<WizardStep>(1);
   const [accountKind, setAccountKind] = useState<AccountKind | null>(null);
   const [accountType, setAccountType] = useState<"prop" | "real">("prop");
@@ -305,8 +307,7 @@ export function PropAccountDialog({
                 onBack={goBack}
                 onUpgrade={() => {
                   onOpenChange(false);
-                  window.history.pushState(null, "", "/pricing");
-                  window.dispatchEvent(new Event("popstate"));
+                  router.push("/pricing");
                 }}
               />
             ) : null}

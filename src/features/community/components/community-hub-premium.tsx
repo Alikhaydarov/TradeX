@@ -29,6 +29,7 @@ import { Input } from "@/components/ui/input";
 import { Spinner } from "@/components/ui/spinner";
 import { Textarea } from "@/components/ui/textarea";
 import { apiRequest } from "@/lib/api-client";
+import { useRouter } from "next/navigation";
 
 type Accent = "emerald" | "sky" | "amber" | "rose";
 
@@ -92,9 +93,14 @@ function normalizeAccent(value?: string): Accent {
   return value === "sky" || value === "amber" || value === "rose" ? value : "emerald";
 }
 
-function go(path: string) {
-  window.history.pushState(null, "", path);
-  window.dispatchEvent(new Event("popstate"));
+/**
+ * Community links used to pushState and then dispatch a synthetic popstate.
+ * The App Router cannot resolve that against the null history state pushState
+ * writes, so every one of these "navigations" cost a full document reload.
+ */
+function useGo() {
+  const router = useRouter();
+  return useCallback((path: string) => router.push(path), [router]);
 }
 
 function formatCount(value: number) {
@@ -136,6 +142,7 @@ function EmptyState({ invitation = false }: { invitation?: boolean }) {
 }
 
 function CommunityCard({ community }: { community: CommunityCardData }) {
+  const go = useGo();
   const accent = ACCENTS[normalizeAccent(community.accent)];
   const path = `/community/${community.id}/overview`;
   const isPublic = Boolean(community.is_public);
@@ -225,6 +232,7 @@ function CommunityCard({ community }: { community: CommunityCardData }) {
 }
 
 export function CommunityHubPremium() {
+  const go = useGo();
   const [data, setData] = useState<HubData | null>(null);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);

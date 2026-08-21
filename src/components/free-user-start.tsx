@@ -14,13 +14,12 @@ import { useAuth } from "./auth-context";
 import { Button } from "./ui/button";
 import { Spinner } from "./ui/spinner";
 import { usePremiumStatus } from "./use-premium-status";
+import { useRouter } from "next/navigation";
 
-function openAccountSetup() {
-  window.history.pushState(null, "", "/accounts?new=1");
-  window.dispatchEvent(new Event("popstate"));
-}
+
 
 export function FreeUserStart({ children }: { children: ReactNode }) {
+  const router = useRouter();
   const { accounts, loading: accountsLoading } = useActiveAccountStore();
   const { status, loading: premiumLoading } = usePremiumStatus(true);
   const { user } = useAuth();
@@ -71,7 +70,7 @@ export function FreeUserStart({ children }: { children: ReactNode }) {
               journal, calendar and performance review.
             </p>
             <Button
-              onClick={openAccountSetup}
+              onClick={() => router.push("/accounts?new=1")}
               className="mt-7 h-12 w-full rounded-xl bg-white px-5 text-sm font-black text-black hover:bg-zinc-200 sm:w-auto"
             >
               <Plus size={16} /> Add your first account <ArrowRight size={15} />

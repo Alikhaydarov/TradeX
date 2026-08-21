@@ -7,6 +7,7 @@ import { useAuth } from "./auth-context";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog";
 import { Badge } from "./ui/badge";
 import { Button } from "./ui/button";
+import { useRouter } from "next/navigation";
 
 interface PremiumStatus {
   isPremium: boolean;
@@ -23,6 +24,7 @@ const plans = [
 const PREMIUM_UPSELL_COOLDOWN_MS = 1000 * 60 * 60 * 48;
 
 export function PremiumUpsellDialog() {
+  const router = useRouter();
   const { user } = useAuth();
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -87,8 +89,7 @@ export function PremiumUpsellDialog() {
 
   const openPricing = () => {
     setOpen(false);
-    window.history.pushState(null, "", "/pricing");
-    window.dispatchEvent(new Event("popstate"));
+    router.push("/pricing");
   };
 
   const startCheckout = async (planId: "standard" | "pro") => {

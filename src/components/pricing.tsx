@@ -8,6 +8,7 @@ import {
   ShieldCheck,
   Sparkles,
 } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 
 import { apiRequest } from "@/lib/api-client";
@@ -91,6 +92,7 @@ const freeFeatures = [
 ];
 
 export function Pricing({ onLogin }: { onLogin?: () => void } = {}) {
+  const router = useRouter();
   const { user } = useAuth();
   const [premium, setPremium] = useState<PremiumStatus | null>(null);
   const [checkoutPlan, setCheckoutPlan] = useState<string | null>(null);
@@ -298,10 +300,7 @@ export function Pricing({ onLogin }: { onLogin?: () => void } = {}) {
             features={freeFeatures}
             current={premium?.plan === "free"}
             actionLabel={premium?.plan === "free" ? "Current plan" : "Continue with Free"}
-            onAction={() => {
-              window.history.pushState(null, "", "/");
-              window.dispatchEvent(new Event("popstate"));
-            }}
+            onAction={() => router.push("/")}
           />
 
           {paidPlans.map((plan) => (

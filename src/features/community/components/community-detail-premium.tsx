@@ -23,6 +23,7 @@ import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import { apiRequest } from "@/lib/api-client";
 import type { CommunitySection } from "./community-sidebar";
+import { useRouter } from "next/navigation";
 
 type Profile = {
   id: string;
@@ -98,9 +99,14 @@ const money = new Intl.NumberFormat("en-US", {
 
 const PANEL = "rounded-2xl border border-white/[.085] bg-[#070707]";
 
-function go(path: string) {
-  window.history.pushState(null, "", path);
-  window.dispatchEvent(new Event("popstate"));
+/**
+ * Community links used to pushState and then dispatch a synthetic popstate.
+ * The App Router cannot resolve that against the null history state pushState
+ * writes, so every one of these "navigations" cost a full document reload.
+ */
+function useGo() {
+  const router = useRouter();
+  return useCallback((path: string) => router.push(path), [router]);
 }
 
 function SectionHeading({
@@ -261,6 +267,7 @@ export function CommunityDetailPremium({
   communityId: string;
   activeTab: CommunitySection;
 }) {
+  const go = useGo();
   const [data, setData] = useState<DetailData | null>(null);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);

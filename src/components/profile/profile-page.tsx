@@ -10,6 +10,7 @@ import { ProfileEditDialog } from "./profile-edit-dialog";
 import { ProfileHeader } from "./profile-header";
 import { ProfilePosts } from "./profile-posts";
 import { useProfileController } from "./use-profile-controller";
+import { profilePath } from "@/lib/navigation";
 
 export type ProfilePageProps = {
   onLogin: () => void;
@@ -156,8 +157,7 @@ export function ProfilePage({ onLogin, profileUsername }: ProfilePageProps) {
         actingId={controller.connectionsActingId}
         onClose={() => controller.setConnectionsOpen(null)}
         onOpenProfile={(username) => {
-          router.push(`/${username.replace(/^@/, "").toLowerCase()}`);
-          window.dispatchEvent(new Event("tradeup:open-profile"));
+          router.push(profilePath(username));
           controller.setConnectionsOpen(null);
         }}
         onToggleFollow={(item) => void controller.toggleConnectionFollow(item)}
