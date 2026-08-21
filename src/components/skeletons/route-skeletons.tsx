@@ -35,7 +35,7 @@ function Shell({
 
 function Panel({ className = "", children }: { className?: string; children?: React.ReactNode }) {
   return (
-    <div className={`rounded-xl border border-white/8 bg-[#0a0a0a] ${className}`}>
+    <div className={`rounded-xl border border-white/8 bg-surface ${className}`}>
       {children}
     </div>
   );

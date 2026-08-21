@@ -78,7 +78,7 @@ export function ProfileHeader({
         </div>
         {profile.statsVisible !== false || isOwnProfile ? <div className="mt-4">
           {isOwnProfile && profile.statsVisible === false ? <p className="mb-1.5 flex items-center gap-1 text-[10px] font-semibold text-zinc-600"><EyeOff size={11} /> Boshqalarga yashirilgan &mdash; faqat siz ko&apos;rasiz</p> : null}
-          <div className="grid grid-cols-4 divide-x divide-border overflow-hidden rounded-lg border border-border bg-[#111111]">
+          <div className="grid grid-cols-4 divide-x divide-border overflow-hidden rounded-lg border border-border bg-surface-raised">
             {[["Trades", String(stats.trades)], ["Win", `${stats.winRate}%`], ["P&L", formatMoneyCompact(stats.netPnl)], ["Avg R", `${stats.averageR.toFixed(2)}R`]].map(([label, value]) => <div key={label} className="min-w-0 px-2 py-2.5 text-center">
               <strong className="block truncate font-mono text-xs text-zinc-100">{value}</strong>
               <span className="mt-0.5 block text-[8px] font-bold uppercase text-zinc-600">{label}</span>

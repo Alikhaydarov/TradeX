@@ -43,7 +43,7 @@ export function TradingViewChart({ symbol, className = "" }: { symbol: string; c
   }, [tvSymbol]);
 
   return (
-    <div className={`relative overflow-hidden bg-[#050505] ${className}`}>
+    <div className={`relative overflow-hidden bg-surface ${className}`}>
       {!loaded ? (
         <div className="absolute inset-0 grid place-items-center gap-2 text-zinc-600">
           <Loader2 size={20} className="animate-spin" />

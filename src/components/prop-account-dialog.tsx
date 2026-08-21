@@ -75,7 +75,7 @@ function StepDots({ step }: { step: WizardStep }) {
         <div key={item} className="flex items-center">
           <span className={cn(
             "grid size-2.5 place-items-center rounded-full border transition",
-            step >= item ? "border-white bg-white" : "border-white/10 bg-[#111111]",
+            step >= item ? "border-white bg-white" : "border-white/10 bg-surface-raised",
           )} />
           {item < 3 ? <span className={cn("h-px w-10 transition sm:w-16", step > item ? "bg-white" : "bg-[#262626]")} /> : null}
         </div>
@@ -246,7 +246,7 @@ export function PropAccountDialog({
   if (open && !premiumLoaded) {
     return (
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="overflow-hidden border-[#1a1a1a] bg-[#050505] p-0 text-zinc-100 sm:max-w-[520px]">
+        <DialogContent className="overflow-hidden border-[#1a1a1a] bg-surface p-0 text-zinc-100 sm:max-w-[520px]">
           <div className="border-b border-white/8 px-5 py-4">
             <div className="h-5 w-36 animate-pulse rounded bg-white/10" />
             <div className="mt-2 h-3 w-64 animate-pulse rounded bg-white/[.06]" />
@@ -263,7 +263,7 @@ export function PropAccountDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[calc(100dvh-1rem)] gap-0 overflow-hidden border-[#1a1a1a] bg-[#030303] p-0 text-zinc-100 sm:max-h-[88dvh] sm:max-w-[780px]">
+      <DialogContent className="max-h-[calc(100dvh-1rem)] gap-0 overflow-hidden border-[#1a1a1a] bg-surface p-0 text-zinc-100 sm:max-h-[88dvh] sm:max-w-[780px]">
         <div className="flex items-center gap-3 border-b border-white/8 bg-black px-4 py-3.5 sm:px-5">
           <DialogHeader className="min-w-0 sm:w-36">
             <DialogTitle className="truncate text-base font-black sm:text-lg">Add account</DialogTitle>
@@ -275,7 +275,7 @@ export function PropAccountDialog({
         <form onSubmit={handleSubmit} className="relative max-h-[calc(100dvh-4.75rem)] overflow-y-auto sm:max-h-[calc(88dvh-61px)]">
           <div className="px-4 py-4 sm:px-6 sm:py-5">
             {step > 1 ? (
-              <Button type="button" variant="outline" size="sm" onClick={goBack} className="mb-4 h-9 rounded-xl border-white/10 bg-[#050505] hover:bg-[#111111]">
+              <Button type="button" variant="outline" size="sm" onClick={goBack} className="mb-4 h-9 rounded-xl border-white/10 bg-surface hover:bg-surface-raised">
                 <ArrowLeft size={16} /> Back
               </Button>
             ) : null}
@@ -315,9 +315,9 @@ export function PropAccountDialog({
             {step === 3 ? (
               <div className="mx-auto max-w-[640px] overflow-hidden rounded-2xl border border-white/10 bg-black">
                 <div className="space-y-4 p-4 sm:p-5">
-                  <div className="rounded-2xl border border-white/10 bg-[#050505] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,.03)]">
+                  <div className="rounded-2xl border border-white/10 bg-surface p-4 shadow-[inset_0_1px_0_rgba(255,255,255,.03)]">
                     <div className="flex flex-wrap items-center gap-2">
-                      <span className="rounded-full bg-[#080808] px-2.5 py-1 text-[10px] font-black uppercase tracking-wider text-zinc-300">
+                      <span className="rounded-full bg-surface px-2.5 py-1 text-[10px] font-black uppercase tracking-wider text-zinc-300">
                         {accountType === "prop" ? "Prop account" : "Real account"}
                       </span>
                       {accountKind === "automatic" ? <PlatformLogoBadge platform={selectedPlatform.id} compact /> : null}
@@ -364,7 +364,7 @@ export function PropAccountDialog({
                   ) : null}
 
                   {accountKind === "manual" ? (
-                    <div className="rounded-xl border border-white/10 bg-[#050505] p-4 text-xs leading-5 text-zinc-400">
+                    <div className="rounded-xl border border-white/10 bg-surface p-4 text-xs leading-5 text-zinc-400">
                       Manual account creates a clean journal without connector setup. You can add trades from the journal after creating it.
                     </div>
                   ) : null}
@@ -374,7 +374,7 @@ export function PropAccountDialog({
           </div>
 
           {step === 3 ? (
-            <div className="sticky bottom-0 flex items-center gap-2 border-t border-white/8 bg-[#030303]/95 px-4 py-3 backdrop-blur sm:justify-end sm:px-5 sm:py-4">
+            <div className="sticky bottom-0 flex items-center gap-2 border-t border-white/8 bg-surface/95 px-4 py-3 backdrop-blur sm:justify-end sm:px-5 sm:py-4">
               <Button type="button" variant="outline" onClick={() => onOpenChange(false)} className="flex-1 sm:flex-none">Cancel</Button>
               <Button disabled={isSubmitting} className="flex-1 bg-white font-semibold text-black hover:bg-zinc-200 sm:flex-none">
                 {isSubmitting ? <LoaderCircle className="animate-spin" /> : <Plus size={18} />}
@@ -409,9 +409,9 @@ function ChoiceCard({ icon, title, text, onClick }: { icon: ReactNode; title: st
     <button
       type="button"
       onClick={onClick}
-      className="group flex min-h-[180px] flex-col items-center justify-center rounded-2xl border border-white/10 bg-[#050505] p-5 text-center transition hover:border-white/25 hover:bg-[#111111] sm:min-h-[210px]"
+      className="group flex min-h-[180px] flex-col items-center justify-center rounded-2xl border border-white/10 bg-surface p-5 text-center transition hover:border-white/25 hover:bg-surface-raised sm:min-h-[210px]"
     >
-      <span className="grid size-12 place-items-center rounded-2xl bg-[#161616] text-white">{icon}</span>
+      <span className="grid size-12 place-items-center rounded-2xl bg-surface-raised text-white">{icon}</span>
       <h3 className="mt-4 text-lg font-black sm:text-xl">{title}</h3>
       <p className="mt-2 max-w-xs text-xs font-semibold leading-5 text-zinc-500 sm:text-sm">{text}</p>
       <ChevronRight className="mt-4 transition group-hover:translate-x-1" size={20} />
@@ -440,7 +440,7 @@ function AccountBasics({
 }) {
   return (
     <div className="space-y-4">
-      <div className="grid grid-cols-2 gap-2 rounded-xl border border-white/10 bg-[#0b0b0b] p-1">
+      <div className="grid grid-cols-2 gap-2 rounded-xl border border-white/10 bg-surface p-1">
         {(["prop", "real"] as const).map((type) => (
           <button
             key={type}
@@ -458,7 +458,7 @@ function AccountBasics({
 
       <div className="space-y-2">
         <Label className="text-xs font-semibold uppercase tracking-wider text-zinc-500">Name *</Label>
-        <Input name="name" required placeholder={placeholder} className="h-11 border-white/10 bg-[#080808]" />
+        <Input name="name" required placeholder={placeholder} className="h-11 border-white/10 bg-surface" />
       </div>
 
       <div className="grid gap-3 sm:grid-cols-2">
@@ -467,7 +467,7 @@ function AccountBasics({
           <select
             value={firm}
             onChange={(event) => setFirm(event.target.value)}
-            className="h-11 w-full rounded-lg border border-white/10 bg-[#080808] px-3 text-sm font-semibold text-zinc-100 outline-none focus:border-white/25"
+            className="h-11 w-full rounded-lg border border-white/10 bg-surface px-3 text-sm font-semibold text-zinc-100 outline-none focus:border-white/25"
           >
             {sources.map((item) => <option key={item} value={item}>{item}</option>)}
           </select>
@@ -477,7 +477,7 @@ function AccountBasics({
           <select
             value={size}
             onChange={(event) => setSize(Number(event.target.value))}
-            className="h-11 w-full rounded-lg border border-white/10 bg-[#080808] px-3 font-mono text-sm font-bold text-zinc-100 outline-none focus:border-white/25"
+            className="h-11 w-full rounded-lg border border-white/10 bg-surface px-3 font-mono text-sm font-bold text-zinc-100 outline-none focus:border-white/25"
           >
             {SIZES.map((item) => <option key={item} value={item}>${item.toLocaleString()}</option>)}
           </select>
@@ -495,18 +495,18 @@ function Mt5Fields({
   setConnectNow: (value: boolean | ((current: boolean) => boolean)) => void;
 }) {
   return (
-    <div className="rounded-xl border border-white/10 bg-[#0b0b0b] p-4">
+    <div className="rounded-xl border border-white/10 bg-surface p-4">
       <button type="button" onClick={() => setConnectNow((value) => !value)} className="mb-4 flex w-full items-center justify-between text-left">
         <span className="flex items-center gap-2 text-sm font-black text-zinc-100"><KeyRound size={15} /> Connect MT5 now</span>
-        <span className={cn("rounded-full px-2 py-1 text-[10px] font-black uppercase", connectNow ? "bg-emerald-400/15 text-emerald-200" : "bg-[#161616] text-zinc-400")}>{connectNow ? "On" : "Later"}</span>
+        <span className={cn("rounded-full px-2 py-1 text-[10px] font-black uppercase", connectNow ? "bg-emerald-400/15 text-emerald-200" : "bg-surface-raised text-zinc-400")}>{connectNow ? "On" : "Later"}</span>
       </button>
       {connectNow ? (
         <div className="grid gap-3">
           <div className="grid gap-3 sm:grid-cols-2">
-            <Input name="mt5Login" placeholder="MT5 login / account ID" inputMode="numeric" autoComplete="off" className="h-11 border-white/10 bg-[#080808] font-mono" />
-            <Input name="mt5Password" type="password" placeholder="Investor password" autoComplete="new-password" className="h-11 border-white/10 bg-[#080808]" />
+            <Input name="mt5Login" placeholder="MT5 login / account ID" inputMode="numeric" autoComplete="off" className="h-11 border-white/10 bg-surface font-mono" />
+            <Input name="mt5Password" type="password" placeholder="Investor password" autoComplete="new-password" className="h-11 border-white/10 bg-surface" />
           </div>
-          <Input name="mt5Server" placeholder="Broker server, e.g. Exness-MT5Trial15" autoComplete="off" className="h-11 border-white/10 bg-[#080808]" />
+          <Input name="mt5Server" placeholder="Broker server, e.g. Exness-MT5Trial15" autoComplete="off" className="h-11 border-white/10 bg-surface" />
           <div className="rounded-xl border border-emerald-400/15 bg-emerald-400/[.055] p-3 text-[11px] leading-5 text-emerald-50/80">
             <p className="flex items-start gap-2"><ShieldCheck size={13} className="mt-0.5 shrink-0" /> Investor password tavsiya qilinadi. Tradoxy faqat history o&apos;qiydi — trade ochmaydi, yopmaydi yoki o&apos;zgartirmaydi.</p>
           </div>
@@ -518,7 +518,7 @@ function Mt5Fields({
 
 function CsvImportNotice({ platform, report }: { platform: string; report: string }) {
   return (
-    <div className="rounded-xl border border-white/10 bg-[#0b0b0b] p-4">
+    <div className="rounded-xl border border-white/10 bg-surface p-4">
       <div className="flex items-start gap-3">
         <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-amber-400/10 text-amber-300"><FileSpreadsheet size={18} /></span>
         <div>

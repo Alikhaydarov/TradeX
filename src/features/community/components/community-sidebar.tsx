@@ -114,7 +114,7 @@ export function CommunitySidebar({
 
   return (
     <aside
-      className={`fixed inset-y-0 left-0 z-40 hidden flex-col overflow-hidden border-r border-white/[.075] bg-[#030303] transition-[width] duration-200 ease-out xl:flex ${
+      className={`fixed inset-y-0 left-0 z-40 hidden flex-col overflow-hidden border-r border-white/[.075] bg-surface transition-[width] duration-200 ease-out xl:flex ${
         collapsed ? "w-[72px]" : "w-[236px]"
       }`}
       data-community-sidebar={collapsed ? "collapsed" : "expanded"}
@@ -167,7 +167,7 @@ export function CommunitySidebar({
               <button
                 type="button"
                 onClick={() => setCollapsed(true)}
-                className="grid size-8 shrink-0 place-items-center rounded-lg border border-white/7 bg-[#080808] text-zinc-600 transition hover:border-white/15 hover:bg-white/[.05] hover:text-white"
+                className="grid size-8 shrink-0 place-items-center rounded-lg border border-white/7 bg-surface text-zinc-600 transition hover:border-white/15 hover:bg-white/[.05] hover:text-white"
                 aria-label="Collapse community sidebar"
                 title="Collapse sidebar"
               >
@@ -175,7 +175,7 @@ export function CommunitySidebar({
               </button>
             </div>
 
-            <div className="relative mt-2 overflow-hidden rounded-2xl border border-white/[.085] bg-[#080808] p-3 shadow-[0_16px_35px_rgba(0,0,0,.22)]">
+            <div className="relative mt-2 overflow-hidden rounded-2xl border border-white/[.085] bg-surface p-3 shadow-[0_16px_35px_rgba(0,0,0,.22)]">
               <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-emerald-400/[.055] via-transparent to-transparent" />
               <div className="relative flex items-center gap-2.5">
                 <div className="relative shrink-0">
@@ -264,7 +264,7 @@ export function CommunitySidebar({
                 className={`grid size-7 shrink-0 place-items-center rounded-lg border transition ${
                   selected
                     ? "border-emerald-400/20 bg-emerald-400/[.08] text-emerald-200"
-                    : "border-white/5 bg-[#070707] text-zinc-700 group-hover:text-zinc-400"
+                    : "border-white/5 bg-surface text-zinc-700 group-hover:text-zinc-400"
                 }`}
               >
                 <Icon size={14} />
@@ -290,7 +290,7 @@ export function CommunitySidebar({
             <Radio size={15} />
           </div>
         ) : (
-          <div className="flex items-center gap-2.5 rounded-xl border border-white/7 bg-[#070707] p-2.5">
+          <div className="flex items-center gap-2.5 rounded-xl border border-white/7 bg-surface p-2.5">
             <span className="grid size-7 place-items-center rounded-lg border border-emerald-400/12 bg-emerald-400/[.05] text-emerald-300">
               <Radio size={13} />
             </span>

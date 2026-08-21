@@ -300,7 +300,7 @@ function WorkspaceAppRouterShellInner({
     <>
       <ActiveAccountProvider initialAccounts={bootstrap?.accounts}>
         <JournalSeedProvider entries={bootstrap?.journalEntries}>
-          {bootstrap ? null : <WorkspaceBootLoader />}
+          <WorkspaceBootLoader bootstrapped={Boolean(bootstrap)} />
           <div className="workspace-shell flex h-dvh w-full overflow-hidden bg-black p-0 text-foreground">
             <Sidebar
               active={section}

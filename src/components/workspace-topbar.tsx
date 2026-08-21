@@ -93,7 +93,7 @@ export function WorkspaceTopbar({ section }: { section: Section }) {
         <button
           type="button"
           onClick={openMobileDrawer}
-          className="grid size-10 shrink-0 place-items-center rounded-lg border border-white/12 bg-[#0c0c0c] text-zinc-100 transition hover:border-white/20 hover:bg-[#151515] active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/30 lg:hidden"
+          className="grid size-10 shrink-0 place-items-center rounded-lg border border-white/12 bg-surface text-zinc-100 transition hover:border-white/20 hover:bg-surface-raised active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/30 lg:hidden"
           aria-label="Open mobile menu"
         >
           <Menu size={18} strokeWidth={2} />
@@ -186,7 +186,7 @@ function PnlModeMenu({
       <DropdownMenuTrigger asChild>
         <button
           type="button"
-          className="inline-flex size-10 items-center justify-center rounded-lg border border-white/12 bg-[#0c0c0c] text-zinc-100 shadow-[inset_0_1px_0_rgba(255,255,255,.035)] transition hover:border-white/20 hover:bg-[#151515] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/30"
+          className="inline-flex size-10 items-center justify-center rounded-lg border border-white/12 bg-surface text-zinc-100 shadow-[inset_0_1px_0_rgba(255,255,255,.035)] transition hover:border-white/20 hover:bg-surface-raised focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/30"
           data-compact={compact ? "true" : "false"}
           aria-label={`P&L display: ${pnlLabel}`}
           title={pnlLabel}
@@ -197,7 +197,7 @@ function PnlModeMenu({
       </DropdownMenuTrigger>
       <DropdownMenuContent
         align="end"
-        className="w-52 border-white/12 bg-[#080808] p-1.5"
+        className="w-52 border-white/12 bg-surface p-1.5"
       >
         {items.map((item) => (
           <DropdownMenuItem

@@ -49,7 +49,7 @@ function ProfilePost({
   return (
     <article
       ref={(node) => observePostView(node, post.id)}
-      className="group border-b border-white/8 bg-[#111111] px-4 py-5 last:border-b-0 transition hover:bg-[#141414] sm:px-6"
+      className="group border-b border-white/8 bg-surface-raised px-4 py-5 last:border-b-0 transition hover:bg-surface-raised sm:px-6"
     >
       <div className="grid grid-cols-[40px_minmax(0,1fr)] gap-3 sm:grid-cols-[48px_minmax(0,1fr)] sm:gap-4">
         <TraderAvatar
@@ -80,7 +80,7 @@ function ProfilePost({
               <InstrumentBadge
                 symbol={post.symbol}
                 compact
-                className="mr-auto rounded-xl bg-[#131313]"
+                className="mr-auto rounded-xl bg-surface-raised"
               />
               <span className="text-[10px] font-black text-zinc-300">{post.side}</span>
               <span

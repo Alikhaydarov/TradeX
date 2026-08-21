@@ -71,7 +71,7 @@ export function ProfileEditDialog({
               Profil ma&apos;lumotlari va trading uslubingizni yangilang.
             </DialogDescription>
           </DialogHeader>
-          <div className="relative h-36 overflow-hidden bg-[#080808]">
+          <div className="relative h-36 overflow-hidden bg-surface">
             {profile.bannerUrl ? (
               <MediaImage
                 src={profile.bannerUrl}
@@ -242,7 +242,7 @@ export function ProfileEditDialog({
                   {profile.bio.length}/160
                 </span>
               </div>
-              <div className="flex items-center justify-between gap-3 rounded-xl border border-white/8 bg-[#080808] px-4 py-3">
+              <div className="flex items-center justify-between gap-3 rounded-xl border border-white/8 bg-surface px-4 py-3">
                 <div className="flex items-center gap-2.5">
                   {profile.statsVisible === false ? (
                     <EyeOff size={16} className="shrink-0 text-zinc-500" />

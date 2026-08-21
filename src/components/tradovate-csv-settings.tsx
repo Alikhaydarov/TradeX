@@ -67,7 +67,7 @@ export function TradovateCsvSettings({
   };
 
   return (
-    <Card className="border-white/8 bg-[#070707] shadow-none">
+    <Card className="border-white/8 bg-surface shadow-none">
       <CardContent className="p-4 sm:p-6">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
           <div className="flex min-w-0 items-start gap-3">
@@ -88,7 +88,7 @@ export function TradovateCsvSettings({
           <Button
             type="button"
             variant="outline"
-            className="shrink-0 border-white/10 bg-[#0b0b0b]"
+            className="shrink-0 border-white/10 bg-surface"
             onClick={() => window.open("https://trader.tradovate.com/", "_blank", "noopener,noreferrer")}
           >
             Open Tradovate <ExternalLink size={15} />
@@ -147,7 +147,7 @@ export function TradovateCsvSettings({
               setResult(null);
             }}
             disabled={busy}
-            className="mt-3 cursor-pointer border-white/10 bg-[#080808]"
+            className="mt-3 cursor-pointer border-white/10 bg-surface"
           />
         </label>
 
