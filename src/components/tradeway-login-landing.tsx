@@ -144,7 +144,7 @@ export function TradoxyLoginLanding({
             <button onClick={onLogin}>I have an account</button>
           </div>
           <div className="auth3-proof">
-            <span><ShieldCheck size={15} /> Secure Supabase auth</span>
+            <span><ShieldCheck size={15} /> Secure sign-in</span>
             <span><Check size={15} /> No card required</span>
           </div>
         </div>

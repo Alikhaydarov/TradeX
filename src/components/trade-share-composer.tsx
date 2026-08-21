@@ -1,6 +1,6 @@
 "use client";
 
-import { Download, LoaderCircle, X } from "lucide-react";
+import { Download, LoaderCircle, Share2, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { apiRequest } from "@/lib/api-client";
 import { useAuth } from "./auth-context";
@@ -83,8 +83,105 @@ function drawGhostCandles(ctx: CanvasRenderingContext2D, x: number, y: number, w
   ctx.restore();
 }
 
+
+/* ── SHARE THEMES ──────────────────────────────────────────────────────────
+ * Two tiers, matching how traders actually pick: a flat colour wash, or a
+ * neon-framed "premium" card.
+ *
+ * The theme drives the card's background and frame only. Profit stays green
+ * and loss stays red regardless of theme - a losing trade on the gold card
+ * still has to read as a loss, or the card is dishonest.
+ */
+export type ShareTheme = {
+  id: string;
+  label: string;
+  tier: "color" | "premium";
+  /** background gradient stops, top-left to bottom-right */
+  from: string;
+  mid?: string;
+  to: string;
+  /** neon frame colour; premium tier only */
+  glow?: string;
+};
+
+export const SHARE_THEMES: ShareTheme[] = [
+  { id: "onyx",     label: "Onyx",     tier: "color", from: "#0a0a0a", to: "#1c1c1c" },
+  { id: "midnight", label: "Midnight", tier: "color", from: "#08131f", mid: "#0e2337", to: "#16354f" },
+  { id: "ember",    label: "Ember",    tier: "color", from: "#1b0d05", mid: "#3a1a0a", to: "#5a2a10" },
+  { id: "plum",     label: "Plum",     tier: "color", from: "#140a20", mid: "#241238", to: "#3a1d58" },
+  { id: "crimson",  label: "Crimson",  tier: "color", from: "#1c0709", mid: "#360d14", to: "#54141f" },
+  { id: "sand",     label: "Sand",     tier: "color", from: "#1c1710", mid: "#3a2f22", to: "#5d4b35" },
+
+  { id: "azure",    label: "Azure",    tier: "premium", from: "#050a12", to: "#0a1622", glow: "#38bdf8" },
+  { id: "magenta",  label: "Magenta",  tier: "premium", from: "#0f050f", to: "#1b0a1b", glow: "#e879f9" },
+  { id: "violet",   label: "Violet",   tier: "premium", from: "#0a0714", to: "#140d24", glow: "#a78bfa" },
+  { id: "emerald",  label: "Emerald",  tier: "premium", from: "#04100b", to: "#081d14", glow: "#34d399" },
+  { id: "ruby",     label: "Ruby",     tier: "premium", from: "#120507", to: "#1f0a0e", glow: "#fb7185" },
+  { id: "amber",    label: "Amber",    tier: "premium", from: "#120c02", to: "#1f1605", glow: "#fbbf24" },
+];
+
+export const DEFAULT_THEME = SHARE_THEMES[0];
+
+/** CSS preview for a theme swatch in the picker. */
+export function themeSwatchStyle(theme: ShareTheme) {
+  const stops = [theme.from, theme.mid, theme.to].filter(Boolean).join(", ");
+  return theme.glow
+    ? {
+        backgroundImage: `linear-gradient(135deg, ${stops})`,
+        boxShadow: `inset 0 0 0 2px ${theme.glow}, 0 0 12px -1px ${theme.glow}`,
+      }
+    : { backgroundImage: `linear-gradient(135deg, ${stops})` };
+}
+
+/** Paints the theme background across an arbitrary canvas box. */
+function paintThemeBackground(
+  ctx: CanvasRenderingContext2D,
+  theme: ShareTheme,
+  w: number,
+  h: number,
+  diagonal: boolean,
+) {
+  const bg = diagonal
+    ? ctx.createLinearGradient(0, 0, w, h)
+    : ctx.createLinearGradient(0, 0, 0, h);
+  bg.addColorStop(0, theme.from);
+  if (theme.mid) bg.addColorStop(0.55, theme.mid);
+  bg.addColorStop(1, theme.to);
+  ctx.fillStyle = bg;
+  ctx.fillRect(0, 0, w, h);
+}
+
+/**
+ * Neon frame for the premium tier.
+ *
+ * Canvas has no blur filter we can rely on across browsers, so the glow is
+ * built by stroking the same rounded rect several times with a growing
+ * shadowBlur - cheap, and it reads the same everywhere.
+ */
+function paintThemeFrame(
+  ctx: CanvasRenderingContext2D,
+  theme: ShareTheme,
+  w: number,
+  h: number,
+  inset: number,
+  radius: number,
+) {
+  if (!theme.glow) return;
+  ctx.save();
+  ctx.strokeStyle = theme.glow;
+  ctx.shadowColor = theme.glow;
+  for (const [blur, width, alpha] of [[54, 10, 0.35], [26, 6, 0.6], [10, 3, 1]] as const) {
+    ctx.globalAlpha = alpha;
+    ctx.shadowBlur = blur;
+    ctx.lineWidth = width;
+    rRect(ctx, inset, inset, w - inset * 2, h - inset * 2, radius);
+    ctx.stroke();
+  }
+  ctx.restore();
+}
+
 /* ── FEED CARD  1080 × 1080 ────────────────────────────────────────────────── */
-async function makeFeedCard(trade: JournalEntry): Promise<string> {
+async function makeFeedCard(trade: JournalEntry, theme: ShareTheme): Promise<string> {
   const S = 1080;
   const canvas = document.createElement("canvas");
   canvas.width = S; canvas.height = S;
@@ -98,9 +195,7 @@ async function makeFeedCard(trade: JournalEntry): Promise<string> {
 
   const draw = (chart: HTMLImageElement | null) => {
     /* 1 — dark background */
-    const bg = ctx.createLinearGradient(0, 0, S, S);
-    bg.addColorStop(0, "#0a0a0a"); bg.addColorStop(1, "#1c1c1c");
-    ctx.fillStyle = bg; ctx.fillRect(0, 0, S, S);
+    paintThemeBackground(ctx, theme, S, S, true);
 
     /* 2 — blurred chart ghost (right side) */
     if (chart) {
@@ -226,6 +321,8 @@ async function makeFeedCard(trade: JournalEntry): Promise<string> {
     ctx.fillText("tradeway.app", S / 2, S - 36);
     ctx.textAlign = "left";
 
+    paintThemeFrame(ctx, theme, S, S, 34, 54);
+
     return canvas.toDataURL("image/png", 1);
   };
 
@@ -237,7 +334,7 @@ async function makeFeedCard(trade: JournalEntry): Promise<string> {
 }
 
 /* ── STORY CARD  1080 × 1920 ──────────────────────────────────────────────── */
-async function makeStoryCard(trade: JournalEntry): Promise<string> {
+async function makeStoryCard(trade: JournalEntry, theme: ShareTheme): Promise<string> {
   const W = 1080, H = 1920;
   const canvas = document.createElement("canvas");
   canvas.width = W; canvas.height = H;
@@ -251,9 +348,7 @@ async function makeStoryCard(trade: JournalEntry): Promise<string> {
 
   const draw = (chart: HTMLImageElement | null) => {
     /* background */
-    const bg = ctx.createLinearGradient(0, 0, 0, H);
-    bg.addColorStop(0, "#060606"); bg.addColorStop(0.6, "#101010"); bg.addColorStop(1, "#181818");
-    ctx.fillStyle = bg; ctx.fillRect(0, 0, W, H);
+    paintThemeBackground(ctx, theme, W, H, false);
 
     /* accent strip */
     ctx.fillStyle = accent; ctx.fillRect(0, 0, 6, H);
@@ -383,6 +478,8 @@ async function makeStoryCard(trade: JournalEntry): Promise<string> {
     ctx.fillText("Track. Trade. Grow.", W / 2, H - 50);
     ctx.textAlign = "left";
 
+    paintThemeFrame(ctx, theme, W, H, 40, 62);
+
     return canvas.toDataURL("image/png", 1);
   };
 
@@ -415,6 +512,7 @@ export function TradeShareComposer({ trade, onClose }: TradeShareComposerProps) 
   const [shared, setShared]         = useState(false);
   const [error, setError]           = useState("");
   const [activeTab, setActiveTab]   = useState<"feed" | "story">("feed");
+  const [theme, setTheme]           = useState<ShareTheme>(DEFAULT_THEME);
 
   const username  = String(user?.user_metadata?.user_name ?? user?.email?.split("@")[0] ?? "you");
   const fullName  = String(user?.user_metadata?.full_name ?? user?.user_metadata?.name ?? username);
@@ -436,11 +534,71 @@ export function TradeShareComposer({ trade, onClose }: TradeShareComposerProps) 
     setCaption(text);
     setShared(false); setError(""); setActiveTab("feed");
 
-    setGenerating(true); setFeedCardUrl(""); setStoryCardUrl("");
-    Promise.all([makeFeedCard(trade), makeStoryCard(trade)]).then(([feed, story]) => {
-      setFeedCardUrl(feed); setStoryCardUrl(story); setGenerating(false);
-    }).catch(() => setGenerating(false));
   }, [trade]);
+
+  // Cards are redrawn on every theme change. Both formats are generated up
+  // front so switching the Post/Story tab is instant rather than a re-render.
+  useEffect(() => {
+    if (!trade) return;
+    let active = true;
+    setGenerating(true); setFeedCardUrl(""); setStoryCardUrl("");
+    Promise.all([makeFeedCard(trade, theme), makeStoryCard(trade, theme)])
+      .then(([feed, story]) => {
+        if (!active) return;
+        setFeedCardUrl(feed); setStoryCardUrl(story); setGenerating(false);
+      })
+      .catch(() => { if (active) setGenerating(false); });
+    return () => { active = false; };
+  }, [trade, theme]);
+
+
+  /**
+   * Hands the rendered card to the OS share sheet.
+   *
+   * This is the only route to Instagram from the web: Instagram has no public
+   * share URL that accepts an image, so "share to Instagram" means handing the
+   * file to the system sheet and letting the user pick it. Story vs Post is
+   * decided by which format we hand over - Instagram reads the aspect ratio.
+   * Desktop browsers mostly cannot share files, so the button falls back to a
+   * download and says so.
+   */
+  const canShareFiles = () =>
+    typeof navigator !== "undefined" &&
+    typeof navigator.canShare === "function" &&
+    typeof navigator.share === "function";
+
+  const shareToDevice = async (format: "feed" | "story") => {
+    const url = format === "feed" ? feedCardUrl : storyCardUrl;
+    if (!trade || !url) return;
+    setError("");
+
+    const suffix = format === "feed" ? "post" : "story";
+    const filename = `${trade.symbol}-${trade.rawDate}-${suffix}.png`;
+
+    try {
+      const blob = await (await fetch(url)).blob();
+      const file = new File([blob], filename, { type: "image/png" });
+
+      if (canShareFiles() && navigator.canShare({ files: [file] })) {
+        await navigator.share({
+          files: [file],
+          title: `${trade.symbol} ${trade.side.toUpperCase()}`,
+          text: caption.slice(0, 280),
+        });
+        return;
+      }
+
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      a.click();
+      setError("Bu qurilma to'g'ridan-to'g'ri ulashishni qo'llamaydi - rasm yuklab olindi.");
+    } catch (shareError) {
+      // A cancelled share sheet rejects too; that is not a failure worth showing.
+      if ((shareError as Error)?.name === "AbortError") return;
+      setError("Ulashib bo'lmadi. Rasmni yuklab olib qo'lda joylashingiz mumkin.");
+    }
+  };
 
   const post = async () => {
     if (!trade || !caption.trim() || sharing) return;
@@ -477,11 +635,12 @@ export function TradeShareComposer({ trade, onClose }: TradeShareComposerProps) 
     }
   };
 
-  const downloadStory = () => {
-    if (!storyCardUrl || !trade) return;
+  const downloadCard = (format: "feed" | "story") => {
+    const url = format === "feed" ? feedCardUrl : storyCardUrl;
+    if (!url || !trade) return;
     const a = document.createElement("a");
-    a.href = storyCardUrl;
-    a.download = `${trade.symbol}-${trade.rawDate}-story.png`;
+    a.href = url;
+    a.download = `${trade.symbol}-${trade.rawDate}-${format === "feed" ? "post" : "story"}.png`;
     a.click();
   };
 
@@ -522,10 +681,16 @@ export function TradeShareComposer({ trade, onClose }: TradeShareComposerProps) 
             <h3 className="text-lg font-bold text-[#f1f1f1]">Post ulashildi!</h3>
             <p className="text-sm text-[#8a8a8a]">Tradoxy feedida chiqdi.</p>
             {storyCardUrl && (
-              <button type="button" onClick={downloadStory}
-                className="mt-2 flex items-center gap-2 rounded-full border border-[#2a2a2a] px-5 py-2.5 text-sm font-semibold text-[#f1f1f1] transition hover:bg-[#1a1a1a]">
-                <Download size={15} /> Instagram Story yuklab olish
-              </button>
+              <div className="mt-2 flex flex-wrap justify-center gap-2">
+                <button type="button" onClick={() => void shareToDevice("story")}
+                  className="flex items-center gap-2 rounded-full bg-white px-5 py-2.5 text-sm font-semibold text-black transition hover:bg-zinc-200">
+                  <Share2 size={15} /> Story sifatida ulashish
+                </button>
+                <button type="button" onClick={() => downloadCard("story")}
+                  className="flex items-center gap-2 rounded-full border border-white/12 px-5 py-2.5 text-sm font-semibold text-ink-soft transition hover:border-white/25 hover:text-white">
+                  <Download size={15} /> .png
+                </button>
+              </div>
             )}
             <button type="button" onClick={onClose}
               className="mt-1 text-sm text-[#8a8a8a] transition hover:text-[#f1f1f1]">
@@ -596,8 +761,9 @@ export function TradeShareComposer({ trade, onClose }: TradeShareComposerProps) 
               <div className="mb-3 flex gap-1">
                 {(["feed", "story"] as const).map((tab) => (
                   <button key={tab} type="button" onClick={() => setActiveTab(tab)}
-                    className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition ${activeTab === tab ? "bg-white/10 text-[#f1f1f1]" : "text-[#8a8a8a] hover:text-[#c1c1c1]"}`}>
-                    {tab === "feed" ? "📸 Feed card" : "📱 IG Story"}
+                    aria-pressed={activeTab === tab}
+                    className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition ${activeTab === tab ? "bg-white/10 text-[#f1f1f1]" : "text-ink-subtle hover:text-ink-soft"}`}>
+                    {tab === "feed" ? "Post · 1:1" : "Story · 9:16"}
                   </button>
                 ))}
               </div>
@@ -614,14 +780,61 @@ export function TradeShareComposer({ trade, onClose }: TradeShareComposerProps) 
                 )}
               </div>
 
-              {activeTab === "story" && storyCardUrl && (
-                <div className="mt-3 flex justify-center">
-                  <button type="button" onClick={downloadStory}
-                    className="flex items-center gap-2 rounded-lg border border-[#2a2a2a] px-4 py-2 text-xs font-semibold text-[#a1a1aa] transition hover:border-[#3a3a3a] hover:text-[#f1f1f1]">
-                    <Download size={13} /> Story yuklab olish (.png)
-                  </button>
+              <div className="mt-4">
+                <p className="mb-2 text-[11px] font-semibold uppercase tracking-[.14em] text-ink-subtle">
+                  Color theme
+                </p>
+                <div className="grid grid-cols-6 gap-2">
+                  {SHARE_THEMES.filter((item) => item.tier === "color").map((item) => (
+                    <button
+                      key={item.id}
+                      type="button"
+                      onClick={() => setTheme(item)}
+                      aria-label={item.label}
+                      aria-pressed={theme.id === item.id}
+                      style={themeSwatchStyle(item)}
+                      className={`aspect-square rounded-lg border transition ${theme.id === item.id ? "border-white ring-2 ring-white/60" : "border-white/12 hover:border-white/35"}`}
+                    />
+                  ))}
                 </div>
-              )}
+
+                <p className="mb-2 mt-4 text-[11px] font-semibold uppercase tracking-[.14em] text-ink-subtle">
+                  Premium theme
+                </p>
+                <div className="grid grid-cols-6 gap-2">
+                  {SHARE_THEMES.filter((item) => item.tier === "premium").map((item) => (
+                    <button
+                      key={item.id}
+                      type="button"
+                      onClick={() => setTheme(item)}
+                      aria-label={item.label}
+                      aria-pressed={theme.id === item.id}
+                      style={themeSwatchStyle(item)}
+                      className={`aspect-square rounded-lg border transition ${theme.id === item.id ? "border-white ring-2 ring-white/60" : "border-white/12 hover:border-white/35"}`}
+                    />
+                  ))}
+                </div>
+              </div>
+
+              <div className="mt-4 flex flex-wrap justify-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => void shareToDevice(activeTab)}
+                  disabled={generating || !(activeTab === "feed" ? feedCardUrl : storyCardUrl)}
+                  className="flex items-center gap-2 rounded-lg bg-white px-4 py-2 text-xs font-semibold text-black transition hover:bg-zinc-200 disabled:opacity-50"
+                >
+                  <Share2 size={13} />
+                  {activeTab === "feed" ? "Post sifatida ulashish" : "Story sifatida ulashish"}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => downloadCard(activeTab)}
+                  disabled={generating || !(activeTab === "feed" ? feedCardUrl : storyCardUrl)}
+                  className="flex items-center gap-2 rounded-lg border border-white/12 px-4 py-2 text-xs font-semibold text-ink-soft transition hover:border-white/25 hover:text-white disabled:opacity-50"
+                >
+                  <Download size={13} /> .png
+                </button>
+              </div>
             </div>
 
             {/* Footer */}
