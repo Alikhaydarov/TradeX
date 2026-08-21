@@ -36,10 +36,10 @@ function PlanSummary({ plan }: { plan: Exclude<AccountPlan, "free"> }) {
         <span className="grid size-8 shrink-0 place-items-center rounded-lg bg-emerald-400/10 text-emerald-300"><Check size={15} strokeWidth={3} /></span>
         <div className="min-w-0">
           <p className="text-xs font-black text-white">{plan === "pro" ? "Pro" : "Standard"} plan</p>
-          <p className="truncate text-[10px] text-zinc-500">{plan === "pro" ? "Unlimited account workspaces" : "Up to 3 account workspaces"}</p>
+          <p className="truncate text-[10px] text-ink-mute">{plan === "pro" ? "Unlimited account workspaces" : "Up to 3 account workspaces"}</p>
         </div>
       </div>
-      <span className="rounded-full bg-emerald-400/10 px-2 py-1 text-[9px] font-black uppercase tracking-[0.12em] text-emerald-300">Active</span>
+      <span className="rounded-full bg-emerald-400/10 px-2 py-1 text-[10px] font-black uppercase tracking-[0.12em] text-emerald-300">Active</span>
     </div>
   );
 }
@@ -60,11 +60,11 @@ function PlatformCard({ item, onSelect }: { item: PlatformConfig; onSelect: (ite
     >
       <PlatformLogoBadge platform={item.id} />
       <span className="mt-3 text-sm font-black text-white">{item.name}</span>
-      <span className="mt-1 text-[11px] text-zinc-500">{item.helper}</span>
-      <span className={cn("mt-2 rounded-full px-2 py-1 text-[9px] font-black uppercase tracking-[0.1em]", live ? activeTone : "bg-white/6 text-zinc-500")}>
+      <span className="mt-1 text-[11px] text-ink-mute">{item.helper}</span>
+      <span className={cn("mt-2 rounded-full px-2 py-1 text-[10px] font-black uppercase tracking-[0.1em]", live ? activeTone : "bg-white/6 text-ink-mute")}>
         {live ? item.mode === "csv" ? "CSV import" : item.market : "Coming soon"}
       </span>
-      {live ? <ChevronRight size={15} className="absolute right-3 top-3 text-zinc-600 transition group-hover:translate-x-0.5 group-hover:text-white" /> : null}
+      {live ? <ChevronRight size={15} className="absolute right-3 top-3 text-ink-subtle transition group-hover:translate-x-0.5 group-hover:text-white" /> : null}
     </button>
   );
 }
@@ -89,8 +89,8 @@ export function AccountPlatformSelector({ plan, onSelect, onBack, onUpgrade }: {
       <div className="relative overflow-hidden rounded-2xl">
         <div className={cn("space-y-3 transition", locked && "pointer-events-none select-none blur-[5px] opacity-45")} aria-hidden={locked}>
           <label className="mx-auto flex h-10 max-w-[360px] items-center gap-2 rounded-xl border border-white/10 bg-surface-raised px-3">
-            <Search size={14} className="text-zinc-600" />
-            <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search platform..." className="h-full min-w-0 flex-1 bg-transparent text-xs text-white outline-none placeholder:text-zinc-600" />
+            <Search size={14} className="text-ink-subtle" />
+            <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search platform..." className="h-full min-w-0 flex-1 bg-transparent text-xs text-white outline-none placeholder:text-ink-subtle" />
           </label>
           <div data-platform-grid className="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-4">
             {filtered.map((item) => <PlatformCard key={item.id} item={item} onSelect={onSelect} />)}
@@ -101,7 +101,7 @@ export function AccountPlatformSelector({ plan, onSelect, onBack, onUpgrade }: {
             <div className="w-full max-w-sm text-center">
               <span className="mx-auto grid size-11 place-items-center rounded-2xl border border-white/10 bg-surface text-white"><LockKeyhole size={18} /></span>
               <h3 className="mt-3 text-base font-black text-white">Platform connections are locked</h3>
-              <p className="mx-auto mt-1 max-w-xs text-xs leading-5 text-zinc-400">Upgrade to Standard or Pro to connect a platform or import trade history.</p>
+              <p className="mx-auto mt-1 max-w-xs text-xs leading-5 text-ink-soft">Upgrade to Standard or Pro to connect a platform or import trade history.</p>
               <div className="mx-auto mt-4 grid max-w-[280px] grid-cols-2 gap-2">
                 <Button type="button" variant="outline" onClick={onBack} className="border-white/10 bg-surface">Back</Button>
                 <Button type="button" onClick={onUpgrade} className="bg-white text-black hover:bg-zinc-200">Compare plans</Button>

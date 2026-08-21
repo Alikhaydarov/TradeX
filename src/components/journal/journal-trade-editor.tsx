@@ -121,7 +121,7 @@ export function JournalTradeEditor({
                 {trade.pnl >= 0 ? "+" : ""}
                 {cash.format(trade.pnl)}
               </span>
-              <p className="hidden text-xs text-zinc-500 sm:block">
+              <p className="hidden text-xs text-ink-mute sm:block">
                 Trade review, edit and screenshots
               </p>
             </div>
@@ -129,7 +129,7 @@ export function JournalTradeEditor({
           <button
             type="button"
             onClick={onClose}
-            className="grid size-9 shrink-0 place-items-center rounded-xl text-zinc-500 transition hover:bg-surface-raised hover:text-white"
+            className="grid size-9 shrink-0 place-items-center rounded-xl text-ink-mute transition hover:bg-surface-raised hover:text-white"
             aria-label="Close"
           >
             <X size={17} />
@@ -138,10 +138,10 @@ export function JournalTradeEditor({
         <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain p-3 sm:p-5">
           <section className="mb-4 overflow-hidden rounded-2xl border border-white/8">
             <div className="flex items-center justify-between border-b border-white/8 bg-surface px-3 py-2 sm:px-4 sm:py-2.5">
-              <p className="text-[10px] font-black uppercase tracking-[.16em] text-zinc-500">
+              <p className="text-[10px] font-black uppercase tracking-[.16em] text-ink-mute">
                 Chart · TradingView
               </p>
-              <span className="text-[10px] text-zinc-600">{trade.symbol}</span>
+              <span className="text-[10px] text-ink-subtle">{trade.symbol}</span>
             </div>
             <TradingViewChart
               symbol={trade.symbol}
@@ -152,7 +152,7 @@ export function JournalTradeEditor({
             <div className="space-y-4">
               <section className="rounded-2xl border border-white/8 bg-surface p-4">
                 <div className="mb-4">
-                  <p className="text-[10px] font-black uppercase tracking-[.16em] text-zinc-500">
+                  <p className="text-[10px] font-black uppercase tracking-[.16em] text-ink-mute">
                     Trade details
                   </p>
                   <h4 className="mt-1 text-sm font-black text-white">
@@ -168,7 +168,7 @@ export function JournalTradeEditor({
                       className="mt-1"
                     />
                   </label>
-                  <label className="min-w-0 text-xs text-zinc-500">
+                  <label className="min-w-0 text-xs text-ink-mute">
                     Side
                     <Select name="side" defaultValue={trade.side}>
                       <SelectTrigger className="mt-1 w-full">
@@ -180,7 +180,7 @@ export function JournalTradeEditor({
                       </SelectContent>
                     </Select>
                   </label>
-                  <label className="min-w-0 text-xs text-zinc-500">
+                  <label className="min-w-0 text-xs text-ink-mute">
                     Date
                     <Input
                       name="tradedAt"
@@ -191,7 +191,7 @@ export function JournalTradeEditor({
                   </label>
                 </div>
                 <div className="mt-3 grid min-w-0 grid-cols-2 gap-3 sm:grid-cols-[repeat(3,minmax(0,1fr))]">
-                  <label className="min-w-0 text-xs text-zinc-500">
+                  <label className="min-w-0 text-xs text-ink-mute">
                     PnL
                     <Input
                       name="pnl"
@@ -200,7 +200,7 @@ export function JournalTradeEditor({
                       className="mt-1"
                     />
                   </label>
-                  <label className="min-w-0 text-xs text-zinc-500">
+                  <label className="min-w-0 text-xs text-ink-mute">
                     Quantity
                     <Input
                       name="quantity"
@@ -209,7 +209,7 @@ export function JournalTradeEditor({
                       className="mt-1"
                     />
                   </label>
-                  <label className="col-span-2 min-w-0 text-xs text-zinc-500 sm:col-span-1">
+                  <label className="col-span-2 min-w-0 text-xs text-ink-mute sm:col-span-1">
                     Fees
                     <Input
                       name="fees"
@@ -223,7 +223,7 @@ export function JournalTradeEditor({
 
               <section className="rounded-2xl border border-white/8 bg-surface p-4">
                 <div className="mb-4">
-                  <p className="text-[10px] font-black uppercase tracking-[.16em] text-zinc-500">
+                  <p className="text-[10px] font-black uppercase tracking-[.16em] text-ink-mute">
                     Context
                   </p>
                   <h4 className="mt-1 text-sm font-black text-white">
@@ -231,7 +231,7 @@ export function JournalTradeEditor({
                   </h4>
                 </div>
                 <div className="grid min-w-0 grid-cols-2 gap-3 sm:grid-cols-[repeat(3,minmax(0,1fr))]">
-                  <label className="text-xs text-zinc-500">
+                  <label className="text-xs text-ink-mute">
                     Risk $
                     <Input
                       name="riskAmount"
@@ -240,7 +240,7 @@ export function JournalTradeEditor({
                       className="mt-1"
                     />
                   </label>
-                  <label className="text-xs text-zinc-500">
+                  <label className="text-xs text-ink-mute">
                     RR
                     <Input
                       name="resultR"
@@ -249,7 +249,7 @@ export function JournalTradeEditor({
                       className="mt-1"
                     />
                   </label>
-                  <label className="col-span-2 text-xs text-zinc-500 sm:col-span-1">
+                  <label className="col-span-2 text-xs text-ink-mute sm:col-span-1">
                     Risk %
                     <Input
                       name="riskPercent"
@@ -259,7 +259,7 @@ export function JournalTradeEditor({
                   </label>
                 </div>
                 <div className="mt-3 grid min-w-0 grid-cols-2 gap-3 sm:grid-cols-[repeat(3,minmax(0,1fr))]">
-                  <label className="col-span-2 text-xs text-zinc-500 sm:col-span-1">
+                  <label className="col-span-2 text-xs text-ink-mute sm:col-span-1">
                     Setup
                     <Input
                       name="setup"
@@ -267,7 +267,7 @@ export function JournalTradeEditor({
                       className="mt-1"
                     />
                   </label>
-                  <label className="text-xs text-zinc-500">
+                  <label className="text-xs text-ink-mute">
                     Session
                     <Input
                       name="session"
@@ -275,7 +275,7 @@ export function JournalTradeEditor({
                       className="mt-1"
                     />
                   </label>
-                  <label className="text-xs text-zinc-500">
+                  <label className="text-xs text-ink-mute">
                     Tags
                     <Input
                       name="tags"
@@ -288,14 +288,14 @@ export function JournalTradeEditor({
 
               <section className="rounded-2xl border border-white/8 bg-surface p-4">
                 <div className="mb-4">
-                  <p className="text-[10px] font-black uppercase tracking-[.16em] text-zinc-500">
+                  <p className="text-[10px] font-black uppercase tracking-[.16em] text-ink-mute">
                     Review note
                   </p>
                   <h4 className="mt-1 text-sm font-black text-white">
                     What happened in this trade?
                   </h4>
                 </div>
-                <label className="block text-xs text-zinc-500">
+                <label className="block text-xs text-ink-mute">
                   Notes
                   <Textarea
                     name="note"
@@ -310,14 +310,14 @@ export function JournalTradeEditor({
               <section className="rounded-2xl border border-white/8 bg-surface p-4">
                 <div className="mb-3 flex items-center justify-between gap-3">
                   <div>
-                    <p className="text-[10px] font-black uppercase tracking-[.16em] text-zinc-500">
+                    <p className="text-[10px] font-black uppercase tracking-[.16em] text-ink-mute">
                       Screenshots
                     </p>
                     <h4 className="mt-1 text-sm font-black text-white">
                       Chart capture
                     </h4>
                   </div>
-                  <span className="text-xs text-zinc-500">
+                  <span className="text-xs text-ink-mute">
                     {imageUrls.length}/3
                   </span>
                 </div>
@@ -373,7 +373,7 @@ export function JournalTradeEditor({
                     <button
                       type="button"
                       onClick={() => imageInputRef.current?.click()}
-                      className="grid aspect-square place-items-center rounded-lg border border-dashed border-white/10 text-zinc-500 transition hover:bg-surface-raised hover:text-white"
+                      className="grid aspect-square place-items-center rounded-lg border border-dashed border-white/10 text-ink-mute transition hover:bg-surface-raised hover:text-white"
                     >
                       {uploadingImages ? (
                         <Spinner className="size-5" />
@@ -386,7 +386,7 @@ export function JournalTradeEditor({
               </section>
 
               <section className="rounded-2xl border border-white/8 bg-surface p-4">
-                <p className="mb-3 text-[10px] font-black uppercase tracking-[.16em] text-zinc-500">
+                <p className="mb-3 text-[10px] font-black uppercase tracking-[.16em] text-ink-mute">
                   Review checklist
                 </p>
                 <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-1">
@@ -423,7 +423,7 @@ export function JournalTradeEditor({
                     Add to Trading Bible
                   </label>
                 </div>
-                <label className="mt-3 block text-xs text-zinc-500">
+                <label className="mt-3 block text-xs text-ink-mute">
                   Mistake type
                   <Input
                     name="mistakeType"
@@ -435,13 +435,13 @@ export function JournalTradeEditor({
 
               <details className="group overflow-hidden rounded-2xl border">
                 <summary className="flex cursor-pointer list-none items-center gap-3 px-4 py-3.5 text-sm font-bold text-zinc-200 transition hover:bg-surface-raised">
-                  <ImageIcon size={17} className="text-zinc-500" />
+                  <ImageIcon size={17} className="text-ink-mute" />
                   Share image
-                  <span className="ml-auto text-xs font-medium text-zinc-600 group-open:hidden">
+                  <span className="ml-auto text-xs font-medium text-ink-subtle group-open:hidden">
                     PNG yaratish
                   </span>
                   <ChevronDown
-                    className="ml-auto hidden text-zinc-500 group-open:block"
+                    className="ml-auto hidden text-ink-mute group-open:block"
                     size={16}
                   />
                 </summary>
@@ -697,7 +697,7 @@ function TradeReviewImage({
       <div className="flex items-center justify-between border-b border-white/8 px-4 py-3">
         <div>
           <p className="text-sm font-black text-white">Trade review image</p>
-          <p className="text-xs text-zinc-500">1080 x 1080 PNG</p>
+          <p className="text-xs text-ink-mute">1080 x 1080 PNG</p>
         </div>
         <div className="flex gap-2">
           <Button
@@ -719,7 +719,7 @@ function TradeReviewImage({
           className="aspect-square w-full bg-surface object-contain"
         />
       ) : (
-        <div className="grid aspect-square w-full place-items-center text-zinc-500">
+        <div className="grid aspect-square w-full place-items-center text-ink-mute">
           <Spinner className="size-6" />
         </div>
       )}

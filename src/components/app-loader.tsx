@@ -4,7 +4,7 @@ import { Spinner } from "./ui/spinner";
 export function XSpinner({ size = "md" }: { size?: "sm" | "md" | "lg" }) {
   const sizeClass = size === "sm" ? "size-4" : size === "lg" ? "size-8 sm:size-9" : "size-5 sm:size-6";
 
-  return <Spinner className={`${sizeClass} shrink-0 text-zinc-300`} />;
+  return <Spinner className={`${sizeClass} shrink-0 text-ink-strong`} />;
 }
 
 export function LoadingDots() {
@@ -23,7 +23,7 @@ export function SkeletonBlock({ className = "" }: { className?: string }) {
 
 export function InlineLoading({ label = "Loading" }: { label?: string }) {
   return (
-    <div className="inline-flex items-center gap-2 rounded-md border border-white/10 bg-surface px-3 py-1.5 text-xs font-semibold text-zinc-300">
+    <div className="inline-flex items-center gap-2 rounded-md border border-white/10 bg-surface px-3 py-1.5 text-xs font-semibold text-ink-strong">
       <XSpinner size="sm" /> {label}
     </div>
   );
@@ -34,7 +34,7 @@ export function AppLoader({ label = "Checking session" }: { label?: string }) {
     <div className="grid min-h-40 place-items-center p-5 text-center sm:min-h-48 sm:p-8">
       <div className="rounded-xl border border-white/10 bg-surface px-5 py-5 shadow-[0_18px_54px_rgba(0,0,0,.28)] sm:px-7 sm:py-6">
         <XSpinner size="lg" />
-        <p className="mt-3 text-xs font-semibold text-zinc-300 sm:mt-4 sm:text-sm">{label}</p>
+        <p className="mt-3 text-xs font-semibold text-ink-strong sm:mt-4 sm:text-sm">{label}</p>
       </div>
     </div>
   );

@@ -10,7 +10,7 @@ export function TypingIndicator({ users }: { users: ChatPresenceMeta[] }) {
       : `${names[0]}, ${names[1]} and others are typing`;
 
   return (
-    <div className="flex h-5 items-center gap-2 px-1 text-[10px] text-zinc-600" aria-live="polite">
+    <div className="flex h-5 items-center gap-2 px-1 text-[10px] text-ink-subtle" aria-live="polite">
       <span className="flex items-center gap-0.5">
         <span className="size-1 animate-bounce rounded-full bg-zinc-500 [animation-delay:-.2s]" />
         <span className="size-1 animate-bounce rounded-full bg-zinc-500 [animation-delay:-.1s]" />

@@ -121,11 +121,11 @@ export function PlatformCsvSettings({
             <div className="min-w-0">
               <div className="flex flex-wrap items-center gap-2">
                 <h3 className="font-black text-white">{config.name} Trade Import</h3>
-                <span className="rounded-full bg-amber-400/10 px-2 py-1 text-[9px] font-black uppercase tracking-wider text-amber-300">
+                <span className="rounded-full bg-amber-400/10 px-2 py-1 text-[10px] font-black uppercase tracking-wider text-amber-300">
                   CSV
                 </span>
               </div>
-              <p className="mt-1 max-w-2xl text-xs leading-5 text-zinc-500">{config.description}</p>
+              <p className="mt-1 max-w-2xl text-xs leading-5 text-ink-mute">{config.description}</p>
             </div>
           </div>
 
@@ -148,7 +148,7 @@ export function PlatformCsvSettings({
                 </span>
                 <div>
                   <p className="text-xs font-black text-white">{title}</p>
-                  <p className="mt-1 text-[10px] leading-4 text-zinc-500">{text}</p>
+                  <p className="mt-1 text-[10px] leading-4 text-ink-mute">{text}</p>
                 </div>
               </div>
             </div>
@@ -164,12 +164,12 @@ export function PlatformCsvSettings({
 
         <label className="mt-5 block rounded-2xl border border-dashed border-white/12 bg-black/30 p-4 transition hover:border-white/25">
           <div className="flex items-center gap-3">
-            <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-white/[.07] text-zinc-300">
+            <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-white/[.07] text-ink-strong">
               <FileSpreadsheet size={18} />
             </span>
             <div className="min-w-0 flex-1">
               <p className="truncate text-sm font-bold text-white">{file ? file.name : `Select ${config.name} CSV`}</p>
-              <p className="mt-0.5 text-[10px] text-zinc-500">{config.reportName} · maximum 10 MB</p>
+              <p className="mt-0.5 text-[10px] text-ink-mute">{config.reportName} · maximum 10 MB</p>
             </div>
           </div>
           <Input

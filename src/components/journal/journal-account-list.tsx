@@ -61,7 +61,7 @@ export function JournalAccountList({
           <h1 className="text-xl font-black text-white sm:text-2xl">
             Accounts
           </h1>
-          <p className="mt-0.5 text-xs text-zinc-600">
+          <p className="mt-0.5 text-xs text-ink-subtle">
             Your trading journals in one place.
           </p>
         </div>
@@ -79,7 +79,7 @@ export function JournalAccountList({
         <section>
           <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-white/10 bg-surface px-4 py-3">
             <div>
-              <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-zinc-600">
+              <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-ink-subtle">
                 Portfolio value
               </p>
               <p className="mt-1 font-mono text-xl font-black tracking-tight text-white sm:text-2xl">
@@ -97,7 +97,7 @@ export function JournalAccountList({
                 {netPnl >= 0 ? "+" : ""}
                 {cash.format(netPnl)}
               </span>
-              <p className="mt-1.5 text-[10px] text-zinc-600">
+              <p className="mt-1.5 text-[10px] text-ink-subtle">
                 {summaries.length}{" "}
                 {summaries.length === 1 ? "account" : "accounts"} ·{" "}
                 {cash.format(startingCapital)} capital
@@ -111,12 +111,12 @@ export function JournalAccountList({
         <div className="grid min-h-80 place-items-center rounded-[24px] border border-dashed border-white/12 bg-surface px-5 text-center">
           <div>
             <div className="mx-auto grid size-14 place-items-center rounded-2xl border border-white/8 bg-surface">
-              <WalletCards size={24} className="text-zinc-300" />
+              <WalletCards size={24} className="text-ink-strong" />
             </div>
             <h2 className="mt-4 text-xl font-black text-white">
               Create your first journal
             </h2>
-            <p className="mx-auto mt-2 max-w-sm text-sm leading-6 text-zinc-500">
+            <p className="mx-auto mt-2 max-w-sm text-sm leading-6 text-ink-mute">
               Add an account name and starting balance. You can begin logging
               trades immediately.
             </p>
@@ -146,10 +146,10 @@ export function JournalAccountList({
             className="group grid min-h-[172px] place-items-center rounded-2xl border border-dashed border-white/12 bg-surface p-4 text-center transition hover:border-white/25 hover:bg-surface"
           >
             <span>
-              <span className="mx-auto grid size-9 place-items-center rounded-xl border border-white/10 bg-surface text-zinc-500 transition group-hover:text-white">
+              <span className="mx-auto grid size-9 place-items-center rounded-xl border border-white/10 bg-surface text-ink-mute transition group-hover:text-white">
                 <Plus size={17} />
               </span>
-              <span className="mt-2.5 block text-sm font-bold text-zinc-500 transition group-hover:text-zinc-200">
+              <span className="mt-2.5 block text-sm font-bold text-ink-mute transition group-hover:text-zinc-200">
                 Add account
               </span>
             </span>
@@ -178,7 +178,7 @@ function JournalAccountCard({
   const statusColor: Record<string, string> = {
     Processing: "text-sky-300 bg-[#091119] border-sky-400/20",
     Active: "text-emerald-300 bg-[#0b1c12] border-emerald-400/20",
-    Passed: "text-zinc-300 bg-surface border-white/15",
+    Passed: "text-ink-strong bg-surface border-white/15",
     Failed: "text-rose-300 bg-[#1a0d10] border-rose-400/20",
     Paused: "text-amber-400 bg-[#1a1407] border-amber-400/20",
   };
@@ -214,7 +214,7 @@ function JournalAccountCard({
                 {summary.account.name}
               </p>
             </div>
-            <p className="truncate text-[11px] text-zinc-600">
+            <p className="truncate text-[11px] text-ink-subtle">
               {sourceLabel} ·{" "}
               {summary.account.accountType === "real"
                 ? "Personal"
@@ -223,7 +223,7 @@ function JournalAccountCard({
           </div>
           <div className="flex shrink-0 items-center gap-2">
             <span
-              className={`rounded-md border px-1.5 py-0.5 text-[9px] font-semibold ${
+              className={`rounded-md border px-1.5 py-0.5 text-[10px] font-semibold ${
                 statusColor[summary.account.status] || statusColor.Active
               }`}
             >
@@ -258,7 +258,7 @@ function JournalAccountCard({
         </div>
 
         <div className="mt-3.5">
-          <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-zinc-600">
+          <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-ink-subtle">
             Current balance
           </p>
           <div className="mt-1 flex items-end justify-between gap-2">
@@ -273,14 +273,14 @@ function JournalAccountCard({
         </div>
 
         <div className="mt-3.5 flex items-center justify-between gap-3 border-t border-white/8 pt-2.5">
-          <div className="flex min-w-0 items-center gap-3 text-[11px] text-zinc-500">
+          <div className="flex min-w-0 items-center gap-3 text-[11px] text-ink-mute">
             <span>{summary.trades} trades</span>
             <span className="text-zinc-800">/</span>
             <span>{summary.winRate}% win rate</span>
           </div>
           <ChevronRight
             size={16}
-            className="text-zinc-600 transition-transform group-hover:translate-x-0.5"
+            className="text-ink-subtle transition-transform group-hover:translate-x-0.5"
           />
         </div>
       </div>

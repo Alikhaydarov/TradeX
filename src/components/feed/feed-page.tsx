@@ -84,7 +84,7 @@ export function FeedPage({ onLogin }: FeedPageProps) {
         <div className="mx-auto flex max-w-4xl items-center gap-3">
           <div className="min-w-0 flex-1">
             <h1 className="text-lg font-bold tracking-tight">Trade feed</h1>
-            <p className="mt-0.5 text-[10px] text-zinc-500">
+            <p className="mt-0.5 text-[10px] text-ink-mute">
               Shared trade reviews only
             </p>
           </div>
@@ -100,10 +100,10 @@ export function FeedPage({ onLogin }: FeedPageProps) {
 
       <div className="mx-auto max-w-4xl px-3 py-4 sm:px-5 sm:py-5">
         <div className="flex items-center px-1">
-          <h2 className="text-xs font-semibold uppercase tracking-[.18em] text-zinc-500">
+          <h2 className="text-xs font-semibold uppercase tracking-[.18em] text-ink-mute">
             Community tape
           </h2>
-          <span className="ml-auto text-[10px] text-zinc-600">
+          <span className="ml-auto text-[10px] text-ink-subtle">
             {feed.posts.length} posts
           </span>
         </div>
@@ -263,7 +263,7 @@ export function FeedPage({ onLogin }: FeedPageProps) {
             className="min-h-32"
           />
           <div className="flex items-center gap-3">
-            <span className="text-xs tabular-nums text-zinc-500">
+            <span className="text-xs tabular-nums text-ink-mute">
               {feed.editingText.length}/280
             </span>
             <Button

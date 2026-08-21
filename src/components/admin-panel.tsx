@@ -193,7 +193,7 @@ export function AdminPanel({ onLogin }: { onLogin: () => void }) {
     <div className="min-h-full">
       <header className="sticky top-0 z-20 flex items-center border-b border-white/8 bg-[linear-gradient(90deg,rgba(14,165,233,.08),rgba(17,17,17,.96)_35%,rgba(245,158,11,.06))] px-3 py-3 backdrop-blur-xl sm:px-5 sm:py-4">
         <div>
-          <p className="text-[10px] font-bold uppercase tracking-[.22em] text-zinc-500">Superadmin</p>
+          <p className="text-[10px] font-bold uppercase tracking-[.22em] text-ink-mute">Superadmin</p>
           <h1 className="mt-1 text-xl font-black tracking-tight text-white sm:text-2xl">Tradoxy access console</h1>
         </div>
         <span className="ml-auto flex items-center gap-1.5 rounded-full border border-emerald-400/15 bg-emerald-400/10 px-3 py-1.5 text-[10px] font-bold text-emerald-200">
@@ -240,12 +240,12 @@ export function AdminPanel({ onLogin }: { onLogin: () => void }) {
             <div className="flex flex-col gap-3 xl:flex-row xl:items-center">
               <div>
                 <h2 className="text-base font-black text-white">Users, plans and roles</h2>
-                <p className="mt-1 text-xs text-zinc-500">
+                <p className="mt-1 text-xs text-ink-mute">
                   Manage premium access, verified badge and admin rights from one place.
                 </p>
               </div>
               <div className="relative xl:ml-auto xl:w-80">
-                <Search size={15} className="pointer-events-none absolute left-3.5 top-1/2 z-10 -translate-y-1/2 text-zinc-500" />
+                <Search size={15} className="pointer-events-none absolute left-3.5 top-1/2 z-10 -translate-y-1/2 text-ink-mute" />
                 <Input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search user or email" className="h-11 pl-9" />
               </div>
             </div>
@@ -263,11 +263,11 @@ export function AdminPanel({ onLogin }: { onLogin: () => void }) {
                     key={value}
                     type="button"
                     onClick={() => setPlanFilter(value)}
-                    className={`inline-flex h-9 shrink-0 items-center gap-2 rounded-full border px-3 text-xs font-bold transition ${selected ? "border-white/20 bg-white text-black" : "border-white/8 bg-black/25 text-zinc-400 hover:border-white/15 hover:text-white"}`}
+                    className={`inline-flex h-9 shrink-0 items-center gap-2 rounded-full border px-3 text-xs font-bold transition ${selected ? "border-white/20 bg-white text-black" : "border-white/8 bg-black/25 text-ink-soft hover:border-white/15 hover:text-white"}`}
                   >
                     {selected ? <Check size={13} /> : null}
                     {label}
-                    <span className={`rounded-full px-1.5 py-0.5 text-[9px] ${selected ? "bg-black/10" : "bg-white/[.06]"}`}>{count}</span>
+                    <span className={`rounded-full px-1.5 py-0.5 text-[10px] ${selected ? "bg-black/10" : "bg-white/[.06]"}`}>{count}</span>
                   </button>
                 );
               })}
@@ -282,7 +282,7 @@ export function AdminPanel({ onLogin }: { onLogin: () => void }) {
                 { label: "Linked accounts", value: summary.linkedAccounts, icon: BarChart3 },
               ].map((item) => (
                 <div key={item.label} className="rounded-2xl border border-white/8 bg-surface px-4 py-3">
-                  <div className="flex items-center gap-2 text-[11px] uppercase tracking-[.18em] text-zinc-500">
+                  <div className="flex items-center gap-2 text-[11px] uppercase tracking-[.18em] text-ink-mute">
                     <item.icon size={13} />
                     {item.label}
                   </div>
@@ -317,18 +317,18 @@ export function AdminPanel({ onLogin }: { onLogin: () => void }) {
                             <strong className="truncate text-sm text-white">{target.fullName}</strong>
                             {premiumEnabled && draft.isVerified ? <VerifiedBadge size={14} /> : null}
                             {draft.isAdmin ? (
-                              <span className="rounded-full border border-white/10 bg-white/[.04] px-2 py-0.5 text-[10px] font-bold text-zinc-300">
+                              <span className="rounded-full border border-white/10 bg-white/[.04] px-2 py-0.5 text-[10px] font-bold text-ink-strong">
                                 ADMIN
                               </span>
                             ) : null}
-                            <span className="rounded-full border border-white/10 bg-white/[.03] px-2 py-0.5 text-[10px] font-bold text-zinc-400">
+                            <span className="rounded-full border border-white/10 bg-white/[.03] px-2 py-0.5 text-[10px] font-bold text-ink-soft">
                               {PLAN_OPTIONS.find((item) => item.value === draft.plan)?.label}
                             </span>
                           </div>
-                          <p className="truncate text-[11px] text-zinc-500">@{target.username}</p>
-                          <p className="truncate text-[11px] text-zinc-600">{target.email || "Email not available"}</p>
+                          <p className="truncate text-[11px] text-ink-mute">@{target.username}</p>
+                          <p className="truncate text-[11px] text-ink-subtle">{target.email || "Email not available"}</p>
 
-                          <div className="mt-3 grid gap-2 text-[11px] text-zinc-400 sm:grid-cols-2 xl:grid-cols-3">
+                          <div className="mt-3 grid gap-2 text-[11px] text-ink-soft sm:grid-cols-2 xl:grid-cols-3">
                             <span className="rounded-full border border-white/8 bg-white/[.03] px-2.5 py-1">
                               Expires: {formatDate(target.premiumUntil)}
                             </span>
@@ -338,13 +338,13 @@ export function AdminPanel({ onLogin }: { onLogin: () => void }) {
                             <span className="rounded-full border border-white/8 bg-white/[.03] px-2.5 py-1">
                               Joined: {formatDate(target.createdAt)}
                             </span>
-                            <span className={`rounded-full border px-2.5 py-1 ${target.aiEnabled ? "border-emerald-500/20 bg-emerald-400/10 text-emerald-200" : "border-white/8 bg-white/[.03] text-zinc-500"}`}>
+                            <span className={`rounded-full border px-2.5 py-1 ${target.aiEnabled ? "border-emerald-500/20 bg-emerald-400/10 text-emerald-200" : "border-white/8 bg-white/[.03] text-ink-mute"}`}>
                               <Sparkles className="mr-1 inline size-3" /> AI {target.aiEnabled ? "on" : "off"}
                             </span>
-                            <span className={`rounded-full border px-2.5 py-1 ${target.autoSyncEnabled ? "border-sky-500/20 bg-sky-500/10 text-sky-200" : "border-white/8 bg-white/[.03] text-zinc-500"}`}>
+                            <span className={`rounded-full border px-2.5 py-1 ${target.autoSyncEnabled ? "border-sky-500/20 bg-sky-500/10 text-sky-200" : "border-white/8 bg-white/[.03] text-ink-mute"}`}>
                               <Zap className="mr-1 inline size-3" /> Auto Sync {target.autoSyncEnabled ? "on" : "off"}
                             </span>
-                            <span className={`rounded-full border px-2.5 py-1 ${target.traderoxEnabled ? "border-fuchsia-500/20 bg-fuchsia-500/10 text-fuchsia-200" : "border-white/8 bg-white/[.03] text-zinc-500"}`}>
+                            <span className={`rounded-full border px-2.5 py-1 ${target.traderoxEnabled ? "border-fuchsia-500/20 bg-fuchsia-500/10 text-fuchsia-200" : "border-white/8 bg-white/[.03] text-ink-mute"}`}>
                               <Star className="mr-1 inline size-3" /> Coach {target.traderoxEnabled ? "on" : "off"}
                             </span>
                             <span className="rounded-full border border-white/8 bg-white/[.03] px-2.5 py-1">
@@ -369,7 +369,7 @@ export function AdminPanel({ onLogin }: { onLogin: () => void }) {
 
                     <div className="grid gap-4 rounded-[24px] border border-white/8 bg-white/[.02] p-3">
                       <div className="grid gap-2">
-                        <span className="text-[10px] font-bold uppercase tracking-[.2em] text-zinc-500">Plan</span>
+                        <span className="text-[10px] font-bold uppercase tracking-[.2em] text-ink-mute">Plan</span>
                         <div className="grid grid-cols-3 gap-1.5 rounded-2xl border border-white/8 bg-black/25 p-1.5">
                           {PLAN_OPTIONS.map((option) => {
                             const selected = draft.plan === option.value;
@@ -400,13 +400,13 @@ export function AdminPanel({ onLogin }: { onLogin: () => void }) {
                             );
                           })}
                         </div>
-                        <p className="text-[11px] text-zinc-500">
+                        <p className="text-[11px] text-ink-mute">
                           {PLAN_OPTIONS.find((item) => item.value === draft.plan)?.description}
                         </p>
                       </div>
 
                       <div className="grid gap-2">
-                        <span className="text-[10px] font-bold uppercase tracking-[.2em] text-zinc-500">Verified badge</span>
+                        <span className="text-[10px] font-bold uppercase tracking-[.2em] text-ink-mute">Verified badge</span>
                         <div className="flex items-center gap-2 rounded-2xl border border-white/8 bg-black/20 p-1">
                           <Button
                             type="button"
@@ -442,7 +442,7 @@ export function AdminPanel({ onLogin }: { onLogin: () => void }) {
                       </div>
 
                       <div className="grid gap-2">
-                        <span className="text-[10px] font-bold uppercase tracking-[.2em] text-zinc-500">Role</span>
+                        <span className="text-[10px] font-bold uppercase tracking-[.2em] text-ink-mute">Role</span>
                         <div className="flex items-center gap-2 rounded-2xl border border-white/8 bg-black/20 p-1">
                           <Button
                             type="button"
@@ -488,7 +488,7 @@ export function AdminPanel({ onLogin }: { onLogin: () => void }) {
               })}
 
               {!filteredUsers.length ? (
-                <div className="rounded-2xl border border-dashed border-white/10 p-6 text-center text-sm text-zinc-500">
+                <div className="rounded-2xl border border-dashed border-white/10 p-6 text-center text-sm text-ink-mute">
                   No users found.
                 </div>
               ) : null}

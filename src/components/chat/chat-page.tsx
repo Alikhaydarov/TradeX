@@ -344,7 +344,7 @@ export function ChatPage({ communityId }: { communityId: string }) {
 
   if (loading) {
     return (
-      <div className="grid h-full min-h-0 place-items-center bg-surface text-zinc-500">
+      <div className="grid h-full min-h-0 place-items-center bg-surface text-ink-mute">
         <LoaderCircle size={22} className="animate-spin" />
       </div>
     );
@@ -354,11 +354,11 @@ export function ChatPage({ communityId }: { communityId: string }) {
     return (
       <div className="grid h-full min-h-0 place-items-center bg-surface p-4 text-center">
         <div className="max-w-sm rounded-xl border border-white/[.07] bg-surface-raised p-5">
-          <MessageCircle size={22} className="mx-auto text-zinc-600" />
+          <MessageCircle size={22} className="mx-auto text-ink-subtle" />
           <h1 className="mt-3 text-sm font-bold text-white">
             Chat unavailable
           </h1>
-          <p className="mt-1 text-[11px] leading-5 text-zinc-500">
+          <p className="mt-1 text-[11px] leading-5 text-ink-mute">
             {error || "Apply the community chat migration and try again."}
           </p>
           <Button
@@ -393,8 +393,8 @@ export function ChatPage({ communityId }: { communityId: string }) {
         ) : (
           <div className="grid h-full place-items-center bg-surface text-center">
             <div>
-              <MessageCircle size={28} className="mx-auto text-zinc-600" />
-              <p className="mt-2 text-xs text-zinc-500">
+              <MessageCircle size={28} className="mx-auto text-ink-subtle" />
+              <p className="mt-2 text-xs text-ink-mute">
                 Create or select a channel to start chatting.
               </p>
               <Button

@@ -768,12 +768,12 @@ export function JournalV2({
       <div className="grid min-h-[75dvh] place-items-center text-center">
         <div className="animate-page-in">
           <div className="mx-auto grid size-16 place-items-center rounded-2xl bg-surface">
-            <ShieldCheck className="text-zinc-300" size={32} />
+            <ShieldCheck className="text-ink-strong" size={32} />
           </div>
           <h2 className="mt-5 text-3xl font-black">
             Professional trading journal
           </h2>
-          <p className="mt-2 text-zinc-500">
+          <p className="mt-2 text-ink-mute">
             Track real and prop accounts in one focused workspace.
           </p>
           <Button
@@ -856,14 +856,14 @@ export function JournalV2({
           <div className="rounded-[1.5rem] border border-white/8 bg-surface p-5 shadow-[0_18px_46px_rgba(0,0,0,.22)]">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div>
-                <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-zinc-500">
+                <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-ink-mute">
                   Workspace
                 </p>
                 <h3 className="mt-2 text-xl font-black text-white">
                   Select an account to load dashboard, calendar, trades and
                   analytics.
                 </h3>
-                <p className="mt-1 text-sm text-zinc-500">
+                <p className="mt-1 text-sm text-ink-mute">
                   Home keeps the feed at the top, and your account workspace
                   opens right under it.
                 </p>
@@ -940,7 +940,7 @@ function AiCoachCard({
               {report?.title || "AI Trade Coach"}
             </h3>
             {report ? (
-              <span className="rounded-full border border-white/10 bg-surface px-2 py-0.5 text-[10px] font-black uppercase text-zinc-500">
+              <span className="rounded-full border border-white/10 bg-surface px-2 py-0.5 text-[10px] font-black uppercase text-ink-mute">
                 {report.generatedBy}
               </span>
             ) : null}
@@ -968,7 +968,7 @@ function AiCoachCard({
       {report ? (
         <div className="grid gap-3 p-4 sm:p-5 lg:grid-cols-[220px_1fr_1fr]">
           <div className="rounded-2xl border border-white/8 bg-surface p-4">
-            <p className="text-[10px] font-black uppercase tracking-widest text-zinc-500">
+            <p className="text-[10px] font-black uppercase tracking-widest text-ink-mute">
               Coach score
             </p>
             <p className="mt-2 font-mono text-4xl font-black text-white">
@@ -984,7 +984,7 @@ function AiCoachCard({
             </div>
           </div>
           <div className="rounded-2xl border border-white/8 bg-surface p-4">
-            <p className="text-[10px] font-black uppercase tracking-widest text-zinc-500">
+            <p className="text-[10px] font-black uppercase tracking-widest text-ink-mute">
               Risk warnings
             </p>
             <ul className="mt-3 space-y-2 text-sm leading-5 text-[#d4d4d8]">
@@ -997,7 +997,7 @@ function AiCoachCard({
             </ul>
           </div>
           <div className="rounded-2xl border border-white/8 bg-surface p-4">
-            <p className="text-[10px] font-black uppercase tracking-widest text-zinc-500">
+            <p className="text-[10px] font-black uppercase tracking-widest text-ink-mute">
               Next actions
             </p>
             <ul className="mt-3 space-y-2 text-sm leading-5 text-[#d4d4d8]">
@@ -1309,7 +1309,7 @@ function Workspace(p: {
       <div className="space-y-3 p-3 sm:p-4 lg:space-y-3 lg:p-4">
         {!embedded ? (
           <div className="w-full sm:w-[320px]">
-            <span className="mb-1.5 block text-[10px] font-semibold uppercase tracking-widest text-zinc-500">
+            <span className="mb-1.5 block text-[10px] font-semibold uppercase tracking-widest text-ink-mute">
               Account
             </span>
             <Select value={account.id} onValueChange={p.onAccountChange}>
@@ -1340,13 +1340,13 @@ function Workspace(p: {
               title: "Win rate",
               value: `${stats.rate}%`,
               icon: Target,
-              color: "text-zinc-300",
+              color: "text-ink-strong",
             },
             {
               title: "Average R",
               value: `${stats.r.toFixed(2)}R`,
               icon: BarChart3,
-              color: "text-zinc-300",
+              color: "text-ink-strong",
             },
             {
               title: "Profit factor",
@@ -1371,7 +1371,7 @@ function Workspace(p: {
                   <s.icon size={18} className={s.color} />
                 </span>
                 <div className="min-w-0">
-                  <p className="text-[10px] uppercase tracking-wider text-zinc-500">
+                  <p className="text-[10px] uppercase tracking-wider text-ink-mute">
                     {s.title}
                   </p>
                   <p
@@ -1396,7 +1396,7 @@ function Workspace(p: {
               <section className="rounded-[1rem] border border-white/8 bg-surface p-3.5 sm:p-4">
                 <div className="flex flex-col gap-4 xl:flex-row xl:items-start">
                   <div className="min-w-0 flex-1">
-                    <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-zinc-600">
+                    <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-ink-subtle">
                       Selected account
                     </p>
                     <div className="mt-2.5 flex flex-wrap items-center gap-3">
@@ -1405,7 +1405,7 @@ function Workspace(p: {
                         <h2 className="truncate text-[1.05rem] font-black text-white">
                           {account.name}
                         </h2>
-                        <p className="mt-1 text-xs text-zinc-500">
+                        <p className="mt-1 text-xs text-ink-mute">
                           {account.accountType === "real"
                             ? "Real account"
                             : "Prop account"}{" "}
@@ -1413,7 +1413,7 @@ function Workspace(p: {
                         </p>
                       </div>
                       <span
-                        className={`rounded-full border px-3 py-1 text-[11px] font-bold ${account.status === "Active" ? "border-emerald-400/20 bg-[#0b1c12] text-emerald-300" : "border-white/10 bg-surface text-zinc-300"}`}
+                        className={`rounded-full border px-3 py-1 text-[11px] font-bold ${account.status === "Active" ? "border-emerald-400/20 bg-[#0b1c12] text-emerald-300" : "border-white/10 bg-surface text-ink-strong"}`}
                       >
                         {account.status}
                       </span>
@@ -1446,10 +1446,10 @@ function Workspace(p: {
                       Add trade
                     </button>
                     <div className="rounded-[1rem] border border-white/8 bg-surface p-3.5">
-                      <p className="text-[10px] uppercase tracking-[0.18em] text-zinc-500">
+                      <p className="text-[10px] uppercase tracking-[0.18em] text-ink-mute">
                         Focus
                       </p>
-                      <p className="mt-2 text-[13px] leading-5 text-zinc-300">
+                      <p className="mt-2 text-[13px] leading-5 text-ink-strong">
                         Every workspace section below follows this account
                         instantly when you switch it.
                       </p>
@@ -1465,7 +1465,7 @@ function Workspace(p: {
                       <h3 className="text-[14px] font-black text-white">
                         Recent trades
                       </h3>
-                      <p className="mt-1 text-xs text-zinc-500">
+                      <p className="mt-1 text-xs text-ink-mute">
                         Open any trade, review it, then share it to Home from
                         the trade view.
                       </p>
@@ -1497,12 +1497,12 @@ function Workspace(p: {
                           <div className="min-w-0 flex-1">
                             <div className="flex items-center gap-2">
                               <span
-                                className={`rounded px-1.5 py-0.5 text-[9px] font-black uppercase ${trade.side === "Long" ? "bg-[#0b1c12] text-emerald-300" : "bg-[#1a0d10] text-rose-300"}`}
+                                className={`rounded px-1.5 py-0.5 text-[10px] font-black uppercase ${trade.side === "Long" ? "bg-[#0b1c12] text-emerald-300" : "bg-[#1a0d10] text-rose-300"}`}
                               >
                                 {trade.side === "Long" ? "Buy" : "Sell"}
                               </span>
                             </div>
-                            <p className="mt-1 truncate text-xs text-zinc-500">
+                            <p className="mt-1 truncate text-xs text-ink-mute">
                               {trade.setup || trade.session || trade.rawDate}
                             </p>
                           </div>
@@ -1514,7 +1514,7 @@ function Workspace(p: {
                         </button>
                       ))
                     ) : (
-                      <div className="grid min-h-40 place-items-center rounded-2xl border border-white/8 bg-surface text-center text-sm text-zinc-500">
+                      <div className="grid min-h-40 place-items-center rounded-2xl border border-white/8 bg-surface text-center text-sm text-ink-mute">
                         No trades in this account yet.
                       </div>
                     )}
@@ -1534,14 +1534,14 @@ function Workspace(p: {
                         <h3 className="text-[15px] font-black text-white">
                           Sync & Focus
                         </h3>
-                        <p className="mt-1 text-xs text-zinc-500">
+                        <p className="mt-1 text-xs text-ink-mute">
                           Compact control panel for the selected account.
                         </p>
                       </div>
                     </div>
                     <div className="mt-3 grid gap-2">
                       <div className="rounded-2xl border border-white/8 bg-black px-3 py-2.5">
-                        <p className="text-[10px] font-black uppercase tracking-[0.16em] text-zinc-500">
+                        <p className="text-[10px] font-black uppercase tracking-[0.16em] text-ink-mute">
                           Auto sync
                         </p>
                         <p className="mt-1 text-sm font-bold text-white">
@@ -1549,25 +1549,25 @@ function Workspace(p: {
                             ? "MT5 bridge connected flow"
                             : "Manual or CSV workflow"}
                         </p>
-                        <p className="mt-1 text-xs text-zinc-500">
+                        <p className="mt-1 text-xs text-ink-mute">
                           All dashboard sections below follow this account only.
                         </p>
                       </div>
                       <div className="rounded-2xl border border-white/8 bg-black px-3 py-2.5">
-                        <p className="text-[10px] font-black uppercase tracking-[0.16em] text-zinc-500">
+                        <p className="text-[10px] font-black uppercase tracking-[0.16em] text-ink-mute">
                           Top symbol
                         </p>
                         <p className="mt-1 text-sm font-bold text-white">
                           {symbolStats[0]?.symbol || "No trade edge yet"}
                         </p>
-                        <p className="mt-1 text-xs text-zinc-500">
+                        <p className="mt-1 text-xs text-ink-mute">
                           {symbolStats[0]
                             ? `${symbolStats[0].trades} trades recorded`
                             : "Add trades to unlock symbol edge."}
                         </p>
                       </div>
                       <div className="rounded-2xl border border-white/8 bg-black px-3 py-2.5">
-                        <p className="text-[10px] font-black uppercase tracking-[0.16em] text-zinc-500">
+                        <p className="text-[10px] font-black uppercase tracking-[0.16em] text-ink-mute">
                           Coach mode
                         </p>
                         <p className="mt-1 text-sm font-bold text-white">
@@ -1577,7 +1577,7 @@ function Workspace(p: {
                               ? "Push A+ only"
                               : "Stay consistent"}
                         </p>
-                        <p className="mt-1 text-xs text-zinc-500">
+                        <p className="mt-1 text-xs text-ink-mute">
                           {coachReport?.summary ||
                             "AI coach summary appears here when the report is ready."}
                         </p>
@@ -1625,11 +1625,11 @@ function Workspace(p: {
                   <section className="calendar-surface overflow-hidden rounded-[1rem] border border-white/8 bg-surface">
                     <div className="flex flex-col gap-3 border-b border-white/8 px-3 py-3 sm:px-4 sm:py-4 lg:flex-row lg:items-center">
                       <div className="flex min-w-0 items-center gap-3">
-                        <span className="grid size-9 shrink-0 place-items-center rounded-xl border border-white/8 bg-white/[.035] text-zinc-300"><CalendarDays size={17} /></span>
+                        <span className="grid size-9 shrink-0 place-items-center rounded-xl border border-white/8 bg-white/[.035] text-ink-strong"><CalendarDays size={17} /></span>
                         <div className="min-w-0">
-                          <p className="text-[9px] font-medium uppercase tracking-[0.14em] text-zinc-600">Calendar overview</p>
+                          <p className="text-[10px] font-medium uppercase tracking-[0.14em] text-ink-subtle">Calendar overview</p>
                           <h3 className="truncate text-[15px] font-black text-white">Yearly performance</h3>
-                          <p className="hidden text-[11px] text-zinc-500 sm:block">Choose a month to inspect the trades behind its result.</p>
+                          <p className="hidden text-[11px] text-ink-mute sm:block">Choose a month to inspect the trades behind its result.</p>
                         </div>
                       </div>
                       <div className="grid w-full grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-1 rounded-xl border border-white/8 bg-surface p-1 lg:ml-auto lg:w-auto">
@@ -1643,10 +1643,10 @@ function Workspace(p: {
                         { label: "Net P&L", value: formatTradePnl(yearlyPnl), tone: yearlyPnl >= 0 ? "text-emerald-300" : "text-rose-300" },
                         { label: "Total trades", value: String(yearlyTrades), tone: "text-white" },
                         { label: "Active months", value: String(activeMonths), tone: "text-white" },
-                        { label: "Best month", value: bestMonth.trades ? new Date(month.getFullYear(), bestMonth.monthIndex, 1).toLocaleDateString("en-US", { month: "short" }) : "-", tone: bestMonth.pnl >= 0 ? "text-emerald-300" : "text-zinc-300" },
+                        { label: "Best month", value: bestMonth.trades ? new Date(month.getFullYear(), bestMonth.monthIndex, 1).toLocaleDateString("en-US", { month: "short" }) : "-", tone: bestMonth.pnl >= 0 ? "text-emerald-300" : "text-ink-strong" },
                       ].map((item) => (
                         <div key={item.label} className="rounded-xl border border-white/7 bg-surface px-3 py-2.5 sm:px-3.5">
-                          <p className="text-[9px] font-semibold uppercase tracking-[0.12em] text-zinc-600">{item.label}</p>
+                          <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-ink-subtle">{item.label}</p>
                           <p className={`mt-1 truncate font-mono text-base font-black sm:text-lg ${item.tone}`}>{item.value}</p>
                         </div>
                       ))}
@@ -1656,19 +1656,19 @@ function Workspace(p: {
                         const label = new Date(month.getFullYear(), item.monthIndex, 1).toLocaleDateString("en-US", { month: "short" });
                         const isCurrent = new Date().getFullYear() === month.getFullYear() && new Date().getMonth() === item.monthIndex;
                         return <button key={item.monthIndex} type="button" onClick={() => p.onCalendarMonthSelect(item.monthIndex)} className={`min-h-[94px] rounded-xl border p-3 text-left transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/25 sm:min-h-[112px] ${item.trades ? item.pnl >= 0 ? "border-emerald-500/18 bg-[#07110c] hover:border-emerald-400/40 hover:bg-[#0a1710]" : "border-rose-500/18 bg-[#12070a] hover:border-rose-400/40 hover:bg-[#180a0e]" : "border-white/7 bg-surface hover:border-white/15 hover:bg-surface"} ${isCurrent ? "ring-1 ring-white/20" : ""}`}>
-                          <div className="flex items-center justify-between gap-2"><span className="text-xs font-bold text-white">{label}</span>{item.trades ? <span className="rounded-md bg-black/30 px-1.5 py-0.5 text-[9px] font-bold text-zinc-400">{item.trades}T</span> : null}</div>
-                          {item.trades ? <><p className={`mt-5 truncate font-mono text-sm font-black ${item.pnl >= 0 ? "text-emerald-300" : "text-rose-300"}`}>{item.pnl >= 0 ? "+" : ""}{cashCompact.format(item.pnl)}</p><p className="mt-1 text-[10px] text-zinc-500">{item.wins} win{item.wins === 1 ? "" : "s"}</p></> : <p className="mt-6 text-[10px] text-zinc-600">No trades</p>}
+                          <div className="flex items-center justify-between gap-2"><span className="text-xs font-bold text-white">{label}</span>{item.trades ? <span className="rounded-md bg-black/30 px-1.5 py-0.5 text-[10px] font-bold text-ink-soft">{item.trades}T</span> : null}</div>
+                          {item.trades ? <><p className={`mt-5 truncate font-mono text-sm font-black ${item.pnl >= 0 ? "text-emerald-300" : "text-rose-300"}`}>{item.pnl >= 0 ? "+" : ""}{cashCompact.format(item.pnl)}</p><p className="mt-1 text-[10px] text-ink-mute">{item.wins} win{item.wins === 1 ? "" : "s"}</p></> : <p className="mt-6 text-[10px] text-ink-subtle">No trades</p>}
                         </button>;
                       })}
                     </div>
                   </section>
                   <section className="calendar-surface overflow-hidden rounded-[1rem] border border-white/8 bg-surface p-3 sm:p-4">
-                    <div className="flex items-center justify-between gap-3"><div><p className="text-[9px] font-medium uppercase tracking-[0.14em] text-zinc-600">Year rhythm</p><h3 className="mt-1 text-sm font-black text-white">Monthly net performance</h3></div><span className="rounded-lg border border-white/8 bg-surface px-2.5 py-1 text-[10px] font-semibold text-zinc-500">{activeMonths} active months</span></div>
+                    <div className="flex items-center justify-between gap-3"><div><p className="text-[10px] font-medium uppercase tracking-[0.14em] text-ink-subtle">Year rhythm</p><h3 className="mt-1 text-sm font-black text-white">Monthly net performance</h3></div><span className="rounded-lg border border-white/8 bg-surface px-2.5 py-1 text-[10px] font-semibold text-ink-mute">{activeMonths} active months</span></div>
                     <div className="mt-4 grid h-28 grid-cols-12 items-end gap-1.5 sm:h-36 sm:gap-2">
                       {yearlyCalendar.map((item) => {
                         const maxPnl = Math.max(...yearlyCalendar.map((value) => Math.abs(value.pnl)), 1);
                         const height = item.trades ? Math.max(10, Math.round(Math.abs(item.pnl) / maxPnl * 100)) : 3;
-                        return <button key={`bar-${item.monthIndex}`} type="button" onClick={() => p.onCalendarMonthSelect(item.monthIndex)} title={`${new Date(month.getFullYear(), item.monthIndex, 1).toLocaleDateString("en-US", { month: "long" })}: ${formatTradePnl(item.pnl)}`} className="group flex h-full min-w-0 flex-col justify-end rounded-md px-0.5 text-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/25"><span style={{ height: `${height}%` }} className={`min-h-[3px] rounded-sm transition group-hover:opacity-80 ${item.pnl > 0 ? "bg-emerald-400" : item.pnl < 0 ? "bg-rose-400" : "bg-white/10"}`} /><span className="mt-1.5 text-[8px] font-semibold text-zinc-600 sm:text-[9px]">{new Date(month.getFullYear(), item.monthIndex, 1).toLocaleDateString("en-US", { month: "short" }).slice(0, 1)}</span></button>;
+                        return <button key={`bar-${item.monthIndex}`} type="button" onClick={() => p.onCalendarMonthSelect(item.monthIndex)} title={`${new Date(month.getFullYear(), item.monthIndex, 1).toLocaleDateString("en-US", { month: "long" })}: ${formatTradePnl(item.pnl)}`} className="group flex h-full min-w-0 flex-col justify-end rounded-md px-0.5 text-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/25"><span style={{ height: `${height}%` }} className={`min-h-[3px] rounded-sm transition group-hover:opacity-80 ${item.pnl > 0 ? "bg-emerald-400" : item.pnl < 0 ? "bg-rose-400" : "bg-white/10"}`} /><span className="mt-1.5 text-[8px] font-semibold text-ink-subtle sm:text-[10px]">{new Date(month.getFullYear(), item.monthIndex, 1).toLocaleDateString("en-US", { month: "short" }).slice(0, 1)}</span></button>;
                       })}
                     </div>
                   </section>
@@ -1717,7 +1717,7 @@ function Workspace(p: {
                       className="calendar-summary-card min-w-0 rounded-[1rem] border border-white/8 bg-surface p-2.5 sm:p-4"
                     >
                       <div className="flex items-center justify-between gap-2">
-                        <p className="truncate text-[9px] font-semibold uppercase tracking-[0.12em] text-zinc-500 sm:text-[10px]">
+                        <p className="truncate text-[10px] font-semibold uppercase tracking-[0.12em] text-ink-mute sm:text-[10px]">
                           {item.label}
                         </p>
                         <span
@@ -1729,7 +1729,7 @@ function Workspace(p: {
                       <p className="mt-2 truncate font-mono text-[13px] font-black text-white sm:text-xl">
                         {item.value}
                       </p>
-                      <p className="mt-1 hidden truncate text-[11px] text-zinc-500 sm:block">
+                      <p className="mt-1 hidden truncate text-[11px] text-ink-mute sm:block">
                         {item.note}
                       </p>
                     </div>
@@ -1739,11 +1739,11 @@ function Workspace(p: {
                 <div className="calendar-surface overflow-hidden rounded-[1rem] border border-white/8 bg-surface">
                   <div className="calendar-toolbar flex flex-col gap-3 border-b border-white/8 px-3 py-3 sm:px-4 sm:py-4 lg:flex-row lg:items-center">
                     <div className="flex min-w-0 items-center gap-3">
-                      <span className="grid size-9 shrink-0 place-items-center rounded-xl border border-white/8 bg-white/[.035] text-zinc-300">
+                      <span className="grid size-9 shrink-0 place-items-center rounded-xl border border-white/8 bg-white/[.035] text-ink-strong">
                         <CalendarDays size={17} />
                       </span>
                       <div className="min-w-0">
-                        <p className="truncate text-[9px] font-medium uppercase tracking-[0.14em] text-zinc-600">
+                        <p className="truncate text-[10px] font-medium uppercase tracking-[0.14em] text-ink-subtle">
                           Performance calendar
                         </p>
                         <h3 className="truncate text-[15px] font-black capitalize text-white">
@@ -1752,13 +1752,13 @@ function Workspace(p: {
                             year: "numeric",
                           })}
                         </h3>
-                        <p className="hidden text-[11px] text-zinc-500 sm:block">
+                        <p className="hidden text-[11px] text-ink-mute sm:block">
                           Select a day to review its trades.
                         </p>
                       </div>
                     </div>
                     <div className="calendar-month-switcher grid grid-cols-[auto_auto_minmax(0,1fr)_auto_auto] items-center gap-1 rounded-xl border border-white/8 bg-surface p-1 lg:ml-auto">
-                      <Button variant="ghost" size="sm" onClick={p.onCalendarOverview} className="px-2 text-[11px] text-zinc-400 hover:text-white"><ChevronLeft size={14} /><span className="hidden sm:inline">Year</span></Button>
+                      <Button variant="ghost" size="sm" onClick={p.onCalendarOverview} className="px-2 text-[11px] text-ink-soft hover:text-white"><ChevronLeft size={14} /><span className="hidden sm:inline">Year</span></Button>
                       <Button
                         aria-label="Previous month"
                         variant="ghost"
@@ -1796,7 +1796,7 @@ function Workspace(p: {
                       {WEEKDAYS_FULL.map((d) => (
                         <div
                           key={d}
-                          className="py-1.5 text-center text-[9px] font-semibold uppercase tracking-wider text-zinc-500 sm:py-2 sm:text-[11px]"
+                          className="py-1.5 text-center text-[10px] font-semibold uppercase tracking-wider text-ink-mute sm:py-2 sm:text-[11px]"
                         >
                           <span className="sm:hidden">{d.slice(0, 2)}</span>
                           <span className="hidden sm:inline">{d}</span>
@@ -1822,12 +1822,12 @@ function Workspace(p: {
                             ) : null}
                             <div className="flex items-start justify-between">
                               <span
-                                className={`grid size-4 place-items-center rounded text-[9px] font-bold sm:size-6 sm:rounded-md sm:text-[11px] ${c.trades.length ? "bg-surface text-[#f1f1f1]" : "text-zinc-500"}`}
+                                className={`grid size-4 place-items-center rounded text-[10px] font-bold sm:size-6 sm:rounded-md sm:text-[11px] ${c.trades.length ? "bg-surface text-[#f1f1f1]" : "text-ink-mute"}`}
                               >
                                 {c.day}
                               </span>
                               {c.trades.length > 0 ? (
-                                <span className="hidden font-mono text-[10px] text-zinc-500 sm:inline">
+                                <span className="hidden font-mono text-[10px] text-ink-mute sm:inline">
                                   {c.trades.length}T
                                 </span>
                               ) : null}
@@ -1835,7 +1835,7 @@ function Workspace(p: {
                             {c.trades.length > 0 ? (
                               <>
                                 <p
-                                  className={`mt-1 truncate font-mono text-[9px] font-black leading-tight sm:mt-5 sm:text-sm ${c.pnl >= 0 ? "text-emerald-300" : "text-rose-300"}`}
+                                  className={`mt-1 truncate font-mono text-[10px] font-black leading-tight sm:mt-5 sm:text-sm ${c.pnl >= 0 ? "text-emerald-300" : "text-rose-300"}`}
                                 >
                                   <span className="sm:hidden">
                                     {c.pnl >= 0 ? "+" : ""}
@@ -1846,7 +1846,7 @@ function Workspace(p: {
                                     {cash.format(c.pnl)}
                                   </span>
                                 </p>
-                                <p className="mt-1 hidden text-[10px] font-medium text-zinc-500 lg:block">
+                                <p className="mt-1 hidden text-[10px] font-medium text-ink-mute lg:block">
                                   {c.trades.length === 1
                                     ? "1 closed trade"
                                     : `${c.trades.length} closed trades`}
@@ -1920,7 +1920,7 @@ function Workspace(p: {
                         value as "overview" | "strategy" | "symbols",
                       )
                     }
-                    className={`min-w-0 rounded-[0.8rem] px-2 py-2 text-xs font-semibold transition sm:px-3 sm:py-1.5 ${analyticsView === value ? "bg-white text-black" : "bg-transparent text-zinc-500 hover:bg-surface hover:text-white"}`}
+                    className={`min-w-0 rounded-[0.8rem] px-2 py-2 text-xs font-semibold transition sm:px-3 sm:py-1.5 ${analyticsView === value ? "bg-white text-black" : "bg-transparent text-ink-mute hover:bg-surface hover:text-white"}`}
                   >
                     {label}
                   </button>
@@ -1934,15 +1934,15 @@ function Workspace(p: {
                 <div className="grid gap-3 xl:grid-cols-[minmax(0,1.15fr)_minmax(320px,.85fr)]">
                   <section className="overflow-hidden rounded-[1rem] border border-white/8 bg-surface">
                     <div className="border-b border-white/8 px-4 py-3">
-                      <p className="text-[9px] font-medium uppercase tracking-[0.12em] text-zinc-600">
+                      <p className="text-[10px] font-medium uppercase tracking-[0.12em] text-ink-subtle">
                         {account.name}{" "}
-                        <span className="mx-1 text-zinc-700">&gt;</span>{" "}
+                        <span className="mx-1 text-ink-faint">&gt;</span>{" "}
                         Analytics
                       </p>
                       <h3 className="text-[14px] font-black text-white">
                         Account Balance
                       </h3>
-                      <p className="mt-1 text-xs text-zinc-500">
+                      <p className="mt-1 text-xs text-ink-mute">
                         {month.toLocaleDateString("en-US", {
                           month: "short",
                           day: "numeric",
@@ -2034,7 +2034,7 @@ function Workspace(p: {
                         <h3 className="text-[14px] font-black text-white">
                           Tradoxy Profitability Score
                         </h3>
-                        <p className="mt-1 text-[11px] text-zinc-500">
+                        <p className="mt-1 text-[11px] text-ink-mute">
                           {trades.length < 5
                             ? "Early read, score becomes sharper after 5+ trades."
                             : "Live score based on execution quality."}
@@ -2069,7 +2069,7 @@ function Workspace(p: {
                         </ResponsiveContainer>
                       </div>
                       <div className="flex flex-col justify-between rounded-2xl border border-white/8 bg-surface px-2.5 py-3">
-                        <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-zinc-500">
+                        <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-ink-mute">
                           Score
                         </p>
                         <p className="text-2xl font-black text-white">
@@ -2190,7 +2190,7 @@ function Workspace(p: {
                               <p className="text-sm font-medium text-white">
                                 {mistake.name}
                               </p>
-                              <p className="text-[11px] text-zinc-500">
+                              <p className="text-[11px] text-ink-mute">
                                 {mistake.trades} repeats
                               </p>
                             </div>
@@ -2230,7 +2230,7 @@ function Workspace(p: {
                                 className="shrink-0 bg-surface-raised"
                               />
                               <div>
-                                <p className="text-xs text-zinc-500">
+                                <p className="text-xs text-ink-mute">
                                   {symbol.trades} trades / {symbol.wins} wins
                                 </p>
                               </div>
@@ -2345,12 +2345,12 @@ function Workspace(p: {
                         <span className="min-w-0 flex-1">
                           <span className="flex min-w-0 items-center gap-2">
                             <span
-                              className={`rounded px-1.5 py-0.5 text-[9px] font-black uppercase ${trade.side === "Long" ? "bg-[#0b1c12] text-emerald-300" : "bg-[#1a0d10] text-rose-300"}`}
+                              className={`rounded px-1.5 py-0.5 text-[10px] font-black uppercase ${trade.side === "Long" ? "bg-[#0b1c12] text-emerald-300" : "bg-[#1a0d10] text-rose-300"}`}
                             >
                               {trade.side === "Long" ? "Buy" : "Sell"}
                             </span>
                           </span>
-                          <span className="mt-1 block text-xs text-zinc-500">
+                          <span className="mt-1 block text-xs text-ink-mute">
                             {trade.setup ||
                               trade.session ||
                               trade.note ||
@@ -2363,7 +2363,7 @@ function Workspace(p: {
                           >
                             {formatTradePnl(trade.pnl)}
                           </strong>
-                          <span className="mt-1 block text-[10px] text-zinc-500">
+                          <span className="mt-1 block text-[10px] text-ink-mute">
                             {(trade.resultR || 0).toFixed(2)}R
                           </span>
                         </span>
@@ -2394,7 +2394,7 @@ function ProgressBar({
   return (
     <div>
       <div className="mb-1.5 flex text-xs">
-        <span className="text-zinc-500">{label}</span>
+        <span className="text-ink-mute">{label}</span>
         <b className="ml-auto text-[#f1f1f1]">{value.toFixed(0)}%</b>
       </div>
       <div className="h-1.5 overflow-hidden rounded-full bg-[#242424]">
@@ -2426,7 +2426,7 @@ function MetricPanel({
         : "text-white";
   return (
     <section className="rounded-[1rem] border border-white/8 bg-surface p-3.5">
-      <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-zinc-500">
+      <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-ink-mute">
         {title}
       </p>
       <p
@@ -2434,7 +2434,7 @@ function MetricPanel({
       >
         {value}
       </p>
-      <p className="mt-1 text-[11px] text-zinc-500">{note}</p>
+      <p className="mt-1 text-[11px] text-ink-mute">{note}</p>
     </section>
   );
 }
@@ -2458,13 +2458,13 @@ function QuickMetric({
         : "text-white";
   return (
     <div className="rounded-[1rem] border border-white/8 bg-surface px-4 py-3">
-      <p className="text-[10px] uppercase tracking-[0.18em] text-zinc-500">
+      <p className="text-[10px] uppercase tracking-[0.18em] text-ink-mute">
         {label}
       </p>
       <p className={`mt-1 truncate font-mono text-lg font-black ${color}`}>
         {value}
       </p>
-      <p className="mt-1 text-xs text-zinc-500">{note}</p>
+      <p className="mt-1 text-xs text-ink-mute">{note}</p>
     </div>
   );
 }
@@ -2472,7 +2472,7 @@ function QuickMetric({
 function MiniStat({ label, value }: { label: string; value: string }) {
   return (
     <div className="rounded-xl border border-white/8 bg-surface px-3 py-2.5 text-center">
-      <small className="text-[9px] font-semibold uppercase tracking-wider text-zinc-500">
+      <small className="text-[10px] font-semibold uppercase tracking-wider text-ink-mute">
         {label}
       </small>
       <b className="mt-1 block truncate font-mono text-sm">{value}</b>
@@ -2482,7 +2482,7 @@ function MiniStat({ label, value }: { label: string; value: string }) {
 
 function Empty({ text }: { text: string }) {
   return (
-    <div className="grid min-h-40 place-items-center p-6 text-center text-sm text-zinc-500">
+    <div className="grid min-h-40 place-items-center p-6 text-center text-sm text-ink-mute">
       {text}
     </div>
   );

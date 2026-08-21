@@ -61,13 +61,13 @@ export function PostComposer({
             <DialogTitle className="text-xl font-black">
               {t("shareTrade")}
             </DialogTitle>
-            <p className="text-sm text-zinc-500">{t("pickTrade")}</p>
+            <p className="text-sm text-ink-mute">{t("pickTrade")}</p>
           </DialogHeader>
 
           <div className="border-b border-border p-3">
             {accountOptions.length > 1 ? (
               <div className="mb-3">
-                <span className="mb-1.5 block text-[10px] font-semibold uppercase tracking-[0.18em] text-zinc-500">
+                <span className="mb-1.5 block text-[10px] font-semibold uppercase tracking-[0.18em] text-ink-mute">
                   Account
                 </span>
                 <Select
@@ -90,12 +90,12 @@ export function PostComposer({
             ) : null}
 
             <label className="flex h-11 items-center gap-2 rounded-lg border border-border bg-black/15 px-3 focus-within:border-white/25">
-              <Search size={17} className="text-zinc-500" />
+              <Search size={17} className="text-ink-mute" />
               <input
                 value={query}
                 onChange={(event) => onQueryChange(event.target.value)}
                 placeholder={t("searchTrade")}
-                className="min-w-0 flex-1 bg-transparent text-sm outline-none placeholder:text-zinc-600"
+                className="min-w-0 flex-1 bg-transparent text-sm outline-none placeholder:text-ink-subtle"
               />
             </label>
           </div>
@@ -136,7 +136,7 @@ export function PostComposer({
                       <span className="min-w-0 flex-1">
                         <span className="flex min-w-0 items-center gap-2">
                           <span
-                            className={`rounded px-1.5 py-0.5 text-[9px] font-black uppercase ${
+                            className={`rounded px-1.5 py-0.5 text-[10px] font-black uppercase ${
                               trade.side === "Long"
                                 ? "bg-emerald-400/15 text-emerald-300"
                                 : "bg-rose-400/15 text-rose-300"
@@ -144,18 +144,18 @@ export function PostComposer({
                           >
                             {trade.side}
                           </span>
-                          <span className="text-[10px] text-zinc-600">
+                          <span className="text-[10px] text-ink-subtle">
                             {trade.rawDate}
                           </span>
                         </span>
-                        <span className="mt-1 block truncate text-xs text-zinc-500">
+                        <span className="mt-1 block truncate text-xs text-ink-mute">
                           {trade.setup ||
                             trade.session ||
                             trade.note ||
                             "No review note"}
                         </span>
                         {trade.accountName ? (
-                          <span className="mt-1 block truncate text-[10px] text-zinc-600">
+                          <span className="mt-1 block truncate text-[10px] text-ink-subtle">
                             {trade.accountName}
                           </span>
                         ) : null}
@@ -168,7 +168,7 @@ export function PostComposer({
                         >
                           {win ? "+" : ""}${Math.abs(trade.pnl).toFixed(2)}
                         </strong>
-                        <span className="font-mono text-[10px] text-zinc-600">
+                        <span className="font-mono text-[10px] text-ink-subtle">
                           {(trade.resultR || 0).toFixed(2)}R
                         </span>
                       </span>
@@ -180,7 +180,7 @@ export function PostComposer({
               <div className="grid min-h-48 place-items-center px-6 text-center">
                 <div>
                   <p className="text-sm font-bold">{t("noTrades")}</p>
-                  <p className="mt-1 text-xs leading-5 text-zinc-500">
+                  <p className="mt-1 text-xs leading-5 text-ink-mute">
                     {t("addTradeFirst")}
                   </p>
                   <Button

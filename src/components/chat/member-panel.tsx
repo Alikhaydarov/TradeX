@@ -23,7 +23,7 @@ function MemberRow({
         <TraderAvatar
           name={member.fullName}
           value={member.avatarUrl}
-          className={`size-8 rounded-full border text-[9px] ${
+          className={`size-8 rounded-full border text-[10px] ${
             online ? "border-emerald-400/25" : "border-white/[.07] grayscale-[.25]"
           }`}
         />
@@ -35,12 +35,12 @@ function MemberRow({
       </div>
       <div className="min-w-0 flex-1">
         <div className="flex min-w-0 items-center gap-1">
-          <span className={`truncate text-[11px] font-semibold ${online ? "text-zinc-200" : "text-zinc-500"}`}>
+          <span className={`truncate text-[11px] font-semibold ${online ? "text-zinc-200" : "text-ink-mute"}`}>
             {member.fullName}
           </span>
           {member.isVerified ? <BadgeCheck size={11} className="shrink-0 text-sky-400" /> : null}
         </div>
-        <p className="truncate text-[9px] text-zinc-600">@{member.username}</p>
+        <p className="truncate text-[10px] text-ink-subtle">@{member.username}</p>
       </div>
       {moderator ? (
         <span
@@ -89,17 +89,17 @@ export function MemberPanel({
   const offline = filtered.filter((member) => !onlineIds.has(member.id));
 
   return (
-    <aside className="flex h-full min-h-0 w-[236px] shrink-0 flex-col border-l border-white/[.065] bg-surface-raised text-zinc-300">
+    <aside className="flex h-full min-h-0 w-[236px] shrink-0 flex-col border-l border-white/[.065] bg-surface-raised text-ink-strong">
       <div className="flex h-12 shrink-0 items-center gap-2 border-b border-black/35 px-3">
-        <UsersRound size={14} className="text-zinc-500" />
+        <UsersRound size={14} className="text-ink-mute" />
         <div className="min-w-0 flex-1">
           <p className="text-[11px] font-bold text-zinc-200">Members</p>
-          <p className="text-[8px] text-zinc-600">{onlineUsers.length} online</p>
+          <p className="text-[8px] text-ink-subtle">{onlineUsers.length} online</p>
         </div>
         <button
           type="button"
           onClick={onClose}
-          className="grid size-7 place-items-center rounded-md text-zinc-600 transition hover:bg-white/[.06] hover:text-white"
+          className="grid size-7 place-items-center rounded-md text-ink-subtle transition hover:bg-white/[.06] hover:text-white"
           aria-label="Close member list"
         >
           <X size={13} />
@@ -108,12 +108,12 @@ export function MemberPanel({
 
       <div className="shrink-0 p-2.5">
         <label className="flex h-8 items-center gap-2 rounded-md border border-white/[.07] bg-surface px-2.5 transition focus-within:border-white/[.15]">
-          <Search size={12} className="text-zinc-600" />
+          <Search size={12} className="text-ink-subtle" />
           <input
             value={query}
             onChange={(event) => setQuery(event.target.value)}
             placeholder="Search members"
-            className="min-w-0 flex-1 bg-transparent text-[10px] text-zinc-200 outline-none placeholder:text-zinc-700"
+            className="min-w-0 flex-1 bg-transparent text-[10px] text-zinc-200 outline-none placeholder:text-ink-faint"
           />
         </label>
       </div>
@@ -121,7 +121,7 @@ export function MemberPanel({
       <div className="min-h-0 flex-1 overflow-y-auto px-2 pb-3 scrollbar-thin">
         {online.length ? (
           <section>
-            <p className="px-2 pb-1 pt-1 text-[8px] font-bold uppercase tracking-[.14em] text-zinc-600">
+            <p className="px-2 pb-1 pt-1 text-[8px] font-bold uppercase tracking-[.14em] text-ink-subtle">
               Online — {online.length}
             </p>
             <div className="space-y-0.5">
@@ -139,7 +139,7 @@ export function MemberPanel({
 
         {offline.length ? (
           <section className="mt-3">
-            <p className="px-2 pb-1 text-[8px] font-bold uppercase tracking-[.14em] text-zinc-600">
+            <p className="px-2 pb-1 text-[8px] font-bold uppercase tracking-[.14em] text-ink-subtle">
               Offline — {offline.length}
             </p>
             <div className="space-y-0.5 opacity-80">
@@ -158,8 +158,8 @@ export function MemberPanel({
         {!filtered.length ? (
           <div className="grid min-h-36 place-items-center px-4 text-center">
             <div>
-              <UsersRound size={20} className="mx-auto text-zinc-700" />
-              <p className="mt-2 text-[10px] text-zinc-600">No matching members</p>
+              <UsersRound size={20} className="mx-auto text-ink-faint" />
+              <p className="mt-2 text-[10px] text-ink-subtle">No matching members</p>
             </div>
           </div>
         ) : null}

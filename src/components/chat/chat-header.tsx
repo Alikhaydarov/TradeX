@@ -41,20 +41,20 @@ export function ChatHeader({
         variant="ghost"
         size="icon-sm"
         onClick={onOpenSidebar}
-        className="text-zinc-400 hover:bg-white/[.06] hover:text-white lg:hidden"
+        className="text-ink-soft hover:bg-white/[.06] hover:text-white lg:hidden"
         aria-label="Open chat sidebar"
       >
         <Menu size={17} />
       </Button>
 
-      <span className="grid size-7 shrink-0 place-items-center text-zinc-500">
+      <span className="grid size-7 shrink-0 place-items-center text-ink-mute">
         {roomKind === "channel" ? <Hash size={20} strokeWidth={2.4} /> : <MessageCircle size={18} />}
       </span>
 
       <div className="flex min-w-0 flex-1 items-center gap-2.5">
         <h1 className="truncate text-[14px] font-bold tracking-[-0.015em] text-zinc-100">{title}</h1>
         <span className="hidden h-5 w-px bg-white/[.07] sm:block" />
-        <p className="hidden min-w-0 truncate text-[10px] text-zinc-500 sm:block">{subtitle}</p>
+        <p className="hidden min-w-0 truncate text-[10px] text-ink-mute sm:block">{subtitle}</p>
       </div>
 
       <button
@@ -63,7 +63,7 @@ export function ChatHeader({
         className={`hidden h-8 items-center gap-1.5 rounded-md px-2 text-[10px] font-medium transition xl:inline-flex ${
           membersOpen
             ? "bg-white/[.07] text-zinc-200"
-            : "text-zinc-500 hover:bg-white/[.05] hover:text-zinc-200"
+            : "text-ink-mute hover:bg-white/[.05] hover:text-zinc-200"
         }`}
         aria-label={membersOpen ? "Hide member list" : "Show member list"}
       >
@@ -72,10 +72,10 @@ export function ChatHeader({
         {membersOpen ? <PanelRightClose size={13} /> : <PanelRightOpen size={13} />}
       </button>
       <span
-        className={`inline-flex h-7 items-center gap-1.5 rounded-md border px-2 text-[9px] font-bold ${
+        className={`inline-flex h-7 items-center gap-1.5 rounded-md border px-2 text-[10px] font-bold ${
           live
             ? "border-emerald-400/15 bg-emerald-400/[.065] text-emerald-300"
-            : "border-white/[.08] bg-white/[.035] text-zinc-500"
+            : "border-white/[.08] bg-white/[.035] text-ink-mute"
         }`}
       >
         {live ? <Wifi size={11} /> : <WifiOff size={11} />}
