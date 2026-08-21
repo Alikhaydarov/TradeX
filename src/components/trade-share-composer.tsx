@@ -492,7 +492,7 @@ export function TradeShareComposer({ trade, onClose }: TradeShareComposerProps) 
     <Dialog open={Boolean(trade)} onOpenChange={(v) => { if (!v) onClose(); }}>
       <DialogContent
         showCloseButton={false}
-        className="max-h-[95dvh] overflow-hidden border border-[#2a2a2a] bg-[#0b0b0b] p-0 shadow-2xl shadow-black/80 sm:max-w-lg"
+        className="max-h-[95dvh] overflow-hidden border border-[#2a2a2a] bg-surface p-0 shadow-2xl shadow-black/80 sm:max-w-lg"
       >
         {/* Header */}
         <div className="flex items-center justify-between border-b border-[#2a2a2a] px-4 py-3">
@@ -555,7 +555,7 @@ export function TradeShareComposer({ trade, onClose }: TradeShareComposerProps) 
                   className="w-full resize-none bg-transparent text-[15px] leading-6 text-[#f1f1f1] placeholder:text-[#5a5a5a] outline-none" />
 
                 {/* Trade preview card */}
-                <div className={`mt-3 overflow-hidden rounded-2xl border ${win ? "border-emerald-500/25" : "border-rose-500/25"} bg-[#161616]`}>
+                <div className={`mt-3 overflow-hidden rounded-2xl border ${win ? "border-emerald-500/25" : "border-rose-500/25"} bg-surface-raised`}>
                   <div className={`flex items-center justify-between px-4 py-3 ${win ? "bg-emerald-500/[.06]" : "bg-rose-500/[.06]"}`}>
                     <div className="flex min-w-0 items-center gap-2">
                       <span className="text-sm font-bold text-[#f1f1f1]">{trade.symbol}</span>
@@ -602,7 +602,7 @@ export function TradeShareComposer({ trade, onClose }: TradeShareComposerProps) 
                 ))}
               </div>
 
-              <div className={`relative mx-auto overflow-hidden rounded-xl bg-[#111] ${activeTab === "story" ? "aspect-[9/16] max-w-[164px]" : "aspect-square max-w-[260px]"}`}>
+              <div className={`relative mx-auto overflow-hidden rounded-xl bg-surface-raised ${activeTab === "story" ? "aspect-[9/16] max-w-[164px]" : "aspect-square max-w-[260px]"}`}>
                 {generating ? (
                   <div className="grid h-full place-items-center">
                     <LoaderCircle size={22} className="animate-spin text-zinc-600" />

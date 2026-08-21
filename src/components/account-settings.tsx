@@ -22,6 +22,7 @@ import { Spinner } from "./ui/spinner";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
 import type { PropAccount } from "./types";
 import { useWorkspacePreferences } from "./workspace-preferences-context";
+import { useRouter } from "next/navigation";
 
 const Mt5Settings = dynamic(
   () => import("./mt5-settings").then((module) => module.Mt5Settings),
@@ -104,6 +105,7 @@ function connectorMeta(account: PropAccount): ConnectorMeta {
 }
 
 export function AccountSettings({ onLogin: _onLogin }: { onLogin: () => void }) {
+  const router = useRouter();
   void _onLogin;
   const { accounts, activeAccountId, setActiveAccount, setAccounts, refreshAccounts } = useActiveAccountStore();
   const { hidePersonalInfo } = useWorkspacePreferences();
@@ -174,14 +176,11 @@ export function AccountSettings({ onLogin: _onLogin }: { onLogin: () => void }) 
   if (!account || !connector) {
     return (
       <div className="mx-auto grid min-h-[70dvh] max-w-2xl place-items-center p-4 text-center sm:p-5">
-        <div className="rounded-[1.5rem] border border-white/8 bg-[#0b0b0b] p-6">
+        <div className="rounded-[1.5rem] border border-white/8 bg-surface p-6">
           <WalletCards className="mx-auto text-zinc-400" size={34} />
           <h1 className="mt-4 text-2xl font-black text-white">Select an account first</h1>
           <p className="mt-2 text-sm leading-6 text-zinc-500">Settings are attached to one selected prop or real account.</p>
-          <Button className="mt-5 bg-white text-black hover:bg-zinc-200" onClick={() => {
-            window.history.pushState(null, "", "/accounts");
-            window.dispatchEvent(new Event("popstate"));
-          }}>
+          <Button className="mt-5 bg-white text-black hover:bg-zinc-200" onClick={() => router.push("/accounts")}>
             Open accounts
           </Button>
         </div>
@@ -191,7 +190,7 @@ export function AccountSettings({ onLogin: _onLogin }: { onLogin: () => void }) 
 
   return (
     <div className={cn("mx-auto w-full max-w-[1280px] space-y-4 p-3 pb-24 sm:p-5 sm:pb-8 lg:p-7", isSwitching && "opacity-80")}>
-      <header className="rounded-[1.4rem] border border-white/8 bg-[#090909] p-4 sm:p-5">
+      <header className="rounded-[1.4rem] border border-white/8 bg-surface p-4 sm:p-5">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
           <div className="min-w-0">
             <p className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500">
@@ -203,14 +202,14 @@ export function AccountSettings({ onLogin: _onLogin }: { onLogin: () => void }) 
 
           <div className="flex w-full flex-col gap-2 sm:flex-row lg:w-auto">
             <Select value={account.id} onValueChange={(value) => startTransition(() => setActiveAccount(value))}>
-              <SelectTrigger className="h-11 w-full rounded-xl border-white/10 bg-[#050505] sm:w-[280px]">
+              <SelectTrigger className="h-11 w-full rounded-xl border-white/10 bg-surface sm:w-[280px]">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
                 {accounts.map((item) => <SelectItem key={item.id} value={item.id}>{item.name}</SelectItem>)}
               </SelectContent>
             </Select>
-            <Button type="button" variant="outline" onClick={() => void refresh()} disabled={refreshing} className="h-11 border-white/10 bg-[#050505]">
+            <Button type="button" variant="outline" onClick={() => void refresh()} disabled={refreshing} className="h-11 border-white/10 bg-surface">
               <RefreshCw size={15} className={refreshing ? "animate-spin" : ""} /> Refresh
             </Button>
           </div>
@@ -231,9 +230,9 @@ export function AccountSettings({ onLogin: _onLogin }: { onLogin: () => void }) 
 
       {tab === "profile" ? (
         <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_360px]">
-          <section className="rounded-[1.4rem] border border-white/8 bg-[#090909] p-4 sm:p-5">
+          <section className="rounded-[1.4rem] border border-white/8 bg-surface p-4 sm:p-5">
             <div className="flex items-start gap-3">
-              <span className="grid size-10 shrink-0 place-items-center rounded-xl border border-white/8 bg-[#050505] text-zinc-300"><SlidersHorizontal size={18} /></span>
+              <span className="grid size-10 shrink-0 place-items-center rounded-xl border border-white/8 bg-surface text-zinc-300"><SlidersHorizontal size={18} /></span>
               <div>
                 <h2 className="font-black text-white">Account profile</h2>
                 <p className="mt-1 text-xs leading-5 text-zinc-500">These fields are used across dashboard, analytics and account cards.</p>
@@ -254,7 +253,7 @@ export function AccountSettings({ onLogin: _onLogin }: { onLogin: () => void }) 
             </div>
           </section>
 
-          <aside className="rounded-[1.4rem] border border-white/8 bg-[#090909] p-4 sm:p-5">
+          <aside className="rounded-[1.4rem] border border-white/8 bg-surface p-4 sm:p-5">
             <p className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.18em] text-zinc-500"><ShieldCheck size={14} /> Account details</p>
             <div className="mt-4 space-y-2">
               <Detail label="Platform" value={(account.platform || "manual").toUpperCase()} />
@@ -265,7 +264,7 @@ export function AccountSettings({ onLogin: _onLogin }: { onLogin: () => void }) 
           </aside>
         </div>
       ) : (
-        <section className="rounded-[1.4rem] border border-white/8 bg-[#090909] p-3 sm:p-5">
+        <section className="rounded-[1.4rem] border border-white/8 bg-surface p-3 sm:p-5">
           <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex min-w-0 items-center gap-3">
               <span className={cn(
@@ -274,7 +273,7 @@ export function AccountSettings({ onLogin: _onLogin }: { onLogin: () => void }) 
                   ? "border-emerald-400/20 bg-emerald-400/10 text-emerald-300"
                   : connector.tone === "csv"
                     ? "border-amber-400/20 bg-amber-400/10 text-amber-300"
-                    : "border-white/10 bg-[#050505] text-zinc-400",
+                    : "border-white/10 bg-surface text-zinc-400",
               )}>
                 <Wifi size={17} />
               </span>
@@ -319,7 +318,7 @@ export function AccountSettings({ onLogin: _onLogin }: { onLogin: () => void }) 
 
 function ConnectorLoading() {
   return (
-    <div className="space-y-3 rounded-2xl border border-white/8 bg-[#070707] p-4 sm:p-6">
+    <div className="space-y-3 rounded-2xl border border-white/8 bg-surface p-4 sm:p-6">
       <div className="h-11 w-48 animate-pulse rounded-xl bg-white/[.07]" />
       <div className="h-4 max-w-xl animate-pulse rounded bg-white/[.05]" />
       <div className="h-28 animate-pulse rounded-2xl bg-white/[.04]" />
@@ -348,7 +347,7 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
 
 function Mini({ label, value }: { label: string; value: string }) {
   return (
-    <div className="min-w-0 rounded-xl border border-white/8 bg-[#090909] p-3 sm:p-4">
+    <div className="min-w-0 rounded-xl border border-white/8 bg-surface p-3 sm:p-4">
       <p className="text-[9px] font-black uppercase tracking-wider text-zinc-600">{label}</p>
       <p className="mt-1 truncate text-sm font-bold text-white">{value}</p>
     </div>
@@ -357,7 +356,7 @@ function Mini({ label, value }: { label: string; value: string }) {
 
 function Detail({ label, value }: { label: string; value: string }) {
   return (
-    <div className="flex min-w-0 items-center justify-between gap-3 rounded-xl border border-white/8 bg-[#050505] px-3 py-2.5">
+    <div className="flex min-w-0 items-center justify-between gap-3 rounded-xl border border-white/8 bg-surface px-3 py-2.5">
       <span className="text-[10px] font-black uppercase tracking-wider text-zinc-600">{label}</span>
       <strong className="min-w-0 truncate text-xs text-white">{value}</strong>
     </div>

@@ -7,6 +7,7 @@ import { useAuth } from "./auth-context";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog";
 import { Badge } from "./ui/badge";
 import { Button } from "./ui/button";
+import { useRouter } from "next/navigation";
 
 interface PremiumStatus {
   isPremium: boolean;
@@ -23,6 +24,7 @@ const plans = [
 const PREMIUM_UPSELL_COOLDOWN_MS = 1000 * 60 * 60 * 48;
 
 export function PremiumUpsellDialog() {
+  const router = useRouter();
   const { user } = useAuth();
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -87,8 +89,7 @@ export function PremiumUpsellDialog() {
 
   const openPricing = () => {
     setOpen(false);
-    window.history.pushState(null, "", "/pricing");
-    window.dispatchEvent(new Event("popstate"));
+    router.push("/pricing");
   };
 
   const startCheckout = async (planId: "standard" | "pro") => {
@@ -126,7 +127,7 @@ export function PremiumUpsellDialog() {
           <button
             type="button"
             onClick={() => setOpen(false)}
-            className="grid size-9 place-items-center rounded-full border border-white/10 bg-[#080808] text-zinc-400 transition hover:bg-[#101010] hover:text-white"
+            className="grid size-9 place-items-center rounded-full border border-white/10 bg-surface text-zinc-400 transition hover:bg-surface-raised hover:text-white"
             aria-label="Close premium dialog"
           >
             <X size={16} />
@@ -147,7 +148,7 @@ export function PremiumUpsellDialog() {
 
           <div className="mt-6 grid gap-3 sm:grid-cols-2">
             {plans.map((plan) => (
-              <div key={plan.id} className="rounded-3xl border border-white/10 bg-[#080808] p-4">
+              <div key={plan.id} className="rounded-3xl border border-white/10 bg-surface p-4">
                 <div className="flex items-center justify-between">
                   <h3 className="text-lg font-black text-white">{plan.name}</h3>
                   <span className="text-sm font-bold text-zinc-300">{plan.price}</span>

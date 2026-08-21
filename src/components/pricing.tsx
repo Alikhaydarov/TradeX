@@ -8,6 +8,7 @@ import {
   ShieldCheck,
   Sparkles,
 } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 
 import { apiRequest } from "@/lib/api-client";
@@ -91,6 +92,7 @@ const freeFeatures = [
 ];
 
 export function Pricing({ onLogin }: { onLogin?: () => void } = {}) {
+  const router = useRouter();
   const { user } = useAuth();
   const [premium, setPremium] = useState<PremiumStatus | null>(null);
   const [checkoutPlan, setCheckoutPlan] = useState<string | null>(null);
@@ -212,7 +214,7 @@ export function Pricing({ onLogin }: { onLogin?: () => void } = {}) {
   return (
     <main className="min-h-[100dvh] bg-background px-3 py-5 text-foreground sm:px-5 lg:px-8">
       <div className="mx-auto max-w-6xl">
-        <section className="overflow-hidden rounded-[1.75rem] border border-white/10 bg-[#050505] p-5 shadow-[0_28px_90px_rgba(0,0,0,.52)] sm:p-7">
+        <section className="overflow-hidden rounded-[1.75rem] border border-white/10 bg-surface p-5 shadow-[0_28px_90px_rgba(0,0,0,.52)] sm:p-7">
           <div className="grid gap-6 lg:grid-cols-[1.1fr_.9fr] lg:items-end">
             <div>
               <Badge className="rounded-full bg-white text-black hover:bg-white">
@@ -226,14 +228,14 @@ export function Pricing({ onLogin }: { onLogin?: () => void } = {}) {
               </p>
               <div className="mt-5 flex flex-wrap gap-2">
                 {["Verified badge", "Account imports", "Tradoxy AI on Pro", "Server-side access control"].map((item) => (
-                  <span key={item} className="rounded-full border border-white/10 bg-[#0d0d0d] px-3 py-2 text-xs font-semibold text-zinc-300">
+                  <span key={item} className="rounded-full border border-white/10 bg-surface px-3 py-2 text-xs font-semibold text-zinc-300">
                     {item}
                   </span>
                 ))}
               </div>
             </div>
 
-            <Card className="border-white/10 bg-[#0b0b0b] py-0">
+            <Card className="border-white/10 bg-surface py-0">
               <CardHeader className="px-4 py-4">
                 <CardTitle className="flex items-center gap-2 text-white">
                   <Sparkles className="size-5 text-amber-300" /> Current account access
@@ -246,16 +248,16 @@ export function Pricing({ onLogin }: { onLogin?: () => void } = {}) {
               </CardHeader>
               <CardContent className="space-y-2.5 px-4 pb-4">
                 {activeFeatures.map((feature) => (
-                  <div key={feature.label} className="flex items-center justify-between rounded-2xl border border-white/8 bg-[#0d0d0d] px-4 py-3">
+                  <div key={feature.label} className="flex items-center justify-between rounded-2xl border border-white/8 bg-surface px-4 py-3">
                     <span className="text-sm font-semibold text-white">{feature.label}</span>
-                    <span className={`rounded-full px-2.5 py-1 text-[11px] font-bold ${feature.active ? "bg-emerald-400/15 text-emerald-300" : "bg-[#161616] text-zinc-500"}`}>
+                    <span className={`rounded-full px-2.5 py-1 text-[11px] font-bold ${feature.active ? "bg-emerald-400/15 text-emerald-300" : "bg-surface-raised text-zinc-500"}`}>
                       {feature.active ? "Enabled" : "Locked"}
                     </span>
                   </div>
                 ))}
               </CardContent>
               {premium?.isPremium ? (
-                <CardFooter className="justify-end border-white/8 bg-[#090909] px-4">
+                <CardFooter className="justify-end border-white/8 bg-surface px-4">
                   {premium.billingManaged ? (
                     <Button onClick={() => void openPortal()} disabled={portalLoading} className="h-10 rounded-xl bg-white text-black hover:bg-zinc-200">
                       {portalLoading ? <LoaderCircle className="size-4 animate-spin" /> : null}
@@ -278,12 +280,12 @@ export function Pricing({ onLogin }: { onLogin?: () => void } = {}) {
           </div>
         ) : null}
         {!billingConfigured && missingEnv.length ? (
-          <div className="mt-3 rounded-2xl border border-white/10 bg-[#0b0b0b] px-4 py-3 text-xs text-zinc-400">
+          <div className="mt-3 rounded-2xl border border-white/10 bg-surface px-4 py-3 text-xs text-zinc-400">
             Missing environment values: {missingEnv.join(", ")}
           </div>
         ) : null}
         {!billingConfigured && unlinkedPlans.length ? (
-          <div className="mt-3 rounded-2xl border border-white/10 bg-[#0b0b0b] px-4 py-3 text-xs text-zinc-400">
+          <div className="mt-3 rounded-2xl border border-white/10 bg-surface px-4 py-3 text-xs text-zinc-400">
             Missing Stripe plan links: {unlinkedPlans.map((plan) => `${plan.productName} (${plan.name})`).join(", ")}
           </div>
         ) : null}
@@ -298,10 +300,7 @@ export function Pricing({ onLogin }: { onLogin?: () => void } = {}) {
             features={freeFeatures}
             current={premium?.plan === "free"}
             actionLabel={premium?.plan === "free" ? "Current plan" : "Continue with Free"}
-            onAction={() => {
-              window.history.pushState(null, "", "/");
-              window.dispatchEvent(new Event("popstate"));
-            }}
+            onAction={() => router.push("/")}
           />
 
           {paidPlans.map((plan) => (
@@ -338,7 +337,7 @@ export function Pricing({ onLogin }: { onLogin?: () => void } = {}) {
           ].map(([Icon, title, body]) => {
             const ItemIcon = Icon as typeof BrainCircuit;
             return (
-              <Card key={String(title)} className="border-white/8 bg-[#090909] py-0">
+              <Card key={String(title)} className="border-white/8 bg-surface py-0">
                 <CardContent className="p-4">
                   <span className="grid size-10 place-items-center rounded-xl border border-white/8 bg-black text-zinc-300">
                     <ItemIcon className="size-4" />
@@ -377,7 +376,7 @@ function PlanCard({
   onAction: () => void;
 }) {
   return (
-    <Card className={`relative overflow-hidden py-0 ${highlighted ? "border-amber-300/25 bg-[#0c0b08]" : "border-white/10 bg-[#0b0b0b]"}`}>
+    <Card className={`relative overflow-hidden py-0 ${highlighted ? "border-amber-300/25 bg-[#0c0b08]" : "border-white/10 bg-surface"}`}>
       {highlighted ? <div className="pointer-events-none absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-amber-300/10 to-transparent" /> : null}
       <CardHeader className="relative px-4 py-4">
         <div className="flex items-start justify-between gap-4">
@@ -396,7 +395,7 @@ function PlanCard({
       </CardHeader>
       <CardContent className="relative space-y-2.5 px-4 pb-4">
         {features.map((feature) => (
-          <div key={feature} className="flex items-start gap-3 rounded-2xl border border-white/8 bg-[#0d0d0d] px-4 py-3">
+          <div key={feature} className="flex items-start gap-3 rounded-2xl border border-white/8 bg-surface px-4 py-3">
             <span className="mt-0.5 rounded-full bg-emerald-400/10 p-1 text-emerald-300">
               <Check className="size-3.5" />
             </span>
@@ -404,7 +403,7 @@ function PlanCard({
           </div>
         ))}
       </CardContent>
-      <CardFooter className="relative border-white/8 bg-[#090909] px-4">
+      <CardFooter className="relative border-white/8 bg-surface px-4">
         <Button
           type="button"
           onClick={onAction}

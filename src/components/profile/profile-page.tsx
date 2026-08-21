@@ -10,6 +10,7 @@ import { ProfileEditDialog } from "./profile-edit-dialog";
 import { ProfileHeader } from "./profile-header";
 import { ProfilePosts } from "./profile-posts";
 import { useProfileController } from "./use-profile-controller";
+import { profilePath } from "@/lib/navigation";
 
 export type ProfilePageProps = {
   onLogin: () => void;
@@ -27,7 +28,7 @@ export function ProfilePage({ onLogin, profileUsername }: ProfilePageProps) {
           <h1 className="text-xl font-extrabold">Profile</h1>
         </header>
         <div className="flex min-h-[70vh] flex-col items-center justify-center px-8 text-center">
-          <div className="flex h-20 w-20 items-center justify-center rounded-3xl border border-white/10 bg-[#080808]">
+          <div className="flex h-20 w-20 items-center justify-center rounded-3xl border border-white/10 bg-surface">
             <UserRound size={36} className="text-xmuted" />
           </div>
           <h2 className="mt-6 text-2xl font-black">Create your profile</h2>
@@ -55,7 +56,7 @@ export function ProfilePage({ onLogin, profileUsername }: ProfilePageProps) {
         <header className="h-14 border-b border-border bg-card" />
         <div className="mx-auto max-w-3xl animate-pulse px-3 py-4 sm:px-5">
           <div className="overflow-hidden rounded-lg border border-border bg-card">
-            <div className="h-32 bg-[#080808] sm:h-44" />
+            <div className="h-32 bg-surface sm:h-44" />
             <div className="px-5 pb-6">
               <div className="-mt-10 size-24 rounded-full border-4 border-card bg-zinc-800 sm:-mt-14 sm:size-28" />
               <div className="mt-4 h-6 w-44 rounded bg-zinc-800" />
@@ -78,7 +79,7 @@ export function ProfilePage({ onLogin, profileUsername }: ProfilePageProps) {
   }
 
   return (
-    <div className="min-h-full bg-[#0b0b0b]">
+    <div className="min-h-full bg-surface">
       {controller.error ? (
         <div className="mx-auto mt-3 max-w-5xl rounded-2xl border border-rose-300/15 bg-rose-400/10 px-4 py-3 text-sm text-rose-200">
           {controller.error}
@@ -156,8 +157,7 @@ export function ProfilePage({ onLogin, profileUsername }: ProfilePageProps) {
         actingId={controller.connectionsActingId}
         onClose={() => controller.setConnectionsOpen(null)}
         onOpenProfile={(username) => {
-          router.push(`/${username.replace(/^@/, "").toLowerCase()}`);
-          window.dispatchEvent(new Event("tradeup:open-profile"));
+          router.push(profilePath(username));
           controller.setConnectionsOpen(null);
         }}
         onToggleFollow={(item) => void controller.toggleConnectionFollow(item)}

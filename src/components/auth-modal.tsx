@@ -100,7 +100,7 @@ export function AuthModal({
         aria-modal="true"
         aria-labelledby="auth-modal-title"
         onMouseDown={(event) => event.stopPropagation()}
-        className="relative my-auto w-full max-w-[460px] overflow-hidden rounded-[28px] border border-white/12 bg-[#080808] shadow-[0_30px_100px_rgba(0,0,0,.8)]"
+        className="relative my-auto w-full max-w-[460px] overflow-hidden rounded-[28px] border border-white/12 bg-surface shadow-[0_30px_100px_rgba(0,0,0,.8)]"
       >
         <div className="pointer-events-none absolute inset-x-12 top-0 h-px bg-gradient-to-r from-transparent via-white/70 to-transparent" />
         <div className="p-5 sm:p-7">

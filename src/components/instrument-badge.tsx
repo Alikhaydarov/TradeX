@@ -54,7 +54,7 @@ export function InstrumentBadge({
   return (
     <span
       className={cn(
-        "inline-flex min-w-0 items-center rounded-[22px] border border-white/10 bg-[#171717] px-3 py-2 text-zinc-100 shadow-[inset_0_1px_0_rgba(255,255,255,.05)]",
+        "inline-flex min-w-0 items-center rounded-[22px] border border-white/10 bg-surface-raised px-3 py-2 text-zinc-100 shadow-[inset_0_1px_0_rgba(255,255,255,.05)]",
         compact ? "rounded-[18px] px-2.5 py-1.5" : "",
         className,
       )}

@@ -11,9 +11,11 @@ import {
   Users,
   X,
 } from "lucide-react";
-import { useEffect, useState, type ReactNode } from "react";
+import { useRouter } from "next/navigation";
+import { useCallback, useEffect, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { apiRequest } from "@/lib/api-client";
+import { profilePath } from "@/lib/navigation";
 import { useVisibleInterval } from "@/lib/use-visible-interval";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -65,21 +67,39 @@ function ago(value: string) {
   return `${weeks}w`;
 }
 
-function openProfile(username: string) {
-  const clean = username.replace(/^@/, "").toLowerCase();
-  window.history.pushState(null, "", `/${clean}`);
-  window.dispatchEvent(new Event("tradeup:open-profile"));
-}
+/**
+ * These used to call window.history.pushState directly and then dispatch a
+ * synthetic event to "tell" the app to move.
+ *
+ * The App Router never learned about either. openProfile fired
+ * "tradeup:open-profile", which nothing has listened for since the move off the
+ * single-page shell, so opening a trader from search or notifications only
+ * rewrote the address bar. The rest dispatched a synthetic popstate, which the
+ * router cannot resolve against the null history state pushState left behind,
+ * so it fell back to a full document reload.
+ */
+function useSocialNavigation() {
+  const router = useRouter();
 
-function openFeedPost(postId?: string | null) {
-  window.history.pushState(null, "", postId ? `/#post-${postId}` : "/");
-  window.dispatchEvent(new Event("popstate"));
-  if (!postId) return;
-  window.setTimeout(() => {
-    document
-      .getElementById(`post-${postId}`)
-      ?.scrollIntoView({ behavior: "smooth", block: "center" });
-  }, 280);
+  const toProfile = useCallback(
+    (username: string) => router.push(profilePath(username)),
+    [router],
+  );
+
+  const toFeedPost = useCallback(
+    (postId?: string | null) => {
+      router.push(postId ? `/#post-${postId}` : "/");
+      if (!postId) return;
+      window.setTimeout(() => {
+        document
+          .getElementById(`post-${postId}`)
+          ?.scrollIntoView({ behavior: "smooth", block: "center" });
+      }, 280);
+    },
+    [router],
+  );
+
+  return { toProfile, toFeedPost, push: router.push };
 }
 
 function notificationMeta(type?: string) {
@@ -130,7 +150,7 @@ function Modal({
   return createPortal(
     <div className="fixed inset-0 isolate z-[2147483647] flex min-h-dvh w-full items-start justify-center overflow-y-auto bg-black/82 px-2 py-[max(.5rem,env(safe-area-inset-top))] sm:p-4">
       <div className="absolute inset-0" onClick={onClose} aria-hidden="true" />
-      <section className="relative z-10 flex min-h-0 max-h-[calc(100dvh-1rem)] w-full max-w-xl flex-col overflow-hidden rounded-[24px] border border-white/10 bg-[#050505] text-white shadow-2xl shadow-black/80 sm:h-[min(92dvh,760px)] sm:max-h-[calc(100dvh-2rem)] sm:rounded-[30px]">
+      <section className="relative z-10 flex min-h-0 max-h-[calc(100dvh-1rem)] w-full max-w-xl flex-col overflow-hidden rounded-[24px] border border-white/10 bg-surface text-white shadow-2xl shadow-black/80 sm:h-[min(92dvh,760px)] sm:max-h-[calc(100dvh-2rem)] sm:rounded-[30px]">
         <header className="flex items-center gap-3 border-b border-white/8 px-4 py-4">
           <div className="min-w-0 flex-1">
             <h2 className="text-xl font-black leading-6">{title}</h2>
@@ -138,7 +158,7 @@ function Modal({
           </div>
           <button
             onClick={onClose}
-            className="grid h-10 w-10 place-items-center rounded-2xl bg-[#0d0d0d] text-zinc-400 transition hover:bg-[#151515] hover:text-white"
+            className="grid h-10 w-10 place-items-center rounded-2xl bg-surface text-zinc-400 transition hover:bg-surface-raised hover:text-white"
             aria-label="Close"
           >
             <X size={18} />
@@ -152,6 +172,7 @@ function Modal({
 }
 
 function SearchDialog({ onClose }: { onClose: () => void }) {
+  const { toProfile } = useSocialNavigation();
   const [query, setQuery] = useState("");
   const [users, setUsers] = useState<SearchUser[]>([]);
   const [loading, setLoading] = useState(false);
@@ -160,7 +181,7 @@ function SearchDialog({ onClose }: { onClose: () => void }) {
 
   const goToProfile = (username: string) => {
     onClose();
-    window.setTimeout(() => openProfile(username), 0);
+    toProfile(username);
   };
 
   useEffect(() => {
@@ -277,7 +298,7 @@ function SearchDialog({ onClose }: { onClose: () => void }) {
             key={item.id}
             type="button"
             onClick={() => goToProfile(item.username)}
-            className="flex min-h-[84px] w-full touch-manipulation items-center gap-3 border-b border-white/6 px-4 py-3.5 text-left transition hover:bg-[#0d0d0d] active:bg-[#141414]"
+            className="flex min-h-[84px] w-full touch-manipulation items-center gap-3 border-b border-white/6 px-4 py-3.5 text-left transition hover:bg-surface active:bg-surface-raised"
           >
             <TraderAvatar
               name={item.fullName}
@@ -331,6 +352,7 @@ function NotificationsDialog({
   onClose: () => void;
   onRead: () => void;
 }) {
+  const { toProfile, toFeedPost, push } = useSocialNavigation();
   const [items, setItems] = useState<NotificationItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -366,12 +388,12 @@ function NotificationsDialog({
 
   const goActor = (item: NotificationItem) => {
     if (item.entityType === "post" && item.entityId) {
-      openFeedPost(item.entityId);
+      toFeedPost(item.entityId);
       onClose();
       return;
     }
     if (!item.actor?.username) return;
-    openProfile(item.actor.username);
+    toProfile(item.actor.username);
     onClose();
   };
 
@@ -396,8 +418,7 @@ function NotificationsDialog({
       );
       window.dispatchEvent(new Event("tradox:community-membership-changed"));
       if (decision === "accept") {
-        window.history.pushState(null, "", "/community");
-        window.dispatchEvent(new Event("popstate"));
+        push("/community");
         onClose();
       }
     } catch (err) {
@@ -431,7 +452,7 @@ function NotificationsDialog({
         {!loading && !items.length ? (
           <div className="grid min-h-72 place-items-center px-6 text-center">
             <div>
-              <span className="mx-auto grid size-14 place-items-center rounded-2xl border border-white/8 bg-[#0d0d0d]">
+              <span className="mx-auto grid size-14 place-items-center rounded-2xl border border-white/8 bg-surface">
                 <Bell className="text-zinc-500" size={26} />
               </span>
               <h3 className="mt-4 text-lg font-black">No notifications yet</h3>
@@ -517,7 +538,7 @@ function NotificationsDialog({
                   className="h-12 w-12 shrink-0 text-xs"
                 />
                 <span
-                  className={`absolute -bottom-1 -right-1 grid size-5 place-items-center rounded-full border border-[#171717] bg-[#0f1011] ${meta.tint}`}
+                  className={`absolute -bottom-1 -right-1 grid size-5 place-items-center rounded-full border border-[#171717] bg-surface ${meta.tint}`}
                 >
                   <Icon size={11} />
                 </span>
@@ -599,7 +620,7 @@ export function SocialActions({
         <button
           type="button"
           onClick={() => setSearchOpen(true)}
-          className={`items-center rounded-xl border border-white/10 bg-[#090909] text-zinc-100 transition hover:border-white/15 hover:bg-[#111111] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/30 ${expandedSearch ? "hidden h-9 w-[clamp(180px,18vw,260px)] justify-start gap-2.5 px-3 text-xs text-zinc-400 xl:flex" : `grid place-items-center ${compact ? "size-9" : "size-10"}`}`}
+          className={`items-center rounded-xl border border-white/10 bg-surface text-zinc-100 transition hover:border-white/15 hover:bg-surface-raised focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/30 ${expandedSearch ? "hidden h-9 w-[clamp(180px,18vw,260px)] justify-start gap-2.5 px-3 text-xs text-zinc-400 xl:flex" : `grid place-items-center ${compact ? "size-9" : "size-10"}`}`}
           aria-label="Search traders"
           title="Search traders"
         >
@@ -617,7 +638,7 @@ export function SocialActions({
           <button
             type="button"
             onClick={() => setSearchOpen(true)}
-            className={`grid place-items-center rounded-xl border border-white/10 bg-[#090909] text-zinc-100 transition hover:bg-[#111111] xl:hidden ${compact ? "size-9" : "size-10"}`}
+            className={`grid place-items-center rounded-xl border border-white/10 bg-surface text-zinc-100 transition hover:bg-surface-raised xl:hidden ${compact ? "size-9" : "size-10"}`}
             aria-label="Search traders"
           >
             <Search size={compact ? 16 : 17} strokeWidth={1.9} />
@@ -626,7 +647,7 @@ export function SocialActions({
         <button
           type="button"
           onClick={() => setNotificationsOpen(true)}
-          className={`relative grid place-items-center rounded-xl border border-white/10 bg-[#090909] text-zinc-100 transition hover:border-white/15 hover:bg-[#111111] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/30 ${compact ? "size-9" : "size-10"}`}
+          className={`relative grid place-items-center rounded-xl border border-white/10 bg-surface text-zinc-100 transition hover:border-white/15 hover:bg-surface-raised focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/30 ${compact ? "size-9" : "size-10"}`}
           aria-label={
             unread ? `Notifications, ${unread} unread` : "Notifications"
           }
@@ -657,9 +678,9 @@ export function SocialActions({
 
 export function SocialActionsCard() {
   return (
-    <section className="rounded-[24px] border border-white/9 bg-[#0a0a0a] p-4 shadow-xl shadow-black/30">
+    <section className="rounded-[24px] border border-white/9 bg-surface p-4 shadow-xl shadow-black/30">
       <div className="flex items-center gap-3">
-        <div className="grid h-10 w-10 place-items-center rounded-2xl bg-[#111111] text-zinc-300">
+        <div className="grid h-10 w-10 place-items-center rounded-2xl bg-surface-raised text-zinc-300">
           <Users size={18} />
         </div>
         <div className="min-w-0 flex-1">

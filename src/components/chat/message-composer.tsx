@@ -55,10 +55,10 @@ export function MessageComposer({
   };
 
   return (
-    <div className="shrink-0 border-t border-white/[0.09] bg-[#090909] px-3 pb-3 pt-2 sm:px-4">
+    <div className="shrink-0 border-t border-white/[0.09] bg-surface px-3 pb-3 pt-2 sm:px-4">
       <div className="mx-auto w-full max-w-[1120px]">
         {reply ? (
-          <div className="flex items-center gap-2 rounded-t-lg border border-b-0 border-white/[.09] bg-[#0e0e0e] px-3 py-2">
+          <div className="flex items-center gap-2 rounded-t-lg border border-b-0 border-white/[.09] bg-surface px-3 py-2">
             <CornerUpLeft size={13} className="shrink-0 text-zinc-500" />
             <div className="min-w-0 flex-1">
               <p className="text-[10px] font-semibold text-zinc-400">Replying to {reply.senderName}</p>
@@ -75,7 +75,7 @@ export function MessageComposer({
           </div>
         ) : null}
 
-        <div className={`flex items-end gap-2 border border-white/[.09] bg-[#0e0e0e] px-2.5 py-1.5 transition focus-within:border-white/[.18] ${reply ? "rounded-b-lg" : "rounded-lg"}`}>
+        <div className={`flex items-end gap-2 border border-white/[.09] bg-surface px-2.5 py-1.5 transition focus-within:border-white/[.18] ${reply ? "rounded-b-lg" : "rounded-lg"}`}>
           <Textarea
             ref={textareaRef}
             value={value}

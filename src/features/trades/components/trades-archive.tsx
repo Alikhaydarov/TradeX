@@ -81,16 +81,16 @@ function currentWeekGroups(trades: JournalEntry[]) {
 function TradeGalleryCard({ trade, formatPnl, onOpen }: { trade: JournalEntry; formatPnl: (amount: number) => string; onOpen: () => void }) {
   const screenshotCount = trade.imageUrls?.length ?? (trade.imageUrl ? 1 : 0)
   return (
-    <button type="button" onClick={onOpen} className="group overflow-hidden rounded-xl border border-white/8 bg-[#080808] text-left transition hover:border-white/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/25">
+    <button type="button" onClick={onOpen} className="group overflow-hidden rounded-xl border border-white/8 bg-surface text-left transition hover:border-white/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/25">
       {trade.imageUrl ? (
-        <div className="relative aspect-[16/10] overflow-hidden bg-[#101010]">
+        <div className="relative aspect-[16/10] overflow-hidden bg-surface-raised">
           <MediaImage src={trade.imageUrl} alt={`${trade.symbol} trade screenshot`} className="h-full w-full object-contain p-2 transition-transform group-hover:scale-[1.015]" />
           {screenshotCount > 1 ? <span className="absolute right-2 top-2 rounded-md bg-black/80 px-2 py-1 text-[9px] font-semibold text-zinc-300">{screenshotCount} images</span> : null}
         </div>
       ) : null}
       <div className="p-3">
         <div className="flex items-center gap-2">
-          <InstrumentBadge symbol={trade.symbol} compact className="shrink-0 bg-[#121212]" />
+          <InstrumentBadge symbol={trade.symbol} compact className="shrink-0 bg-surface-raised" />
           <div className="min-w-0 flex-1"><p className="truncate text-[11px] text-zinc-500">{formatDate(trade.rawDate)}</p></div>
           <p className={`font-mono text-sm font-semibold ${trade.pnl >= 0 ? "text-emerald-300" : "text-rose-300"}`}>{formatPnl(trade.pnl)}</p>
         </div>
@@ -132,7 +132,7 @@ export function TradesArchive({
   const rangeNote = range === "daily" ? "Today" : range === "monthly" ? "Current month" : range === "quarter" ? "Last 3 months" : range === "yearly" ? "Current year" : "Custom dates"
 
   return (
-    <Card className="gap-0 bg-[#070707] shadow-none">
+    <Card className="gap-0 bg-surface shadow-none">
       <CardHeader className="gap-4 border-b border-white/8 pb-4">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
           <div><CardTitle className="text-base">Trade journal</CardTitle><CardDescription>Review execution, filter results and open a trade for details.</CardDescription></div>
@@ -162,7 +162,7 @@ export function TradesArchive({
         </div>
 
         <Tabs value={view} onValueChange={(value) => { setView(value as TradeView); setPage(0) }}>
-          <TabsList className="grid w-full grid-cols-3 bg-[#0b0b0b] sm:w-fit">
+          <TabsList className="grid w-full grid-cols-3 bg-surface sm:w-fit">
             <TabsTrigger value="list"><List /> Trades</TabsTrigger><TabsTrigger value="gallery"><Images /> Gallery</TabsTrigger><TabsTrigger value="weekly"><CalendarRange /> Week</TabsTrigger>
           </TabsList>
         </Tabs>
@@ -179,7 +179,7 @@ export function TradesArchive({
                 <TableBody>{pagedTrades.map((trade) => (
                   <TableRow key={trade.id} tabIndex={0} role="button" onClick={() => onOpenTrade(trade)} onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); onOpenTrade(trade) } }} className="cursor-pointer">
                     <TableCell><p className="font-medium text-zinc-200">{formatDate(trade.rawDate)}</p><p className="mt-0.5 max-w-52 truncate text-[11px] text-zinc-600">{trade.note || "Open review"}</p></TableCell>
-                    <TableCell><InstrumentBadge symbol={trade.symbol} compact className="bg-[#121212]" /></TableCell>
+                    <TableCell><InstrumentBadge symbol={trade.symbol} compact className="bg-surface-raised" /></TableCell>
                     <TableCell><span className={`text-xs font-semibold ${trade.side === "Long" ? "text-emerald-300" : "text-rose-300"}`}>{trade.side === "Long" ? "Buy" : "Sell"}</span></TableCell>
                     <TableCell className="max-w-56 truncate text-zinc-400">{trade.setup || trade.session || "—"}</TableCell>
                     <TableCell className="font-mono text-zinc-400">{(trade.resultR || 0).toFixed(2)}R</TableCell>
@@ -190,14 +190,14 @@ export function TradesArchive({
             </div>
             <div className="divide-y divide-white/8 sm:hidden">{pagedTrades.map((trade) => (
               <button key={trade.id} type="button" onClick={() => onOpenTrade(trade)} className="flex w-full items-center gap-3 px-3 py-3 text-left transition hover:bg-white/[.025] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-white/25">
-                <InstrumentBadge symbol={trade.symbol} compact className="shrink-0 bg-[#121212]" />
+                <InstrumentBadge symbol={trade.symbol} compact className="shrink-0 bg-surface-raised" />
                 <div className="min-w-0 flex-1"><span className={`text-[10px] font-semibold ${trade.side === "Long" ? "text-emerald-300" : "text-rose-300"}`}>{trade.side === "Long" ? "Buy" : "Sell"}</span><p className="mt-1 truncate text-[11px] text-zinc-500">{formatDate(trade.rawDate)} · {trade.setup || trade.session || "No setup"}</p></div>
                 <div className="text-right"><p className={`font-mono text-sm font-semibold ${trade.pnl >= 0 ? "text-emerald-300" : "text-rose-300"}`}>{formatPnl(trade.pnl)}</p><p className="mt-1 text-[10px] text-zinc-600">{(trade.resultR || 0).toFixed(2)}R</p></div>
               </button>
             ))}</div>
             <div className="hidden gap-2 p-3 sm:grid sm:grid-cols-2 lg:hidden">{pagedTrades.map((trade) => (
-              <button key={trade.id} type="button" onClick={() => onOpenTrade(trade)} className="flex w-full items-center gap-3 rounded-xl border border-white/8 bg-[#0a0a0a] px-3 py-3 text-left transition hover:border-white/15 hover:bg-white/[.025] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/25">
-                <InstrumentBadge symbol={trade.symbol} compact className="shrink-0 bg-[#121212]" />
+              <button key={trade.id} type="button" onClick={() => onOpenTrade(trade)} className="flex w-full items-center gap-3 rounded-xl border border-white/8 bg-surface px-3 py-3 text-left transition hover:border-white/15 hover:bg-white/[.025] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/25">
+                <InstrumentBadge symbol={trade.symbol} compact className="shrink-0 bg-surface-raised" />
                 <div className="min-w-0 flex-1"><span className={`text-[10px] font-semibold ${trade.side === "Long" ? "text-emerald-300" : "text-rose-300"}`}>{trade.side === "Long" ? "Buy" : "Sell"}</span><p className="mt-1 truncate text-[11px] text-zinc-500">{formatDate(trade.rawDate)} · {trade.setup || trade.session || "No setup"}</p></div>
                 <div className="text-right"><p className={`font-mono text-sm font-semibold ${trade.pnl >= 0 ? "text-emerald-300" : "text-rose-300"}`}>{formatPnl(trade.pnl)}</p><p className="mt-1 text-[10px] text-zinc-600">{(trade.resultR || 0).toFixed(2)}R</p></div>
               </button>

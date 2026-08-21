@@ -767,7 +767,7 @@ export function JournalV2({
     return (
       <div className="grid min-h-[75dvh] place-items-center text-center">
         <div className="animate-page-in">
-          <div className="mx-auto grid size-16 place-items-center rounded-2xl bg-[#0d0d0d]">
+          <div className="mx-auto grid size-16 place-items-center rounded-2xl bg-surface">
             <ShieldCheck className="text-zinc-300" size={32} />
           </div>
           <h2 className="mt-5 text-3xl font-black">
@@ -853,7 +853,7 @@ export function JournalV2({
             onMt5Synced={reloadJournal}
           />
         ) : (
-          <div className="rounded-[1.5rem] border border-white/8 bg-[#0b0b0b] p-5 shadow-[0_18px_46px_rgba(0,0,0,.22)]">
+          <div className="rounded-[1.5rem] border border-white/8 bg-surface p-5 shadow-[0_18px_46px_rgba(0,0,0,.22)]">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-zinc-500">
@@ -927,11 +927,11 @@ function AiCoachCard({
       ? "border-rose-400/20 bg-[#130a0d]"
       : report?.mood === "push"
         ? "border-[#d9f96d]/25 bg-[#101208]"
-        : "border-white/10 bg-[#070707]";
+        : "border-white/10 bg-surface";
   return (
     <section className={`overflow-hidden rounded-[24px] border ${tone}`}>
       <div className="flex flex-col gap-3 border-b border-white/8 p-4 sm:flex-row sm:items-start sm:p-5">
-        <span className="grid size-11 shrink-0 place-items-center rounded-2xl border border-white/10 bg-[#050505] text-[#d9f96d]">
+        <span className="grid size-11 shrink-0 place-items-center rounded-2xl border border-white/10 bg-surface text-[#d9f96d]">
           <BrainCircuit size={21} />
         </span>
         <div className="min-w-0 flex-1">
@@ -940,7 +940,7 @@ function AiCoachCard({
               {report?.title || "AI Trade Coach"}
             </h3>
             {report ? (
-              <span className="rounded-full border border-white/10 bg-[#050505] px-2 py-0.5 text-[10px] font-black uppercase text-zinc-500">
+              <span className="rounded-full border border-white/10 bg-surface px-2 py-0.5 text-[10px] font-black uppercase text-zinc-500">
                 {report.generatedBy}
               </span>
             ) : null}
@@ -967,14 +967,14 @@ function AiCoachCard({
       </div>
       {report ? (
         <div className="grid gap-3 p-4 sm:p-5 lg:grid-cols-[220px_1fr_1fr]">
-          <div className="rounded-2xl border border-white/8 bg-[#050505] p-4">
+          <div className="rounded-2xl border border-white/8 bg-surface p-4">
             <p className="text-[10px] font-black uppercase tracking-widest text-zinc-500">
               Coach score
             </p>
             <p className="mt-2 font-mono text-4xl font-black text-white">
               {Math.round(report.score)}
             </p>
-            <div className="mt-3 h-2 overflow-hidden rounded-full bg-[#111111]">
+            <div className="mt-3 h-2 overflow-hidden rounded-full bg-surface-raised">
               <div
                 className="h-full rounded-full bg-[#d9f96d]"
                 style={{
@@ -983,7 +983,7 @@ function AiCoachCard({
               />
             </div>
           </div>
-          <div className="rounded-2xl border border-white/8 bg-[#050505] p-4">
+          <div className="rounded-2xl border border-white/8 bg-surface p-4">
             <p className="text-[10px] font-black uppercase tracking-widest text-zinc-500">
               Risk warnings
             </p>
@@ -996,7 +996,7 @@ function AiCoachCard({
               ))}
             </ul>
           </div>
-          <div className="rounded-2xl border border-white/8 bg-[#050505] p-4">
+          <div className="rounded-2xl border border-white/8 bg-surface p-4">
             <p className="text-[10px] font-black uppercase tracking-widest text-zinc-500">
               Next actions
             </p>
@@ -1313,7 +1313,7 @@ function Workspace(p: {
               Account
             </span>
             <Select value={account.id} onValueChange={p.onAccountChange}>
-              <SelectTrigger className="h-11 rounded-2xl border-white/10 bg-[#090909]">
+              <SelectTrigger className="h-11 rounded-2xl border-white/10 bg-surface">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -1367,7 +1367,7 @@ function Workspace(p: {
               className={`gap-0 py-0 ${index === 4 ? "col-span-2 sm:col-span-1" : ""}`}
             >
               <CardContent className="flex min-h-18 items-center gap-2 p-3 sm:min-h-18 sm:gap-3 sm:p-3.5">
-                <span className="grid size-9 shrink-0 place-items-center rounded-lg bg-[#050505] sm:size-10">
+                <span className="grid size-9 shrink-0 place-items-center rounded-lg bg-surface sm:size-10">
                   <s.icon size={18} className={s.color} />
                 </span>
                 <div className="min-w-0">
@@ -1393,7 +1393,7 @@ function Workspace(p: {
         >
           {!singleTabMode || activeTab === "home" ? (
             <TabsContent value="home" className="space-y-4">
-              <section className="rounded-[1rem] border border-white/8 bg-[#070707] p-3.5 sm:p-4">
+              <section className="rounded-[1rem] border border-white/8 bg-surface p-3.5 sm:p-4">
                 <div className="flex flex-col gap-4 xl:flex-row xl:items-start">
                   <div className="min-w-0 flex-1">
                     <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-zinc-600">
@@ -1413,7 +1413,7 @@ function Workspace(p: {
                         </p>
                       </div>
                       <span
-                        className={`rounded-full border px-3 py-1 text-[11px] font-bold ${account.status === "Active" ? "border-emerald-400/20 bg-[#0b1c12] text-emerald-300" : "border-white/10 bg-[#0a0a0a] text-zinc-300"}`}
+                        className={`rounded-full border px-3 py-1 text-[11px] font-bold ${account.status === "Active" ? "border-emerald-400/20 bg-[#0b1c12] text-emerald-300" : "border-white/10 bg-surface text-zinc-300"}`}
                       >
                         {account.status}
                       </span>
@@ -1445,7 +1445,7 @@ function Workspace(p: {
                     >
                       Add trade
                     </button>
-                    <div className="rounded-[1rem] border border-white/8 bg-[#050505] p-3.5">
+                    <div className="rounded-[1rem] border border-white/8 bg-surface p-3.5">
                       <p className="text-[10px] uppercase tracking-[0.18em] text-zinc-500">
                         Focus
                       </p>
@@ -1459,7 +1459,7 @@ function Workspace(p: {
               </section>
 
               <div className="grid gap-3 xl:grid-cols-[minmax(0,1.2fr)_minmax(300px,.8fr)]">
-                <section className="rounded-[1rem] border border-white/8 bg-[#070707] p-3.5 sm:p-4">
+                <section className="rounded-[1rem] border border-white/8 bg-surface p-3.5 sm:p-4">
                   <div className="flex items-center justify-between gap-3">
                     <div>
                       <h3 className="text-[14px] font-black text-white">
@@ -1474,7 +1474,7 @@ function Workspace(p: {
                       type="button"
                       variant="outline"
                       size="sm"
-                      className="border-white/10 bg-[#050505] hover:bg-[#101010]"
+                      className="border-white/10 bg-surface hover:bg-surface-raised"
                       onClick={() => setActiveTab("trades")}
                     >
                       Open log
@@ -1487,12 +1487,12 @@ function Workspace(p: {
                           key={trade.id}
                           type="button"
                           onClick={() => openTrade(trade)}
-                          className="flex w-full items-center gap-3 rounded-2xl border border-white/8 bg-[#050505] px-3 py-2.5 text-left transition hover:bg-[#0d0d0d]"
+                          className="flex w-full items-center gap-3 rounded-2xl border border-white/8 bg-surface px-3 py-2.5 text-left transition hover:bg-surface"
                         >
                           <InstrumentBadge
                             symbol={trade.symbol}
                             compact
-                            className="shrink-0 bg-[#121212]"
+                            className="shrink-0 bg-surface-raised"
                           />
                           <div className="min-w-0 flex-1">
                             <div className="flex items-center gap-2">
@@ -1514,7 +1514,7 @@ function Workspace(p: {
                         </button>
                       ))
                     ) : (
-                      <div className="grid min-h-40 place-items-center rounded-2xl border border-white/8 bg-[#050505] text-center text-sm text-zinc-500">
+                      <div className="grid min-h-40 place-items-center rounded-2xl border border-white/8 bg-surface text-center text-sm text-zinc-500">
                         No trades in this account yet.
                       </div>
                     )}
@@ -1528,7 +1528,7 @@ function Workspace(p: {
                     error={coachError}
                     onRefresh={loadCoach}
                   />
-                  <section className="rounded-[1rem] border border-white/8 bg-[#070707] p-3.5 sm:p-4">
+                  <section className="rounded-[1rem] border border-white/8 bg-surface p-3.5 sm:p-4">
                     <div className="flex items-center justify-between gap-3">
                       <div>
                         <h3 className="text-[15px] font-black text-white">
@@ -1622,7 +1622,7 @@ function Workspace(p: {
             <TabsContent value="calendar">
               {calendarView === "year" ? (
                 <div className="calendar-workspace space-y-3">
-                  <section className="calendar-surface overflow-hidden rounded-[1rem] border border-white/8 bg-[#070707]">
+                  <section className="calendar-surface overflow-hidden rounded-[1rem] border border-white/8 bg-surface">
                     <div className="flex flex-col gap-3 border-b border-white/8 px-3 py-3 sm:px-4 sm:py-4 lg:flex-row lg:items-center">
                       <div className="flex min-w-0 items-center gap-3">
                         <span className="grid size-9 shrink-0 place-items-center rounded-xl border border-white/8 bg-white/[.035] text-zinc-300"><CalendarDays size={17} /></span>
@@ -1632,7 +1632,7 @@ function Workspace(p: {
                           <p className="hidden text-[11px] text-zinc-500 sm:block">Choose a month to inspect the trades behind its result.</p>
                         </div>
                       </div>
-                      <div className="grid w-full grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-1 rounded-xl border border-white/8 bg-[#050505] p-1 lg:ml-auto lg:w-auto">
+                      <div className="grid w-full grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-1 rounded-xl border border-white/8 bg-surface p-1 lg:ml-auto lg:w-auto">
                         <Button aria-label="Previous year" variant="ghost" size="icon-sm" onClick={() => p.onCalendarYearShift(-1)}><ChevronLeft size={16} /></Button>
                         <strong className="px-3 text-center text-sm">{month.getFullYear()}</strong>
                         <Button aria-label="Next year" variant="ghost" size="icon-sm" onClick={() => p.onCalendarYearShift(1)}><ChevronRight size={16} /></Button>
@@ -1645,7 +1645,7 @@ function Workspace(p: {
                         { label: "Active months", value: String(activeMonths), tone: "text-white" },
                         { label: "Best month", value: bestMonth.trades ? new Date(month.getFullYear(), bestMonth.monthIndex, 1).toLocaleDateString("en-US", { month: "short" }) : "-", tone: bestMonth.pnl >= 0 ? "text-emerald-300" : "text-zinc-300" },
                       ].map((item) => (
-                        <div key={item.label} className="rounded-xl border border-white/7 bg-[#050505] px-3 py-2.5 sm:px-3.5">
+                        <div key={item.label} className="rounded-xl border border-white/7 bg-surface px-3 py-2.5 sm:px-3.5">
                           <p className="text-[9px] font-semibold uppercase tracking-[0.12em] text-zinc-600">{item.label}</p>
                           <p className={`mt-1 truncate font-mono text-base font-black sm:text-lg ${item.tone}`}>{item.value}</p>
                         </div>
@@ -1655,15 +1655,15 @@ function Workspace(p: {
                       {yearlyCalendar.map((item) => {
                         const label = new Date(month.getFullYear(), item.monthIndex, 1).toLocaleDateString("en-US", { month: "short" });
                         const isCurrent = new Date().getFullYear() === month.getFullYear() && new Date().getMonth() === item.monthIndex;
-                        return <button key={item.monthIndex} type="button" onClick={() => p.onCalendarMonthSelect(item.monthIndex)} className={`min-h-[94px] rounded-xl border p-3 text-left transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/25 sm:min-h-[112px] ${item.trades ? item.pnl >= 0 ? "border-emerald-500/18 bg-[#07110c] hover:border-emerald-400/40 hover:bg-[#0a1710]" : "border-rose-500/18 bg-[#12070a] hover:border-rose-400/40 hover:bg-[#180a0e]" : "border-white/7 bg-[#050505] hover:border-white/15 hover:bg-[#0a0a0a]"} ${isCurrent ? "ring-1 ring-white/20" : ""}`}>
+                        return <button key={item.monthIndex} type="button" onClick={() => p.onCalendarMonthSelect(item.monthIndex)} className={`min-h-[94px] rounded-xl border p-3 text-left transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/25 sm:min-h-[112px] ${item.trades ? item.pnl >= 0 ? "border-emerald-500/18 bg-[#07110c] hover:border-emerald-400/40 hover:bg-[#0a1710]" : "border-rose-500/18 bg-[#12070a] hover:border-rose-400/40 hover:bg-[#180a0e]" : "border-white/7 bg-surface hover:border-white/15 hover:bg-surface"} ${isCurrent ? "ring-1 ring-white/20" : ""}`}>
                           <div className="flex items-center justify-between gap-2"><span className="text-xs font-bold text-white">{label}</span>{item.trades ? <span className="rounded-md bg-black/30 px-1.5 py-0.5 text-[9px] font-bold text-zinc-400">{item.trades}T</span> : null}</div>
                           {item.trades ? <><p className={`mt-5 truncate font-mono text-sm font-black ${item.pnl >= 0 ? "text-emerald-300" : "text-rose-300"}`}>{item.pnl >= 0 ? "+" : ""}{cashCompact.format(item.pnl)}</p><p className="mt-1 text-[10px] text-zinc-500">{item.wins} win{item.wins === 1 ? "" : "s"}</p></> : <p className="mt-6 text-[10px] text-zinc-600">No trades</p>}
                         </button>;
                       })}
                     </div>
                   </section>
-                  <section className="calendar-surface overflow-hidden rounded-[1rem] border border-white/8 bg-[#070707] p-3 sm:p-4">
-                    <div className="flex items-center justify-between gap-3"><div><p className="text-[9px] font-medium uppercase tracking-[0.14em] text-zinc-600">Year rhythm</p><h3 className="mt-1 text-sm font-black text-white">Monthly net performance</h3></div><span className="rounded-lg border border-white/8 bg-[#050505] px-2.5 py-1 text-[10px] font-semibold text-zinc-500">{activeMonths} active months</span></div>
+                  <section className="calendar-surface overflow-hidden rounded-[1rem] border border-white/8 bg-surface p-3 sm:p-4">
+                    <div className="flex items-center justify-between gap-3"><div><p className="text-[9px] font-medium uppercase tracking-[0.14em] text-zinc-600">Year rhythm</p><h3 className="mt-1 text-sm font-black text-white">Monthly net performance</h3></div><span className="rounded-lg border border-white/8 bg-surface px-2.5 py-1 text-[10px] font-semibold text-zinc-500">{activeMonths} active months</span></div>
                     <div className="mt-4 grid h-28 grid-cols-12 items-end gap-1.5 sm:h-36 sm:gap-2">
                       {yearlyCalendar.map((item) => {
                         const maxPnl = Math.max(...yearlyCalendar.map((value) => Math.abs(value.pnl)), 1);
@@ -1714,7 +1714,7 @@ function Workspace(p: {
                   ].map((item) => (
                     <div
                       key={item.label}
-                      className="calendar-summary-card min-w-0 rounded-[1rem] border border-white/8 bg-[#070707] p-2.5 sm:p-4"
+                      className="calendar-summary-card min-w-0 rounded-[1rem] border border-white/8 bg-surface p-2.5 sm:p-4"
                     >
                       <div className="flex items-center justify-between gap-2">
                         <p className="truncate text-[9px] font-semibold uppercase tracking-[0.12em] text-zinc-500 sm:text-[10px]">
@@ -1736,7 +1736,7 @@ function Workspace(p: {
                   ))}
                 </div>
 
-                <div className="calendar-surface overflow-hidden rounded-[1rem] border border-white/8 bg-[#070707]">
+                <div className="calendar-surface overflow-hidden rounded-[1rem] border border-white/8 bg-surface">
                   <div className="calendar-toolbar flex flex-col gap-3 border-b border-white/8 px-3 py-3 sm:px-4 sm:py-4 lg:flex-row lg:items-center">
                     <div className="flex min-w-0 items-center gap-3">
                       <span className="grid size-9 shrink-0 place-items-center rounded-xl border border-white/8 bg-white/[.035] text-zinc-300">
@@ -1757,7 +1757,7 @@ function Workspace(p: {
                         </p>
                       </div>
                     </div>
-                    <div className="calendar-month-switcher grid grid-cols-[auto_auto_minmax(0,1fr)_auto_auto] items-center gap-1 rounded-xl border border-white/8 bg-[#050505] p-1 lg:ml-auto">
+                    <div className="calendar-month-switcher grid grid-cols-[auto_auto_minmax(0,1fr)_auto_auto] items-center gap-1 rounded-xl border border-white/8 bg-surface p-1 lg:ml-auto">
                       <Button variant="ghost" size="sm" onClick={p.onCalendarOverview} className="px-2 text-[11px] text-zinc-400 hover:text-white"><ChevronLeft size={14} /><span className="hidden sm:inline">Year</span></Button>
                       <Button
                         aria-label="Previous month"
@@ -1785,7 +1785,7 @@ function Workspace(p: {
                         variant="outline"
                         size="sm"
                         onClick={p.onToday}
-                        className="border-white/8 bg-transparent px-2 text-[11px] hover:bg-[#101010] sm:px-3"
+                        className="border-white/8 bg-transparent px-2 text-[11px] hover:bg-surface-raised sm:px-3"
                       >
                         Today
                       </Button>
@@ -1813,7 +1813,7 @@ function Workspace(p: {
                             onClick={() =>
                               c.trades.length ? setSelectedDay(c) : null
                             }
-                            className={`calendar-day relative h-full w-full overflow-hidden rounded-md border p-1 text-left transition-colors sm:rounded-[0.9rem] sm:p-2.5 ${c.trades.length ? (c.pnl >= 0 ? "border-emerald-500/16 bg-[#07110c] hover:border-emerald-400/30 hover:bg-[#0a1710]" : "border-rose-500/16 bg-[#12070a] hover:border-rose-400/30 hover:bg-[#180a0e]") : "border-white/6 bg-[#050505]"} ${c.trades.length ? "cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/25" : "cursor-default"}`}
+                            className={`calendar-day relative h-full w-full overflow-hidden rounded-md border p-1 text-left transition-colors sm:rounded-[0.9rem] sm:p-2.5 ${c.trades.length ? (c.pnl >= 0 ? "border-emerald-500/16 bg-[#07110c] hover:border-emerald-400/30 hover:bg-[#0a1710]" : "border-rose-500/16 bg-[#12070a] hover:border-rose-400/30 hover:bg-[#180a0e]") : "border-white/6 bg-surface"} ${c.trades.length ? "cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/25" : "cursor-default"}`}
                           >
                             {c.trades.length ? (
                               <span
@@ -1822,7 +1822,7 @@ function Workspace(p: {
                             ) : null}
                             <div className="flex items-start justify-between">
                               <span
-                                className={`grid size-4 place-items-center rounded text-[9px] font-bold sm:size-6 sm:rounded-md sm:text-[11px] ${c.trades.length ? "bg-[#050505] text-[#f1f1f1]" : "text-zinc-500"}`}
+                                className={`grid size-4 place-items-center rounded text-[9px] font-bold sm:size-6 sm:rounded-md sm:text-[11px] ${c.trades.length ? "bg-surface text-[#f1f1f1]" : "text-zinc-500"}`}
                               >
                                 {c.day}
                               </span>
@@ -1906,7 +1906,7 @@ function Workspace(p: {
           {/* Analytics */}
           {!singleTabMode || activeTab === "analytics" ? (
             <TabsContent value="analytics" className="space-y-3">
-              <div className="grid grid-cols-3 items-center gap-1 rounded-[0.95rem] border border-white/8 bg-[#050505] p-1 sm:flex sm:flex-wrap sm:gap-2">
+              <div className="grid grid-cols-3 items-center gap-1 rounded-[0.95rem] border border-white/8 bg-surface p-1 sm:flex sm:flex-wrap sm:gap-2">
                 {[
                   ["overview", "Overview"],
                   ["strategy", "Strategy"],
@@ -1920,19 +1920,19 @@ function Workspace(p: {
                         value as "overview" | "strategy" | "symbols",
                       )
                     }
-                    className={`min-w-0 rounded-[0.8rem] px-2 py-2 text-xs font-semibold transition sm:px-3 sm:py-1.5 ${analyticsView === value ? "bg-white text-black" : "bg-transparent text-zinc-500 hover:bg-[#0d0d0d] hover:text-white"}`}
+                    className={`min-w-0 rounded-[0.8rem] px-2 py-2 text-xs font-semibold transition sm:px-3 sm:py-1.5 ${analyticsView === value ? "bg-white text-black" : "bg-transparent text-zinc-500 hover:bg-surface hover:text-white"}`}
                   >
                     {label}
                   </button>
                 ))}
-                <div className="col-span-3 rounded-[0.8rem] bg-[#0d0d0d] px-3 py-1.5 text-center text-xs font-semibold text-white sm:col-span-1 sm:ml-auto">
+                <div className="col-span-3 rounded-[0.8rem] bg-surface px-3 py-1.5 text-center text-xs font-semibold text-white sm:col-span-1 sm:ml-auto">
                   All time
                 </div>
               </div>
 
               {analyticsView === "overview" ? (
                 <div className="grid gap-3 xl:grid-cols-[minmax(0,1.15fr)_minmax(320px,.85fr)]">
-                  <section className="overflow-hidden rounded-[1rem] border border-white/8 bg-[#070707]">
+                  <section className="overflow-hidden rounded-[1rem] border border-white/8 bg-surface">
                     <div className="border-b border-white/8 px-4 py-3">
                       <p className="text-[9px] font-medium uppercase tracking-[0.12em] text-zinc-600">
                         {account.name}{" "}
@@ -2028,7 +2028,7 @@ function Workspace(p: {
                     </div>
                   </section>
 
-                  <section className="overflow-hidden rounded-[1rem] border border-white/8 bg-[#070707]">
+                  <section className="overflow-hidden rounded-[1rem] border border-white/8 bg-surface">
                     <div className="flex items-center justify-between border-b border-white/8 px-4 py-3">
                       <div>
                         <h3 className="text-[14px] font-black text-white">
@@ -2040,7 +2040,7 @@ function Workspace(p: {
                             : "Live score based on execution quality."}
                         </p>
                       </div>
-                      <span className="rounded-full border border-white/8 bg-[#050505] px-2.5 py-1 text-[11px] font-black text-white">
+                      <span className="rounded-full border border-white/8 bg-surface px-2.5 py-1 text-[11px] font-black text-white">
                         {profitabilityScore}
                       </span>
                     </div>
@@ -2068,14 +2068,14 @@ function Workspace(p: {
                           </RadarChart>
                         </ResponsiveContainer>
                       </div>
-                      <div className="flex flex-col justify-between rounded-2xl border border-white/8 bg-[#050505] px-2.5 py-3">
+                      <div className="flex flex-col justify-between rounded-2xl border border-white/8 bg-surface px-2.5 py-3">
                         <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-zinc-500">
                           Score
                         </p>
                         <p className="text-2xl font-black text-white">
                           {profitabilityScore}
                         </p>
-                        <div className="h-full min-h-24 rounded-full bg-[#0d0d0d] p-2">
+                        <div className="h-full min-h-24 rounded-full bg-surface p-2">
                           <div
                             className="h-full w-full rounded-full bg-gradient-to-b from-emerald-400 to-emerald-600"
                             style={{
@@ -2130,7 +2130,7 @@ function Workspace(p: {
 
               {analyticsView === "strategy" ? (
                 <div className="grid gap-3 xl:grid-cols-2">
-                  <section className="rounded-[1rem] border border-white/8 bg-[#070707] p-4">
+                  <section className="rounded-[1rem] border border-white/8 bg-surface p-4">
                     <h3 className="text-[14px] font-black text-white">
                       Setup Performance
                     </h3>
@@ -2159,7 +2159,7 @@ function Workspace(p: {
                       )}
                     </div>
                   </section>
-                  <section className="rounded-[1rem] border border-white/8 bg-[#070707] p-4">
+                  <section className="rounded-[1rem] border border-white/8 bg-surface p-4">
                     <h3 className="text-[14px] font-black text-white">
                       Discipline & Mistakes
                     </h3>
@@ -2184,7 +2184,7 @@ function Workspace(p: {
                         mistakes.map((mistake) => (
                           <div
                             key={mistake.name}
-                            className="flex items-center justify-between rounded-xl border border-white/8 bg-[#050505] px-4 py-3"
+                            className="flex items-center justify-between rounded-xl border border-white/8 bg-surface px-4 py-3"
                           >
                             <div>
                               <p className="text-sm font-medium text-white">
@@ -2212,7 +2212,7 @@ function Workspace(p: {
 
               {analyticsView === "symbols" ? (
                 <div className="grid gap-3 xl:grid-cols-[minmax(0,1fr)_320px]">
-                  <section className="rounded-[1rem] border border-white/8 bg-[#070707] p-4">
+                  <section className="rounded-[1rem] border border-white/8 bg-surface p-4">
                     <h3 className="text-[14px] font-black text-white">
                       Most Traded Symbols
                     </h3>
@@ -2221,13 +2221,13 @@ function Workspace(p: {
                         symbolStats.map((symbol) => (
                           <div
                             key={symbol.symbol}
-                            className="flex items-center justify-between rounded-2xl border border-white/8 bg-[#050505] px-3 py-3"
+                            className="flex items-center justify-between rounded-2xl border border-white/8 bg-surface px-3 py-3"
                           >
                             <div className="flex items-center gap-2">
                               <InstrumentBadge
                                 symbol={symbol.symbol}
                                 compact
-                                className="shrink-0 bg-[#121212]"
+                                className="shrink-0 bg-surface-raised"
                               />
                               <div>
                                 <p className="text-xs text-zinc-500">
@@ -2248,7 +2248,7 @@ function Workspace(p: {
                       )}
                     </div>
                   </section>
-                  <section className="rounded-[1rem] border border-white/8 bg-[#070707] p-4">
+                  <section className="rounded-[1rem] border border-white/8 bg-surface p-4">
                     <h3 className="text-[14px] font-black text-white">
                       Account Details
                     </h3>
@@ -2335,12 +2335,12 @@ function Workspace(p: {
                           setSelectedDay(null);
                           openTrade(trade);
                         }}
-                        className="flex w-full items-center gap-3 rounded-2xl border border-white/10 bg-black px-3 py-3 text-left transition hover:bg-[#0b0b0b]"
+                        className="flex w-full items-center gap-3 rounded-2xl border border-white/10 bg-black px-3 py-3 text-left transition hover:bg-surface"
                       >
                         <InstrumentBadge
                           symbol={trade.symbol}
                           compact
-                          className="shrink-0 rounded-xl bg-[#151515]"
+                          className="shrink-0 rounded-xl bg-surface-raised"
                         />
                         <span className="min-w-0 flex-1">
                           <span className="flex min-w-0 items-center gap-2">
@@ -2425,7 +2425,7 @@ function MetricPanel({
         ? "text-rose-300"
         : "text-white";
   return (
-    <section className="rounded-[1rem] border border-white/8 bg-[#070707] p-3.5">
+    <section className="rounded-[1rem] border border-white/8 bg-surface p-3.5">
       <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-zinc-500">
         {title}
       </p>
@@ -2457,7 +2457,7 @@ function QuickMetric({
         ? "text-rose-300"
         : "text-white";
   return (
-    <div className="rounded-[1rem] border border-white/8 bg-[#050505] px-4 py-3">
+    <div className="rounded-[1rem] border border-white/8 bg-surface px-4 py-3">
       <p className="text-[10px] uppercase tracking-[0.18em] text-zinc-500">
         {label}
       </p>
@@ -2471,7 +2471,7 @@ function QuickMetric({
 
 function MiniStat({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-xl border border-white/8 bg-[#050505] px-3 py-2.5 text-center">
+    <div className="rounded-xl border border-white/8 bg-surface px-3 py-2.5 text-center">
       <small className="text-[9px] font-semibold uppercase tracking-wider text-zinc-500">
         {label}
       </small>

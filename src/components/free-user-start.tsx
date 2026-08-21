@@ -14,13 +14,12 @@ import { useAuth } from "./auth-context";
 import { Button } from "./ui/button";
 import { Spinner } from "./ui/spinner";
 import { usePremiumStatus } from "./use-premium-status";
+import { useRouter } from "next/navigation";
 
-function openAccountSetup() {
-  window.history.pushState(null, "", "/accounts?new=1");
-  window.dispatchEvent(new Event("popstate"));
-}
+
 
 export function FreeUserStart({ children }: { children: ReactNode }) {
+  const router = useRouter();
   const { accounts, loading: accountsLoading } = useActiveAccountStore();
   const { status, loading: premiumLoading } = usePremiumStatus(true);
   const { user } = useAuth();
@@ -71,7 +70,7 @@ export function FreeUserStart({ children }: { children: ReactNode }) {
               journal, calendar and performance review.
             </p>
             <Button
-              onClick={openAccountSetup}
+              onClick={() => router.push("/accounts?new=1")}
               className="mt-7 h-12 w-full rounded-xl bg-white px-5 text-sm font-black text-black hover:bg-zinc-200 sm:w-auto"
             >
               <Plus size={16} /> Add your first account <ArrowRight size={15} />
@@ -141,7 +140,7 @@ function StartStep({
 
 function ProductPreview() {
   return (
-    <section className="relative overflow-hidden rounded-[28px] border border-white/10 bg-[#070707] p-3 shadow-[0_30px_100px_rgba(0,0,0,.6)] sm:p-4">
+    <section className="relative overflow-hidden rounded-[28px] border border-white/10 bg-surface p-3 shadow-[0_30px_100px_rgba(0,0,0,.6)] sm:p-4">
       <div className="flex items-center justify-between border-b border-white/8 px-2 pb-3">
         <div>
           <p className="text-xs font-black">Your workspace</p>

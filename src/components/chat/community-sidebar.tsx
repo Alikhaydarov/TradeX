@@ -134,7 +134,7 @@ export function CommunityChatSidebar({
   };
 
   return (
-    <div className="flex h-full min-h-0 flex-col bg-[#111214] text-zinc-300">
+    <div className="flex h-full min-h-0 flex-col bg-surface-raised text-zinc-300">
       <div className="flex h-14 shrink-0 items-center gap-2.5 border-b border-black/40 px-3 shadow-[0_1px_0_rgba(255,255,255,.025)]">
         <TraderAvatar
           name={communityName}
@@ -171,7 +171,7 @@ export function CommunityChatSidebar({
           </span>
           Community overview
         </button>
-        <label className="flex h-8 items-center gap-2 rounded-md border border-white/[.065] bg-[#0b0c0e] px-2.5 transition focus-within:border-white/[.15]">
+        <label className="flex h-8 items-center gap-2 rounded-md border border-white/[.065] bg-surface px-2.5 transition focus-within:border-white/[.15]">
           <Search size={12} className="text-zinc-600" />
           <input
             value={sidebarQuery}
@@ -199,7 +199,7 @@ export function CommunityChatSidebar({
           </div>
 
           {createOpen ? (
-            <div className="mb-2 rounded-lg border border-white/[.07] bg-[#17191c] p-2.5">
+            <div className="mb-2 rounded-lg border border-white/[.07] bg-surface-raised p-2.5">
               <Input
                 value={channelName}
                 onChange={(event) => setChannelName(event.target.value)}
@@ -207,7 +207,7 @@ export function CommunityChatSidebar({
                   if (event.key === "Enter") void createChannel();
                 }}
                 placeholder="new-channel"
-                className="h-8 rounded-md border-white/[.08] bg-[#0f1012] text-[11px]"
+                className="h-8 rounded-md border-white/[.08] bg-surface text-[11px]"
                 maxLength={60}
               />
               <label className="mt-2 flex items-center gap-2 text-[10px] text-zinc-500">
@@ -300,8 +300,8 @@ export function CommunityChatSidebar({
           </div>
 
           {dmOpen ? (
-            <div className="mb-2 rounded-lg border border-white/[.07] bg-[#17191c] p-2.5">
-              <div className="flex h-8 items-center gap-2 rounded-md border border-white/[.07] bg-[#0f1012] px-2">
+            <div className="mb-2 rounded-lg border border-white/[.07] bg-surface-raised p-2.5">
+              <div className="flex h-8 items-center gap-2 rounded-md border border-white/[.07] bg-surface px-2">
                 <Search size={12} className="text-zinc-500" />
                 <input
                   value={query}
@@ -365,7 +365,7 @@ export function CommunityChatSidebar({
         </section>
       </div>
 
-      <div className="flex h-[52px] shrink-0 items-center gap-2 border-t border-black/35 bg-[#0b0c0e] px-2.5">
+      <div className="flex h-[52px] shrink-0 items-center gap-2 border-t border-black/35 bg-surface px-2.5">
         <div className="relative shrink-0">
           <TraderAvatar name={currentUser.fullName} value={currentUser.avatarUrl} className="size-8 rounded-full text-[9px]" />
           <span className="absolute -bottom-0.5 -right-0.5 size-2.5 rounded-full border-2 border-[#0b0c0e] bg-emerald-400" />

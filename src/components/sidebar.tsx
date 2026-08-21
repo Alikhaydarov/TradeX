@@ -89,7 +89,7 @@ function GroupLabel({ children }: { children: string }) {
 function TradoxyBrand({ mobile = false }: { mobile?: boolean }) {
   return (
     <span
-      className={`${mobile ? "size-10" : "size-9"} relative grid shrink-0 place-items-center overflow-hidden rounded-xl border border-white/10 bg-[#0a0a0a] shadow-[0_10px_24px_rgba(0,0,0,.32)]`}
+      className={`${mobile ? "size-10" : "size-9"} relative grid shrink-0 place-items-center overflow-hidden rounded-xl border border-white/10 bg-surface shadow-[0_10px_24px_rgba(0,0,0,.32)]`}
     >
       <TradoxyMark className={mobile ? "size-5" : "size-4.5"} />
     </span>
@@ -310,12 +310,12 @@ export function Sidebar({
           mobile ? "min-h-11" : ""
         } ${
           selected
-            ? "bg-[#111111] text-white ring-1 ring-white/10"
-            : "text-zinc-400 hover:bg-[#080808] hover:text-white"
+            ? "bg-surface-raised text-white ring-1 ring-white/10"
+            : "text-zinc-400 hover:bg-surface hover:text-white"
         }`}
       >
         <span
-          className={`grid h-7 w-7 place-items-center rounded-lg transition-colors ${selected ? "bg-[#1a1a1a] text-white" : "bg-[#050505] text-zinc-500 group-hover:bg-[#0f0f0f] group-hover:text-zinc-300"}`}
+          className={`grid h-7 w-7 place-items-center rounded-lg transition-colors ${selected ? "bg-[#1a1a1a] text-white" : "bg-surface text-zinc-500 group-hover:bg-surface group-hover:text-zinc-300"}`}
         >
           <Icon size={15} strokeWidth={selected ? 2.3 : 2} />
         </span>
@@ -332,7 +332,7 @@ export function Sidebar({
       onOpenChange={setAccountSwitcherOpen}
     >
       <div
-        className={`${mobile ? "flex w-full items-center gap-2 rounded-2xl border border-white/10 bg-[#030303] p-3" : "mt-4 flex w-full items-center gap-2 rounded-[0.95rem] border border-white/8 bg-[#030303] p-2 transition hover:bg-[#070707]"}`}
+        className={`${mobile ? "flex w-full items-center gap-2 rounded-2xl border border-white/10 bg-surface p-3" : "mt-4 flex w-full items-center gap-2 rounded-[0.95rem] border border-white/8 bg-surface p-2 transition hover:bg-surface"}`}
       >
         <button
           type="button"
@@ -358,7 +358,7 @@ export function Sidebar({
         <DropdownMenuTrigger asChild>
           <button
             type="button"
-            className={`${mobile ? "size-9" : "size-8"} grid shrink-0 place-items-center rounded-xl border border-white/8 bg-[#090909] text-zinc-400 transition hover:bg-[#111111] hover:text-white`}
+            className={`${mobile ? "size-9" : "size-8"} grid shrink-0 place-items-center rounded-xl border border-white/8 bg-surface text-zinc-400 transition hover:bg-surface-raised hover:text-white`}
             aria-label="Open account switcher"
           >
             <ChevronDown
@@ -372,13 +372,13 @@ export function Sidebar({
         side={mobile ? "bottom" : "right"}
         align="start"
         sideOffset={mobile ? 10 : 12}
-        className={`${mobile ? "w-[min(320px,calc(100vw-2rem))]" : "w-[320px]"} rounded-2xl border-white/10 bg-[#080808] p-0 shadow-[0_28px_80px_rgba(0,0,0,.65)]`}
+        className={`${mobile ? "w-[min(320px,calc(100vw-2rem))]" : "w-[320px]"} rounded-2xl border-white/10 bg-surface p-0 shadow-[0_28px_80px_rgba(0,0,0,.65)]`}
       >
         <div className="border-b border-white/8 px-4 py-3">
           <button
             type="button"
             onClick={openAccountsPage}
-            className="w-full rounded-xl px-2 py-1.5 text-left text-sm font-black text-white transition hover:bg-[#111111]"
+            className="w-full rounded-xl px-2 py-1.5 text-left text-sm font-black text-white transition hover:bg-surface-raised"
           >
             All Accounts
           </button>
@@ -405,10 +405,10 @@ export function Sidebar({
                     event.preventDefault();
                     selectAccount(account.id);
                   }}
-                  className={`flex cursor-pointer items-center gap-3 rounded-xl px-3 py-3 ${selected ? "bg-[#101010] text-white" : "text-zinc-300"}`}
+                  className={`flex cursor-pointer items-center gap-3 rounded-xl px-3 py-3 ${selected ? "bg-surface-raised text-white" : "text-zinc-300"}`}
                 >
                   <span
-                    className={`grid size-8 shrink-0 place-items-center rounded-lg text-[10px] font-black ${selected ? "bg-white text-black" : "bg-[#141414] text-white"}`}
+                    className={`grid size-8 shrink-0 place-items-center rounded-lg text-[10px] font-black ${selected ? "bg-white text-black" : "bg-surface-raised text-white"}`}
                   >
                     {initials(account)}
                   </span>
@@ -439,7 +439,7 @@ export function Sidebar({
       <aside className="fixed left-[max(1rem,calc((100vw-1860px)/2+1rem))] top-3 z-40 hidden h-[calc(100dvh-1.5rem)] w-[252px] shrink-0 flex-col rounded-[1rem] border border-white/8 bg-black p-3 shadow-none lg:flex">
         <button
           onClick={() => onChange("feed")}
-          className="flex items-center gap-3 rounded-2xl px-2 py-1.5 text-left transition-colors hover:bg-[#080808]"
+          className="flex items-center gap-3 rounded-2xl px-2 py-1.5 text-left transition-colors hover:bg-surface"
           aria-label="Tradoxy home"
         >
           <TradoxyBrand />
@@ -449,7 +449,7 @@ export function Sidebar({
                 Tradoxy
               </strong>
               <span
-                className={`rounded-full px-2 py-0.5 text-[10px] font-black ${premium.isPremium ? "bg-[#0b1c12] text-emerald-300" : "bg-[#0a0a0a] text-zinc-400"}`}
+                className={`rounded-full px-2 py-0.5 text-[10px] font-black ${premium.isPremium ? "bg-[#0b1c12] text-emerald-300" : "bg-surface text-zinc-400"}`}
               >
                 {planLabel}
               </span>
@@ -482,7 +482,7 @@ export function Sidebar({
         </div>
 
         <div className="mt-auto">
-          <div className="flex w-full items-center gap-3 rounded-2xl border border-white/10 bg-[#0b0b0b] p-2 text-left shadow-[inset_0_1px_0_rgba(255,255,255,.035)] transition-colors hover:bg-[#121212]">
+          <div className="flex w-full items-center gap-3 rounded-2xl border border-white/10 bg-surface p-2 text-left shadow-[inset_0_1px_0_rgba(255,255,255,.035)] transition-colors hover:bg-surface-raised">
             <TraderAvatar
               name={name}
               value={avatar}
@@ -500,14 +500,14 @@ export function Sidebar({
               <DropdownMenuTrigger asChild>
                 <button
                   type="button"
-                  className="grid size-8 place-items-center rounded-xl text-zinc-400 transition hover:bg-[#111111] hover:text-white"
+                  className="grid size-8 place-items-center rounded-xl text-zinc-400 transition hover:bg-surface-raised hover:text-white"
                 >
                   <MoreHorizontal size={16} />
                 </button>
               </DropdownMenuTrigger>
               <DropdownMenuContent
                 align="end"
-                className="w-44 border-white/10 bg-[#090909]"
+                className="w-44 border-white/10 bg-surface"
               >
                 <DropdownMenuItem
                   onClick={openSettings}
@@ -588,7 +588,7 @@ export function Sidebar({
                         Tradoxy
                       </strong>
                       <span
-                        className={`rounded-full px-2 py-0.5 text-[10px] font-black ${premium.isPremium ? "bg-[#0b1c12] text-emerald-300" : "bg-[#0a0a0a] text-zinc-400"}`}
+                        className={`rounded-full px-2 py-0.5 text-[10px] font-black ${premium.isPremium ? "bg-[#0b1c12] text-emerald-300" : "bg-surface text-zinc-400"}`}
                       >
                         {planLabel}
                       </span>
@@ -601,7 +601,7 @@ export function Sidebar({
                 <button
                   type="button"
                   onClick={() => setMobileMenuOpen(false)}
-                  className="grid size-9 place-items-center rounded-xl border border-white/10 bg-[#0a0a0a] text-zinc-300"
+                  className="grid size-9 place-items-center rounded-xl border border-white/10 bg-surface text-zinc-300"
                   aria-label="Close navigation"
                 >
                   <X size={17} />
@@ -632,7 +632,7 @@ export function Sidebar({
               </div>
 
               <div className="border-t border-white/8 p-3">
-                <div className="flex w-full items-center gap-3 rounded-2xl border border-white/10 bg-[#0b0b0b] p-2.5 text-left">
+                <div className="flex w-full items-center gap-3 rounded-2xl border border-white/10 bg-surface p-2.5 text-left">
                   <TraderAvatar
                     name={name}
                     value={avatar}
@@ -652,7 +652,7 @@ export function Sidebar({
                   <button
                     type="button"
                     onClick={openMobileAccountActions}
-                    className="grid size-10 shrink-0 place-items-center rounded-xl border border-white/8 bg-[#090909] text-zinc-300 transition hover:bg-[#111111] hover:text-white active:scale-95"
+                    className="grid size-10 shrink-0 place-items-center rounded-xl border border-white/8 bg-surface text-zinc-300 transition hover:bg-surface-raised hover:text-white active:scale-95"
                     aria-label="Open account settings"
                     aria-haspopup="dialog"
                     aria-expanded={mobileAccountActionsOpen}
@@ -675,11 +675,11 @@ export function Sidebar({
           side="bottom"
           showCloseButton={false}
           aria-label="Account actions"
-          className="inset-x-2 bottom-2 h-auto max-h-[calc(100dvh-1rem)] w-auto overflow-y-auto rounded-[1.75rem] border border-white/10 bg-[#050505] px-3 pt-3 pb-[max(1rem,env(safe-area-inset-bottom))] shadow-[0_-24px_80px_rgba(0,0,0,.78)] lg:hidden"
+          className="inset-x-2 bottom-2 h-auto max-h-[calc(100dvh-1rem)] w-auto overflow-y-auto rounded-[1.75rem] border border-white/10 bg-surface px-3 pt-3 pb-[max(1rem,env(safe-area-inset-bottom))] shadow-[0_-24px_80px_rgba(0,0,0,.78)] lg:hidden"
         >
           <div className="mx-auto mb-3 h-1 w-10 rounded-full bg-white/15" />
 
-          <div className="flex items-center gap-3 rounded-2xl border border-white/10 bg-[#0b0b0b] p-3">
+          <div className="flex items-center gap-3 rounded-2xl border border-white/10 bg-surface p-3">
             <TraderAvatar
               name={name}
               value={avatar}
@@ -708,7 +708,7 @@ export function Sidebar({
             </button>
           </div>
 
-          <div className="mt-3 overflow-hidden rounded-2xl border border-white/10 bg-[#080808]">
+          <div className="mt-3 overflow-hidden rounded-2xl border border-white/10 bg-surface">
             <button
               type="button"
               onClick={openMobileSettings}
@@ -767,7 +767,7 @@ export function Sidebar({
             </button>
           </div>
 
-          <div className="mt-3 rounded-2xl border border-white/10 bg-[#080808] p-3">
+          <div className="mt-3 rounded-2xl border border-white/10 bg-surface p-3">
             <div className="flex items-center gap-3">
               <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-white/[.055] text-zinc-200">
                 <Globe size={18} />
@@ -830,7 +830,7 @@ export function Sidebar({
       </Sheet>
 
       <AlertDialog open={logoutConfirmOpen} onOpenChange={setLogoutConfirmOpen}>
-        <AlertDialogContent className="border-white/10 bg-[#050505]">
+        <AlertDialogContent className="border-white/10 bg-surface">
           <AlertDialogHeader>
             <AlertDialogTitle className="text-white">
               Confirm logout
@@ -840,7 +840,7 @@ export function Sidebar({
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel className="border-white/10 bg-black text-white hover:bg-[#111111]">
+            <AlertDialogCancel className="border-white/10 bg-black text-white hover:bg-surface-raised">
               Cancel
             </AlertDialogCancel>
             <AlertDialogAction

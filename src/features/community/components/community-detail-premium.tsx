@@ -23,6 +23,7 @@ import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import { apiRequest } from "@/lib/api-client";
 import type { CommunitySection } from "./community-sidebar";
+import { useRouter } from "next/navigation";
 
 type Profile = {
   id: string;
@@ -96,11 +97,16 @@ const money = new Intl.NumberFormat("en-US", {
   maximumFractionDigits: 2,
 });
 
-const PANEL = "rounded-2xl border border-white/[.085] bg-[#070707]";
+const PANEL = "rounded-2xl border border-white/[.085] bg-surface";
 
-function go(path: string) {
-  window.history.pushState(null, "", path);
-  window.dispatchEvent(new Event("popstate"));
+/**
+ * Community links used to pushState and then dispatch a synthetic popstate.
+ * The App Router cannot resolve that against the null history state pushState
+ * writes, so every one of these "navigations" cost a full document reload.
+ */
+function useGo() {
+  const router = useRouter();
+  return useCallback((path: string) => router.push(path), [router]);
 }
 
 function SectionHeading({
@@ -139,7 +145,7 @@ function StatCard({
       ? "border-emerald-400/12 bg-emerald-400/[.035] text-emerald-300"
       : tone === "warning"
         ? "border-amber-400/12 bg-amber-400/[.035] text-amber-300"
-        : "border-white/[.085] bg-[#070707] text-zinc-500";
+        : "border-white/[.085] bg-surface text-zinc-500";
 
   return (
     <div className={`rounded-xl border p-3 ${toneClass}`}>
@@ -156,7 +162,7 @@ function StatCard({
 
 function ResultRow({ result, rank, expanded = false }: { result: Result; rank: number; expanded?: boolean }) {
   return (
-    <div className="grid grid-cols-[32px_minmax(0,1fr)_auto] items-center gap-2.5 rounded-xl border border-white/7 bg-[#050505] px-3 py-2.5 transition hover:border-white/14 hover:bg-[#0a0a0a]">
+    <div className="grid grid-cols-[32px_minmax(0,1fr)_auto] items-center gap-2.5 rounded-xl border border-white/7 bg-surface px-3 py-2.5 transition hover:border-white/14 hover:bg-surface">
       <span className={`grid size-8 place-items-center rounded-lg text-[10px] font-black ${rank <= 3 ? "bg-amber-400/10 text-amber-300" : "bg-white/[.04] text-zinc-600"}`}>
         {rank}
       </span>
@@ -211,7 +217,7 @@ function AccountSharing({
         {accounts.map((account) => {
           const value = draft[account.id] ?? { enabled: false, showDollarPnl: false };
           return (
-            <div key={account.id} className="rounded-xl border border-white/7 bg-[#050505] p-2.5 transition hover:border-white/13">
+            <div key={account.id} className="rounded-xl border border-white/7 bg-surface p-2.5 transition hover:border-white/13">
               <div className="flex items-center gap-2.5">
                 <button
                   type="button"
@@ -244,7 +250,7 @@ function AccountSharing({
         {!accounts.length ? <p className="py-8 text-center text-[10px] text-zinc-700">No trading accounts found.</p> : null}
       </div>
       {accounts.length ? (
-        <div className="sticky bottom-0 border-t border-white/7 bg-[#070707]/95 p-3 backdrop-blur">
+        <div className="sticky bottom-0 border-t border-white/7 bg-surface/95 p-3 backdrop-blur">
           <Button type="button" disabled={busy} onClick={onSave} className="h-8 w-full rounded-lg bg-white text-[10px] font-bold text-black hover:bg-zinc-200">
             {busy ? <Spinner className="size-3.5" /> : <Check size={13} />} Save sharing
           </Button>
@@ -261,6 +267,7 @@ export function CommunityDetailPremium({
   communityId: string;
   activeTab: CommunitySection;
 }) {
+  const go = useGo();
   const [data, setData] = useState<DetailData | null>(null);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
@@ -400,7 +407,7 @@ export function CommunityDetailPremium({
             <button
               type="button"
               onClick={() => go("/community")}
-              className="grid size-8 shrink-0 place-items-center rounded-lg border border-white/8 bg-[#0b0b0b] text-zinc-600 transition hover:text-white lg:hidden"
+              className="grid size-8 shrink-0 place-items-center rounded-lg border border-white/8 bg-surface text-zinc-600 transition hover:text-white lg:hidden"
               aria-label="Back to communities"
             >
               <ArrowLeft size={14} />
@@ -427,7 +434,7 @@ export function CommunityDetailPremium({
         </div>
       </header>
 
-      <nav className="grid grid-cols-5 gap-1 rounded-xl border border-white/8 bg-[#050505] p-1 lg:hidden">
+      <nav className="grid grid-cols-5 gap-1 rounded-xl border border-white/8 bg-surface p-1 lg:hidden">
         {mobileNav.map((item) => {
           const Icon = item.icon;
           const selected = activeTab === item.id;
@@ -436,7 +443,7 @@ export function CommunityDetailPremium({
               key={item.id}
               type="button"
               onClick={() => navigate(item.id)}
-              className={`flex min-w-0 flex-col items-center gap-1 rounded-lg px-1 py-2 text-[8px] font-semibold transition ${selected ? "bg-[#151515] text-white" : "text-zinc-600"}`}
+              className={`flex min-w-0 flex-col items-center gap-1 rounded-lg px-1 py-2 text-[8px] font-semibold transition ${selected ? "bg-surface-raised text-white" : "text-zinc-600"}`}
             >
               <Icon size={13} />
               <span className="truncate">{item.label}</span>
@@ -565,7 +572,7 @@ export function CommunityDetailPremium({
                       key={profile.id}
                       type="button"
                       onClick={() => setSelectedFollowers((current) => selected ? current.filter((id) => id !== profile.id) : [...current, profile.id])}
-                      className={`flex w-full items-center gap-2 rounded-xl border px-2 py-2 text-left transition ${selected ? "border-white/18 bg-white/[.065]" : "border-white/6 bg-[#050505] hover:border-white/12"}`}
+                      className={`flex w-full items-center gap-2 rounded-xl border px-2 py-2 text-left transition ${selected ? "border-white/18 bg-white/[.065]" : "border-white/6 bg-surface hover:border-white/12"}`}
                     >
                       <TraderAvatar name={profile.full_name || profile.username} value={profile.avatar_url} className="size-7 rounded-lg text-[8px]" />
                       <span className="min-w-0 flex-1 truncate text-[10px] text-zinc-300">@{profile.username}</span>

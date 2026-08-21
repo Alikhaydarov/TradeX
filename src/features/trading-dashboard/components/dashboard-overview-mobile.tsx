@@ -70,7 +70,7 @@ const COUNTRY_CURRENCY: Record<string, string> = {
 }
 
 const MOBILE_CARD =
-  "gap-0 overflow-hidden rounded-[18px] border-white/10 bg-[#080808] py-0 shadow-none"
+  "gap-0 overflow-hidden rounded-[18px] border-white/10 bg-surface py-0 shadow-none"
 
 function cleanUsername(value: unknown) {
   return (
@@ -378,7 +378,7 @@ export function DashboardOverviewMobile({
             }}
             aria-hidden="true"
           >
-            <div className="size-full rounded-full bg-[#080808]" />
+            <div className="size-full rounded-full bg-surface" />
           </div>
         </Card>
 
@@ -429,7 +429,7 @@ export function DashboardOverviewMobile({
                 onClick={() => onOpenTrade(trade)}
                 className="grid min-h-[54px] w-full grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2.5 rounded-xl px-2 text-left hover:bg-white/[.04]"
               >
-                <InstrumentBadge symbol={trade.symbol} compact className="shrink-0 bg-[#111111]" />
+                <InstrumentBadge symbol={trade.symbol} compact className="shrink-0 bg-surface-raised" />
                 <div className="min-w-0">
                   <p className="truncate text-[12px] font-semibold text-white">{trade.symbol}</p>
                   <p className="truncate text-[9px] text-zinc-600">
@@ -492,7 +492,7 @@ export function DashboardOverviewMobile({
                   key={item.id}
                   className="grid min-h-[54px] grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2.5 border-b border-white/8 px-1 last:border-0"
                 >
-                  <span className="grid h-8 min-w-11 place-items-center rounded-lg border border-white/10 bg-[#101010] px-2 text-[10px] font-bold text-zinc-200">
+                  <span className="grid h-8 min-w-11 place-items-center rounded-lg border border-white/10 bg-surface-raised px-2 text-[10px] font-bold text-zinc-200">
                     {eventCurrency(item)}
                   </span>
                   <div className="min-w-0">

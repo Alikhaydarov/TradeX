@@ -77,7 +77,7 @@ export function JournalAccountList({
 
       {summaries.length ? (
         <section>
-          <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-white/10 bg-[#060606] px-4 py-3">
+          <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-white/10 bg-surface px-4 py-3">
             <div>
               <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-zinc-600">
                 Portfolio value
@@ -108,9 +108,9 @@ export function JournalAccountList({
       ) : null}
 
       {!summaries.length ? (
-        <div className="grid min-h-80 place-items-center rounded-[24px] border border-dashed border-white/12 bg-[#050505] px-5 text-center">
+        <div className="grid min-h-80 place-items-center rounded-[24px] border border-dashed border-white/12 bg-surface px-5 text-center">
           <div>
-            <div className="mx-auto grid size-14 place-items-center rounded-2xl border border-white/8 bg-[#0d0d0d]">
+            <div className="mx-auto grid size-14 place-items-center rounded-2xl border border-white/8 bg-surface">
               <WalletCards size={24} className="text-zinc-300" />
             </div>
             <h2 className="mt-4 text-xl font-black text-white">
@@ -143,10 +143,10 @@ export function JournalAccountList({
           <button
             type="button"
             onClick={onAdd}
-            className="group grid min-h-[172px] place-items-center rounded-2xl border border-dashed border-white/12 bg-[#030303] p-4 text-center transition hover:border-white/25 hover:bg-[#070707]"
+            className="group grid min-h-[172px] place-items-center rounded-2xl border border-dashed border-white/12 bg-surface p-4 text-center transition hover:border-white/25 hover:bg-surface"
           >
             <span>
-              <span className="mx-auto grid size-9 place-items-center rounded-xl border border-white/10 bg-[#0d0d0d] text-zinc-500 transition group-hover:text-white">
+              <span className="mx-auto grid size-9 place-items-center rounded-xl border border-white/10 bg-surface text-zinc-500 transition group-hover:text-white">
                 <Plus size={17} />
               </span>
               <span className="mt-2.5 block text-sm font-bold text-zinc-500 transition group-hover:text-zinc-200">
@@ -178,7 +178,7 @@ function JournalAccountCard({
   const statusColor: Record<string, string> = {
     Processing: "text-sky-300 bg-[#091119] border-sky-400/20",
     Active: "text-emerald-300 bg-[#0b1c12] border-emerald-400/20",
-    Passed: "text-zinc-300 bg-[#0a0a0a] border-white/15",
+    Passed: "text-zinc-300 bg-surface border-white/15",
     Failed: "text-rose-300 bg-[#1a0d10] border-rose-400/20",
     Paused: "text-amber-400 bg-[#1a1407] border-amber-400/20",
   };
@@ -201,8 +201,8 @@ function JournalAccountCard({
         compact ? "min-h-[150px]" : "min-h-[172px]"
       } ${
         active
-          ? "border-white/20 bg-[#080808] shadow-[0_12px_32px_rgba(0,0,0,.3)]"
-          : "border-white/10 bg-[#050505] hover:border-white/20 hover:bg-[#080808]"
+          ? "border-white/20 bg-surface shadow-[0_12px_32px_rgba(0,0,0,.3)]"
+          : "border-white/10 bg-surface hover:border-white/20 hover:bg-surface"
       }`}
     >
       <div className="p-3.5">
@@ -242,7 +242,7 @@ function JournalAccountCard({
               </DropdownMenuTrigger>
               <DropdownMenuContent
                 align="end"
-                className="border-white/10 bg-[#0a0a0a]"
+                className="border-white/10 bg-surface"
                 onClick={(event) => event.stopPropagation()}
               >
                 <DropdownMenuItem

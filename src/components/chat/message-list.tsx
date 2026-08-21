@@ -111,14 +111,14 @@ export function MessageList({
 
   if (loading) {
     return (
-      <div className="grid min-h-0 flex-1 place-items-center bg-[#15171a] text-zinc-500">
+      <div className="grid min-h-0 flex-1 place-items-center bg-surface-raised text-zinc-500">
         <LoaderCircle size={20} className="animate-spin" />
       </div>
     );
   }
 
   return (
-    <div className="relative min-h-0 flex-1 overflow-hidden bg-[#15171a]">
+    <div className="relative min-h-0 flex-1 overflow-hidden bg-surface-raised">
       <div
         ref={scrollerRef}
         onScroll={() => void handleScroll()}

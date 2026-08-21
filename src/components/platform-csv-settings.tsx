@@ -113,7 +113,7 @@ export function PlatformCsvSettings({
   };
 
   return (
-    <Card className="border-white/8 bg-[#070707] shadow-none">
+    <Card className="border-white/8 bg-surface shadow-none">
       <CardContent className="p-4 sm:p-6">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
           <div className="flex min-w-0 items-start gap-3">
@@ -132,7 +132,7 @@ export function PlatformCsvSettings({
           <Button
             type="button"
             variant="outline"
-            className="shrink-0 border-white/10 bg-[#0b0b0b]"
+            className="shrink-0 border-white/10 bg-surface"
             onClick={() => window.open(config.openUrl, "_blank", "noopener,noreferrer")}
           >
             {config.openLabel} <ExternalLink size={15} />
@@ -182,7 +182,7 @@ export function PlatformCsvSettings({
               setSuccess(false);
             }}
             disabled={busy}
-            className="mt-3 cursor-pointer border-white/10 bg-[#080808]"
+            className="mt-3 cursor-pointer border-white/10 bg-surface"
           />
         </label>
 

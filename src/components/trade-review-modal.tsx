@@ -24,7 +24,7 @@ const SETUPS = ["None", "BOS", "CHoCH", "Liquidity Sweep", "FVG", "OB", "Breakou
 const MISTAKES = ["Erta kirish", "Kechiktirilgan kirish", "SL qoymaslik", "Ortiqcha risk", "Plansiz trade", "Revenge trade", "FOMO", "Erta yopish"];
 const SYMBOLS = ["NAS100", "XAUUSD", "EURUSD", "GBPUSD", "US30", "GER30", "BTCUSD"];
 
-const inputClass = "h-10 rounded-lg border-white/8 bg-[#111111] text-sm font-semibold text-white placeholder:text-zinc-600 focus:border-white/20 focus:ring-1 focus:ring-white/10";
+const inputClass = "h-10 rounded-lg border-white/8 bg-surface-raised text-sm font-semibold text-white placeholder:text-zinc-600 focus:border-white/20 focus:ring-1 focus:ring-white/10";
 
 function storedOptions(key: string, fallback: string[]) {
   if (typeof window === "undefined") return fallback;
@@ -88,14 +88,14 @@ function OptionStack({
         type="button"
         onClick={() => setOpen((current) => !current)}
         aria-expanded={open}
-        className={`flex h-10 w-full items-center justify-between gap-3 rounded-lg border px-3 text-left text-sm font-semibold transition ${open ? "border-white/20 bg-[#171717]" : "border-white/8 bg-[#111111] hover:border-white/15"}`}
+        className={`flex h-10 w-full items-center justify-between gap-3 rounded-lg border px-3 text-left text-sm font-semibold transition ${open ? "border-white/20 bg-surface-raised" : "border-white/8 bg-surface-raised hover:border-white/15"}`}
       >
         <span className={value ? "truncate text-white" : "truncate text-zinc-500"}>{value || placeholder}</span>
         <ChevronDown size={15} className={`shrink-0 text-zinc-500 transition-transform ${open ? "rotate-180" : ""}`} />
       </button>
 
       {open ? (
-        <div className="absolute left-0 right-0 top-[calc(100%+6px)] z-[100] overflow-hidden rounded-xl border border-white/10 bg-[#0b0b0b] shadow-2xl shadow-black/70">
+        <div className="absolute left-0 right-0 top-[calc(100%+6px)] z-[100] overflow-hidden rounded-xl border border-white/10 bg-surface shadow-2xl shadow-black/70">
           <div className="max-h-52 overflow-y-auto p-1.5">
             {options.length ? options.map((option) => {
               const active = value === option;
@@ -123,7 +123,7 @@ function OptionStack({
             }) : <div className="px-3 py-4 text-center text-xs text-zinc-500">Option yo'q.</div>}
           </div>
 
-          <div className="flex min-h-10 items-center gap-2 border-t border-white/10 bg-[#0f0f0f] px-2 py-1.5">
+          <div className="flex min-h-10 items-center gap-2 border-t border-white/10 bg-surface px-2 py-1.5">
             <Plus size={14} className="shrink-0 text-zinc-500" />
             <input
               value={draft}
@@ -262,7 +262,7 @@ export function TradeReviewModal({ open, saving, account: _account, onOpenChange
     <Dialog open={open} onOpenChange={close}>
       <DialogContent
         showCloseButton={false}
-        className="w-[calc(100vw-18px)] overflow-hidden rounded-[1rem] border border-white/10 bg-[#070707] p-0 shadow-2xl shadow-black/85 sm:max-w-[870px]"
+        className="w-[calc(100vw-18px)] overflow-hidden rounded-[1rem] border border-white/10 bg-surface p-0 shadow-2xl shadow-black/85 sm:max-w-[870px]"
       >
         <div className="flex items-start gap-3 border-b border-white/8 px-4 py-3 sm:px-4">
           <div className="min-w-0 flex-1">
@@ -332,7 +332,7 @@ export function TradeReviewModal({ open, saving, account: _account, onOpenChange
                     className={`${inputClass} flex-1 px-4`}
                   />
                 </div>
-                <div className="grid h-10 grid-cols-2 gap-1 rounded-lg border border-white/8 bg-[#111111] p-1">
+                <div className="grid h-10 grid-cols-2 gap-1 rounded-lg border border-white/8 bg-surface-raised p-1">
                   <button type="button" onClick={() => setOutcome("win")} className={`rounded-md text-xs font-black transition ${outcome === "win" ? "bg-emerald-500/15 text-emerald-300" : "text-zinc-500 hover:text-zinc-200"}`}>Win</button>
                   <button type="button" onClick={() => setOutcome("loss")} className={`rounded-md text-xs font-black transition ${outcome === "loss" ? "bg-rose-500/15 text-rose-300" : "text-zinc-500 hover:text-zinc-200"}`}>Loss</button>
                 </div>
@@ -378,7 +378,7 @@ export function TradeReviewModal({ open, saving, account: _account, onOpenChange
               </button>
 
               {advancedOpen ? (
-                <div className="space-y-3 rounded-xl border border-white/10 bg-[#101010] p-3">
+                <div className="space-y-3 rounded-xl border border-white/10 bg-surface-raised p-3">
                   <div className="grid gap-3 sm:grid-cols-2">
                     <div className="space-y-1.5">
                       <FieldLabel>Session</FieldLabel>
@@ -448,7 +448,7 @@ export function TradeReviewModal({ open, saving, account: _account, onOpenChange
 
               <div className="space-y-2">
                 <FieldLabel>Screenshots</FieldLabel>
-                <div onDragOver={(event) => event.preventDefault()} onDrop={drop} className="min-h-[250px] rounded-xl border border-white/8 bg-[#101010] p-3 sm:min-h-[252px]">
+                <div onDragOver={(event) => event.preventDefault()} onDrop={drop} className="min-h-[250px] rounded-xl border border-white/8 bg-surface-raised p-3 sm:min-h-[252px]">
                   {imageUrls.length ? (
                     <div className="grid grid-cols-3 gap-2">
                       {imageUrls.map((url, index) => (
@@ -468,7 +468,7 @@ export function TradeReviewModal({ open, saving, account: _account, onOpenChange
                       ) : null}
                     </div>
                   ) : (
-                    <button type="button" onClick={() => inputRef.current?.click()} className="grid h-full min-h-[224px] w-full place-items-center rounded-lg text-center text-zinc-500 transition hover:bg-[#151515] hover:text-zinc-300">
+                    <button type="button" onClick={() => inputRef.current?.click()} className="grid h-full min-h-[224px] w-full place-items-center rounded-lg text-center text-zinc-500 transition hover:bg-surface-raised hover:text-zinc-300">
                       <span>
                         {uploading ? <LoaderCircle className="mx-auto animate-spin" size={30} /> : <CloudUpload className="mx-auto text-zinc-700" size={36} />}
                         <b className="mt-4 block text-sm text-white">Upload Screenshot</b>
@@ -482,7 +482,7 @@ export function TradeReviewModal({ open, saving, account: _account, onOpenChange
 
               <div className="space-y-2">
                 <FieldLabel>Notes</FieldLabel>
-                <Textarea name="note" className="min-h-[86px] resize-y rounded-lg border-white/8 bg-[#101010] text-sm placeholder:text-zinc-600 focus:border-white/20" placeholder="Enter your trade notes" />
+                <Textarea name="note" className="min-h-[86px] resize-y rounded-lg border-white/8 bg-surface-raised text-sm placeholder:text-zinc-600 focus:border-white/20" placeholder="Enter your trade notes" />
               </div>
 
               <div className="space-y-2">
@@ -500,8 +500,8 @@ export function TradeReviewModal({ open, saving, account: _account, onOpenChange
             </div>
           </div>
 
-          <div className="flex items-center justify-end gap-2 border-t border-white/8 bg-[#080808]/95 px-4 py-3">
-            <Button type="button" variant="outline" onClick={() => close(false)} className="h-9 rounded-lg border-white/10 bg-[#111111] px-4 text-sm font-black text-zinc-200 hover:bg-white/[.06]">
+          <div className="flex items-center justify-end gap-2 border-t border-white/8 bg-surface/95 px-4 py-3">
+            <Button type="button" variant="outline" onClick={() => close(false)} className="h-9 rounded-lg border-white/10 bg-surface-raised px-4 text-sm font-black text-zinc-200 hover:bg-white/[.06]">
               Cancel
             </Button>
             <Button disabled={saving || uploading} className="h-9 rounded-lg bg-white px-5 text-sm font-black text-black hover:bg-zinc-200">

@@ -57,7 +57,7 @@ function buildCard(row: HTMLButtonElement) {
   const card = document.createElement("button");
   card.type = "button";
   card.setAttribute("data-mobile-trade-card", "true");
-  card.className = "w-full rounded-xl border border-white/8 bg-[#080808] px-4 py-3 text-left shadow-[inset_0_1px_0_rgba(255,255,255,.03)] transition active:scale-[.99]";
+  card.className = "w-full rounded-xl border border-white/8 bg-surface px-4 py-3 text-left shadow-[inset_0_1px_0_rgba(255,255,255,.03)] transition active:scale-[.99]";
   card.addEventListener("click", () => row.click());
 
   const sideClass = isSell ? "bg-rose-500/18 text-rose-200" : "bg-emerald-500/14 text-emerald-200";

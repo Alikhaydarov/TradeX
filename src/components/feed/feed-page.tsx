@@ -45,7 +45,7 @@ function FeedSkeleton() {
       {Array.from({ length: 4 }).map((_, index) => (
         <div
           key={index}
-          className="rounded-2xl border border-white/8 bg-[#0a0a0a] px-3 py-4 sm:px-5 sm:py-5"
+          className="rounded-2xl border border-white/8 bg-surface px-3 py-4 sm:px-5 sm:py-5"
         >
           <div className="flex gap-3.5">
             <SkeletonBlock className="size-11 shrink-0 rounded-full sm:size-12" />

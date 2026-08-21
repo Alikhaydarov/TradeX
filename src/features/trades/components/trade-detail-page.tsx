@@ -34,9 +34,9 @@ const money = new Intl.NumberFormat("en-US", {
   maximumFractionDigits: 2,
 });
 
-const CARD = "overflow-hidden rounded-2xl border border-white/8 bg-[#070707] shadow-none";
+const CARD = "overflow-hidden rounded-2xl border border-white/8 bg-surface shadow-none";
 const LABEL = "text-[10px] font-bold uppercase tracking-[0.14em] text-zinc-600";
-const INPUT = "mt-1.5 h-10 border-white/10 bg-[#0c0c0c] text-sm";
+const INPUT = "mt-1.5 h-10 border-white/10 bg-surface text-sm";
 
 interface TradeRow {
   id: string;
@@ -406,7 +406,7 @@ export function TradeDetailPage({ tradeId, onBack }: { tradeId: string; onBack: 
   if (!trade || !draft) {
     return (
       <div className="mx-auto grid min-h-[70dvh] max-w-2xl place-items-center p-4 text-center">
-        <div className="rounded-2xl border border-white/10 bg-[#070707] p-7">
+        <div className="rounded-2xl border border-white/10 bg-surface p-7">
           <div className="mx-auto grid size-12 place-items-center rounded-xl bg-rose-400/10 text-rose-300">
             <X size={22} />
           </div>
@@ -426,7 +426,7 @@ export function TradeDetailPage({ tradeId, onBack }: { tradeId: string; onBack: 
   return (
     <div className="mx-auto max-w-[1540px] space-y-4 p-3 pb-28 sm:p-4 sm:pb-8 lg:p-5">
       {toast ? (
-        <div className="fixed right-3 top-3 z-[10000] rounded-xl border border-white/10 bg-[#111]/95 px-3 py-2 text-xs font-semibold text-zinc-100 shadow-2xl">
+        <div className="fixed right-3 top-3 z-[10000] rounded-xl border border-white/10 bg-surface-raised/95 px-3 py-2 text-xs font-semibold text-zinc-100 shadow-2xl">
           {toast}
         </div>
       ) : null}
@@ -441,7 +441,7 @@ export function TradeDetailPage({ tradeId, onBack }: { tradeId: string; onBack: 
         <CardContent className="p-0">
           <div className="flex flex-col gap-4 p-4 sm:p-5 lg:flex-row lg:items-center lg:justify-between">
             <div className="flex min-w-0 items-start gap-3 sm:items-center">
-              <Button type="button" variant="outline" size="icon" onClick={onBack} className="shrink-0 border-white/10 bg-[#0b0b0b]">
+              <Button type="button" variant="outline" size="icon" onClick={onBack} className="shrink-0 border-white/10 bg-surface">
                 <ArrowLeft size={17} />
               </Button>
               <div className="min-w-0">
@@ -466,8 +466,8 @@ export function TradeDetailPage({ tradeId, onBack }: { tradeId: string; onBack: 
                   {positive ? "+" : ""}{money.format(trade.pnl)}
                 </p>
               </div>
-              <Button type="button" variant="outline" onClick={() => void shareTrade()} className="border-white/10 bg-[#0b0b0b]"><Share2 size={15} /><span className="hidden sm:inline">Share</span></Button>
-              <Button type="button" variant="outline" onClick={() => void copyLink()} className="border-white/10 bg-[#0b0b0b]"><Copy size={15} /><span className="hidden sm:inline">Copy link</span></Button>
+              <Button type="button" variant="outline" onClick={() => void shareTrade()} className="border-white/10 bg-surface"><Share2 size={15} /><span className="hidden sm:inline">Share</span></Button>
+              <Button type="button" variant="outline" onClick={() => void copyLink()} className="border-white/10 bg-surface"><Copy size={15} /><span className="hidden sm:inline">Copy link</span></Button>
               <Button type="button" onClick={() => setEditing((current) => !current)} className={editing ? "bg-zinc-800 text-white hover:bg-zinc-700" : "bg-white text-black hover:bg-zinc-200"}>
                 {editing ? <X size={15} /> : <Edit3 size={15} />}{editing ? "Cancel" : "Edit"}
               </Button>
@@ -516,7 +516,7 @@ export function TradeDetailPage({ tradeId, onBack }: { tradeId: string; onBack: 
                 <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                   <label className={LABEL}>Symbol<Input value={draft.symbol} onChange={(event) => updateDraft("symbol", event.target.value.toUpperCase())} className={INPUT} /></label>
                   <label className={LABEL}>Side
-                    <div className="mt-1.5 grid h-10 grid-cols-2 rounded-lg border border-white/10 bg-[#0c0c0c] p-1">
+                    <div className="mt-1.5 grid h-10 grid-cols-2 rounded-lg border border-white/10 bg-surface p-1">
                       {(["Long", "Short"] as const).map((side) => <button key={side} type="button" onClick={() => updateDraft("side", side)} className={`rounded-md text-xs font-bold ${draft.side === side ? "bg-white text-black" : "text-zinc-500 hover:text-white"}`}>{side}</button>)}
                     </div>
                   </label>
@@ -619,7 +619,7 @@ export function TradeDetailPage({ tradeId, onBack }: { tradeId: string; onBack: 
                   <span><ImagePlus className="mx-auto text-zinc-600" size={28} /><span className="mt-3 block text-sm font-bold text-zinc-200">Upload screenshot</span><span className="mt-1 block text-[11px] text-zinc-600">PNG, JPG or WEBP · up to 3 images</span></span>
                 </button>
               )}
-              {draft.imageUrls.length < 3 ? <Button type="button" variant="outline" onClick={() => fileInputRef.current?.click()} disabled={uploading} className="mt-3 w-full border-white/10 bg-[#0b0b0b]">{uploading ? <LoaderCircle className="animate-spin" size={15} /> : <ImagePlus size={15} />} Add screenshot</Button> : null}
+              {draft.imageUrls.length < 3 ? <Button type="button" variant="outline" onClick={() => fileInputRef.current?.click()} disabled={uploading} className="mt-3 w-full border-white/10 bg-surface">{uploading ? <LoaderCircle className="animate-spin" size={15} /> : <ImagePlus size={15} />} Add screenshot</Button> : null}
             </CardContent>
           </Card>
 
@@ -632,7 +632,7 @@ export function TradeDetailPage({ tradeId, onBack }: { tradeId: string; onBack: 
               <Clipboard size={18} className="text-zinc-500" />
             </div>
             <CardContent className="p-4 sm:p-5">
-              {editing ? <Textarea value={draft.note} onChange={(event) => updateDraft("note", event.target.value)} className="min-h-48 border-white/10 bg-[#0c0c0c] leading-6" placeholder="What happened before, during and after this trade?" /> : trade.note ? <p className="whitespace-pre-wrap text-sm leading-7 text-zinc-300">{trade.note}</p> : <div className="grid min-h-40 place-items-center rounded-xl border border-dashed border-white/8 bg-black/25 px-5 text-center"><div><Clipboard className="mx-auto text-zinc-700" size={23} /><p className="mt-3 text-sm font-bold text-zinc-300">No trade notes yet</p><p className="mt-1 text-xs text-zinc-600">Add execution context and the lesson from this trade.</p></div></div>}
+              {editing ? <Textarea value={draft.note} onChange={(event) => updateDraft("note", event.target.value)} className="min-h-48 border-white/10 bg-surface leading-6" placeholder="What happened before, during and after this trade?" /> : trade.note ? <p className="whitespace-pre-wrap text-sm leading-7 text-zinc-300">{trade.note}</p> : <div className="grid min-h-40 place-items-center rounded-xl border border-dashed border-white/8 bg-black/25 px-5 text-center"><div><Clipboard className="mx-auto text-zinc-700" size={23} /><p className="mt-3 text-sm font-bold text-zinc-300">No trade notes yet</p><p className="mt-1 text-xs text-zinc-600">Add execution context and the lesson from this trade.</p></div></div>}
             </CardContent>
           </Card>
         </div>
@@ -652,14 +652,14 @@ export function TradeDetailPage({ tradeId, onBack }: { tradeId: string; onBack: 
       {editing ? (
         <div className="fixed inset-x-0 bottom-0 z-[9998] border-t border-white/10 bg-black/94 p-3 backdrop-blur sm:static sm:border-0 sm:bg-transparent sm:p-0">
           <div className="mx-auto flex max-w-[1540px] gap-2 sm:justify-end">
-            <Button type="button" variant="outline" onClick={() => { setDraft(editableFrom(trade)); setEditing(false); }} className="flex-1 border-white/10 bg-[#0b0b0b] sm:flex-none"><X size={15} /> Cancel</Button>
+            <Button type="button" variant="outline" onClick={() => { setDraft(editableFrom(trade)); setEditing(false); }} className="flex-1 border-white/10 bg-surface sm:flex-none"><X size={15} /> Cancel</Button>
             <Button type="button" onClick={() => void saveTrade()} disabled={saving} className="flex-1 bg-white text-black hover:bg-zinc-200 sm:flex-none">{saving ? <LoaderCircle className="animate-spin" size={15} /> : <Save size={15} />} Save changes</Button>
           </div>
         </div>
       ) : (
         <div className="fixed inset-x-0 bottom-0 z-[9998] grid grid-cols-3 gap-2 border-t border-white/10 bg-black/94 p-3 backdrop-blur sm:hidden">
-          <Button type="button" variant="outline" onClick={() => setEditing(true)} className="border-white/10 bg-[#0b0b0b]"><Edit3 size={15} /> Edit</Button>
-          <Button type="button" variant="outline" onClick={() => fileInputRef.current?.click()} className="border-white/10 bg-[#0b0b0b]"><ImagePlus size={15} /> Image</Button>
+          <Button type="button" variant="outline" onClick={() => setEditing(true)} className="border-white/10 bg-surface"><Edit3 size={15} /> Edit</Button>
+          <Button type="button" variant="outline" onClick={() => fileInputRef.current?.click()} className="border-white/10 bg-surface"><ImagePlus size={15} /> Image</Button>
           <Button type="button" onClick={() => void shareTrade()} className="bg-white text-black hover:bg-zinc-200"><Share2 size={15} /> Share</Button>
         </div>
       )}

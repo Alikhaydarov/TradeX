@@ -135,7 +135,7 @@ const COUNTRY_CURRENCY: Record<string, string> = {
 }
 
 const CARD_SURFACE =
-  "flex min-h-0 flex-col gap-0 overflow-hidden rounded-xl border-white/10 bg-[#080808] py-0 shadow-none sm:rounded-2xl"
+  "flex min-h-0 flex-col gap-0 overflow-hidden rounded-xl border-white/10 bg-surface py-0 shadow-none sm:rounded-2xl"
 
 function cleanUsername(value: unknown) {
   return (
@@ -200,7 +200,7 @@ function MetricRing({ value }: { value: number }) {
         background: `conic-gradient(${tone} ${bounded * 3.6}deg, rgba(255,255,255,.09) 0deg)`,
       }}
     >
-      <div className="grid h-full w-full place-items-center rounded-full bg-[#080808] text-center">
+      <div className="grid h-full w-full place-items-center rounded-full bg-surface text-center">
         <div>
           <p className="text-base font-bold leading-none tabular-nums text-white sm:text-lg">
             {Math.round(bounded)}%
@@ -236,7 +236,7 @@ function WeeklyStrip({
           return (
             <article
               key={day.key}
-              className="h-[64px] overflow-hidden rounded-xl border border-white/10 bg-[#0a0a0a] px-3 py-2.5 transition hover:border-white/20 hover:bg-[#0d0d0d]"
+              className="h-[64px] overflow-hidden rounded-xl border border-white/10 bg-surface px-3 py-2.5 transition hover:border-white/20 hover:bg-surface"
             >
               <div className="flex items-center justify-between gap-2">
                 <p className="truncate text-[12px] font-semibold text-zinc-200">
@@ -416,10 +416,10 @@ export function DashboardOverviewResponsive({
           </p>
         </div>
         <div className="hidden items-center gap-2 sm:flex">
-          <span className="rounded-lg border border-white/10 bg-[#0b0b0b] px-3 py-2 text-[11px] font-semibold text-zinc-300">
+          <span className="rounded-lg border border-white/10 bg-surface px-3 py-2 text-[11px] font-semibold text-zinc-300">
             Current week
           </span>
-          <span className="flex items-center gap-2 rounded-lg border border-white/10 bg-[#0b0b0b] px-3 py-2 text-[11px] font-semibold text-zinc-300">
+          <span className="flex items-center gap-2 rounded-lg border border-white/10 bg-surface px-3 py-2 text-[11px] font-semibold text-zinc-300">
             <span
               className={`size-1.5 rounded-full ${
                 account.status === "Active" ? "bg-emerald-400" : "bg-amber-400"
@@ -570,7 +570,7 @@ export function DashboardOverviewResponsive({
                     <InstrumentBadge
                       symbol={item.symbol}
                       compact
-                      className="hidden shrink-0 bg-[#111111] min-[390px]:grid"
+                      className="hidden shrink-0 bg-surface-raised min-[390px]:grid"
                     />
                     <div className="min-w-0 flex-1">
                       <p className="truncate text-[12px] font-semibold leading-4 text-white">
@@ -696,7 +696,7 @@ export function DashboardOverviewResponsive({
                   <InstrumentBadge
                     symbol={trade.symbol}
                     compact
-                    className="hidden shrink-0 bg-[#111111] min-[420px]:grid"
+                    className="hidden shrink-0 bg-surface-raised min-[420px]:grid"
                   />
                   <div className="min-w-0">
                     <div className="flex min-w-0 items-center gap-2">
@@ -793,7 +793,7 @@ export function DashboardOverviewResponsive({
                       key={item.id}
                       className="grid h-[43px] grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2 border-b border-white/8 px-1 last:border-0 min-[420px]:gap-2.5 min-[420px]:px-1.5"
                     >
-                      <span className="grid h-7 min-w-9 place-items-center rounded-lg border border-white/10 bg-[#101010] px-1 text-[8px] font-bold text-zinc-200 min-[420px]:min-w-10 min-[420px]:px-1.5 min-[420px]:text-[9px]">
+                      <span className="grid h-7 min-w-9 place-items-center rounded-lg border border-white/10 bg-surface-raised px-1 text-[8px] font-bold text-zinc-200 min-[420px]:min-w-10 min-[420px]:px-1.5 min-[420px]:text-[9px]">
                         {eventCurrency(item)}
                       </span>
                       <div className="min-w-0">

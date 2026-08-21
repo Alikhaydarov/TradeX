@@ -29,6 +29,7 @@ import { Input } from "@/components/ui/input";
 import { Spinner } from "@/components/ui/spinner";
 import { Textarea } from "@/components/ui/textarea";
 import { apiRequest } from "@/lib/api-client";
+import { useRouter } from "next/navigation";
 
 type Accent = "emerald" | "sky" | "amber" | "rose";
 
@@ -92,9 +93,14 @@ function normalizeAccent(value?: string): Accent {
   return value === "sky" || value === "amber" || value === "rose" ? value : "emerald";
 }
 
-function go(path: string) {
-  window.history.pushState(null, "", path);
-  window.dispatchEvent(new Event("popstate"));
+/**
+ * Community links used to pushState and then dispatch a synthetic popstate.
+ * The App Router cannot resolve that against the null history state pushState
+ * writes, so every one of these "navigations" cost a full document reload.
+ */
+function useGo() {
+  const router = useRouter();
+  return useCallback((path: string) => router.push(path), [router]);
 }
 
 function formatCount(value: number) {
@@ -117,9 +123,9 @@ function HubSkeleton() {
 
 function EmptyState({ invitation = false }: { invitation?: boolean }) {
   return (
-    <div className="grid min-h-56 place-items-center rounded-2xl border border-dashed border-white/10 bg-[#050505] px-5 text-center">
+    <div className="grid min-h-56 place-items-center rounded-2xl border border-dashed border-white/10 bg-surface px-5 text-center">
       <div className="max-w-sm">
-        <span className="mx-auto grid size-11 place-items-center rounded-xl border border-white/8 bg-[#0b0b0b] text-zinc-600">
+        <span className="mx-auto grid size-11 place-items-center rounded-xl border border-white/8 bg-surface text-zinc-600">
           {invitation ? <Mail size={19} /> : <UsersRound size={19} />}
         </span>
         <h2 className="mt-3 text-sm font-bold text-zinc-200">
@@ -136,6 +142,7 @@ function EmptyState({ invitation = false }: { invitation?: boolean }) {
 }
 
 function CommunityCard({ community }: { community: CommunityCardData }) {
+  const go = useGo();
   const accent = ACCENTS[normalizeAccent(community.accent)];
   const path = `/community/${community.id}/overview`;
   const isPublic = Boolean(community.is_public);
@@ -145,7 +152,7 @@ function CommunityCard({ community }: { community: CommunityCardData }) {
   };
 
   return (
-    <article className="group relative min-h-[196px] overflow-hidden rounded-2xl border border-white/[.085] bg-[#070707] shadow-[0_18px_45px_rgba(0,0,0,.18)] transition duration-200 hover:-translate-y-0.5 hover:border-white/18 hover:bg-[#0a0a0a] hover:shadow-[0_22px_55px_rgba(0,0,0,.3)]">
+    <article className="group relative min-h-[196px] overflow-hidden rounded-2xl border border-white/[.085] bg-surface shadow-[0_18px_45px_rgba(0,0,0,.18)] transition duration-200 hover:-translate-y-0.5 hover:border-white/18 hover:bg-surface hover:shadow-[0_22px_55px_rgba(0,0,0,.3)]">
       <div className={`absolute inset-x-0 top-0 h-px ${accent.line}`} />
       <div className={`pointer-events-none absolute inset-0 bg-gradient-to-br ${accent.glow} via-transparent to-transparent opacity-70`} />
 
@@ -159,7 +166,7 @@ function CommunityCard({ community }: { community: CommunityCardData }) {
             <MoreHorizontal size={15} />
           </button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="w-44 border-white/10 bg-[#080808] p-1.5">
+        <DropdownMenuContent align="end" className="w-44 border-white/10 bg-surface p-1.5">
           <DropdownMenuItem onClick={() => go(path)} className="rounded-lg px-3 py-2.5 text-xs">
             <ArrowUpRight size={14} className="mr-2" /> Open community
           </DropdownMenuItem>
@@ -225,6 +232,7 @@ function CommunityCard({ community }: { community: CommunityCardData }) {
 }
 
 export function CommunityHubPremium() {
+  const go = useGo();
   const [data, setData] = useState<HubData | null>(null);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
@@ -297,7 +305,7 @@ export function CommunityHubPremium() {
     <div className="mx-auto max-w-[1260px] space-y-4 p-3 pb-24 sm:p-4 lg:p-5">
       <header className="flex flex-col gap-3 rounded-2xl border border-white/[.075] bg-gradient-to-br from-white/[.035] to-transparent p-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex min-w-0 items-center gap-3">
-          <span className="grid size-10 shrink-0 place-items-center rounded-xl border border-white/10 bg-[#0b0b0b] text-zinc-200 shadow-[0_12px_32px_rgba(0,0,0,.28)]">
+          <span className="grid size-10 shrink-0 place-items-center rounded-xl border border-white/10 bg-surface text-zinc-200 shadow-[0_12px_32px_rgba(0,0,0,.28)]">
             <UsersRound size={18} />
           </span>
           <div className="min-w-0">
@@ -323,11 +331,11 @@ export function CommunityHubPremium() {
       </header>
 
       <div className="flex items-center justify-between gap-3">
-        <div className="inline-flex rounded-xl border border-white/8 bg-[#050505] p-1">
+        <div className="inline-flex rounded-xl border border-white/8 bg-surface p-1">
           <button
             type="button"
             onClick={() => setTab("communities")}
-            className={`relative flex h-9 items-center gap-2 rounded-lg px-3 text-[11px] font-bold transition ${tab === "communities" ? "bg-[#151515] text-white shadow-sm" : "text-zinc-600 hover:text-zinc-300"}`}
+            className={`relative flex h-9 items-center gap-2 rounded-lg px-3 text-[11px] font-bold transition ${tab === "communities" ? "bg-surface-raised text-white shadow-sm" : "text-zinc-600 hover:text-zinc-300"}`}
           >
             My communities
             <span className="rounded-md bg-white/[.06] px-1.5 py-0.5 text-[8px] text-zinc-400">{communities.length}</span>
@@ -335,7 +343,7 @@ export function CommunityHubPremium() {
           <button
             type="button"
             onClick={() => setTab("invitations")}
-            className={`relative flex h-9 items-center gap-2 rounded-lg px-3 text-[11px] font-bold transition ${tab === "invitations" ? "bg-[#151515] text-white shadow-sm" : "text-zinc-600 hover:text-zinc-300"}`}
+            className={`relative flex h-9 items-center gap-2 rounded-lg px-3 text-[11px] font-bold transition ${tab === "invitations" ? "bg-surface-raised text-white shadow-sm" : "text-zinc-600 hover:text-zinc-300"}`}
           >
             Invitations
             {invitations.length ? (
@@ -354,7 +362,7 @@ export function CommunityHubPremium() {
       ) : null}
 
       {createOpen ? (
-        <section className="grid gap-4 rounded-2xl border border-white/9 bg-[#070707] p-4 lg:grid-cols-[minmax(0,1fr)_minmax(320px,.72fr)]">
+        <section className="grid gap-4 rounded-2xl border border-white/9 bg-surface p-4 lg:grid-cols-[minmax(0,1fr)_minmax(320px,.72fr)]">
           <div>
             <div className="flex items-center gap-2">
               <span className="grid size-8 place-items-center rounded-lg border border-amber-400/15 bg-amber-400/[.06] text-amber-300">
@@ -373,7 +381,7 @@ export function CommunityHubPremium() {
                     key={item}
                     type="button"
                     onClick={() => setAccent(item)}
-                    className={`grid size-8 place-items-center rounded-lg border transition ${accent === item ? "border-white/25 bg-white/[.08]" : "border-white/7 bg-[#080808] hover:border-white/14"}`}
+                    className={`grid size-8 place-items-center rounded-lg border transition ${accent === item ? "border-white/25 bg-white/[.08]" : "border-white/7 bg-surface hover:border-white/14"}`}
                     aria-label={`${item} accent`}
                   >
                     <span className={`size-2.5 rounded-full ${ACCENTS[item].dot}`} />
@@ -383,8 +391,8 @@ export function CommunityHubPremium() {
             </div>
           </div>
           <div className="space-y-2.5">
-            <Input value={name} onChange={(event) => setName(event.target.value)} placeholder="Community name" maxLength={60} className="h-9 rounded-xl border-white/10 bg-[#0b0b0b] text-xs" />
-            <Textarea value={description} onChange={(event) => setDescription(event.target.value)} placeholder="Short description" maxLength={280} className="min-h-20 rounded-xl border-white/10 bg-[#0b0b0b] text-xs" />
+            <Input value={name} onChange={(event) => setName(event.target.value)} placeholder="Community name" maxLength={60} className="h-9 rounded-xl border-white/10 bg-surface text-xs" />
+            <Textarea value={description} onChange={(event) => setDescription(event.target.value)} placeholder="Short description" maxLength={280} className="min-h-20 rounded-xl border-white/10 bg-surface text-xs" />
             <Button type="button" onClick={() => void create()} disabled={busy || name.trim().length < 3} className="h-9 w-full rounded-xl bg-white text-[11px] font-bold text-black hover:bg-zinc-200">
               {busy ? <Spinner className="size-4" /> : <Sparkles size={14} />} Create community
             </Button>
@@ -403,7 +411,7 @@ export function CommunityHubPremium() {
           {invitations.map((community) => {
             const accentItem = ACCENTS[normalizeAccent(community.accent)];
             return (
-              <article key={community.id} className="flex flex-col gap-3 rounded-2xl border border-white/9 bg-[#070707] p-3.5 transition hover:border-white/16 sm:flex-row sm:items-center">
+              <article key={community.id} className="flex flex-col gap-3 rounded-2xl border border-white/9 bg-surface p-3.5 transition hover:border-white/16 sm:flex-row sm:items-center">
                 <div className="flex min-w-0 flex-1 items-center gap-3">
                   <div className="relative shrink-0">
                     <TraderAvatar name={community.name} value={community.avatar_url || community.owner?.avatar_url} className="size-11 rounded-xl text-xs" />
@@ -419,7 +427,7 @@ export function CommunityHubPremium() {
                   </div>
                 </div>
                 <div className="flex gap-2 sm:shrink-0">
-                  <Button type="button" variant="outline" disabled={busy} onClick={() => void respond(community.id, "decline")} className="h-8 flex-1 rounded-lg border-white/10 bg-[#080808] px-3 text-[10px] sm:flex-none">Decline</Button>
+                  <Button type="button" variant="outline" disabled={busy} onClick={() => void respond(community.id, "decline")} className="h-8 flex-1 rounded-lg border-white/10 bg-surface px-3 text-[10px] sm:flex-none">Decline</Button>
                   <Button type="button" disabled={busy} onClick={() => void respond(community.id, "accept")} className="h-8 flex-1 rounded-lg bg-white px-3 text-[10px] font-bold text-black hover:bg-zinc-200 sm:flex-none"><Check size={12} /> Accept</Button>
                 </div>
               </article>

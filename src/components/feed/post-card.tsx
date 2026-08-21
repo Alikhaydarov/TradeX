@@ -191,7 +191,7 @@ export function PostCard({
     <article
       id={`post-${post.id}`}
       ref={(node) => observePost(node, post.id)}
-      className="rounded-2xl border border-white/8 bg-[#0a0a0a] px-3 py-4 shadow-[inset_0_1px_0_rgba(255,255,255,.025)] transition-colors hover:border-white/12 hover:bg-[#0e0e0e] sm:px-5 sm:py-5"
+      className="rounded-2xl border border-white/8 bg-surface px-3 py-4 shadow-[inset_0_1px_0_rgba(255,255,255,.025)] transition-colors hover:border-white/12 hover:bg-surface sm:px-5 sm:py-5"
     >
       <div className="flex gap-3.5">
         <button

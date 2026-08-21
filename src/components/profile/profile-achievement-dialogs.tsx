@@ -135,7 +135,7 @@ export function ProfileAchievementDialogs({
         }}
       >
         <DialogContent className="max-h-[96dvh] max-w-[min(1100px,calc(100vw-1rem))] overflow-hidden bg-black p-0 sm:max-w-[min(1100px,calc(100vw-2rem))]">
-          <DialogHeader className="border-b border-white/10 bg-[#171717] px-4 py-3 pr-14 text-left">
+          <DialogHeader className="border-b border-white/10 bg-surface-raised px-4 py-3 pr-14 text-left">
             <DialogTitle>{viewing?.title}</DialogTitle>
             <DialogDescription>
               {viewing?.issuer || viewing?.achievement_type}

@@ -324,7 +324,7 @@ function SettingsContent() {
                     title="Your account"
                     description="Public identity shown across Tradoxy."
                   >
-                    <div className="flex flex-col gap-4 rounded-2xl border border-white/8 bg-[#090909] p-4 sm:flex-row sm:items-center">
+                    <div className="flex flex-col gap-4 rounded-2xl border border-white/8 bg-surface p-4 sm:flex-row sm:items-center">
                       <TraderAvatar
                         name={fullName || username || "Trader"}
                         value={avatarUrl}
@@ -512,7 +512,7 @@ function SettingsContent() {
                         </Select>
                       </Field>
                       <Field label="Typography">
-                        <div className="flex h-10 items-center rounded-xl border border-white/8 bg-[#080808] px-3 text-sm font-medium text-zinc-300">
+                        <div className="flex h-10 items-center rounded-xl border border-white/8 bg-surface px-3 text-sm font-medium text-zinc-300">
                           DM Sans
                           <span className="ml-auto text-[10px] text-zinc-600">
                             Tradoxy default
@@ -533,7 +533,7 @@ function SettingsContent() {
                         {customOnly.map((item) => (
                           <div
                             key={item}
-                            className="flex items-center justify-between rounded-2xl border border-white/8 bg-[#090909] px-4 py-3"
+                            className="flex items-center justify-between rounded-2xl border border-white/8 bg-surface px-4 py-3"
                           >
                             <span className="font-semibold text-white">
                               {item}
@@ -549,7 +549,7 @@ function SettingsContent() {
                         ))}
                       </div>
                     ) : (
-                      <div className="rounded-2xl border border-dashed border-white/10 bg-[#090909] px-4 py-8 text-center text-sm text-zinc-500">
+                      <div className="rounded-2xl border border-dashed border-white/10 bg-surface px-4 py-8 text-center text-sm text-zinc-500">
                         No custom symbols yet.
                       </div>
                     )}
@@ -569,7 +569,7 @@ function SettingsContent() {
       </Dialog>
 
       <Dialog open={symbolModalOpen} onOpenChange={setSymbolModalOpen}>
-        <DialogContent className="border-white/10 bg-[#050505] sm:max-w-md">
+        <DialogContent className="border-white/10 bg-surface sm:max-w-md">
           <DialogHeader>
             <DialogTitle className="text-white">Add custom symbol</DialogTitle>
           </DialogHeader>
@@ -629,7 +629,7 @@ function SettingsOverview({
 }) {
   return (
     <main className="mx-auto w-full max-w-3xl px-4 py-4 sm:px-6 sm:py-6">
-      <label className="flex h-14 items-center gap-3 rounded-full bg-[#0a0a0a] px-5 text-zinc-500 ring-1 ring-white/[.025] focus-within:ring-white/10 sm:h-16">
+      <label className="flex h-14 items-center gap-3 rounded-full bg-surface px-5 text-zinc-500 ring-1 ring-white/[.025] focus-within:ring-white/10 sm:h-16">
         <Search size={25} strokeWidth={1.8} className="shrink-0" />
         <input
           type="search"
@@ -686,7 +686,7 @@ function Panel({
   children: React.ReactNode;
 }) {
   return (
-    <section className="space-y-4 rounded-[1.4rem] border border-white/8 bg-[#070707] p-4 sm:p-5">
+    <section className="space-y-4 rounded-[1.4rem] border border-white/8 bg-surface p-4 sm:p-5">
       <div>
         <h3 className="text-lg font-black text-white">{title}</h3>
         <p className="mt-1 text-sm leading-6 text-zinc-500">{description}</p>
@@ -722,7 +722,7 @@ function SettingRow({
   children: React.ReactNode;
 }) {
   return (
-    <div className="flex items-center justify-between gap-4 rounded-2xl border border-white/8 bg-[#090909] p-4">
+    <div className="flex items-center justify-between gap-4 rounded-2xl border border-white/8 bg-surface p-4">
       <div>
         <p className="font-semibold text-white">{title}</p>
         <p className="mt-1 text-sm leading-5 text-zinc-500">{description}</p>
@@ -742,7 +742,7 @@ function InfoCard({
   value: string;
 }) {
   return (
-    <div className="min-w-0 rounded-2xl border border-white/8 bg-[#090909] p-4">
+    <div className="min-w-0 rounded-2xl border border-white/8 bg-surface p-4">
       <Icon size={17} className="text-zinc-400" />
       <p className="mt-3 text-[10px] font-black uppercase tracking-wider text-zinc-500">
         {label}
@@ -778,7 +778,7 @@ function PlanCard({
   disabled?: boolean;
 }) {
   return (
-    <div className="flex min-h-56 flex-col rounded-[1.25rem] border border-white/8 bg-[#090909] p-4">
+    <div className="flex min-h-56 flex-col rounded-[1.25rem] border border-white/8 bg-surface p-4">
       <p className="text-sm font-black text-white">{title}</p>
       <p className="mt-3 text-2xl font-black text-white">{price}</p>
       <p className="mt-2 flex-1 text-sm leading-6 text-zinc-500">
@@ -813,7 +813,7 @@ function RowAction({
     <button
       type="button"
       onClick={onClick}
-      className="flex w-full items-center justify-between gap-4 rounded-2xl border border-white/8 bg-[#090909] px-4 py-3 text-left transition hover:border-white/15 hover:bg-white/[.04]"
+      className="flex w-full items-center justify-between gap-4 rounded-2xl border border-white/8 bg-surface px-4 py-3 text-left transition hover:border-white/15 hover:bg-white/[.04]"
     >
       <div>
         <p className="font-semibold text-white">{label}</p>

@@ -31,7 +31,7 @@ export const ACCOUNT_PLATFORMS: PlatformConfig[] = [
 
 function PlanSummary({ plan }: { plan: Exclude<AccountPlan, "free"> }) {
   return (
-    <div className="flex items-center justify-between gap-3 rounded-xl border border-white/10 bg-[#0a0a0a] px-3 py-2.5">
+    <div className="flex items-center justify-between gap-3 rounded-xl border border-white/10 bg-surface px-3 py-2.5">
       <div className="flex min-w-0 items-center gap-2.5">
         <span className="grid size-8 shrink-0 place-items-center rounded-lg bg-emerald-400/10 text-emerald-300"><Check size={15} strokeWidth={3} /></span>
         <div className="min-w-0">
@@ -55,7 +55,7 @@ function PlatformCard({ item, onSelect }: { item: PlatformConfig; onSelect: (ite
       onClick={() => onSelect(item)}
       className={cn(
         "group relative flex min-h-[150px] flex-col items-center justify-center rounded-2xl border p-3 text-center transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/30",
-        live ? "border-white/10 bg-[#111111] hover:border-white/25 hover:bg-[#151515]" : "cursor-not-allowed border-white/6 bg-[#070707] opacity-55",
+        live ? "border-white/10 bg-surface-raised hover:border-white/25 hover:bg-surface-raised" : "cursor-not-allowed border-white/6 bg-surface opacity-55",
       )}
     >
       <PlatformLogoBadge platform={item.id} />
@@ -88,7 +88,7 @@ export function AccountPlatformSelector({ plan, onSelect, onBack, onUpgrade }: {
       {plan !== "free" ? <PlanSummary plan={plan} /> : null}
       <div className="relative overflow-hidden rounded-2xl">
         <div className={cn("space-y-3 transition", locked && "pointer-events-none select-none blur-[5px] opacity-45")} aria-hidden={locked}>
-          <label className="mx-auto flex h-10 max-w-[360px] items-center gap-2 rounded-xl border border-white/10 bg-[#111111] px-3">
+          <label className="mx-auto flex h-10 max-w-[360px] items-center gap-2 rounded-xl border border-white/10 bg-surface-raised px-3">
             <Search size={14} className="text-zinc-600" />
             <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search platform..." className="h-full min-w-0 flex-1 bg-transparent text-xs text-white outline-none placeholder:text-zinc-600" />
           </label>
@@ -99,11 +99,11 @@ export function AccountPlatformSelector({ plan, onSelect, onBack, onUpgrade }: {
         {locked ? (
           <div className="absolute inset-0 z-10 flex items-center justify-center bg-black/30 px-4">
             <div className="w-full max-w-sm text-center">
-              <span className="mx-auto grid size-11 place-items-center rounded-2xl border border-white/10 bg-[#0b0b0b] text-white"><LockKeyhole size={18} /></span>
+              <span className="mx-auto grid size-11 place-items-center rounded-2xl border border-white/10 bg-surface text-white"><LockKeyhole size={18} /></span>
               <h3 className="mt-3 text-base font-black text-white">Platform connections are locked</h3>
               <p className="mx-auto mt-1 max-w-xs text-xs leading-5 text-zinc-400">Upgrade to Standard or Pro to connect a platform or import trade history.</p>
               <div className="mx-auto mt-4 grid max-w-[280px] grid-cols-2 gap-2">
-                <Button type="button" variant="outline" onClick={onBack} className="border-white/10 bg-[#0b0b0b]">Back</Button>
+                <Button type="button" variant="outline" onClick={onBack} className="border-white/10 bg-surface">Back</Button>
                 <Button type="button" onClick={onUpgrade} className="bg-white text-black hover:bg-zinc-200">Compare plans</Button>
               </div>
             </div>
