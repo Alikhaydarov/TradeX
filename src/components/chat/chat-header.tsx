@@ -35,7 +35,7 @@ export function ChatHeader({
   const live = connection === "connected";
 
   return (
-    <header className="flex h-12 shrink-0 items-center gap-2 border-b border-white/[.075] bg-[#0b0c0e]/95 px-2.5 shadow-[0_1px_0_rgba(255,255,255,.025)] backdrop-blur-xl sm:px-4">
+    <header className="flex h-12 shrink-0 items-center gap-2 border-b border-white/[.075] bg-surface/95 px-2.5 shadow-[0_1px_0_rgba(255,255,255,.025)] backdrop-blur-xl sm:px-4">
       <Button
         type="button"
         variant="ghost"

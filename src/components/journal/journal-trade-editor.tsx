@@ -102,7 +102,7 @@ export function JournalTradeEditor({
       <div className="absolute inset-0" onClick={onClose} aria-hidden="true" />
       <form
         action={onSave}
-        className="relative z-10 flex h-[calc(100dvh-1rem)] max-h-[920px] w-full max-w-5xl flex-col overflow-hidden rounded-[20px] border border-white/8 bg-[#070707] text-foreground shadow-2xl shadow-black/80 sm:h-auto sm:max-h-[92dvh] sm:rounded-[18px] lg:max-w-6xl"
+        className="relative z-10 flex h-[calc(100dvh-1rem)] max-h-[920px] w-full max-w-5xl flex-col overflow-hidden rounded-[20px] border border-white/8 bg-surface text-foreground shadow-2xl shadow-black/80 sm:h-auto sm:max-h-[92dvh] sm:rounded-[18px] lg:max-w-6xl"
       >
         <header className="flex shrink-0 items-start justify-between gap-3 border-b border-border px-4 py-3 sm:items-center sm:px-5 sm:py-4">
           <div className="min-w-0 flex-1 py-0.5 sm:py-0">
@@ -129,7 +129,7 @@ export function JournalTradeEditor({
           <button
             type="button"
             onClick={onClose}
-            className="grid size-9 shrink-0 place-items-center rounded-xl text-zinc-500 transition hover:bg-[#111111] hover:text-white"
+            className="grid size-9 shrink-0 place-items-center rounded-xl text-zinc-500 transition hover:bg-surface-raised hover:text-white"
             aria-label="Close"
           >
             <X size={17} />
@@ -137,7 +137,7 @@ export function JournalTradeEditor({
         </header>
         <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain p-3 sm:p-5">
           <section className="mb-4 overflow-hidden rounded-2xl border border-white/8">
-            <div className="flex items-center justify-between border-b border-white/8 bg-[#050505] px-3 py-2 sm:px-4 sm:py-2.5">
+            <div className="flex items-center justify-between border-b border-white/8 bg-surface px-3 py-2 sm:px-4 sm:py-2.5">
               <p className="text-[10px] font-black uppercase tracking-[.16em] text-zinc-500">
                 Chart · TradingView
               </p>
@@ -150,7 +150,7 @@ export function JournalTradeEditor({
           </section>
           <div className="grid gap-4 lg:grid-cols-[minmax(0,1.12fr)_minmax(300px,.88fr)]">
             <div className="space-y-4">
-              <section className="rounded-2xl border border-white/8 bg-[#050505] p-4">
+              <section className="rounded-2xl border border-white/8 bg-surface p-4">
                 <div className="mb-4">
                   <p className="text-[10px] font-black uppercase tracking-[.16em] text-zinc-500">
                     Trade details
@@ -221,7 +221,7 @@ export function JournalTradeEditor({
                 </div>
               </section>
 
-              <section className="rounded-2xl border border-white/8 bg-[#050505] p-4">
+              <section className="rounded-2xl border border-white/8 bg-surface p-4">
                 <div className="mb-4">
                   <p className="text-[10px] font-black uppercase tracking-[.16em] text-zinc-500">
                     Context
@@ -286,7 +286,7 @@ export function JournalTradeEditor({
                 </div>
               </section>
 
-              <section className="rounded-2xl border border-white/8 bg-[#050505] p-4">
+              <section className="rounded-2xl border border-white/8 bg-surface p-4">
                 <div className="mb-4">
                   <p className="text-[10px] font-black uppercase tracking-[.16em] text-zinc-500">
                     Review note
@@ -307,7 +307,7 @@ export function JournalTradeEditor({
             </div>
 
             <div className="space-y-4">
-              <section className="rounded-2xl border border-white/8 bg-[#050505] p-4">
+              <section className="rounded-2xl border border-white/8 bg-surface p-4">
                 <div className="mb-3 flex items-center justify-between gap-3">
                   <div>
                     <p className="text-[10px] font-black uppercase tracking-[.16em] text-zinc-500">
@@ -363,7 +363,7 @@ export function JournalTradeEditor({
                             current.filter((item) => item !== url),
                           )
                         }
-                        className="absolute right-1.5 top-1.5 grid size-7 place-items-center rounded-md bg-[#050505] text-rose-200"
+                        className="absolute right-1.5 top-1.5 grid size-7 place-items-center rounded-md bg-surface text-rose-200"
                       >
                         <Trash2 size={12} />
                       </button>
@@ -373,7 +373,7 @@ export function JournalTradeEditor({
                     <button
                       type="button"
                       onClick={() => imageInputRef.current?.click()}
-                      className="grid aspect-square place-items-center rounded-lg border border-dashed border-white/10 text-zinc-500 transition hover:bg-[#111111] hover:text-white"
+                      className="grid aspect-square place-items-center rounded-lg border border-dashed border-white/10 text-zinc-500 transition hover:bg-surface-raised hover:text-white"
                     >
                       {uploadingImages ? (
                         <Spinner className="size-5" />
@@ -385,7 +385,7 @@ export function JournalTradeEditor({
                 </div>
               </section>
 
-              <section className="rounded-2xl border border-white/8 bg-[#050505] p-4">
+              <section className="rounded-2xl border border-white/8 bg-surface p-4">
                 <p className="mb-3 text-[10px] font-black uppercase tracking-[.16em] text-zinc-500">
                   Review checklist
                 </p>
@@ -434,7 +434,7 @@ export function JournalTradeEditor({
               </section>
 
               <details className="group overflow-hidden rounded-2xl border">
-                <summary className="flex cursor-pointer list-none items-center gap-3 px-4 py-3.5 text-sm font-bold text-zinc-200 transition hover:bg-[#171717]">
+                <summary className="flex cursor-pointer list-none items-center gap-3 px-4 py-3.5 text-sm font-bold text-zinc-200 transition hover:bg-surface-raised">
                   <ImageIcon size={17} className="text-zinc-500" />
                   Share image
                   <span className="ml-auto text-xs font-medium text-zinc-600 group-open:hidden">
@@ -693,7 +693,7 @@ function TradeReviewImage({
   };
 
   return (
-    <section className="mx-auto w-full max-w-[380px] overflow-hidden rounded-2xl border border-white/10 bg-[#171717] shadow-xl shadow-black/25">
+    <section className="mx-auto w-full max-w-[380px] overflow-hidden rounded-2xl border border-white/10 bg-surface-raised shadow-xl shadow-black/25">
       <div className="flex items-center justify-between border-b border-white/8 px-4 py-3">
         <div>
           <p className="text-sm font-black text-white">Trade review image</p>
@@ -706,7 +706,7 @@ function TradeReviewImage({
             onClick={download}
             size="sm"
             variant="outline"
-            className="border-white/10 bg-[#0d0d0d] hover:bg-[#151515]"
+            className="border-white/10 bg-surface hover:bg-surface-raised"
           >
             <Download size={15} /> PNG
           </Button>
@@ -716,7 +716,7 @@ function TradeReviewImage({
         <MediaImage
           src={generatedUrl}
           alt={`${trade.symbol} Tradoxy review image`}
-          className="aspect-square w-full bg-[#0b0b0b] object-contain"
+          className="aspect-square w-full bg-surface object-contain"
         />
       ) : (
         <div className="grid aspect-square w-full place-items-center text-zinc-500">

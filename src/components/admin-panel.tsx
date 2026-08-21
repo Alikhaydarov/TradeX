@@ -212,7 +212,7 @@ export function AdminPanel({ onLogin }: { onLogin: () => void }) {
           <section
             role="status"
             aria-label="Loading superadmin directory"
-            className="rounded-3xl border border-white/8 bg-[#0a0a0a] p-3 shadow-2xl shadow-black/25 sm:p-4"
+            className="rounded-3xl border border-white/8 bg-surface p-3 shadow-2xl shadow-black/25 sm:p-4"
           >
             <div className="flex flex-col gap-3 xl:flex-row xl:items-center">
               <div className="space-y-2">
@@ -236,7 +236,7 @@ export function AdminPanel({ onLogin }: { onLogin: () => void }) {
             </div>
           </section>
         ) : (
-          <section className="rounded-3xl border border-white/8 bg-[#0a0a0a] p-3 shadow-2xl shadow-black/25 sm:p-4">
+          <section className="rounded-3xl border border-white/8 bg-surface p-3 shadow-2xl shadow-black/25 sm:p-4">
             <div className="flex flex-col gap-3 xl:flex-row xl:items-center">
               <div>
                 <h2 className="text-base font-black text-white">Users, plans and roles</h2>
@@ -281,7 +281,7 @@ export function AdminPanel({ onLogin }: { onLogin: () => void }) {
                 { label: "Admins", value: summary.admins, icon: UserCog },
                 { label: "Linked accounts", value: summary.linkedAccounts, icon: BarChart3 },
               ].map((item) => (
-                <div key={item.label} className="rounded-2xl border border-white/8 bg-[#0d0d0d] px-4 py-3">
+                <div key={item.label} className="rounded-2xl border border-white/8 bg-surface px-4 py-3">
                   <div className="flex items-center gap-2 text-[11px] uppercase tracking-[.18em] text-zinc-500">
                     <item.icon size={13} />
                     {item.label}
@@ -307,7 +307,7 @@ export function AdminPanel({ onLogin }: { onLogin: () => void }) {
                 return (
                   <div
                     key={target.id}
-                    className={`grid gap-4 rounded-[28px] border bg-[#0d0d0d] p-4 shadow-[inset_3px_0_0_var(--plan-accent)] lg:grid-cols-[minmax(0,1.3fr)_minmax(340px,.9fr)_auto] ${draft.plan === "pro" ? "border-amber-300/15 [--plan-accent:#facc15]" : draft.plan === "standard" ? "border-sky-300/15 [--plan-accent:#38bdf8]" : "border-white/8 [--plan-accent:#3f3f46]"}`}
+                    className={`grid gap-4 rounded-[28px] border bg-surface p-4 shadow-[inset_3px_0_0_var(--plan-accent)] lg:grid-cols-[minmax(0,1.3fr)_minmax(340px,.9fr)_auto] ${draft.plan === "pro" ? "border-amber-300/15 [--plan-accent:#facc15]" : draft.plan === "standard" ? "border-sky-300/15 [--plan-accent:#38bdf8]" : "border-white/8 [--plan-accent:#3f3f46]"}`}
                   >
                     <div className="min-w-0">
                       <div className="flex items-start gap-3">

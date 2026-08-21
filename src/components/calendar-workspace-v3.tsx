@@ -210,7 +210,7 @@ function tone(value: number) {
 function resultSurface(value: number) {
   if (value > 0) return "border-emerald-400/25 bg-emerald-400/[.07]";
   if (value < 0) return "border-rose-400/25 bg-rose-400/[.07]";
-  return "border-white/8 bg-[#0a0a0a]";
+  return "border-white/8 bg-surface";
 }
 
 function isTodayDate(year: number, month: number, day: number) {
@@ -411,7 +411,7 @@ export function CalendarWorkspaceV3() {
     <>
       <div className="mx-auto max-w-[1420px] space-y-3 p-3 sm:p-4 lg:p-5">
         <div className="flex justify-center">
-          <div className="inline-flex rounded-xl border border-white/8 bg-[#0a0a0a] p-1">
+          <div className="inline-flex rounded-xl border border-white/8 bg-surface p-1">
             <button type="button" onClick={() => switchMode("journal")} className={`rounded-lg px-4 py-1.5 text-xs font-semibold transition ${route.mode === "journal" ? "bg-white/[.10] text-white" : "text-zinc-500 hover:text-zinc-300"}`}>Journal</button>
             <button type="button" onClick={() => switchMode("economic")} className={`rounded-lg px-4 py-1.5 text-xs font-semibold transition ${route.mode === "economic" ? "bg-white/[.10] text-white" : "text-zinc-500 hover:text-zinc-300"}`}>Economic Calendar</button>
           </div>
@@ -495,7 +495,7 @@ function YearOverview({
 
   return (
     <div className="space-y-3">
-      <Card className="gap-0 border-white/8 bg-[#0a0a0a] shadow-none">
+      <Card className="gap-0 border-white/8 bg-surface shadow-none">
         <CardHeader className="border-b border-white/8 px-4 py-4">
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0">
@@ -503,7 +503,7 @@ function YearOverview({
               <p className="mt-1 text-sm text-zinc-500">Select a month to view its performance</p>
             </div>
             <Select value={yearFilter} onValueChange={onYearFilter}>
-              <SelectTrigger className="h-11 w-[138px] rounded-xl border-white/10 bg-[#101010] text-sm">
+              <SelectTrigger className="h-11 w-[138px] rounded-xl border-white/10 bg-surface-raised text-sm">
                 <SelectValue placeholder="All years" />
               </SelectTrigger>
               <SelectContent>
@@ -544,7 +544,7 @@ function YearOverview({
         </CardContent>
       </Card>
 
-      <Card className="gap-0 border-white/8 bg-[#0a0a0a] shadow-none">
+      <Card className="gap-0 border-white/8 bg-surface shadow-none">
         <CardHeader className="px-4 py-4">
           <h2 className="text-xl font-semibold text-white">Account Balance</h2>
           <p className="mt-1 text-sm text-zinc-500">{accountName} · equity curve of selected year</p>
@@ -600,7 +600,7 @@ function MonthlyCalendar({
 }) {
   const isJournal = route.mode === "journal";
   return (
-    <Card className="gap-0 overflow-hidden border-white/8 bg-[#0a0a0a] py-0 shadow-none">
+    <Card className="gap-0 overflow-hidden border-white/8 bg-surface py-0 shadow-none">
       <CardHeader className="border-b border-white/8 px-3 py-3 sm:px-5 sm:py-4">
         <div className="hidden items-center md:grid md:grid-cols-[1fr_auto_1fr]">
           <div className="flex min-w-0 items-center gap-2.5">
@@ -618,7 +618,7 @@ function MonthlyCalendar({
 
         <div className="md:hidden">
           {isJournal ? (
-            <div className="grid grid-cols-2 gap-2 rounded-2xl border border-white/8 bg-[#0a0a0a] px-3 py-4 min-[480px]:grid-cols-4">
+            <div className="grid grid-cols-2 gap-2 rounded-2xl border border-white/8 bg-surface px-3 py-4 min-[480px]:grid-cols-4">
               <CompactStat label="Total trades" value={String(stats.total)} />
               <CompactStat label="Realized RR" value={stats.total ? `${stats.realizedR.toFixed(2)}R` : "—"} />
               <CompactStat label="Trade Winrate" value={`${stats.winRate}%`} />
@@ -689,7 +689,7 @@ function MonthNavigation({ year, month, onShift, large = false }: { year: number
 
 function DesktopStat({ label, value, valueClass = "text-white" }: { label: string; value: string; valueClass?: string }) {
   return (
-    <div className="rounded-xl border border-white/8 bg-[#101010] px-3 py-3">
+    <div className="rounded-xl border border-white/8 bg-surface-raised px-3 py-3">
       <p className="text-[10px] font-medium text-zinc-500">{label}</p>
       <p className={`mt-2 truncate text-lg font-semibold tabular-nums ${valueClass}`}>{value}</p>
     </div>
@@ -770,7 +770,7 @@ function DesktopDayCell({
   const hasData = mode === "journal" ? entries.length > 0 : events.length > 0;
 
   return (
-    <button type="button" onClick={() => onOpenDay(day)} className={`relative min-h-[96px] overflow-hidden rounded-xl border p-2 text-left transition hover:border-white/20 hover:bg-white/[.03] ${mode === "journal" && entries.length ? resultSurface(pnl) : "border-white/8 bg-[#0a0a0a]"}`}>
+    <button type="button" onClick={() => onOpenDay(day)} className={`relative min-h-[96px] overflow-hidden rounded-xl border p-2 text-left transition hover:border-white/20 hover:bg-white/[.03] ${mode === "journal" && entries.length ? resultSurface(pnl) : "border-white/8 bg-surface"}`}>
       <div className="flex items-start justify-between gap-2">
         <div>
           <span className={`text-xs font-semibold ${weekend ? "text-zinc-600" : "text-zinc-300"}`}>{day}</span>
@@ -790,7 +790,7 @@ function DesktopDayCell({
         <div className="mt-2 space-y-1">
           {events.slice(0, 2).map((event) => {
             const date = eventLocalDate(event);
-            return <div key={event.id} className="rounded-lg border border-white/8 bg-[#101010] px-2 py-1.5"><p className="truncate text-[10px] font-semibold text-white">{event.event}</p><p className="mt-0.5 text-[9px] text-zinc-500">{eventFlag(event)} {eventCurrency(event)} · {date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</p></div>;
+            return <div key={event.id} className="rounded-lg border border-white/8 bg-surface-raised px-2 py-1.5"><p className="truncate text-[10px] font-semibold text-white">{event.event}</p><p className="mt-0.5 text-[9px] text-zinc-500">{eventFlag(event)} {eventCurrency(event)} · {date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</p></div>;
           })}
           {events.length > 2 ? <p className="px-1 text-[9px] text-zinc-600">+{events.length - 2} more</p> : null}
         </div>
@@ -819,7 +819,7 @@ function MobileMonthGrid({
   onOpenDay: (day: number) => void;
 }) {
   return (
-    <div className="rounded-[1.75rem] border border-white/10 bg-[#0a0a0a] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,.025)]">
+    <div className="rounded-[1.75rem] border border-white/10 bg-surface p-4 shadow-[inset_0_1px_0_rgba(255,255,255,.025)]">
       <div className="grid grid-cols-7 gap-2">
         {MOBILE_WEEKDAYS.map((day, index) => <div key={`${day}-${index}`} className={`grid aspect-square place-items-center rounded-xl border border-white/8 bg-black text-base font-semibold ${index >= 5 ? "text-zinc-600" : "text-zinc-200"}`}>{day}</div>)}
         {weeks.flat().map((day, index) => {
@@ -830,7 +830,7 @@ function MobileMonthGrid({
           const count = mode === "journal" ? entries.length : events.length;
           const today = isTodayDate(year, month, day);
           return (
-            <button key={day} type="button" onClick={() => onOpenDay(day)} className={`relative grid aspect-square place-items-center rounded-xl border text-lg font-medium transition active:scale-95 ${count && mode === "journal" ? resultSurface(pnl) : "border-white/10 bg-[#0a0a0a] text-zinc-300"}`}>
+            <button key={day} type="button" onClick={() => onOpenDay(day)} className={`relative grid aspect-square place-items-center rounded-xl border text-lg font-medium transition active:scale-95 ${count && mode === "journal" ? resultSurface(pnl) : "border-white/10 bg-surface text-zinc-300"}`}>
               <span>{day}</span>
               {count ? <span className={`absolute bottom-1.5 size-1.5 rounded-full ${mode === "economic" || pnl >= 0 ? "bg-emerald-400" : "bg-rose-400"}`} /> : null}
               {today ? <span className="absolute -bottom-1 left-1/2 h-0.5 w-6 -translate-x-1/2 rounded-full bg-emerald-400" /> : null}
@@ -869,7 +869,7 @@ function DayDetailsDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[85dvh] w-[calc(100vw-1.5rem)] max-w-xl overflow-hidden rounded-2xl border-white/10 bg-[#0a0a0a] p-0 shadow-2xl">
+      <DialogContent className="max-h-[85dvh] w-[calc(100vw-1.5rem)] max-w-xl overflow-hidden rounded-2xl border-white/10 bg-surface p-0 shadow-2xl">
         <DialogHeader className="border-b border-white/8 px-5 py-4 text-left">
           <DialogTitle className="text-base font-semibold text-white">{title}</DialogTitle>
           <DialogDescription className="text-xs text-zinc-500">{mode === "journal" ? `${entries.length} trade${entries.length === 1 ? "" : "s"} · ${cash.format(dayPnl)}` : `${events.length} high-impact event${events.length === 1 ? "" : "s"}`}</DialogDescription>
@@ -878,7 +878,7 @@ function DayDetailsDialog({
         <div className="max-h-[65dvh] overflow-y-auto p-4">
           {mode === "journal" ? (
             entries.length ? <div className="space-y-2.5">{entries.map((entry) => (
-              <article key={entry.id} className="flex items-center gap-3 rounded-xl border border-white/8 bg-[#101010] px-3 py-3">
+              <article key={entry.id} className="flex items-center gap-3 rounded-xl border border-white/8 bg-surface-raised px-3 py-3">
                 <span className={`grid size-10 shrink-0 place-items-center rounded-xl ${entry.side === "Long" ? "bg-emerald-400/10 text-emerald-300" : "bg-rose-400/10 text-rose-300"}`}>{entry.side === "Long" ? <TrendingUp className="size-4" /> : <TrendingDown className="size-4" />}</span>
                 <div className="min-w-0 flex-1"><p className="truncate text-sm font-semibold text-white">{entry.symbol}</p><p className="mt-1 truncate text-xs text-zinc-500">{entry.setup || entry.side}{entry.resultR ? ` · ${entry.resultR.toFixed(2)}R` : ""}</p></div>
                 <p className={`shrink-0 text-sm font-semibold tabular-nums ${tone(entry.pnl)}`}>{cash.format(entry.pnl)}</p>
@@ -888,7 +888,7 @@ function DayDetailsDialog({
             events.length ? <div className="space-y-2.5">{events.map((event) => {
               const date = eventLocalDate(event);
               return (
-                <article key={event.id} className="flex items-start gap-3 rounded-xl border border-white/8 bg-[#101010] px-3 py-3">
+                <article key={event.id} className="flex items-start gap-3 rounded-xl border border-white/8 bg-surface-raised px-3 py-3">
                   <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-black text-lg">{eventFlag(event)}</span>
                   <div className="min-w-0 flex-1"><p className="text-sm font-semibold leading-5 text-white">{event.event}</p><p className="mt-1 text-xs leading-5 text-zinc-500">{eventCurrency(event)} · Forecast {event.forecast || "—"} · Previous {event.previous || "—"}</p></div>
                   <div className="shrink-0 text-right"><p className="text-xs font-semibold tabular-nums text-zinc-300">{Number.isNaN(date.getTime()) ? "TBD" : date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</p><p className="mt-1 text-[10px] text-rose-300">★★★</p></div>
@@ -904,7 +904,7 @@ function DayDetailsDialog({
 
 function EmptyDayState({ label }: { label: string }) {
   return (
-    <div className="grid min-h-40 place-items-center rounded-xl border border-dashed border-white/10 bg-[#0a0a0a] px-5 text-center">
+    <div className="grid min-h-40 place-items-center rounded-xl border border-dashed border-white/10 bg-surface px-5 text-center">
       <div><CalendarDays className="mx-auto size-5 text-zinc-600" /><p className="mt-3 text-sm text-zinc-500">{label}</p></div>
     </div>
   );

@@ -89,7 +89,7 @@ export function MemberPanel({
   const offline = filtered.filter((member) => !onlineIds.has(member.id));
 
   return (
-    <aside className="flex h-full min-h-0 w-[236px] shrink-0 flex-col border-l border-white/[.065] bg-[#111214] text-zinc-300">
+    <aside className="flex h-full min-h-0 w-[236px] shrink-0 flex-col border-l border-white/[.065] bg-surface-raised text-zinc-300">
       <div className="flex h-12 shrink-0 items-center gap-2 border-b border-black/35 px-3">
         <UsersRound size={14} className="text-zinc-500" />
         <div className="min-w-0 flex-1">
@@ -107,7 +107,7 @@ export function MemberPanel({
       </div>
 
       <div className="shrink-0 p-2.5">
-        <label className="flex h-8 items-center gap-2 rounded-md border border-white/[.07] bg-[#0b0c0e] px-2.5 transition focus-within:border-white/[.15]">
+        <label className="flex h-8 items-center gap-2 rounded-md border border-white/[.07] bg-surface px-2.5 transition focus-within:border-white/[.15]">
           <Search size={12} className="text-zinc-600" />
           <input
             value={query}

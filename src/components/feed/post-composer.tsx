@@ -56,7 +56,7 @@ export function PostComposer({
   return (
     <>
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="max-h-[88dvh] overflow-hidden border-border bg-[#171717] p-0 sm:max-w-lg">
+        <DialogContent className="max-h-[88dvh] overflow-hidden border-border bg-surface-raised p-0 sm:max-w-lg">
           <DialogHeader className="border-b border-border px-4 py-4">
             <DialogTitle className="text-xl font-black">
               {t("shareTrade")}

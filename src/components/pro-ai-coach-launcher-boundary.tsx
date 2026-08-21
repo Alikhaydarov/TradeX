@@ -8,7 +8,7 @@ const AI_LAUNCHER_PARITY = [
   "contents",
   "[&>button]:fixed [&>button]:bottom-[5.75rem] [&>button]:right-4 [&>button]:block",
   "[&>button]:size-[3.1rem] [&>button]:min-w-[3.1rem] [&>button]:overflow-hidden [&>button]:rounded-full",
-  "[&>button]:border [&>button]:border-white/[0.13] [&>button]:bg-[#0b0b0b]",
+  "[&>button]:border [&>button]:border-white/[0.13] [&>button]:bg-surface",
   "[&>button]:p-0 [&>button]:gap-0 [&>button]:text-[0px] [&>button]:leading-none [&>button]:text-transparent",
   "[&>button]:shadow-[0_14px_36px_rgba(0,0,0,0.56)] [&>button]:backdrop-blur-[18px]",
   "[&>button]:isolate [&>button]:[-webkit-tap-highlight-color:transparent]",

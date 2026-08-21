@@ -140,7 +140,7 @@ function StartStep({
 
 function ProductPreview() {
   return (
-    <section className="relative overflow-hidden rounded-[28px] border border-white/10 bg-[#070707] p-3 shadow-[0_30px_100px_rgba(0,0,0,.6)] sm:p-4">
+    <section className="relative overflow-hidden rounded-[28px] border border-white/10 bg-surface p-3 shadow-[0_30px_100px_rgba(0,0,0,.6)] sm:p-4">
       <div className="flex items-center justify-between border-b border-white/8 px-2 pb-3">
         <div>
           <p className="text-xs font-black">Your workspace</p>

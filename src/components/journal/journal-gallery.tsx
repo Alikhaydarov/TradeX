@@ -18,7 +18,7 @@ function reviewScore(entry: JournalEntry) {
 
 function MiniStat({ label, value }: { label: string; value: string }) {
   return (
-    <div className="min-w-0 rounded-xl border border-white/8 bg-[#050505] px-3 py-2">
+    <div className="min-w-0 rounded-xl border border-white/8 bg-surface px-3 py-2">
       <p className="truncate text-[9px] font-bold uppercase tracking-[0.12em] text-zinc-600">
         {label}
       </p>
@@ -37,7 +37,7 @@ export function JournalGallery({
   onOpenTrade: (trade: JournalEntry) => void;
 }) {
   return (
-    <section className="overflow-hidden rounded-[1rem] border border-white/8 bg-[#070707]">
+    <section className="overflow-hidden rounded-[1rem] border border-white/8 bg-surface">
       <div className="flex flex-col gap-3 border-b border-white/8 px-5 py-4 sm:flex-row sm:items-center">
         <div>
           <h3 className="flex items-center gap-2 font-bold">
@@ -63,7 +63,7 @@ export function JournalGallery({
               key={trade.id}
               type="button"
               onClick={() => onOpenTrade(trade)}
-              className="group overflow-hidden rounded-[1rem] border border-white/8 bg-[#050505] text-left transition hover:border-white/20 hover:bg-[#0d0d0d]"
+              className="group overflow-hidden rounded-[1rem] border border-white/8 bg-surface text-left transition hover:border-white/20 hover:bg-surface"
             >
               {trade.imageUrl ? (
                 <div className="h-40 overflow-hidden border-b border-white/8 bg-black">
@@ -94,7 +94,7 @@ export function JournalGallery({
                       / {trade.date}
                     </p>
                   </div>
-                  <span className="rounded-xl bg-[#0d0d0d] px-2.5 py-1 text-[10px] font-black text-zinc-300">
+                  <span className="rounded-xl bg-surface px-2.5 py-1 text-[10px] font-black text-zinc-300">
                     {reviewScore(trade)}/6
                   </span>
                 </div>
@@ -103,7 +103,7 @@ export function JournalGallery({
                 </p>
                 <div className="mt-3 flex flex-wrap gap-1.5">
                   {trade.reviewCompleted ? (
-                    <span className="inline-flex items-center gap-1 rounded-lg bg-[#0d0d0d] px-2 py-1 text-[10px] font-bold text-zinc-300">
+                    <span className="inline-flex items-center gap-1 rounded-lg bg-surface px-2 py-1 text-[10px] font-bold text-zinc-300">
                       <CheckCircle2 size={11} /> Reviewed
                     </span>
                   ) : null}
@@ -124,7 +124,7 @@ export function JournalGallery({
                   {(trade.tags ?? []).slice(0, 3).map((tag) => (
                     <span
                       key={tag}
-                      className="rounded-lg bg-[#0d0d0d] px-2 py-1 text-[10px] text-zinc-400"
+                      className="rounded-lg bg-surface px-2 py-1 text-[10px] text-zinc-400"
                     >
                       {tag}
                     </span>

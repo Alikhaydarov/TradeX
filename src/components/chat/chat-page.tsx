@@ -133,7 +133,7 @@ function ChatRoomPanel({
   const clearReply = useCallback(() => setReply(null), []);
 
   return (
-    <div className="flex h-full min-h-0 bg-[#090909]">
+    <div className="flex h-full min-h-0 bg-surface">
       <div className="flex min-h-0 min-w-0 flex-1 flex-col">
         <ChatHeader
           roomKind={room.kind}
@@ -344,7 +344,7 @@ export function ChatPage({ communityId }: { communityId: string }) {
 
   if (loading) {
     return (
-      <div className="grid h-full min-h-0 place-items-center bg-[#090909] text-zinc-500">
+      <div className="grid h-full min-h-0 place-items-center bg-surface text-zinc-500">
         <LoaderCircle size={22} className="animate-spin" />
       </div>
     );
@@ -352,8 +352,8 @@ export function ChatPage({ communityId }: { communityId: string }) {
 
   if (!context) {
     return (
-      <div className="grid h-full min-h-0 place-items-center bg-[#090909] p-4 text-center">
-        <div className="max-w-sm rounded-xl border border-white/[.07] bg-[#111214] p-5">
+      <div className="grid h-full min-h-0 place-items-center bg-surface p-4 text-center">
+        <div className="max-w-sm rounded-xl border border-white/[.07] bg-surface-raised p-5">
           <MessageCircle size={22} className="mx-auto text-zinc-600" />
           <h1 className="mt-3 text-sm font-bold text-white">
             Chat unavailable
@@ -376,7 +376,7 @@ export function ChatPage({ communityId }: { communityId: string }) {
   return (
     <div
       data-community-chat
-      className="relative flex h-dvh min-h-0 overflow-hidden bg-[#090909] lg:h-[calc(100dvh-2rem)]"
+      className="relative flex h-dvh min-h-0 overflow-hidden bg-surface lg:h-[calc(100dvh-2rem)]"
     >
       <aside className="hidden w-[264px] shrink-0 border-r border-black/35 lg:block">
         {sidebar}
@@ -391,7 +391,7 @@ export function ChatPage({ communityId }: { communityId: string }) {
             onOpenSidebar={() => setMobileSidebarOpen(true)}
           />
         ) : (
-          <div className="grid h-full place-items-center bg-[#090909] text-center">
+          <div className="grid h-full place-items-center bg-surface text-center">
             <div>
               <MessageCircle size={28} className="mx-auto text-zinc-600" />
               <p className="mt-2 text-xs text-zinc-500">
@@ -418,7 +418,7 @@ export function ChatPage({ communityId }: { communityId: string }) {
             onClick={() => setMobileSidebarOpen(false)}
             aria-label="Close sidebar"
           />
-          <aside className="absolute inset-y-0 left-0 w-[min(280px,88vw)] border-r border-black/40 bg-[#111214] shadow-2xl">
+          <aside className="absolute inset-y-0 left-0 w-[min(280px,88vw)] border-r border-black/40 bg-surface-raised shadow-2xl">
             {sidebar}
           </aside>
         </div>

@@ -243,7 +243,7 @@ export function ProAiCoachLauncher() {
       </Button>
 
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="flex h-[min(92dvh,760px)] w-[calc(100vw-1rem)] flex-col gap-0 overflow-hidden rounded-[24px] border-white/10 bg-[#070707] p-0 sm:max-w-[760px] sm:rounded-[28px]">
+        <DialogContent className="flex h-[min(92dvh,760px)] w-[calc(100vw-1rem)] flex-col gap-0 overflow-hidden rounded-[24px] border-white/10 bg-surface p-0 sm:max-w-[760px] sm:rounded-[28px]">
           <DialogHeader className="shrink-0 border-b border-white/8 px-4 py-4 text-left sm:px-5">
             <div className="flex items-center gap-3 pr-9">
               <span className="grid size-10 shrink-0 place-items-center rounded-2xl border border-white/10 bg-white text-black">
@@ -278,12 +278,12 @@ export function ProAiCoachLauncher() {
             </div>
           </DialogHeader>
 
-          <div className="shrink-0 border-b border-white/8 bg-[#090909] px-4 py-3 sm:px-5">
+          <div className="shrink-0 border-b border-white/8 bg-surface px-4 py-3 sm:px-5">
             <Select value={accountId} onValueChange={setAccountId}>
               <SelectTrigger className="h-10 w-full rounded-xl border-white/10 bg-black px-3 text-sm sm:max-w-[360px]">
                 <SelectValue placeholder="Select trading account" />
               </SelectTrigger>
-              <SelectContent className="z-[170] border-white/10 bg-[#0b0b0b]">
+              <SelectContent className="z-[170] border-white/10 bg-surface">
                 {accounts.map((account) => (
                   <SelectItem key={account.id} value={account.id}>
                     {account.name}{account.firm ? ` · ${account.firm}` : ""}
@@ -309,10 +309,10 @@ export function ProAiCoachLauncher() {
                     </div>
                   ) : (
                     <div key={message.id} className="flex items-start gap-2.5">
-                      <span className="mt-0.5 grid size-7 shrink-0 place-items-center rounded-xl border border-white/10 bg-[#101010] text-zinc-300">
+                      <span className="mt-0.5 grid size-7 shrink-0 place-items-center rounded-xl border border-white/10 bg-surface-raised text-zinc-300">
                         <Sparkles className="size-3.5" />
                       </span>
-                      <article className="max-w-[calc(100%-2.5rem)] rounded-[20px] rounded-tl-md border border-white/8 bg-[#0d0d0d] px-4 py-3 text-sm leading-6 text-zinc-200 sm:max-w-[78%]">
+                      <article className="max-w-[calc(100%-2.5rem)] rounded-[20px] rounded-tl-md border border-white/8 bg-surface px-4 py-3 text-sm leading-6 text-zinc-200 sm:max-w-[78%]">
                         <p className="whitespace-pre-wrap break-words">{message.content}</p>
                       </article>
                     </div>
@@ -321,10 +321,10 @@ export function ProAiCoachLauncher() {
 
                 {sending ? (
                   <div className="flex items-start gap-2.5">
-                    <span className="grid size-7 shrink-0 place-items-center rounded-xl border border-white/10 bg-[#101010] text-zinc-300">
+                    <span className="grid size-7 shrink-0 place-items-center rounded-xl border border-white/10 bg-surface-raised text-zinc-300">
                       <Sparkles className="size-3.5" />
                     </span>
-                    <div className="flex items-center gap-1.5 rounded-[20px] rounded-tl-md border border-white/8 bg-[#0d0d0d] px-4 py-3">
+                    <div className="flex items-center gap-1.5 rounded-[20px] rounded-tl-md border border-white/8 bg-surface px-4 py-3">
                       <span className="size-1.5 animate-pulse rounded-full bg-zinc-500" />
                       <span className="size-1.5 animate-pulse rounded-full bg-zinc-500 [animation-delay:120ms]" />
                       <span className="size-1.5 animate-pulse rounded-full bg-zinc-500 [animation-delay:240ms]" />
@@ -335,7 +335,7 @@ export function ProAiCoachLauncher() {
               </div>
             ) : (
               <div className="grid min-h-full content-center py-8 text-center">
-                <span className="mx-auto grid size-14 place-items-center rounded-[20px] border border-white/10 bg-[#0d0d0d] text-white shadow-[0_18px_50px_rgba(0,0,0,.35)]">
+                <span className="mx-auto grid size-14 place-items-center rounded-[20px] border border-white/10 bg-surface text-white shadow-[0_18px_50px_rgba(0,0,0,.35)]">
                   <BrainCircuit className="size-6" />
                 </span>
                 <h3 className="mt-4 text-lg font-semibold tracking-[-0.02em] text-white">
@@ -352,7 +352,7 @@ export function ProAiCoachLauncher() {
                       type="button"
                       onClick={() => void sendMessage(item)}
                       disabled={!accountId || sending}
-                      className="rounded-full border border-white/10 bg-[#0b0b0b] px-3.5 py-2 text-xs text-zinc-400 transition hover:border-white/20 hover:bg-[#111111] hover:text-white disabled:cursor-not-allowed disabled:opacity-40"
+                      className="rounded-full border border-white/10 bg-surface px-3.5 py-2 text-xs text-zinc-400 transition hover:border-white/20 hover:bg-surface-raised hover:text-white disabled:cursor-not-allowed disabled:opacity-40"
                     >
                       {item}
                     </button>
@@ -363,7 +363,7 @@ export function ProAiCoachLauncher() {
           </div>
 
           <form
-            className="shrink-0 border-t border-white/8 bg-[#090909] p-3 sm:p-4"
+            className="shrink-0 border-t border-white/8 bg-surface p-3 sm:p-4"
             onSubmit={(event) => {
               event.preventDefault();
               void sendMessage();

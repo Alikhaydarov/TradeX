@@ -49,7 +49,7 @@ export function ProfileAchievements({
           {achievements.map((item) => (
             <article
               key={item.id}
-              className="group relative w-36 shrink-0 overflow-hidden rounded-lg border border-border bg-[#111111] sm:w-40"
+              className="group relative w-36 shrink-0 overflow-hidden rounded-lg border border-border bg-surface-raised sm:w-40"
             >
               <button
                 type="button"

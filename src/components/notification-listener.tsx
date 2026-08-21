@@ -233,7 +233,7 @@ export function NotificationListener() {
   return (
     <>
       {permission === "default" && !promptDismissed && (
-        <div className="fixed bottom-5 right-3 z-30 hidden max-w-[280px] rounded-2xl border border-white/10 bg-[#080808] p-3 text-xs text-zinc-200 shadow-2xl shadow-slate-950/40 sm:block">
+        <div className="fixed bottom-5 right-3 z-30 hidden max-w-[280px] rounded-2xl border border-white/10 bg-surface p-3 text-xs text-zinc-200 shadow-2xl shadow-slate-950/40 sm:block">
           <div className="flex gap-2 pr-7">
             <Bell size={16} className="mt-0.5 shrink-0 text-zinc-300" />
             <div>
@@ -251,7 +251,7 @@ export function NotificationListener() {
       )}
 
       {toast && (
-        <div className="fixed right-3 top-3 z-[80] w-[min(380px,calc(100vw-24px))] rounded-2xl border border-white/10 bg-[#080808] p-3 text-sm text-white shadow-2xl shadow-slate-950/50">
+        <div className="fixed right-3 top-3 z-[80] w-[min(380px,calc(100vw-24px))] rounded-2xl border border-white/10 bg-surface p-3 text-sm text-white shadow-2xl shadow-slate-950/50">
           <div className="flex items-start gap-3">
             <span className={`grid h-9 w-9 shrink-0 place-items-center rounded-2xl ${toastIsAi ? "bg-violet-400/10 text-violet-300" : "bg-white/[.06] text-zinc-300"}`}>
               {toastIsAi ? <BrainCircuit size={17} /> : <BellRing size={17} />}
