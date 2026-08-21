@@ -278,7 +278,7 @@ function SettingsContent() {
             <button
               type="button"
               onClick={closeOrGoBack}
-              className="grid size-11 shrink-0 place-items-center rounded-full text-zinc-300 transition hover:bg-white/[.06] hover:text-white active:scale-95"
+              className="grid size-11 shrink-0 place-items-center rounded-full text-ink-strong transition hover:bg-white/[.06] hover:text-white active:scale-95"
               aria-label={section ? "Back to settings" : "Close settings"}
             >
               <ArrowLeft size={24} strokeWidth={2} />
@@ -287,7 +287,7 @@ function SettingsContent() {
               <h2 className="truncate text-xl font-black tracking-[-0.025em] text-white sm:text-2xl">
                 Settings
               </h2>
-              <p className="mt-0.5 truncate text-sm text-zinc-500">
+              <p className="mt-0.5 truncate text-sm text-ink-mute">
                 @{displayHandle.replace(/^@/, "")}
               </p>
             </div>
@@ -295,7 +295,7 @@ function SettingsContent() {
               type="button"
               aria-label="Close settings"
               onClick={() => setSettingsOpen(false)}
-              className="hidden size-10 shrink-0 place-items-center rounded-xl border border-white/10 text-zinc-400 transition hover:bg-white/5 hover:text-white sm:grid"
+              className="hidden size-10 shrink-0 place-items-center rounded-xl border border-white/10 text-ink-soft transition hover:bg-white/5 hover:text-white sm:grid"
             >
               <X size={18} />
             </button>
@@ -312,7 +312,7 @@ function SettingsContent() {
             ) : (
               <main className="mx-auto w-full max-w-4xl space-y-4 p-4 sm:p-6">
                 {loading ? (
-                  <div className="grid min-h-[50dvh] place-items-center text-sm text-zinc-500">
+                  <div className="grid min-h-[50dvh] place-items-center text-sm text-ink-mute">
                     <span className="flex items-center gap-2">
                       <Spinner className="size-4" /> Loading settings
                     </span>
@@ -334,7 +334,7 @@ function SettingsContent() {
                         <p className="truncate font-black text-white">
                           {username || "username"}
                         </p>
-                        <p className="truncate text-sm text-zinc-500">
+                        <p className="truncate text-sm text-ink-mute">
                           {email}
                         </p>
                       </div>
@@ -365,7 +365,7 @@ function SettingsContent() {
                         <p
                           className={`text-xs ${
                             validateUsername(username).valid
-                              ? "text-zinc-500"
+                              ? "text-ink-mute"
                               : "text-rose-300"
                           }`}
                         >
@@ -378,7 +378,7 @@ function SettingsContent() {
                         <Input
                           value={email}
                           readOnly
-                          className="text-zinc-500"
+                          className="text-ink-mute"
                         />
                       </Field>
                     </div>
@@ -512,9 +512,9 @@ function SettingsContent() {
                         </Select>
                       </Field>
                       <Field label="Typography">
-                        <div className="flex h-10 items-center rounded-xl border border-white/8 bg-surface px-3 text-sm font-medium text-zinc-300">
+                        <div className="flex h-10 items-center rounded-xl border border-white/8 bg-surface px-3 text-sm font-medium text-ink-strong">
                           DM Sans
-                          <span className="ml-auto text-[10px] text-zinc-600">
+                          <span className="ml-auto text-[10px] text-ink-subtle">
                             Tradoxy default
                           </span>
                         </div>
@@ -549,7 +549,7 @@ function SettingsContent() {
                         ))}
                       </div>
                     ) : (
-                      <div className="rounded-2xl border border-dashed border-white/10 bg-surface px-4 py-8 text-center text-sm text-zinc-500">
+                      <div className="rounded-2xl border border-dashed border-white/10 bg-surface px-4 py-8 text-center text-sm text-ink-mute">
                         No custom symbols yet.
                       </div>
                     )}
@@ -629,14 +629,14 @@ function SettingsOverview({
 }) {
   return (
     <main className="mx-auto w-full max-w-3xl px-4 py-4 sm:px-6 sm:py-6">
-      <label className="flex h-14 items-center gap-3 rounded-full bg-surface px-5 text-zinc-500 ring-1 ring-white/[.025] focus-within:ring-white/10 sm:h-16">
+      <label className="flex h-14 items-center gap-3 rounded-full bg-surface px-5 text-ink-mute ring-1 ring-white/[.025] focus-within:ring-white/10 sm:h-16">
         <Search size={25} strokeWidth={1.8} className="shrink-0" />
         <input
           type="search"
           value={query}
           onChange={(event) => onQueryChange(event.target.value)}
           placeholder="Search settings"
-          className="min-w-0 flex-1 bg-transparent text-[16px] text-white outline-none placeholder:text-zinc-500"
+          className="min-w-0 flex-1 bg-transparent text-[16px] text-white outline-none placeholder:text-ink-mute"
         />
       </label>
 
@@ -648,27 +648,27 @@ function SettingsOverview({
             onClick={() => onOpen(id)}
             className="group flex min-h-[104px] w-full items-start gap-4 px-1 py-5 text-left transition hover:bg-white/[.025] active:bg-white/[.045] sm:rounded-2xl sm:px-4"
           >
-            <span className="grid size-12 shrink-0 place-items-center text-zinc-500 transition group-hover:text-zinc-300">
+            <span className="grid size-12 shrink-0 place-items-center text-ink-mute transition group-hover:text-ink-strong">
               <Icon size={27} strokeWidth={1.75} />
             </span>
             <span className="min-w-0 flex-1 pt-0.5">
               <strong className="block text-[17px] font-semibold leading-6 text-zinc-100 sm:text-lg">
                 {title}
               </strong>
-              <span className="mt-1 block text-[14px] leading-5 text-zinc-500 sm:text-[15px] sm:leading-6">
+              <span className="mt-1 block text-[14px] leading-5 text-ink-mute sm:text-[15px] sm:leading-6">
                 {description}
               </span>
             </span>
             <ChevronRight
               size={19}
-              className="mt-3 shrink-0 text-zinc-700 transition group-hover:translate-x-0.5 group-hover:text-zinc-400"
+              className="mt-3 shrink-0 text-ink-faint transition group-hover:translate-x-0.5 group-hover:text-ink-soft"
             />
           </button>
         ))}
       </div>
 
       {!items.length ? (
-        <div className="grid min-h-52 place-items-center text-center text-sm text-zinc-500">
+        <div className="grid min-h-52 place-items-center text-center text-sm text-ink-mute">
           No settings match “{query}”.
         </div>
       ) : null}
@@ -689,7 +689,7 @@ function Panel({
     <section className="space-y-4 rounded-[1.4rem] border border-white/8 bg-surface p-4 sm:p-5">
       <div>
         <h3 className="text-lg font-black text-white">{title}</h3>
-        <p className="mt-1 text-sm leading-6 text-zinc-500">{description}</p>
+        <p className="mt-1 text-sm leading-6 text-ink-mute">{description}</p>
       </div>
       <Separator className="bg-white/8" />
       {children}
@@ -706,7 +706,7 @@ function Field({
 }) {
   return (
     <label className="block space-y-2">
-      <span className="text-sm font-semibold text-zinc-300">{label}</span>
+      <span className="text-sm font-semibold text-ink-strong">{label}</span>
       {children}
     </label>
   );
@@ -725,7 +725,7 @@ function SettingRow({
     <div className="flex items-center justify-between gap-4 rounded-2xl border border-white/8 bg-surface p-4">
       <div>
         <p className="font-semibold text-white">{title}</p>
-        <p className="mt-1 text-sm leading-5 text-zinc-500">{description}</p>
+        <p className="mt-1 text-sm leading-5 text-ink-mute">{description}</p>
       </div>
       <div className="shrink-0">{children}</div>
     </div>
@@ -743,8 +743,8 @@ function InfoCard({
 }) {
   return (
     <div className="min-w-0 rounded-2xl border border-white/8 bg-surface p-4">
-      <Icon size={17} className="text-zinc-400" />
-      <p className="mt-3 text-[10px] font-black uppercase tracking-wider text-zinc-500">
+      <Icon size={17} className="text-ink-soft" />
+      <p className="mt-3 text-[10px] font-black uppercase tracking-wider text-ink-mute">
         {label}
       </p>
       <p className="mt-1 truncate text-sm font-bold capitalize text-white">
@@ -756,7 +756,7 @@ function InfoCard({
 
 function StatusMessage({ children }: { children: React.ReactNode }) {
   return (
-    <p role="status" aria-live="polite" className="text-sm text-zinc-400">
+    <p role="status" aria-live="polite" className="text-sm text-ink-soft">
       {children}
     </p>
   );
@@ -781,14 +781,14 @@ function PlanCard({
     <div className="flex min-h-56 flex-col rounded-[1.25rem] border border-white/8 bg-surface p-4">
       <p className="text-sm font-black text-white">{title}</p>
       <p className="mt-3 text-2xl font-black text-white">{price}</p>
-      <p className="mt-2 flex-1 text-sm leading-6 text-zinc-500">
+      <p className="mt-2 flex-1 text-sm leading-6 text-ink-mute">
         {description}
       </p>
       <Button
         type="button"
         className={
           disabled
-            ? "bg-white/6 text-zinc-500 hover:bg-white/6"
+            ? "bg-white/6 text-ink-mute hover:bg-white/6"
             : "bg-white text-black hover:bg-zinc-200"
         }
         disabled={disabled}
@@ -817,9 +817,9 @@ function RowAction({
     >
       <div>
         <p className="font-semibold text-white">{label}</p>
-        <p className="mt-1 text-sm text-zinc-500">{description}</p>
+        <p className="mt-1 text-sm text-ink-mute">{description}</p>
       </div>
-      <ExternalLink size={16} className="shrink-0 text-zinc-400" />
+      <ExternalLink size={16} className="shrink-0 text-ink-soft" />
     </button>
   );
 }

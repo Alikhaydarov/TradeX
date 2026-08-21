@@ -17,7 +17,7 @@ export default function ErrorBoundary({
     <div className="grid min-h-[60vh] place-items-center px-4">
       <div className="w-full max-w-sm rounded-xl border border-white/10 bg-surface p-5 text-center shadow-2xl">
         <h2 className="text-base font-bold text-white">This page could not load</h2>
-        <p className="mt-2 text-sm leading-6 text-zinc-400">
+        <p className="mt-2 text-sm leading-6 text-ink-soft">
           Your workspace is still available. Try loading this section again.
         </p>
         <button

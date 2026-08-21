@@ -82,7 +82,7 @@ function MessageBubbleImpl({
             className="size-10 rounded-full border border-white/[.07] text-[10px]"
           />
         ) : (
-          <span className="block pt-1 text-center text-[8px] text-transparent transition group-hover:text-zinc-600">
+          <span className="block pt-1 text-center text-[8px] text-transparent transition group-hover:text-ink-subtle">
             {timeLabel(message.createdAt)}
           </span>
         )}
@@ -95,10 +95,10 @@ function MessageBubbleImpl({
               {message.sender.fullName}
             </span>
             {message.sender.isVerified ? <VerifiedBadge size={12} /> : null}
-            <span className="text-[9px] text-zinc-600">{timeLabel(message.createdAt)}</span>
-            {message.editedAt ? <span className="text-[9px] text-zinc-600">(edited)</span> : null}
-            {message.pending ? <span className="text-[9px] text-zinc-500">sending…</span> : null}
-            {message.failed ? <span className="text-[9px] font-semibold text-rose-400">failed to send</span> : null}
+            <span className="text-[10px] text-ink-subtle">{timeLabel(message.createdAt)}</span>
+            {message.editedAt ? <span className="text-[10px] text-ink-subtle">(edited)</span> : null}
+            {message.pending ? <span className="text-[10px] text-ink-mute">sending…</span> : null}
+            {message.failed ? <span className="text-[10px] font-semibold text-rose-400">failed to send</span> : null}
           </div>
         ) : null}
 
@@ -107,9 +107,9 @@ function MessageBubbleImpl({
             type="button"
             className="mt-1 flex max-w-full items-center gap-1.5 border-l-2 border-l-zinc-500 pl-2 text-left"
           >
-            <CornerUpLeft size={11} className="shrink-0 text-zinc-500" />
-            <span className="shrink-0 text-[10px] font-semibold text-zinc-400">{message.reply.senderName}</span>
-            <span className="truncate text-[10px] text-zinc-600">{message.reply.content}</span>
+            <CornerUpLeft size={11} className="shrink-0 text-ink-mute" />
+            <span className="shrink-0 text-[10px] font-semibold text-ink-soft">{message.reply.senderName}</span>
+            <span className="truncate text-[10px] text-ink-subtle">{message.reply.content}</span>
           </button>
         ) : null}
 
@@ -131,7 +131,7 @@ function MessageBubbleImpl({
               autoFocus
               className="min-h-16 resize-none rounded-md border-white/[.08] bg-[#272a2f] text-[13px] leading-5"
             />
-            <div className="flex items-center gap-1.5 text-[9px] text-zinc-600">
+            <div className="flex items-center gap-1.5 text-[10px] text-ink-subtle">
               Esc to cancel · Enter to save
               <Button type="button" size="sm" onClick={() => void save()} disabled={busy} className="ml-auto h-7 px-2 text-[10px]">
                 <Check size={12} /> Save
@@ -142,9 +142,9 @@ function MessageBubbleImpl({
             </div>
           </div>
         ) : message.deletedAt ? (
-          <p className="mt-0.5 text-[13px] italic text-zinc-600">Message deleted</p>
+          <p className="mt-0.5 text-[13px] italic text-ink-subtle">Message deleted</p>
         ) : (
-          <p className="mt-0.5 max-w-[860px] whitespace-pre-wrap break-words text-[14px] leading-[1.45] text-zinc-300">
+          <p className="mt-0.5 max-w-[860px] whitespace-pre-wrap break-words text-[14px] leading-[1.45] text-ink-strong">
             {message.content}
           </p>
         )}
@@ -159,7 +159,7 @@ function MessageBubbleImpl({
                 className={`inline-flex h-6 items-center gap-1 rounded-md border px-1.5 text-[10px] transition ${
                   reaction.reactedByMe
                     ? "border-indigo-400/35 bg-indigo-400/[.12] text-indigo-200"
-                    : "border-white/[.07] bg-[#202226] text-zinc-400 hover:border-white/[.12] hover:text-zinc-100"
+                    : "border-white/[.07] bg-[#202226] text-ink-soft hover:border-white/[.12] hover:text-zinc-100"
                 }`}
               >
                 <span>{reaction.emoji}</span>
@@ -180,7 +180,7 @@ function MessageBubbleImpl({
               senderName: message.sender.fullName,
               deleted: false,
             })}
-            className="grid size-8 place-items-center text-zinc-400 hover:bg-white/[.06] hover:text-white"
+            className="grid size-8 place-items-center text-ink-soft hover:bg-white/[.06] hover:text-white"
             aria-label="Reply"
           >
             <CornerUpLeft size={13} />
@@ -196,12 +196,12 @@ function MessageBubbleImpl({
               {emoji}
             </button>
           ))}
-          <span className="grid size-8 place-items-center text-zinc-500"><SmilePlus size={13} /></span>
+          <span className="grid size-8 place-items-center text-ink-mute"><SmilePlus size={13} /></span>
           {mine ? (
             <button
               type="button"
               onClick={() => setEditing(true)}
-              className="grid size-8 place-items-center text-zinc-400 hover:bg-white/[.06] hover:text-white"
+              className="grid size-8 place-items-center text-ink-soft hover:bg-white/[.06] hover:text-white"
               aria-label="Edit"
             >
               <Pencil size={13} />
@@ -211,7 +211,7 @@ function MessageBubbleImpl({
             <button
               type="button"
               onClick={() => void remove()}
-              className="grid size-8 place-items-center text-zinc-400 hover:bg-rose-400/10 hover:text-rose-300"
+              className="grid size-8 place-items-center text-ink-soft hover:bg-rose-400/10 hover:text-rose-300"
               aria-label="Delete"
             >
               <Trash2 size={13} />

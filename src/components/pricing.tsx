@@ -223,12 +223,12 @@ export function Pricing({ onLogin }: { onLogin?: () => void } = {}) {
               <h1 className="mt-4 max-w-2xl text-3xl font-semibold tracking-[-0.04em] text-white sm:text-5xl">
                 Choose the tools your trading workflow actually needs.
               </h1>
-              <p className="mt-4 max-w-2xl text-sm leading-6 text-zinc-400">
+              <p className="mt-4 max-w-2xl text-sm leading-6 text-ink-soft">
                 Standard unlocks verification and account sync. Pro adds Tradoxy AI chat, account reports and smart notifications generated from the selected journal account.
               </p>
               <div className="mt-5 flex flex-wrap gap-2">
                 {["Verified badge", "Account imports", "Tradoxy AI on Pro", "Server-side access control"].map((item) => (
-                  <span key={item} className="rounded-full border border-white/10 bg-surface px-3 py-2 text-xs font-semibold text-zinc-300">
+                  <span key={item} className="rounded-full border border-white/10 bg-surface px-3 py-2 text-xs font-semibold text-ink-strong">
                     {item}
                   </span>
                 ))}
@@ -240,7 +240,7 @@ export function Pricing({ onLogin }: { onLogin?: () => void } = {}) {
                 <CardTitle className="flex items-center gap-2 text-white">
                   <Sparkles className="size-5 text-amber-300" /> Current account access
                 </CardTitle>
-                <CardDescription className="text-zinc-400">
+                <CardDescription className="text-ink-soft">
                   {premium?.isPremium
                     ? `Your ${premium.plan === "pro" ? "Pro" : "Standard"} access is active.`
                     : "Free accounts can still use the feed, profile and manual journal."}
@@ -250,7 +250,7 @@ export function Pricing({ onLogin }: { onLogin?: () => void } = {}) {
                 {activeFeatures.map((feature) => (
                   <div key={feature.label} className="flex items-center justify-between rounded-2xl border border-white/8 bg-surface px-4 py-3">
                     <span className="text-sm font-semibold text-white">{feature.label}</span>
-                    <span className={`rounded-full px-2.5 py-1 text-[11px] font-bold ${feature.active ? "bg-emerald-400/15 text-emerald-300" : "bg-surface-raised text-zinc-500"}`}>
+                    <span className={`rounded-full px-2.5 py-1 text-[11px] font-bold ${feature.active ? "bg-emerald-400/15 text-emerald-300" : "bg-surface-raised text-ink-mute"}`}>
                       {feature.active ? "Enabled" : "Locked"}
                     </span>
                   </div>
@@ -280,12 +280,12 @@ export function Pricing({ onLogin }: { onLogin?: () => void } = {}) {
           </div>
         ) : null}
         {!billingConfigured && missingEnv.length ? (
-          <div className="mt-3 rounded-2xl border border-white/10 bg-surface px-4 py-3 text-xs text-zinc-400">
+          <div className="mt-3 rounded-2xl border border-white/10 bg-surface px-4 py-3 text-xs text-ink-soft">
             Missing environment values: {missingEnv.join(", ")}
           </div>
         ) : null}
         {!billingConfigured && unlinkedPlans.length ? (
-          <div className="mt-3 rounded-2xl border border-white/10 bg-surface px-4 py-3 text-xs text-zinc-400">
+          <div className="mt-3 rounded-2xl border border-white/10 bg-surface px-4 py-3 text-xs text-ink-soft">
             Missing Stripe plan links: {unlinkedPlans.map((plan) => `${plan.productName} (${plan.name})`).join(", ")}
           </div>
         ) : null}
@@ -339,11 +339,11 @@ export function Pricing({ onLogin }: { onLogin?: () => void } = {}) {
             return (
               <Card key={String(title)} className="border-white/8 bg-surface py-0">
                 <CardContent className="p-4">
-                  <span className="grid size-10 place-items-center rounded-xl border border-white/8 bg-black text-zinc-300">
+                  <span className="grid size-10 place-items-center rounded-xl border border-white/8 bg-black text-ink-strong">
                     <ItemIcon className="size-4" />
                   </span>
                   <h3 className="mt-4 text-sm font-semibold text-white">{String(title)}</h3>
-                  <p className="mt-2 text-xs leading-5 text-zinc-500">{String(body)}</p>
+                  <p className="mt-2 text-xs leading-5 text-ink-mute">{String(body)}</p>
                 </CardContent>
               </Card>
             );
@@ -385,11 +385,11 @@ function PlanCard({
               <CardTitle className="text-white">{name}</CardTitle>
               {highlighted ? <Badge variant="secondary" className="rounded-full bg-amber-300/15 text-amber-200">Tradoxy AI</Badge> : null}
             </div>
-            <CardDescription className="mt-2 text-zinc-400">{tagline}</CardDescription>
+            <CardDescription className="mt-2 text-ink-soft">{tagline}</CardDescription>
           </div>
           <div className="text-right">
             <p className="text-2xl font-semibold text-white">{price}</p>
-            <p className="text-xs text-zinc-500">{price === "$0" ? "forever" : "per month"}</p>
+            <p className="text-xs text-ink-mute">{price === "$0" ? "forever" : "per month"}</p>
           </div>
         </div>
       </CardHeader>

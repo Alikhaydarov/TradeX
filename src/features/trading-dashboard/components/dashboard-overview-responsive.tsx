@@ -180,7 +180,7 @@ function SectionHeader({
         <h2 className="truncate text-[14px] font-bold leading-5 tracking-[-0.02em] text-white sm:text-[15px]">
           {title}
         </h2>
-        <p className="truncate text-[10px] font-medium leading-4 text-zinc-500 sm:text-[11px]">
+        <p className="truncate text-[10px] font-medium leading-4 text-ink-mute sm:text-[11px]">
           {description}
         </p>
       </div>
@@ -205,7 +205,7 @@ function MetricRing({ value }: { value: number }) {
           <p className="text-base font-bold leading-none tabular-nums text-white sm:text-lg">
             {Math.round(bounded)}%
           </p>
-          <p className="mt-1 text-[7px] font-bold uppercase tracking-[0.12em] text-zinc-500 sm:text-[8px]">
+          <p className="mt-1 text-[7px] font-bold uppercase tracking-[0.12em] text-ink-mute sm:text-[8px]">
             Win rate
           </p>
         </div>
@@ -231,7 +231,7 @@ function WeeklyStrip({
             ? "text-emerald-300"
             : negative
               ? "text-rose-300"
-              : "text-zinc-500"
+              : "text-ink-mute"
 
           return (
             <article
@@ -251,7 +251,7 @@ function WeeklyStrip({
                 <p className={`truncate text-[12px] font-bold tabular-nums ${tone}`}>
                   {day.trades ? formatTradePnl(day.pnl) : "—"}
                 </p>
-                <p className="shrink-0 text-[10px] text-zinc-500">
+                <p className="shrink-0 text-[10px] text-ink-mute">
                   {day.trades} trade{day.trades === 1 ? "" : "s"}
                 </p>
               </div>
@@ -281,7 +281,7 @@ function BreakdownRow({
 
   return (
     <div className="flex min-h-0 items-center justify-between gap-3 py-1.5">
-      <span className="truncate text-[10px] leading-none text-zinc-400 sm:text-[11px]">
+      <span className="truncate text-[10px] leading-none text-ink-soft sm:text-[11px]">
         {label}
       </span>
       <strong className={`shrink-0 text-[10px] leading-none tabular-nums sm:text-[11px] ${valueClass}`}>
@@ -411,15 +411,15 @@ export function DashboardOverviewResponsive({
           <h1 className="truncate text-[22px] font-medium tracking-[-0.04em] text-white min-[420px]:text-[25px] sm:text-[27px]">
             Welcome back, {username}
           </h1>
-          <p className="mt-0.5 text-[11px] font-medium text-zinc-500 sm:text-[12px]">
+          <p className="mt-0.5 text-[11px] font-medium text-ink-mute sm:text-[12px]">
             {todayLabel}
           </p>
         </div>
         <div className="hidden items-center gap-2 sm:flex">
-          <span className="rounded-lg border border-white/10 bg-surface px-3 py-2 text-[11px] font-semibold text-zinc-300">
+          <span className="rounded-lg border border-white/10 bg-surface px-3 py-2 text-[11px] font-semibold text-ink-strong">
             Current week
           </span>
-          <span className="flex items-center gap-2 rounded-lg border border-white/10 bg-surface px-3 py-2 text-[11px] font-semibold text-zinc-300">
+          <span className="flex items-center gap-2 rounded-lg border border-white/10 bg-surface px-3 py-2 text-[11px] font-semibold text-ink-strong">
             <span
               className={`size-1.5 rounded-full ${
                 account.status === "Active" ? "bg-emerald-400" : "bg-amber-400"
@@ -436,7 +436,7 @@ export function DashboardOverviewResponsive({
         <Card className={`${CARD_SURFACE} h-full`}>
           <CardHeader className="flex shrink-0 flex-col gap-3 border-b border-white/8 px-3.5 py-3 sm:flex-row sm:items-start sm:justify-between sm:px-4 sm:py-3.5">
             <div className="min-w-0">
-              <CardDescription className="text-[10px] font-medium text-zinc-500 sm:text-[11px]">
+              <CardDescription className="text-[10px] font-medium text-ink-mute sm:text-[11px]">
                 Account Balance
               </CardDescription>
               <CardTitle className="mt-1 truncate text-[27px] font-medium tracking-[-0.05em] text-white sm:text-[32px]">
@@ -452,7 +452,7 @@ export function DashboardOverviewResponsive({
             </div>
             <div className="flex shrink-0 gap-5 text-left sm:text-right">
               <div>
-                <p className="text-[9px] font-semibold uppercase tracking-[0.12em] text-zinc-500">
+                <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-ink-mute">
                   Start
                 </p>
                 <p className="mt-1 text-[11px] font-semibold tabular-nums text-zinc-200 sm:text-[12px]">
@@ -460,7 +460,7 @@ export function DashboardOverviewResponsive({
                 </p>
               </div>
               <div>
-                <p className="text-[9px] font-semibold uppercase tracking-[0.12em] text-zinc-500">
+                <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-ink-mute">
                   Return
                 </p>
                 <p
@@ -576,12 +576,12 @@ export function DashboardOverviewResponsive({
                       <p className="truncate text-[12px] font-semibold leading-4 text-white">
                         {item.symbol}
                       </p>
-                      <p className="truncate text-[9px] leading-3 text-zinc-500">
+                      <p className="truncate text-[10px] leading-3 text-ink-mute">
                         {item.trades} trade{item.trades === 1 ? "" : "s"}
                       </p>
                     </div>
                     <p
-                      className={`hidden shrink-0 text-[9px] font-semibold tabular-nums min-[450px]:block ${
+                      className={`hidden shrink-0 text-[10px] font-semibold tabular-nums min-[450px]:block ${
                         item.pnl >= 0 ? "text-emerald-300" : "text-rose-300"
                       }`}
                     >
@@ -593,7 +593,7 @@ export function DashboardOverviewResponsive({
                 <div className="col-span-full grid h-full place-items-center text-center">
                   <div>
                     <p className="text-2xl font-medium text-white">N/A</p>
-                    <p className="mt-1 text-[10px] text-zinc-500">No symbol data yet</p>
+                    <p className="mt-1 text-[10px] text-ink-mute">No symbol data yet</p>
                   </div>
                 </div>
               )}
@@ -622,11 +622,11 @@ export function DashboardOverviewResponsive({
             </CardHeader>
             <CardContent className="flex min-h-0 flex-1 items-center justify-between gap-2 px-3.5 py-2">
               <div className="min-w-0 text-[10px] leading-none sm:text-[11px]">
-                <p className="truncate text-zinc-400">Winning trades</p>
+                <p className="truncate text-ink-soft">Winning trades</p>
                 <p className="mt-1.5 font-semibold tabular-nums text-emerald-300">
                   {stats.wins}
                 </p>
-                <p className="mt-3 truncate text-zinc-400">Losing trades</p>
+                <p className="mt-3 truncate text-ink-soft">Losing trades</p>
                 <p className="mt-1.5 font-semibold tabular-nums text-rose-300">
                   {stats.losses}
                 </p>
@@ -657,7 +657,7 @@ export function DashboardOverviewResponsive({
                   />
                 ))}
               </div>
-              <p className="self-end truncate pt-2 text-[9px] leading-none text-zinc-500 sm:text-[10px]">
+              <p className="self-end truncate pt-2 text-[10px] leading-none text-ink-mute sm:text-[10px]">
                 {stats.pf >= 1 ? "Positive expectancy" : "Below break-even"}
               </p>
             </CardContent>
@@ -713,7 +713,7 @@ export function DashboardOverviewResponsive({
                         {trade.side === "Long" ? "Buy" : "Sell"}
                       </span>
                     </div>
-                    <p className="truncate text-[9px] text-zinc-500">
+                    <p className="truncate text-[10px] text-ink-mute">
                       {trade.setup || trade.session || trade.rawDate}
                     </p>
                   </div>
@@ -725,7 +725,7 @@ export function DashboardOverviewResponsive({
                     >
                       {formatTradePnl(trade.pnl)}
                     </p>
-                    <p className="text-[8px] text-zinc-500">
+                    <p className="text-[8px] text-ink-mute">
                       {trade.resultR
                         ? `${trade.resultR.toFixed(2)}R`
                         : trade.rawDate}
@@ -767,7 +767,7 @@ export function DashboardOverviewResponsive({
                   onClick={() => void loadNews()}
                   disabled={newsLoading}
                   aria-label="Refresh market news"
-                  className="text-zinc-400"
+                  className="text-ink-soft"
                 >
                   <RefreshCw className={`size-3.5 ${newsLoading ? "animate-spin" : ""}`} />
                 </Button>
@@ -793,19 +793,19 @@ export function DashboardOverviewResponsive({
                       key={item.id}
                       className="grid h-[43px] grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2 border-b border-white/8 px-1 last:border-0 min-[420px]:gap-2.5 min-[420px]:px-1.5"
                     >
-                      <span className="grid h-7 min-w-9 place-items-center rounded-lg border border-white/10 bg-surface-raised px-1 text-[8px] font-bold text-zinc-200 min-[420px]:min-w-10 min-[420px]:px-1.5 min-[420px]:text-[9px]">
+                      <span className="grid h-7 min-w-9 place-items-center rounded-lg border border-white/10 bg-surface-raised px-1 text-[8px] font-bold text-zinc-200 min-[420px]:min-w-10 min-[420px]:px-1.5 min-[420px]:text-[10px]">
                         {eventCurrency(item)}
                       </span>
                       <div className="min-w-0">
                         <p className="truncate text-[10px] font-semibold text-white min-[420px]:text-[11px]">
                           {item.event}
                         </p>
-                        <p className="truncate text-[8px] text-zinc-500 min-[420px]:text-[9px]">
+                        <p className="truncate text-[8px] text-ink-mute min-[420px]:text-[10px]">
                           {item.country}
                         </p>
                       </div>
                       <div className="text-right">
-                        <p className="text-[9px] font-semibold tabular-nums text-zinc-200 min-[420px]:text-[10px]">
+                        <p className="text-[10px] font-semibold tabular-nums text-zinc-200 min-[420px]:text-[10px]">
                           {Number.isNaN(date.getTime())
                             ? "TBD"
                             : date.toLocaleTimeString([], {
@@ -826,8 +826,8 @@ export function DashboardOverviewResponsive({
             ) : (
               <div className="grid h-full place-items-center text-center">
                 <div>
-                  <CalendarDays className="mx-auto size-4 text-zinc-500" />
-                  <p className="mt-2 text-[12px] font-semibold text-zinc-300">
+                  <CalendarDays className="mx-auto size-4 text-ink-mute" />
+                  <p className="mt-2 text-[12px] font-semibold text-ink-strong">
                     No high-impact releases found
                   </p>
                 </div>

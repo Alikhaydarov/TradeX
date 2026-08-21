@@ -111,7 +111,7 @@ export function MessageList({
 
   if (loading) {
     return (
-      <div className="grid min-h-0 flex-1 place-items-center bg-surface-raised text-zinc-500">
+      <div className="grid min-h-0 flex-1 place-items-center bg-surface-raised text-ink-mute">
         <LoaderCircle size={20} className="animate-spin" />
       </div>
     );
@@ -126,11 +126,11 @@ export function MessageList({
       >
         <div className="mx-auto w-full max-w-[1120px] pb-3">
           {loadingOlder ? (
-            <div className="flex h-9 items-center justify-center text-zinc-600">
+            <div className="flex h-9 items-center justify-center text-ink-subtle">
               <LoaderCircle size={14} className="animate-spin" />
             </div>
           ) : hasOlder ? (
-            <div className="py-1.5 text-center text-[9px] text-zinc-600">Scroll up for older messages</div>
+            <div className="py-1.5 text-center text-[10px] text-ink-subtle">Scroll up for older messages</div>
           ) : null}
 
           {!messages.length ? (
@@ -140,7 +140,7 @@ export function MessageList({
                   <Hash size={27} strokeWidth={2.4} />
                 </div>
                 <h3 className="mt-4 text-xl font-extrabold tracking-[-0.03em] text-zinc-100">Welcome to the conversation</h3>
-                <p className="mt-1 text-[12px] leading-5 text-zinc-500">
+                <p className="mt-1 text-[12px] leading-5 text-ink-mute">
                   This is the beginning of this channel. Messages, replies and reactions appear here instantly.
                 </p>
               </div>
@@ -150,7 +150,7 @@ export function MessageList({
               <section key={group.day}>
                 <div className="my-4 flex items-center gap-3 px-4">
                   <span className="h-px flex-1 bg-white/[.055]" />
-                  <span className="text-[10px] font-semibold text-zinc-500">{dayLabel(group.day)}</span>
+                  <span className="text-[10px] font-semibold text-ink-mute">{dayLabel(group.day)}</span>
                   <span className="h-px flex-1 bg-white/[.055]" />
                 </div>
                 <div>

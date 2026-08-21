@@ -105,13 +105,13 @@ export function WorkspaceTopbar({ section }: { section: Section }) {
               {page}
             </h1>
             {isAccountScoped ? (
-              <span className="hidden max-w-[220px] items-center gap-2 rounded-full border border-white/10 bg-white/[0.045] px-2.5 py-1 text-[10px] font-semibold text-zinc-300 lg:inline-flex">
+              <span className="hidden max-w-[220px] items-center gap-2 rounded-full border border-white/10 bg-white/[0.045] px-2.5 py-1 text-[10px] font-semibold text-ink-strong lg:inline-flex">
                 <span className="size-1.5 shrink-0 rounded-full bg-emerald-400 shadow-[0_0_10px_rgba(52,211,153,.6)]" />
                 <span className="truncate">{workspace}</span>
               </span>
             ) : null}
           </div>
-          <p className="mt-1 truncate text-[10px] font-medium text-zinc-500 lg:text-[11px]">
+          <p className="mt-1 truncate text-[10px] font-medium text-ink-mute lg:text-[11px]">
             {isAccountScoped
               ? "Trading performance workspace"
               : "Tradoxy workspace"}
@@ -139,7 +139,7 @@ export function WorkspaceTopbar({ section }: { section: Section }) {
       {isAccountScoped ? (
         <div className="mt-2.5 flex items-center gap-2.5 border-t border-white/8 pt-2.5 lg:hidden">
           <div className="min-w-0 flex-1">
-            <p className="truncate text-[9px] font-semibold uppercase tracking-[0.14em] text-zinc-500">
+            <p className="truncate text-[10px] font-semibold uppercase tracking-[0.14em] text-ink-mute">
               Active account
             </p>
             <p className="mt-0.5 truncate text-xs font-semibold text-zinc-200">
@@ -210,7 +210,7 @@ function PnlModeMenu({
               {item.label}
             </span>
             {pnlMode === item.value ? (
-              <span className="rounded-full bg-emerald-500/12 px-2 py-0.5 text-[9px] font-black uppercase tracking-wide text-emerald-300">
+              <span className="rounded-full bg-emerald-500/12 px-2 py-0.5 text-[10px] font-black uppercase tracking-wide text-emerald-300">
                 Active
               </span>
             ) : null}

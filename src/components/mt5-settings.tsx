@@ -157,7 +157,7 @@ export function Mt5Settings({ account, onSynced }: { account: PropAccount; onSyn
     if (s === "connected") return "text-emerald-300";
     if (s === "pending") return "text-sky-400";
     if (s === "error") return "text-rose-300";
-    return "text-zinc-500";
+    return "text-ink-mute";
   };
 
   const lastSync = connection?.last_synced_at
@@ -181,16 +181,16 @@ export function Mt5Settings({ account, onSynced }: { account: PropAccount; onSyn
       <div className="rounded-2xl border border-white/8 bg-surface px-3 py-3 sm:px-4">
         <div className="flex flex-wrap items-center gap-2">
           <span className={`text-xs font-semibold ${workerStateClass}`}>{workerStateLabel}</span>
-          <span className="rounded-full border border-white/10 bg-white/[.03] px-2 py-0.5 text-[10px] font-semibold text-zinc-500">
+          <span className="rounded-full border border-white/10 bg-white/[.03] px-2 py-0.5 text-[10px] font-semibold text-ink-mute">
             {connectorStatus?.mode === "mt5_api" ? "VPS API" : "Legacy bridge"}
           </span>
           {connectorStatus?.syncIntervalSeconds ? (
-            <span className="rounded-full border border-white/10 bg-white/[.03] px-2 py-0.5 text-[10px] font-semibold text-zinc-500">
+            <span className="rounded-full border border-white/10 bg-white/[.03] px-2 py-0.5 text-[10px] font-semibold text-ink-mute">
               {connectorStatus.syncIntervalSeconds}s loop
             </span>
           ) : null}
         </div>
-        <p className="mt-2 text-[11px] leading-5 text-zinc-500">
+        <p className="mt-2 text-[11px] leading-5 text-ink-mute">
           {connectorStatus?.reachable
             ? "Tradoxy VPS worker is reachable. Auto sync should continue without manually pressing Start."
             : "Connector service is unavailable right now. Try again later or contact support."}
@@ -214,23 +214,23 @@ export function Mt5Settings({ account, onSynced }: { account: PropAccount; onSyn
                 <span className={`text-xs font-semibold ${statusColor(connection.status)}`}>
                   {connection.status === "connected" ? "Ulangan" : connection.status === "pending" ? "Sync qilinyapti" : connection.status === "error" ? "Xato" : "Tayyor"}
                 </span>
-                <span className="max-w-full truncate font-mono text-[11px] text-zinc-400 sm:text-xs">{connection.login} @ {connection.server}</span>
+                <span className="max-w-full truncate font-mono text-[11px] text-ink-soft sm:text-xs">{connection.login} @ {connection.server}</span>
               </div>
 
               <div className="flex flex-wrap items-center gap-1.5">
                 <span className="inline-flex items-center gap-1 rounded-full border border-emerald-500/20 bg-emerald-400/10 px-2 py-0.5 text-[10px] font-bold text-emerald-300">
                   <CheckCircle2 size={10} /> Auto-sync
                 </span>
-                <span className="rounded-full border border-white/10 bg-white/[.03] px-2 py-0.5 text-[10px] font-semibold text-zinc-500">30s refresh</span>
-                <span className="rounded-full border border-white/10 bg-white/[.03] px-2 py-0.5 text-[10px] font-semibold text-zinc-500">periodic rescan</span>
-                {lastSync ? <span className="text-[10px] text-zinc-600">{lastSync}</span> : null}
+                <span className="rounded-full border border-white/10 bg-white/[.03] px-2 py-0.5 text-[10px] font-semibold text-ink-mute">30s refresh</span>
+                <span className="rounded-full border border-white/10 bg-white/[.03] px-2 py-0.5 text-[10px] font-semibold text-ink-mute">periodic rescan</span>
+                {lastSync ? <span className="text-[10px] text-ink-subtle">{lastSync}</span> : null}
               </div>
 
               {connection.last_error && <p className="break-words text-[10px] text-rose-500">{connection.last_error}</p>}
             </div>
 
             <button type="button" aria-label="Disconnect MT5" onClick={() => setDisconnectOpen(true)} disabled={!!busy}
-              className="grid size-9 shrink-0 place-items-center rounded-xl border border-white/10 text-zinc-600 transition hover:border-rose-500/30 hover:text-rose-300 disabled:opacity-50">
+              className="grid size-9 shrink-0 place-items-center rounded-xl border border-white/10 text-ink-subtle transition hover:border-rose-500/30 hover:text-rose-300 disabled:opacity-50">
               {busy === "disconnect" ? <Spinner className="size-3.5" /> : <Unplug size={13} />}
             </button>
           </div>
@@ -238,37 +238,37 @@ export function Mt5Settings({ account, onSynced }: { account: PropAccount; onSyn
       )}
 
       <div className="space-y-3 rounded-2xl border border-white/8 bg-surface p-3 sm:p-4">
-        <p className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-zinc-500">
+        <p className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-ink-mute">
           <KeyRound size={12} /> MT5 Credentials
         </p>
 
         <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
           <div className="space-y-1">
-            <label className="flex items-center gap-1 text-[10px] font-semibold uppercase text-zinc-500">
+            <label className="flex items-center gap-1 text-[10px] font-semibold uppercase text-ink-mute">
               <UserRound size={10} /> Login
             </label>
             <input value={login} onChange={e => setLogin(e.target.value.replace(/\D/g, "").slice(0, 20))}
               placeholder="12345678" inputMode="numeric" autoComplete="off" spellCheck={false}
-              className="h-10 w-full rounded-xl border border-white/10 bg-surface px-3 font-mono text-sm text-zinc-200 placeholder:text-zinc-700 outline-none focus:border-white/20" />
+              className="h-10 w-full rounded-xl border border-white/10 bg-surface px-3 font-mono text-sm text-zinc-200 placeholder:text-ink-faint outline-none focus:border-white/20" />
           </div>
           <div className="space-y-1">
-            <label className="flex items-center gap-1 text-[10px] font-semibold uppercase text-zinc-500">
+            <label className="flex items-center gap-1 text-[10px] font-semibold uppercase text-ink-mute">
               <KeyRound size={10} /> Parol
             </label>
             <input type="password" value={password} onChange={e => setPassword(e.target.value.slice(0, 128))}
               placeholder="••••••••" autoComplete="new-password" spellCheck={false}
-              className="h-10 w-full rounded-xl border border-white/10 bg-surface px-3 text-sm text-zinc-200 placeholder:text-zinc-700 outline-none focus:border-white/20" />
+              className="h-10 w-full rounded-xl border border-white/10 bg-surface px-3 text-sm text-zinc-200 placeholder:text-ink-faint outline-none focus:border-white/20" />
           </div>
         </div>
 
         <div className="space-y-1">
-          <label className="flex items-center gap-1 text-[10px] font-semibold uppercase text-zinc-500">
+          <label className="flex items-center gap-1 text-[10px] font-semibold uppercase text-ink-mute">
             <Server size={10} /> Broker Server
           </label>
           <input value={server} onChange={e => setServer(e.target.value.slice(0, 120))} autoComplete="off" spellCheck={false}
             placeholder="Exness-MT5Trial, ICMarketsEU-Live04 ..."
-            className="h-10 w-full rounded-xl border border-white/10 bg-surface px-3 text-sm text-zinc-200 placeholder:text-zinc-700 outline-none focus:border-white/20" />
-          <p className="text-[10px] text-zinc-700">MT5 → Tools → Options → Server</p>
+            className="h-10 w-full rounded-xl border border-white/10 bg-surface px-3 text-sm text-zinc-200 placeholder:text-ink-faint outline-none focus:border-white/20" />
+          <p className="text-[10px] text-ink-faint">MT5 → Tools → Options → Server</p>
         </div>
 
         <button type="button" onClick={() => void save()} disabled={!!busy}
@@ -303,7 +303,7 @@ export function Mt5Settings({ account, onSynced }: { account: PropAccount; onSyn
       )}
 
       {isVerified === false && (
-        <p className="text-center text-[11px] text-zinc-600">
+        <p className="text-center text-[11px] text-ink-subtle">
           Auto-sync verified akaunts uchun mavjud.
         </p>
       )}

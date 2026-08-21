@@ -75,11 +75,11 @@ export function TradovateCsvSettings({
             <div className="min-w-0">
               <div className="flex flex-wrap items-center gap-2">
                 <h3 className="font-black text-white">Tradovate Position History Import</h3>
-                <span className="rounded-full bg-amber-400/10 px-2 py-1 text-[9px] font-black uppercase tracking-wider text-amber-300">
+                <span className="rounded-full bg-amber-400/10 px-2 py-1 text-[10px] font-black uppercase tracking-wider text-amber-300">
                   CSV
                 </span>
               </div>
-              <p className="mt-1 max-w-2xl text-xs leading-5 text-zinc-500">
+              <p className="mt-1 max-w-2xl text-xs leading-5 text-ink-mute">
                 Daily and monthly Position History reports are supported. The importer finds the trade header even when report information appears above it.
               </p>
             </div>
@@ -108,7 +108,7 @@ export function TradovateCsvSettings({
                 </span>
                 <div>
                   <p className="text-xs font-black text-white">{title}</p>
-                  <p className="mt-1 text-[10px] leading-4 text-zinc-500">{text}</p>
+                  <p className="mt-1 text-[10px] leading-4 text-ink-mute">{text}</p>
                 </div>
               </div>
             </div>
@@ -124,14 +124,14 @@ export function TradovateCsvSettings({
 
         <label className="mt-5 block rounded-2xl border border-dashed border-white/12 bg-black/30 p-4 transition hover:border-white/25">
           <div className="flex items-center gap-3">
-            <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-white/[.07] text-zinc-300">
+            <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-white/[.07] text-ink-strong">
               <FileSpreadsheet size={18} />
             </span>
             <div className="min-w-0 flex-1">
               <p className="truncate text-sm font-bold text-white">
                 {file ? file.name : "Select Tradovate CSV"}
               </p>
-              <p className="mt-0.5 text-[10px] text-zinc-500">
+              <p className="mt-0.5 text-[10px] text-ink-mute">
                 Position History report · daily or monthly · maximum 10 MB
               </p>
             </div>
@@ -190,7 +190,7 @@ export function TradovateCsvSettings({
 function ImportStat({ label, value }: { label: string; value: number }) {
   return (
     <div className="rounded-lg border border-white/8 bg-black/30 px-2.5 py-2">
-      <p className="text-[9px] font-black uppercase tracking-wider text-zinc-500">{label}</p>
+      <p className="text-[10px] font-black uppercase tracking-wider text-ink-mute">{label}</p>
       <p className="mt-0.5 font-mono text-sm font-black text-white">{value}</p>
     </div>
   );

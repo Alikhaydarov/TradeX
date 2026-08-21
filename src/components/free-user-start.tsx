@@ -27,7 +27,7 @@ export function FreeUserStart({ children }: { children: ReactNode }) {
   if (accountsLoading || premiumLoading) {
     return (
       <div className="grid min-h-[65vh] place-items-center">
-        <Spinner className="size-5 text-zinc-500" />
+        <Spinner className="size-5 text-ink-mute" />
       </div>
     );
   }
@@ -45,14 +45,14 @@ export function FreeUserStart({ children }: { children: ReactNode }) {
       <div className="mx-auto w-full max-w-6xl">
         <header className="flex items-center justify-between gap-4">
           <div>
-            <p className="text-[10px] font-bold uppercase tracking-[.2em] text-zinc-600">
+            <p className="text-[10px] font-bold uppercase tracking-[.2em] text-ink-subtle">
               Getting started
             </p>
-            <p className="mt-1 text-sm font-semibold text-zinc-400">
+            <p className="mt-1 text-sm font-semibold text-ink-soft">
               Free workspace
             </p>
           </div>
-          <span className="rounded-full border border-white/10 bg-white/[.04] px-3 py-1.5 text-[10px] font-bold text-zinc-400">
+          <span className="rounded-full border border-white/10 bg-white/[.04] px-3 py-1.5 text-[10px] font-bold text-ink-soft">
             1 account included
           </span>
         </header>
@@ -65,7 +65,7 @@ export function FreeUserStart({ children }: { children: ReactNode }) {
             <h1 className="mt-6 max-w-lg text-3xl font-black tracking-[-.045em] sm:text-4xl lg:text-5xl">
               Welcome, {firstName}. Build your trading record.
             </h1>
-            <p className="mt-4 max-w-lg text-sm leading-6 text-zinc-500 sm:text-base">
+            <p className="mt-4 max-w-lg text-sm leading-6 text-ink-mute sm:text-base">
               Start with one account. Tradoxy will turn your trades into a clear
               journal, calendar and performance review.
             </p>
@@ -75,7 +75,7 @@ export function FreeUserStart({ children }: { children: ReactNode }) {
             >
               <Plus size={16} /> Add your first account <ArrowRight size={15} />
             </Button>
-            <p className="mt-3 text-[11px] text-zinc-700">
+            <p className="mt-3 text-[11px] text-ink-faint">
               Manual accounts are free. No card required.
             </p>
 
@@ -122,17 +122,17 @@ function StartStep({
       className={`grid grid-cols-[32px_minmax(0,1fr)] gap-3 rounded-xl px-2 py-3 ${active ? "bg-white/[.04]" : ""}`}
     >
       <span
-        className={`pt-0.5 font-mono text-[10px] font-bold ${active ? "text-white" : "text-zinc-700"}`}
+        className={`pt-0.5 font-mono text-[10px] font-bold ${active ? "text-white" : "text-ink-faint"}`}
       >
         {number}
       </span>
       <div>
         <p
-          className={`text-sm font-bold ${active ? "text-white" : "text-zinc-500"}`}
+          className={`text-sm font-bold ${active ? "text-white" : "text-ink-mute"}`}
         >
           {title}
         </p>
-        <p className="mt-1 text-[11px] leading-4 text-zinc-700">{text}</p>
+        <p className="mt-1 text-[11px] leading-4 text-ink-faint">{text}</p>
       </div>
     </div>
   );
@@ -144,11 +144,11 @@ function ProductPreview() {
       <div className="flex items-center justify-between border-b border-white/8 px-2 pb-3">
         <div>
           <p className="text-xs font-black">Your workspace</p>
-          <p className="mt-1 text-[10px] text-zinc-600">
+          <p className="mt-1 text-[10px] text-ink-subtle">
             Ready after account setup
           </p>
         </div>
-        <span className="flex items-center gap-1.5 text-[9px] font-bold text-zinc-600">
+        <span className="flex items-center gap-1.5 text-[10px] font-bold text-ink-subtle">
           <span className="size-1.5 rounded-full bg-white" /> Live journal
         </span>
       </div>
@@ -161,9 +161,9 @@ function ProductPreview() {
         <div className="flex items-center justify-between">
           <div>
             <p className="text-xs font-bold">Performance</p>
-            <p className="mt-1 text-[9px] text-zinc-700">Equity curve</p>
+            <p className="mt-1 text-[10px] text-ink-faint">Equity curve</p>
           </div>
-          <LineChart size={15} className="text-zinc-500" />
+          <LineChart size={15} className="text-ink-mute" />
         </div>
         <div className="mt-5 flex h-32 items-end gap-1.5 sm:h-44">
           {[18, 28, 22, 38, 34, 51, 46, 62, 58, 72, 68, 84, 78, 92].map(
@@ -196,7 +196,7 @@ function ProductPreview() {
 function PreviewMetric({ label, value }: { label: string; value: string }) {
   return (
     <div className="rounded-xl border border-white/8 bg-white/[.025] p-3">
-      <p className="text-[8px] font-bold uppercase tracking-wider text-zinc-700">
+      <p className="text-[8px] font-bold uppercase tracking-wider text-ink-faint">
         {label}
       </p>
       <p className="mt-2 text-sm font-black sm:text-base">{value}</p>
@@ -215,12 +215,12 @@ function PreviewFeature({
 }) {
   return (
     <div className="flex gap-3 rounded-xl border border-white/8 bg-white/[.02] p-3">
-      <span className="grid size-8 shrink-0 place-items-center rounded-lg bg-white/[.05] text-zinc-400">
+      <span className="grid size-8 shrink-0 place-items-center rounded-lg bg-white/[.05] text-ink-soft">
         <Icon size={14} />
       </span>
       <div>
         <p className="text-[11px] font-bold">{title}</p>
-        <p className="mt-1 text-[9px] leading-4 text-zinc-700">{text}</p>
+        <p className="mt-1 text-[10px] leading-4 text-ink-faint">{text}</p>
       </div>
     </div>
   );

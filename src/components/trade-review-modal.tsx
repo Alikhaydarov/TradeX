@@ -24,7 +24,7 @@ const SETUPS = ["None", "BOS", "CHoCH", "Liquidity Sweep", "FVG", "OB", "Breakou
 const MISTAKES = ["Erta kirish", "Kechiktirilgan kirish", "SL qoymaslik", "Ortiqcha risk", "Plansiz trade", "Revenge trade", "FOMO", "Erta yopish"];
 const SYMBOLS = ["NAS100", "XAUUSD", "EURUSD", "GBPUSD", "US30", "GER30", "BTCUSD"];
 
-const inputClass = "h-10 rounded-lg border-white/8 bg-surface-raised text-sm font-semibold text-white placeholder:text-zinc-600 focus:border-white/20 focus:ring-1 focus:ring-white/10";
+const inputClass = "h-10 rounded-lg border-white/8 bg-surface-raised text-sm font-semibold text-white placeholder:text-ink-subtle focus:border-white/20 focus:ring-1 focus:ring-white/10";
 
 function storedOptions(key: string, fallback: string[]) {
   if (typeof window === "undefined") return fallback;
@@ -90,8 +90,8 @@ function OptionStack({
         aria-expanded={open}
         className={`flex h-10 w-full items-center justify-between gap-3 rounded-lg border px-3 text-left text-sm font-semibold transition ${open ? "border-white/20 bg-surface-raised" : "border-white/8 bg-surface-raised hover:border-white/15"}`}
       >
-        <span className={value ? "truncate text-white" : "truncate text-zinc-500"}>{value || placeholder}</span>
-        <ChevronDown size={15} className={`shrink-0 text-zinc-500 transition-transform ${open ? "rotate-180" : ""}`} />
+        <span className={value ? "truncate text-white" : "truncate text-ink-mute"}>{value || placeholder}</span>
+        <ChevronDown size={15} className={`shrink-0 text-ink-mute transition-transform ${open ? "rotate-180" : ""}`} />
       </button>
 
       {open ? (
@@ -100,7 +100,7 @@ function OptionStack({
             {options.length ? options.map((option) => {
               const active = value === option;
               return (
-                <div key={option} className={`group flex min-h-9 items-center gap-2 rounded-lg px-2.5 text-xs transition ${active ? "bg-white/[.08] text-white" : "text-zinc-400 hover:bg-white/[.045] hover:text-white"}`}>
+                <div key={option} className={`group flex min-h-9 items-center gap-2 rounded-lg px-2.5 text-xs transition ${active ? "bg-white/[.08] text-white" : "text-ink-soft hover:bg-white/[.045] hover:text-white"}`}>
                   <button type="button" onClick={() => { onChange(option === "None" ? "" : option); setOpen(false); }} className="flex min-w-0 flex-1 items-center gap-2 text-left">
                     <Check size={13} className={active ? "shrink-0 opacity-100" : "shrink-0 opacity-0"} />
                     <span className="truncate font-semibold">{option}</span>
@@ -112,7 +112,7 @@ function OptionStack({
                         event.stopPropagation();
                         onRemove(option);
                       }}
-                      className="grid size-7 shrink-0 place-items-center rounded-md text-zinc-500 hover:bg-rose-400/10 hover:text-rose-300 sm:opacity-0 sm:group-hover:opacity-100"
+                      className="grid size-7 shrink-0 place-items-center rounded-md text-ink-mute hover:bg-rose-400/10 hover:text-rose-300 sm:opacity-0 sm:group-hover:opacity-100"
                       aria-label={`${option} optionni o'chirish`}
                     >
                       <X size={12} />
@@ -120,11 +120,11 @@ function OptionStack({
                   ) : null}
                 </div>
               );
-            }) : <div className="px-3 py-4 text-center text-xs text-zinc-500">Option yo'q.</div>}
+            }) : <div className="px-3 py-4 text-center text-xs text-ink-mute">Option yo'q.</div>}
           </div>
 
           <div className="flex min-h-10 items-center gap-2 border-t border-white/10 bg-surface px-2 py-1.5">
-            <Plus size={14} className="shrink-0 text-zinc-500" />
+            <Plus size={14} className="shrink-0 text-ink-mute" />
             <input
               value={draft}
               onChange={(event) => setDraft(event.target.value)}
@@ -135,9 +135,9 @@ function OptionStack({
                 }
               }}
               placeholder="Create option"
-              className="min-w-0 flex-1 bg-transparent text-xs text-white outline-none placeholder:text-zinc-600"
+              className="min-w-0 flex-1 bg-transparent text-xs text-white outline-none placeholder:text-ink-subtle"
             />
-            <button type="button" onClick={add} className="rounded-md px-2 py-1 text-[11px] font-bold text-zinc-400 hover:bg-white/[.05] hover:text-white">
+            <button type="button" onClick={add} className="rounded-md px-2 py-1 text-[11px] font-bold text-ink-soft hover:bg-white/[.05] hover:text-white">
               Add
             </button>
           </div>
@@ -267,9 +267,9 @@ export function TradeReviewModal({ open, saving, account: _account, onOpenChange
         <div className="flex items-start gap-3 border-b border-white/8 px-4 py-3 sm:px-4">
           <div className="min-w-0 flex-1">
             <h2 className="text-lg font-black leading-tight text-white">Add Trade</h2>
-            <p className="mt-0.5 truncate text-sm text-zinc-500">Enter the details of your trade.</p>
+            <p className="mt-0.5 truncate text-sm text-ink-mute">Enter the details of your trade.</p>
           </div>
-          <button type="button" onClick={() => close(false)} className="grid size-8 shrink-0 place-items-center rounded-lg text-zinc-400 transition hover:bg-white/[.06] hover:text-white" aria-label="Close">
+          <button type="button" onClick={() => close(false)} className="grid size-8 shrink-0 place-items-center rounded-lg text-ink-soft transition hover:bg-white/[.06] hover:text-white" aria-label="Close">
             <X size={19} />
           </button>
         </div>
@@ -287,9 +287,9 @@ export function TradeReviewModal({ open, saving, account: _account, onOpenChange
                   >
                     {symbolOptions.map((item) => <option key={item} value={item}>{item}</option>)}
                   </select>
-                  <ChevronDown size={15} className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500" />
+                  <ChevronDown size={15} className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-ink-mute" />
                 </div>
-                <p className="text-sm text-zinc-600">Can&apos;t find a symbol? <button type="button" onClick={() => { const next = window.prompt("Custom symbol"); if (next) { addCustomSymbol(next); setSymbol(next.trim().toUpperCase()); } }} className="font-black text-white underline underline-offset-2">Create it</button></p>
+                <p className="text-sm text-ink-subtle">Can&apos;t find a symbol? <button type="button" onClick={() => { const next = window.prompt("Custom symbol"); if (next) { addCustomSymbol(next); setSymbol(next.trim().toUpperCase()); } }} className="font-black text-white underline underline-offset-2">Create it</button></p>
               </div>
 
               <div className="space-y-1.5">
@@ -309,11 +309,11 @@ export function TradeReviewModal({ open, saving, account: _account, onOpenChange
                   <button type="button" onClick={() => setOutcome("win")} className="hidden" aria-hidden="true" tabIndex={-1} />
                   <label className="cursor-pointer">
                     <input type="radio" name="side" value="Long" defaultChecked className="peer sr-only" />
-                    <span className="inline-flex h-8 items-center rounded-lg px-4 text-sm font-black text-zinc-500 transition peer-checked:bg-white/[.08] peer-checked:text-white">Buy ↑</span>
+                    <span className="inline-flex h-8 items-center rounded-lg px-4 text-sm font-black text-ink-mute transition peer-checked:bg-white/[.08] peer-checked:text-white">Buy ↑</span>
                   </label>
                   <label className="cursor-pointer">
                     <input type="radio" name="side" value="Short" className="peer sr-only" />
-                    <span className="inline-flex h-8 items-center rounded-lg px-4 text-sm font-black text-zinc-500 transition peer-checked:bg-white/[.08] peer-checked:text-white">Sell ↓</span>
+                    <span className="inline-flex h-8 items-center rounded-lg px-4 text-sm font-black text-ink-mute transition peer-checked:bg-white/[.08] peer-checked:text-white">Sell ↓</span>
                   </label>
                 </div>
               </div>
@@ -321,7 +321,7 @@ export function TradeReviewModal({ open, saving, account: _account, onOpenChange
               <div className="space-y-1.5">
                 <FieldLabel>P&amp;L *</FieldLabel>
                 <div className="flex items-center gap-2">
-                  <span className="text-lg text-zinc-500">$</span>
+                  <span className="text-lg text-ink-mute">$</span>
                   <Input
                     name="pnl"
                     value={pnl}
@@ -333,8 +333,8 @@ export function TradeReviewModal({ open, saving, account: _account, onOpenChange
                   />
                 </div>
                 <div className="grid h-10 grid-cols-2 gap-1 rounded-lg border border-white/8 bg-surface-raised p-1">
-                  <button type="button" onClick={() => setOutcome("win")} className={`rounded-md text-xs font-black transition ${outcome === "win" ? "bg-emerald-500/15 text-emerald-300" : "text-zinc-500 hover:text-zinc-200"}`}>Win</button>
-                  <button type="button" onClick={() => setOutcome("loss")} className={`rounded-md text-xs font-black transition ${outcome === "loss" ? "bg-rose-500/15 text-rose-300" : "text-zinc-500 hover:text-zinc-200"}`}>Loss</button>
+                  <button type="button" onClick={() => setOutcome("win")} className={`rounded-md text-xs font-black transition ${outcome === "win" ? "bg-emerald-500/15 text-emerald-300" : "text-ink-mute hover:text-zinc-200"}`}>Win</button>
+                  <button type="button" onClick={() => setOutcome("loss")} className={`rounded-md text-xs font-black transition ${outcome === "loss" ? "bg-rose-500/15 text-rose-300" : "text-ink-mute hover:text-zinc-200"}`}>Loss</button>
                 </div>
               </div>
 
@@ -359,7 +359,7 @@ export function TradeReviewModal({ open, saving, account: _account, onOpenChange
               <div className="space-y-1.5">
                 <FieldLabel>Rating</FieldLabel>
                 <div className="flex items-center gap-3">
-                  <span className="w-7 text-sm font-medium text-zinc-400">{Number(rating) ? rating : "-"}</span>
+                  <span className="w-7 text-sm font-medium text-ink-soft">{Number(rating) ? rating : "-"}</span>
                   <input
                     type="range"
                     min="0"
@@ -372,7 +372,7 @@ export function TradeReviewModal({ open, saving, account: _account, onOpenChange
                 </div>
               </div>
 
-              <button type="button" onClick={() => setAdvancedOpen((current) => !current)} className="flex items-center gap-2 rounded-lg py-1 text-sm font-semibold text-zinc-300 transition hover:text-white">
+              <button type="button" onClick={() => setAdvancedOpen((current) => !current)} className="flex items-center gap-2 rounded-lg py-1 text-sm font-semibold text-ink-strong transition hover:text-white">
                 <ChevronDown size={15} className={`transition-transform ${advancedOpen ? "rotate-180" : "-rotate-90"}`} />
                 Advanced options
               </button>
@@ -417,7 +417,7 @@ export function TradeReviewModal({ open, saving, account: _account, onOpenChange
                           key={mistake}
                           type="button"
                           onClick={() => setMistakeType(mistakeType === mistake ? "" : mistake)}
-                          className={`rounded-lg px-2.5 py-1 text-[11px] font-medium transition ${mistakeType === mistake ? "bg-rose-500/15 text-rose-300 ring-1 ring-rose-500/30" : "bg-white/[.04] text-zinc-500 hover:text-white"}`}
+                          className={`rounded-lg px-2.5 py-1 text-[11px] font-medium transition ${mistakeType === mistake ? "bg-rose-500/15 text-rose-300 ring-1 ring-rose-500/30" : "bg-white/[.04] text-ink-mute hover:text-white"}`}
                         >
                           {mistake}
                         </button>
@@ -462,17 +462,17 @@ export function TradeReviewModal({ open, saving, account: _account, onOpenChange
                         </div>
                       ))}
                       {imageUrls.length < 3 ? (
-                        <button type="button" onClick={() => inputRef.current?.click()} className="grid aspect-square place-items-center rounded-lg border border-dashed border-white/10 text-zinc-500 hover:bg-white/[.04] hover:text-white">
+                        <button type="button" onClick={() => inputRef.current?.click()} className="grid aspect-square place-items-center rounded-lg border border-dashed border-white/10 text-ink-mute hover:bg-white/[.04] hover:text-white">
                           {uploading ? <LoaderCircle className="animate-spin" size={20} /> : <ImagePlus size={22} />}
                         </button>
                       ) : null}
                     </div>
                   ) : (
-                    <button type="button" onClick={() => inputRef.current?.click()} className="grid h-full min-h-[224px] w-full place-items-center rounded-lg text-center text-zinc-500 transition hover:bg-surface-raised hover:text-zinc-300">
+                    <button type="button" onClick={() => inputRef.current?.click()} className="grid h-full min-h-[224px] w-full place-items-center rounded-lg text-center text-ink-mute transition hover:bg-surface-raised hover:text-ink-strong">
                       <span>
-                        {uploading ? <LoaderCircle className="mx-auto animate-spin" size={30} /> : <CloudUpload className="mx-auto text-zinc-700" size={36} />}
+                        {uploading ? <LoaderCircle className="mx-auto animate-spin" size={30} /> : <CloudUpload className="mx-auto text-ink-faint" size={36} />}
                         <b className="mt-4 block text-sm text-white">Upload Screenshot</b>
-                        <small className="mt-1 block text-sm text-zinc-600">Drop here, paste with Ctrl+V or click</small>
+                        <small className="mt-1 block text-sm text-ink-subtle">Drop here, paste with Ctrl+V or click</small>
                       </span>
                     </button>
                   )}
@@ -482,7 +482,7 @@ export function TradeReviewModal({ open, saving, account: _account, onOpenChange
 
               <div className="space-y-2">
                 <FieldLabel>Notes</FieldLabel>
-                <Textarea name="note" className="min-h-[86px] resize-y rounded-lg border-white/8 bg-surface-raised text-sm placeholder:text-zinc-600 focus:border-white/20" placeholder="Enter your trade notes" />
+                <Textarea name="note" className="min-h-[86px] resize-y rounded-lg border-white/8 bg-surface-raised text-sm placeholder:text-ink-subtle focus:border-white/20" placeholder="Enter your trade notes" />
               </div>
 
               <div className="space-y-2">
@@ -495,7 +495,7 @@ export function TradeReviewModal({ open, saving, account: _account, onOpenChange
                   onRemove={(value) => removeOption("tradex-journal-setup-options", setSetupOptions, setupOptions, value, setup, () => setSetup(""))}
                   placeholder="None"
                 />
-                <p className="text-sm text-zinc-600">Select a strategy to set confluences.</p>
+                <p className="text-sm text-ink-subtle">Select a strategy to set confluences.</p>
               </div>
             </div>
           </div>
@@ -528,8 +528,8 @@ function CheckRow({ label, checked, onToggle, tone }: { label: string; checked: 
   const toneMap: Record<string, string> = {
     emerald: "border-emerald-500/45 bg-emerald-500/15 text-emerald-300",
     rose: "border-rose-500/45 bg-rose-500/15 text-rose-300",
-    blue: "border-white/25 bg-white/[.08] text-zinc-300",
-    violet: "border-white/25 bg-white/[.08] text-zinc-300",
+    blue: "border-white/25 bg-white/[.08] text-ink-strong",
+    violet: "border-white/25 bg-white/[.08] text-ink-strong",
   };
 
   return (
@@ -537,7 +537,7 @@ function CheckRow({ label, checked, onToggle, tone }: { label: string; checked: 
       <span className={`grid size-5 shrink-0 place-items-center rounded-md border text-[8px] font-black transition ${checked ? toneMap[tone] : "border-white/12 bg-transparent text-transparent group-hover:border-white/20"}`}>
         {checked ? "OK" : ""}
       </span>
-      <span className={`text-sm transition ${checked ? "text-white" : "text-zinc-500 group-hover:text-zinc-300"}`}>{label}</span>
+      <span className={`text-sm transition ${checked ? "text-white" : "text-ink-mute group-hover:text-ink-strong"}`}>{label}</span>
     </button>
   );
 }

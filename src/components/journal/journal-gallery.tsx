@@ -19,7 +19,7 @@ function reviewScore(entry: JournalEntry) {
 function MiniStat({ label, value }: { label: string; value: string }) {
   return (
     <div className="min-w-0 rounded-xl border border-white/8 bg-surface px-3 py-2">
-      <p className="truncate text-[9px] font-bold uppercase tracking-[0.12em] text-zinc-600">
+      <p className="truncate text-[10px] font-bold uppercase tracking-[0.12em] text-ink-subtle">
         {label}
       </p>
       <p className="mt-1 truncate font-mono text-sm font-black text-white">
@@ -41,9 +41,9 @@ export function JournalGallery({
       <div className="flex flex-col gap-3 border-b border-white/8 px-5 py-4 sm:flex-row sm:items-center">
         <div>
           <h3 className="flex items-center gap-2 font-bold">
-            <BookOpen size={17} className="text-zinc-300" /> Trading Bible
+            <BookOpen size={17} className="text-ink-strong" /> Trading Bible
           </h3>
-          <p className="text-xs text-zinc-500">
+          <p className="text-xs text-ink-mute">
             Eng yaxshi setup va reviewlar playbook sifatida saqlanadi.
           </p>
         </div>
@@ -89,21 +89,21 @@ export function JournalGallery({
                     <h4 className="truncate text-base font-black text-white">
                       {trade.symbol}
                     </h4>
-                    <p className="mt-0.5 truncate text-xs text-zinc-500">
+                    <p className="mt-0.5 truncate text-xs text-ink-mute">
                       {trade.setup || "No setup"} / {trade.session || "No session"}{" "}
                       / {trade.date}
                     </p>
                   </div>
-                  <span className="rounded-xl bg-surface px-2.5 py-1 text-[10px] font-black text-zinc-300">
+                  <span className="rounded-xl bg-surface px-2.5 py-1 text-[10px] font-black text-ink-strong">
                     {reviewScore(trade)}/6
                   </span>
                 </div>
-                <p className="mt-3 line-clamp-3 text-sm leading-6 text-zinc-300">
+                <p className="mt-3 line-clamp-3 text-sm leading-6 text-ink-strong">
                   {trade.note || "Review note yozilmagan."}
                 </p>
                 <div className="mt-3 flex flex-wrap gap-1.5">
                   {trade.reviewCompleted ? (
-                    <span className="inline-flex items-center gap-1 rounded-lg bg-surface px-2 py-1 text-[10px] font-bold text-zinc-300">
+                    <span className="inline-flex items-center gap-1 rounded-lg bg-surface px-2 py-1 text-[10px] font-bold text-ink-strong">
                       <CheckCircle2 size={11} /> Reviewed
                     </span>
                   ) : null}
@@ -124,7 +124,7 @@ export function JournalGallery({
                   {(trade.tags ?? []).slice(0, 3).map((tag) => (
                     <span
                       key={tag}
-                      className="rounded-lg bg-surface px-2 py-1 text-[10px] text-zinc-400"
+                      className="rounded-lg bg-surface px-2 py-1 text-[10px] text-ink-soft"
                     >
                       {tag}
                     </span>
@@ -137,9 +137,9 @@ export function JournalGallery({
       ) : (
         <div className="grid min-h-72 place-items-center px-6 text-center">
           <div>
-            <BookOpen className="mx-auto text-zinc-700" size={38} />
+            <BookOpen className="mx-auto text-ink-faint" size={38} />
             <h3 className="mt-4 text-lg font-black">Trading Bible bo&apos;sh</h3>
-            <p className="mt-1 max-w-md text-sm leading-6 text-zinc-500">
+            <p className="mt-1 max-w-md text-sm leading-6 text-ink-mute">
               Trade review ochib &quot;+ to Trading Bible&quot; ni belgilang.
               Eng yaxshi setup va saboqlar shu yerda playbook bo&apos;lib
               yig&apos;iladi.

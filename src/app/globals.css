@@ -52,6 +52,19 @@
      of them, so screens rendered a patchwork of greys. */
   --color-surface: var(--surface);
   --color-surface-raised: var(--surface-raised);
+  /* Text prominence ladder, strongest to faintest. The contrast against
+     --surface (#0a0a0a) is noted on each value; every step clears WCAG AA for
+     body text. The raw zinc shades these replace did not - zinc-700 sat at
+     1.90:1 and zinc-600 at 2.56:1. Readable values already existed, but only
+     as an !important override scoped to the workspace subtree, so dialogs and
+     menus (which portal to document.body) and the auth screens never got them.
+     The "ink-" prefix keeps these clear of the shadcn --muted / --secondary
+     tokens, which are surface colours, not text colours. */
+  --color-ink-strong: var(--ink-strong);
+  --color-ink-soft: var(--ink-soft);
+  --color-ink-mute: var(--ink-mute);
+  --color-ink-subtle: var(--ink-subtle);
+  --color-ink-faint: var(--ink-faint);
   --radius-sm: calc(var(--radius) * 0.6);
   --radius-md: calc(var(--radius) * 0.8);
   --radius-lg: var(--radius);
@@ -69,6 +82,11 @@
      than borrowing the shadcn card token. */
   --surface: #0a0a0a;
   --surface-raised: #101010;
+  --ink-strong: #e4e4e7; /* 15.60:1 */
+  --ink-soft: #c6c6ce;   /* 11.66:1 */
+  --ink-mute: #a8a8b2;   /*  8.40:1 */
+  --ink-subtle: #90909a; /*  6.26:1 */
+  --ink-faint: #7a7a84;  /*  4.66:1 */
   --card: #0a0a0a;
   --card-foreground: #f8f8f8;
   --popover: #101010;
@@ -105,6 +123,21 @@
   * {
     @apply border-border outline-ring/50;
     box-sizing: border-box;
+  }
+
+  /*
+   * Keyboard focus, once, for everything focusable.
+   *
+   * Of 167 hand-rolled <button> elements in the app, most carried no focus
+   * style at all - tabbing through a dialog or the sidebar moved an invisible
+   * cursor. :where() holds this at zero specificity, so any component that
+   * defines its own focus treatment still wins; this only fills the gaps.
+   * :focus-visible means it shows for keyboard users without ringing every
+   * mouse click.
+   */
+  :where(a, button, input, select, textarea, summary, [tabindex]:not([tabindex="-1"])):focus-visible {
+    outline: 2px solid rgba(255, 255, 255, 0.72);
+    outline-offset: 2px;
   }
 
   html {

@@ -71,7 +71,7 @@ export function PlatformLogoBadge({
       {badge}
       <span className="min-w-0">
         <span className="block truncate text-sm font-black text-zinc-100">{meta.label}</span>
-        <span className="block text-[10px] text-zinc-500">Trading platform</span>
+        <span className="block text-[10px] text-ink-mute">Trading platform</span>
       </span>
     </div>
   );

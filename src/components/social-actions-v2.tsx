@@ -113,7 +113,7 @@ function notificationMeta(type?: string) {
     return { icon: Repeat2, tint: "text-emerald-300", label: "Repost" };
   if (type === "follow")
     return { icon: UserPlus, tint: "text-amber-300", label: "Follow" };
-  return { icon: Bell, tint: "text-zinc-300", label: "Alert" };
+  return { icon: Bell, tint: "text-ink-strong", label: "Alert" };
 }
 
 function Modal({
@@ -154,11 +154,11 @@ function Modal({
         <header className="flex items-center gap-3 border-b border-white/8 px-4 py-4">
           <div className="min-w-0 flex-1">
             <h2 className="text-xl font-black leading-6">{title}</h2>
-            <p className="mt-1 text-xs text-zinc-500">{subtitle}</p>
+            <p className="mt-1 text-xs text-ink-mute">{subtitle}</p>
           </div>
           <button
             onClick={onClose}
-            className="grid h-10 w-10 place-items-center rounded-2xl bg-surface text-zinc-400 transition hover:bg-surface-raised hover:text-white"
+            className="grid h-10 w-10 place-items-center rounded-2xl bg-surface text-ink-soft transition hover:bg-surface-raised hover:text-white"
             aria-label="Close"
           >
             <X size={18} />
@@ -246,7 +246,7 @@ function SearchDialog({ onClose }: { onClose: () => void }) {
         <div className="relative">
           <Search
             size={18}
-            className="pointer-events-none absolute left-4 top-1/2 z-10 -translate-y-1/2 text-zinc-300"
+            className="pointer-events-none absolute left-4 top-1/2 z-10 -translate-y-1/2 text-ink-strong"
           />
           <Input
             autoFocus
@@ -289,7 +289,7 @@ function SearchDialog({ onClose }: { onClose: () => void }) {
       </form>
       <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
         {cleanQuery.length < 2 ? (
-          <div className="grid min-h-56 place-items-center px-6 text-center text-sm text-zinc-500">
+          <div className="grid min-h-56 place-items-center px-6 text-center text-sm text-ink-mute">
             Type at least 2 letters to search live accounts.
           </div>
         ) : null}
@@ -311,32 +311,32 @@ function SearchDialog({ onClose }: { onClose: () => void }) {
                   {item.fullName}
                 </span>
               </span>
-              <span className="block truncate text-xs text-zinc-500">
+              <span className="block truncate text-xs text-ink-mute">
                 @{item.username}
               </span>
               {item.bio ? (
-                <span className="mt-1 block truncate text-xs text-zinc-400">
+                <span className="mt-1 block truncate text-xs text-ink-soft">
                   {item.bio}
                 </span>
               ) : (
-                <span className="mt-1 block truncate text-xs text-zinc-600">
+                <span className="mt-1 block truncate text-xs text-ink-subtle">
                   {item.tradingStyle || "Trader"}
                 </span>
               )}
-              <span className="mt-1 block truncate text-[11px] text-zinc-600">
+              <span className="mt-1 block truncate text-[11px] text-ink-subtle">
                 {item.followersCount.toLocaleString("en-US")} followers /{" "}
                 {item.followingCount.toLocaleString("en-US")} following
               </span>
             </span>
             <span
-              className={`rounded-full border px-2 py-1 text-[10px] font-bold ${item.isFollowing ? "border-white/15 text-zinc-300" : "border-white/8 text-zinc-500"}`}
+              className={`rounded-full border px-2 py-1 text-[10px] font-bold ${item.isFollowing ? "border-white/15 text-ink-strong" : "border-white/8 text-ink-mute"}`}
             >
               {item.isFollowing ? "Following" : item.tradingStyle || "Trader"}
             </span>
           </button>
         ))}
         {!loading && cleanQuery.length >= 2 && !users.length ? (
-          <div className="grid min-h-56 place-items-center px-6 text-center text-sm text-zinc-500">
+          <div className="grid min-h-56 place-items-center px-6 text-center text-sm text-ink-mute">
             No matching users found.
           </div>
         ) : null}
@@ -439,7 +439,7 @@ function NotificationsDialog({
       <div className="min-h-0 flex-1 overflow-y-auto">
         {loading ? (
           <div className="grid min-h-52 place-items-center">
-            <Spinner className="size-8 text-zinc-300" />
+            <Spinner className="size-8 text-ink-strong" />
           </div>
         ) : null}
         {error ? (
@@ -453,10 +453,10 @@ function NotificationsDialog({
           <div className="grid min-h-72 place-items-center px-6 text-center">
             <div>
               <span className="mx-auto grid size-14 place-items-center rounded-2xl border border-white/8 bg-surface">
-                <Bell className="text-zinc-500" size={26} />
+                <Bell className="text-ink-mute" size={26} />
               </span>
               <h3 className="mt-4 text-lg font-black">No notifications yet</h3>
-              <p className="mt-1 max-w-xs text-sm leading-6 text-zinc-500">
+              <p className="mt-1 max-w-xs text-sm leading-6 text-ink-mute">
                 Likes, replies, reposts and follows will show up here.
               </p>
             </div>
@@ -487,14 +487,14 @@ function NotificationsDialog({
                       <p className="truncate text-[15px] font-black">
                         {item.actor?.fullName ?? "Community owner"}
                       </p>
-                      <span className="shrink-0 text-[10px] text-zinc-600">
+                      <span className="shrink-0 text-[10px] text-ink-subtle">
                         {ago(item.createdAt)}
                       </span>
                     </div>
-                    <p className="mt-1 text-sm leading-5 text-zinc-300">
+                    <p className="mt-1 text-sm leading-5 text-ink-strong">
                       {item.message}
                     </p>
-                    <p className="mt-1 text-[11px] leading-4 text-zinc-600">
+                    <p className="mt-1 text-[11px] leading-4 text-ink-subtle">
                       Accept to unlock this private trading desk. A Pro plan is
                       not required for members.
                     </p>
@@ -515,7 +515,7 @@ function NotificationsDialog({
                         disabled={respondingId === item.id}
                         variant="outline"
                         onClick={() => void respondToInvite(item, "decline")}
-                        className="h-10 rounded-xl border-white/10 bg-transparent px-5 text-zinc-300 hover:bg-white/[.06] hover:text-white"
+                        className="h-10 rounded-xl border-white/10 bg-transparent px-5 text-ink-strong hover:bg-white/[.06] hover:text-white"
                       >
                         <X size={15} /> Decline
                       </Button>
@@ -552,14 +552,14 @@ function NotificationsDialog({
                     <span className="size-2 rounded-full bg-white" />
                   ) : null}
                 </span>
-                <span className="mt-0.5 block truncate text-xs text-zinc-500">
+                <span className="mt-0.5 block truncate text-xs text-ink-mute">
                   {item.actor?.username ? `@${item.actor.username}` : "system"}{" "}
                   - {meta.label} - {ago(item.createdAt)}
                 </span>
-                <span className="mt-1 block line-clamp-2 text-sm leading-5 text-zinc-300">
+                <span className="mt-1 block line-clamp-2 text-sm leading-5 text-ink-strong">
                   {item.message}
                 </span>
-                <span className="mt-2 inline-flex rounded-full border border-white/8 px-2 py-1 text-[10px] font-bold text-zinc-500">
+                <span className="mt-2 inline-flex rounded-full border border-white/8 px-2 py-1 text-[10px] font-bold text-ink-mute">
                   {item.entityType === "post" && item.entityId
                     ? "Open post"
                     : "Open profile"}
@@ -620,7 +620,7 @@ export function SocialActions({
         <button
           type="button"
           onClick={() => setSearchOpen(true)}
-          className={`items-center rounded-xl border border-white/10 bg-surface text-zinc-100 transition hover:border-white/15 hover:bg-surface-raised focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/30 ${expandedSearch ? "hidden h-9 w-[clamp(180px,18vw,260px)] justify-start gap-2.5 px-3 text-xs text-zinc-400 xl:flex" : `grid place-items-center ${compact ? "size-9" : "size-10"}`}`}
+          className={`items-center rounded-xl border border-white/10 bg-surface text-zinc-100 transition hover:border-white/15 hover:bg-surface-raised focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/30 ${expandedSearch ? "hidden h-9 w-[clamp(180px,18vw,260px)] justify-start gap-2.5 px-3 text-xs text-ink-soft xl:flex" : `grid place-items-center ${compact ? "size-9" : "size-10"}`}`}
           aria-label="Search traders"
           title="Search traders"
         >
@@ -628,7 +628,7 @@ export function SocialActions({
           {expandedSearch ? (
             <>
               <span className="flex-1 text-left">Search traders</span>
-              <kbd className="rounded border border-white/10 bg-black px-1.5 py-0.5 font-sans text-[9px] text-zinc-600">
+              <kbd className="rounded border border-white/10 bg-black px-1.5 py-0.5 font-sans text-[10px] text-ink-subtle">
                 ⌘ K
               </kbd>
             </>
@@ -656,7 +656,7 @@ export function SocialActions({
           <Bell size={compact ? 16 : 17} strokeWidth={1.9} />
           {unread > 0 ? (
             <span
-              className={`absolute grid place-items-center rounded-full bg-rose-500 px-1 font-black text-white ring-2 ring-[#090909] ${compact ? "-right-1 -top-1 min-h-4 min-w-4 text-[9px]" : "-right-1 -top-1 min-h-5 min-w-5 text-[10px]"}`}
+              className={`absolute grid place-items-center rounded-full bg-rose-500 px-1 font-black text-white ring-2 ring-[#090909] ${compact ? "-right-1 -top-1 min-h-4 min-w-4 text-[10px]" : "-right-1 -top-1 min-h-5 min-w-5 text-[10px]"}`}
             >
               {unread > 9 ? "9+" : unread}
             </span>
@@ -680,12 +680,12 @@ export function SocialActionsCard() {
   return (
     <section className="rounded-[24px] border border-white/9 bg-surface p-4 shadow-xl shadow-black/30">
       <div className="flex items-center gap-3">
-        <div className="grid h-10 w-10 place-items-center rounded-2xl bg-surface-raised text-zinc-300">
+        <div className="grid h-10 w-10 place-items-center rounded-2xl bg-surface-raised text-ink-strong">
           <Users size={18} />
         </div>
         <div className="min-w-0 flex-1">
           <h2 className="text-sm font-black">People</h2>
-          <p className="text-[10px] text-zinc-500">Search and notifications</p>
+          <p className="text-[10px] text-ink-mute">Search and notifications</p>
         </div>
         <SocialActions />
       </div>

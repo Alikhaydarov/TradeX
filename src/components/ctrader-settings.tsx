@@ -64,10 +64,10 @@ export function CTraderSettings({ account, onImported }: { account: PropAccount;
             disabled={busy}
             className="cursor-pointer"
           />
-          {file ? <p className="text-xs text-zinc-500">Selected: {file.name}</p> : null}
+          {file ? <p className="text-xs text-ink-mute">Selected: {file.name}</p> : null}
         </div>
 
-        {message ? <p className="mt-4 rounded-xl border border-white/10 bg-muted/30 px-3 py-2 text-xs text-zinc-300">{message}</p> : null}
+        {message ? <p className="mt-4 rounded-xl border border-white/10 bg-muted/30 px-3 py-2 text-xs text-ink-strong">{message}</p> : null}
 
         <div className="mt-5 flex flex-wrap gap-2">
           <Button disabled={busy || !file} onClick={() => void importCsv()}>

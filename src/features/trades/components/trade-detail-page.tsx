@@ -35,7 +35,7 @@ const money = new Intl.NumberFormat("en-US", {
 });
 
 const CARD = "overflow-hidden rounded-2xl border border-white/8 bg-surface shadow-none";
-const LABEL = "text-[10px] font-bold uppercase tracking-[0.14em] text-zinc-600";
+const LABEL = "text-[10px] font-bold uppercase tracking-[0.14em] text-ink-subtle";
 const INPUT = "mt-1.5 h-10 border-white/10 bg-surface text-sm";
 
 interface TradeRow {
@@ -411,7 +411,7 @@ export function TradeDetailPage({ tradeId, onBack }: { tradeId: string; onBack: 
             <X size={22} />
           </div>
           <h1 className="mt-4 text-xl font-black text-white">Trade not found</h1>
-          <p className="mt-2 text-sm leading-6 text-zinc-500">{error || "This trade may have been deleted or does not belong to your account."}</p>
+          <p className="mt-2 text-sm leading-6 text-ink-mute">{error || "This trade may have been deleted or does not belong to your account."}</p>
           <Button className="mt-5" onClick={onBack}>
             <ArrowLeft size={16} /> Back to trades
           </Button>
@@ -431,10 +431,10 @@ export function TradeDetailPage({ tradeId, onBack }: { tradeId: string; onBack: 
         </div>
       ) : null}
 
-      <div className="flex min-w-0 items-center gap-2 text-[11px] font-semibold text-zinc-600">
+      <div className="flex min-w-0 items-center gap-2 text-[11px] font-semibold text-ink-subtle">
         <button type="button" onClick={onBack} className="transition hover:text-white">Trades</button>
         <span>/</span>
-        <span className="truncate text-zinc-400">{trade.symbol}</span>
+        <span className="truncate text-ink-soft">{trade.symbol}</span>
       </div>
 
       <Card className={CARD}>
@@ -451,7 +451,7 @@ export function TradeDetailPage({ tradeId, onBack }: { tradeId: string; onBack: 
                     {trade.side === "Long" ? "Buy" : "Sell"}
                   </span>
                 </div>
-                <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-zinc-500">
+                <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-ink-mute">
                   <span className="inline-flex items-center gap-1.5"><CalendarDays size={13} /> {formatDate(trade.tradedAt)}</span>
                   <span>{trade.accountName}</span>
                   <span>{trade.marketType}</span>
@@ -509,7 +509,7 @@ export function TradeDetailPage({ tradeId, onBack }: { tradeId: string; onBack: 
                 <p className={LABEL}>Execution</p>
                 <h2 className="mt-1 text-base font-black text-white">Trade details</h2>
               </div>
-              <BarChart3 size={18} className="text-zinc-500" />
+              <BarChart3 size={18} className="text-ink-mute" />
             </div>
             <CardContent className="p-4 sm:p-5">
               {editing ? (
@@ -517,7 +517,7 @@ export function TradeDetailPage({ tradeId, onBack }: { tradeId: string; onBack: 
                   <label className={LABEL}>Symbol<Input value={draft.symbol} onChange={(event) => updateDraft("symbol", event.target.value.toUpperCase())} className={INPUT} /></label>
                   <label className={LABEL}>Side
                     <div className="mt-1.5 grid h-10 grid-cols-2 rounded-lg border border-white/10 bg-surface p-1">
-                      {(["Long", "Short"] as const).map((side) => <button key={side} type="button" onClick={() => updateDraft("side", side)} className={`rounded-md text-xs font-bold ${draft.side === side ? "bg-white text-black" : "text-zinc-500 hover:text-white"}`}>{side}</button>)}
+                      {(["Long", "Short"] as const).map((side) => <button key={side} type="button" onClick={() => updateDraft("side", side)} className={`rounded-md text-xs font-bold ${draft.side === side ? "bg-white text-black" : "text-ink-mute hover:text-white"}`}>{side}</button>)}
                     </div>
                   </label>
                   <label className={LABEL}>Trade date<Input type="date" value={draft.tradedAt} onChange={(event) => updateDraft("tradedAt", event.target.value)} className={INPUT} /></label>
@@ -550,7 +550,7 @@ export function TradeDetailPage({ tradeId, onBack }: { tradeId: string; onBack: 
                 <p className={LABEL}>Playbook</p>
                 <h2 className="mt-1 text-base font-black text-white">Strategy &amp; discipline</h2>
               </div>
-              <ShieldCheck size={18} className="text-zinc-500" />
+              <ShieldCheck size={18} className="text-ink-mute" />
             </div>
             <CardContent className="p-4 sm:p-5">
               {editing ? (
@@ -567,7 +567,7 @@ export function TradeDetailPage({ tradeId, onBack }: { tradeId: string; onBack: 
                       ["errorMade", "Execution mistake made"],
                       ["toTradingBible", "Save to Trading Bible"],
                     ].map(([key, label]) => (
-                      <label key={key} className="flex min-h-11 items-center gap-3 rounded-xl border border-white/8 bg-black/35 px-3 text-sm text-zinc-300">
+                      <label key={key} className="flex min-h-11 items-center gap-3 rounded-xl border border-white/8 bg-black/35 px-3 text-sm text-ink-strong">
                         <Checkbox checked={Boolean(draft[key as keyof EditableTrade])} onCheckedChange={(checked) => updateDraft(key as "followingPlan" | "reviewCompleted" | "errorMade" | "toTradingBible", Boolean(checked))} />
                         {label}
                       </label>
@@ -583,11 +583,11 @@ export function TradeDetailPage({ tradeId, onBack }: { tradeId: string; onBack: 
                   </div>
                   <div className="flex flex-wrap gap-2">
                     <span className={`inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[10px] font-bold ${trade.followingPlan ? "bg-emerald-400/10 text-emerald-300" : "bg-amber-400/10 text-amber-300"}`}><CheckCircle2 size={12} />{trade.followingPlan ? "Plan followed" : "Off-plan"}</span>
-                    <span className={`rounded-lg px-2.5 py-1.5 text-[10px] font-bold ${trade.reviewCompleted ? "bg-sky-400/10 text-sky-300" : "bg-white/[.05] text-zinc-500"}`}>{trade.reviewCompleted ? "Reviewed" : "Review pending"}</span>
+                    <span className={`rounded-lg px-2.5 py-1.5 text-[10px] font-bold ${trade.reviewCompleted ? "bg-sky-400/10 text-sky-300" : "bg-white/[.05] text-ink-mute"}`}>{trade.reviewCompleted ? "Reviewed" : "Review pending"}</span>
                     {trade.errorMade ? <span className="rounded-lg bg-rose-400/10 px-2.5 py-1.5 text-[10px] font-bold text-rose-300">{trade.mistakeType || "Mistake recorded"}</span> : null}
                     {trade.toTradingBible ? <span className="rounded-lg bg-violet-400/10 px-2.5 py-1.5 text-[10px] font-bold text-violet-300">Trading Bible</span> : null}
                   </div>
-                  {trade.tags.length ? <div className="flex flex-wrap gap-1.5">{trade.tags.map((tag) => <span key={tag} className="inline-flex items-center gap-1 rounded-lg border border-white/8 bg-black/35 px-2 py-1 text-[10px] text-zinc-400"><Tag size={10} />{tag}</span>)}</div> : null}
+                  {trade.tags.length ? <div className="flex flex-wrap gap-1.5">{trade.tags.map((tag) => <span key={tag} className="inline-flex items-center gap-1 rounded-lg border border-white/8 bg-black/35 px-2 py-1 text-[10px] text-ink-soft"><Tag size={10} />{tag}</span>)}</div> : null}
                 </div>
               )}
             </CardContent>
@@ -601,7 +601,7 @@ export function TradeDetailPage({ tradeId, onBack }: { tradeId: string; onBack: 
                 <p className={LABEL}>Visual review</p>
                 <h2 className="mt-1 text-base font-black text-white">Screenshots</h2>
               </div>
-              <span className="text-xs font-semibold text-zinc-600">{draft.imageUrls.length}/3</span>
+              <span className="text-xs font-semibold text-ink-subtle">{draft.imageUrls.length}/3</span>
             </div>
             <CardContent className="p-4 sm:p-5">
               <input ref={fileInputRef} type="file" multiple accept="image/jpeg,image/png,image/webp" className="hidden" onChange={(event) => void uploadImages(event.target.files)} />
@@ -616,7 +616,7 @@ export function TradeDetailPage({ tradeId, onBack }: { tradeId: string; onBack: 
                 </div>
               ) : (
                 <button type="button" onClick={() => fileInputRef.current?.click()} className="grid min-h-64 w-full place-items-center rounded-xl border border-dashed border-white/12 bg-black/25 text-center transition hover:border-white/25 hover:bg-white/[.025]">
-                  <span><ImagePlus className="mx-auto text-zinc-600" size={28} /><span className="mt-3 block text-sm font-bold text-zinc-200">Upload screenshot</span><span className="mt-1 block text-[11px] text-zinc-600">PNG, JPG or WEBP · up to 3 images</span></span>
+                  <span><ImagePlus className="mx-auto text-ink-subtle" size={28} /><span className="mt-3 block text-sm font-bold text-zinc-200">Upload screenshot</span><span className="mt-1 block text-[11px] text-ink-subtle">PNG, JPG or WEBP · up to 3 images</span></span>
                 </button>
               )}
               {draft.imageUrls.length < 3 ? <Button type="button" variant="outline" onClick={() => fileInputRef.current?.click()} disabled={uploading} className="mt-3 w-full border-white/10 bg-surface">{uploading ? <LoaderCircle className="animate-spin" size={15} /> : <ImagePlus size={15} />} Add screenshot</Button> : null}
@@ -629,10 +629,10 @@ export function TradeDetailPage({ tradeId, onBack }: { tradeId: string; onBack: 
                 <p className={LABEL}>Journal</p>
                 <h2 className="mt-1 text-base font-black text-white">Notes</h2>
               </div>
-              <Clipboard size={18} className="text-zinc-500" />
+              <Clipboard size={18} className="text-ink-mute" />
             </div>
             <CardContent className="p-4 sm:p-5">
-              {editing ? <Textarea value={draft.note} onChange={(event) => updateDraft("note", event.target.value)} className="min-h-48 border-white/10 bg-surface leading-6" placeholder="What happened before, during and after this trade?" /> : trade.note ? <p className="whitespace-pre-wrap text-sm leading-7 text-zinc-300">{trade.note}</p> : <div className="grid min-h-40 place-items-center rounded-xl border border-dashed border-white/8 bg-black/25 px-5 text-center"><div><Clipboard className="mx-auto text-zinc-700" size={23} /><p className="mt-3 text-sm font-bold text-zinc-300">No trade notes yet</p><p className="mt-1 text-xs text-zinc-600">Add execution context and the lesson from this trade.</p></div></div>}
+              {editing ? <Textarea value={draft.note} onChange={(event) => updateDraft("note", event.target.value)} className="min-h-48 border-white/10 bg-surface leading-6" placeholder="What happened before, during and after this trade?" /> : trade.note ? <p className="whitespace-pre-wrap text-sm leading-7 text-ink-strong">{trade.note}</p> : <div className="grid min-h-40 place-items-center rounded-xl border border-dashed border-white/8 bg-black/25 px-5 text-center"><div><Clipboard className="mx-auto text-ink-faint" size={23} /><p className="mt-3 text-sm font-bold text-ink-strong">No trade notes yet</p><p className="mt-1 text-xs text-ink-subtle">Add execution context and the lesson from this trade.</p></div></div>}
             </CardContent>
           </Card>
         </div>
@@ -644,7 +644,7 @@ export function TradeDetailPage({ tradeId, onBack }: { tradeId: string; onBack: 
             <p className={LABEL}>Market context</p>
             <h2 className="mt-1 text-base font-black text-white">TradingView chart</h2>
           </div>
-          <span className="text-xs font-semibold text-zinc-600">{trade.symbol} · 1H</span>
+          <span className="text-xs font-semibold text-ink-subtle">{trade.symbol} · 1H</span>
         </div>
         <TradingViewChart symbol={trade.symbol} className="h-[320px] sm:h-[420px] lg:h-[520px]" />
       </Card>

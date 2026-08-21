@@ -177,9 +177,9 @@ export function AccountSettings({ onLogin: _onLogin }: { onLogin: () => void }) 
     return (
       <div className="mx-auto grid min-h-[70dvh] max-w-2xl place-items-center p-4 text-center sm:p-5">
         <div className="rounded-[1.5rem] border border-white/8 bg-surface p-6">
-          <WalletCards className="mx-auto text-zinc-400" size={34} />
+          <WalletCards className="mx-auto text-ink-soft" size={34} />
           <h1 className="mt-4 text-2xl font-black text-white">Select an account first</h1>
-          <p className="mt-2 text-sm leading-6 text-zinc-500">Settings are attached to one selected prop or real account.</p>
+          <p className="mt-2 text-sm leading-6 text-ink-mute">Settings are attached to one selected prop or real account.</p>
           <Button className="mt-5 bg-white text-black hover:bg-zinc-200" onClick={() => router.push("/accounts")}>
             Open accounts
           </Button>
@@ -193,11 +193,11 @@ export function AccountSettings({ onLogin: _onLogin }: { onLogin: () => void }) 
       <header className="rounded-[1.4rem] border border-white/8 bg-surface p-4 sm:p-5">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
           <div className="min-w-0">
-            <p className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500">
+            <p className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-ink-mute">
               <Settings size={14} /> Account settings
             </p>
             <h1 className="mt-2 truncate text-[1.65rem] font-black tracking-[-0.04em] text-white sm:text-[2rem]">{account.name}</h1>
-            <p className="mt-1 text-xs leading-5 text-zinc-500 sm:text-sm">Manage account details and import or sync trade history.</p>
+            <p className="mt-1 text-xs leading-5 text-ink-mute sm:text-sm">Manage account details and import or sync trade history.</p>
           </div>
 
           <div className="flex w-full flex-col gap-2 sm:flex-row lg:w-auto">
@@ -232,10 +232,10 @@ export function AccountSettings({ onLogin: _onLogin }: { onLogin: () => void }) 
         <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_360px]">
           <section className="rounded-[1.4rem] border border-white/8 bg-surface p-4 sm:p-5">
             <div className="flex items-start gap-3">
-              <span className="grid size-10 shrink-0 place-items-center rounded-xl border border-white/8 bg-surface text-zinc-300"><SlidersHorizontal size={18} /></span>
+              <span className="grid size-10 shrink-0 place-items-center rounded-xl border border-white/8 bg-surface text-ink-strong"><SlidersHorizontal size={18} /></span>
               <div>
                 <h2 className="font-black text-white">Account profile</h2>
-                <p className="mt-1 text-xs leading-5 text-zinc-500">These fields are used across dashboard, analytics and account cards.</p>
+                <p className="mt-1 text-xs leading-5 text-ink-mute">These fields are used across dashboard, analytics and account cards.</p>
               </div>
             </div>
 
@@ -249,12 +249,12 @@ export function AccountSettings({ onLogin: _onLogin }: { onLogin: () => void }) 
               <Button onClick={() => void saveProfile()} disabled={saving} className="bg-white text-black hover:bg-zinc-200">
                 {saving ? <Spinner className="size-4" /> : <CheckCircle2 size={15} />} Save changes
               </Button>
-              {message ? <p className="text-sm text-zinc-400">{message}</p> : null}
+              {message ? <p className="text-sm text-ink-soft">{message}</p> : null}
             </div>
           </section>
 
           <aside className="rounded-[1.4rem] border border-white/8 bg-surface p-4 sm:p-5">
-            <p className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.18em] text-zinc-500"><ShieldCheck size={14} /> Account details</p>
+            <p className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.18em] text-ink-mute"><ShieldCheck size={14} /> Account details</p>
             <div className="mt-4 space-y-2">
               <Detail label="Platform" value={(account.platform || "manual").toUpperCase()} />
               <Detail label="Import source" value={account.importSource || "manual"} />
@@ -273,22 +273,22 @@ export function AccountSettings({ onLogin: _onLogin }: { onLogin: () => void }) 
                   ? "border-emerald-400/20 bg-emerald-400/10 text-emerald-300"
                   : connector.tone === "csv"
                     ? "border-amber-400/20 bg-amber-400/10 text-amber-300"
-                    : "border-white/10 bg-surface text-zinc-400",
+                    : "border-white/10 bg-surface text-ink-soft",
               )}>
                 <Wifi size={17} />
               </span>
               <div className="min-w-0">
                 <h2 className="truncate font-black text-white">{connector.label}</h2>
-                <p className="mt-0.5 text-xs leading-5 text-zinc-500">{connector.description}</p>
+                <p className="mt-0.5 text-xs leading-5 text-ink-mute">{connector.description}</p>
               </div>
             </div>
             <span className={cn(
-              "w-fit rounded-full px-2.5 py-1 text-[9px] font-black uppercase tracking-wider",
+              "w-fit rounded-full px-2.5 py-1 text-[10px] font-black uppercase tracking-wider",
               connector.tone === "auto"
                 ? "bg-emerald-400/10 text-emerald-300"
                 : connector.tone === "csv"
                   ? "bg-amber-400/10 text-amber-300"
-                  : "bg-white/6 text-zinc-500",
+                  : "bg-white/6 text-ink-mute",
             )}>
               {connector.tone === "auto" ? "Automatic" : connector.tone === "csv" ? "CSV import" : "Manual"}
             </span>
@@ -306,7 +306,7 @@ export function AccountSettings({ onLogin: _onLogin }: { onLogin: () => void }) 
             <div className="grid min-h-48 place-items-center rounded-2xl border border-dashed border-white/10 bg-black/20 px-4 text-center">
               <div>
                 <h3 className="text-lg font-black text-white">{connector.label}</h3>
-                <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-zinc-500">No connector is active for this account. Trades can still be added manually from the journal.</p>
+                <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-ink-mute">No connector is active for this account. Trades can still be added manually from the journal.</p>
               </div>
             </div>
           )}
@@ -333,7 +333,7 @@ function TabButton({ active, onClick, icon, label }: { active: boolean; onClick:
       onClick={onClick}
       className={cn(
         "flex h-10 items-center justify-center gap-2 rounded-lg text-xs font-black transition",
-        active ? "bg-white text-black" : "text-zinc-500 hover:bg-white/[.05] hover:text-white",
+        active ? "bg-white text-black" : "text-ink-mute hover:bg-white/[.05] hover:text-white",
       )}
     >
       {icon} {label}
@@ -342,13 +342,13 @@ function TabButton({ active, onClick, icon, label }: { active: boolean; onClick:
 }
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
-  return <label className="text-[10px] font-black uppercase tracking-wider text-zinc-500">{label}<div className="mt-1.5">{children}</div></label>;
+  return <label className="text-[10px] font-black uppercase tracking-wider text-ink-mute">{label}<div className="mt-1.5">{children}</div></label>;
 }
 
 function Mini({ label, value }: { label: string; value: string }) {
   return (
     <div className="min-w-0 rounded-xl border border-white/8 bg-surface p-3 sm:p-4">
-      <p className="text-[9px] font-black uppercase tracking-wider text-zinc-600">{label}</p>
+      <p className="text-[10px] font-black uppercase tracking-wider text-ink-subtle">{label}</p>
       <p className="mt-1 truncate text-sm font-bold text-white">{value}</p>
     </div>
   );
@@ -357,7 +357,7 @@ function Mini({ label, value }: { label: string; value: string }) {
 function Detail({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex min-w-0 items-center justify-between gap-3 rounded-xl border border-white/8 bg-surface px-3 py-2.5">
-      <span className="text-[10px] font-black uppercase tracking-wider text-zinc-600">{label}</span>
+      <span className="text-[10px] font-black uppercase tracking-wider text-ink-subtle">{label}</span>
       <strong className="min-w-0 truncate text-xs text-white">{value}</strong>
     </div>
   );

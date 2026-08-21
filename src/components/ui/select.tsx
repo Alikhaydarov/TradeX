@@ -44,7 +44,7 @@ function SelectTrigger({
       data-slot="select-trigger"
       data-size={size}
       className={cn(
-        "flex w-full min-w-0 items-center justify-between gap-2 rounded-[1rem] border border-white/10 bg-surface-raised px-3.5 py-2 text-sm font-semibold text-foreground whitespace-nowrap shadow-[inset_0_1px_0_rgba(255,255,255,.025)] transition-colors outline-none select-none hover:border-white/16 hover:bg-surface-raised focus-visible:border-white/20 focus-visible:ring-2 focus-visible:ring-white/6 disabled:cursor-not-allowed disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-2 aria-invalid:ring-destructive/20 data-placeholder:text-zinc-500 data-[size=default]:h-11 data-[size=sm]:h-9 *:data-[slot=select-value]:line-clamp-1 *:data-[slot=select-value]:flex *:data-[slot=select-value]:min-w-0 *:data-[slot=select-value]:items-center *:data-[slot=select-value]:gap-1.5 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+        "flex w-full min-w-0 items-center justify-between gap-2 rounded-[1rem] border border-white/10 bg-surface-raised px-3.5 py-2 text-sm font-semibold text-foreground whitespace-nowrap shadow-[inset_0_1px_0_rgba(255,255,255,.025)] transition-colors outline-none select-none hover:border-white/16 hover:bg-surface-raised focus-visible:border-white/20 focus-visible:ring-2 focus-visible:ring-white/6 disabled:cursor-not-allowed disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-2 aria-invalid:ring-destructive/20 data-placeholder:text-ink-mute data-[size=default]:h-11 data-[size=sm]:h-9 *:data-[slot=select-value]:line-clamp-1 *:data-[slot=select-value]:flex *:data-[slot=select-value]:min-w-0 *:data-[slot=select-value]:items-center *:data-[slot=select-value]:gap-1.5 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
         className
       )}
       {...props}
@@ -112,7 +112,7 @@ function SelectItem({
     <SelectPrimitive.Item
       data-slot="select-item"
       className={cn(
-        "relative flex min-h-10 w-full cursor-default items-center gap-2 rounded-[0.85rem] py-2 pr-9 pl-3 text-sm font-medium text-zinc-400 outline-hidden select-none focus:bg-white/[.06] focus:text-white data-disabled:pointer-events-none data-disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4 *:[span]:last:flex *:[span]:last:items-center *:[span]:last:gap-2",
+        "relative flex min-h-10 w-full cursor-default items-center gap-2 rounded-[0.85rem] py-2 pr-9 pl-3 text-sm font-medium text-ink-soft outline-hidden select-none focus:bg-white/[.06] focus:text-white data-disabled:pointer-events-none data-disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4 *:[span]:last:flex *:[span]:last:items-center *:[span]:last:gap-2",
         className
       )}
       {...props}

@@ -45,7 +45,7 @@ export function TradingViewChart({ symbol, className = "" }: { symbol: string; c
   return (
     <div className={`relative overflow-hidden bg-surface ${className}`}>
       {!loaded ? (
-        <div className="absolute inset-0 grid place-items-center gap-2 text-zinc-600">
+        <div className="absolute inset-0 grid place-items-center gap-2 text-ink-subtle">
           <Loader2 size={20} className="animate-spin" />
           <span className="text-[11px] font-semibold uppercase tracking-wider">Chart yuklanmoqda</span>
         </div>

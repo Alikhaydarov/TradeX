@@ -107,7 +107,7 @@ export function AuthModal({
           <div className="flex items-center">
             <span className="grid size-9 place-items-center rounded-xl border border-white/15 bg-white text-xs font-black text-black">TD</span>
             <span className="ml-3 text-sm font-bold tracking-tight">Tradoxy</span>
-            <button onClick={onClose} className="ml-auto grid size-9 place-items-center rounded-full text-zinc-500 transition hover:bg-white/8 hover:text-white" aria-label="Close">
+            <button onClick={onClose} className="ml-auto grid size-9 place-items-center rounded-full text-ink-mute transition hover:bg-white/8 hover:text-white" aria-label="Close">
               <X size={19} />
             </button>
           </div>
@@ -118,7 +118,7 @@ export function AuthModal({
                 <Check size={25} strokeWidth={2.5} />
               </span>
               <h2 id="auth-modal-title" className="mt-6 text-2xl font-bold tracking-tight">Check your inbox</h2>
-              <p className="mx-auto mt-3 max-w-xs text-sm leading-6 text-zinc-400">
+              <p className="mx-auto mt-3 max-w-xs text-sm leading-6 text-ink-soft">
                 We sent a secure confirmation link to <strong className="text-zinc-200">{confirmationEmail}</strong>.
               </p>
               <button onClick={onClose} className="mt-7 rounded-full bg-white px-6 py-2.5 text-sm font-bold text-black transition hover:bg-zinc-200">
@@ -135,7 +135,7 @@ export function AuthModal({
                       setMode(item);
                       setError(null);
                     }}
-                    className={`rounded-lg px-3 py-2.5 text-sm font-semibold transition ${mode === item ? "bg-white text-black shadow-sm" : "text-zinc-500 hover:text-zinc-200"}`}
+                    className={`rounded-lg px-3 py-2.5 text-sm font-semibold transition ${mode === item ? "bg-white text-black shadow-sm" : "text-ink-mute hover:text-zinc-200"}`}
                   >
                     {item === "login" ? "Sign in" : "Create account"}
                   </button>
@@ -143,11 +143,11 @@ export function AuthModal({
               </div>
 
               <div className="mt-7">
-                <p className="text-[11px] font-bold uppercase tracking-[.18em] text-zinc-600">Your trading operating system</p>
+                <p className="text-[11px] font-bold uppercase tracking-[.18em] text-ink-subtle">Your trading operating system</p>
                 <h2 id="auth-modal-title" className="mt-2 text-2xl font-bold tracking-[-.035em] sm:text-[28px]">
                   {mode === "login" ? "Welcome back." : "Build your edge."}
                 </h2>
-                <p className="mt-2 text-sm leading-6 text-zinc-500">
+                <p className="mt-2 text-sm leading-6 text-ink-mute">
                   {mode === "login" ? "Continue where your last session ended." : "Start your journal and track every decision."}
                 </p>
               </div>
@@ -163,7 +163,7 @@ export function AuthModal({
                 </button>
               </div>
 
-              <div className="my-6 flex items-center gap-3 text-[11px] font-semibold uppercase tracking-[.14em] text-zinc-700">
+              <div className="my-6 flex items-center gap-3 text-[11px] font-semibold uppercase tracking-[.14em] text-ink-faint">
                 <span className="h-px flex-1 bg-white/8" />or use email<span className="h-px flex-1 bg-white/8" />
               </div>
 
@@ -171,16 +171,16 @@ export function AuthModal({
                 {mode === "register" && (
                   <label className="block">
                     <span className="sr-only">Full name</span>
-                    <input value={name} onChange={(event) => setName(event.target.value)} autoComplete="name" required minLength={2} maxLength={60} placeholder="Full name" className="h-12 w-full rounded-xl border border-white/10 bg-black px-4 text-sm outline-none transition placeholder:text-zinc-700 focus:border-white/35" />
+                    <input value={name} onChange={(event) => setName(event.target.value)} autoComplete="name" required minLength={2} maxLength={60} placeholder="Full name" className="h-12 w-full rounded-xl border border-white/10 bg-black px-4 text-sm outline-none transition placeholder:text-ink-faint focus:border-white/35" />
                   </label>
                 )}
                 <label className="relative block">
-                  <Mail className="absolute left-4 top-1/2 size-4 -translate-y-1/2 text-zinc-600" />
-                  <input type="email" value={email} onChange={(event) => setEmail(event.target.value)} autoComplete="email" required maxLength={254} placeholder="Email address" className="h-12 w-full rounded-xl border border-white/10 bg-black pl-11 pr-4 text-sm outline-none transition placeholder:text-zinc-700 focus:border-white/35" />
+                  <Mail className="absolute left-4 top-1/2 size-4 -translate-y-1/2 text-ink-subtle" />
+                  <input type="email" value={email} onChange={(event) => setEmail(event.target.value)} autoComplete="email" required maxLength={254} placeholder="Email address" className="h-12 w-full rounded-xl border border-white/10 bg-black pl-11 pr-4 text-sm outline-none transition placeholder:text-ink-faint focus:border-white/35" />
                 </label>
                 <label className="relative block">
-                  <input type={showPassword ? "text" : "password"} value={password} onChange={(event) => setPassword(event.target.value)} autoComplete={mode === "login" ? "current-password" : "new-password"} required minLength={8} maxLength={128} placeholder="Password (8+ characters)" className="h-12 w-full rounded-xl border border-white/10 bg-black px-4 pr-12 text-sm outline-none transition placeholder:text-zinc-700 focus:border-white/35" />
-                  <button type="button" onClick={() => setShowPassword((value) => !value)} className="absolute right-3 top-1/2 grid size-8 -translate-y-1/2 place-items-center text-zinc-600 hover:text-white" aria-label={showPassword ? "Hide password" : "Show password"}>
+                  <input type={showPassword ? "text" : "password"} value={password} onChange={(event) => setPassword(event.target.value)} autoComplete={mode === "login" ? "current-password" : "new-password"} required minLength={8} maxLength={128} placeholder="Password (8+ characters)" className="h-12 w-full rounded-xl border border-white/10 bg-black px-4 pr-12 text-sm outline-none transition placeholder:text-ink-faint focus:border-white/35" />
+                  <button type="button" onClick={() => setShowPassword((value) => !value)} className="absolute right-3 top-1/2 grid size-8 -translate-y-1/2 place-items-center text-ink-subtle hover:text-white" aria-label={showPassword ? "Hide password" : "Show password"}>
                     {showPassword ? <EyeOff size={17} /> : <Eye size={17} />}
                   </button>
                 </label>
@@ -190,9 +190,9 @@ export function AuthModal({
                 </button>
               </form>
 
-              {!configured && <p className="mt-4 rounded-xl border border-white/10 bg-white/5 p-3 text-xs text-zinc-400">Backend auth is not configured yet.</p>}
+              {!configured && <p className="mt-4 rounded-xl border border-white/10 bg-white/5 p-3 text-xs text-ink-soft">Backend auth is not configured yet.</p>}
               {error && <p className="mt-4 rounded-xl border border-red-500/20 bg-red-500/8 p-3 text-sm text-red-300" role="alert">{error}</p>}
-              <p className="mt-5 text-center text-[11px] leading-5 text-zinc-600">
+              <p className="mt-5 text-center text-[11px] leading-5 text-ink-subtle">
                 By continuing, you agree to the Terms and Privacy Policy.
               </p>
             </>

@@ -77,7 +77,7 @@ function SheetContent({
               type="button"
               variant="ghost"
               size="icon-sm"
-              className="absolute right-3 top-3 rounded-xl text-zinc-400 hover:bg-white/6 hover:text-white"
+              className="absolute right-3 top-3 rounded-xl text-ink-soft hover:bg-white/6 hover:text-white"
             >
               <XIcon />
               <span className="sr-only">Close</span>

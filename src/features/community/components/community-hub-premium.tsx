@@ -125,13 +125,13 @@ function EmptyState({ invitation = false }: { invitation?: boolean }) {
   return (
     <div className="grid min-h-56 place-items-center rounded-2xl border border-dashed border-white/10 bg-surface px-5 text-center">
       <div className="max-w-sm">
-        <span className="mx-auto grid size-11 place-items-center rounded-xl border border-white/8 bg-surface text-zinc-600">
+        <span className="mx-auto grid size-11 place-items-center rounded-xl border border-white/8 bg-surface text-ink-subtle">
           {invitation ? <Mail size={19} /> : <UsersRound size={19} />}
         </span>
         <h2 className="mt-3 text-sm font-bold text-zinc-200">
           {invitation ? "No invitations" : "No communities yet"}
         </h2>
-        <p className="mt-1 text-[11px] leading-5 text-zinc-600">
+        <p className="mt-1 text-[11px] leading-5 text-ink-subtle">
           {invitation
             ? "New community invitations will appear here."
             : "Create a community on Pro or accept an invitation from another trader."}
@@ -160,7 +160,7 @@ function CommunityCard({ community }: { community: CommunityCardData }) {
         <DropdownMenuTrigger asChild>
           <button
             type="button"
-            className="absolute right-3 top-3 z-20 grid size-8 place-items-center rounded-lg border border-white/8 bg-black/25 text-zinc-600 transition hover:bg-white/[.06] hover:text-white"
+            className="absolute right-3 top-3 z-20 grid size-8 place-items-center rounded-lg border border-white/8 bg-black/25 text-ink-subtle transition hover:bg-white/[.06] hover:text-white"
             aria-label={`${community.name} menu`}
           >
             <MoreHorizontal size={15} />
@@ -191,7 +191,7 @@ function CommunityCard({ community }: { community: CommunityCardData }) {
               <h2 className="truncate text-[15px] font-bold tracking-[-0.025em] text-white">{community.name}</h2>
               <ShieldCheck size={14} className={`shrink-0 ${accent.icon}`} />
             </div>
-            <p className="mt-1 line-clamp-2 min-h-9 text-[11px] leading-[18px] text-zinc-500">
+            <p className="mt-1 line-clamp-2 min-h-9 text-[11px] leading-[18px] text-ink-mute">
               {community.description || "A private trading community for shared growth and accountability."}
             </p>
           </div>
@@ -199,13 +199,13 @@ function CommunityCard({ community }: { community: CommunityCardData }) {
 
         <div className="mt-4 grid grid-cols-2 gap-2">
           <div className="rounded-xl border border-white/7 bg-black/20 px-3 py-2">
-            <p className="text-[8px] font-bold uppercase tracking-[0.14em] text-zinc-700">Members</p>
+            <p className="text-[8px] font-bold uppercase tracking-[0.14em] text-ink-faint">Members</p>
             <div className="mt-1 flex items-center gap-1.5 text-xs font-bold text-zinc-200">
-              {formatCount(community.memberCount)} <UsersRound size={12} className="text-zinc-600" />
+              {formatCount(community.memberCount)} <UsersRound size={12} className="text-ink-subtle" />
             </div>
           </div>
           <div className="rounded-xl border border-white/7 bg-black/20 px-3 py-2">
-            <p className="text-[8px] font-bold uppercase tracking-[0.14em] text-zinc-700">Privacy</p>
+            <p className="text-[8px] font-bold uppercase tracking-[0.14em] text-ink-faint">Privacy</p>
             <div className="mt-1 flex items-center gap-1.5 text-xs font-bold text-zinc-200">
               {isPublic ? "Public" : "Private"}
               {isPublic ? <Globe2 size={12} className="text-sky-400" /> : <LockKeyhole size={12} className="text-amber-400" />}
@@ -220,9 +220,9 @@ function CommunityCard({ community }: { community: CommunityCardData }) {
               value={community.owner?.avatar_url}
               className="size-6 rounded-lg text-[8px]"
             />
-            <span className="max-w-32 truncate text-[9px] text-zinc-600">@{community.owner?.username || "owner"}</span>
+            <span className="max-w-32 truncate text-[10px] text-ink-subtle">@{community.owner?.username || "owner"}</span>
           </div>
-          <span className="rounded-full border border-white/8 bg-white/[.035] px-2 py-1 text-[8px] font-black uppercase tracking-[0.13em] text-zinc-500">
+          <span className="rounded-full border border-white/8 bg-white/[.035] px-2 py-1 text-[8px] font-black uppercase tracking-[0.13em] text-ink-mute">
             {community.role}
           </span>
         </div>
@@ -311,11 +311,11 @@ export function CommunityHubPremium() {
           <div className="min-w-0">
             <div className="flex items-center gap-2">
               <h1 className="truncate text-xl font-bold tracking-[-0.035em] text-white sm:text-[22px]">Communities</h1>
-              <span className="hidden rounded-full border border-white/8 bg-white/[.035] px-2 py-0.5 text-[8px] font-bold uppercase tracking-[0.14em] text-zinc-500 sm:inline-flex">
+              <span className="hidden rounded-full border border-white/8 bg-white/[.035] px-2 py-0.5 text-[8px] font-bold uppercase tracking-[0.14em] text-ink-mute sm:inline-flex">
                 Social journal
               </span>
             </div>
-            <p className="mt-1 truncate text-[11px] text-zinc-600 sm:text-xs">Share performance, learn together and stay accountable.</p>
+            <p className="mt-1 truncate text-[11px] text-ink-subtle sm:text-xs">Share performance, learn together and stay accountable.</p>
           </div>
         </div>
         {data?.canCreate ? (
@@ -335,15 +335,15 @@ export function CommunityHubPremium() {
           <button
             type="button"
             onClick={() => setTab("communities")}
-            className={`relative flex h-9 items-center gap-2 rounded-lg px-3 text-[11px] font-bold transition ${tab === "communities" ? "bg-surface-raised text-white shadow-sm" : "text-zinc-600 hover:text-zinc-300"}`}
+            className={`relative flex h-9 items-center gap-2 rounded-lg px-3 text-[11px] font-bold transition ${tab === "communities" ? "bg-surface-raised text-white shadow-sm" : "text-ink-subtle hover:text-ink-strong"}`}
           >
             My communities
-            <span className="rounded-md bg-white/[.06] px-1.5 py-0.5 text-[8px] text-zinc-400">{communities.length}</span>
+            <span className="rounded-md bg-white/[.06] px-1.5 py-0.5 text-[8px] text-ink-soft">{communities.length}</span>
           </button>
           <button
             type="button"
             onClick={() => setTab("invitations")}
-            className={`relative flex h-9 items-center gap-2 rounded-lg px-3 text-[11px] font-bold transition ${tab === "invitations" ? "bg-surface-raised text-white shadow-sm" : "text-zinc-600 hover:text-zinc-300"}`}
+            className={`relative flex h-9 items-center gap-2 rounded-lg px-3 text-[11px] font-bold transition ${tab === "invitations" ? "bg-surface-raised text-white shadow-sm" : "text-ink-subtle hover:text-ink-strong"}`}
           >
             Invitations
             {invitations.length ? (
@@ -354,7 +354,7 @@ export function CommunityHubPremium() {
             ) : null}
           </button>
         </div>
-        <p className="hidden text-[10px] text-zinc-700 sm:block">Plan: <span className="capitalize text-zinc-500">{data?.plan || "free"}</span></p>
+        <p className="hidden text-[10px] text-ink-faint sm:block">Plan: <span className="capitalize text-ink-mute">{data?.plan || "free"}</span></p>
       </div>
 
       {error ? (
@@ -370,11 +370,11 @@ export function CommunityHubPremium() {
               </span>
               <div>
                 <h2 className="text-sm font-bold text-white">Create your community</h2>
-                <p className="mt-0.5 text-[10px] text-zinc-600">A focused private space for your traders.</p>
+                <p className="mt-0.5 text-[10px] text-ink-subtle">A focused private space for your traders.</p>
               </div>
             </div>
             <div className="mt-4 rounded-xl border border-white/7 bg-black/20 p-3">
-              <p className="text-[9px] font-bold uppercase tracking-[0.14em] text-zinc-700">Accent</p>
+              <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-ink-faint">Accent</p>
               <div className="mt-2 flex gap-2">
                 {(Object.keys(ACCENTS) as Accent[]).map((item) => (
                   <button
@@ -422,8 +422,8 @@ export function CommunityHubPremium() {
                       <h2 className="truncate text-[13px] font-bold text-white">{community.name}</h2>
                       <ShieldCheck size={13} className={accentItem.icon} />
                     </div>
-                    <p className="mt-0.5 line-clamp-1 text-[10px] text-zinc-600">{community.description || "You were invited to join this community."}</p>
-                    <p className="mt-1 text-[9px] text-zinc-700">{formatCount(community.memberCount)} members · invited by @{community.owner?.username || "owner"}</p>
+                    <p className="mt-0.5 line-clamp-1 text-[10px] text-ink-subtle">{community.description || "You were invited to join this community."}</p>
+                    <p className="mt-1 text-[10px] text-ink-faint">{formatCount(community.memberCount)} members · invited by @{community.owner?.username || "owner"}</p>
                   </div>
                 </div>
                 <div className="flex gap-2 sm:shrink-0">

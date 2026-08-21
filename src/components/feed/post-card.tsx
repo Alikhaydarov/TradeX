@@ -218,9 +218,9 @@ export function PostCard({
                 {post.name}
                 {post.isVerified ? <VerifiedBadge size={16} /> : null}
               </button>
-              <p className="truncate text-[11px] text-zinc-500">
+              <p className="truncate text-[11px] text-ink-mute">
                 {post.handle}
-                <span className="px-1 text-zinc-700">·</span>
+                <span className="px-1 text-ink-faint">·</span>
                 {post.time}
               </p>
             </div>
@@ -229,7 +229,7 @@ export function PostCard({
               <DropdownMenuTrigger asChild>
                 <button
                   type="button"
-                  className={`grid size-9 shrink-0 place-items-center rounded-lg text-zinc-600 transition-colors hover:bg-white/[.06] hover:text-zinc-200 ${FOCUS_RING}`}
+                  className={`grid size-9 shrink-0 place-items-center rounded-lg text-ink-subtle transition-colors hover:bg-white/[.06] hover:text-zinc-200 ${FOCUS_RING}`}
                   aria-label="Post options"
                 >
                   <MoreHorizontal size={18} />
@@ -281,7 +281,7 @@ export function PostCard({
                 className="mr-auto rounded-lg bg-white/[.03]"
               />
               <span
-                className={`rounded-md px-2 py-1 text-[9px] font-bold tracking-wide ${
+                className={`rounded-md px-2 py-1 text-[10px] font-bold tracking-wide ${
                   post.side === "LONG"
                     ? "bg-emerald-300/10 text-emerald-300"
                     : "bg-rose-300/10 text-rose-300"
@@ -290,12 +290,12 @@ export function PostCard({
                 {post.side}
               </span>
               <span
-                className={`rounded-md px-2 py-1 text-[9px] font-bold tracking-wide ${
+                className={`rounded-md px-2 py-1 text-[10px] font-bold tracking-wide ${
                   post.result === "WIN"
                     ? "bg-emerald-300/10 text-emerald-300"
                     : post.result === "LOSS"
                       ? "bg-rose-300/10 text-rose-300"
-                      : "bg-white/8 text-zinc-300"
+                      : "bg-white/8 text-ink-strong"
                 }`}
               >
                 {post.result}
@@ -310,7 +310,7 @@ export function PostCard({
                 </strong>
               ) : null}
               {typeof post.resultR === "number" ? (
-                <span className="text-xs font-semibold tabular-nums text-zinc-300">
+                <span className="text-xs font-semibold tabular-nums text-ink-strong">
                   {post.resultR >= 0 ? "+" : ""}
                   {post.resultR.toFixed(2)}R
                 </span>
@@ -332,7 +332,7 @@ export function PostCard({
             />
           ) : null}
 
-          <div className="mt-3 flex items-center justify-between gap-1 text-zinc-500">
+          <div className="mt-3 flex items-center justify-between gap-1 text-ink-mute">
             <div className="flex items-center gap-0.5">
               <ActionButton
                 label="Replies"
@@ -383,7 +383,7 @@ export function PostCard({
           {openReplies ? (
             <div className="mt-4 border-t border-white/8 pt-4">
               {loadingReplies ? (
-                <div className="flex items-center gap-2 py-4 text-xs text-zinc-500">
+                <div className="flex items-center gap-2 py-4 text-xs text-ink-mute">
                   <XSpinner size="sm" /> Loading replies
                 </div>
               ) : (
@@ -406,20 +406,20 @@ export function PostCard({
                           {reply.isVerified ? (
                             <VerifiedBadge size={14} />
                           ) : null}
-                          <span className="text-[10px] text-zinc-600">
+                          <span className="text-[10px] text-ink-subtle">
                             @{reply.username}
-                            <span className="px-1 text-zinc-700">·</span>
+                            <span className="px-1 text-ink-faint">·</span>
                             {formatRelativeTime(reply.createdAt)}
                           </span>
                         </div>
-                        <p className="mt-1 whitespace-pre-line text-sm leading-5 text-zinc-300">
+                        <p className="mt-1 whitespace-pre-line text-sm leading-5 text-ink-strong">
                           {reply.content}
                         </p>
                       </div>
                     </div>
                   ))}
                   {!replies.length ? (
-                    <p className="py-2 text-xs text-zinc-500">
+                    <p className="py-2 text-xs text-ink-mute">
                       No replies yet. Be the first.
                     </p>
                   ) : null}

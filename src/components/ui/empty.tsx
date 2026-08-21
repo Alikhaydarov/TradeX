@@ -23,7 +23,7 @@ function EmptyMedia({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
       data-slot="empty-media"
-      className={cn("grid size-10 place-items-center rounded-lg border border-white/8 bg-white/[.035] text-zinc-400", className)}
+      className={cn("grid size-10 place-items-center rounded-lg border border-white/8 bg-white/[.035] text-ink-soft", className)}
       {...props}
     />
   )
@@ -34,7 +34,7 @@ function EmptyTitle({ className, ...props }: React.ComponentProps<"h3">) {
 }
 
 function EmptyDescription({ className, ...props }: React.ComponentProps<"p">) {
-  return <p data-slot="empty-description" className={cn("text-xs leading-5 text-zinc-500", className)} {...props} />
+  return <p data-slot="empty-description" className={cn("text-xs leading-5 text-ink-mute", className)} {...props} />
 }
 
 function EmptyContent({ className, ...props }: React.ComponentProps<"div">) {

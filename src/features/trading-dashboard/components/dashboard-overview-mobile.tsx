@@ -217,19 +217,19 @@ export function DashboardOverviewMobile({
         <h1 className="break-words text-[clamp(1.65rem,7.4vw,2.15rem)] font-normal leading-[1.08] tracking-[-0.045em] text-white">
           Welcome back, {username}
         </h1>
-        <p className="mt-2 text-[15px] font-semibold text-zinc-600">{dashboardDate()}</p>
+        <p className="mt-2 text-[15px] font-semibold text-ink-subtle">{dashboardDate()}</p>
       </section>
 
       <Card className={`${MOBILE_CARD} min-h-[480px]`}>
         <CardHeader className="relative border-b-0 px-4 pb-1 pt-5">
           <div className="min-w-0 pr-28">
-            <CardDescription className="text-[15px] font-bold text-zinc-600">
+            <CardDescription className="text-[15px] font-bold text-ink-subtle">
               Account Balance
             </CardDescription>
             <CardTitle className="mt-1 break-words text-[clamp(2.25rem,12vw,3.15rem)] font-normal leading-none tracking-[-0.055em] text-white">
               {formattedBalance}
             </CardTitle>
-            <p className="mt-3 text-[14px] font-bold text-zinc-600">Last 30 Days</p>
+            <p className="mt-3 text-[14px] font-bold text-ink-subtle">Last 30 Days</p>
           </div>
           <div
             className={`absolute right-4 top-7 rounded-xl px-3.5 py-2 text-[15px] font-semibold tabular-nums ${
@@ -289,7 +289,7 @@ export function DashboardOverviewMobile({
             <div className="relative grid h-full place-items-center px-6 text-center">
               <div className="absolute inset-x-0 bottom-16 h-px bg-emerald-500/80" />
               <div>
-                <p className="text-sm font-semibold text-zinc-300">No balance curve yet</p>
+                <p className="text-sm font-semibold text-ink-strong">No balance curve yet</p>
                 <Button className="mt-3" size="sm" variant="outline" onClick={onAddTrade}>
                   Add first trade
                 </Button>
@@ -302,7 +302,7 @@ export function DashboardOverviewMobile({
       <section className="grid grid-cols-2 gap-2.5">
         <Card className={`${MOBILE_CARD} min-h-[206px]`}>
           <CardHeader className="px-3.5 pb-0 pt-4">
-            <CardTitle className="text-[14px] font-bold leading-tight text-zinc-600">
+            <CardTitle className="text-[14px] font-bold leading-tight text-ink-subtle">
               Most Traded Assets
             </CardTitle>
           </CardHeader>
@@ -316,7 +316,7 @@ export function DashboardOverviewMobile({
                 return (
                   <div key={item?.symbol ?? index}>
                     <div className="flex items-center justify-between gap-2 text-[13px] font-semibold">
-                      <span className="min-w-0 truncate text-zinc-600">
+                      <span className="min-w-0 truncate text-ink-subtle">
                         {item ? prettySymbol(item.symbol) : "-"}
                       </span>
                       <span className="shrink-0 tabular-nums text-white">{item?.trades ?? "-"}</span>
@@ -331,7 +331,7 @@ export function DashboardOverviewMobile({
 
         <Card className={`${MOBILE_CARD} min-h-[206px]`}>
           <CardHeader className="px-3.5 pb-0 pt-4">
-            <CardTitle className="text-[14px] font-bold leading-tight text-zinc-600">
+            <CardTitle className="text-[14px] font-bold leading-tight text-ink-subtle">
               Total Trades
             </CardTitle>
           </CardHeader>
@@ -347,7 +347,7 @@ export function DashboardOverviewMobile({
               ].map(([label, value]) => (
                 <div key={String(label)}>
                   <div className="flex items-center justify-between gap-2 text-[13px] font-semibold">
-                    <span className="truncate text-zinc-600">{label}</span>
+                    <span className="truncate text-ink-subtle">{label}</span>
                     <span className="shrink-0 tabular-nums text-white">{value}</span>
                   </div>
                   <StatDivider />
@@ -359,7 +359,7 @@ export function DashboardOverviewMobile({
 
         <Card className={`${MOBILE_CARD} relative min-h-[190px]`}>
           <CardHeader className="relative z-10 px-3.5 pb-0 pt-4">
-            <CardTitle className="text-[14px] font-bold leading-tight text-zinc-600">
+            <CardTitle className="text-[14px] font-bold leading-tight text-ink-subtle">
               Trade Winrate
             </CardTitle>
           </CardHeader>
@@ -367,7 +367,7 @@ export function DashboardOverviewMobile({
             <p className="text-[2.35rem] font-normal leading-none tracking-[-0.05em] text-white">
               {Math.round(winRate)}%
             </p>
-            <p className="mt-3 text-[12px] font-semibold text-zinc-600">
+            <p className="mt-3 text-[12px] font-semibold text-ink-subtle">
               {stats.wins}W / {stats.losses}L
             </p>
           </CardContent>
@@ -384,7 +384,7 @@ export function DashboardOverviewMobile({
 
         <Card className={`${MOBILE_CARD} min-h-[190px]`}>
           <CardHeader className="px-3.5 pb-0 pt-4">
-            <CardTitle className="text-[14px] font-bold leading-tight text-zinc-600">
+            <CardTitle className="text-[14px] font-bold leading-tight text-ink-subtle">
               Profit Factor
             </CardTitle>
           </CardHeader>
@@ -412,7 +412,7 @@ export function DashboardOverviewMobile({
         <CardHeader className="flex flex-row items-center justify-between border-b border-white/8 px-4 py-3.5">
           <div>
             <CardTitle className="text-[15px] font-bold text-white">Recent Trades</CardTitle>
-            <CardDescription className="mt-0.5 text-[10px] text-zinc-600">
+            <CardDescription className="mt-0.5 text-[10px] text-ink-subtle">
               Latest journal entries
             </CardDescription>
           </div>
@@ -432,7 +432,7 @@ export function DashboardOverviewMobile({
                 <InstrumentBadge symbol={trade.symbol} compact className="shrink-0 bg-surface-raised" />
                 <div className="min-w-0">
                   <p className="truncate text-[12px] font-semibold text-white">{trade.symbol}</p>
-                  <p className="truncate text-[9px] text-zinc-600">
+                  <p className="truncate text-[10px] text-ink-subtle">
                     {trade.setup || trade.session || trade.rawDate}
                   </p>
                 </div>
@@ -448,8 +448,8 @@ export function DashboardOverviewMobile({
           ) : (
             <div className="grid min-h-32 place-items-center py-5 text-center">
               <div>
-                <BookOpen className="mx-auto size-4 text-zinc-600" />
-                <p className="mt-2 text-sm font-semibold text-zinc-300">No trades yet</p>
+                <BookOpen className="mx-auto size-4 text-ink-subtle" />
+                <p className="mt-2 text-sm font-semibold text-ink-strong">No trades yet</p>
                 <Button className="mt-3" size="sm" onClick={onAddTrade}>
                   Add first trade
                 </Button>
@@ -463,7 +463,7 @@ export function DashboardOverviewMobile({
         <CardHeader className="flex flex-row items-center justify-between border-b border-white/8 px-4 py-3.5">
           <div>
             <CardTitle className="text-[15px] font-bold text-white">High Impact News</CardTitle>
-            <CardDescription className="mt-0.5 text-[10px] text-zinc-600">
+            <CardDescription className="mt-0.5 text-[10px] text-ink-subtle">
               Today's upcoming releases
             </CardDescription>
           </div>
@@ -497,9 +497,9 @@ export function DashboardOverviewMobile({
                   </span>
                   <div className="min-w-0">
                     <p className="truncate text-[11px] font-semibold text-white">{item.event}</p>
-                    <p className="truncate text-[9px] text-zinc-600">{item.country}</p>
+                    <p className="truncate text-[10px] text-ink-subtle">{item.country}</p>
                   </div>
-                  <p className="text-[10px] font-semibold tabular-nums text-zinc-300">
+                  <p className="text-[10px] font-semibold tabular-nums text-ink-strong">
                     {Number.isNaN(date.getTime())
                       ? "TBD"
                       : date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
@@ -510,8 +510,8 @@ export function DashboardOverviewMobile({
           ) : (
             <div className="grid min-h-32 place-items-center py-5 text-center">
               <div>
-                <CalendarDays className="mx-auto size-4 text-zinc-600" />
-                <p className="mt-2 text-sm font-semibold text-zinc-300">
+                <CalendarDays className="mx-auto size-4 text-ink-subtle" />
+                <p className="mt-2 text-sm font-semibold text-ink-strong">
                   No high-impact releases found
                 </p>
               </div>

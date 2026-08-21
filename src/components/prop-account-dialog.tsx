@@ -269,7 +269,7 @@ export function PropAccountDialog({
             <DialogTitle className="truncate text-base font-black sm:text-lg">Add account</DialogTitle>
           </DialogHeader>
           <div className="flex flex-1 justify-center"><StepDots step={step} /></div>
-          <span className="mr-8 w-10 shrink-0 text-right text-[10px] font-black text-zinc-600 sm:mr-7 sm:w-20">{step} / 3</span>
+          <span className="mr-8 w-10 shrink-0 text-right text-[10px] font-black text-ink-subtle sm:mr-7 sm:w-20">{step} / 3</span>
         </div>
 
         <form onSubmit={handleSubmit} className="relative max-h-[calc(100dvh-4.75rem)] overflow-y-auto sm:max-h-[calc(88dvh-61px)]">
@@ -282,7 +282,7 @@ export function PropAccountDialog({
 
             <div className="mx-auto mb-5 max-w-xl text-left sm:text-center">
               <h2 className="text-xl font-black tracking-tight sm:text-2xl">{stepTitle(step, accountKind, selectedPlatform)}</h2>
-              <p className="mt-1.5 text-xs font-medium leading-5 text-zinc-500 sm:mx-auto sm:max-w-md sm:text-sm">
+              <p className="mt-1.5 text-xs font-medium leading-5 text-ink-mute sm:mx-auto sm:max-w-md sm:text-sm">
                 {stepDescription(step, accountKind, selectedPlatform)}
               </p>
             </div>
@@ -317,7 +317,7 @@ export function PropAccountDialog({
                 <div className="space-y-4 p-4 sm:p-5">
                   <div className="rounded-2xl border border-white/10 bg-surface p-4 shadow-[inset_0_1px_0_rgba(255,255,255,.03)]">
                     <div className="flex flex-wrap items-center gap-2">
-                      <span className="rounded-full bg-surface px-2.5 py-1 text-[10px] font-black uppercase tracking-wider text-zinc-300">
+                      <span className="rounded-full bg-surface px-2.5 py-1 text-[10px] font-black uppercase tracking-wider text-ink-strong">
                         {accountType === "prop" ? "Prop account" : "Real account"}
                       </span>
                       {accountKind === "automatic" ? <PlatformLogoBadge platform={selectedPlatform.id} compact /> : null}
@@ -326,7 +326,7 @@ export function PropAccountDialog({
                       <PropFirmLogo firm={firm} compact />
                       <div className="min-w-0">
                         <p className="truncate text-sm font-black text-white">{firm}</p>
-                        <p className="truncate text-[11px] text-zinc-500">
+                        <p className="truncate text-[11px] text-ink-mute">
                           {accountKind === "manual"
                             ? "Manual journal workspace"
                             : selectedPlatform.mode === "csv"
@@ -335,7 +335,7 @@ export function PropAccountDialog({
                         </p>
                       </div>
                       <div className="ml-auto shrink-0 whitespace-nowrap text-right">
-                        <p className="text-[10px] uppercase tracking-widest text-zinc-500">Size</p>
+                        <p className="text-[10px] uppercase tracking-widest text-ink-mute">Size</p>
                         <p className="font-mono text-sm font-black text-zinc-100">${size.toLocaleString()}</p>
                       </div>
                     </div>
@@ -364,7 +364,7 @@ export function PropAccountDialog({
                   ) : null}
 
                   {accountKind === "manual" ? (
-                    <div className="rounded-xl border border-white/10 bg-surface p-4 text-xs leading-5 text-zinc-400">
+                    <div className="rounded-xl border border-white/10 bg-surface p-4 text-xs leading-5 text-ink-soft">
                       Manual account creates a clean journal without connector setup. You can add trades from the journal after creating it.
                     </div>
                   ) : null}
@@ -413,7 +413,7 @@ function ChoiceCard({ icon, title, text, onClick }: { icon: ReactNode; title: st
     >
       <span className="grid size-12 place-items-center rounded-2xl bg-surface-raised text-white">{icon}</span>
       <h3 className="mt-4 text-lg font-black sm:text-xl">{title}</h3>
-      <p className="mt-2 max-w-xs text-xs font-semibold leading-5 text-zinc-500 sm:text-sm">{text}</p>
+      <p className="mt-2 max-w-xs text-xs font-semibold leading-5 text-ink-mute sm:text-sm">{text}</p>
       <ChevronRight className="mt-4 transition group-hover:translate-x-1" size={20} />
     </button>
   );
@@ -448,7 +448,7 @@ function AccountBasics({
             onClick={() => changeAccountType(type)}
             className={cn(
               "rounded-lg py-2 text-sm font-bold capitalize transition",
-              accountType === type ? "bg-white text-black" : "text-zinc-500 hover:text-zinc-100",
+              accountType === type ? "bg-white text-black" : "text-ink-mute hover:text-zinc-100",
             )}
           >
             {type}
@@ -457,13 +457,13 @@ function AccountBasics({
       </div>
 
       <div className="space-y-2">
-        <Label className="text-xs font-semibold uppercase tracking-wider text-zinc-500">Name *</Label>
+        <Label className="text-xs font-semibold uppercase tracking-wider text-ink-mute">Name *</Label>
         <Input name="name" required placeholder={placeholder} className="h-11 border-white/10 bg-surface" />
       </div>
 
       <div className="grid gap-3 sm:grid-cols-2">
         <div className="space-y-2">
-          <Label className="text-xs font-semibold uppercase tracking-wider text-zinc-500">{accountType === "prop" ? "Firm" : "Broker"}</Label>
+          <Label className="text-xs font-semibold uppercase tracking-wider text-ink-mute">{accountType === "prop" ? "Firm" : "Broker"}</Label>
           <select
             value={firm}
             onChange={(event) => setFirm(event.target.value)}
@@ -473,7 +473,7 @@ function AccountBasics({
           </select>
         </div>
         <div className="space-y-2">
-          <Label className="text-xs font-semibold uppercase tracking-wider text-zinc-500">Size</Label>
+          <Label className="text-xs font-semibold uppercase tracking-wider text-ink-mute">Size</Label>
           <select
             value={size}
             onChange={(event) => setSize(Number(event.target.value))}
@@ -498,7 +498,7 @@ function Mt5Fields({
     <div className="rounded-xl border border-white/10 bg-surface p-4">
       <button type="button" onClick={() => setConnectNow((value) => !value)} className="mb-4 flex w-full items-center justify-between text-left">
         <span className="flex items-center gap-2 text-sm font-black text-zinc-100"><KeyRound size={15} /> Connect MT5 now</span>
-        <span className={cn("rounded-full px-2 py-1 text-[10px] font-black uppercase", connectNow ? "bg-emerald-400/15 text-emerald-200" : "bg-surface-raised text-zinc-400")}>{connectNow ? "On" : "Later"}</span>
+        <span className={cn("rounded-full px-2 py-1 text-[10px] font-black uppercase", connectNow ? "bg-emerald-400/15 text-emerald-200" : "bg-surface-raised text-ink-soft")}>{connectNow ? "On" : "Later"}</span>
       </button>
       {connectNow ? (
         <div className="grid gap-3">
@@ -523,7 +523,7 @@ function CsvImportNotice({ platform, report }: { platform: string; report: strin
         <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-amber-400/10 text-amber-300"><FileSpreadsheet size={18} /></span>
         <div>
           <h3 className="text-sm font-black text-white">{platform} CSV import</h3>
-          <p className="mt-1 text-xs leading-5 text-zinc-500">Create the account first. Then open Account Settings and upload: {report}.</p>
+          <p className="mt-1 text-xs leading-5 text-ink-mute">Create the account first. Then open Account Settings and upload: {report}.</p>
         </div>
       </div>
       <div className="mt-4 rounded-xl border border-emerald-400/15 bg-emerald-400/[.055] p-3 text-[11px] leading-5 text-emerald-50/80">
