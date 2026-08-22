@@ -101,7 +101,7 @@ export function ProfileEditDialog({
                 <TraderAvatar
                   name={profile.fullName}
                   value={profile.avatarUrl}
-                  className="h-28 w-28 rounded-[28px] border-4 border-[#171717] text-2xl"
+                  className="h-28 w-28 rounded-full border-4 border-[#171717] text-2xl"
                 />
                 <input
                   ref={avatarInputRef}
@@ -115,7 +115,7 @@ export function ProfileEditDialog({
                   variant="ghost"
                   onClick={() => avatarInputRef.current?.click()}
                   disabled={uploadingAvatar}
-                  className="absolute inset-0 h-full w-full rounded-[28px] bg-black/45 text-white hover:bg-black/55"
+                  className="absolute inset-0 h-full w-full rounded-full bg-black/45 text-white hover:bg-black/55"
                 >
                   {uploadingAvatar ? (
                     <XSpinner size="sm" />

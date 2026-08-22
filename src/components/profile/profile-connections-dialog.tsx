@@ -31,7 +31,7 @@ export function ProfileConnectionsDialog({
   return (
     <div className="fixed inset-0 z-[9999] flex items-start justify-center overflow-y-auto bg-black/92 p-3 pt-[max(1rem,env(safe-area-inset-top))] sm:items-center sm:p-4">
       <div className="absolute inset-0" onClick={onClose} aria-hidden="true" />
-      <section className="relative z-10 w-full max-w-xl overflow-hidden rounded-[30px] border border-white/10 bg-surface-raised/98 text-white shadow-2xl shadow-black/80">
+      <section className="relative z-10 w-full max-w-xl overflow-hidden rounded-2xl border border-white/10 bg-surface-raised/98 text-white shadow-2xl shadow-black/80">
         <header className="flex items-center gap-3 border-b border-white/8 px-4 py-4">
           <div className="min-w-0 flex-1">
             <h2 className="text-xl font-black leading-6">
