@@ -1,5 +1,7 @@
 import type { Post } from "@/components/types";
 
+export const SOCIAL_POST_SELECT = "id, user_id, content, author_name, author_handle, author_avatar, image_url, symbol, side, entry_price, target_price, trade_result, pnl, result_r, likes_count, replies_count, reposts_count, views_count, created_at" as const;
+
 export interface SocialPostRecord {
   id: string;
   user_id: string;

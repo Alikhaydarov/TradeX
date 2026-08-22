@@ -1,5 +1,6 @@
 import { authenticateRequest, serverError } from "@/lib/backend/auth";
 import { hasVerifiedPremiumAccess } from "@/lib/premium-plan";
+import { SOCIAL_POST_SELECT } from "@/lib/social-format";
 import { getSupabaseServerClient } from "@/lib/supabase/server";
 
 export const runtime = "nodejs";
@@ -9,8 +10,6 @@ interface PostRow {
   user_id: string;
   [key: string]: unknown;
 }
-
-const FEED_POST_SELECT = "id, user_id, content, author_name, author_handle, author_avatar, image_url, symbol, side, entry_price, target_price, trade_result, pnl, result_r, likes_count, replies_count, reposts_count, views_count, created_at" as const;
 
 interface ProfileRow {
   id: string;
@@ -31,7 +30,7 @@ export async function GET(request: Request) {
   const [{ data: posts, error }, auth] = await Promise.all([
     supabase
       .from("posts")
-      .select(FEED_POST_SELECT)
+      .select(SOCIAL_POST_SELECT)
       .eq("is_archived", false)
       .not("symbol", "is", null)
       .not("side", "is", null)

@@ -1,4 +1,5 @@
 import { hasVerifiedPremiumAccess } from "@/lib/premium-plan";
+import { SOCIAL_POST_SELECT } from "@/lib/social-format";
 import { getSupabaseServerClient } from "@/lib/supabase/server";
 import { getProfileInsights } from "@/lib/server/profile-insights";
 
@@ -17,8 +18,8 @@ interface RepostRow {
 
 async function followCounts(supabase: NonNullable<Awaited<ReturnType<typeof getSupabaseServerClient>>>, userId: string) {
   const [followers, following] = await Promise.all([
-    supabase.from("user_follows").select("*", { count: "exact", head: true }).eq("following_id", userId),
-    supabase.from("user_follows").select("*", { count: "exact", head: true }).eq("follower_id", userId),
+    supabase.from("user_follows").select("follower_id", { count: "exact", head: true }).eq("following_id", userId),
+    supabase.from("user_follows").select("following_id", { count: "exact", head: true }).eq("follower_id", userId),
   ]);
 
   return {
@@ -133,11 +134,11 @@ export async function loadProfileView(
   if (error) return { error: error.message, status: 500 };
   if (!profile) return { error: "Profile topilmadi.", status: 404 };
 
-  const [counts, postsResult, repliesResult, repostsResult, insights] = await Promise.all([
+  const [counts, postsResult, repliesResult, repostsResult, insights, followResult] = await Promise.all([
     followCounts(supabase, profile.id),
     supabase
       .from("posts")
-      .select("*")
+      .select(SOCIAL_POST_SELECT)
       .eq("user_id", profile.id)
       .eq("is_archived", false)
       .not("symbol", "is", null)
@@ -160,6 +161,14 @@ export async function loadProfileView(
       .limit(50)
       .returns<RepostRow[]>(),
     getProfileInsights(supabase, profile.id),
+    viewerId && viewerId !== profile.id
+      ? supabase
+          .from("user_follows")
+          .select("follower_id")
+          .eq("follower_id", viewerId)
+          .eq("following_id", profile.id)
+          .maybeSingle()
+      : Promise.resolve({ data: null, error: null }),
   ]);
   const { data: posts, error: postsError } = postsResult;
 
@@ -167,16 +176,8 @@ export async function loadProfileView(
   if (repliesResult.error) return { error: repliesResult.error.message, status: 500 };
   if (repostsResult.error) return { error: repostsResult.error.message, status: 500 };
 
-  let isFollowing = false;
-  if (viewerId && viewerId !== profile.id) {
-    const { data: follow } = await supabase
-      .from("user_follows")
-      .select("follower_id")
-      .eq("follower_id", viewerId)
-      .eq("following_id", profile.id)
-      .maybeSingle();
-    isFollowing = Boolean(follow);
-  }
+  if (followResult.error) return { error: followResult.error.message, status: 500 };
+  const isFollowing = Boolean(followResult.data);
 
   const hydratedPosts = (posts ?? []).map((post) => ({
     ...post,
@@ -195,7 +196,7 @@ export async function loadProfileView(
   if (parentPostIds.length) {
     const { data: rawParentPosts, error: parentPostsError } = await supabase
       .from("posts")
-      .select("*")
+      .select(SOCIAL_POST_SELECT)
       .in("id", parentPostIds)
       .returns<Record<string, unknown>[]>();
     if (parentPostsError) return { error: parentPostsError.message, status: 500 };
