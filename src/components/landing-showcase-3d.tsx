@@ -449,15 +449,18 @@ export function LandingShowcase3D() {
 
   return (
     <section
-      className="auth3-showcase relative z-[1] mx-auto w-[min(1180px,calc(100%-48px))] py-[110px] [contain-intrinsic-size:1px_760px] [content-visibility:auto] max-sm:w-[min(calc(100%-30px),1180px)] max-sm:py-20"
+      className="relative z-[1] mx-auto w-[min(1180px,calc(100%-48px))] pb-32 max-sm:w-[min(calc(100%-30px),1180px)] max-sm:pb-20"
       aria-labelledby="showcase-heading"
     >
-      <div className="auth3-section-title" data-reveal>
-        <span>INSIDE THE WORKSPACE</span>
-        <h2 id="showcase-heading">
-          Every screen you use.
-          <br />
-          One honest picture of your trading.
+      <div className="text-center">
+        <p className="text-[11px] uppercase tracking-[.18em] text-white/35">
+          Inside the workspace
+        </p>
+        <h2
+          id="showcase-heading"
+          className="mx-auto mt-4 max-w-2xl text-[clamp(24px,3.4vw,40px)] font-light leading-[1.2] tracking-[-0.02em] text-white"
+        >
+          Every screen you use. One honest picture of your trading.
         </h2>
       </div>
 
