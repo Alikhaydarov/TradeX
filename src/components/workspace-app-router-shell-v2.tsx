@@ -177,27 +177,39 @@ function WorkspaceAppRouterShellInner({
   useEffect(() => {
     if (!user) return;
 
-    const prefetch = () => {
-      CORE_WORKSPACE_ROUTES.forEach((route) => {
-        router.prefetch(route);
-        preloadWorkspaceRoute(route);
-      });
+    let cancelled = false;
+    const timers: number[] = [];
+    const routes = CORE_WORKSPACE_ROUTES.filter((route) => route !== pathname);
+
+    const prefetchInStages = (index = 0) => {
+      if (cancelled || index >= routes.length) return;
+      const route = routes[index];
+      router.prefetch(route);
+      preloadWorkspaceRoute(route);
+      timers.push(
+        window.setTimeout(() => prefetchInStages(index + 1), 450),
+      );
     };
 
     const idleWindow = window as Window & {
       requestIdleCallback?: (callback: () => void, options?: { timeout: number }) => number;
       cancelIdleCallback?: (handle: number) => void;
     };
-    const idleHandle = idleWindow.requestIdleCallback?.(prefetch, { timeout: 1200 });
+    const idleHandle = idleWindow.requestIdleCallback?.(
+      () => prefetchInStages(),
+      { timeout: 2200 },
+    );
     const timeoutHandle = idleHandle === undefined
-      ? window.setTimeout(prefetch, 350)
+      ? window.setTimeout(() => prefetchInStages(), 900)
       : undefined;
 
     return () => {
+      cancelled = true;
       if (idleHandle !== undefined) idleWindow.cancelIdleCallback?.(idleHandle);
       if (timeoutHandle !== undefined) window.clearTimeout(timeoutHandle);
+      timers.forEach((timer) => window.clearTimeout(timer));
     };
-  }, [router, user]);
+  }, [pathname, router, user]);
 
   useEffect(() => {
     if (!user) {
