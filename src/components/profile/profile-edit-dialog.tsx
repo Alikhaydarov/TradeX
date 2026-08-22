@@ -89,7 +89,7 @@ export function ProfileEditDialog({
               {uploadingBanner ? (
                 <XSpinner size="sm" />
               ) : (
-                <span className="inline-flex items-center gap-1.5 rounded-full bg-black/55 px-3 py-1.5 text-xs font-semibold backdrop-blur">
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-black/80 px-3 py-1.5 text-xs font-semibold">
                   <Camera size={14} /> Change cover
                 </span>
               )}

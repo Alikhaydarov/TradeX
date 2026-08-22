@@ -43,7 +43,7 @@ export function ProfileHeader({
         {profile.bannerUrl ? <MediaImage src={profile.bannerUrl} alt={`${profile.fullName} banner`} className="h-full w-full object-cover" /> : null}
         {isOwnProfile ? <>
           <input ref={bannerInputRef} type="file" accept="image/png,image/jpeg,image/webp,image/gif" className="hidden" onChange={(event) => onBannerFile(event.target.files?.[0])} />
-          <button type="button" onClick={() => bannerInputRef.current?.click()} disabled={uploadingBanner} className="absolute right-2 top-2 grid size-8 place-items-center rounded-lg bg-black/55 text-white backdrop-blur transition hover:bg-black/70 disabled:opacity-60" aria-label="Change banner">
+          <button type="button" onClick={() => bannerInputRef.current?.click()} disabled={uploadingBanner} className="absolute right-2 top-2 grid size-8 place-items-center rounded-lg bg-black/80 text-white transition hover:bg-black disabled:opacity-60" aria-label="Change banner">
             {uploadingBanner ? <XSpinner size="sm" /> : <Camera size={14} />}
           </button>
         </> : null}

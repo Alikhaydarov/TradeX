@@ -414,7 +414,7 @@ export function ChatPage({ communityId }: { communityId: string }) {
         <div className="absolute inset-0 z-50 lg:hidden">
           <button
             type="button"
-            className="absolute inset-0 bg-black/75 backdrop-blur-sm"
+            className="absolute inset-0 bg-black/95"
             onClick={() => setMobileSidebarOpen(false)}
             aria-label="Close sidebar"
           />

@@ -374,7 +374,7 @@ export function PropAccountDialog({
           </div>
 
           {step === 3 ? (
-            <div className="sticky bottom-0 flex items-center gap-2 border-t border-white/8 bg-surface/95 px-4 py-3 backdrop-blur sm:justify-end sm:px-5 sm:py-4">
+            <div className="sticky bottom-0 flex items-center gap-2 border-t border-white/8 bg-surface px-4 py-3 sm:justify-end sm:px-5 sm:py-4">
               <Button type="button" variant="outline" onClick={() => onOpenChange(false)} className="flex-1 sm:flex-none">Cancel</Button>
               <Button disabled={isSubmitting} className="flex-1 bg-white font-semibold text-black hover:bg-zinc-200 sm:flex-none">
                 {isSubmitting ? <LoaderCircle className="animate-spin" /> : <Plus size={18} />}

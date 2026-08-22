@@ -191,7 +191,7 @@ export function AdminPanel({ onLogin }: { onLogin: () => void }) {
 
   return (
     <div className="min-h-full">
-      <header className="sticky top-0 z-20 flex items-center border-b border-white/8 bg-[linear-gradient(90deg,rgba(14,165,233,.08),rgba(17,17,17,.96)_35%,rgba(245,158,11,.06))] px-3 py-3 backdrop-blur-xl sm:px-5 sm:py-4">
+      <header className="sticky top-0 z-20 flex items-center border-b border-white/8 bg-black px-3 py-3 sm:px-5 sm:py-4">
         <div>
           <p className="text-[10px] font-bold uppercase tracking-[.22em] text-ink-mute">Superadmin</p>
           <h1 className="mt-1 text-xl font-black tracking-tight text-white sm:text-2xl">Tradoxy access console</h1>
