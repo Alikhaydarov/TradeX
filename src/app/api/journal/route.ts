@@ -45,28 +45,6 @@ export async function GET(request: Request) {
     ? Math.min(Math.max(requestedLimit, 1), JOURNAL_MAX_LIMIT)
     : JOURNAL_DEFAULT_LIMIT;
 
-  let versionQuery = auth.supabase
-    .from("journal_entries")
-    .select("updated_at", { count: "exact" })
-    .eq("user_id", auth.user.id)
-    .order("updated_at", { ascending: false })
-    .limit(1);
-  if (accountId) versionQuery = versionQuery.eq("prop_account_id", accountId);
-
-  const { data: versionRows, count, error: versionError } = await versionQuery;
-  if (versionError) return serverError(versionError.message);
-
-  const latestUpdatedAt = versionRows?.[0]?.updated_at ?? "empty";
-  const etag = `W/\"${accountId ?? "all"}:${count ?? 0}:${latestUpdatedAt}\"`;
-  const headers = {
-    "Cache-Control": "private, no-cache, must-revalidate",
-    ETag: etag,
-  };
-
-  if (request.headers.get("if-none-match") === etag) {
-    return new Response(null, { status: 304, headers });
-  }
-
   let query = auth.supabase
     .from("journal_entries")
     .select("*")
@@ -77,6 +55,21 @@ export async function GET(request: Request) {
   if (accountId) query = query.eq("prop_account_id", accountId);
   const { data, error } = await query;
   if (error) return serverError(error.message);
+
+  const latestUpdatedAt = (data ?? []).reduce((latest, row) => {
+    const candidate = String(row.updated_at || row.created_at || "");
+    return candidate > latest ? candidate : latest;
+  }, "empty");
+  const etag = `W/\"${accountId ?? "all"}:${data?.length ?? 0}:${latestUpdatedAt}\"`;
+  const headers = {
+    "Cache-Control": "private, no-cache, must-revalidate",
+    ETag: etag,
+  };
+
+  if (request.headers.get("if-none-match") === etag) {
+    return new Response(null, { status: 304, headers });
+  }
+
   return Response.json({ entries: data }, { headers });
 }
 

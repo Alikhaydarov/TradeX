@@ -88,7 +88,7 @@ function NavigationProgressBar({ active }: { active: boolean }) {
     const timer = window.setTimeout(() => {
       setVisible(false);
       setProgress(0);
-    }, 260);
+    }, 120);
     return () => window.clearTimeout(timer);
   }, [active, visible, pathname]);
 
@@ -102,7 +102,7 @@ function NavigationProgressBar({ active }: { active: boolean }) {
       className="pointer-events-none fixed inset-x-0 top-0 z-[2147483646] h-0.5"
     >
       <div
-        className="h-full bg-white shadow-[0_0_12px_rgba(255,255,255,.55)] transition-[width,opacity] duration-200 ease-out"
+        className="h-full bg-white shadow-[0_0_12px_rgba(255,255,255,.55)] transition-[width,opacity] duration-150 ease-out"
         style={{ width: `${progress}%`, opacity: progress === 100 ? 0 : 1 }}
       />
     </div>

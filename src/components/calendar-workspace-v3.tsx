@@ -16,6 +16,8 @@ import { usePathname, useRouter } from "next/navigation";
 
 import { apiRequest } from "@/lib/api-client";
 import { useActiveAccountStore } from "./active-account-context";
+import { useAuth } from "./auth-context";
+import { useJournalData } from "./journal/use-journal-data";
 import { Button } from "./ui/button";
 import { Card, CardContent, CardHeader } from "./ui/card";
 import {
@@ -39,16 +41,6 @@ const CalendarCurveChart = dynamic(
   () => import("./calendar-curve-chart").then((m) => m.CalendarCurveChart),
   { ssr: false, loading: () => <div className="h-full w-full" /> },
 );
-
-type EntryRow = {
-  id: string;
-  symbol: string;
-  side: "Long" | "Short";
-  pnl: string | number;
-  result_r?: string | number | null;
-  traded_at: string;
-  setup?: string | null;
-};
 
 type CalendarEntry = {
   id: string;
@@ -229,12 +221,11 @@ function CompactStat({ label, value, valueClass = "text-white" }: { label: strin
 export function CalendarWorkspaceV3() {
   const pathname = usePathname();
   const router = useRouter();
+  const { user } = useAuth();
   const { accounts, activeAccountId, loading: accountsLoading } = useActiveAccountStore();
   const activeAccount = accounts.find((account) => account.id === activeAccountId) || null;
 
   const [route, setRoute] = useState<RouteState>(() => currentRoute(pathname));
-  const [entries, setEntries] = useState<CalendarEntry[]>([]);
-  const [entriesLoading, setEntriesLoading] = useState(true);
   const [news, setNews] = useState<MarketNewsEvent[]>([]);
   const [newsLoading, setNewsLoading] = useState(false);
   const [newsLimited, setNewsLimited] = useState(false);
@@ -247,41 +238,25 @@ export function CalendarWorkspaceV3() {
     setDayDialogOpen(false);
   }, [pathname]);
 
-  useEffect(() => {
-    if (!activeAccountId) {
-      setEntries([]);
-      setEntriesLoading(false);
-      return;
-    }
+  const { entries: journalEntries, loading: entriesLoading } = useJournalData({
+    userId: user?.id ?? null,
+    mode: "workspace",
+    accountId: activeAccountId,
+    accountsLoading,
+  });
 
-    let active = true;
-    setEntriesLoading(true);
-    void apiRequest<{ entries: EntryRow[] }>(`/api/journal?accountId=${encodeURIComponent(activeAccountId)}`)
-      .then((response) => {
-        if (!active) return;
-        setEntries(
-          (response.entries || []).map((entry) => ({
-            id: entry.id,
-            symbol: entry.symbol,
-            side: entry.side,
-            pnl: Number(entry.pnl || 0),
-            resultR: Number(entry.result_r || 0),
-            date: entry.traded_at,
-            setup: entry.setup || "",
-          })),
-        );
-      })
-      .catch(() => {
-        if (active) setEntries([]);
-      })
-      .finally(() => {
-        if (active) setEntriesLoading(false);
-      });
-
-    return () => {
-      active = false;
-    };
-  }, [activeAccountId]);
+  const entries = useMemo<CalendarEntry[]>(
+    () => journalEntries.map((entry) => ({
+      id: entry.id,
+      symbol: entry.symbol,
+      side: entry.side,
+      pnl: entry.pnl,
+      resultR: entry.resultR ?? 0,
+      date: entry.rawDate ?? "",
+      setup: entry.setup ?? "",
+    })),
+    [journalEntries],
+  );
 
   const loadNews = useCallback(async () => {
     if (route.mode !== "economic") return;

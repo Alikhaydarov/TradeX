@@ -14,8 +14,8 @@ import { TradoxyMark } from "./tradoxy-mark";
  * as a glitch rather than a brand moment - so the splash holds briefly, then
  * fades. Tune this one number if it feels long or short; nothing else gates it.
  */
-const SETTLE_MS = 380;
-const FADE_MS = 220;
+const SETTLE_MS = 80;
+const FADE_MS = 100;
 
 /**
  * Covers the gap between first paint and an interactive app.
@@ -88,7 +88,7 @@ export function WorkspaceBootLoader({
       role="status"
       aria-live="polite"
       aria-label="Loading Tradoxy"
-      className={`fixed inset-0 z-[2147483647] grid place-items-center bg-black transition-opacity duration-200 ${finishing ? "opacity-0" : "opacity-100"}`}
+      className={`fixed inset-0 z-[2147483647] grid place-items-center bg-black transition-opacity duration-100 ${finishing ? "opacity-0" : "opacity-100"}`}
     >
       <div className="flex -translate-y-4 flex-col items-center gap-5">
         <div className="relative grid size-16 place-items-center">
