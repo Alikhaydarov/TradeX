@@ -236,15 +236,22 @@ export function Scroll3D({
     const element = ref.current;
     if (!element) return;
 
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-      element.style.opacity = "1";
-      element.style.transform = "none";
-      return;
-    }
+    // "Reduce" does not have to mean "remove". What makes scroll effects
+    // uncomfortable is large travel - the depth and the rotation. Those are
+    // dropped here and a short fade-up is kept, so a visitor whose system asks
+    // for less motion still gets a page that arrives rather than one that is
+    // simply already there.
+    const gentle = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
     return register({
       element,
       apply: (raw, leave, node) => {
+        if (gentle) {
+          const eased = easeOut(Math.min(1, Math.max(0, (raw - delay) / (1 - delay))));
+          node.style.opacity = String(Math.min(1, 0.2 + eased * 1.1));
+          node.style.transform = `translate3d(0, ${(1 - eased) * 12}px, 0)`;
+          return;
+        }
         if (!enter) {
           node.style.opacity = String(1 - leave * 0.65);
           node.style.transform = `translate3d(0, ${leave * -lift}px, ${
