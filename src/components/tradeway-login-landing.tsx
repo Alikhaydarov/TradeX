@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 
+import { LandingShowcase3D } from "./landing-showcase-3d";
 import { AUTH_LANDING_TAILWIND_CLASS } from "./tailwind/auth-tailwind-classes";
 import { TradoxyMark } from "./tradoxy-mark";
 
@@ -162,6 +163,8 @@ export function TradoxyLoginLanding({
           ))}
         </div>
       </section>
+
+      <LandingShowcase3D />
 
       <section className="auth3-workflow" id="workflow">
         <div className="auth3-section-title" data-reveal>
