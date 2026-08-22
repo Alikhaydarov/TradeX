@@ -87,7 +87,7 @@ export function WorkspaceTopbar({ section }: { section: Section }) {
   return (
     <header
       role="banner"
-      className="tw-app-topbar sticky top-0 z-[70] shrink-0 border-b border-white/10 bg-black px-3 py-2.5 lg:flex lg:min-h-[60px] lg:items-center lg:gap-5 lg:px-6 lg:py-2"
+      className="tw-app-topbar sticky top-0 z-[70] shrink-0 border-b border-white/10 bg-black px-3 py-3 lg:flex lg:min-h-16 lg:items-center lg:gap-5 lg:px-6 lg:py-2.5"
     >
       <div className="flex min-w-0 items-center gap-2 lg:flex-1 lg:gap-5">
         <button
@@ -101,7 +101,7 @@ export function WorkspaceTopbar({ section }: { section: Section }) {
 
         <div className="min-w-0 flex-1">
           <div className="flex min-w-0 items-center gap-2.5">
-            <h1 className="truncate text-[15px] font-bold leading-tight tracking-[-0.025em] text-white lg:text-[16px]">
+            <h1 className="truncate text-base font-bold leading-tight tracking-[-0.02em] text-white lg:text-[17px]">
               {page}
             </h1>
             {isAccountScoped ? (
@@ -111,7 +111,7 @@ export function WorkspaceTopbar({ section }: { section: Section }) {
               </span>
             ) : null}
           </div>
-          <p className="mt-1 truncate text-[10px] font-medium text-ink-mute lg:text-[11px]">
+          <p className="mt-1 truncate text-[11px] font-medium text-ink-mute">
             {isAccountScoped
               ? "Trading performance workspace"
               : "Tradoxy workspace"}
