@@ -10,6 +10,8 @@ interface PostRow {
   [key: string]: unknown;
 }
 
+const FEED_POST_SELECT = "id, user_id, content, author_name, author_handle, author_avatar, image_url, symbol, side, entry_price, target_price, trade_result, pnl, result_r, likes_count, replies_count, reposts_count, views_count, created_at" as const;
+
 interface ProfileRow {
   id: string;
   full_name: string;
@@ -29,7 +31,7 @@ export async function GET(request: Request) {
   const [{ data: posts, error }, auth] = await Promise.all([
     supabase
       .from("posts")
-      .select("*")
+      .select(FEED_POST_SELECT)
       .eq("is_archived", false)
       .not("symbol", "is", null)
       .not("side", "is", null)
@@ -43,6 +45,7 @@ export async function GET(request: Request) {
 
   const rawPosts = (posts ?? []) as PostRow[];
   const userIds = Array.from(new Set(rawPosts.map((post) => post.user_id).filter(Boolean)));
+  const postIds = rawPosts.map((post) => post.id);
 
   const profilesRequest = userIds.length
     ? supabase
@@ -51,11 +54,11 @@ export async function GET(request: Request) {
       .in("id", userIds)
     : Promise.resolve({ data: [] as ProfileRow[], error: null });
 
-  const interactionRequest = auth
+  const interactionRequest = auth && postIds.length
     ? Promise.all([
-      auth.supabase.from("post_likes").select("post_id").eq("user_id", auth.user.id),
-      auth.supabase.from("post_bookmarks").select("post_id").eq("user_id", auth.user.id),
-      auth.supabase.from("post_reposts").select("post_id").eq("user_id", auth.user.id),
+      auth.supabase.from("post_likes").select("post_id").eq("user_id", auth.user.id).in("post_id", postIds),
+      auth.supabase.from("post_bookmarks").select("post_id").eq("user_id", auth.user.id).in("post_id", postIds),
+      auth.supabase.from("post_reposts").select("post_id").eq("user_id", auth.user.id).in("post_id", postIds),
     ])
     : Promise.resolve(null);
 

@@ -259,7 +259,7 @@ export function useFeedData(onLogin: () => void) {
     }
 
     let active = true;
-    apiRequest<{ isAdmin: boolean }>("/api/admin/me")
+    apiRequest<{ isAdmin: boolean }>("/api/admin/me", { cacheMs: 60_000 })
       .then((response) => {
         if (active) setIsAdmin(response.isAdmin);
       })

@@ -24,7 +24,7 @@ export function FreeUserStart({ children }: { children: ReactNode }) {
   const { status, loading: premiumLoading } = usePremiumStatus(true);
   const { user } = useAuth();
 
-  if (accountsLoading || premiumLoading) {
+  if (accountsLoading || (premiumLoading && accounts.length === 0)) {
     return (
       <div className="grid min-h-[65vh] place-items-center">
         <Spinner className="size-5 text-ink-mute" />
