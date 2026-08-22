@@ -10,6 +10,7 @@ import {
   Edit3,
   ImagePlus,
   LoaderCircle,
+  Maximize2,
   Save,
   Share2,
   ShieldCheck,
@@ -34,7 +35,7 @@ const money = new Intl.NumberFormat("en-US", {
   maximumFractionDigits: 2,
 });
 
-const CARD = "overflow-hidden rounded-2xl border border-white/8 bg-surface shadow-none";
+const CARD = "overflow-hidden rounded-xl border border-white/8 bg-surface shadow-none";
 const LABEL = "text-[10px] font-bold uppercase tracking-[0.14em] text-ink-subtle";
 const INPUT = "mt-1.5 h-10 border-white/10 bg-surface text-sm";
 
@@ -204,7 +205,7 @@ function formatDate(value: string) {
 
 function DetailItem({ label, value, tone }: { label: string; value: string; tone?: "good" | "bad" }) {
   return (
-    <div className="min-w-0 rounded-xl border border-white/7 bg-black/35 px-3 py-3">
+    <div className="min-w-0 border-b border-white/7 px-0 py-3 sm:border-b-0 sm:border-l sm:px-4 sm:first:border-l-0">
       <p className={LABEL}>{label}</p>
       <p
         className={`mt-1.5 truncate text-sm font-semibold tabular-nums ${
@@ -227,6 +228,7 @@ export function TradeDetailPage({ tradeId, onBack }: { tradeId: string; onBack: 
   const [editing, setEditing] = useState(false);
   const [error, setError] = useState("");
   const [toast, setToast] = useState("");
+  const [previewImage, setPreviewImage] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   const loadTrade = useCallback(async () => {
@@ -424,7 +426,7 @@ export function TradeDetailPage({ tradeId, onBack }: { tradeId: string; onBack: 
   const sideGood = trade.side === "Long";
 
   return (
-    <div className="mx-auto max-w-[1540px] space-y-4 p-3 pb-28 sm:p-4 sm:pb-8 lg:p-5">
+    <div className="mx-auto max-w-[1480px] space-y-4 px-3 py-4 pb-28 sm:px-5 sm:pb-8 lg:px-6">
       {toast ? (
         <div className="fixed right-3 top-3 z-[10000] rounded-xl border border-white/10 bg-surface-raised/95 px-3 py-2 text-xs font-semibold text-zinc-100 shadow-2xl">
           {toast}
@@ -446,8 +448,8 @@ export function TradeDetailPage({ tradeId, onBack }: { tradeId: string; onBack: 
               </Button>
               <div className="min-w-0">
                 <div className="flex flex-wrap items-center gap-2">
-                  <h1 className="truncate text-2xl font-black tracking-[-0.04em] text-white sm:text-3xl">{trade.symbol}</h1>
-                  <span className={`rounded-lg px-2.5 py-1 text-[10px] font-black uppercase ${sideGood ? "bg-emerald-400/10 text-emerald-300" : "bg-rose-400/10 text-rose-300"}`}>
+                  <h1 className="truncate text-xl font-bold text-white sm:text-2xl">{trade.symbol}</h1>
+                  <span className={`rounded-md border px-2 py-0.5 text-[10px] font-bold uppercase ${sideGood ? "border-emerald-400/15 bg-emerald-400/8 text-emerald-300" : "border-rose-400/15 bg-rose-400/8 text-rose-300"}`}>
                     {trade.side === "Long" ? "Buy" : "Sell"}
                   </span>
                 </div>
@@ -460,14 +462,14 @@ export function TradeDetailPage({ tradeId, onBack }: { tradeId: string; onBack: 
             </div>
 
             <div className="flex flex-wrap items-center gap-2 lg:justify-end">
-              <div className={`mr-auto rounded-xl border px-3 py-2 text-left lg:mr-2 ${positive ? "border-emerald-400/15 bg-emerald-400/[.055]" : "border-rose-400/15 bg-rose-400/[.055]"}`}>
+              <div className="mr-auto min-w-[132px] text-left lg:mr-3 lg:text-right">
                 <p className={LABEL}>Net P&amp;L</p>
-                <p className={`mt-0.5 font-mono text-lg font-black ${positive ? "text-emerald-300" : "text-rose-300"}`}>
+                <p className={`mt-0.5 font-mono text-xl font-bold ${positive ? "text-emerald-300" : "text-rose-300"}`}>
                   {positive ? "+" : ""}{money.format(trade.pnl)}
                 </p>
               </div>
-              <Button type="button" variant="outline" onClick={() => void shareTrade()} className="border-white/10 bg-surface"><Share2 size={15} /><span className="hidden sm:inline">Share</span></Button>
-              <Button type="button" variant="outline" onClick={() => void copyLink()} className="border-white/10 bg-surface"><Copy size={15} /><span className="hidden sm:inline">Copy link</span></Button>
+              <Button type="button" variant="outline" size="icon" title="Share trade" onClick={() => void shareTrade()} className="border-white/10 bg-surface"><Share2 size={15} /></Button>
+              <Button type="button" variant="outline" size="icon" title="Copy trade link" onClick={() => void copyLink()} className="border-white/10 bg-surface"><Copy size={15} /></Button>
               <Button type="button" onClick={() => setEditing((current) => !current)} className={editing ? "bg-zinc-800 text-white hover:bg-zinc-700" : "bg-white text-black hover:bg-zinc-200"}>
                 {editing ? <X size={15} /> : <Edit3 size={15} />}{editing ? "Cancel" : "Edit"}
               </Button>
@@ -477,7 +479,7 @@ export function TradeDetailPage({ tradeId, onBack }: { tradeId: string; onBack: 
             </div>
           </div>
 
-          <div className="grid grid-cols-2 border-t border-white/8 sm:grid-cols-4 lg:grid-cols-6">
+          <div className="grid grid-cols-2 border-t border-white/8 sm:grid-cols-3 lg:grid-cols-6">
             {[
               ["Entry", trade.entry ? String(trade.entry) : "—"],
               ["Exit", trade.exit ? String(trade.exit) : "—"],
@@ -486,7 +488,7 @@ export function TradeDetailPage({ tradeId, onBack }: { tradeId: string; onBack: 
               ["Result", `${trade.resultR.toFixed(2)}R`],
               ["Review", `${reviewScore}%`],
             ].map(([label, value]) => (
-              <div key={label} className="min-w-0 border-b border-r border-white/8 px-3 py-3 last:border-r-0 sm:border-b-0">
+              <div key={label} className="min-w-0 border-b border-r border-white/8 px-4 py-3.5 lg:border-b-0">
                 <p className={LABEL}>{label}</p>
                 <p className="mt-1 truncate text-sm font-bold tabular-nums text-zinc-100">{value}</p>
               </div>
@@ -501,7 +503,7 @@ export function TradeDetailPage({ tradeId, onBack }: { tradeId: string; onBack: 
         </div>
       ) : null}
 
-      <div className="grid items-start gap-4 xl:grid-cols-[minmax(0,1.16fr)_minmax(340px,.84fr)]">
+      <div className="grid items-start gap-4 xl:grid-cols-[minmax(0,1.2fr)_minmax(360px,.8fr)]">
         <div className="space-y-4">
           <Card className={CARD}>
             <div className="flex items-center justify-between border-b border-white/8 px-4 py-3.5 sm:px-5">
@@ -529,7 +531,7 @@ export function TradeDetailPage({ tradeId, onBack }: { tradeId: string; onBack: 
                   <label className={LABEL}>Risk %<Input value={draft.riskPercent} onChange={(event) => updateDraft("riskPercent", event.target.value)} className={INPUT} /></label>
                 </div>
               ) : (
-                <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+                <div className="grid gap-x-0 sm:grid-cols-2 lg:grid-cols-3">
                   <DetailItem label="Symbol" value={trade.symbol} />
                   <DetailItem label="Side" value={trade.side === "Long" ? "Buy" : "Sell"} tone={sideGood ? "good" : "bad"} />
                   <DetailItem label="Trade date" value={formatDate(trade.tradedAt)} />
@@ -608,8 +610,11 @@ export function TradeDetailPage({ tradeId, onBack }: { tradeId: string; onBack: 
               {draft.imageUrls.length ? (
                 <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-1 2xl:grid-cols-2">
                   {draft.imageUrls.map((url, index) => (
-                    <div key={url} className={`group relative overflow-hidden rounded-xl border border-white/8 bg-black ${index === 0 ? "sm:col-span-2 xl:col-span-1 2xl:col-span-2" : ""}`}>
-                      <MediaImage src={url} alt={`${trade.symbol} screenshot ${index + 1}`} className={`w-full object-contain ${index === 0 ? "h-56 sm:h-72 xl:h-64" : "h-40"}`} />
+                    <div key={url} className={`group relative overflow-hidden rounded-lg border border-white/8 bg-black ${index === 0 ? "sm:col-span-2 xl:col-span-1 2xl:col-span-2" : ""}`}>
+                      <button type="button" onClick={() => setPreviewImage(url)} className="block w-full cursor-zoom-in" aria-label={`Open screenshot ${index + 1}`}>
+                        <MediaImage src={url} alt={`${trade.symbol} screenshot ${index + 1}`} className={`w-full object-contain transition duration-300 group-hover:scale-[1.01] ${index === 0 ? "h-56 sm:h-72 xl:h-64" : "h-40"}`} />
+                      </button>
+                      <span className="pointer-events-none absolute bottom-2 right-2 grid size-7 place-items-center rounded-md bg-black/75 text-zinc-200 opacity-0 transition group-hover:opacity-100"><Maximize2 size={12} /></span>
                       {editing ? <button type="button" onClick={() => updateDraft("imageUrls", draft.imageUrls.filter((item) => item !== url))} className="absolute right-2 top-2 grid size-8 place-items-center rounded-lg bg-black/85 text-rose-300 opacity-100 transition sm:opacity-0 sm:group-hover:opacity-100"><Trash2 size={13} /></button> : null}
                     </div>
                   ))}
@@ -663,6 +668,13 @@ export function TradeDetailPage({ tradeId, onBack }: { tradeId: string; onBack: 
           <Button type="button" onClick={() => void shareTrade()} className="bg-white text-black hover:bg-zinc-200"><Share2 size={15} /> Share</Button>
         </div>
       )}
+
+      {previewImage ? (
+        <div className="fixed inset-0 z-[10020] grid place-items-center bg-black/95 p-3 sm:p-6" role="dialog" aria-modal="true" aria-label="Trade screenshot preview" onClick={() => setPreviewImage(null)}>
+          <button type="button" onClick={() => setPreviewImage(null)} className="absolute right-4 top-4 grid size-10 place-items-center rounded-lg border border-white/10 bg-zinc-950 text-zinc-200 hover:bg-zinc-900" aria-label="Close preview"><X size={18} /></button>
+          <MediaImage src={previewImage} alt={`${trade.symbol} screenshot preview`} className="max-h-[92dvh] max-w-[96vw] object-contain" />
+        </div>
+      ) : null}
     </div>
   );
 }
