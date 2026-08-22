@@ -2,7 +2,7 @@
 
 import type { ComponentProps } from "react"
 import { useCallback, useEffect, useMemo, useState } from "react"
-import { ArrowUpRight, BookOpen, CalendarDays, RefreshCw } from "lucide-react"
+import { ArrowUpRight, BookOpen, CalendarDays, RefreshCw, ShieldCheck } from "lucide-react"
 
 import dynamic from "next/dynamic"
 
@@ -70,7 +70,7 @@ const COUNTRY_CURRENCY: Record<string, string> = {
 }
 
 const MOBILE_CARD =
-  "gap-0 overflow-hidden rounded-2xl border-white/10 bg-surface py-0 shadow-none"
+  "gap-0 overflow-hidden rounded-xl border-white/10 bg-surface py-0 shadow-none"
 
 function cleanUsername(value: unknown) {
   return (
@@ -127,8 +127,13 @@ function StatDivider() {
 export function DashboardOverviewMobile({
   stats,
   equity,
+  weeklyStrip,
+  setups,
+  planRate,
   monthCount,
   recentTrades,
+  activityEntries,
+  openPositions,
   currentPnl,
   currentEquity,
   balancesHidden,
@@ -186,7 +191,7 @@ export function DashboardOverviewMobile({
   const instrumentStats = useMemo(
     () =>
       [
-        ...recentTrades
+        ...(activityEntries ?? recentTrades)
           .reduce((map, trade) => {
             const current = map.get(trade.symbol) ?? {
               symbol: trade.symbol,
@@ -200,7 +205,7 @@ export function DashboardOverviewMobile({
           }, new Map<string, { symbol: string; trades: number; pnl: number }>())
           .values(),
       ].sort((left, right) => right.trades - left.trades || right.pnl - left.pnl),
-    [recentTrades],
+    [activityEntries, recentTrades],
   )
 
   const topInstrument = instrumentStats[0]
@@ -210,6 +215,13 @@ export function DashboardOverviewMobile({
   const formattedPnl = balancesHidden
     ? "******"
     : `${currentPnl >= 0 ? "+" : "-"}${money.format(Math.abs(currentPnl))}`
+  const topSetup = setups[0]
+  const focus =
+    planRate < 70
+      ? "Follow the plan before adding risk."
+      : stats.pf < 1 && monthCount > 2
+        ? "Protect downside and filter weaker entries."
+        : "Stay patient and execute only A+ setups."
 
   return (
     <div className="w-full min-w-0 space-y-3 overflow-x-clip pb-24">
@@ -219,6 +231,34 @@ export function DashboardOverviewMobile({
         </h1>
         <p className="mt-1 text-[11px] font-medium text-ink-mute">{dashboardDate()}</p>
       </section>
+
+      <div className="-mx-0.5 overflow-x-auto px-0.5 pb-0.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        <div className="flex min-w-max gap-2">
+          {weeklyStrip.map((day) => (
+            <div key={day.key} className="w-[104px] rounded-lg border border-white/8 bg-surface px-2.5 py-2">
+              <div className="flex items-center justify-between gap-2">
+                <span className="truncate text-[10px] font-semibold text-zinc-300">{day.label}</span>
+                <span className={`text-[9px] font-semibold tabular-nums ${day.pnl > 0 ? "text-emerald-300" : day.pnl < 0 ? "text-rose-300" : "text-ink-mute"}`}>{day.trades}</span>
+              </div>
+              <p className={`mt-1 truncate text-[10px] font-bold tabular-nums ${day.pnl > 0 ? "text-emerald-300" : day.pnl < 0 ? "text-rose-300" : "text-ink-mute"}`}>{day.trades ? formatTradePnl(day.pnl) : "No trades"}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <Card className={MOBILE_CARD}>
+        <CardContent className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 px-3.5 py-3">
+          <span className="grid size-8 place-items-center rounded-lg bg-white/[.05] text-zinc-300"><ShieldCheck className="size-4" /></span>
+          <div className="min-w-0">
+            <p className="text-[9px] font-bold uppercase tracking-[0.12em] text-ink-mute">Today&apos;s focus</p>
+            <p className="mt-0.5 truncate text-[11px] font-semibold text-zinc-200">{focus}</p>
+          </div>
+          <div className="text-right">
+            <p className={`text-sm font-bold tabular-nums ${planRate >= 70 ? "text-emerald-300" : "text-amber-300"}`}>{Math.round(planRate)}%</p>
+            <p className="text-[8px] text-ink-mute">{topSetup?.name || `${openPositions.length} open`}</p>
+          </div>
+        </CardContent>
+      </Card>
 
       <Card className={`${MOBILE_CARD} min-h-[360px]`}>
         <CardHeader className="relative border-b-0 px-4 pb-1 pt-4">

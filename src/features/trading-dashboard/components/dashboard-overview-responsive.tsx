@@ -5,6 +5,7 @@ import {
   BookOpen,
   CalendarDays,
   RefreshCw,
+  ShieldCheck,
   TrendingUp,
 } from "lucide-react"
 import {
@@ -104,6 +105,7 @@ interface DashboardOverviewProps {
   planRate: number
   monthCount: number
   recentTrades: JournalEntry[]
+  activityEntries?: JournalEntry[]
   openPositions: OpenPosition[]
   currentPnl: number
   currentEquity: number
@@ -135,7 +137,7 @@ const COUNTRY_CURRENCY: Record<string, string> = {
 }
 
 const CARD_SURFACE =
-  "flex min-h-0 flex-col gap-0 overflow-hidden rounded-xl border-white/10 bg-surface py-0 shadow-none sm:rounded-2xl"
+  "flex min-h-0 flex-col gap-0 overflow-hidden rounded-xl border-white/10 bg-surface py-0 shadow-none"
 
 function cleanUsername(value: unknown) {
   return (
@@ -296,8 +298,12 @@ export function DashboardOverviewResponsive({
   stats,
   equity,
   weeklyStrip,
+  setups,
+  planRate,
   monthCount,
   recentTrades,
+  activityEntries,
+  openPositions,
   currentPnl,
   currentEquity,
   balancesHidden,
@@ -360,7 +366,7 @@ export function DashboardOverviewResponsive({
   const instrumentStats = useMemo(
     () =>
       [
-        ...recentTrades
+        ...(activityEntries ?? recentTrades)
           .reduce((map, trade) => {
             const current = map.get(trade.symbol) ?? {
               symbol: trade.symbol,
@@ -377,8 +383,16 @@ export function DashboardOverviewResponsive({
         (left, right) =>
           right.trades - left.trades || right.pnl - left.pnl,
       ),
-    [recentTrades],
+    [activityEntries, recentTrades],
   )
+
+  const topSetup = setups[0]
+  const focus =
+    planRate < 70
+      ? "Protect process quality before increasing risk."
+      : stats.pf < 1 && monthCount > 2
+        ? "Reduce low-quality entries and protect downside."
+        : "Keep risk consistent and wait for A+ execution."
 
   const breakeven = Math.max(0, monthCount - stats.wins - stats.losses)
   const profitSegments = 14
@@ -431,6 +445,26 @@ export function DashboardOverviewResponsive({
       </section>
 
       <WeeklyStrip weeklyStrip={weeklyStrip} formatTradePnl={formatTradePnl} />
+
+      <section className="grid overflow-hidden rounded-xl border border-white/10 bg-surface md:grid-cols-[minmax(0,1.5fr)_minmax(150px,.55fr)_minmax(150px,.55fr)]">
+        <div className="flex min-w-0 items-center gap-3 px-4 py-3">
+          <span className="grid size-8 shrink-0 place-items-center rounded-lg bg-white/[.05] text-zinc-300">
+            <ShieldCheck className="size-4" />
+          </span>
+          <div className="min-w-0">
+            <p className="text-[10px] font-bold uppercase tracking-[0.13em] text-ink-mute">Today&apos;s focus</p>
+            <p className="mt-0.5 truncate text-[12px] font-semibold text-zinc-200">{focus}</p>
+          </div>
+        </div>
+        <div className="border-t border-white/8 px-4 py-3 md:border-l md:border-t-0">
+          <p className="text-[10px] font-medium text-ink-mute">Plan alignment</p>
+          <p className={`mt-1 text-sm font-bold tabular-nums ${planRate >= 70 ? "text-emerald-300" : "text-amber-300"}`}>{Math.round(planRate)}%</p>
+        </div>
+        <div className="border-t border-white/8 px-4 py-3 md:border-l md:border-t-0">
+          <p className="truncate text-[10px] font-medium text-ink-mute">{topSetup ? "Leading setup" : "Open positions"}</p>
+          <p className="mt-1 truncate text-sm font-bold text-zinc-100">{topSetup?.name || openPositions.length}</p>
+        </div>
+      </section>
 
       <section className="grid items-stretch gap-3 xl:h-[392px] xl:grid-cols-2">
         <Card className={`${CARD_SURFACE} h-full`}>

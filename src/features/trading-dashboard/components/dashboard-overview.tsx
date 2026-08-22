@@ -4,6 +4,7 @@ import type { ComponentProps } from "react"
 import { useCallback, useEffect, useMemo, useState } from "react"
 
 import { LG_BREAKPOINT_QUERY, useMediaQuery } from "@/lib/use-media-query"
+import type { JournalEntry } from "@/components/types"
 import { DASHBOARD_MOBILE_TAILWIND_CLASS } from "./dashboard-overview-mobile-tailwind"
 import { DashboardOverviewMobile } from "./dashboard-overview-mobile"
 import { DashboardOverviewResponsive } from "./dashboard-overview-responsive"
@@ -16,7 +17,7 @@ type DashboardOverviewOwnProps = DashboardOverviewProps & {
    * this list, so passing it down lets the account-wide summary be computed
    * locally instead of refetching /api/journal a second time.
    */
-  allEntries?: JournalStatsRow[]
+  allEntries?: JournalEntry[]
 }
 
 type JournalStatsRow = {
@@ -121,9 +122,10 @@ export function DashboardOverview({
               pf: synced.pf,
             },
             monthCount: synced.count,
+            activityEntries: allEntries,
           }
         : props,
-    [props, synced],
+    [allEntries, props, synced],
   )
 
   // Both trees used to be rendered and one hidden with `lg:hidden`. That mounted
