@@ -5,6 +5,11 @@ import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 
+import { LandingFaq } from "./landing/faq";
+import { LandingMetrics } from "./landing/metrics";
+import { LandingPlans } from "./landing/plans";
+import { Scroll3D, Scroll3DStage } from "./landing/scroll-3d";
+import { LandingSteps } from "./landing/steps";
 import { LandingShowcase3D } from "./landing-showcase-3d";
 import { AUTH_LANDING_TAILWIND_CLASS } from "./tailwind/auth-tailwind-classes";
 import { TradoxyMark } from "./tradoxy-mark";
@@ -127,7 +132,9 @@ export function TradoxyLoginLanding({
         <Link href="/" className="auth3-logo" aria-label="Tradoxy home"><b><TradoxyMark className="size-4 text-black" /></b><span>Tradoxy</span></Link>
         <div className="auth3-navlinks">
           <a href="#workflow">Product</a>
-          <Link href="/pricing">Pricing</Link>
+          <a href="#how">How it works</a>
+          <a href="#plans">Plans</a>
+          <a href="#faq">FAQ</a>
           <button onClick={onLogin}>Sign in</button>
           <button className="auth3-nav-cta" onClick={onRegister}>Get started</button>
         </div>
@@ -149,7 +156,11 @@ export function TradoxyLoginLanding({
             <span><Check size={15} /> No card required</span>
           </div>
         </div>
-        <div className="auth3-visual"><MarketCanvas /></div>
+        <Scroll3DStage className="auth3-visual" perspective={1600}>
+          <Scroll3D enter={false} depth={260} rotate={14} lift={40}>
+            <MarketCanvas />
+          </Scroll3D>
+        </Scroll3DStage>
       </section>
 
       <section className="auth3-platforms">
@@ -164,23 +175,23 @@ export function TradoxyLoginLanding({
         </div>
       </section>
 
-      <LandingShowcase3D />
+      <LandingMetrics />
 
       <section className="auth3-workflow" id="workflow">
         <div className="auth3-section-title" data-reveal>
           <span>THE DAILY LOOP</span>
           <h2>Everything around the trade.<br />None of the noise.</h2>
         </div>
-        <div className="auth3-feature-grid">
-          <article data-reveal>
+        <Scroll3DStage className="auth3-feature-grid">
+          <Scroll3D as="article" depth={190} rotate={10} lift={44}>
             <BookOpen /><span>01</span><h3>Journal the decision</h3><p>Capture setup, risk and psychology while the context is still fresh.</p>
             <div className="auth3-feature-art auth3-note-art" aria-hidden="true">
               <div><small>SETUP</small><b>London continuation</b></div>
               <p>Waited for the retest. Risk stayed inside plan.</p>
               <span><i /> A+ execution</span>
             </div>
-          </article>
-          <article data-reveal>
+          </Scroll3D>
+          <Scroll3D as="article" delay={0.07} depth={190} rotate={10} lift={44}>
             <BarChart3 /><span>02</span><h3>Find the pattern</h3><p>Turn executions into clean performance insights you can act on.</p>
             <div className="auth3-feature-art auth3-bars-art" aria-hidden="true">
               <div><span>Mon</span><i style={{ height: "44%" }} /></div>
@@ -189,17 +200,21 @@ export function TradoxyLoginLanding({
               <div><span>Thu</span><i style={{ height: "88%" }} /></div>
               <div><span>Fri</span><i style={{ height: "64%" }} /></div>
             </div>
-          </article>
-          <article data-reveal>
+          </Scroll3D>
+          <Scroll3D as="article" delay={0.14} depth={190} rotate={10} lift={44}>
             <Users /><span>03</span><h3>Improve together</h3><p>Share verified progress inside private, focused trader communities.</p>
             <div className="auth3-feature-art auth3-community-art" aria-hidden="true">
               <div className="auth3-avatar-stack"><i>AK</i><i>MR</i><i>JL</i><i>+8</i></div>
               <div><small>WEEKLY REVIEW</small><b>12 traders checked in</b></div>
               <span><i /> Private space</span>
             </div>
-          </article>
-        </div>
+          </Scroll3D>
+        </Scroll3DStage>
       </section>
+
+      <LandingSteps />
+
+      <LandingShowcase3D />
 
       <section className="auth3-integrations" id="integrations">
         <div className="auth3-integration-copy" data-reveal>
@@ -226,6 +241,10 @@ export function TradoxyLoginLanding({
           </article>
         ))}
       </section>
+
+      <LandingPlans />
+
+      <LandingFaq />
 
       <section className="auth3-final" data-reveal>
         <div><span>YOUR NEXT SESSION STARTS HERE</span><h2>Build a trading process<br />you can actually repeat.</h2></div>
