@@ -81,20 +81,20 @@ function currentWeekGroups(trades: JournalEntry[]) {
 function TradeGalleryCard({ trade, formatPnl, onOpen }: { trade: JournalEntry; formatPnl: (amount: number) => string; onOpen: () => void }) {
   const screenshotCount = trade.imageUrls?.length ?? (trade.imageUrl ? 1 : 0)
   return (
-    <button type="button" onClick={onOpen} className="group overflow-hidden rounded-xl border border-white/8 bg-surface text-left transition hover:border-white/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/25">
+    <button type="button" onClick={onOpen} className="group min-w-0 overflow-hidden rounded-xl border border-white/8 bg-surface text-left transition hover:border-white/15 hover:bg-surface-raised focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/25">
       {trade.imageUrl ? (
-        <div className="relative aspect-[16/10] overflow-hidden bg-surface-raised">
+        <div className="relative aspect-video overflow-hidden border-b border-white/8 bg-black">
           <MediaImage src={trade.imageUrl} alt={`${trade.symbol} trade screenshot`} className="h-full w-full object-contain p-2 transition-transform group-hover:scale-[1.015]" />
           {screenshotCount > 1 ? <span className="absolute right-2 top-2 rounded-md bg-black/80 px-2 py-1 text-[10px] font-semibold text-ink-strong">{screenshotCount} images</span> : null}
         </div>
       ) : null}
-      <div className="p-3">
+      <div className="p-2.5 sm:p-3">
         <div className="flex items-center gap-2">
           <InstrumentBadge symbol={trade.symbol} compact className="shrink-0 bg-surface-raised" />
           <div className="min-w-0 flex-1"><p className="truncate text-[11px] text-ink-mute">{formatDate(trade.rawDate)}</p></div>
           <p className={`font-mono text-sm font-semibold ${trade.pnl >= 0 ? "text-emerald-300" : "text-rose-300"}`}>{formatPnl(trade.pnl)}</p>
         </div>
-        <p className="mt-3 truncate text-xs text-ink-soft">{trade.setup || trade.session || "No setup tagged"}</p>
+        <p className="mt-2.5 truncate text-[11px] text-ink-soft">{trade.setup || trade.session || "No setup tagged"}</p>
       </div>
     </button>
   )
@@ -162,8 +162,8 @@ export function TradesArchive({
         </div>
 
         <Tabs value={view} onValueChange={(value) => { setView(value as TradeView); setPage(0) }}>
-          <TabsList className="grid w-full grid-cols-3 bg-surface sm:w-fit">
-            <TabsTrigger value="list"><List /> Trades</TabsTrigger><TabsTrigger value="gallery"><Images /> Gallery</TabsTrigger><TabsTrigger value="weekly"><CalendarRange /> Week</TabsTrigger>
+          <TabsList className="grid h-10 w-full grid-cols-3 rounded-xl border border-white/8 bg-black p-1 sm:w-fit sm:min-w-[330px]">
+            <TabsTrigger value="list"><List /> Trades</TabsTrigger><TabsTrigger value="gallery"><Images /> Gallery</TabsTrigger><TabsTrigger value="weekly"><CalendarRange /> Weekly</TabsTrigger>
           </TabsList>
         </Tabs>
       </CardHeader>
@@ -205,9 +205,9 @@ export function TradesArchive({
             <Pagination page={page} pages={pages} total={trades.length} onPage={setPage} />
           </>
         ) : view === "gallery" ? (
-          <><div className="space-y-5 p-3 sm:p-4">{galleryGroups.map((group) => <section key={group.key}><div className="mb-3 flex items-center gap-2"><h3 className="text-sm font-semibold text-white">{group.label}</h3><span className="text-xs text-ink-subtle">{group.trades.length}</span></div><div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">{group.trades.map((trade) => <TradeGalleryCard key={trade.id} trade={trade} formatPnl={formatPnl} onOpen={() => onOpenTrade(trade)} />)}</div></section>)}</div><Pagination page={page} pages={pages} total={trades.length} onPage={setPage} /></>
+          <><div className="space-y-5 p-3 sm:p-4">{galleryGroups.map((group) => <section key={group.key}><div className="mb-3 flex items-center gap-2"><h3 className="text-sm font-semibold text-white">{group.label}</h3><span className="text-xs text-ink-subtle">{group.trades.length}</span></div><div className="grid gap-2.5 min-[480px]:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">{group.trades.map((trade) => <TradeGalleryCard key={trade.id} trade={trade} formatPnl={formatPnl} onOpen={() => onOpenTrade(trade)} />)}</div></section>)}</div><Pagination page={page} pages={pages} total={trades.length} onPage={setPage} /></>
         ) : weekGroups.length ? (
-          <div className="space-y-5 p-3 sm:p-4">{weekGroups.map((group) => <section key={group.key}><div className="mb-3 flex items-baseline gap-2"><h3 className="text-sm font-semibold text-white">{group.label}</h3><span className="text-xs text-ink-subtle">{group.dateLabel} · {group.trades.length} trades</span></div><div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">{group.trades.map((trade) => <TradeGalleryCard key={trade.id} trade={trade} formatPnl={formatPnl} onOpen={() => onOpenTrade(trade)} />)}</div></section>)}</div>
+          <div className="space-y-5 p-3 sm:p-4">{weekGroups.map((group) => <section key={group.key}><div className="mb-3 flex items-baseline gap-2"><h3 className="text-sm font-semibold text-white">{group.label}</h3><span className="text-xs text-ink-subtle">{group.dateLabel} · {group.trades.length} trades</span></div><div className="grid gap-2.5 min-[480px]:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">{group.trades.map((trade) => <TradeGalleryCard key={trade.id} trade={trade} formatPnl={formatPnl} onOpen={() => onOpenTrade(trade)} />)}</div></section>)}</div>
         ) : (
           <Empty className="m-3 min-h-64"><EmptyMedia><CalendarRange className="size-4" /></EmptyMedia><EmptyHeader><EmptyTitle>No trades this week</EmptyTitle><EmptyDescription>Weekly review will appear after the first closed trade.</EmptyDescription></EmptyHeader></Empty>
         )}
