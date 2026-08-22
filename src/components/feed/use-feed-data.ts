@@ -125,6 +125,8 @@ export function useFeedData(onLogin: () => void) {
   const [lightboxUrl, setLightboxUrl] = useState<string | null>(null);
   const viewed = useRef(new Set<string>());
   const pendingViews = useRef(new Set<string>());
+  const viewRetries = useRef(new Map<string, number>());
+  const viewRetryTimers = useRef(new Set<number>());
   const observer = useRef<IntersectionObserver | null>(null);
 
   const loadPosts = useCallback((force = false) => {
@@ -307,6 +309,7 @@ export function useFeedData(onLogin: () => void) {
       })
         .then((response) => {
           viewed.current.add(postId);
+          viewRetries.current.delete(postId);
           recordedViewKeys.add(`${user.id}:${postId}`);
           const currentViews = response.views;
           if (typeof currentViews !== "number") return;
@@ -326,7 +329,21 @@ export function useFeedData(onLogin: () => void) {
             ),
           );
         })
-        .catch(() => undefined)
+        .catch(() => {
+          const attempts = viewRetries.current.get(postId) ?? 0;
+          if (attempts >= 2) return;
+          viewRetries.current.set(postId, attempts + 1);
+          const timer = window.setTimeout(() => {
+            viewRetryTimers.current.delete(timer);
+            const node = document.querySelector<HTMLElement>(
+              `[data-post-id="${postId}"]`,
+            );
+            if (!node?.isConnected || !observer.current) return;
+            observer.current.unobserve(node);
+            observer.current.observe(node);
+          }, 1200 * (attempts + 1));
+          viewRetryTimers.current.add(timer);
+        })
         .finally(() => {
           pendingViews.current.delete(postId);
         });
@@ -359,7 +376,14 @@ export function useFeedData(onLogin: () => void) {
     [recordView, user],
   );
 
-  useEffect(() => () => observer.current?.disconnect(), []);
+  useEffect(
+    () => () => {
+      observer.current?.disconnect();
+      viewRetryTimers.current.forEach((timer) => window.clearTimeout(timer));
+      viewRetryTimers.current.clear();
+    },
+    [],
+  );
 
   const openProfile = useCallback(
     (username: string) => {
