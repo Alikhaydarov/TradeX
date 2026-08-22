@@ -8,6 +8,40 @@ create table if not exists public.post_views (
   primary key (post_id, viewer_id)
 );
 
+-- Older production databases used user_id/created_at for the same fields.
+-- Normalize those names without dropping the existing unique-view history.
+do $$
+begin
+  if exists (
+    select 1 from information_schema.columns
+    where table_schema = 'public'
+      and table_name = 'post_views'
+      and column_name = 'user_id'
+  ) and not exists (
+    select 1 from information_schema.columns
+    where table_schema = 'public'
+      and table_name = 'post_views'
+      and column_name = 'viewer_id'
+  ) then
+    alter table public.post_views rename column user_id to viewer_id;
+  end if;
+
+  if exists (
+    select 1 from information_schema.columns
+    where table_schema = 'public'
+      and table_name = 'post_views'
+      and column_name = 'created_at'
+  ) and not exists (
+    select 1 from information_schema.columns
+    where table_schema = 'public'
+      and table_name = 'post_views'
+      and column_name = 'viewed_at'
+  ) then
+    alter table public.post_views rename column created_at to viewed_at;
+  end if;
+end;
+$$;
+
 alter table public.post_views enable row level security;
 
 create index if not exists post_views_post_id_idx
@@ -83,3 +117,13 @@ $$;
 
 revoke all on function public.record_unique_post_view(uuid) from public, anon;
 grant execute on function public.record_unique_post_view(uuid) to authenticated;
+
+-- Retire the legacy render-based counter so cached/older clients cannot inflate
+-- views after the counters have been reconciled.
+do $$
+begin
+  if to_regprocedure('public.record_post_view(uuid)') is not null then
+    revoke all on function public.record_post_view(uuid) from public, anon, authenticated;
+  end if;
+end;
+$$;
