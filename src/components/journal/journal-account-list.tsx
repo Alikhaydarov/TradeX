@@ -58,16 +58,13 @@ export function JournalAccountList({
   const portfolioValue = startingCapital + netPnl;
 
   return (
-    <div className="animate-page-in mx-auto max-w-[1320px] space-y-3 p-3 sm:p-4 lg:p-5">
-      <div className="flex items-center justify-between gap-3">
-        <div>
-          <h1 className="text-xl font-black text-white sm:text-2xl">
-            Accounts
-          </h1>
-          <p className="mt-0.5 text-xs text-ink-subtle">
-            Your trading journals in one place.
-          </p>
-        </div>
+    <div className="animate-page-in mx-auto w-full max-w-[1480px] space-y-3 p-3 sm:p-4 lg:p-5">
+      <div className="flex min-h-10 items-center justify-between gap-3">
+        <p className="text-xs font-medium text-ink-mute">
+          {summaries.length
+            ? `${summaries.length} connected ${summaries.length === 1 ? "account" : "accounts"}`
+            : "Create an account to start journaling"}
+        </p>
         <Button
           onClick={onAdd}
           className="h-9 shrink-0 rounded-xl bg-white px-3 text-xs font-bold text-black hover:bg-zinc-200 sm:px-4 sm:text-sm"
@@ -147,7 +144,7 @@ export function JournalAccountList({
           <button
             type="button"
             onClick={onAdd}
-            className="group grid min-h-[172px] place-items-center rounded-2xl border border-dashed border-white/12 bg-surface p-4 text-center transition hover:border-white/25 hover:bg-surface"
+            className="group grid min-h-[156px] place-items-center rounded-2xl border border-dashed border-white/12 bg-surface p-4 text-center transition hover:border-white/25 hover:bg-surface-raised"
           >
             <span>
               <span className="mx-auto grid size-9 place-items-center rounded-xl border border-white/10 bg-surface text-ink-mute transition group-hover:text-white">
@@ -204,14 +201,14 @@ function JournalAccountCard({
         }
       }}
       className={`group relative cursor-pointer overflow-hidden rounded-2xl border transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/30 ${
-        compact ? "min-h-[150px]" : "min-h-[172px]"
+        compact ? "min-h-[144px]" : "min-h-[156px]"
       } ${
         active
           ? "border-white/20 bg-surface shadow-[0_12px_32px_rgba(0,0,0,.3)]"
           : "border-white/10 bg-surface hover:border-white/20 hover:bg-surface"
       }`}
     >
-      <div className="p-3.5">
+      <div className="p-3.5 sm:p-4">
         <div className="flex items-start gap-3">
           <div className="min-w-0 flex-1 space-y-1">
             <div className="flex min-w-0 items-center gap-2">
@@ -268,7 +265,7 @@ function JournalAccountCard({
           </div>
         </div>
 
-        <div className="mt-3.5">
+        <div className="mt-3">
           <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-ink-subtle">
             Current balance
           </p>
@@ -283,7 +280,7 @@ function JournalAccountCard({
           </div>
         </div>
 
-        <div className="mt-3.5 flex items-center justify-between gap-3 border-t border-white/8 pt-2.5">
+        <div className="mt-3 flex items-center justify-between gap-3 border-t border-white/8 pt-2.5">
           <div className="flex min-w-0 items-center gap-3 text-[11px] text-ink-mute">
             <span>{summary.trades} trades</span>
             <span className="text-zinc-800">/</span>
