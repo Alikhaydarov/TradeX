@@ -147,7 +147,7 @@ export function PropAccountDialog({
     if (!open) return;
     let active = true;
     setPremiumLoaded(false);
-    apiRequest<PremiumStatus>("/api/premium/status")
+    apiRequest<PremiumStatus>("/api/premium/status", { cacheMs: 60_000 })
       .then((response) => {
         if (active) setPremiumStatus(response);
       })

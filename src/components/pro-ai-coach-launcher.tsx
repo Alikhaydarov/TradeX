@@ -98,7 +98,7 @@ export function ProAiCoachLauncher() {
 
   useEffect(() => {
     let active = true;
-    void apiRequest<PremiumStatus>("/api/premium/status")
+    void apiRequest<PremiumStatus>("/api/premium/status", { cacheMs: 60_000 })
       .then((nextStatus) => {
         if (active) setStatus(nextStatus);
       })

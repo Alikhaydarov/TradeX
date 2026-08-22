@@ -170,7 +170,7 @@ function SettingsContent() {
     if (!settingsOpen || !user) return;
     setLoading(true);
     setMessage("");
-    void apiRequest<ProfileResponse>("/api/profile")
+    void apiRequest<ProfileResponse>("/api/profile", { cacheMs: 30_000 })
       .then(({ profile }) => {
         setFullName(profile.full_name || "");
         setUsername(profile.username || "");

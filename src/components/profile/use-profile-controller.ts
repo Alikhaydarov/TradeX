@@ -154,13 +154,13 @@ export function useProfileController(
           posts: PostRecord[];
           achievements?: Achievement[];
           stats?: TradingStats;
-        }>(`/api/profile/${profileUsername}`)
+        }>(`/api/profile/${profileUsername}`, { cacheMs: 30_000 })
       : apiRequest<{
           profile: ProfileRecord;
           posts: PostRecord[];
           achievements?: Achievement[];
           stats?: TradingStats;
-        }>("/api/profile");
+        }>("/api/profile", { cacheMs: 30_000 });
 
     request
       .then((data) => {

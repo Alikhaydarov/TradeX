@@ -174,7 +174,7 @@ export function Sidebar({
         avatar_url?: string | null;
         full_name?: string | null;
       };
-    }>("/api/profile")
+    }>("/api/profile", { cacheMs: 30_000 })
       .then(({ profile }) => {
         if (!active) return;
         setProfileUsername(profile.username || "");
@@ -203,7 +203,7 @@ export function Sidebar({
     if (!user) return;
     let active = true;
     const loadAccess = () => {
-      apiRequest<{ community: unknown | null }>("/api/community")
+      apiRequest<{ community: unknown | null }>("/api/community", { cacheMs: 30_000 })
         .then((data) => {
           if (active) setHasCommunityAccess(Boolean(data.community));
         })

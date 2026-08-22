@@ -110,7 +110,7 @@ export function Pricing({ onLogin }: { onLogin?: () => void } = {}) {
     }
 
     let active = true;
-    void apiRequest<PremiumStatus>("/api/premium/status")
+    void apiRequest<PremiumStatus>("/api/premium/status", { cacheMs: 60_000 })
       .then((data) => {
         if (active) setPremium(data);
       })
@@ -125,7 +125,7 @@ export function Pricing({ onLogin }: { onLogin?: () => void } = {}) {
 
   useEffect(() => {
     let active = true;
-    void apiRequest<StripeConfigStatus>("/api/stripe/config")
+    void apiRequest<StripeConfigStatus>("/api/stripe/config", { cacheMs: 300_000 })
       .then((data) => {
         if (!active) return;
         setBillingConfigured(Boolean(data.configured));
