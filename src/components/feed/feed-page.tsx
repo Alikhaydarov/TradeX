@@ -146,7 +146,7 @@ export function FeedPage({ onLogin }: FeedPageProps) {
 
       {feed.lightboxUrl ? (
         <div
-          className="fixed inset-0 z-[99998] flex items-center justify-center bg-black/92 p-4 backdrop-blur-sm"
+          className="fixed inset-0 z-[99998] flex items-center justify-center bg-black/95 p-4"
           onClick={() => feed.setLightboxUrl(null)}
         >
           <button

@@ -94,7 +94,7 @@ export function AuthModal({
   };
 
   return (
-    <div className="fixed inset-0 z-[80] grid place-items-center overflow-y-auto bg-black/80 p-3 backdrop-blur-md sm:p-6" onMouseDown={onClose}>
+    <div className="fixed inset-0 z-[80] grid place-items-center overflow-y-auto bg-black/95 p-3 sm:p-6" onMouseDown={onClose}>
       <section
         role="dialog"
         aria-modal="true"

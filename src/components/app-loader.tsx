@@ -42,11 +42,11 @@ export function AppLoader({ label = "Checking session" }: { label?: string }) {
 
 export function FullScreenLoader({ label = "Opening" }: { label?: string }) {
   return (
-    <div className="fixed inset-0 z-[2147483646] grid place-items-center bg-surface/92 px-5 text-center text-white backdrop-blur-sm">
+    <div className="fixed inset-0 z-[2147483646] grid place-items-center bg-black px-5 text-center text-white">
       <div className="flex w-full max-w-[220px] flex-col items-center">
-        <div className="inline-flex items-center gap-3 rounded-lg border border-white/10 bg-surface px-4 py-3 shadow-[0_24px_70px_rgba(0,0,0,.42)]">
+        <div className="inline-flex items-center gap-3 rounded-xl border border-white/10 bg-surface px-4 py-3 shadow-[0_24px_70px_rgba(0,0,0,.56)]">
           <XSpinner size="md" />
-          <span className="text-xs font-black tracking-[.18em] text-zinc-100">TRADEWAY</span>
+          <span className="text-xs font-black tracking-[.18em] text-zinc-100">TRADOXY</span>
         </div>
         <p className="mt-4 text-xs font-bold text-zinc-100 sm:mt-5 sm:text-sm">{label}</p>
       </div>
