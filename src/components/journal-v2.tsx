@@ -889,6 +889,10 @@ export function JournalV2({
             setActiveAccount(id);
             router.push("/dashboard");
           }}
+          onSettings={(id) => {
+            setActiveAccount(id);
+            router.push("/settings");
+          }}
           onDelete={removeAccount}
         />
       )}

@@ -1,6 +1,5 @@
 import type { ReactNode } from "react";
 
-import { AccountCardMenuBridge } from "@/components/account-card-menu-bridge";
 import { FloatingAddTradeButton } from "@/components/floating-add-trade-button";
 import { MobileTradesBridge } from "@/components/mobile-trades-bridge";
 import { ProAiCoachLauncherBoundary } from "@/components/pro-ai-coach-launcher-boundary";
@@ -20,7 +19,6 @@ export function WorkspaceRouteLayout({
       <WorkspaceAppRouterShellV2 bootstrap={bootstrap}>
         {children}
       </WorkspaceAppRouterShellV2>
-      <AccountCardMenuBridge />
       <FloatingAddTradeButton />
       <MobileTradesBridge />
       <ProAiCoachLauncherBoundary />

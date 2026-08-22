@@ -4,6 +4,7 @@ import {
   ChevronRight,
   MoreHorizontal,
   Plus,
+  Settings,
   Trash2,
   WalletCards,
 } from "lucide-react";
@@ -38,6 +39,7 @@ export function JournalAccountList({
   deleting,
   onAdd,
   onOpen,
+  onSettings,
   onDelete,
 }: {
   activeAccountId: string | null;
@@ -45,6 +47,7 @@ export function JournalAccountList({
   deleting: string | null;
   onAdd: () => void;
   onOpen: (id: string) => void;
+  onSettings: (id: string) => void;
   onDelete: (account: PropAccount) => void;
 }) {
   const startingCapital = summaries.reduce(
@@ -137,6 +140,7 @@ export function JournalAccountList({
               summary={summary}
               deleting={deleting}
               onOpen={onOpen}
+              onSettings={onSettings}
               onDelete={onDelete}
             />
           ))}
@@ -165,6 +169,7 @@ function JournalAccountCard({
   summary,
   deleting,
   onOpen,
+  onSettings,
   onDelete,
   compact = false,
 }: {
@@ -172,6 +177,7 @@ function JournalAccountCard({
   summary: JournalAccountSummary;
   deleting: string | null;
   onOpen: (id: string) => void;
+  onSettings: (id: string) => void;
   onDelete: (account: PropAccount) => void;
   compact?: boolean;
 }) {
@@ -245,6 +251,11 @@ function JournalAccountCard({
                 className="border-white/10 bg-surface"
                 onClick={(event) => event.stopPropagation()}
               >
+                <DropdownMenuItem
+                  onClick={() => onSettings(summary.account.id)}
+                >
+                  <Settings size={14} /> Settings
+                </DropdownMenuItem>
                 <DropdownMenuItem
                   variant="destructive"
                   disabled={deleting === summary.account.id}
