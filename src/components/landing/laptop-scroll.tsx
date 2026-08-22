@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import type { ReactNode } from "react";
 
-import { readPin, useScrollSignal } from "./scroll-3d";
+import { readPin, useReducedMotion, useScrollSignal } from "./scroll-3d";
 
 /**
  * The hero device, opening as you scroll.
@@ -23,6 +23,7 @@ export function LaptopScroll({ children }: { children: ReactNode }) {
   const frameRef = useRef<HTMLDivElement>(null);
   const screenRef = useRef<HTMLDivElement>(null);
   const baseRef = useRef<HTMLDivElement>(null);
+  const reduced = useReducedMotion();
 
   useScrollSignal(sectionRef, (_progress, _leave, node) => {
     const pin = readPin(node);
@@ -48,6 +49,20 @@ export function LaptopScroll({ children }: { children: ReactNode }) {
       base.style.transform = `rotateX(${68 + p * 22}deg) translateY(${p * 30}px)`;
     }
   });
+
+  // With motion reduced there is nothing to open, so the section collapses to
+  // the height of the finished dashboard and simply shows it. Leaving the
+  // pinned frame in place would freeze the lid half-way, which is worse than
+  // having no effect at all.
+  if (reduced) {
+    return (
+      <section className="mx-auto mt-12 w-[min(1100px,calc(100%-48px))] max-sm:w-[calc(100%-24px)]" aria-hidden="true">
+        <div className="overflow-hidden rounded-[18px] border border-black/10 bg-[#0a0a0a] shadow-[0_40px_100px_-60px_rgba(0,0,0,.6)] max-sm:rounded-xl">
+          {children}
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { CSSProperties, ReactNode } from "react";
 
 /**
@@ -122,6 +122,30 @@ export function readPin(section: HTMLElement) {
   const travel = Math.max(1, box.height - window.innerHeight);
   const offset = Math.min(travel, Math.max(0, -box.top));
   return { offset, travel, progress: offset / travel };
+}
+
+/**
+ * Whether this visitor has asked the system to reduce motion.
+ *
+ * Sections that are built around movement need more than "skip the animation":
+ * a pinned frame with its animation frozen half-way is worse than no effect at
+ * all. They read this and render a plain, finished layout instead.
+ *
+ * It starts false so the server and the first client paint agree, then
+ * corrects itself on mount.
+ */
+export function useReducedMotion() {
+  const [reduced, setReduced] = useState(false);
+
+  useEffect(() => {
+    const query = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const apply = () => setReduced(query.matches);
+    apply();
+    query.addEventListener("change", apply);
+    return () => query.removeEventListener("change", apply);
+  }, []);
+
+  return reduced;
 }
 
 export type ScrollApply = (progress: number, leave: number, element: HTMLElement) => void;
