@@ -70,7 +70,7 @@ const COUNTRY_CURRENCY: Record<string, string> = {
 }
 
 const MOBILE_CARD =
-  "gap-0 overflow-hidden rounded-[18px] border-white/10 bg-surface py-0 shadow-none"
+  "gap-0 overflow-hidden rounded-2xl border-white/10 bg-surface py-0 shadow-none"
 
 function cleanUsername(value: unknown) {
   return (
@@ -213,26 +213,26 @@ export function DashboardOverviewMobile({
 
   return (
     <div className="w-full min-w-0 space-y-3 overflow-x-clip pb-24">
-      <section className="px-1 pb-1 pt-2">
-        <h1 className="break-words text-[clamp(1.65rem,7.4vw,2.15rem)] font-normal leading-[1.08] tracking-[-0.045em] text-white">
+      <section className="px-0.5 pb-0.5 pt-1">
+        <h1 className="truncate text-xl font-semibold leading-tight tracking-[-0.025em] text-white">
           Welcome back, {username}
         </h1>
-        <p className="mt-2 text-[15px] font-semibold text-ink-subtle">{dashboardDate()}</p>
+        <p className="mt-1 text-[11px] font-medium text-ink-mute">{dashboardDate()}</p>
       </section>
 
-      <Card className={`${MOBILE_CARD} min-h-[480px]`}>
-        <CardHeader className="relative border-b-0 px-4 pb-1 pt-5">
-          <div className="min-w-0 pr-28">
-            <CardDescription className="text-[15px] font-bold text-ink-subtle">
+      <Card className={`${MOBILE_CARD} min-h-[360px]`}>
+        <CardHeader className="relative border-b-0 px-4 pb-1 pt-4">
+          <div className="min-w-0 pr-24">
+            <CardDescription className="text-xs font-semibold text-ink-mute">
               Account Balance
             </CardDescription>
-            <CardTitle className="mt-1 break-words text-[clamp(2.25rem,12vw,3.15rem)] font-normal leading-none tracking-[-0.055em] text-white">
+            <CardTitle className="mt-1 break-words text-[clamp(1.75rem,9vw,2.35rem)] font-semibold leading-none tracking-[-0.04em] text-white">
               {formattedBalance}
             </CardTitle>
-            <p className="mt-3 text-[14px] font-bold text-ink-subtle">Last 30 Days</p>
+            <p className="mt-2 text-[11px] font-medium text-ink-mute">Last 30 days</p>
           </div>
           <div
-            className={`absolute right-4 top-7 rounded-xl px-3.5 py-2 text-[15px] font-semibold tabular-nums ${
+            className={`absolute right-4 top-5 rounded-lg px-2.5 py-1.5 text-xs font-semibold tabular-nums ${
               currentPnl >= 0
                 ? "bg-emerald-950/70 text-emerald-500"
                 : "bg-rose-950/70 text-rose-300"
@@ -242,7 +242,7 @@ export function DashboardOverviewMobile({
           </div>
         </CardHeader>
 
-        <CardContent className="mt-auto h-[320px] min-h-0 px-0 pb-0 pt-4">
+        <CardContent className="mt-auto h-[245px] min-h-0 px-0 pb-0 pt-3">
           {equity.length > 1 ? (
             <MobileEquityChart
               equity={equity}
@@ -263,22 +263,22 @@ export function DashboardOverviewMobile({
       </Card>
 
       <section className="grid grid-cols-2 gap-2.5">
-        <Card className={`${MOBILE_CARD} min-h-[206px]`}>
+        <Card className={`${MOBILE_CARD} min-h-[174px]`}>
           <CardHeader className="px-3.5 pb-0 pt-4">
-            <CardTitle className="text-[14px] font-bold leading-tight text-ink-subtle">
+            <CardTitle className="text-xs font-semibold leading-tight text-ink-mute">
               Most Traded Assets
             </CardTitle>
           </CardHeader>
           <CardContent className="px-3.5 pb-3 pt-4">
-            <p className="truncate text-[clamp(1.8rem,8vw,2.55rem)] font-normal leading-none tracking-[-0.04em] text-white">
+            <p className="truncate text-[clamp(1.35rem,6vw,1.8rem)] font-semibold leading-none tracking-[-0.03em] text-white">
               {topInstrument ? prettySymbol(topInstrument.symbol) : "N/A"}
             </p>
-            <div className="mt-7 space-y-3">
+            <div className="mt-5 space-y-2.5">
               {Array.from({ length: 3 }, (_, index) => {
                 const item = instrumentStats[index]
                 return (
                   <div key={item?.symbol ?? index}>
-                    <div className="flex items-center justify-between gap-2 text-[13px] font-semibold">
+                    <div className="flex items-center justify-between gap-2 text-[11px] font-medium">
                       <span className="min-w-0 truncate text-ink-subtle">
                         {item ? prettySymbol(item.symbol) : "-"}
                       </span>
@@ -292,24 +292,24 @@ export function DashboardOverviewMobile({
           </CardContent>
         </Card>
 
-        <Card className={`${MOBILE_CARD} min-h-[206px]`}>
+        <Card className={`${MOBILE_CARD} min-h-[174px]`}>
           <CardHeader className="px-3.5 pb-0 pt-4">
-            <CardTitle className="text-[14px] font-bold leading-tight text-ink-subtle">
+            <CardTitle className="text-xs font-semibold leading-tight text-ink-mute">
               Total Trades
             </CardTitle>
           </CardHeader>
           <CardContent className="px-3.5 pb-3 pt-4">
-            <p className="text-[2.55rem] font-normal leading-none tracking-[-0.05em] text-white">
+            <p className="text-[1.8rem] font-semibold leading-none tracking-[-0.04em] text-white">
               {monthCount}
             </p>
-            <div className="mt-7 space-y-3">
+            <div className="mt-5 space-y-2.5">
               {[
                 ["Winning", stats.wins],
                 ["Breakeven", breakeven],
                 ["Losing", stats.losses],
               ].map(([label, value]) => (
                 <div key={String(label)}>
-                  <div className="flex items-center justify-between gap-2 text-[13px] font-semibold">
+                  <div className="flex items-center justify-between gap-2 text-[11px] font-medium">
                     <span className="truncate text-ink-subtle">{label}</span>
                     <span className="shrink-0 tabular-nums text-white">{value}</span>
                   </div>
@@ -320,14 +320,14 @@ export function DashboardOverviewMobile({
           </CardContent>
         </Card>
 
-        <Card className={`${MOBILE_CARD} relative min-h-[190px]`}>
+        <Card className={`${MOBILE_CARD} relative min-h-[164px]`}>
           <CardHeader className="relative z-10 px-3.5 pb-0 pt-4">
-            <CardTitle className="text-[14px] font-bold leading-tight text-ink-subtle">
+            <CardTitle className="text-xs font-semibold leading-tight text-ink-mute">
               Trade Winrate
             </CardTitle>
           </CardHeader>
           <CardContent className="relative z-10 px-3.5 pb-3 pt-4">
-            <p className="text-[2.35rem] font-normal leading-none tracking-[-0.05em] text-white">
+            <p className="text-[1.8rem] font-semibold leading-none tracking-[-0.04em] text-white">
               {Math.round(winRate)}%
             </p>
             <p className="mt-3 text-[12px] font-semibold text-ink-subtle">
@@ -345,14 +345,14 @@ export function DashboardOverviewMobile({
           </div>
         </Card>
 
-        <Card className={`${MOBILE_CARD} min-h-[190px]`}>
+        <Card className={`${MOBILE_CARD} min-h-[164px]`}>
           <CardHeader className="px-3.5 pb-0 pt-4">
-            <CardTitle className="text-[14px] font-bold leading-tight text-ink-subtle">
+            <CardTitle className="text-xs font-semibold leading-tight text-ink-mute">
               Profit Factor
             </CardTitle>
           </CardHeader>
           <CardContent className="px-3.5 pb-3 pt-4">
-            <p className="text-[2.35rem] font-normal leading-none tracking-[-0.05em] text-white">
+            <p className="text-[1.8rem] font-semibold leading-none tracking-[-0.04em] text-white">
               {stats.pf.toFixed(2)}
             </p>
             <div className="mt-6 flex h-9 items-end gap-1">
