@@ -184,8 +184,84 @@ function paintThemeFrame(
   ctx.restore();
 }
 
+
+/**
+ * The family the app is actually rendering in.
+ *
+ * The cards were drawn in Arial, which is what canvas falls back to when you
+ * name a font it cannot resolve - so every shared card looked nothing like the
+ * product. next/font generates a hashed family name, so it cannot be written
+ * down; reading the computed style off <body> gets the real stack, and
+ * fonts.ready makes sure it has actually loaded before the first measureText.
+ */
+async function resolveCardFont(): Promise<string> {
+  const fallback = 'ui-sans-serif, system-ui, "Segoe UI", Arial, sans-serif';
+  if (typeof document === "undefined") return fallback;
+  try {
+    await document.fonts.ready;
+  } catch {
+    // A browser without the Font Loading API still renders, just unhinted.
+  }
+  const family = getComputedStyle(document.body).fontFamily;
+  return family || fallback;
+}
+
+/**
+ * Fine luminance grain over the whole card.
+ *
+ * Flat CSS-style gradients band badly once they are exported as PNG and then
+ * re-compressed by whatever the card is posted to. A little noise breaks the
+ * bands up, and it is what gives the reference cards their texture. Seeded off
+ * the trade id so the same trade always renders identically.
+ */
+function paintGrain(
+  ctx: CanvasRenderingContext2D,
+  w: number,
+  h: number,
+  seedStr: string,
+  strength = 9,
+) {
+  const rand = seededRandom(seedStr);
+  const tile = 200;
+  const noise = document.createElement("canvas");
+  noise.width = tile;
+  noise.height = tile;
+  const nctx = noise.getContext("2d");
+  if (!nctx) return;
+  const img = nctx.createImageData(tile, tile);
+  for (let i = 0; i < img.data.length; i += 4) {
+    const v = 128 + (rand() - 0.5) * 255;
+    img.data[i] = img.data[i + 1] = img.data[i + 2] = v;
+    img.data[i + 3] = strength;
+  }
+  nctx.putImageData(img, 0, 0);
+
+  ctx.save();
+  ctx.globalCompositeOperation = "overlay";
+  for (let y = 0; y < h; y += tile) {
+    for (let x = 0; x < w; x += tile) ctx.drawImage(noise, x, y);
+  }
+  ctx.restore();
+}
+
+/** A hairline that fades out at both ends instead of stopping dead. */
+function fadedRule(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  width: number,
+) {
+  const g = ctx.createLinearGradient(x, y, x + width, y);
+  g.addColorStop(0, "rgba(255,255,255,0.13)");
+  g.addColorStop(0.72, "rgba(255,255,255,0.07)");
+  g.addColorStop(1, "rgba(255,255,255,0)");
+  ctx.fillStyle = g;
+  ctx.fillRect(x, y, width, 1.5);
+}
+
 /* ── FEED CARD  1080 × 1080 ────────────────────────────────────────────────── */
 async function makeFeedCard(trade: JournalEntry, theme: ShareTheme, author: CardAuthor): Promise<string> {
+  const font = await resolveCardFont();
   const S = 1080;
   const canvas = document.createElement("canvas");
   canvas.width = S; canvas.height = S;
@@ -204,10 +280,27 @@ async function makeFeedCard(trade: JournalEntry, theme: ShareTheme, author: Card
   const CW = S - PAD * 2;
   const CARD_R = 46;
   ctx.save();
-  ctx.fillStyle = "rgba(0,0,0,0.46)";
+  // A flat black panel sat dead on the theme wash. A vertical gradient plus a
+  // one-pixel highlight along the top edge is what makes it read as a surface
+  // catching light rather than a hole cut in the background.
+  const panel = ctx.createLinearGradient(0, PAD, 0, PAD + CW);
+  panel.addColorStop(0, "rgba(12,12,14,0.62)");
+  panel.addColorStop(1, "rgba(0,0,0,0.58)");
+  ctx.fillStyle = panel;
   rRect(ctx, PAD, PAD, CW, CW, CARD_R);
   ctx.fill();
-  ctx.strokeStyle = "rgba(255,255,255,0.09)";
+
+  ctx.save();
+  rRect(ctx, PAD, PAD, CW, CW, CARD_R);
+  ctx.clip();
+  const sheen = ctx.createLinearGradient(0, PAD, 0, PAD + 180);
+  sheen.addColorStop(0, "rgba(255,255,255,0.055)");
+  sheen.addColorStop(1, "rgba(255,255,255,0)");
+  ctx.fillStyle = sheen;
+  ctx.fillRect(PAD, PAD, CW, 180);
+  ctx.restore();
+
+  ctx.strokeStyle = "rgba(255,255,255,0.10)";
   ctx.lineWidth = 2;
   rRect(ctx, PAD, PAD, CW, CW, CARD_R);
   ctx.stroke();
@@ -218,10 +311,10 @@ async function makeFeedCard(trade: JournalEntry, theme: ShareTheme, author: Card
 
   /* Brand, top right: the mark plus the wordmark, then the instrument class. */
   const markSize = 34;
-  ctx.font = "700 30px Arial, sans-serif";
+  ctx.font = `700 30px ${font}`;
   const wordW = ctx.measureText("Tradoxy").width;
   const sideLabel = (trade.side || "").toUpperCase();
-  ctx.font = "800 21px Arial, sans-serif";
+  ctx.font = `800 21px ${font}`;
   const sideW = ctx.measureText(sideLabel).width + 30;
 
   let bx = RIGHT - sideW;
@@ -229,38 +322,42 @@ async function makeFeedCard(trade: JournalEntry, theme: ShareTheme, author: Card
   rRect(ctx, bx, PAD + 58, sideW, 36, 10);
   ctx.fill();
   ctx.fillStyle = accent;
-  ctx.font = "800 21px Arial, sans-serif";
+  ctx.font = `800 21px ${font}`;
   ctx.fillText(sideLabel, bx + 15, PAD + 83);
 
   bx -= 16 + wordW;
   ctx.fillStyle = "#e4e4e7";
-  ctx.font = "700 30px Arial, sans-serif";
+  ctx.font = `700 30px ${font}`;
   ctx.fillText("Tradoxy", bx, PAD + 84);
 
   drawTradoxyMark(ctx, bx - 14 - markSize, PAD + 55, markSize, "#ffffff");
 
   /* Headline: the number this card exists to show. */
   ctx.fillStyle = "#a8a8b2";
-  ctx.font = "600 30px Arial, sans-serif";
+  ctx.font = `600 30px ${font}`;
   ctx.fillText("Realized P/L", X, PAD + 206);
 
   const pnlStr = `${win ? "+" : "\u2212"}$${cash.format(Math.abs(trade.pnl))}`;
   let pnlSize = 116;
-  ctx.font = `800 ${pnlSize}px Arial, sans-serif`;
+  ctx.font = `800 ${pnlSize}px ${font}`;
   while (ctx.measureText(pnlStr).width > CW - 124 && pnlSize > 62) {
     pnlSize -= 4;
-    ctx.font = `800 ${pnlSize}px Arial, sans-serif`;
+    ctx.font = `800 ${pnlSize}px ${font}`;
   }
   ctx.fillStyle = accent;
+  // Tight tracking on display figures; canvas defaults to loose spacing that
+  // makes large numerals look accidental rather than set.
+  ctx.letterSpacing = "-0.025em";
   ctx.fillText(pnlStr, X, PAD + 318);
+  ctx.letterSpacing = "0em";
 
   ctx.fillStyle = "#e4e4e7";
-  ctx.font = "600 38px Arial, sans-serif";
+  ctx.font = `600 38px ${font}`;
   ctx.fillText(trade.symbol, X, PAD + 386);
 
   if (trade.resultR && Math.abs(trade.resultR) > 0.01) {
     const rStr = `${trade.resultR >= 0 ? "+" : ""}${trade.resultR.toFixed(2)}R`;
-    ctx.font = "700 30px Arial, sans-serif";
+    ctx.font = `700 30px ${font}`;
     const rw = ctx.measureText(rStr).width;
     ctx.fillStyle = win ? "rgba(52,211,153,.14)" : "rgba(248,113,113,.14)";
     rRect(ctx, RIGHT - rw - 30, PAD + 352, rw + 30, 48, 12);
@@ -269,19 +366,16 @@ async function makeFeedCard(trade: JournalEntry, theme: ShareTheme, author: Card
     ctx.fillText(rStr, RIGHT - rw - 15, PAD + 385);
   }
 
-  const rule = (y: number) => {
-    ctx.fillStyle = "rgba(255,255,255,0.09)";
-    ctx.fillRect(X, y, CW - 124, 1.5);
-  };
+  const rule = (y: number) => fadedRule(ctx, X, y, CW - 124);
   rule(PAD + 434);
 
   /* Entry and exit, the two numbers that make the P/L checkable. */
   const priceLabel = (label: string, value: string, x: number) => {
     ctx.fillStyle = "#90909a";
-    ctx.font = "500 27px Arial, sans-serif";
+    ctx.font = `500 27px ${font}`;
     ctx.fillText(label, x, PAD + 500);
     ctx.fillStyle = "#f4f4f5";
-    ctx.font = "700 44px Arial, sans-serif";
+    ctx.font = `700 44px ${font}`;
     ctx.fillText(value, x, PAD + 556);
   };
   priceLabel("Entry price", `$${cash.format(trade.entry)}`, X);
@@ -293,7 +387,7 @@ async function makeFeedCard(trade: JournalEntry, theme: ShareTheme, author: Card
      the prices. Internal auto-sync labels never appear on a public card. */
   const isInternalLabel = (val: string) => /auto\s*sync/i.test(val);
   const clip = (val: string, max: number) => {
-    ctx.font = "700 38px Arial, sans-serif";
+    ctx.font = `700 38px ${font}`;
     if (ctx.measureText(val).width <= max) return val;
     let out = val;
     while (out.length > 1 && ctx.measureText(`${out}...`).width > max) out = out.slice(0, -1);
@@ -301,10 +395,10 @@ async function makeFeedCard(trade: JournalEntry, theme: ShareTheme, author: Card
   };
   const contextLabel = (label: string, value: string, x: number) => {
     ctx.fillStyle = "#90909a";
-    ctx.font = "500 27px Arial, sans-serif";
+    ctx.font = `500 27px ${font}`;
     ctx.fillText(label, x, PAD + 676);
     ctx.fillStyle = "#e4e4e7";
-    ctx.font = "700 38px Arial, sans-serif";
+    ctx.font = `700 38px ${font}`;
     ctx.fillText(clip(value, (CW - 148) / 2), x, PAD + 728);
   };
   const setupRaw = (trade.setup || trade.session || "").trim();
@@ -331,17 +425,36 @@ async function makeFeedCard(trade: JournalEntry, theme: ShareTheme, author: Card
   ctx.lineTo(X + 19, footY - 14);
   ctx.stroke();
 
-  ctx.fillStyle = "#a8a8b2";
-  ctx.font = "600 25px Arial, sans-serif";
-  ctx.fillText(`Verified trade by ${author.name}`, X + 38, footY);
-
   const qty = Math.max(1, Math.round(trade.quantity || 1));
-  const meta = `${qty} ${qty === 1 ? "contract" : "contracts"}  ·  ${dateStr}`;
+  const meta = `${qty} ${qty === 1 ? "contract" : "contracts"} · ${dateStr}`;
+
+  // The two halves are measured against each other before either is drawn.
+  // Attribution is variable-length and the terms are not, so a long display
+  // name shortens rather than running into the date.
+  ctx.font = `500 23px ${font}`;
+  const metaW = ctx.measureText(meta).width;
+  const nameLeft = X + 38;
+  const nameRoom = RIGHT - metaW - 28 - nameLeft;
+
+  ctx.font = `600 23px ${font}`;
+  let credit = `Verified trade by ${author.name}`;
+  if (ctx.measureText(credit).width > nameRoom) {
+    credit = author.name;
+    while (credit.length > 1 && ctx.measureText(`${credit}...`).width > nameRoom) {
+      credit = credit.slice(0, -1);
+    }
+    if (credit !== author.name) credit = `${credit}...`;
+  }
+  ctx.fillStyle = "#a8a8b2";
+  ctx.fillText(credit, nameLeft, footY);
+
   ctx.textAlign = "right";
   ctx.fillStyle = "#7a7a84";
-  ctx.font = "500 25px Arial, sans-serif";
+  ctx.font = `500 23px ${font}`;
   ctx.fillText(meta, RIGHT, footY);
   ctx.textAlign = "left";
+
+  paintGrain(ctx, S, S, `${trade.id}-feed`);
 
   /* The neon frame hugs the card, not the canvas edge. */
   paintThemeFrame(ctx, theme, S, S, PAD, CARD_R);
@@ -351,6 +464,7 @@ async function makeFeedCard(trade: JournalEntry, theme: ShareTheme, author: Card
 
 /* ── STORY CARD  1080 × 1920 ──────────────────────────────────────────────── */
 async function makeStoryCard(trade: JournalEntry, theme: ShareTheme, author: CardAuthor): Promise<string> {
+  const font = await resolveCardFont();
   const W = 1080, H = 1920;
   const canvas = document.createElement("canvas");
   canvas.width = W; canvas.height = H;
@@ -390,7 +504,7 @@ async function makeStoryCard(trade: JournalEntry, theme: ShareTheme, author: Car
 
     /* TRADEWAY */
     ctx.fillStyle = "#ffffff";
-    ctx.font = "900 54px 'Arial Black', Arial, sans-serif";
+    ctx.font = `900 54px ${font}`;
     ctx.fillText("TRADEWAY", X, 148);
     /* accent dot */
     ctx.fillStyle = accent;
@@ -400,17 +514,17 @@ async function makeStoryCard(trade: JournalEntry, theme: ShareTheme, author: Car
 
     /* date */
     ctx.fillStyle = "#6b7280";
-    ctx.font = "500 28px Arial, sans-serif";
+    ctx.font = `500 28px ${font}`;
     ctx.fillText(dateStr, X, 206);
 
     /* symbol */
     ctx.fillStyle = "#f9fafb";
-    ctx.font = "900 118px 'Arial Black', Arial, sans-serif";
+    ctx.font = `900 118px ${font}`;
     ctx.fillText(trade.symbol, X, 378);
 
     /* chips */
     const chip = (label: string, x: number, y: number, bg2: string, fg: string) => {
-      ctx.font = "800 27px Arial, sans-serif";
+      ctx.font = `800 27px ${font}`;
       const tw = ctx.measureText(label).width + 44;
       ctx.fillStyle = bg2; rRect(ctx, x, y, tw, 54, 14); ctx.fill();
       ctx.fillStyle = fg; ctx.fillText(label, x + 22, y + 37);
@@ -427,14 +541,14 @@ async function makeStoryCard(trade: JournalEntry, theme: ShareTheme, author: Car
     const pnlStr = `${win ? "+" : "\u2212"}$${cash.format(Math.abs(trade.pnl))}`;
     const pnlSize = pnlStr.length > 12 ? 92 : pnlStr.length > 9 ? 108 : 126;
     ctx.fillStyle = accent;
-    ctx.font = `900 ${pnlSize}px 'Arial Black', Arial, sans-serif`;
+    ctx.font = `900 ${pnlSize}px ${font}`;
     ctx.fillText(pnlStr, X, 604);
 
     /* R value */
     let statsY = 680;
     if (trade.resultR && Math.abs(trade.resultR) > 0.01) {
       ctx.fillStyle = accent; ctx.globalAlpha = 0.72;
-      ctx.font = "700 56px Arial, sans-serif";
+      ctx.font = `700 56px ${font}`;
       ctx.fillText(`${trade.resultR.toFixed(2)}R`, X, 682);
       ctx.globalAlpha = 1;
       statsY = 750;
@@ -448,7 +562,7 @@ async function makeStoryCard(trade: JournalEntry, theme: ShareTheme, author: Car
     const isInternalLabel = (val: string) => /auto\s*sync/i.test(val);
     let tagX = X;
     const tag = (val: string, x: number, y: number) => {
-      ctx.font = "600 27px Arial, sans-serif";
+      ctx.font = `600 27px ${font}`;
       const tw = ctx.measureText(val).width + 32;
       ctx.fillStyle = "rgba(255,255,255,0.07)"; rRect(ctx, x, y, tw, 46, 12); ctx.fill();
       ctx.fillStyle = "#9ca3af"; ctx.fillText(val, x + 16, y + 32);
@@ -489,17 +603,19 @@ async function makeStoryCard(trade: JournalEntry, theme: ShareTheme, author: Car
        the product was renamed, so every shared story carried the old name. */
     ctx.textAlign = "center";
     ctx.fillStyle = "#90909a";
-    ctx.font = "600 26px Arial, sans-serif";
+    ctx.font = `600 26px ${font}`;
     ctx.fillText(`Verified trade by ${author.name}`, W / 2, H - 104);
 
     const brandSize = 30;
-    ctx.font = "700 30px Arial, sans-serif";
+    ctx.font = `700 30px ${font}`;
     const brandW = ctx.measureText("Tradoxy").width;
     const brandLeft = (W - (brandSize + 14 + brandW)) / 2;
     drawTradoxyMark(ctx, brandLeft, H - 62 - brandSize + 6, brandSize, "#c6c6ce");
     ctx.textAlign = "left";
     ctx.fillStyle = "#c6c6ce";
     ctx.fillText("Tradoxy", brandLeft + brandSize + 14, H - 44);
+
+    paintGrain(ctx, W, H, `${trade.id}-story`);
 
     paintThemeFrame(ctx, theme, W, H, 40, 62);
 
