@@ -1,4 +1,5 @@
 import { authenticateRequest, badRequest, serverError, unauthorized } from "@/lib/backend/auth";
+import { JOURNAL_ENTRY_SELECT } from "@/lib/journal-entry";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -47,7 +48,7 @@ export async function GET(request: Request) {
 
   let query = auth.supabase
     .from("journal_entries")
-    .select("*")
+    .select(JOURNAL_ENTRY_SELECT)
     .eq("user_id", auth.user.id)
     .order("traded_at", { ascending: false })
     .order("created_at", { ascending: false })

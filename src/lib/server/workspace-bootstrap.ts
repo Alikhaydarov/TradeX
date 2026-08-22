@@ -1,6 +1,6 @@
 import type { PropAccount } from "@/components/types";
 import { accountFromRow, type AccountRow } from "@/lib/workspace-accounts";
-import { journalEntryFromRow, type JournalEntryRow } from "@/lib/journal-entry";
+import { JOURNAL_ENTRY_SELECT, journalEntryFromRow, type JournalEntryRow } from "@/lib/journal-entry";
 import type { JournalEntry } from "@/components/types";
 import { getSupabaseServerClient } from "@/lib/supabase/server";
 
@@ -50,7 +50,7 @@ export async function getWorkspaceBootstrap(): Promise<WorkspaceBootstrap> {
     supabase.rpc("is_admin"),
     supabase
       .from("journal_entries")
-      .select("*")
+      .select(JOURNAL_ENTRY_SELECT)
       .eq("user_id", userData.user.id)
       .order("traded_at", { ascending: false })
       .order("created_at", { ascending: false })

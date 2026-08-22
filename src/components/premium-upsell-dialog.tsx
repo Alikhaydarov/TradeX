@@ -39,7 +39,7 @@ export function PremiumUpsellDialog() {
   useEffect(() => {
     let active = true;
 
-    apiRequest<StripeConfigStatus>("/api/stripe/config")
+    apiRequest<StripeConfigStatus>("/api/stripe/config", { cacheMs: 300_000 })
       .then((status) => {
         if (active) setBillingConfigured(Boolean(status.configured));
       })
@@ -68,7 +68,7 @@ export function PremiumUpsellDialog() {
     }
 
     const timer = window.setTimeout(() => {
-      apiRequest<PremiumStatus>("/api/premium/status")
+      apiRequest<PremiumStatus>("/api/premium/status", { cacheMs: 60_000 })
         .then((status) => {
           if (!active) return;
           if (!status.isPremium) setOpen(true);

@@ -106,7 +106,7 @@ export function NotificationListener() {
       }
     };
 
-    void apiRequest<{ plan: "free" | "standard" | "pro"; aiEnabled: boolean }>("/api/premium/status")
+    void apiRequest<{ plan: "free" | "standard" | "pro"; aiEnabled: boolean }>("/api/premium/status", { cacheMs: 60_000 })
       .then((status) => {
         if (!active) return;
         proEnabled = status.plan === "pro" && status.aiEnabled;

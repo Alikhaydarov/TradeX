@@ -40,21 +40,25 @@ export function WorkspaceBootLoader({
   const [hydrated, setHydrated] = useState(false);
   const [settled, setSettled] = useState(false);
   const [finishing, setFinishing] = useState(false);
-  const [visible, setVisible] = useState(true);
+  // Server bootstrap already delivered the account and journal payload. In
+  // that path an overlay only hides ready UI, so start fully dismissed.
+  const [visible, setVisible] = useState(() => !bootstrapped);
 
   useEffect(() => {
+    if (bootstrapped) return;
     setHydrated(true);
     const timer = window.setTimeout(() => setSettled(true), SETTLE_MS);
     return () => window.clearTimeout(timer);
-  }, []);
+  }, [bootstrapped]);
 
   // A safety valve: if the un-bootstrapped path never resolves, the splash must
   // still leave rather than trap the user behind it.
   const [forceReady, setForceReady] = useState(false);
   useEffect(() => {
+    if (bootstrapped) return;
     const timer = window.setTimeout(() => setForceReady(true), 3500);
     return () => window.clearTimeout(timer);
-  }, []);
+  }, [bootstrapped]);
 
   const ready =
     forceReady ||

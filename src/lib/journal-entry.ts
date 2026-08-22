@@ -33,7 +33,11 @@ export type JournalEntryRow = {
   to_trading_bible?: boolean;
   image_url?: string | null;
   tags?: string[];
+  created_at?: string;
+  updated_at?: string;
 };
+
+export const JOURNAL_ENTRY_SELECT = "id,prop_account_id,symbol,side,entry_price,exit_price,quantity,fees,pnl,note,traded_at,account_name,market_type,setup,emotion,risk_amount,result_r,risk_percent,session,following_plan,error_made,mistake_type,review_completed,to_trading_bible,image_url,tags,created_at,updated_at" as const;
 
 function parseTradeImages(value?: string | null) {
   if (!value) return [];
