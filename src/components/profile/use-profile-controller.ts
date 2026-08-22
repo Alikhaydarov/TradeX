@@ -124,13 +124,25 @@ export function useProfileController(
   const [achievementImage, setAchievementImage] = useState("");
   const [achievementBusy, setAchievementBusy] = useState(false);
   const viewedPosts = useRef<Set<string>>(new Set());
+  const pendingPostViews = useRef<Set<string>>(new Set());
+  const postViewRetries = useRef<Map<string, number>>(new Map());
+  const postViewRetryTimers = useRef<Set<number>>(new Set());
   const viewObserver = useRef<IntersectionObserver | null>(null);
   const avatarInputRef = useRef<HTMLInputElement | null>(null);
   const bannerInputRef = useRef<HTMLInputElement | null>(null);
 
   const seededRef = useRef(Boolean(seed));
 
-  useEffect(() => () => viewObserver.current?.disconnect(), []);
+  useEffect(
+    () => () => {
+      viewObserver.current?.disconnect();
+      postViewRetryTimers.current.forEach((timer) =>
+        window.clearTimeout(timer),
+      );
+      postViewRetryTimers.current.clear();
+    },
+    [],
+  );
 
   useEffect(() => {
     if (!user) {
@@ -473,8 +485,14 @@ export function useProfileController(
   };
 
   const recordPostView = (postId: string) => {
-    if (!user || viewedPosts.current.has(postId)) return;
-    viewedPosts.current.add(postId);
+    if (
+      !user ||
+      viewedPosts.current.has(postId) ||
+      pendingPostViews.current.has(postId)
+    ) {
+      return;
+    }
+    pendingPostViews.current.add(postId);
     void apiRequest<{ success: boolean; views?: number | null }>(
       "/api/post-actions",
       {
@@ -483,6 +501,8 @@ export function useProfileController(
       },
     )
       .then((response) => {
+        viewedPosts.current.add(postId);
+        postViewRetries.current.delete(postId);
         if (typeof response.views !== "number") return;
         setPosts((current) =>
           current.map((item) =>
@@ -492,7 +512,19 @@ export function useProfileController(
           ),
         );
       })
-      .catch(() => undefined);
+      .catch(() => {
+        const attempts = postViewRetries.current.get(postId) ?? 0;
+        if (attempts >= 2) return;
+        postViewRetries.current.set(postId, attempts + 1);
+        const timer = window.setTimeout(() => {
+          postViewRetryTimers.current.delete(timer);
+          recordPostView(postId);
+        }, 1200 * (attempts + 1));
+        postViewRetryTimers.current.add(timer);
+      })
+      .finally(() => {
+        pendingPostViews.current.delete(postId);
+      });
   };
 
   const observePostView = (node: HTMLElement | null, postId: string) => {
