@@ -3,6 +3,7 @@
 import { Check } from "lucide-react";
 import Link from "next/link";
 
+import { RevealWords } from "./reveal-words";
 import { Scroll3D, Scroll3DStage } from "./scroll-3d";
 
 /**
@@ -57,56 +58,81 @@ export function LandingPlans() {
   return (
     <section
       id="plans"
-      className="relative z-[1] mx-auto w-[min(1180px,calc(100%-48px))] border-t border-white/[.11] py-[110px] max-sm:w-[min(calc(100%-30px),1180px)] max-sm:py-20"
-      aria-labelledby="plans-heading"
+      className="mx-auto w-[min(1180px,calc(100%-48px))] py-32 max-sm:w-[min(calc(100%-30px),1180px)] max-sm:py-20"
+      aria-label="Plans"
     >
-      <div className="auth3-section-title" data-reveal>
-        <span>PLANS</span>
-        <h2 id="plans-heading">
-          Start at zero.
-          <br />
-          Pay only when it earns it.
-        </h2>
-      </div>
+      <RevealWords
+        as="h2"
+        text="Start at zero. Pay when it earns it."
+        className="mx-auto max-w-2xl text-center text-[clamp(24px,3.4vw,40px)] font-light leading-[1.2] tracking-[-0.02em]"
+      />
 
-      <Scroll3DStage className="mt-12 grid gap-4 lg:grid-cols-3">
+      <Scroll3DStage className="mt-14 grid gap-3 lg:grid-cols-3">
         {PLANS.map((plan, index) => (
           <Scroll3D
             key={plan.name}
             as="article"
-            delay={index * 0.09}
-            depth={190}
+            delay={index * 0.07}
+            depth={170}
             rotate={9}
-            lift={46}
-            className={`flex flex-col rounded-2xl border p-7 max-sm:p-6 ${
+            lift={42}
+            className={`flex flex-col rounded-2xl border p-8 max-sm:p-6 ${
               plan.highlight
-                ? "border-white/25 bg-white/[.05]"
-                : "border-white/8 bg-white/[.02]"
+                ? "border-black/15 bg-black text-white"
+                : "border-black/10 bg-white"
             }`}
           >
             <div className="flex items-center gap-2">
-              <h3 className="text-[15px] font-semibold tracking-tight text-white">
+              <h3
+                className={`text-[14px] ${plan.highlight ? "text-white" : "text-black"}`}
+              >
                 {plan.name}
               </h3>
               {plan.badge ? (
-                <span className="rounded-full border border-white/20 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[.12em] text-ink-soft">
+                <span className="rounded-full border border-white/25 px-2 py-0.5 text-[10px] uppercase tracking-[.12em] text-white/70">
                   {plan.badge}
                 </span>
               ) : null}
             </div>
 
-            <p className="mt-5 flex items-baseline gap-2">
-              <span className="text-[40px] font-bold leading-none tracking-[-0.045em] text-white">
+            <p className="mt-6 flex items-baseline gap-2">
+              <span
+                className={`text-[42px] font-light leading-none tracking-[-0.035em] ${
+                  plan.highlight ? "text-white" : "text-black"
+                }`}
+              >
                 {plan.price}
               </span>
-              <span className="text-[12px] text-ink-faint">{plan.period}</span>
+              <span
+                className={`text-[12px] ${
+                  plan.highlight ? "text-white/45" : "text-black/40"
+                }`}
+              >
+                {plan.period}
+              </span>
             </p>
-            <p className="mt-3 text-[13px] leading-6 text-ink-mute">{plan.tagline}</p>
+            <p
+              className={`mt-3 text-[13px] leading-6 ${
+                plan.highlight ? "text-white/55" : "text-black/45"
+              }`}
+            >
+              {plan.tagline}
+            </p>
 
-            <ul className="mt-6 space-y-2.5">
+            <ul className="mt-7 space-y-3">
               {plan.features.map((feature) => (
-                <li key={feature} className="flex gap-2.5 text-[13px] leading-6 text-ink-soft">
-                  <Check size={15} className="mt-1 shrink-0 text-ink-faint" />
+                <li
+                  key={feature}
+                  className={`flex gap-2.5 text-[13px] leading-6 ${
+                    plan.highlight ? "text-white/80" : "text-black/70"
+                  }`}
+                >
+                  <Check
+                    size={14}
+                    className={`mt-1.5 shrink-0 ${
+                      plan.highlight ? "text-white/40" : "text-black/30"
+                    }`}
+                  />
                   {feature}
                 </li>
               ))}
@@ -114,10 +140,10 @@ export function LandingPlans() {
 
             <Link
               href="/pricing"
-              className={`mt-7 inline-flex h-11 items-center justify-center rounded-xl text-[13px] font-semibold transition-colors ${
+              className={`mt-8 inline-flex h-11 items-center justify-center rounded-full text-[13px] transition-opacity hover:opacity-85 ${
                 plan.highlight
-                  ? "bg-white text-black hover:bg-zinc-200"
-                  : "border border-white/12 text-ink-soft hover:border-white/25 hover:text-white"
+                  ? "bg-white text-black"
+                  : "border border-black/12 text-black/75"
               }`}
             >
               See {plan.name} in full
@@ -126,9 +152,9 @@ export function LandingPlans() {
         ))}
       </Scroll3DStage>
 
-      <p className="mt-6 text-[12px] text-ink-faint">
+      <p className="mt-7 text-center text-[12px] text-black/35">
         Billed monthly, cancel from the billing portal at any time. There is no
-        trial - the Free plan is the trial, and it does not expire.
+        trial — the Free plan is the trial, and it does not expire.
       </p>
     </section>
   );

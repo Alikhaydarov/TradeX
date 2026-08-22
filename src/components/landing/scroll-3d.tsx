@@ -92,7 +92,7 @@ function schedule(active: Controller) {
   });
 }
 
-function register(entry: Entry) {
+export function register(entry: Entry) {
   const active = getController();
   active.entries.set(entry.element, entry);
   active.observer.observe(entry.element);
@@ -105,6 +105,58 @@ function register(entry: Entry) {
 }
 
 const easeOut = (value: number) => 1 - Math.pow(1 - value, 3);
+
+/**
+ * How far a tall section has been scrolled through, and how far its inner
+ * frame must be pushed down to appear pinned to the top of the viewport.
+ *
+ * `position: sticky` is not available to us here: the app sets
+ * `overflow-x: hidden` on <body> for the workspace, which makes the body a
+ * scroll container and quietly disables sticky for everything inside it.
+ * Translating the frame by the same amount the page has scrolled produces the
+ * identical result, costs one transform, and does not care what the ancestors
+ * do.
+ */
+export function readPin(section: HTMLElement) {
+  const box = section.getBoundingClientRect();
+  const travel = Math.max(1, box.height - window.innerHeight);
+  const offset = Math.min(travel, Math.max(0, -box.top));
+  return { offset, travel, progress: offset / travel };
+}
+
+export type ScrollApply = (progress: number, leave: number, element: HTMLElement) => void;
+
+/**
+ * Subscribe any element to the shared scroll controller.
+ *
+ * Components that need the scroll signal for something other than a depth
+ * transform - a word-by-word reveal, a counter, a horizontal rail - use this
+ * instead of adding their own listener, so the page still has exactly one.
+ */
+export function useScrollSignal(
+  ref: React.RefObject<HTMLElement | null>,
+  apply: ScrollApply,
+  options?: { motionSafe?: boolean },
+) {
+  const latest = useRef(apply);
+  latest.current = apply;
+
+  useEffect(() => {
+    const element = ref.current;
+    if (!element) return;
+    if (
+      options?.motionSafe !== false &&
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches
+    ) {
+      latest.current(1, 0, element);
+      return;
+    }
+    return register({
+      element,
+      apply: (progress, leave, node) => latest.current(progress, leave, node),
+    });
+  }, [options?.motionSafe, ref]);
+}
 
 export type Scroll3DProps = {
   children: ReactNode;
