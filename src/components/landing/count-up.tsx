@@ -26,10 +26,16 @@ export function CountUp({
 }) {
   const ref = useRef<HTMLSpanElement>(null);
 
-  useScrollSignal(ref, (progress, _leave, node) => {
-    const eased = 1 - Math.pow(1 - Math.min(1, progress / 0.75), 3);
-    node.textContent = `${prefix}${(value * eased).toFixed(decimals)}${suffix}`;
-  });
+  // A changing number is not movement, so this runs regardless of the reduced
+  // motion setting; it only ever ends on the real figure.
+  useScrollSignal(
+    ref,
+    (progress, _leave, node) => {
+      const eased = 1 - Math.pow(1 - Math.min(1, progress / 0.75), 3);
+      node.textContent = `${prefix}${(value * eased).toFixed(decimals)}${suffix}`;
+    },
+    { motionSafe: false },
+  );
 
   return (
     <span ref={ref} className={className}>

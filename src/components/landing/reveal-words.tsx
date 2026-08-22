@@ -32,6 +32,9 @@ export function RevealWords({
   const ref = useRef<HTMLElement>(null);
   const words = useMemo(() => text.split(" "), [text]);
 
+  // Not motion: the words do not move, they change colour. Kept on even when
+  // the system asks for reduced motion, or the sentence would just sit there
+  // fully lit and the page would lose its one piece of rhythm.
   useScrollSignal(ref, (progress, _leave, node) => {
     const spans = node.querySelectorAll<HTMLElement>("[data-word]");
     const count = spans.length || 1;
@@ -44,7 +47,7 @@ export function RevealWords({
       span.style.color = lit > 0.5 ? to : from;
       span.style.opacity = String(0.55 + lit * 0.45);
     });
-  });
+  }, { motionSafe: false });
 
   return (
     <Tag ref={ref as never} className={className}>
