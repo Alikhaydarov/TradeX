@@ -26,27 +26,43 @@ export async function GET(request: Request) {
   const supabase = await getSupabaseServerClient();
   if (!supabase) return serverError("Database ulanmagan.");
 
-  const { data: posts, error } = await supabase
-    .from("posts")
-    .select("*")
-    .eq("is_archived", false)
-    .not("symbol", "is", null)
-    .not("side", "is", null)
-    .not("trade_result", "is", null)
-    .order("created_at", { ascending: false })
-    .limit(50);
+  const [{ data: posts, error }, auth] = await Promise.all([
+    supabase
+      .from("posts")
+      .select("*")
+      .eq("is_archived", false)
+      .not("symbol", "is", null)
+      .not("side", "is", null)
+      .not("trade_result", "is", null)
+      .order("created_at", { ascending: false })
+      .limit(50),
+    authenticateRequest(request),
+  ]);
 
   if (error) return serverError(error.message);
 
   const rawPosts = (posts ?? []) as PostRow[];
   const userIds = Array.from(new Set(rawPosts.map((post) => post.user_id).filter(Boolean)));
 
-  const { data: profiles, error: profileError } = userIds.length
-    ? await supabase
+  const profilesRequest = userIds.length
+    ? supabase
       .from("profiles")
       .select("id, full_name, username, avatar_url, is_verified, plan, premium_until")
       .in("id", userIds)
-    : { data: [], error: null };
+    : Promise.resolve({ data: [] as ProfileRow[], error: null });
+
+  const interactionRequest = auth
+    ? Promise.all([
+      auth.supabase.from("post_likes").select("post_id").eq("user_id", auth.user.id),
+      auth.supabase.from("post_bookmarks").select("post_id").eq("user_id", auth.user.id),
+      auth.supabase.from("post_reposts").select("post_id").eq("user_id", auth.user.id),
+    ])
+    : Promise.resolve(null);
+
+  const [{ data: profiles, error: profileError }, interactions] = await Promise.all([
+    profilesRequest,
+    interactionRequest,
+  ]);
 
   if (profileError) return serverError(profileError.message);
 
@@ -64,16 +80,11 @@ export async function GET(request: Request) {
     };
   });
 
-  const auth = await authenticateRequest(request);
-  if (!auth) {
+  if (!auth || !interactions) {
     return Response.json({ posts: hydratedPosts, likedPostIds: [], bookmarkedPostIds: [], repostedPostIds: [] });
   }
 
-  const [likes, bookmarks, reposts] = await Promise.all([
-    auth.supabase.from("post_likes").select("post_id").eq("user_id", auth.user.id),
-    auth.supabase.from("post_bookmarks").select("post_id").eq("user_id", auth.user.id),
-    auth.supabase.from("post_reposts").select("post_id").eq("user_id", auth.user.id),
-  ]);
+  const [likes, bookmarks, reposts] = interactions;
 
   return Response.json({
     posts: hydratedPosts,

@@ -22,6 +22,17 @@ import { profilePath } from "@/lib/navigation";
 
 type PostRecord = SocialPostRecord;
 
+const FEED_CACHE_TTL_MS = 30_000;
+const feedSnapshots = new Map<
+  string,
+  { posts: Post[]; fetchedAt: number }
+>();
+const recordedViewKeys = new Set<string>();
+
+function feedCacheKey(userId?: string) {
+  return userId ? `viewer:${userId}` : "viewer:guest";
+}
+
 interface FeedTradeRow {
   id: string;
   prop_account_id?: string | null;
@@ -116,8 +127,20 @@ export function useFeedData(onLogin: () => void) {
   const pendingViews = useRef(new Set<string>());
   const observer = useRef<IntersectionObserver | null>(null);
 
-  const loadPosts = useCallback(() => {
-    setLoading(true);
+  const loadPosts = useCallback((force = false) => {
+    const cacheKey = feedCacheKey(user?.id);
+    const snapshot = feedSnapshots.get(cacheKey);
+    const isFresh =
+      snapshot && Date.now() - snapshot.fetchedAt < FEED_CACHE_TTL_MS;
+
+    if (snapshot) {
+      setPosts(snapshot.posts);
+      setLoading(false);
+      if (isFresh && !force) return Promise.resolve();
+    } else {
+      setLoading(true);
+    }
+
     setError(null);
     return apiRequest<{
       posts: PostRecord[];
@@ -129,19 +152,26 @@ export function useFeedData(onLogin: () => void) {
         const liked = new Set(data.likedPostIds);
         const bookmarked = new Set(data.bookmarkedPostIds);
         const reposted = new Set(data.repostedPostIds);
-        setPosts(
-          data.posts.map((post) =>
-            toSocialPost(post, {
-              liked: liked.has(post.id),
-              bookmarked: bookmarked.has(post.id),
-              reposted: reposted.has(post.id),
-            }),
-          ),
+        const nextPosts = data.posts.map((post) =>
+          toSocialPost(post, {
+            liked: liked.has(post.id),
+            bookmarked: bookmarked.has(post.id),
+            reposted: reposted.has(post.id),
+          }),
         );
+        feedSnapshots.set(cacheKey, {
+          posts: nextPosts,
+          fetchedAt: Date.now(),
+        });
+        setPosts(nextPosts);
       })
       .catch((nextError: Error) => setError(nextError.message))
       .finally(() => setLoading(false));
-  }, []);
+  }, [user?.id]);
+
+  const invalidateFeedCache = useCallback(() => {
+    feedSnapshots.delete(feedCacheKey(user?.id));
+  }, [user?.id]);
 
   const loadShareTrades = useCallback(() => {
     if (!user) return Promise.resolve();
@@ -260,7 +290,8 @@ export function useFeedData(onLogin: () => void) {
       if (
         !user ||
         viewed.current.has(postId) ||
-        pendingViews.current.has(postId)
+        pendingViews.current.has(postId) ||
+        recordedViewKeys.has(`${user.id}:${postId}`)
       ) {
         return;
       }
@@ -276,8 +307,19 @@ export function useFeedData(onLogin: () => void) {
       })
         .then((response) => {
           viewed.current.add(postId);
+          recordedViewKeys.add(`${user.id}:${postId}`);
           const currentViews = response.views;
           if (typeof currentViews !== "number") return;
+          const cacheKey = feedCacheKey(user.id);
+          const snapshot = feedSnapshots.get(cacheKey);
+          if (snapshot) {
+            feedSnapshots.set(cacheKey, {
+              ...snapshot,
+              posts: snapshot.posts.map((post) =>
+                post.id === postId ? { ...post, views: currentViews } : post,
+              ),
+            });
+          }
           setPosts((current) =>
             current.map((post) =>
               post.id === postId ? { ...post, views: currentViews } : post,
@@ -337,6 +379,7 @@ export function useFeedData(onLogin: () => void) {
         onLogin();
         return;
       }
+      invalidateFeedCache();
       const optimisticLiked = !post.liked;
       const optimisticLikes = Math.max(
         0,
@@ -374,7 +417,7 @@ export function useFeedData(onLogin: () => void) {
         );
       }
     },
-    [onLogin, user],
+    [invalidateFeedCache, onLogin, user],
   );
 
   const toggleBookmark = useCallback(
@@ -383,6 +426,7 @@ export function useFeedData(onLogin: () => void) {
         onLogin();
         return;
       }
+      invalidateFeedCache();
       const bookmarked = !post.bookmarked;
       setPosts((current) =>
         current.map((item) =>
@@ -416,7 +460,7 @@ export function useFeedData(onLogin: () => void) {
         );
       }
     },
-    [onLogin, user],
+    [invalidateFeedCache, onLogin, user],
   );
 
   const toggleRepost = useCallback(
@@ -425,6 +469,7 @@ export function useFeedData(onLogin: () => void) {
         onLogin();
         return;
       }
+      invalidateFeedCache();
       const reposted = !post.reposted;
       const reposts = Math.max(
         0,
@@ -464,7 +509,7 @@ export function useFeedData(onLogin: () => void) {
         );
       }
     },
-    [onLogin, user],
+    [invalidateFeedCache, onLogin, user],
   );
 
   const openEditPost = useCallback((post: Post) => {
@@ -474,6 +519,7 @@ export function useFeedData(onLogin: () => void) {
 
   const savePostEdit = useCallback(async () => {
     if (!editingPost || !editingText.trim()) return;
+    invalidateFeedCache();
     const previous = editingPost.text;
     const content = editingText.trim();
     setActingId(editingPost.id);
@@ -505,7 +551,7 @@ export function useFeedData(onLogin: () => void) {
     } finally {
       setActingId(null);
     }
-  }, [editingPost, editingText]);
+  }, [editingPost, editingText, invalidateFeedCache]);
 
   const toggleReplies = useCallback(
     async (post: Post) => {
@@ -554,6 +600,7 @@ export function useFeedData(onLogin: () => void) {
       }
       const content = replyDrafts[post.id]?.trim();
       if (!content) return;
+      invalidateFeedCache();
 
       const optimisticReply: PostReply = {
         id: `optimistic-${Date.now()}`,
@@ -634,7 +681,7 @@ export function useFeedData(onLogin: () => void) {
         setSavingReply(null);
       }
     },
-    [onLogin, premiumStatus.isVerified, replyDrafts, user],
+    [invalidateFeedCache, onLogin, premiumStatus.isVerified, replyDrafts, user],
   );
 
   const sharePost = useCallback(async (post: Post) => {
@@ -670,6 +717,7 @@ export function useFeedData(onLogin: () => void) {
 
   const archivePost = useCallback(async () => {
     if (!user || !deleteTarget) return;
+    invalidateFeedCache();
     setActingId(deleteTarget.id);
     setError(null);
     try {
@@ -693,11 +741,11 @@ export function useFeedData(onLogin: () => void) {
     } finally {
       setActingId(null);
     }
-  }, [deleteTarget, user]);
+  }, [deleteTarget, invalidateFeedCache, user]);
 
   const closeShareComposer = useCallback(() => {
     setShareTarget(null);
-    void loadPosts();
+    void loadPosts(true);
   }, [loadPosts]);
 
   return {
