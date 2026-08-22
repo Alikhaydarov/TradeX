@@ -139,7 +139,13 @@ export function useScrollSignal(
   options?: { motionSafe?: boolean },
 ) {
   const latest = useRef(apply);
-  latest.current = apply;
+
+  // Kept in an effect rather than assigned during render: the callback is a
+  // fresh closure every render, and writing a ref while rendering is exactly
+  // the pattern React warns about.
+  useEffect(() => {
+    latest.current = apply;
+  });
 
   useEffect(() => {
     const element = ref.current;
