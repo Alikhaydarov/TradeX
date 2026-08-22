@@ -54,14 +54,14 @@ function PlatformCard({ item, onSelect }: { item: PlatformConfig; onSelect: (ite
       disabled={!live}
       onClick={() => onSelect(item)}
       className={cn(
-        "group relative flex min-h-[150px] flex-col items-center justify-center rounded-2xl border p-3 text-center transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/30",
+        "group relative flex min-h-[126px] flex-col items-center justify-center rounded-xl border p-3 text-center transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/30 sm:min-h-[138px] sm:rounded-2xl",
         live ? "border-white/10 bg-surface-raised hover:border-white/25 hover:bg-surface-raised" : "cursor-not-allowed border-white/6 bg-surface opacity-55",
       )}
     >
       <PlatformLogoBadge platform={item.id} />
-      <span className="mt-3 text-sm font-black text-white">{item.name}</span>
-      <span className="mt-1 text-[11px] text-ink-mute">{item.helper}</span>
-      <span className={cn("mt-2 rounded-full px-2 py-1 text-[10px] font-black uppercase tracking-[0.1em]", live ? activeTone : "bg-white/6 text-ink-mute")}>
+      <span className="mt-2.5 text-[13px] font-bold text-white sm:text-sm">{item.name}</span>
+      <span className="mt-1 line-clamp-2 text-[10px] leading-4 text-ink-mute sm:text-[11px]">{item.helper}</span>
+      <span className={cn("mt-2 rounded-full px-2 py-0.5 text-[9px] font-bold uppercase tracking-[0.08em] sm:text-[10px]", live ? activeTone : "bg-white/6 text-ink-mute")}>
         {live ? item.mode === "csv" ? "CSV import" : item.market : "Coming soon"}
       </span>
       {live ? <ChevronRight size={15} className="absolute right-3 top-3 text-ink-subtle transition group-hover:translate-x-0.5 group-hover:text-white" /> : null}

@@ -263,7 +263,7 @@ export function PropAccountDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[calc(100dvh-1rem)] gap-0 overflow-hidden border-[#1a1a1a] bg-surface p-0 text-zinc-100 sm:max-h-[88dvh] sm:max-w-[780px]">
+      <DialogContent className="max-h-[calc(100dvh-.5rem)] w-[calc(100vw-.5rem)] gap-0 overflow-hidden border-[#1a1a1a] bg-surface p-0 text-zinc-100 sm:max-h-[88dvh] sm:max-w-[780px]">
         <div className="flex items-center gap-3 border-b border-white/8 bg-black px-4 py-3.5 sm:px-5">
           <DialogHeader className="min-w-0 sm:w-36">
             <DialogTitle className="truncate text-base font-black sm:text-lg">Add account</DialogTitle>
@@ -294,7 +294,7 @@ export function PropAccountDialog({
             ) : null}
 
             {step === 1 ? (
-              <div className="grid gap-5 md:grid-cols-2">
+              <div className="grid gap-3 sm:grid-cols-2">
                 <ChoiceCard icon={<Pencil size={22} />} title="Manual Account" text="Create a journal account and add your trades manually." onClick={chooseManual} />
                 <ChoiceCard icon={<Zap size={22} />} title="Sync or Import Account" text="Sync MT5 automatically or import supported platform trade history from CSV." onClick={chooseAutomatic} />
               </div>
@@ -409,12 +409,12 @@ function ChoiceCard({ icon, title, text, onClick }: { icon: ReactNode; title: st
     <button
       type="button"
       onClick={onClick}
-      className="group flex min-h-[180px] flex-col items-center justify-center rounded-2xl border border-white/10 bg-surface p-5 text-center transition hover:border-white/25 hover:bg-surface-raised sm:min-h-[210px]"
+      className="group flex min-h-[148px] flex-col items-center justify-center rounded-2xl border border-white/10 bg-surface p-4 text-center transition hover:border-white/25 hover:bg-surface-raised sm:min-h-[168px] sm:p-5"
     >
-      <span className="grid size-12 place-items-center rounded-2xl bg-surface-raised text-white">{icon}</span>
-      <h3 className="mt-4 text-lg font-black sm:text-xl">{title}</h3>
-      <p className="mt-2 max-w-xs text-xs font-semibold leading-5 text-ink-mute sm:text-sm">{text}</p>
-      <ChevronRight className="mt-4 transition group-hover:translate-x-1" size={20} />
+      <span className="grid size-10 place-items-center rounded-xl bg-surface-raised text-white sm:size-11">{icon}</span>
+      <h3 className="mt-3 text-base font-bold sm:text-lg">{title}</h3>
+      <p className="mt-1.5 max-w-xs text-xs font-medium leading-5 text-ink-mute">{text}</p>
+      <ChevronRight className="mt-3 transition group-hover:translate-x-1" size={18} />
     </button>
   );
 }
