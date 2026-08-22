@@ -3,7 +3,7 @@
 import { useRef } from "react";
 import { BarChart3, NotebookPen, Users } from "lucide-react";
 
-import { readPin, useScrollSignal } from "./scroll-3d";
+import { readPin, useReducedMotion, useScrollSignal } from "./scroll-3d";
 
 const ANGLES = [
   {
@@ -93,6 +93,7 @@ export function LandingRail() {
   const sectionRef = useRef<HTMLElement>(null);
   const frameRef = useRef<HTMLDivElement>(null);
   const trackRef = useRef<HTMLDivElement>(null);
+  const reduced = useReducedMotion();
 
   useScrollSignal(sectionRef, (_progress, _leave, node) => {
     const pin = readPin(node);
@@ -107,6 +108,45 @@ export function LandingRail() {
     const eased = Math.min(1, Math.max(0, (pin.progress - 0.08) / 0.84));
     track.style.transform = `translate3d(${-eased * distance}px, 0, 0)`;
   });
+
+  // Without motion the rail would sit pinned and never travel, hiding two of
+  // the three cards. Stack them instead - the same content, read by scrolling
+  // the page normally.
+  if (reduced) {
+    return (
+      <section
+        className="mx-auto w-[min(1180px,calc(100%-48px))] py-24 max-sm:w-[min(calc(100%-30px),1180px)]"
+        aria-labelledby="angles-heading"
+      >
+        <p className="text-[11px] uppercase tracking-[.18em] text-white/35">
+          The workspace
+        </p>
+        <h2
+          id="angles-heading"
+          className="mt-3 text-[clamp(26px,3.6vw,44px)] font-light leading-[1.15] tracking-[-0.02em] text-white"
+        >
+          One workspace. Three angles.
+        </h2>
+        <div className="mt-10 grid gap-4 lg:grid-cols-3">
+          {ANGLES.map((angle) => (
+            <article
+              key={angle.title}
+              className="flex flex-col justify-between rounded-2xl border border-white/8 bg-[#0b0b0b] p-8 max-sm:p-6"
+            >
+              <div>
+                <angle.icon size={20} className="text-white/50" />
+                <h3 className="mt-6 text-[clamp(22px,2.6vw,30px)] font-light tracking-[-0.02em] text-white">
+                  {angle.title}
+                </h3>
+                <p className="mt-3 text-[13px] leading-6 text-white/50">{angle.body}</p>
+              </div>
+              <div className="mt-8">{angle.art}</div>
+            </article>
+          ))}
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section
