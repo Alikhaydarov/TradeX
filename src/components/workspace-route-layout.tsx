@@ -1,7 +1,6 @@
 import type { ReactNode } from "react";
 
 import { FloatingAddTradeButton } from "@/components/floating-add-trade-button";
-import { MobileTradesBridge } from "@/components/mobile-trades-bridge";
 import { ProAiCoachLauncherBoundary } from "@/components/pro-ai-coach-launcher-boundary";
 import { WorkspaceTailwindBoundary } from "@/components/tailwind/workspace-tailwind-boundary";
 import { WorkspaceAppRouterShellV2 } from "@/components/workspace-app-router-shell-v2";
@@ -20,7 +19,6 @@ export function WorkspaceRouteLayout({
         {children}
       </WorkspaceAppRouterShellV2>
       <FloatingAddTradeButton />
-      <MobileTradesBridge />
       <ProAiCoachLauncherBoundary />
     </WorkspaceTailwindBoundary>
   );
