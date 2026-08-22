@@ -1,7 +1,15 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { BarChart3, CalendarDays, NotebookPen, Users } from "lucide-react";
+import {
+  BarChart3,
+  CalendarDays,
+  Globe2,
+  NotebookPen,
+  Table2,
+  UserRound,
+  Users,
+} from "lucide-react";
 
 type Screen = {
   id: string;
@@ -129,6 +137,63 @@ const SCREENS: Screen[] = [
     ),
   },
   {
+    id: "trades",
+    label: "Trades",
+    title: "Filter the archive, not your memory",
+    benefit:
+      "Search by symbol, setup or note, narrow the date range, and read the whole table at once.",
+    icon: Table2,
+    render: () => (
+      <>
+        <div className="grid grid-cols-4 gap-1">
+          {[
+            ["Trades", "148"],
+            ["Win rate", "68%"],
+            ["Best", "+$914"],
+            ["Avg R", "1.35R"],
+          ].map(([k, v]) => (
+            <div key={k} className="rounded-md bg-white/[.03] px-1.5 py-1">
+              <p className="text-[7px] uppercase tracking-wider text-ink-faint">{k}</p>
+              <p className="text-[10px] font-semibold text-ink-strong">{v}</p>
+            </div>
+          ))}
+        </div>
+        <div className="mt-2 grid grid-cols-[1fr_1fr_.7fr_1fr] gap-2 border-b border-white/8 pb-1 text-[7px] uppercase tracking-wider text-ink-faint">
+          <span>Date</span>
+          <span>Instrument</span>
+          <span>Side</span>
+          <span className="text-right">P&amp;L</span>
+        </div>
+        <div className="divide-y divide-white/5">
+          {[
+            ["12 Aug", "MNQ", "Buy", "+$603.00", true],
+            ["12 Aug", "EURUSD", "Sell", "−$182.40", false],
+            ["11 Aug", "XAUUSD", "Buy", "+$914.25", true],
+            ["11 Aug", "ES", "Sell", "+$248.00", true],
+          ].map(([date, sym, side, pnl, win]) => (
+            <div
+              key={`${date}-${sym}`}
+              className="grid grid-cols-[1fr_1fr_.7fr_1fr] gap-2 py-1.5 text-[8px]"
+            >
+              <span className="text-ink-faint">{date}</span>
+              <span className="font-semibold text-ink-strong">{sym}</span>
+              <span className={side === "Buy" ? "text-emerald-300" : "text-rose-300"}>
+                {side}
+              </span>
+              <span
+                className={`text-right font-semibold tabular-nums ${
+                  win ? "text-emerald-300" : "text-rose-300"
+                }`}
+              >
+                {pnl}
+              </span>
+            </div>
+          ))}
+        </div>
+      </>
+    ),
+  },
+  {
     id: "calendar",
     label: "Calendar",
     title: "Your month at a glance",
@@ -179,6 +244,50 @@ const SCREENS: Screen[] = [
     },
   },
   {
+    id: "economic",
+    label: "Economic calendar",
+    title: "Know what moves the session",
+    benefit:
+      "High-impact releases for the major markets, laid out on the month you are actually trading.",
+    icon: Globe2,
+    render: () => (
+      <>
+        <div className="flex items-baseline justify-between">
+          <span className="text-[9px] uppercase tracking-[.16em] text-ink-faint">
+            High impact
+          </span>
+          <span className="text-[8px] text-ink-mute">August</span>
+        </div>
+        <div className="mt-2 space-y-1.5">
+          {[
+            ["USD", "13:30", "Non-farm payrolls", "2N"],
+            ["EUR", "10:00", "ECB rate decision", "1N"],
+            ["GBP", "07:00", "CPI year over year", "1N"],
+          ].map(([ccy, time, name, count]) => (
+            <div
+              key={name as string}
+              className="flex items-center gap-2 rounded-md border border-white/6 bg-white/[.02] px-2 py-1.5"
+            >
+              <span className="w-8 shrink-0 text-[8px] font-semibold text-ink-strong">
+                {ccy}
+              </span>
+              <span className="min-w-0 flex-1 truncate text-[8px] text-ink-mute">
+                {name}
+              </span>
+              <span className="text-[8px] tabular-nums text-ink-faint">{time}</span>
+              <span className="rounded bg-white/8 px-1 text-[7px] text-ink-mute">
+                {count}
+              </span>
+            </div>
+          ))}
+        </div>
+        <p className="mt-2 text-[7px] text-ink-faint">
+          Forecast and previous on every release.
+        </p>
+      </>
+    ),
+  },
+  {
     id: "community",
     label: "Community",
     title: "Progress you can actually verify",
@@ -225,6 +334,63 @@ const SCREENS: Screen[] = [
           <i className="size-1.5 rounded-full bg-emerald-400" /> Verified from
           synced accounts
         </p>
+      </>
+    ),
+  },
+  {
+    id: "profile",
+    label: "Profile",
+    title: "One page that shows the work",
+    benefit:
+      "Stats, achievements and posts on a profile other traders can actually follow.",
+    icon: UserRound,
+    render: () => (
+      <>
+        <div className="flex items-center gap-2">
+          <span className="grid size-8 shrink-0 place-items-center rounded-full bg-white/10 text-[9px] font-semibold text-ink-strong">
+            AK
+          </span>
+          <div className="min-w-0">
+            <p className="truncate text-[10px] font-semibold text-ink-strong">
+              Ali Khaydarov
+            </p>
+            <p className="text-[8px] text-ink-faint">@alikhaydarov</p>
+          </div>
+        </div>
+        <div className="mt-2 flex gap-3 text-[8px]">
+          {[
+            ["Followers", "412"],
+            ["Following", "128"],
+            ["Posts", "36"],
+          ].map(([k, v]) => (
+            <span key={k} className="text-ink-faint">
+              <b className="text-ink-strong">{v}</b> {k}
+            </span>
+          ))}
+        </div>
+        <div className="mt-2 grid grid-cols-4 gap-1">
+          {[
+            ["Trades", "148"],
+            ["Win", "68%"],
+            ["P&L", "+$12.8K"],
+            ["Avg R", "1.35R"],
+          ].map(([k, v]) => (
+            <div key={k} className="rounded-md border border-white/6 px-1.5 py-1">
+              <p className="text-[7px] uppercase tracking-wider text-ink-faint">{k}</p>
+              <p className="text-[9px] font-semibold text-ink-strong">{v}</p>
+            </div>
+          ))}
+        </div>
+        <div className="mt-2 flex gap-1.5">
+          {["Verified", "30-day streak", "Top 8%"].map((badge) => (
+            <span
+              key={badge}
+              className="rounded-full border border-white/8 bg-white/[.03] px-1.5 py-0.5 text-[7px] text-ink-mute"
+            >
+              {badge}
+            </span>
+          ))}
+        </div>
       </>
     ),
   },
@@ -283,15 +449,18 @@ export function LandingShowcase3D() {
 
   return (
     <section
-      className="auth3-showcase relative z-[1] mx-auto w-[min(1180px,calc(100%-48px))] py-[110px] [contain-intrinsic-size:1px_760px] [content-visibility:auto] max-sm:w-[min(calc(100%-30px),1180px)] max-sm:py-20"
+      className="relative z-[1] mx-auto w-[min(1180px,calc(100%-48px))] pb-32 max-sm:w-[min(calc(100%-30px),1180px)] max-sm:pb-20"
       aria-labelledby="showcase-heading"
     >
-      <div className="auth3-section-title" data-reveal>
-        <span>INSIDE THE WORKSPACE</span>
-        <h2 id="showcase-heading">
-          Four screens.
-          <br />
-          One honest picture of your trading.
+      <div className="text-center">
+        <p className="text-[11px] uppercase tracking-[.18em] text-white/35">
+          Inside the workspace
+        </p>
+        <h2
+          id="showcase-heading"
+          className="mx-auto mt-4 max-w-2xl text-[clamp(24px,3.4vw,40px)] font-light leading-[1.2] tracking-[-0.02em] text-white"
+        >
+          Every screen you use. One honest picture of your trading.
         </h2>
       </div>
 
