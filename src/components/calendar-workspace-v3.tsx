@@ -1,5 +1,7 @@
 "use client";
 
+import dynamic from "next/dynamic";
+
 import {
   ArrowLeft,
   CalendarDays,
@@ -11,15 +13,6 @@ import {
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import {
-  Area,
-  AreaChart,
-  CartesianGrid,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from "recharts";
 
 import { apiRequest } from "@/lib/api-client";
 import { useActiveAccountStore } from "./active-account-context";
@@ -40,6 +33,12 @@ import {
   SelectValue,
 } from "./ui/select";
 import { Skeleton } from "./ui/skeleton";
+
+// Loaded after paint; the placeholder keeps the panel height stable.
+const CalendarCurveChart = dynamic(
+  () => import("./calendar-curve-chart").then((m) => m.CalendarCurveChart),
+  { ssr: false, loading: () => <div className="h-full w-full" /> },
+);
 
 type EntryRow = {
   id: string;
@@ -550,21 +549,7 @@ function YearOverview({
           <p className="mt-1 text-sm text-ink-mute">{accountName} · equity curve of selected year</p>
         </CardHeader>
         <CardContent className="h-[250px] px-2 pb-4 sm:h-[320px] sm:px-4">
-          <ResponsiveContainer width="100%" height="100%">
-            <AreaChart data={curve} margin={{ left: 4, right: 8, top: 8, bottom: 0 }}>
-              <defs>
-                <linearGradient id="calendarYearCurve" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#22c55e" stopOpacity={0.28} />
-                  <stop offset="100%" stopColor="#22c55e" stopOpacity={0} />
-                </linearGradient>
-              </defs>
-              <CartesianGrid stroke="rgba(255,255,255,.05)" vertical={false} />
-              <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: "#71717a" }} />
-              <YAxis hide />
-              <Tooltip formatter={(value) => cash.format(Number(value))} contentStyle={{ background: "#0a0a0a", border: "1px solid rgba(255,255,255,.1)", borderRadius: 12 }} />
-              <Area type="monotone" dataKey="balance" stroke="#22c55e" strokeWidth={2} fill="url(#calendarYearCurve)" dot={false} />
-            </AreaChart>
-          </ResponsiveContainer>
+          <CalendarCurveChart curve={curve} cash={cash} />
         </CardContent>
       </Card>
     </div>

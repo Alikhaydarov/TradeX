@@ -14,18 +14,18 @@ import {
   useMemo,
   useState,
 } from "react"
-import {
-  Area,
-  AreaChart,
-  CartesianGrid,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from "recharts"
+import dynamic from "next/dynamic"
 
 import { useAuth } from "@/components/auth-context"
 import { InstrumentBadge } from "@/components/instrument-badge"
+
+// Loaded after paint. The placeholder holds the chart's height so nothing
+// shifts when it arrives.
+const EquityAreaChart = dynamic(
+  () => import("./equity-area-chart").then((m) => m.EquityAreaChart),
+  { ssr: false, loading: () => <div className="h-full w-full" /> },
+)
+
 import type { JournalEntry, OpenPosition, PropAccount } from "@/components/types"
 import { Button } from "@/components/ui/button"
 import {
@@ -476,61 +476,7 @@ export function DashboardOverviewResponsive({
           </CardHeader>
           <CardContent className="h-[290px] min-h-0 flex-1 px-0.5 pb-1 pt-2 min-[480px]:h-[320px] sm:px-3 xl:h-auto">
             {equity.length > 1 ? (
-              <ResponsiveContainer width="100%" height="100%">
-                <AreaChart
-                  data={equity}
-                  margin={{ left: 0, right: 10, top: 14, bottom: 0 }}
-                >
-                  <defs>
-                    <linearGradient
-                      id="tradoxResponsiveEquity"
-                      x1="0"
-                      y1="0"
-                      x2="0"
-                      y2="1"
-                    >
-                      <stop offset="0%" stopColor="#22c55e" stopOpacity={0.24} />
-                      <stop offset="62%" stopColor="#22c55e" stopOpacity={0.07} />
-                      <stop offset="100%" stopColor="#22c55e" stopOpacity={0} />
-                    </linearGradient>
-                  </defs>
-                  <CartesianGrid stroke="rgba(255,255,255,.05)" vertical={false} />
-                  <XAxis
-                    dataKey="trade"
-                    axisLine={false}
-                    tickLine={false}
-                    tick={{ fontSize: 10, fill: "#71717a" }}
-                  />
-                  <YAxis hide domain={["dataMin - 100", "dataMax + 100"]} />
-                  <Tooltip
-                    formatter={(value) => formatBalance(Number(value))}
-                    labelFormatter={(_, payload) =>
-                      payload?.[0]?.payload?.label ?? "Balance"
-                    }
-                    contentStyle={{
-                      background: "#0b0b0b",
-                      border: "1px solid rgba(255,255,255,.12)",
-                      borderRadius: 12,
-                      color: "#f4f4f5",
-                      fontSize: 11,
-                    }}
-                  />
-                  <Area
-                    type="monotone"
-                    dataKey="equity"
-                    stroke="#22c55e"
-                    fill="url(#tradoxResponsiveEquity)"
-                    strokeWidth={2}
-                    dot={false}
-                    activeDot={{
-                      r: 4,
-                      fill: "#22c55e",
-                      stroke: "#050505",
-                      strokeWidth: 2,
-                    }}
-                  />
-                </AreaChart>
-              </ResponsiveContainer>
+              <EquityAreaChart equity={equity} formatBalance={formatBalance} />
             ) : (
               <div className="relative h-full">
                 <div className="absolute inset-x-0 bottom-7 h-px bg-emerald-500/80" />
