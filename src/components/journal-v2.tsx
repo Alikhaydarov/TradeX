@@ -1,5 +1,7 @@
 "use client";
 
+import dynamic from "next/dynamic";
+
 import {
   BarChart3,
   BrainCircuit,
@@ -14,20 +16,6 @@ import {
   Zap,
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import {
-  Area,
-  AreaChart,
-  CartesianGrid,
-  PolarAngleAxis,
-  PolarGrid,
-  PolarRadiusAxis,
-  Radar,
-  RadarChart,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from "recharts";
 import { apiRequest } from "../lib/api-client";
 import { DashboardOverview } from "@/features/trading-dashboard/components/dashboard-overview";
 import { JournalAccountList } from "./journal/journal-account-list";
@@ -68,6 +56,17 @@ import { Mt5Settings } from "./mt5-settings";
 import { TradeReviewModal } from "./trade-review-modal";
 import { useWorkspacePreferences } from "./workspace-preferences-context";
 import type { JournalEntry, OpenPosition, PropAccount } from "./types";
+
+// Loaded after paint. Placeholders hold each chart's height so the analytics
+// panel does not jump when they arrive.
+const JournalEquityChart = dynamic(
+  () => import("./journal-charts").then((m) => m.JournalEquityChart),
+  { ssr: false, loading: () => <div className="h-full w-full" /> },
+);
+const JournalScoreRadar = dynamic(
+  () => import("./journal-charts").then((m) => m.JournalScoreRadar),
+  { ssr: false, loading: () => <div className="h-full w-full" /> },
+);
 
 type AccountRow = {
   id: string;
@@ -1956,72 +1955,7 @@ function Workspace(p: {
                     </div>
                     <div className="h-[240px] p-2 sm:h-[260px] sm:p-4">
                       {equity.length > 1 ? (
-                        <ResponsiveContainer width="100%" height="100%">
-                          <AreaChart
-                            data={equity}
-                            margin={{ left: 8, right: 8, top: 16, bottom: 4 }}
-                          >
-                            <defs>
-                              <linearGradient
-                                id="analyticsBalanceFill"
-                                x1="0"
-                                y1="0"
-                                x2="0"
-                                y2="1"
-                              >
-                                <stop
-                                  offset="0%"
-                                  stopColor="#22c55e"
-                                  stopOpacity={0.35}
-                                />
-                                <stop
-                                  offset="100%"
-                                  stopColor="#171717"
-                                  stopOpacity={0.05}
-                                />
-                              </linearGradient>
-                            </defs>
-                            <CartesianGrid
-                              stroke="rgba(255,255,255,.07)"
-                              vertical={false}
-                            />
-                            <XAxis
-                              dataKey="trade"
-                              axisLine={false}
-                              tickLine={false}
-                              tick={{ fontSize: 11, fill: "#707b91" }}
-                            />
-                            <YAxis
-                              width={54}
-                              axisLine={false}
-                              tickLine={false}
-                              tickFormatter={(value) =>
-                                `$${Number(value / 1000).toFixed(1)}K`
-                              }
-                              tick={{ fontSize: 10, fill: "#707b91" }}
-                            />
-                            <Tooltip
-                              formatter={(v) => cash.format(Number(v))}
-                              labelFormatter={(_, payload) =>
-                                payload?.[0]?.payload?.label ?? "Balance"
-                              }
-                              contentStyle={{
-                                background: "#171717",
-                                border: "1px solid #333333",
-                                borderRadius: 12,
-                                color: "#f1f1f1",
-                              }}
-                            />
-                            <Area
-                              type="monotone"
-                              dataKey="equity"
-                              stroke="#22c55e"
-                              fill="url(#analyticsBalanceFill)"
-                              strokeWidth={3}
-                              dot={false}
-                            />
-                          </AreaChart>
-                        </ResponsiveContainer>
+                        <JournalEquityChart equity={equity} cash={cash} />
                       ) : (
                         <Empty text="Add trades to unlock analytics charts." />
                       )}
@@ -2046,27 +1980,7 @@ function Workspace(p: {
                     </div>
                     <div className="grid gap-3 p-4 sm:grid-cols-[1fr_72px]">
                       <div className="h-[210px]">
-                        <ResponsiveContainer width="100%" height="100%">
-                          <RadarChart data={scoreRadar}>
-                            <PolarGrid stroke="rgba(255,255,255,.12)" />
-                            <PolarAngleAxis
-                              dataKey="subject"
-                              tick={{ fill: "#d4d4d8", fontSize: 12 }}
-                            />
-                            <PolarRadiusAxis
-                              angle={30}
-                              domain={[0, 100]}
-                              tick={false}
-                              axisLine={false}
-                            />
-                            <Radar
-                              dataKey="value"
-                              stroke="#22c55e"
-                              fill="#22c55e"
-                              fillOpacity={0.36}
-                            />
-                          </RadarChart>
-                        </ResponsiveContainer>
+                        <JournalScoreRadar scoreRadar={scoreRadar} />
                       </div>
                       <div className="flex flex-col justify-between rounded-2xl border border-white/8 bg-surface px-2.5 py-3">
                         <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-ink-mute">

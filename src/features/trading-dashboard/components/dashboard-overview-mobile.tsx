@@ -2,16 +2,9 @@
 
 import type { ComponentProps } from "react"
 import { useCallback, useEffect, useMemo, useState } from "react"
-import {
-  Area,
-  AreaChart,
-  CartesianGrid,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from "recharts"
 import { ArrowUpRight, BookOpen, CalendarDays, RefreshCw } from "lucide-react"
+
+import dynamic from "next/dynamic"
 
 import { useAuth } from "@/components/auth-context"
 import { InstrumentBadge } from "@/components/instrument-badge"
@@ -24,6 +17,13 @@ import {
   CardTitle,
 } from "@/components/ui/card"
 import { apiRequest } from "@/lib/api-client"
+
+// Loaded after paint; the placeholder holds the chart's height so the card
+// does not jump when it arrives.
+const MobileEquityChart = dynamic(
+  () => import("./mobile-equity-chart").then((m) => m.MobileEquityChart),
+  { ssr: false, loading: () => <div className="h-full w-full" /> },
+)
 
 // Type-only. This used to be a value import of the (now deleted) polished
 // dashboard, which dragged 866 unused lines into the mobile bundle just to
@@ -244,47 +244,10 @@ export function DashboardOverviewMobile({
 
         <CardContent className="mt-auto h-[320px] min-h-0 px-0 pb-0 pt-4">
           {equity.length > 1 ? (
-            <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={equity} margin={{ left: 0, right: 0, top: 16, bottom: 8 }}>
-                <defs>
-                  <linearGradient id="tradoxMobileEquity" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#22c55e" stopOpacity={0.28} />
-                    <stop offset="72%" stopColor="#22c55e" stopOpacity={0.05} />
-                    <stop offset="100%" stopColor="#22c55e" stopOpacity={0} />
-                  </linearGradient>
-                </defs>
-                <CartesianGrid stroke="rgba(255,255,255,.025)" vertical={false} />
-                <XAxis
-                  dataKey="label"
-                  axisLine={false}
-                  tickLine={false}
-                  interval="preserveStartEnd"
-                  minTickGap={44}
-                  tick={{ fontSize: 12, fontWeight: 600, fill: "#52525b" }}
-                  tickMargin={16}
-                />
-                <YAxis hide domain={["dataMin - 100", "dataMax + 100"]} />
-                <Tooltip
-                  formatter={(value) => (balancesHidden ? "******" : money.format(Number(value)))}
-                  contentStyle={{
-                    background: "#0b0b0b",
-                    border: "1px solid rgba(255,255,255,.12)",
-                    borderRadius: 12,
-                    color: "#f4f4f5",
-                    fontSize: 11,
-                  }}
-                />
-                <Area
-                  type="monotone"
-                  dataKey="equity"
-                  stroke="#22c55e"
-                  strokeWidth={2}
-                  fill="url(#tradoxMobileEquity)"
-                  dot={false}
-                  activeDot={{ r: 4, fill: "#22c55e", stroke: "#050505", strokeWidth: 2 }}
-                />
-              </AreaChart>
-            </ResponsiveContainer>
+            <MobileEquityChart
+              equity={equity}
+              formatBalance={(value) => (balancesHidden ? "******" : money.format(value))}
+            />
           ) : (
             <div className="relative grid h-full place-items-center px-6 text-center">
               <div className="absolute inset-x-0 bottom-16 h-px bg-emerald-500/80" />

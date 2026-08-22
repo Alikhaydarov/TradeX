@@ -1,12 +1,13 @@
 "use client";
 
 import { Download, LoaderCircle, Share2, X } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { apiRequest } from "@/lib/api-client";
 import { useAuth } from "./auth-context";
 import { MediaImage } from "./media-image";
 import { Dialog, DialogContent } from "./ui/dialog";
 import type { JournalEntry } from "./types";
+import { drawTradoxyMark } from "@/lib/tradoxy-mark";
 
 interface TradeShareComposerProps {
   trade: JournalEntry | null;
@@ -92,6 +93,9 @@ function drawGhostCandles(ctx: CanvasRenderingContext2D, x: number, y: number, w
  * and loss stays red regardless of theme - a losing trade on the gold card
  * still has to read as a loss, or the card is dishonest.
  */
+/** Who the card says took the trade. */
+export type CardAuthor = { name: string; handle: string };
+
 export type ShareTheme = {
   id: string;
   label: string;
@@ -180,161 +184,287 @@ function paintThemeFrame(
   ctx.restore();
 }
 
+
+/**
+ * The family the app is actually rendering in.
+ *
+ * The cards were drawn in Arial, which is what canvas falls back to when you
+ * name a font it cannot resolve - so every shared card looked nothing like the
+ * product. next/font generates a hashed family name, so it cannot be written
+ * down; reading the computed style off <body> gets the real stack, and
+ * fonts.ready makes sure it has actually loaded before the first measureText.
+ */
+async function resolveCardFont(): Promise<string> {
+  const fallback = 'ui-sans-serif, system-ui, "Segoe UI", Arial, sans-serif';
+  if (typeof document === "undefined") return fallback;
+  try {
+    await document.fonts.ready;
+  } catch {
+    // A browser without the Font Loading API still renders, just unhinted.
+  }
+  const family = getComputedStyle(document.body).fontFamily;
+  return family || fallback;
+}
+
+/**
+ * Fine luminance grain over the whole card.
+ *
+ * Flat CSS-style gradients band badly once they are exported as PNG and then
+ * re-compressed by whatever the card is posted to. A little noise breaks the
+ * bands up, and it is what gives the reference cards their texture. Seeded off
+ * the trade id so the same trade always renders identically.
+ */
+function paintGrain(
+  ctx: CanvasRenderingContext2D,
+  w: number,
+  h: number,
+  seedStr: string,
+  strength = 9,
+) {
+  const rand = seededRandom(seedStr);
+  const tile = 200;
+  const noise = document.createElement("canvas");
+  noise.width = tile;
+  noise.height = tile;
+  const nctx = noise.getContext("2d");
+  if (!nctx) return;
+  const img = nctx.createImageData(tile, tile);
+  for (let i = 0; i < img.data.length; i += 4) {
+    const v = 128 + (rand() - 0.5) * 255;
+    img.data[i] = img.data[i + 1] = img.data[i + 2] = v;
+    img.data[i + 3] = strength;
+  }
+  nctx.putImageData(img, 0, 0);
+
+  ctx.save();
+  ctx.globalCompositeOperation = "overlay";
+  for (let y = 0; y < h; y += tile) {
+    for (let x = 0; x < w; x += tile) ctx.drawImage(noise, x, y);
+  }
+  ctx.restore();
+}
+
+/** A hairline that fades out at both ends instead of stopping dead. */
+function fadedRule(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  width: number,
+) {
+  const g = ctx.createLinearGradient(x, y, x + width, y);
+  g.addColorStop(0, "rgba(255,255,255,0.13)");
+  g.addColorStop(0.72, "rgba(255,255,255,0.07)");
+  g.addColorStop(1, "rgba(255,255,255,0)");
+  ctx.fillStyle = g;
+  ctx.fillRect(x, y, width, 1.5);
+}
+
 /* ── FEED CARD  1080 × 1080 ────────────────────────────────────────────────── */
-async function makeFeedCard(trade: JournalEntry, theme: ShareTheme): Promise<string> {
+async function makeFeedCard(trade: JournalEntry, theme: ShareTheme, author: CardAuthor): Promise<string> {
+  const font = await resolveCardFont();
   const S = 1080;
   const canvas = document.createElement("canvas");
   canvas.width = S; canvas.height = S;
   const ctx = canvas.getContext("2d");
   if (!ctx) return "";
 
-  const win     = trade.pnl >= 0;
-  const accent  = win ? "#34d399" : "#f87171";
-  const dateStr = new Date(`${trade.rawDate}T00:00:00`).toLocaleDateString("en-US",
-    { month: "short", day: "numeric", year: "numeric" });
+  const win = trade.pnl >= 0;
+  const accent = win ? "#34d399" : "#f87171";
+  const dateStr = new Date(`${trade.rawDate}T00:00:00`).toLocaleDateString("en-GB",
+    { day: "numeric", month: "short", year: "numeric" });
 
-  const draw = (chart: HTMLImageElement | null) => {
-    /* 1 — dark background */
-    paintThemeBackground(ctx, theme, S, S, true);
+  /* Theme wash, then the card itself floating inside it. */
+  paintThemeBackground(ctx, theme, S, S, true);
 
-    /* 2 — blurred chart ghost (right side) */
-    if (chart) {
-      ctx.save();
-      const scale = Math.max(S / chart.width, S / chart.height);
-      const cw = chart.width * scale, ch = chart.height * scale;
-      ctx.globalAlpha = 0.22;
-      ctx.drawImage(chart, (S - cw) / 2, (S - ch) / 2, cw, ch);
-      ctx.globalAlpha = 1;
-      ctx.restore();
-    }
+  const PAD = 76;
+  const CW = S - PAD * 2;
+  const CARD_R = 46;
+  ctx.save();
+  // A flat black panel sat dead on the theme wash. A vertical gradient plus a
+  // one-pixel highlight along the top edge is what makes it read as a surface
+  // catching light rather than a hole cut in the background.
+  const panel = ctx.createLinearGradient(0, PAD, 0, PAD + CW);
+  panel.addColorStop(0, "rgba(12,12,14,0.62)");
+  panel.addColorStop(1, "rgba(0,0,0,0.58)");
+  ctx.fillStyle = panel;
+  rRect(ctx, PAD, PAD, CW, CW, CARD_R);
+  ctx.fill();
 
-    /* 3 — left-to-right dark fade so text stays readable */
-    const shade = ctx.createLinearGradient(0, 0, S, 0);
-    shade.addColorStop(0,    "rgba(10,10,10,1)");
-    shade.addColorStop(0.52, "rgba(10,10,10,0.92)");
-    shade.addColorStop(0.78, "rgba(10,10,10,0.60)");
-    shade.addColorStop(1,    "rgba(10,10,10,0.10)");
-    ctx.fillStyle = shade; ctx.fillRect(0, 0, S, S);
+  ctx.save();
+  rRect(ctx, PAD, PAD, CW, CW, CARD_R);
+  ctx.clip();
+  const sheen = ctx.createLinearGradient(0, PAD, 0, PAD + 180);
+  sheen.addColorStop(0, "rgba(255,255,255,0.055)");
+  sheen.addColorStop(1, "rgba(255,255,255,0)");
+  ctx.fillStyle = sheen;
+  ctx.fillRect(PAD, PAD, CW, 180);
+  ctx.restore();
 
-    /* 4 — accent left border strip */
-    ctx.fillStyle = accent;
-    ctx.fillRect(0, 0, 6, S);
+  ctx.strokeStyle = "rgba(255,255,255,0.10)";
+  ctx.lineWidth = 2;
+  rRect(ctx, PAD, PAD, CW, CW, CARD_R);
+  ctx.stroke();
+  ctx.restore();
 
-    /* ── TEXT ── */
-    const X = 72; // left margin
+  const X = PAD + 62;               // text column
+  const RIGHT = S - PAD - 62;       // right-aligned column
 
-    /* TRADEWAY logo */
-    ctx.fillStyle = "#ffffff";
-    ctx.font = "900 50px 'Arial Black', Arial, sans-serif";
-    ctx.fillText("TRADEWAY", X, 108);
+  /* Brand, top right: the mark plus the wordmark, then the instrument class. */
+  const markSize = 34;
+  ctx.font = `700 30px ${font}`;
+  const wordW = ctx.measureText("Tradoxy").width;
+  const sideLabel = (trade.side || "").toUpperCase();
+  ctx.font = `800 21px ${font}`;
+  const sideW = ctx.measureText(sideLabel).width + 30;
 
-    /* date — top right */
-    ctx.fillStyle = "#6b7280";
-    ctx.font = "500 26px Arial, sans-serif";
-    ctx.textAlign = "right";
-    ctx.fillText(dateStr, S - 56, 96);
-    ctx.textAlign = "left";
+  let bx = RIGHT - sideW;
+  ctx.fillStyle = win ? "rgba(52,211,153,.16)" : "rgba(248,113,113,.16)";
+  rRect(ctx, bx, PAD + 58, sideW, 36, 10);
+  ctx.fill();
+  ctx.fillStyle = accent;
+  ctx.font = `800 21px ${font}`;
+  ctx.fillText(sideLabel, bx + 15, PAD + 83);
 
-    /* Symbol */
-    ctx.fillStyle = "#f9fafb";
-    ctx.font = "900 100px 'Arial Black', Arial, sans-serif";
-    ctx.fillText(trade.symbol, X, 268);
+  bx -= 16 + wordW;
+  ctx.fillStyle = "#e4e4e7";
+  ctx.font = `700 30px ${font}`;
+  ctx.fillText("Tradoxy", bx, PAD + 84);
 
-    /* Side + Result chips */
-    const drawChip = (label: string, x: number, y: number, bg2: string, fg: string) => {
-      ctx.font = "800 26px Arial, sans-serif";
-      const tw = ctx.measureText(label).width;
-      const pw = tw + 36, ph = 48, r = 12;
-      ctx.fillStyle = bg2; rRect(ctx, x, y, pw, ph, r); ctx.fill();
-      ctx.fillStyle = fg; ctx.fillText(label, x + 18, y + 33);
-      return pw + 14;
-    };
+  drawTradoxyMark(ctx, bx - 14 - markSize, PAD + 55, markSize, "#ffffff");
 
-    const sideColor  = trade.side === "Long" ? ["rgba(52,211,153,.2)", "#34d399"] : ["rgba(248,113,113,.2)", "#f87171"];
-    const resultLabel = trade.pnl > 0 ? "WIN" : trade.pnl < 0 ? "LOSS" : "BREAKEVEN";
-    const resultColor = win ? ["rgba(52,211,153,.2)", "#34d399"] : ["rgba(248,113,113,.2)", "#f87171"];
+  /* Headline: the number this card exists to show. */
+  ctx.fillStyle = "#a8a8b2";
+  ctx.font = `600 30px ${font}`;
+  ctx.fillText("Realized P/L", X, PAD + 206);
 
-    let cx = X;
-    cx += drawChip(trade.side.toUpperCase(), cx, 304, sideColor[0], sideColor[1]);
-    drawChip(resultLabel, cx, 304, resultColor[0], resultColor[1]);
-
-    /* P&L — big */
-    const pnlStr = `${win ? "+" : ""}$${cash.format(Math.abs(trade.pnl))}`;
-    const pnlSize = pnlStr.length > 12 ? 82 : pnlStr.length > 9 ? 92 : 104;
-    ctx.fillStyle = accent;
-    ctx.font = `900 ${pnlSize}px 'Arial Black', Arial, sans-serif`;
-    ctx.fillText(pnlStr, X, 460);
-
-    /* R value (only if valid) */
-    let nextY = 510;
-    if (trade.resultR && Math.abs(trade.resultR) > 0.01) {
-      ctx.fillStyle = accent; ctx.globalAlpha = 0.7;
-      ctx.font = "700 44px Arial, sans-serif";
-      ctx.fillText(`${trade.resultR.toFixed(2)}R`, X, 525);
-      ctx.globalAlpha = 1;
-      nextY = 560;
-    }
-
-    /* divider */
-    ctx.fillStyle = "rgba(255,255,255,0.1)";
-    ctx.fillRect(X, nextY + 10, 560, 1.5);
-
-    /* optional tags (setup / session) — internal auto-sync labels are never shown publicly */
-    const isInternalLabel = (val: string) => /auto\s*sync/i.test(val);
-    let tagX = X;
-    const drawTag = (val: string, x: number, y: number) => {
-      ctx.font = "600 25px Arial, sans-serif";
-      const tw = ctx.measureText(val).width;
-      ctx.fillStyle = "rgba(255,255,255,0.07)"; rRect(ctx, x, y, tw + 28, 42, 10); ctx.fill();
-      ctx.fillStyle = "#9ca3af"; ctx.fillText(val, x + 14, y + 29);
-      return tw + 44;
-    };
-    const tagY = nextY + 36;
-    const setupTag = trade.setup?.trim();
-    const sessionTag = trade.session?.trim();
-    if (setupTag && !isInternalLabel(setupTag))     tagX += drawTag(setupTag, tagX, tagY);
-    if (sessionTag && !isInternalLabel(sessionTag)) drawTag(sessionTag, tagX, tagY);
-
-    /* trend arrow (top-right) — direction and color always match the actual outcome */
-    if (chart) {
-      ctx.strokeStyle = accent; ctx.lineWidth = 7; ctx.lineCap = "round";
-      ctx.globalAlpha = 0.55;
-      ctx.beginPath();
-      if (win) { ctx.moveTo(660, 520); ctx.bezierCurveTo(760, 440, 840, 360, 950, 270); }
-      else { ctx.moveTo(660, 270); ctx.bezierCurveTo(760, 350, 840, 430, 950, 520); }
-      ctx.stroke();
-      ctx.fillStyle = accent;
-      ctx.beginPath();
-      if (win) { ctx.moveTo(950, 270); ctx.lineTo(900, 295); ctx.lineTo(936, 335); }
-      else { ctx.moveTo(950, 520); ctx.lineTo(936, 465); ctx.lineTo(900, 495); }
-      ctx.closePath(); ctx.fill();
-      ctx.globalAlpha = 1;
-    } else {
-      /* no chart image — fill the empty right side with a subtle procedural candle backdrop instead of blank space */
-      drawGhostCandles(ctx, 640, 150, S - 640 - 56, 460, accent, win, `${trade.id}-feed`);
-    }
-
-    /* bottom: tiny tradeway.app */
-    ctx.fillStyle = "rgba(255,255,255,0.15)";
-    ctx.font = "500 22px Arial, sans-serif";
-    ctx.textAlign = "center";
-    ctx.fillText("tradeway.app", S / 2, S - 36);
-    ctx.textAlign = "left";
-
-    paintThemeFrame(ctx, theme, S, S, 34, 54);
-
-    return canvas.toDataURL("image/png", 1);
-  };
-
-  if (trade.imageUrls?.[0]) {
-    const img = await loadImg(trade.imageUrls[0]);
-    try { return draw(img); } catch { return draw(null); }
+  const pnlStr = `${win ? "+" : "\u2212"}$${cash.format(Math.abs(trade.pnl))}`;
+  let pnlSize = 116;
+  ctx.font = `800 ${pnlSize}px ${font}`;
+  while (ctx.measureText(pnlStr).width > CW - 124 && pnlSize > 62) {
+    pnlSize -= 4;
+    ctx.font = `800 ${pnlSize}px ${font}`;
   }
-  return draw(null);
+  ctx.fillStyle = accent;
+  // Tight tracking on display figures; canvas defaults to loose spacing that
+  // makes large numerals look accidental rather than set.
+  ctx.letterSpacing = "-0.025em";
+  ctx.fillText(pnlStr, X, PAD + 318);
+  ctx.letterSpacing = "0em";
+
+  ctx.fillStyle = "#e4e4e7";
+  ctx.font = `600 38px ${font}`;
+  ctx.fillText(trade.symbol, X, PAD + 386);
+
+  if (trade.resultR && Math.abs(trade.resultR) > 0.01) {
+    const rStr = `${trade.resultR >= 0 ? "+" : ""}${trade.resultR.toFixed(2)}R`;
+    ctx.font = `700 30px ${font}`;
+    const rw = ctx.measureText(rStr).width;
+    ctx.fillStyle = win ? "rgba(52,211,153,.14)" : "rgba(248,113,113,.14)";
+    rRect(ctx, RIGHT - rw - 30, PAD + 352, rw + 30, 48, 12);
+    ctx.fill();
+    ctx.fillStyle = accent;
+    ctx.fillText(rStr, RIGHT - rw - 15, PAD + 385);
+  }
+
+  const rule = (y: number) => fadedRule(ctx, X, y, CW - 124);
+  rule(PAD + 434);
+
+  /* Entry and exit, the two numbers that make the P/L checkable. */
+  const priceLabel = (label: string, value: string, x: number) => {
+    ctx.fillStyle = "#90909a";
+    ctx.font = `500 27px ${font}`;
+    ctx.fillText(label, x, PAD + 500);
+    ctx.fillStyle = "#f4f4f5";
+    ctx.font = `700 44px ${font}`;
+    ctx.fillText(value, x, PAD + 556);
+  };
+  priceLabel("Entry price", `$${cash.format(trade.entry)}`, X);
+  priceLabel("Exit price", `$${cash.format(trade.exit)}`, X + (CW - 124) / 2);
+
+  rule(PAD + 606);
+
+  /* A second pair of facts, so the square card is not two thirds empty below
+     the prices. Internal auto-sync labels never appear on a public card. */
+  const isInternalLabel = (val: string) => /auto\s*sync/i.test(val);
+  const clip = (val: string, max: number) => {
+    ctx.font = `700 38px ${font}`;
+    if (ctx.measureText(val).width <= max) return val;
+    let out = val;
+    while (out.length > 1 && ctx.measureText(`${out}...`).width > max) out = out.slice(0, -1);
+    return `${out}...`;
+  };
+  const contextLabel = (label: string, value: string, x: number) => {
+    ctx.fillStyle = "#90909a";
+    ctx.font = `500 27px ${font}`;
+    ctx.fillText(label, x, PAD + 676);
+    ctx.fillStyle = "#e4e4e7";
+    ctx.font = `700 38px ${font}`;
+    ctx.fillText(clip(value, (CW - 148) / 2), x, PAD + 728);
+  };
+  const setupRaw = (trade.setup || trade.session || "").trim();
+  contextLabel("Account", trade.accountName?.trim() || "Personal", X);
+  contextLabel(
+    "Setup",
+    setupRaw && !isInternalLabel(setupRaw) ? setupRaw : trade.marketType?.trim() || "Discretionary",
+    X + (CW - 124) / 2,
+  );
+
+  rule(PAD + 778);
+
+  /* Footer: who took the trade, and the terms that make it verifiable. */
+  const footY = PAD + CW - 62;
+  ctx.beginPath();
+  ctx.arc(X + 13, footY - 9, 13, 0, Math.PI * 2);
+  ctx.fillStyle = "rgba(52,211,153,.9)";
+  ctx.fill();
+  ctx.strokeStyle = "#04120c";
+  ctx.lineWidth = 3.5;
+  ctx.beginPath();
+  ctx.moveTo(X + 7, footY - 9);
+  ctx.lineTo(X + 11.5, footY - 4);
+  ctx.lineTo(X + 19, footY - 14);
+  ctx.stroke();
+
+  const qty = Math.max(1, Math.round(trade.quantity || 1));
+  const meta = `${qty} ${qty === 1 ? "contract" : "contracts"} · ${dateStr}`;
+
+  // The two halves are measured against each other before either is drawn.
+  // Attribution is variable-length and the terms are not, so a long display
+  // name shortens rather than running into the date.
+  ctx.font = `500 23px ${font}`;
+  const metaW = ctx.measureText(meta).width;
+  const nameLeft = X + 38;
+  const nameRoom = RIGHT - metaW - 28 - nameLeft;
+
+  ctx.font = `600 23px ${font}`;
+  let credit = `Verified trade by ${author.name}`;
+  if (ctx.measureText(credit).width > nameRoom) {
+    credit = author.name;
+    while (credit.length > 1 && ctx.measureText(`${credit}...`).width > nameRoom) {
+      credit = credit.slice(0, -1);
+    }
+    if (credit !== author.name) credit = `${credit}...`;
+  }
+  ctx.fillStyle = "#a8a8b2";
+  ctx.fillText(credit, nameLeft, footY);
+
+  ctx.textAlign = "right";
+  ctx.fillStyle = "#7a7a84";
+  ctx.font = `500 23px ${font}`;
+  ctx.fillText(meta, RIGHT, footY);
+  ctx.textAlign = "left";
+
+  paintGrain(ctx, S, S, `${trade.id}-feed`);
+
+  /* The neon frame hugs the card, not the canvas edge. */
+  paintThemeFrame(ctx, theme, S, S, PAD, CARD_R);
+
+  return canvas.toDataURL("image/png", 1);
 }
 
 /* ── STORY CARD  1080 × 1920 ──────────────────────────────────────────────── */
-async function makeStoryCard(trade: JournalEntry, theme: ShareTheme): Promise<string> {
+async function makeStoryCard(trade: JournalEntry, theme: ShareTheme, author: CardAuthor): Promise<string> {
+  const font = await resolveCardFont();
   const W = 1080, H = 1920;
   const canvas = document.createElement("canvas");
   canvas.width = W; canvas.height = H;
@@ -374,7 +504,7 @@ async function makeStoryCard(trade: JournalEntry, theme: ShareTheme): Promise<st
 
     /* TRADEWAY */
     ctx.fillStyle = "#ffffff";
-    ctx.font = "900 54px 'Arial Black', Arial, sans-serif";
+    ctx.font = `900 54px ${font}`;
     ctx.fillText("TRADEWAY", X, 148);
     /* accent dot */
     ctx.fillStyle = accent;
@@ -384,17 +514,17 @@ async function makeStoryCard(trade: JournalEntry, theme: ShareTheme): Promise<st
 
     /* date */
     ctx.fillStyle = "#6b7280";
-    ctx.font = "500 28px Arial, sans-serif";
+    ctx.font = `500 28px ${font}`;
     ctx.fillText(dateStr, X, 206);
 
     /* symbol */
     ctx.fillStyle = "#f9fafb";
-    ctx.font = "900 118px 'Arial Black', Arial, sans-serif";
+    ctx.font = `900 118px ${font}`;
     ctx.fillText(trade.symbol, X, 378);
 
     /* chips */
     const chip = (label: string, x: number, y: number, bg2: string, fg: string) => {
-      ctx.font = "800 27px Arial, sans-serif";
+      ctx.font = `800 27px ${font}`;
       const tw = ctx.measureText(label).width + 44;
       ctx.fillStyle = bg2; rRect(ctx, x, y, tw, 54, 14); ctx.fill();
       ctx.fillStyle = fg; ctx.fillText(label, x + 22, y + 37);
@@ -408,17 +538,17 @@ async function makeStoryCard(trade: JournalEntry, theme: ShareTheme): Promise<st
     chip(rLabel, X + cw2, 414, rBg, win ? "#34d399" : "#f87171");
 
     /* P&L */
-    const pnlStr = `${win ? "+" : ""}$${cash.format(Math.abs(trade.pnl))}`;
+    const pnlStr = `${win ? "+" : "\u2212"}$${cash.format(Math.abs(trade.pnl))}`;
     const pnlSize = pnlStr.length > 12 ? 92 : pnlStr.length > 9 ? 108 : 126;
     ctx.fillStyle = accent;
-    ctx.font = `900 ${pnlSize}px 'Arial Black', Arial, sans-serif`;
+    ctx.font = `900 ${pnlSize}px ${font}`;
     ctx.fillText(pnlStr, X, 604);
 
     /* R value */
     let statsY = 680;
     if (trade.resultR && Math.abs(trade.resultR) > 0.01) {
       ctx.fillStyle = accent; ctx.globalAlpha = 0.72;
-      ctx.font = "700 56px Arial, sans-serif";
+      ctx.font = `700 56px ${font}`;
       ctx.fillText(`${trade.resultR.toFixed(2)}R`, X, 682);
       ctx.globalAlpha = 1;
       statsY = 750;
@@ -432,7 +562,7 @@ async function makeStoryCard(trade: JournalEntry, theme: ShareTheme): Promise<st
     const isInternalLabel = (val: string) => /auto\s*sync/i.test(val);
     let tagX = X;
     const tag = (val: string, x: number, y: number) => {
-      ctx.font = "600 27px Arial, sans-serif";
+      ctx.font = `600 27px ${font}`;
       const tw = ctx.measureText(val).width + 32;
       ctx.fillStyle = "rgba(255,255,255,0.07)"; rRect(ctx, x, y, tw, 46, 12); ctx.fill();
       ctx.fillStyle = "#9ca3af"; ctx.fillText(val, x + 16, y + 32);
@@ -469,14 +599,23 @@ async function makeStoryCard(trade: JournalEntry, theme: ShareTheme): Promise<st
     btm.addColorStop(0, "rgba(6,6,6,0)"); btm.addColorStop(1, "rgba(6,6,6,0.96)");
     ctx.fillStyle = btm; ctx.fillRect(0, H * 0.87, W, H * 0.13);
 
-    /* footer */
+    /* Footer: attribution, then the brand. This said "tradeway.app" long after
+       the product was renamed, so every shared story carried the old name. */
     ctx.textAlign = "center";
-    ctx.fillStyle = "#374151";
-    ctx.font = "600 28px Arial, sans-serif";
-    ctx.fillText("tradeway.app", W / 2, H - 88);
-    ctx.font = "500 22px Arial, sans-serif";
-    ctx.fillText("Track. Trade. Grow.", W / 2, H - 50);
+    ctx.fillStyle = "#90909a";
+    ctx.font = `600 26px ${font}`;
+    ctx.fillText(`Verified trade by ${author.name}`, W / 2, H - 104);
+
+    const brandSize = 30;
+    ctx.font = `700 30px ${font}`;
+    const brandW = ctx.measureText("Tradoxy").width;
+    const brandLeft = (W - (brandSize + 14 + brandW)) / 2;
+    drawTradoxyMark(ctx, brandLeft, H - 62 - brandSize + 6, brandSize, "#c6c6ce");
     ctx.textAlign = "left";
+    ctx.fillStyle = "#c6c6ce";
+    ctx.fillText("Tradoxy", brandLeft + brandSize + 14, H - 44);
+
+    paintGrain(ctx, W, H, `${trade.id}-story`);
 
     paintThemeFrame(ctx, theme, W, H, 40, 62);
 
@@ -516,6 +655,11 @@ export function TradeShareComposer({ trade, onClose }: TradeShareComposerProps) 
 
   const username  = String(user?.user_metadata?.user_name ?? user?.email?.split("@")[0] ?? "you");
   const fullName  = String(user?.user_metadata?.full_name ?? user?.user_metadata?.name ?? username);
+  // Memoised so the card effect below does not redraw on every render.
+  const author = useMemo<CardAuthor>(
+    () => ({ name: fullName, handle: username }),
+    [fullName, username],
+  );
   const avatarUrl = typeof user?.user_metadata?.avatar_url === "string" ? user.user_metadata.avatar_url : null;
 
   useEffect(() => {
@@ -525,7 +669,7 @@ export function TradeShareComposer({ trade, onClose }: TradeShareComposerProps) 
     const win = trade.pnl >= 0;
     const parts = [
       `${trade.symbol} ${trade.side.toUpperCase()}`,
-      `${win ? "+" : ""}$${cash.format(Math.abs(trade.pnl))}`,
+      `${win ? "+" : "\u2212"}$${cash.format(Math.abs(trade.pnl))}`,
     ];
     if (trade.resultR && Math.abs(trade.resultR) > 0.01) parts.push(`${trade.resultR.toFixed(2)}R`);
     if (trade.setup?.trim()) parts.push(trade.setup.trim());
@@ -542,14 +686,17 @@ export function TradeShareComposer({ trade, onClose }: TradeShareComposerProps) 
     if (!trade) return;
     let active = true;
     setGenerating(true); setFeedCardUrl(""); setStoryCardUrl("");
-    Promise.all([makeFeedCard(trade, theme), makeStoryCard(trade, theme)])
+    Promise.all([
+      makeFeedCard(trade, theme, author),
+      makeStoryCard(trade, theme, author),
+    ])
       .then(([feed, story]) => {
         if (!active) return;
         setFeedCardUrl(feed); setStoryCardUrl(story); setGenerating(false);
       })
       .catch(() => { if (active) setGenerating(false); });
     return () => { active = false; };
-  }, [trade, theme]);
+  }, [author, trade, theme]);
 
 
   /**
@@ -609,7 +756,7 @@ export function TradeShareComposer({ trade, onClose }: TradeShareComposerProps) 
         try {
           shareImageUrl = await uploadDataUrl(
             feedCardUrl,
-            `${trade.symbol}-${trade.rawDate}-tradeway.png`,
+            `${trade.symbol}-${trade.rawDate}-tradoxy.png`,
           );
         } catch { /* post without card if upload fails */ }
       }
@@ -730,7 +877,7 @@ export function TradeShareComposer({ trade, onClose }: TradeShareComposerProps) 
                       {trade.setup?.trim() ? <span className="truncate text-[11px] text-[#8a8a8a]">{trade.setup}</span> : null}
                     </div>
                     <span className={`ml-3 shrink-0 font-mono text-base font-black ${win ? "text-emerald-300" : "text-rose-300"}`}>
-                      {win ? "+" : ""}${cash.format(Math.abs(trade.pnl))}
+                      {win ? "+" : "−"}${cash.format(Math.abs(trade.pnl))}
                     </span>
                   </div>
                   <div className="flex items-center gap-3 border-t border-[#2a2a2a] px-4 py-2">

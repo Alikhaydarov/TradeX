@@ -4,7 +4,6 @@ import { Check, Newspaper, X } from "lucide-react";
 
 import { SkeletonBlock, XSpinner } from "../app-loader";
 import { MediaImage } from "../media-image";
-import { SocialActions } from "../social-actions-v2";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -80,18 +79,6 @@ export function FeedPage({ onLogin }: FeedPageProps) {
 
   return (
     <div className="min-h-full">
-      <header className="sticky top-0 z-20 border-b border-white/8 bg-black/90 px-3 py-3 backdrop-blur-sm sm:px-6">
-        <div className="mx-auto flex max-w-4xl items-center gap-3">
-          <div className="min-w-0 flex-1">
-            <h1 className="text-lg font-bold tracking-tight">Trade feed</h1>
-            <p className="mt-0.5 text-[10px] text-ink-mute">
-              Shared trade reviews only
-            </p>
-          </div>
-          <SocialActions className="lg:hidden" />
-        </div>
-      </header>
-
       {feed.error ? (
         <div className="mx-auto mt-4 max-w-4xl rounded-[1rem] border border-rose-300/15 bg-rose-400/10 px-4 py-3 text-sm text-rose-200">
           {feed.error}
