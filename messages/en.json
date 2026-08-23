@@ -5,6 +5,9 @@
   "shell": {
     "settings": "Settings", "manageSubscription": "Manage subscription", "viewPlans": "View plans", "language": "Language", "chooseLanguage": "Choose the interface language", "active": "Active", "helpCenter": "Help Center", "support": "Support and platform information", "logout": "Logout", "signIn": "Sign in", "guestTrader": "Guest trader", "workspace": "Workspace", "dashboard": "Dashboard", "calendar": "Calendar", "trades": "Trades", "analytics": "Analytics", "community": "Community"
   },
+  "accountPlatform": {
+    "workspace": "{plan} workspace", "proSummary": "Unlimited accounts, sync and AI coaching", "standardSummary": "Up to 3 connected account workspaces", "freeSummary": "Manual journal account included", "connectionsOn": "Connections on", "manualOnly": "Manual only", "autoSync": "Auto sync", "csvImport": "CSV import", "comingSoon": "Coming soon", "autoHelper": "Read-only automatic sync", "csvHelper": "Closed trade history import", "search": "Search platform...", "readOnly": "CFD and Futures history, read-only", "connect": "Connect {platform}", "automaticHistory": "Automatic read-only history sync", "csvHistory": "Trade history CSV import", "paidOnly": "Available on Standard and Pro", "upgradeDescription": "Free includes one manual journal. Upgrade to connect platforms, import history and keep accounts synchronized.", "keepFree": "Keep Free", "viewPlans": "View plans", "manualInstead": "Use a manual account instead", "closeUpgrade": "Close upgrade message"
+  },
   "settings": {
     "title": "Settings", "back": "Back to settings", "close": "Close settings", "customizationTitle": "Privacy, display and languages", "customizationDescription": "Tune the workspace for focus, screenshots and streaming.", "hidePersonalInfo": "Hide personal info", "hidePersonalInfoDescription": "Mask personal values throughout the workspace.", "language": "Language", "typography": "Typography", "defaultFont": "Tradoxy default"
   }

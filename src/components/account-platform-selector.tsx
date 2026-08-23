@@ -1,6 +1,7 @@
 "use client";
 
 import { Check, ChevronRight, LockKeyhole, Search, ShieldCheck, Sparkles, X } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { useMemo, useState } from "react";
 import { cn } from "@/lib/utils";
 import { PlatformLogoBadge } from "./platform-logo-badge";
@@ -30,7 +31,9 @@ export const ACCOUNT_PLATFORMS: PlatformConfig[] = [
 ];
 
 function PlanSummary({ plan }: { plan: AccountPlan }) {
+  const t = useTranslations("accountPlatform");
   const paid = plan !== "free";
+  const planName = plan === "pro" ? "Pro" : plan === "standard" ? "Standard" : "Free";
   return (
     <div className="flex items-center justify-between gap-3 rounded-xl border border-white/10 bg-[#090909] px-3 py-2.5">
       <div className="flex min-w-0 items-center gap-2.5">
@@ -38,20 +41,21 @@ function PlanSummary({ plan }: { plan: AccountPlan }) {
           {paid ? <Check size={15} strokeWidth={3} /> : <LockKeyhole size={14} />}
         </span>
         <div className="min-w-0">
-          <p className="text-xs font-black text-white">{plan === "pro" ? "Pro" : plan === "standard" ? "Standard" : "Free"} workspace</p>
+          <p className="text-xs font-black text-white">{t("workspace", { plan: planName })}</p>
           <p className="truncate text-[10px] text-ink-mute">
-            {plan === "pro" ? "Unlimited accounts, sync and AI coaching" : plan === "standard" ? "Up to 3 connected account workspaces" : "Manual journal account included"}
+            {plan === "pro" ? t("proSummary") : plan === "standard" ? t("standardSummary") : t("freeSummary")}
           </p>
         </div>
       </div>
       <span className={cn("rounded-full px-2 py-1 text-[9px] font-black uppercase tracking-[0.12em]", paid ? "bg-emerald-400/10 text-emerald-300" : "bg-white/[.06] text-zinc-400")}>
-        {paid ? "Connections on" : "Manual only"}
+        {paid ? t("connectionsOn") : t("manualOnly")}
       </span>
     </div>
   );
 }
 
 function PlatformCard({ item, locked, onSelect }: { item: PlatformConfig; locked: boolean; onSelect: (item: PlatformConfig) => void }) {
+  const t = useTranslations("accountPlatform");
   const live = item.status === "live";
   const activeTone = item.mode === "csv" ? "bg-amber-400/10 text-amber-300" : "bg-emerald-400/10 text-emerald-300";
 
@@ -71,9 +75,9 @@ function PlatformCard({ item, locked, onSelect }: { item: PlatformConfig; locked
       </div>
       <div className="mt-3 min-w-0">
         <span className="block truncate text-[13px] font-bold text-white">{item.name}</span>
-        <span className="mt-0.5 block truncate text-[10px] text-ink-mute">{item.helper}</span>
+        <span className="mt-0.5 block truncate text-[10px] text-ink-mute">{item.mode === "auto" ? t("autoHelper") : t("csvHelper")}</span>
         <span className={cn("mt-2 inline-flex rounded-full px-2 py-0.5 text-[9px] font-bold uppercase tracking-[0.08em]", live ? activeTone : "bg-white/[.06] text-ink-mute")}>
-          {live ? item.mode === "csv" ? "CSV import" : "Auto sync" : "Coming soon"}
+          {live ? item.mode === "csv" ? t("csvImport") : t("autoSync") : t("comingSoon")}
         </span>
       </div>
     </button>
@@ -86,6 +90,7 @@ export function AccountPlatformSelector({ plan, onSelect, onBack, onUpgrade }: {
   onBack: () => void;
   onUpgrade: () => void;
 }) {
+  const t = useTranslations("accountPlatform");
   const [query, setQuery] = useState("");
   const [lockedSelection, setLockedSelection] = useState<PlatformConfig | null>(null);
   const locked = plan === "free";
@@ -103,9 +108,9 @@ export function AccountPlatformSelector({ plan, onSelect, onBack, onUpgrade }: {
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
             <label className="flex h-10 flex-1 items-center gap-2 rounded-xl border border-white/10 bg-[#090909] px-3 sm:max-w-[360px]">
             <Search size={14} className="text-ink-subtle" />
-            <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search platform..." className="h-full min-w-0 flex-1 bg-transparent text-xs text-white outline-none placeholder:text-ink-subtle" />
+            <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder={t("search")} className="h-full min-w-0 flex-1 bg-transparent text-xs text-white outline-none placeholder:text-ink-subtle" />
             </label>
-            <p className="px-1 text-[10px] font-semibold text-ink-mute">CFD and Futures history, read-only</p>
+            <p className="px-1 text-[10px] font-semibold text-ink-mute">{t("readOnly")}</p>
           </div>
           <div data-platform-grid className="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-4">
             {filtered.map((item) => (
@@ -121,27 +126,27 @@ export function AccountPlatformSelector({ plan, onSelect, onBack, onUpgrade }: {
         {lockedSelection ? (
           <div className="absolute inset-0 z-10 grid place-items-center bg-black/65 px-4 backdrop-blur-sm">
             <div className="relative w-full max-w-[390px] rounded-2xl border border-white/10 bg-[#090909] p-5 shadow-2xl">
-              <button type="button" onClick={() => setLockedSelection(null)} className="absolute right-3 top-3 grid size-8 place-items-center rounded-lg text-zinc-500 hover:bg-white/[.06] hover:text-white" aria-label="Close upgrade message"><X size={15} /></button>
+              <button type="button" onClick={() => setLockedSelection(null)} className="absolute right-3 top-3 grid size-8 place-items-center rounded-lg text-zinc-500 hover:bg-white/[.06] hover:text-white" aria-label={t("closeUpgrade")}><X size={15} /></button>
               <div className="flex items-center gap-3">
                 <PlatformLogoBadge platform={lockedSelection.id} compact />
                 <div>
-                  <p className="text-sm font-black text-white">Connect {lockedSelection.name}</p>
-                  <p className="text-[10px] text-ink-mute">{lockedSelection.mode === "auto" ? "Automatic read-only history sync" : "Trade history CSV import"}</p>
+                  <p className="text-sm font-black text-white">{t("connect", { platform: lockedSelection.name })}</p>
+                  <p className="text-[10px] text-ink-mute">{lockedSelection.mode === "auto" ? t("automaticHistory") : t("csvHistory")}</p>
                 </div>
               </div>
               <div className="mt-4 rounded-xl border border-white/[.07] bg-black p-3">
-                <p className="flex items-center gap-2 text-xs font-bold text-zinc-200"><ShieldCheck size={14} className="text-emerald-300" /> Available on Standard and Pro</p>
-                <p className="mt-1.5 text-[11px] leading-5 text-ink-mute">Free includes one manual journal. Upgrade to connect platforms, import history and keep accounts synchronized.</p>
+                <p className="flex items-center gap-2 text-xs font-bold text-zinc-200"><ShieldCheck size={14} className="text-emerald-300" /> {t("paidOnly")}</p>
+                <p className="mt-1.5 text-[11px] leading-5 text-ink-mute">{t("upgradeDescription")}</p>
               </div>
               <div className="mt-4 grid grid-cols-2 gap-2">
-                <Button type="button" variant="outline" onClick={() => setLockedSelection(null)} className="border-white/10 bg-black">Keep Free</Button>
-                <Button type="button" onClick={onUpgrade} className="bg-white text-black hover:bg-zinc-200"><Sparkles size={14} /> View plans</Button>
+                <Button type="button" variant="outline" onClick={() => setLockedSelection(null)} className="border-white/10 bg-black">{t("keepFree")}</Button>
+                <Button type="button" onClick={onUpgrade} className="bg-white text-black hover:bg-zinc-200"><Sparkles size={14} /> {t("viewPlans")}</Button>
               </div>
             </div>
           </div>
         ) : null}
       </div>
-      <button type="button" onClick={onBack} className="text-[11px] font-semibold text-ink-mute transition hover:text-white">Use a manual account instead</button>
+      <button type="button" onClick={onBack} className="text-[11px] font-semibold text-ink-mute transition hover:text-white">{t("manualInstead")}</button>
     </div>
   );
 }

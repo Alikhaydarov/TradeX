@@ -5,6 +5,9 @@
   "shell": {
     "settings": "설정", "manageSubscription": "구독 관리", "viewPlans": "요금제 보기", "language": "언어", "chooseLanguage": "인터페이스 언어 선택", "active": "활성", "helpCenter": "도움말 센터", "support": "지원 및 플랫폼 정보", "logout": "로그아웃", "signIn": "로그인", "guestTrader": "게스트 트레이더", "workspace": "작업 공간", "dashboard": "대시보드", "calendar": "캘린더", "trades": "거래", "analytics": "분석", "community": "커뮤니티"
   },
+  "accountPlatform": {
+    "workspace": "{plan} 작업 공간", "proSummary": "무제한 계좌, 동기화 및 AI 코칭", "standardSummary": "최대 3개의 연결 계좌 작업 공간", "freeSummary": "수동 저널 계좌 1개 포함", "connectionsOn": "연결 사용 가능", "manualOnly": "수동 전용", "autoSync": "자동 동기화", "csvImport": "CSV 가져오기", "comingSoon": "출시 예정", "autoHelper": "읽기 전용 자동 동기화", "csvHelper": "종료된 거래 내역 가져오기", "search": "플랫폼 검색...", "readOnly": "CFD 및 선물 내역, 읽기 전용", "connect": "{platform} 연결", "automaticHistory": "읽기 전용 자동 내역 동기화", "csvHistory": "CSV 거래 내역 가져오기", "paidOnly": "Standard 및 Pro에서 사용 가능", "upgradeDescription": "Free에는 수동 저널 1개가 포함됩니다. 플랫폼 연결, 내역 가져오기 및 계좌 동기화를 위해 업그레이드하세요.", "keepFree": "Free 유지", "viewPlans": "요금제 보기", "manualInstead": "수동 계좌 사용", "closeUpgrade": "업그레이드 메시지 닫기"
+  },
   "settings": {
     "title": "설정", "back": "설정으로 돌아가기", "close": "설정 닫기", "customizationTitle": "개인정보, 화면 및 언어", "customizationDescription": "집중, 스크린샷 및 스트리밍에 맞게 작업 공간을 조정하세요.", "hidePersonalInfo": "개인정보 숨기기", "hidePersonalInfoDescription": "작업 공간 전체에서 개인 정보를 가립니다.", "language": "언어", "typography": "글꼴", "defaultFont": "Tradoxy 기본값"
   }
