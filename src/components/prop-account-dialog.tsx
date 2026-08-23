@@ -9,6 +9,8 @@ import {
   Pencil,
   Plus,
   ShieldCheck,
+  LockKeyhole,
+  Sparkles,
   Zap,
 } from "lucide-react";
 import { FormEvent, type ReactNode, useEffect, useMemo, useState } from "react";
@@ -269,7 +271,10 @@ export function PropAccountDialog({
             <DialogTitle className="truncate text-base font-black sm:text-lg">Add account</DialogTitle>
           </DialogHeader>
           <div className="flex flex-1 justify-center"><StepDots step={step} /></div>
-          <span className="mr-8 w-10 shrink-0 text-right text-[10px] font-black text-ink-subtle sm:mr-7 sm:w-20">{step} / 3</span>
+          <div className="mr-8 flex shrink-0 items-center gap-2 sm:mr-7">
+            <span className={cn("hidden rounded-full px-2 py-1 text-[9px] font-black uppercase tracking-wider sm:inline-flex", premiumStatus.plan === "free" ? "bg-white/[.06] text-zinc-400" : "bg-emerald-400/10 text-emerald-300")}>{premiumStatus.plan}</span>
+            <span className="w-8 text-right text-[10px] font-black text-ink-subtle">{step}/3</span>
+          </div>
         </div>
 
         <form onSubmit={handleSubmit} className="relative max-h-[calc(100dvh-4.75rem)] overflow-y-auto sm:max-h-[calc(88dvh-61px)]">
@@ -294,9 +299,9 @@ export function PropAccountDialog({
             ) : null}
 
             {step === 1 ? (
-              <div className="grid gap-3 sm:grid-cols-2">
-                <ChoiceCard icon={<Pencil size={22} />} title="Manual Account" text="Create a journal account and add your trades manually." onClick={chooseManual} />
-                <ChoiceCard icon={<Zap size={22} />} title="Sync or Import Account" text="Sync MT5 automatically or import supported platform trade history from CSV." onClick={chooseAutomatic} />
+              <div className="mx-auto grid max-w-[680px] gap-3 sm:grid-cols-2">
+                <ChoiceCard icon={<Pencil size={20} />} title="Manual journal" text="Add and review trades yourself. Included with every plan." badge="Free included" onClick={chooseManual} />
+                <ChoiceCard icon={<Zap size={20} />} title="Connect platform" text="Auto-sync MT5 or import supported CFD and Futures history." badge={premiumStatus.plan === "free" ? "Standard or Pro" : `${premiumStatus.plan} active`} locked={premiumStatus.plan === "free"} onClick={chooseAutomatic} />
               </div>
             ) : null}
 
@@ -404,17 +409,22 @@ export function PropAccountDialog({
   );
 }
 
-function ChoiceCard({ icon, title, text, onClick }: { icon: ReactNode; title: string; text: string; onClick: () => void }) {
+function ChoiceCard({ icon, title, text, badge, locked = false, onClick }: { icon: ReactNode; title: string; text: string; badge: string; locked?: boolean; onClick: () => void }) {
   return (
     <button
       type="button"
       onClick={onClick}
-      className="group flex min-h-[148px] flex-col items-center justify-center rounded-2xl border border-white/10 bg-surface p-4 text-center transition hover:border-white/25 hover:bg-surface-raised sm:min-h-[168px] sm:p-5"
+      className="group relative flex min-h-[150px] flex-col items-start justify-between rounded-2xl border border-white/10 bg-[#090909] p-4 text-left transition hover:border-white/25 hover:bg-[#0d0d0d] sm:min-h-[170px] sm:p-5"
     >
-      <span className="grid size-10 place-items-center rounded-xl bg-surface-raised text-white sm:size-11">{icon}</span>
-      <h3 className="mt-3 text-base font-bold sm:text-lg">{title}</h3>
-      <p className="mt-1.5 max-w-xs text-xs font-medium leading-5 text-ink-mute">{text}</p>
-      <ChevronRight className="mt-3 transition group-hover:translate-x-1" size={18} />
+      <div className="flex w-full items-start justify-between gap-3">
+        <span className="grid size-10 place-items-center rounded-xl border border-white/[.06] bg-black text-white">{icon}</span>
+        <span className={cn("inline-flex items-center gap-1 rounded-full px-2 py-1 text-[9px] font-black uppercase tracking-wider", locked ? "bg-amber-400/10 text-amber-300" : "bg-emerald-400/10 text-emerald-300")}>{locked ? <LockKeyhole size={10} /> : <ShieldCheck size={10} />}{badge}</span>
+      </div>
+      <div className="mt-5">
+        <h3 className="text-base font-bold sm:text-lg">{title}</h3>
+        <p className="mt-1.5 max-w-xs text-xs font-medium leading-5 text-ink-mute">{text}</p>
+      </div>
+      <span className="mt-4 inline-flex items-center gap-1.5 text-[11px] font-bold text-zinc-300">{locked ? <Sparkles size={13} /> : null}{locked ? "Explore platforms" : "Continue"}<ChevronRight className="transition group-hover:translate-x-1" size={14} /></span>
     </button>
   );
 }

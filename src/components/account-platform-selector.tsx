@@ -1,6 +1,6 @@
 "use client";
 
-import { Check, ChevronRight, LockKeyhole, Search } from "lucide-react";
+import { Check, ChevronRight, LockKeyhole, Search, ShieldCheck, Sparkles, X } from "lucide-react";
 import { useMemo, useState } from "react";
 import { cn } from "@/lib/utils";
 import { PlatformLogoBadge } from "./platform-logo-badge";
@@ -29,22 +29,29 @@ export const ACCOUNT_PLATFORMS: PlatformConfig[] = [
   { id: "tradelocker", name: "TradeLocker", mode: "auto", market: "CFD", helper: "Native history export unavailable", status: "coming" },
 ];
 
-function PlanSummary({ plan }: { plan: Exclude<AccountPlan, "free"> }) {
+function PlanSummary({ plan }: { plan: AccountPlan }) {
+  const paid = plan !== "free";
   return (
-    <div className="flex items-center justify-between gap-3 rounded-xl border border-white/10 bg-surface px-3 py-2.5">
+    <div className="flex items-center justify-between gap-3 rounded-xl border border-white/10 bg-[#090909] px-3 py-2.5">
       <div className="flex min-w-0 items-center gap-2.5">
-        <span className="grid size-8 shrink-0 place-items-center rounded-lg bg-emerald-400/10 text-emerald-300"><Check size={15} strokeWidth={3} /></span>
+        <span className={cn("grid size-8 shrink-0 place-items-center rounded-lg", paid ? "bg-emerald-400/10 text-emerald-300" : "bg-white/[.06] text-zinc-400")}>
+          {paid ? <Check size={15} strokeWidth={3} /> : <LockKeyhole size={14} />}
+        </span>
         <div className="min-w-0">
-          <p className="text-xs font-black text-white">{plan === "pro" ? "Pro" : "Standard"} plan</p>
-          <p className="truncate text-[10px] text-ink-mute">{plan === "pro" ? "Unlimited account workspaces" : "Up to 3 account workspaces"}</p>
+          <p className="text-xs font-black text-white">{plan === "pro" ? "Pro" : plan === "standard" ? "Standard" : "Free"} workspace</p>
+          <p className="truncate text-[10px] text-ink-mute">
+            {plan === "pro" ? "Unlimited accounts, sync and AI coaching" : plan === "standard" ? "Up to 3 connected account workspaces" : "Manual journal account included"}
+          </p>
         </div>
       </div>
-      <span className="rounded-full bg-emerald-400/10 px-2 py-1 text-[10px] font-black uppercase tracking-[0.12em] text-emerald-300">Active</span>
+      <span className={cn("rounded-full px-2 py-1 text-[9px] font-black uppercase tracking-[0.12em]", paid ? "bg-emerald-400/10 text-emerald-300" : "bg-white/[.06] text-zinc-400")}>
+        {paid ? "Connections on" : "Manual only"}
+      </span>
     </div>
   );
 }
 
-function PlatformCard({ item, onSelect }: { item: PlatformConfig; onSelect: (item: PlatformConfig) => void }) {
+function PlatformCard({ item, locked, onSelect }: { item: PlatformConfig; locked: boolean; onSelect: (item: PlatformConfig) => void }) {
   const live = item.status === "live";
   const activeTone = item.mode === "csv" ? "bg-amber-400/10 text-amber-300" : "bg-emerald-400/10 text-emerald-300";
 
@@ -54,17 +61,21 @@ function PlatformCard({ item, onSelect }: { item: PlatformConfig; onSelect: (ite
       disabled={!live}
       onClick={() => onSelect(item)}
       className={cn(
-        "group relative flex min-h-[126px] flex-col items-center justify-center rounded-xl border p-3 text-center transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/30 sm:min-h-[138px] sm:rounded-2xl",
-        live ? "border-white/10 bg-surface-raised hover:border-white/25 hover:bg-surface-raised" : "cursor-not-allowed border-white/6 bg-surface opacity-55",
+        "group relative flex min-h-[116px] flex-col items-start justify-between rounded-xl border p-3 text-left transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/30 sm:min-h-[126px]",
+        live ? "border-white/10 bg-[#090909] hover:border-white/25 hover:bg-[#0d0d0d]" : "cursor-not-allowed border-white/[.06] bg-[#070707] opacity-50",
       )}
     >
-      <PlatformLogoBadge platform={item.id} />
-      <span className="mt-2.5 text-[13px] font-bold text-white sm:text-sm">{item.name}</span>
-      <span className="mt-1 line-clamp-2 text-[10px] leading-4 text-ink-mute sm:text-[11px]">{item.helper}</span>
-      <span className={cn("mt-2 rounded-full px-2 py-0.5 text-[9px] font-bold uppercase tracking-[0.08em] sm:text-[10px]", live ? activeTone : "bg-white/6 text-ink-mute")}>
-        {live ? item.mode === "csv" ? "CSV import" : item.market : "Coming soon"}
-      </span>
-      {live ? <ChevronRight size={15} className="absolute right-3 top-3 text-ink-subtle transition group-hover:translate-x-0.5 group-hover:text-white" /> : null}
+      <div className="flex w-full items-start justify-between gap-2">
+        <PlatformLogoBadge platform={item.id} compact />
+        {locked && live ? <LockKeyhole size={13} className="mt-1 text-zinc-500" /> : live ? <ChevronRight size={14} className="mt-1 text-zinc-600 transition group-hover:translate-x-0.5 group-hover:text-white" /> : null}
+      </div>
+      <div className="mt-3 min-w-0">
+        <span className="block truncate text-[13px] font-bold text-white">{item.name}</span>
+        <span className="mt-0.5 block truncate text-[10px] text-ink-mute">{item.helper}</span>
+        <span className={cn("mt-2 inline-flex rounded-full px-2 py-0.5 text-[9px] font-bold uppercase tracking-[0.08em]", live ? activeTone : "bg-white/[.06] text-ink-mute")}>
+          {live ? item.mode === "csv" ? "CSV import" : "Auto sync" : "Coming soon"}
+        </span>
+      </div>
     </button>
   );
 }
@@ -76,6 +87,7 @@ export function AccountPlatformSelector({ plan, onSelect, onBack, onUpgrade }: {
   onUpgrade: () => void;
 }) {
   const [query, setQuery] = useState("");
+  const [lockedSelection, setLockedSelection] = useState<PlatformConfig | null>(null);
   const locked = plan === "free";
   const filtered = useMemo(() => {
     const normalized = query.trim().toLowerCase();
@@ -85,31 +97,51 @@ export function AccountPlatformSelector({ plan, onSelect, onBack, onUpgrade }: {
 
   return (
     <div className="mx-auto w-full max-w-[700px] space-y-3">
-      {plan !== "free" ? <PlanSummary plan={plan} /> : null}
-      <div className="relative overflow-hidden rounded-2xl">
-        <div className={cn("space-y-3 transition", locked && "pointer-events-none select-none blur-[5px] opacity-45")} aria-hidden={locked}>
-          <label className="mx-auto flex h-10 max-w-[360px] items-center gap-2 rounded-xl border border-white/10 bg-surface-raised px-3">
+      <PlanSummary plan={plan} />
+      <div className="relative overflow-hidden rounded-2xl border border-white/[.06] bg-black p-3 sm:p-4">
+        <div className={cn("space-y-3 transition duration-200", lockedSelection && "pointer-events-none select-none blur-[6px] opacity-30")} aria-hidden={Boolean(lockedSelection)}>
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+            <label className="flex h-10 flex-1 items-center gap-2 rounded-xl border border-white/10 bg-[#090909] px-3 sm:max-w-[360px]">
             <Search size={14} className="text-ink-subtle" />
             <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search platform..." className="h-full min-w-0 flex-1 bg-transparent text-xs text-white outline-none placeholder:text-ink-subtle" />
-          </label>
+            </label>
+            <p className="px-1 text-[10px] font-semibold text-ink-mute">CFD and Futures history, read-only</p>
+          </div>
           <div data-platform-grid className="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-4">
-            {filtered.map((item) => <PlatformCard key={item.id} item={item} onSelect={onSelect} />)}
+            {filtered.map((item) => (
+              <PlatformCard
+                key={item.id}
+                item={item}
+                locked={locked}
+                onSelect={(selected) => locked && selected.status === "live" ? setLockedSelection(selected) : onSelect(selected)}
+              />
+            ))}
           </div>
         </div>
-        {locked ? (
-          <div className="absolute inset-0 z-10 flex items-center justify-center bg-black/30 px-4">
-            <div className="w-full max-w-sm text-center">
-              <span className="mx-auto grid size-11 place-items-center rounded-2xl border border-white/10 bg-surface text-white"><LockKeyhole size={18} /></span>
-              <h3 className="mt-3 text-base font-black text-white">Platform connections are locked</h3>
-              <p className="mx-auto mt-1 max-w-xs text-xs leading-5 text-ink-soft">Upgrade to Standard or Pro to connect a platform or import trade history.</p>
-              <div className="mx-auto mt-4 grid max-w-[280px] grid-cols-2 gap-2">
-                <Button type="button" variant="outline" onClick={onBack} className="border-white/10 bg-surface">Back</Button>
-                <Button type="button" onClick={onUpgrade} className="bg-white text-black hover:bg-zinc-200">Compare plans</Button>
+        {lockedSelection ? (
+          <div className="absolute inset-0 z-10 grid place-items-center bg-black/65 px-4 backdrop-blur-sm">
+            <div className="relative w-full max-w-[390px] rounded-2xl border border-white/10 bg-[#090909] p-5 shadow-2xl">
+              <button type="button" onClick={() => setLockedSelection(null)} className="absolute right-3 top-3 grid size-8 place-items-center rounded-lg text-zinc-500 hover:bg-white/[.06] hover:text-white" aria-label="Close upgrade message"><X size={15} /></button>
+              <div className="flex items-center gap-3">
+                <PlatformLogoBadge platform={lockedSelection.id} compact />
+                <div>
+                  <p className="text-sm font-black text-white">Connect {lockedSelection.name}</p>
+                  <p className="text-[10px] text-ink-mute">{lockedSelection.mode === "auto" ? "Automatic read-only history sync" : "Trade history CSV import"}</p>
+                </div>
+              </div>
+              <div className="mt-4 rounded-xl border border-white/[.07] bg-black p-3">
+                <p className="flex items-center gap-2 text-xs font-bold text-zinc-200"><ShieldCheck size={14} className="text-emerald-300" /> Available on Standard and Pro</p>
+                <p className="mt-1.5 text-[11px] leading-5 text-ink-mute">Free includes one manual journal. Upgrade to connect platforms, import history and keep accounts synchronized.</p>
+              </div>
+              <div className="mt-4 grid grid-cols-2 gap-2">
+                <Button type="button" variant="outline" onClick={() => setLockedSelection(null)} className="border-white/10 bg-black">Keep Free</Button>
+                <Button type="button" onClick={onUpgrade} className="bg-white text-black hover:bg-zinc-200"><Sparkles size={14} /> View plans</Button>
               </div>
             </div>
           </div>
         ) : null}
       </div>
+      <button type="button" onClick={onBack} className="text-[11px] font-semibold text-ink-mute transition hover:text-white">Use a manual account instead</button>
     </div>
   );
 }
