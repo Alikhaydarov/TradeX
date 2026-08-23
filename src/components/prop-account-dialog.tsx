@@ -2,6 +2,7 @@
 
 import {
   ArrowLeft,
+  Building2,
   ChevronRight,
   FileSpreadsheet,
   KeyRound,
@@ -11,6 +12,7 @@ import {
   ShieldCheck,
   LockKeyhole,
   Sparkles,
+  WalletCards,
   Zap,
 } from "lucide-react";
 import { FormEvent, type ReactNode, useEffect, useMemo, useState } from "react";
@@ -24,11 +26,12 @@ import {
   type PlatformId,
 } from "./account-platform-selector";
 import { PlatformLogoBadge } from "./platform-logo-badge";
-import { PropFirmLogo } from "./prop-firm-logo";
 import { Button } from "./ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog";
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
+import { Switch } from "./ui/switch";
 import { useRouter } from "next/navigation";
 
 const PROP_FIRMS = ["FTMO", "The5ers", "FundedNext", "FundingPips", "Alpha Capital", "Topstep", "Apex Trader Funding", "Other"];
@@ -318,34 +321,20 @@ export function PropAccountDialog({
             ) : null}
 
             {step === 3 ? (
-              <div className="mx-auto max-w-[640px] overflow-hidden rounded-2xl border border-white/10 bg-black">
-                <div className="space-y-4 p-4 sm:p-5">
-                  <div className="rounded-2xl border border-white/10 bg-surface p-4 shadow-[inset_0_1px_0_rgba(255,255,255,.03)]">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <span className="rounded-full bg-surface px-2.5 py-1 text-[10px] font-black uppercase tracking-wider text-ink-strong">
-                        {accountType === "prop" ? "Prop account" : "Real account"}
-                      </span>
-                      {accountKind === "automatic" ? <PlatformLogoBadge platform={selectedPlatform.id} compact /> : null}
-                    </div>
-                    <div className="mt-3 flex items-center gap-3">
-                      <PropFirmLogo firm={firm} compact />
-                      <div className="min-w-0">
-                        <p className="truncate text-sm font-black text-white">{firm}</p>
-                        <p className="truncate text-[11px] text-ink-mute">
-                          {accountKind === "manual"
-                            ? "Manual journal workspace"
-                            : selectedPlatform.mode === "csv"
-                              ? `${selectedPlatform.name} CSV trade import`
-                              : "Auto sync with MT5 bridge"}
-                        </p>
+              <div className="mx-auto max-w-[640px] space-y-4">
+                  <div className="flex items-center gap-3 rounded-xl border border-white/10 bg-[#090909] px-3.5 py-3">
+                    {accountKind === "automatic" ? <PlatformLogoBadge platform={selectedPlatform.id} compact /> : <span className="grid size-9 shrink-0 place-items-center rounded-xl border border-white/10 bg-black text-zinc-300"><Pencil size={15} /></span>}
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2">
+                        <p className="truncate text-sm font-black text-white">{accountKind === "automatic" ? selectedPlatform.name : "Manual journal"}</p>
+                        <span className="rounded-full bg-white/[.06] px-1.5 py-0.5 text-[8px] font-black uppercase tracking-wider text-zinc-400">{premiumStatus.plan}</span>
                       </div>
-                      <div className="ml-auto shrink-0 whitespace-nowrap text-right">
-                        <p className="text-[10px] uppercase tracking-widest text-ink-mute">Size</p>
-                        <p className="font-mono text-sm font-black text-zinc-100">${size.toLocaleString()}</p>
-                      </div>
+                      <p className="truncate text-[10px] text-ink-mute">{accountKind === "manual" ? "Included with every plan" : selectedPlatform.mode === "csv" ? `${selectedPlatform.market} · CSV history import` : `${selectedPlatform.market} · Read-only auto sync`}</p>
                     </div>
+                    <button type="button" onClick={goBack} className="ml-auto shrink-0 rounded-lg px-2.5 py-1.5 text-[10px] font-bold text-zinc-400 transition hover:bg-white/[.06] hover:text-white">Change</button>
                   </div>
 
+                  <div className="rounded-2xl border border-white/10 bg-black p-4 sm:p-5">
                   <AccountBasics
                     accountType={accountType}
                     changeAccountType={changeAccountType}
@@ -369,11 +358,11 @@ export function PropAccountDialog({
                   ) : null}
 
                   {accountKind === "manual" ? (
-                    <div className="rounded-xl border border-white/10 bg-surface p-4 text-xs leading-5 text-ink-soft">
+                    <div className="mt-4 rounded-xl border border-white/10 bg-[#090909] p-4 text-xs leading-5 text-ink-soft">
                       Manual account creates a clean journal without connector setup. You can add trades from the journal after creating it.
                     </div>
                   ) : null}
-                </div>
+                  </div>
               </div>
             ) : null}
           </div>
@@ -450,7 +439,7 @@ function AccountBasics({
 }) {
   return (
     <div className="space-y-4">
-      <div className="grid grid-cols-2 gap-2 rounded-xl border border-white/10 bg-surface p-1">
+      <div className="grid grid-cols-2 gap-1 rounded-xl border border-white/10 bg-[#090909] p-1">
         {(["prop", "real"] as const).map((type) => (
           <button
             key={type}
@@ -458,7 +447,7 @@ function AccountBasics({
             onClick={() => changeAccountType(type)}
             className={cn(
               "rounded-lg py-2 text-sm font-bold capitalize transition",
-              accountType === type ? "bg-white text-black" : "text-ink-mute hover:text-zinc-100",
+              accountType === type ? "bg-white text-black" : "text-ink-mute hover:bg-white/[.04] hover:text-zinc-100",
             )}
           >
             {type}
@@ -474,23 +463,17 @@ function AccountBasics({
       <div className="grid gap-3 sm:grid-cols-2">
         <div className="space-y-2">
           <Label className="text-xs font-semibold uppercase tracking-wider text-ink-mute">{accountType === "prop" ? "Firm" : "Broker"}</Label>
-          <select
-            value={firm}
-            onChange={(event) => setFirm(event.target.value)}
-            className="h-11 w-full rounded-lg border border-white/10 bg-surface px-3 text-sm font-semibold text-zinc-100 outline-none focus:border-white/25"
-          >
-            {sources.map((item) => <option key={item} value={item}>{item}</option>)}
-          </select>
+          <Select value={firm} onValueChange={setFirm}>
+            <SelectTrigger className="bg-[#090909]"><Building2 size={14} className="text-zinc-500" /><SelectValue /></SelectTrigger>
+            <SelectContent>{sources.map((item) => <SelectItem key={item} value={item}>{item}</SelectItem>)}</SelectContent>
+          </Select>
         </div>
         <div className="space-y-2">
           <Label className="text-xs font-semibold uppercase tracking-wider text-ink-mute">Size</Label>
-          <select
-            value={size}
-            onChange={(event) => setSize(Number(event.target.value))}
-            className="h-11 w-full rounded-lg border border-white/10 bg-surface px-3 font-mono text-sm font-bold text-zinc-100 outline-none focus:border-white/25"
-          >
-            {SIZES.map((item) => <option key={item} value={item}>${item.toLocaleString()}</option>)}
-          </select>
+          <Select value={String(size)} onValueChange={(value) => setSize(Number(value))}>
+            <SelectTrigger className="bg-[#090909] font-mono"><WalletCards size={14} className="text-zinc-500" /><SelectValue /></SelectTrigger>
+            <SelectContent>{SIZES.map((item) => <SelectItem key={item} value={String(item)}>${item.toLocaleString()}</SelectItem>)}</SelectContent>
+          </Select>
         </div>
       </div>
     </div>
@@ -505,18 +488,21 @@ function Mt5Fields({
   setConnectNow: (value: boolean | ((current: boolean) => boolean)) => void;
 }) {
   return (
-    <div className="rounded-xl border border-white/10 bg-surface p-4">
-      <button type="button" onClick={() => setConnectNow((value) => !value)} className="mb-4 flex w-full items-center justify-between text-left">
-        <span className="flex items-center gap-2 text-sm font-black text-zinc-100"><KeyRound size={15} /> Connect MT5 now</span>
-        <span className={cn("rounded-full px-2 py-1 text-[10px] font-black uppercase", connectNow ? "bg-emerald-400/15 text-emerald-200" : "bg-surface-raised text-ink-soft")}>{connectNow ? "On" : "Later"}</span>
-      </button>
+    <div className="mt-4 rounded-xl border border-white/10 bg-[#090909] p-4">
+      <div className={cn("flex w-full items-center justify-between text-left", connectNow && "mb-4")}>
+        <div>
+          <span className="flex items-center gap-2 text-sm font-black text-zinc-100"><KeyRound size={15} /> Connect MT5 now</span>
+          <p className="mt-1 text-[10px] text-ink-mute">You can connect later from account settings.</p>
+        </div>
+        <Switch checked={connectNow} onCheckedChange={setConnectNow} aria-label="Connect MT5 now" />
+      </div>
       {connectNow ? (
         <div className="grid gap-3">
           <div className="grid gap-3 sm:grid-cols-2">
-            <Input name="mt5Login" placeholder="MT5 login / account ID" inputMode="numeric" autoComplete="off" className="h-11 border-white/10 bg-surface font-mono" />
-            <Input name="mt5Password" type="password" placeholder="Investor password" autoComplete="new-password" className="h-11 border-white/10 bg-surface" />
+            <div className="space-y-1.5"><Label className="text-[10px] font-bold uppercase tracking-wider text-ink-mute">Account login</Label><Input name="mt5Login" placeholder="e.g. 12345678" inputMode="numeric" autoComplete="off" className="h-11 border-white/10 bg-black font-mono" /></div>
+            <div className="space-y-1.5"><Label className="text-[10px] font-bold uppercase tracking-wider text-ink-mute">Investor password</Label><Input name="mt5Password" type="password" placeholder="Read-only password" autoComplete="new-password" className="h-11 border-white/10 bg-black" /></div>
           </div>
-          <Input name="mt5Server" placeholder="Broker server, e.g. Exness-MT5Trial15" autoComplete="off" className="h-11 border-white/10 bg-surface" />
+          <div className="space-y-1.5"><Label className="text-[10px] font-bold uppercase tracking-wider text-ink-mute">Broker server</Label><Input name="mt5Server" placeholder="e.g. Exness-MT5Trial15" autoComplete="off" className="h-11 border-white/10 bg-black" /></div>
           <div className="rounded-xl border border-emerald-400/15 bg-emerald-400/[.055] p-3 text-[11px] leading-5 text-emerald-50/80">
             <p className="flex items-start gap-2"><ShieldCheck size={13} className="mt-0.5 shrink-0" /> Investor password tavsiya qilinadi. Tradoxy faqat history o&apos;qiydi — trade ochmaydi, yopmaydi yoki o&apos;zgartirmaydi.</p>
           </div>
@@ -528,7 +514,7 @@ function Mt5Fields({
 
 function CsvImportNotice({ platform, report }: { platform: string; report: string }) {
   return (
-    <div className="rounded-xl border border-white/10 bg-surface p-4">
+    <div className="mt-4 rounded-xl border border-white/10 bg-[#090909] p-4">
       <div className="flex items-start gap-3">
         <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-amber-400/10 text-amber-300"><FileSpreadsheet size={18} /></span>
         <div>
