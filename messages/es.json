@@ -1,0 +1,11 @@
+{
+  "legacy": {
+    "home": "Inicio", "journal": "Diario", "profile": "Perfil", "marketPulse": "Pulso del mercado", "accountsRecords": "Cuentas y registros", "proofSettings": "Pruebas y ajustes", "shareTrade": "Compartir operación", "shareJournalTrade": "Compartir una operación del diario", "reviewedOnly": "Solo se pueden publicar operaciones revisadas.", "pickTrade": "Elige una operación del diario. El feed solo acepta operaciones reales.", "searchTrade": "Buscar símbolo, estrategia o nota", "noTrades": "Aún no hay operaciones", "addTradeFirst": "Primero agrega una operación al Diario y luego compártela desde Inicio.", "openJournal": "Abrir Diario"
+  },
+  "shell": {
+    "settings": "Ajustes", "manageSubscription": "Gestionar suscripción", "viewPlans": "Ver planes", "language": "Idioma", "chooseLanguage": "Elige el idioma de la interfaz", "active": "Activo", "helpCenter": "Centro de ayuda", "support": "Soporte e información de la plataforma", "logout": "Cerrar sesión", "signIn": "Iniciar sesión", "guestTrader": "Trader invitado", "workspace": "Espacio de trabajo", "dashboard": "Panel", "calendar": "Calendario", "trades": "Operaciones", "analytics": "Analítica", "community": "Comunidad"
+  },
+  "settings": {
+    "title": "Ajustes", "back": "Volver a ajustes", "close": "Cerrar ajustes", "customizationTitle": "Privacidad, pantalla e idiomas", "customizationDescription": "Adapta el espacio de trabajo para concentración, capturas y streaming.", "hidePersonalInfo": "Ocultar información personal", "hidePersonalInfoDescription": "Oculta los datos personales en todo el espacio de trabajo.", "language": "Idioma", "typography": "Tipografía", "defaultFont": "Predeterminado de Tradoxy"
+  }
+}

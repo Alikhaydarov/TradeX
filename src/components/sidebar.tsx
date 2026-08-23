@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import type { User } from "@supabase/supabase-js";
 import {
   CalendarDays,
@@ -24,7 +25,7 @@ import {
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { apiRequest } from "@/lib/api-client";
-import { useLanguage } from "@/lib/i18n";
+import { useLanguage, type Locale } from "@/lib/i18n";
 import { useAuth } from "./auth-context";
 import { useActiveAccountStore } from "./active-account-context";
 import { usePremiumStatus } from "./use-premium-status";
@@ -120,7 +121,8 @@ export function Sidebar({
   const [accountQuery, setAccountQuery] = useState("");
   const [logoutConfirmOpen, setLogoutConfirmOpen] = useState(false);
   const [hasCommunityAccess, setHasCommunityAccess] = useState(false);
-  const { t, locale, setLocale } = useLanguage();
+  const { t, locale, locales, labels, setLocale } = useLanguage();
+  const shell = useTranslations("shell");
   const { status: premium } = usePremiumStatus(Boolean(user));
   const { signOut } = useAuth();
   const { hidePersonalInfo, maskValue, setSettingsOpen } =
@@ -227,14 +229,14 @@ export function Sidebar({
     { id: "account" as const, label: t("profile"), icon: UserRound },
   ];
   const journalingNav = [
-    { id: "dashboard" as const, label: "Dashboard", icon: LayoutDashboard },
-    { id: "calendar" as const, label: "Calendar", icon: CalendarDays },
-    { id: "trades" as const, label: "Trades", icon: SquareChartGantt },
-    { id: "analytics" as const, label: "Analytics", icon: TrendingUp },
+    { id: "dashboard" as const, label: shell("dashboard"), icon: LayoutDashboard },
+    { id: "calendar" as const, label: shell("calendar"), icon: CalendarDays },
+    { id: "trades" as const, label: shell("trades"), icon: SquareChartGantt },
+    { id: "analytics" as const, label: shell("analytics"), icon: TrendingUp },
   ];
   const communityNav =
     premium.plan === "pro" || hasCommunityAccess
-      ? [{ id: "community" as const, label: "Community", icon: UsersRound }]
+      ? [{ id: "community" as const, label: shell("community"), icon: UsersRound }]
       : [];
   const openAccountsPage = () => {
     onChange("accounts");
@@ -285,7 +287,7 @@ export function Sidebar({
   const openMobileLogout = () =>
     runMobileAccountAction(() => setLogoutConfirmOpen(true));
   const openMobileLogin = () => runMobileAccountAction(onLogin);
-  const selectMobileLocale = (nextLocale: "en" | "es") => {
+  const selectMobileLocale = (nextLocale: Locale) => {
     setLocale(nextLocale);
     setMobileAccountActionsOpen(false);
   };
@@ -467,13 +469,13 @@ export function Sidebar({
             {primaryNav.map((item) => renderNavButton(item))}
           </nav>
 
-          <GroupLabel>Workspace</GroupLabel>
+          <GroupLabel>{shell("workspace")}</GroupLabel>
           <nav className="space-y-1">
             {journalingNav.map((item) => renderNavButton(item))}
           </nav>
           {communityNav.length ? (
             <>
-              <GroupLabel>Community</GroupLabel>
+              <GroupLabel>{shell("community")}</GroupLabel>
               <nav className="space-y-1">
                 {communityNav.map((item) => renderNavButton(item))}
               </nav>
@@ -514,47 +516,42 @@ export function Sidebar({
                   className="px-3 py-2.5"
                 >
                   <Settings2 size={14} className="mr-2" />
-                  Settings
+                  {shell("settings")}
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={openPricing} className="px-3 py-2.5">
-                  {premium.isPremium ? "Manage subscription" : "View plans"}
+                  {premium.isPremium
+                    ? shell("manageSubscription")
+                    : shell("viewPlans")}
                 </DropdownMenuItem>
-                <DropdownMenuItem
-                  onClick={() => setLocale("en")}
-                  className="flex items-center justify-between px-3 py-2.5"
-                >
-                  <span className="flex items-center gap-2">
-                    <Globe size={14} /> English
-                  </span>
-                  {locale === "en" ? (
-                    <span className="text-[10px] font-bold text-ink-soft">
-                      Active
+                {locales.map((value, index) => (
+                  <DropdownMenuItem
+                    key={value}
+                    onClick={() => setLocale(value)}
+                    className="flex items-center justify-between px-3 py-2.5"
+                  >
+                    <span className={`flex items-center gap-2 ${index ? "pl-6" : ""}`}>
+                      {!index ? <Globe size={14} /> : null}
+                      {labels[value]}
                     </span>
-                  ) : null}
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  onClick={() => setLocale("es")}
-                  className="flex items-center justify-between px-3 py-2.5"
-                >
-                  <span className="flex items-center gap-2 pl-6">Spanish</span>
-                  {locale === "es" ? (
-                    <span className="text-[10px] font-bold text-ink-soft">
-                      Active
-                    </span>
-                  ) : null}
-                </DropdownMenuItem>
+                    {locale === value ? (
+                      <span className="text-[10px] font-bold text-ink-soft">
+                        {shell("active")}
+                      </span>
+                    ) : null}
+                  </DropdownMenuItem>
+                ))}
                 <DropdownMenuItem
                   onClick={openHelpCenter}
                   className="px-3 py-2.5"
                 >
                   <CircleHelp size={14} className="mr-2" />
-                  Help Center
+                  {shell("helpCenter")}
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   onClick={() => setLogoutConfirmOpen(true)}
                   className="px-3 py-2.5 text-rose-300 focus:text-rose-200"
                 >
-                  Logout
+                  {shell("logout")}
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -617,13 +614,13 @@ export function Sidebar({
                   {primaryNav.map((item) => renderNavButton(item, true))}
                 </nav>
 
-                <GroupLabel>Workspace</GroupLabel>
+                <GroupLabel>{shell("workspace")}</GroupLabel>
                 <nav className="space-y-1">
                   {journalingNav.map((item) => renderNavButton(item, true))}
                 </nav>
                 {communityNav.length ? (
                   <>
-                    <GroupLabel>Community</GroupLabel>
+                    <GroupLabel>{shell("community")}</GroupLabel>
                     <nav className="space-y-1">
                       {communityNav.map((item) => renderNavButton(item, true))}
                     </nav>
@@ -758,9 +755,11 @@ export function Sidebar({
                 <CircleHelp size={18} />
               </span>
               <span className="min-w-0 flex-1">
-                <strong className="block text-sm text-white">Help Center</strong>
+                <strong className="block text-sm text-white">
+                  {shell("helpCenter")}
+                </strong>
                 <small className="mt-0.5 block truncate text-[11px] text-ink-mute">
-                  Support and platform information
+                  {shell("support")}
                 </small>
               </span>
               <ChevronDown className="-rotate-90 text-ink-subtle" size={17} />
@@ -773,17 +772,16 @@ export function Sidebar({
                 <Globe size={18} />
               </span>
               <div className="min-w-0 flex-1">
-                <strong className="block text-sm text-white">Language</strong>
+                <strong className="block text-sm text-white">
+                  {shell("language")}
+                </strong>
                 <small className="mt-0.5 block text-[11px] text-ink-mute">
-                  Choose the interface language
+                  {shell("chooseLanguage")}
                 </small>
               </div>
             </div>
             <div className="mt-3 grid grid-cols-2 gap-2">
-              {([
-                ["en", "English"],
-                ["es", "Spanish"],
-              ] as const).map(([value, label]) => (
+              {locales.map((value) => (
                 <button
                   key={value}
                   type="button"
@@ -795,7 +793,7 @@ export function Sidebar({
                   }`}
                 >
                   {locale === value ? <Check size={14} /> : null}
-                  {label}
+                  {labels[value]}
                 </button>
               ))}
             </div>
@@ -807,7 +805,7 @@ export function Sidebar({
               onClick={openMobileLogout}
               className="mt-3 flex min-h-12 w-full items-center justify-center gap-2 rounded-2xl border border-rose-400/15 bg-rose-400/[.07] px-4 text-sm font-bold text-rose-300 transition hover:bg-rose-400/[.12] active:scale-[.99]"
             >
-              <LogOut size={17} /> Logout
+              <LogOut size={17} /> {shell("logout")}
             </button>
           ) : (
             <button
@@ -815,7 +813,7 @@ export function Sidebar({
               onClick={openMobileLogin}
               className="mt-3 flex min-h-12 w-full items-center justify-center gap-2 rounded-2xl bg-white px-4 text-sm font-bold text-black transition hover:bg-zinc-200 active:scale-[.99]"
             >
-              <LogIn size={17} /> Sign in
+              <LogIn size={17} /> {shell("signIn")}
             </button>
           )}
 

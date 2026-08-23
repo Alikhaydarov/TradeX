@@ -17,6 +17,7 @@ import {
   X,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { useEffect, useMemo, useState } from "react";
 
 import { apiRequest } from "@/lib/api-client";
@@ -136,7 +137,8 @@ export function UserSettingsDialog() {
 function SettingsContent() {
   const router = useRouter();
   const { user } = useAuth();
-  const { locale, setLocale } = useLanguage();
+  const { locale, locales, labels, setLocale } = useLanguage();
+  const settingsText = useTranslations("settings");
   const { status: premium } = usePremiumStatus(Boolean(user));
   const {
     settingsOpen,
@@ -483,12 +485,12 @@ function SettingsContent() {
 
                 {!loading && section === "customization" ? (
                   <Panel
-                    title="Privacy, display and languages"
-                    description="Tune the workspace for focus, screenshots and streaming."
+                    title={settingsText("customizationTitle")}
+                    description={settingsText("customizationDescription")}
                   >
                     <SettingRow
-                      title="Hide personal info"
-                      description="Mask personal values throughout the workspace."
+                      title={settingsText("hidePersonalInfo")}
+                      description={settingsText("hidePersonalInfoDescription")}
                     >
                       <Switch
                         checked={hidePersonalInfo}
@@ -497,7 +499,7 @@ function SettingsContent() {
                       />
                     </SettingRow>
                     <div className="grid gap-4 sm:grid-cols-2">
-                      <Field label="Language">
+                      <Field label={settingsText("language")}>
                         <Select
                           value={locale}
                           onValueChange={(value) => setLocale(value as Locale)}
@@ -506,16 +508,19 @@ function SettingsContent() {
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="en">English</SelectItem>
-                            <SelectItem value="es">Español</SelectItem>
+                            {locales.map((value) => (
+                              <SelectItem key={value} value={value}>
+                                {labels[value]}
+                              </SelectItem>
+                            ))}
                           </SelectContent>
                         </Select>
                       </Field>
-                      <Field label="Typography">
+                      <Field label={settingsText("typography")}>
                         <div className="flex h-10 items-center rounded-xl border border-white/8 bg-surface px-3 text-sm font-medium text-ink-strong">
                           DM Sans
                           <span className="ml-auto text-[10px] text-ink-subtle">
-                            Tradoxy default
+                            {settingsText("defaultFont")}
                           </span>
                         </div>
                       </Field>

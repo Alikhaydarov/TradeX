@@ -1,0 +1,11 @@
+{
+  "legacy": {
+    "home": "Главная", "journal": "Журнал", "profile": "Профиль", "marketPulse": "Пульс рынка", "accountsRecords": "Счета и сделки", "proofSettings": "Подтверждения и настройки", "shareTrade": "Поделиться сделкой", "shareJournalTrade": "Поделиться сделкой из журнала", "reviewedOnly": "Публиковать можно только проверенные сделки.", "pickTrade": "Выберите сделку из журнала. В ленте публикуются только реальные сделки.", "searchTrade": "Поиск символа, сетапа или заметки", "noTrades": "В журнале пока нет сделок", "addTradeFirst": "Сначала добавьте сделку в Журнал, затем поделитесь ею на Главной.", "openJournal": "Открыть журнал"
+  },
+  "shell": {
+    "settings": "Настройки", "manageSubscription": "Управление подпиской", "viewPlans": "Посмотреть тарифы", "language": "Язык", "chooseLanguage": "Выберите язык интерфейса", "active": "Активен", "helpCenter": "Центр помощи", "support": "Поддержка и информация о платформе", "logout": "Выйти", "signIn": "Войти", "guestTrader": "Гость", "workspace": "Рабочее пространство", "dashboard": "Панель", "calendar": "Календарь", "trades": "Сделки", "analytics": "Аналитика", "community": "Сообщество"
+  },
+  "settings": {
+    "title": "Настройки", "back": "Назад к настройкам", "close": "Закрыть настройки", "customizationTitle": "Конфиденциальность, вид и языки", "customizationDescription": "Настройте рабочее пространство для фокуса, скриншотов и трансляций.", "hidePersonalInfo": "Скрыть личные данные", "hidePersonalInfoDescription": "Скрывать личные данные во всём рабочем пространстве.", "language": "Язык", "typography": "Шрифт", "defaultFont": "Стандарт Tradoxy"
+  }
+}

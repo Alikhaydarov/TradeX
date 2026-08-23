@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import type { CSSProperties } from "react";
 import { DM_Sans } from "next/font/google";
+import { NextIntlClientProvider } from "next-intl";
+import { getLocale, getMessages } from "next-intl/server";
 
 import { AuthProvider } from "@/components/auth-context";
 import { APP_ROOT_TAILWIND_CLASS } from "@/components/tailwind/app-tailwind-classes";
@@ -62,6 +64,7 @@ export const metadata: Metadata = {
 export default async function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
+  const [locale, messages] = await Promise.all([getLocale(), getMessages()]);
   const configured = isSupabaseConfigured();
   const supabase = await getSupabaseServerClient();
   const { data } = supabase
@@ -70,17 +73,19 @@ export default async function RootLayout({
 
   return (
     <html
-      lang="en"
+      lang={locale}
       className={`dark ${dmSans.variable}`}
       style={appFontVariables}
     >
       <body className={`${appTypographyClass} ${APP_ROOT_TAILWIND_CLASS}`}>
-        <AuthProvider
-          initialUser={data.user}
-          initialConfigured={configured}
-        >
-          {children}
-        </AuthProvider>
+        <NextIntlClientProvider locale={locale} messages={messages}>
+          <AuthProvider
+            initialUser={data.user}
+            initialConfigured={configured}
+          >
+            {children}
+          </AuthProvider>
+        </NextIntlClientProvider>
       </body>
     </html>
   );

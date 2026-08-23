@@ -1,0 +1,11 @@
+{
+  "legacy": {
+    "home": "Home", "journal": "Journal", "profile": "Profile", "marketPulse": "Market pulse", "accountsRecords": "Accounts and trade records", "proofSettings": "Proof and settings", "shareTrade": "Share trade", "shareJournalTrade": "Share a journal trade", "reviewedOnly": "Only reviewed trades can be posted.", "pickTrade": "Pick a journal trade. Home feed only accepts real trade posts.", "searchTrade": "Search symbol, setup or note", "noTrades": "No journal trades yet", "addTradeFirst": "Add a trade in Journal first, then share it from Home.", "openJournal": "Open Journal"
+  },
+  "shell": {
+    "settings": "Settings", "manageSubscription": "Manage subscription", "viewPlans": "View plans", "language": "Language", "chooseLanguage": "Choose the interface language", "active": "Active", "helpCenter": "Help Center", "support": "Support and platform information", "logout": "Logout", "signIn": "Sign in", "guestTrader": "Guest trader", "workspace": "Workspace", "dashboard": "Dashboard", "calendar": "Calendar", "trades": "Trades", "analytics": "Analytics", "community": "Community"
+  },
+  "settings": {
+    "title": "Settings", "back": "Back to settings", "close": "Close settings", "customizationTitle": "Privacy, display and languages", "customizationDescription": "Tune the workspace for focus, screenshots and streaming.", "hidePersonalInfo": "Hide personal info", "hidePersonalInfoDescription": "Mask personal values throughout the workspace.", "language": "Language", "typography": "Typography", "defaultFont": "Tradoxy default"
+  }
+}

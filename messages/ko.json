@@ -1,0 +1,11 @@
+{
+  "legacy": {
+    "home": "홈", "journal": "저널", "profile": "프로필", "marketPulse": "시장 흐름", "accountsRecords": "계좌 및 거래 기록", "proofSettings": "인증 및 설정", "shareTrade": "거래 공유", "shareJournalTrade": "저널 거래 공유", "reviewedOnly": "검토한 거래만 게시할 수 있습니다.", "pickTrade": "저널에서 거래를 선택하세요. 홈 피드에는 실제 거래만 게시됩니다.", "searchTrade": "심볼, 셋업 또는 노트 검색", "noTrades": "아직 저널 거래가 없습니다", "addTradeFirst": "먼저 저널에 거래를 추가한 후 홈에서 공유하세요.", "openJournal": "저널 열기"
+  },
+  "shell": {
+    "settings": "설정", "manageSubscription": "구독 관리", "viewPlans": "요금제 보기", "language": "언어", "chooseLanguage": "인터페이스 언어 선택", "active": "활성", "helpCenter": "도움말 센터", "support": "지원 및 플랫폼 정보", "logout": "로그아웃", "signIn": "로그인", "guestTrader": "게스트 트레이더", "workspace": "작업 공간", "dashboard": "대시보드", "calendar": "캘린더", "trades": "거래", "analytics": "분석", "community": "커뮤니티"
+  },
+  "settings": {
+    "title": "설정", "back": "설정으로 돌아가기", "close": "설정 닫기", "customizationTitle": "개인정보, 화면 및 언어", "customizationDescription": "집중, 스크린샷 및 스트리밍에 맞게 작업 공간을 조정하세요.", "hidePersonalInfo": "개인정보 숨기기", "hidePersonalInfoDescription": "작업 공간 전체에서 개인 정보를 가립니다.", "language": "언어", "typography": "글꼴", "defaultFont": "Tradoxy 기본값"
+  }
+}
