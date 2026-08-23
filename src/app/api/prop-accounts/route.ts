@@ -8,11 +8,19 @@ const ACCOUNT_STATUSES = new Set(["Processing", "Active", "Passed", "Failed", "P
 const DUPLICATE_NAME_PATTERN = /prop_accounts_user_id_name_key|duplicate key value/i;
 const PREMIUM_PLATFORMS = new Set(["tradelocker", "ctrader", "tradovate", "matchtrader"]);
 const IMPORT_SOURCES = new Set(["manual", "mt5_bridge", "ctrader", "tradovate", "ninjatrader", "matchtrader", "projectx", "official_api"]);
+const ACCOUNT_PLATFORMS = new Set(["manual", "mt5", "tradelocker", "ctrader", "tradovate", "ninjatrader", "matchtrader", "projectx"]);
+const MARKET_TYPES = new Set(["CFD", "Futures"]);
+
+function cleanText(value: unknown, maxLength: number) {
+  return String(value || "").replace(/[\u0000-\u001f\u007f]/g, " ").replace(/\s+/g, " ").trim().slice(0, maxLength);
+}
 
 function values(body: Record<string, unknown>) {
-  const name = String(body.name || "").trim().slice(0, 80);
+  const name = cleanText(body.name, 80);
+  const firm = cleanText(body.firm, 80);
   const accountType = String(body.accountType || "prop").trim() === "real" ? "real" : "prop";
-  const platform = String(body.platform || "mt5").trim().toLowerCase().slice(0, 30);
+  const platformRaw = String(body.platform || "manual").trim().toLowerCase();
+  const platform = ACCOUNT_PLATFORMS.has(platformRaw) ? platformRaw : "";
   const importSourceRaw = String(body.importSource || "manual").trim().toLowerCase();
   const requestedImportSource = IMPORT_SOURCES.has(importSourceRaw) ? importSourceRaw : "manual";
   const importSource = platform === "ctrader"
@@ -25,17 +33,20 @@ function values(body: Record<string, unknown>) {
   const profitTarget = Number(body.profitTarget || 0);
   const maxDrawdown = Number(body.maxDrawdown || 0);
   const dailyDrawdown = Number(body.dailyDrawdown || 0);
-  if (!name || ![accountSize, initialBalance, profitTarget, maxDrawdown, dailyDrawdown].every(Number.isFinite) || accountSize <= 0 || initialBalance <= 0) return null;
+  const requestedMarket = cleanText(body.marketType || "CFD", 30).toLowerCase();
+  const marketRaw = requestedMarket === "futures" ? "Futures" : requestedMarket === "cfd" ? "CFD" : "";
+  const marketType = MARKET_TYPES.has(marketRaw) ? marketRaw : "";
+  if (!name || !firm || !platform || !marketType || ![accountSize, initialBalance, profitTarget, maxDrawdown, dailyDrawdown].every(Number.isFinite) || accountSize <= 0 || accountSize > 1_000_000_000 || initialBalance <= 0 || initialBalance > 1_000_000_000) return null;
   return {
     name,
     account_type: accountType,
-    firm: String(body.firm || "").trim().slice(0,80),
-    prop_site: String(body.propSite || "").trim().slice(0, 120),
-    prop_login: String(body.propLogin || "").trim().slice(0, 120),
+    firm,
+    prop_site: cleanText(body.propSite, 120),
+    prop_login: cleanText(body.propLogin, 120),
     import_source: importSource,
     platform,
-    phase: String(body.phase || (accountType === "real" ? "Live" : "Challenge")).slice(0,40),
-    market_type: String(body.marketType || "CFD").slice(0,30),
+    phase: cleanText(body.phase || (accountType === "real" ? "Live" : "Challenge"), 40),
+    market_type: marketType,
     account_size: accountSize,
     initial_balance: initialBalance,
     profit_target: Math.max(0,profitTarget),

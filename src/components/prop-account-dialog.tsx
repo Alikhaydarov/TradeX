@@ -2,7 +2,6 @@
 
 import {
   ArrowLeft,
-  Building2,
   ChevronRight,
   FileSpreadsheet,
   KeyRound,
@@ -12,7 +11,6 @@ import {
   ShieldCheck,
   LockKeyhole,
   Sparkles,
-  WalletCards,
   Zap,
 } from "lucide-react";
 import { FormEvent, type ReactNode, useEffect, useMemo, useState } from "react";
@@ -30,13 +28,11 @@ import { Button } from "./ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog";
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
 import { Switch } from "./ui/switch";
 import { useRouter } from "next/navigation";
 
-const PROP_FIRMS = ["FTMO", "The5ers", "FundedNext", "FundingPips", "Alpha Capital", "Topstep", "Apex Trader Funding", "Other"];
-const BROKERS = ["Tradovate", "NinjaTrader", "MatchTrader", "Project X", "Exness", "IC Markets", "MetaTrader Broker", "Other"];
-const SIZES = [10000, 25000, 50000, 100000, 200000];
+const PROP_FIRMS = ["FTMO", "The5ers", "FundedNext", "FundingPips", "Alpha Capital", "Topstep", "Apex Trader Funding"];
+const BROKERS = ["Exness", "IC Markets", "Pepperstone", "OANDA", "FXCM", "Interactive Brokers"];
 
 type WizardStep = 1 | 2 | 3;
 type AccountKind = "manual" | "automatic";
@@ -121,7 +117,6 @@ export function PropAccountDialog({
     () => ACCOUNT_PLATFORMS.find((item) => item.id === platform) ?? ACCOUNT_PLATFORMS[0],
     [platform],
   );
-  const sources = accountType === "prop" ? PROP_FIRMS : BROKERS;
   const activePlatform = accountKind === "manual" ? "manual" : platform;
   const market = accountKind === "manual" ? "CFD" : selectedPlatform.market;
   const importSource = accountKind === "manual"
@@ -340,7 +335,6 @@ export function PropAccountDialog({
                     changeAccountType={changeAccountType}
                     firm={firm}
                     setFirm={setFirm}
-                    sources={sources}
                     size={size}
                     setSize={setSize}
                     placeholder={accountKind === "manual" ? "Manual account" : selectedPlatform.mode === "csv" ? `${selectedPlatform.name} account` : "FTMO MT5 100K"}
@@ -423,7 +417,6 @@ function AccountBasics({
   changeAccountType,
   firm,
   setFirm,
-  sources,
   size,
   setSize,
   placeholder,
@@ -432,7 +425,6 @@ function AccountBasics({
   changeAccountType: (value: "prop" | "real") => void;
   firm: string;
   setFirm: (value: string) => void;
-  sources: string[];
   size: number;
   setSize: (value: number) => void;
   placeholder: string;
@@ -456,24 +448,43 @@ function AccountBasics({
       </div>
 
       <div className="space-y-2">
-        <Label className="text-xs font-semibold uppercase tracking-wider text-ink-mute">Name *</Label>
-        <Input name="name" required placeholder={placeholder} className="h-11 border-white/10 bg-surface" />
+          <Label className="text-xs font-semibold uppercase tracking-wider text-ink-mute">Account name *</Label>
+          <Input name="name" required maxLength={80} placeholder={placeholder} className="h-11 border-white/10 bg-[#090909]" />
+          <p className="text-[10px] leading-4 text-ink-subtle">A private label used only inside your workspace.</p>
       </div>
 
       <div className="grid gap-3 sm:grid-cols-2">
         <div className="space-y-2">
-          <Label className="text-xs font-semibold uppercase tracking-wider text-ink-mute">{accountType === "prop" ? "Firm" : "Broker"}</Label>
-          <Select value={firm} onValueChange={setFirm}>
-            <SelectTrigger className="bg-[#090909]"><Building2 size={14} className="text-zinc-500" /><SelectValue /></SelectTrigger>
-            <SelectContent>{sources.map((item) => <SelectItem key={item} value={item}>{item}</SelectItem>)}</SelectContent>
-          </Select>
+          <Label className="text-xs font-semibold uppercase tracking-wider text-ink-mute">{accountType === "prop" ? "Prop firm" : "Broker"} *</Label>
+          <Input
+            value={firm}
+            onChange={(event) => setFirm(event.target.value)}
+            list={accountType === "prop" ? "tradoxy-prop-firms" : "tradoxy-brokers"}
+            required
+            maxLength={80}
+            placeholder={accountType === "prop" ? "Enter any prop firm" : "Enter any broker"}
+            autoComplete="off"
+            className="h-11 border-white/10 bg-[#090909]"
+          />
+          <datalist id="tradoxy-prop-firms">{PROP_FIRMS.map((item) => <option key={item} value={item} />)}</datalist>
+          <datalist id="tradoxy-brokers">{BROKERS.map((item) => <option key={item} value={item} />)}</datalist>
         </div>
         <div className="space-y-2">
-          <Label className="text-xs font-semibold uppercase tracking-wider text-ink-mute">Size</Label>
-          <Select value={String(size)} onValueChange={(value) => setSize(Number(value))}>
-            <SelectTrigger className="bg-[#090909] font-mono"><WalletCards size={14} className="text-zinc-500" /><SelectValue /></SelectTrigger>
-            <SelectContent>{SIZES.map((item) => <SelectItem key={item} value={String(item)}>${item.toLocaleString()}</SelectItem>)}</SelectContent>
-          </Select>
+          <Label className="text-xs font-semibold uppercase tracking-wider text-ink-mute">Starting balance *</Label>
+          <div className="relative">
+            <span className="pointer-events-none absolute inset-y-0 left-3 flex items-center font-mono text-sm text-zinc-500">$</span>
+            <Input
+              type="number"
+              value={size}
+              onChange={(event) => setSize(Math.max(1, Number(event.target.value) || 1))}
+              min={1}
+              max={1_000_000_000}
+              step="any"
+              required
+              inputMode="decimal"
+              className="h-11 border-white/10 bg-[#090909] pl-7 font-mono"
+            />
+          </div>
         </div>
       </div>
     </div>
