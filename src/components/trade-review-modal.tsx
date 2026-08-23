@@ -1,6 +1,6 @@
 "use client";
 
-import { Check, ChevronDown, CloudUpload, ImagePlus, LoaderCircle, Plus, Trash2, X } from "lucide-react";
+import { Check, ChevronDown, CloudUpload, ImagePlus, LoaderCircle, Minus, Plus, Trash2, X } from "lucide-react";
 import { useMemo, useRef, useState, type DragEvent, type ReactNode } from "react";
 import { MediaImage } from "./media-image";
 import { useWorkspacePreferences } from "./workspace-preferences-context";
@@ -40,9 +40,12 @@ function storedOptions(key: string, fallback: string[]) {
 }
 
 function sanitizeDecimal(raw: string): string {
-  const cleaned = raw.replace(",", ".").replace(/[^0-9.-]/g, "");
+  const normalized = raw.replace(",", ".").replace(/^1\s*:\s*/, "");
+  const negative = normalized.trim().startsWith("-");
+  const cleaned = normalized.replace(/[^0-9.]/g, "");
   const parts = cleaned.split(".");
-  return parts.length > 2 ? `${parts[0]}.${parts.slice(1).join("")}` : cleaned;
+  const decimal = parts.length > 2 ? `${parts[0]}.${parts.slice(1).join("")}` : cleaned;
+  return negative ? `-${decimal}` : decimal;
 }
 
 function nowLocalDateTime() {
@@ -167,6 +170,7 @@ export function TradeReviewModal({ open, saving, account: _account, onOpenChange
   const [symbol, setSymbol] = useState("NAS100");
   const [entryDateTime, setEntryDateTime] = useState(nowLocalDateTime);
   const [pnl, setPnl] = useState("");
+  const [riskAmount, setRiskAmount] = useState("");
   const [rr, setRr] = useState("");
   const [rating, setRating] = useState("0");
   const [session, setSession] = useState("");
@@ -176,6 +180,15 @@ export function TradeReviewModal({ open, saving, account: _account, onOpenChange
   const symbolOptions = useMemo(() => Array.from(new Set([...SYMBOLS, ...customSymbols])), [customSymbols]);
 
   const tradedDate = useMemo(() => entryDateTime.slice(0, 10) || new Date().toISOString().slice(0, 10), [entryDateTime]);
+  const rrValue = Math.max(0, Number(rr) || 0);
+  const rrRiskWidth = rrValue > 0 ? 100 / (1 + rrValue) : 50;
+  const rrRewardWidth = 100 - rrRiskWidth;
+
+  const calculateR = (nextPnl: string, nextRisk: string) => {
+    const amount = Math.abs(Number(nextPnl) || 0);
+    const risk = Math.abs(Number(nextRisk) || 0);
+    if (amount > 0 && risk > 0) setRr((amount / risk).toFixed(2));
+  };
 
   const addOption = (key: string, setOptions: (options: string[]) => void, current: string[], value: string) => {
     const nextValue = value.trim();
@@ -207,6 +220,7 @@ export function TradeReviewModal({ open, saving, account: _account, onOpenChange
     setSymbol("NAS100");
     setEntryDateTime(nowLocalDateTime());
     setPnl("");
+    setRiskAmount("");
     setRr("");
     setRating("0");
     setSession("");
@@ -251,6 +265,9 @@ export function TradeReviewModal({ open, saving, account: _account, onOpenChange
   const submit = async (form: FormData) => {
     const amount = Math.abs(Number(String(form.get("pnl") || "0").replace(",", ".")) || 0);
     form.set("pnl", String(outcome === "loss" ? -amount : amount));
+    const resultR = Math.abs(Number(rr) || 0);
+    form.set("resultR", String(outcome === "loss" ? -resultR : resultR));
+    form.set("riskAmount", String(Math.abs(Number(riskAmount) || 0)));
     const entry = await onSave(form);
     if (entry) {
       resetForm();
@@ -325,7 +342,11 @@ export function TradeReviewModal({ open, saving, account: _account, onOpenChange
                   <Input
                     name="pnl"
                     value={pnl}
-                    onChange={(event) => setPnl(sanitizeDecimal(event.target.value))}
+                    onChange={(event) => {
+                      const next = sanitizeDecimal(event.target.value);
+                      setPnl(next);
+                      calculateR(next, riskAmount);
+                    }}
                     placeholder="Enter your P&L"
                     required
                     inputMode="decimal"
@@ -340,20 +361,44 @@ export function TradeReviewModal({ open, saving, account: _account, onOpenChange
 
               <div className="space-y-1.5">
                 <FieldLabel>Risk/Reward ratio</FieldLabel>
-                <div className="flex items-center gap-3">
-                  <Input
-                    name="resultR"
-                    value={rr}
-                    onChange={(event) => setRr(sanitizeDecimal(event.target.value))}
-                    placeholder="1:2"
-                    inputMode="decimal"
-                    className={`${inputClass} w-[62px] px-2 text-center font-mono text-xs`}
-                  />
-                  <div className="flex h-4 flex-1 overflow-hidden rounded-full bg-[#202020]">
-                    <div className="w-1/2 bg-rose-500" />
-                    <div className="flex-1 bg-emerald-500" />
+                <div className="grid grid-cols-2 gap-2">
+                  <label className="relative">
+                    <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-xs font-semibold text-ink-mute">Risk $</span>
+                    <Input
+                      value={riskAmount}
+                      onChange={(event) => {
+                        const next = sanitizeDecimal(event.target.value);
+                        setRiskAmount(next);
+                        calculateR(pnl, next);
+                      }}
+                      placeholder="100"
+                      inputMode="decimal"
+                      className={`${inputClass} pl-[58px] pr-3 font-mono`}
+                    />
+                  </label>
+                  <div className="flex h-10 items-center rounded-lg border border-white/8 bg-surface-raised p-1">
+                    <button type="button" onClick={() => setRr(Math.max(0, rrValue - 0.25).toFixed(2))} className="grid size-8 shrink-0 place-items-center rounded-md text-ink-mute hover:bg-white/[.05] hover:text-white" aria-label="Decrease RR"><Minus size={13} /></button>
+                    <span className="shrink-0 pl-1 text-xs font-bold text-ink-mute">1 :</span>
+                    <Input
+                      name="resultR"
+                      value={rr}
+                      onChange={(event) => setRr(sanitizeDecimal(event.target.value))}
+                      placeholder="2.00"
+                      inputMode="decimal"
+                      className="h-8 min-w-0 flex-1 border-0 bg-transparent px-1 text-center font-mono text-sm font-bold shadow-none focus-visible:ring-0"
+                    />
+                    <button type="button" onClick={() => setRr((rrValue + 0.25).toFixed(2))} className="grid size-8 shrink-0 place-items-center rounded-md text-ink-mute hover:bg-white/[.05] hover:text-white" aria-label="Increase RR"><Plus size={13} /></button>
                   </div>
                 </div>
+                <div className="flex items-center gap-3 pt-1">
+                  <span className="w-8 text-[10px] font-bold text-rose-300">1R</span>
+                  <div className="flex h-2 flex-1 overflow-hidden rounded-full bg-white/[.06]" aria-label={`Risk reward 1 to ${rrValue.toFixed(2)}`}>
+                    <div className="bg-rose-500 transition-[width] duration-200" style={{ width: `${rrRiskWidth}%` }} />
+                    <div className="bg-emerald-500 transition-[width] duration-200" style={{ width: `${rrRewardWidth}%` }} />
+                  </div>
+                  <span className="w-10 text-right text-[10px] font-bold text-emerald-300">{rrValue.toFixed(2)}R</span>
+                </div>
+                <p className="text-[10px] text-ink-subtle">P&amp;L ÷ Risk automatically calculates R. You can still adjust it manually.</p>
               </div>
 
               <div className="space-y-1.5">
@@ -431,7 +476,7 @@ export function TradeReviewModal({ open, saving, account: _account, onOpenChange
               <input type="hidden" name="tradedAt" value={tradedDate} />
               <input type="hidden" name="quantity" value="1" />
               <input type="hidden" name="fees" value="0" />
-              <input type="hidden" name="riskAmount" value="0" />
+              <input type="hidden" name="riskAmount" value={riskAmount} />
               <input type="hidden" name="session" value={session} />
               <input type="hidden" name="riskPercent" value={riskPct} />
               <input type="hidden" name="setup" value={setup} />
