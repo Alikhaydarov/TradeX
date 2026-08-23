@@ -181,8 +181,7 @@ export function TradeReviewModal({ open, saving, account: _account, onOpenChange
 
   const tradedDate = useMemo(() => entryDateTime.slice(0, 10) || new Date().toISOString().slice(0, 10), [entryDateTime]);
   const rrValue = Math.max(0, Number(rr) || 0);
-  const rrRiskWidth = rrValue > 0 ? 100 / (1 + rrValue) : 50;
-  const rrRewardWidth = 100 - rrRiskWidth;
+  const rrSliderValue = Math.min(10, Math.max(0.25, rrValue || 0.25));
 
   const calculateR = (nextPnl: string, nextRisk: string) => {
     const amount = Math.abs(Number(nextPnl) || 0);
@@ -392,10 +391,25 @@ export function TradeReviewModal({ open, saving, account: _account, onOpenChange
                 </div>
                 <div className="flex items-center gap-3 pt-1">
                   <span className="w-8 text-[10px] font-bold text-rose-300">1R</span>
-                  <div className="flex h-2 flex-1 overflow-hidden rounded-full bg-white/[.06]" aria-label={`Risk reward 1 to ${rrValue.toFixed(2)}`}>
-                    <div className="bg-rose-500 transition-[width] duration-200" style={{ width: `${rrRiskWidth}%` }} />
-                    <div className="bg-emerald-500 transition-[width] duration-200" style={{ width: `${rrRewardWidth}%` }} />
-                  </div>
+                  <input
+                    type="range"
+                    min="0.25"
+                    max="10"
+                    step="0.25"
+                    value={rrSliderValue}
+                    onChange={(event) => setRr(Number(event.target.value).toFixed(2))}
+                    className="h-4 flex-1 cursor-pointer appearance-none rounded-full border border-white/10 bg-transparent
+                      [&::-webkit-slider-runnable-track]:h-2 [&::-webkit-slider-runnable-track]:rounded-full
+                      [&::-webkit-slider-thumb]:mt-[-4px] [&::-webkit-slider-thumb]:size-4 [&::-webkit-slider-thumb]:appearance-none
+                      [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-black
+                      [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:shadow-[0_0_0_2px_rgba(255,255,255,.2)]
+                      [&::-moz-range-thumb]:size-4 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:border-2
+                      [&::-moz-range-thumb]:border-black [&::-moz-range-thumb]:bg-white"
+                    style={{
+                      background: "linear-gradient(to right, #ef4444 0%, #f59e0b 38%, #22c55e 100%)",
+                    }}
+                    aria-label="Risk reward ratio"
+                  />
                   <span className="w-10 text-right text-[10px] font-bold text-emerald-300">{rrValue.toFixed(2)}R</span>
                 </div>
                 <p className="text-[10px] text-ink-subtle">P&amp;L ÷ Risk automatically calculates R. You can still adjust it manually.</p>
