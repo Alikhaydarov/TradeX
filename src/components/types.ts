@@ -182,7 +182,7 @@ export interface PropAccount {
   firm: string;
   propSite?: string;
   propLogin?: string;
-  importSource?: "manual" | "mt5_bridge" | "ctrader" | "tradovate" | "ninjatrader" | "projectx" | "official_api";
+  importSource?: "manual" | "mt5_bridge" | "ctrader" | "tradovate" | "ninjatrader" | "matchtrader" | "projectx" | "official_api";
   platform?: string;
   phase: string;
   marketType: string;

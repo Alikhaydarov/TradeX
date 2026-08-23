@@ -94,7 +94,8 @@ export async function POST(request: Request) {
   const payload = values(await request.json()); if (!payload) return badRequest("Check account details.");
   const premium = await getPremiumStatus(auth);
 
-  if (!premium.isPremium) {
+  const accountLimit = premium.plan === "pro" ? null : premium.plan === "standard" ? 3 : 1;
+  if (accountLimit !== null) {
     const { count, error: countError } = await auth.supabase
       .from("prop_accounts")
       .select("id", { count: "exact", head: true })
@@ -102,11 +103,14 @@ export async function POST(request: Request) {
 
     if (countError) return serverError(countError.message);
 
-    if ((count || 0) >= 1) {
+    if ((count || 0) >= accountLimit) {
       return Response.json(
         {
-          error: "Free plan allows only 1 account. Upgrade to Premium to add more accounts.",
+          error: premium.plan === "standard"
+            ? "Standard allows up to 3 accounts. Upgrade to Pro for unlimited accounts."
+            : "Free allows one manual account. Upgrade to Standard or Pro to add another account.",
           upgradeUrl: "/pricing",
+          accountLimit,
         },
         { status: 403 },
       );
@@ -117,7 +121,7 @@ export async function POST(request: Request) {
   if (!premium.isPremium && (connectorRequested || PREMIUM_PLATFORMS.has(String(payload.platform || "").toLowerCase()))) {
     return Response.json(
       {
-        error: "Automatic account connections are available only on Tradoxy Premium.",
+        error: "Platform connections are available on Standard and Pro plans.",
         upgradeUrl: "/pricing",
       },
       { status: 403 },

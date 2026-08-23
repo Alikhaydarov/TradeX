@@ -17,6 +17,8 @@ import {
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
 import type { PropAccount } from "../types";
+import { PlatformLogoBadge } from "../platform-logo-badge";
+import { cn } from "@/lib/utils";
 
 export type JournalAccountSummary = {
   account: PropAccount;
@@ -186,9 +188,15 @@ function JournalAccountCard({
     Paused: "text-amber-400 bg-[#1a1407] border-amber-400/20",
   };
   const pnlTone = summary.pnl >= 0 ? "text-emerald-300" : "text-rose-300";
-  const sourceLabel =
-    summary.account.importSource === "mt5_bridge" ? "MT5 sync" : "Manual";
+  const source = summary.account.importSource || "manual";
+  const sourceLabel = source === "mt5_bridge"
+    ? "Auto sync"
+    : source === "manual"
+      ? "Manual"
+      : "CSV import";
+  const platform = summary.account.platform || (source === "mt5_bridge" ? "mt5" : source);
   const currentBalance = summary.account.accountSize + summary.pnl;
+  const isOnline = summary.account.status === "Active" || summary.account.status === "Passed";
 
   return (
     <div
@@ -200,36 +208,37 @@ function JournalAccountCard({
           onOpen(summary.account.id);
         }
       }}
-      className={`group relative cursor-pointer overflow-hidden rounded-2xl border transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/30 ${
-        compact ? "min-h-[144px]" : "min-h-[156px]"
+      className={`group relative cursor-pointer overflow-hidden rounded-xl border transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/30 ${
+        compact ? "min-h-[136px]" : "min-h-[148px]"
       } ${
         active
-          ? "border-white/20 bg-surface shadow-[0_12px_32px_rgba(0,0,0,.3)]"
-          : "border-white/10 bg-surface hover:border-white/20 hover:bg-surface"
+          ? "border-white/20 bg-[#0a0a0a] shadow-[0_12px_32px_rgba(0,0,0,.3)]"
+          : "border-white/10 bg-[#080808] hover:border-white/20 hover:bg-[#0b0b0b]"
       }`}
     >
       <div className="p-3.5 sm:p-4">
         <div className="flex items-start gap-3">
-          <div className="min-w-0 flex-1 space-y-1">
+          <PlatformLogoBadge platform={platform} compact />
+          <div className="min-w-0 flex-1 space-y-0.5">
             <div className="flex min-w-0 items-center gap-2">
-              <span className="size-2 shrink-0 rounded-full bg-emerald-400 shadow-[0_0_12px_rgba(52,211,153,.45)]" />
               <p className="truncate text-[15px] font-bold text-white">
                 {summary.account.name}
               </p>
             </div>
             <p className="truncate text-[11px] text-ink-subtle">
-              {sourceLabel} ·{" "}
+              {sourceLabel} · {summary.account.marketType || "CFD"} ·{" "}
               {summary.account.accountType === "real"
-                ? "Personal"
+                ? "Real"
                 : summary.account.firm || "Prop account"}
             </p>
           </div>
           <div className="flex shrink-0 items-center gap-2">
             <span
-              className={`rounded-md border px-1.5 py-0.5 text-[10px] font-semibold ${
-                statusColor[summary.account.status] || statusColor.Active
-              }`}
+              className={`inline-flex items-center gap-1.5 rounded-md border px-1.5 py-0.5 text-[10px] font-semibold ${
+                  statusColor[summary.account.status] || statusColor.Active
+                }`}
             >
+              <span className={cn("size-1.5 rounded-full", isOnline ? "bg-emerald-400" : summary.account.status === "Processing" ? "bg-sky-400" : summary.account.status === "Paused" ? "bg-amber-400" : "bg-rose-400")} />
               {summary.account.status}
             </span>
             <DropdownMenu>
@@ -265,7 +274,7 @@ function JournalAccountCard({
           </div>
         </div>
 
-        <div className="mt-3">
+        <div className="mt-3 pl-12">
           <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-ink-subtle">
             Current balance
           </p>
