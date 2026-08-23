@@ -30,6 +30,7 @@ import { Input } from "./ui/input";
 import { Label } from "./ui/label";
 import { Switch } from "./ui/switch";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 
 const PROP_FIRMS = ["FTMO", "The5ers", "FundedNext", "FundingPips", "Alpha Capital", "Topstep", "Apex Trader Funding"];
 const BROKERS = ["Exness", "IC Markets", "Pepperstone", "OANDA", "FXCM", "Interactive Brokers"];
@@ -97,6 +98,7 @@ export function PropAccountDialog({
   onSave: (form: FormData) => Promise<unknown> | unknown;
 }) {
   const router = useRouter();
+  const t = useTranslations("accountWizard");
   const [step, setStep] = useState<WizardStep>(1);
   const [accountKind, setAccountKind] = useState<AccountKind | null>(null);
   const [accountType, setAccountType] = useState<"prop" | "real">("prop");
@@ -266,7 +268,7 @@ export function PropAccountDialog({
       <DialogContent className="max-h-[calc(100dvh-.5rem)] w-[calc(100vw-.5rem)] gap-0 overflow-hidden border-[#1a1a1a] bg-surface p-0 text-zinc-100 sm:max-h-[88dvh] sm:max-w-[780px]">
         <div className="flex items-center gap-3 border-b border-white/8 bg-black px-4 py-3.5 sm:px-5">
           <DialogHeader className="min-w-0 sm:w-36">
-            <DialogTitle className="truncate text-base font-black sm:text-lg">Add account</DialogTitle>
+            <DialogTitle className="truncate text-base font-black sm:text-lg">{t("addAccount")}</DialogTitle>
           </DialogHeader>
           <div className="flex flex-1 justify-center"><StepDots step={step} /></div>
           <div className="mr-8 flex shrink-0 items-center gap-2 sm:mr-7">
@@ -279,7 +281,7 @@ export function PropAccountDialog({
           <div className="px-4 py-4 sm:px-6 sm:py-5">
             {step > 1 ? (
               <Button type="button" variant="outline" size="sm" onClick={goBack} className="mb-4 h-9 rounded-xl border-white/10 bg-surface hover:bg-surface-raised">
-                <ArrowLeft size={16} /> Back
+                <ArrowLeft size={16} /> {t("back")}
               </Button>
             ) : null}
 
@@ -298,8 +300,8 @@ export function PropAccountDialog({
 
             {step === 1 ? (
               <div className="mx-auto grid max-w-[680px] gap-3 sm:grid-cols-2">
-                <ChoiceCard icon={<Pencil size={20} />} title="Manual journal" text="Add and review trades yourself. Included with every plan." badge="Free included" onClick={chooseManual} />
-                <ChoiceCard icon={<Zap size={20} />} title="Connect platform" text="Auto-sync MT5 or import supported CFD and Futures history." badge={premiumStatus.plan === "free" ? "Standard or Pro" : `${premiumStatus.plan} active`} locked={premiumStatus.plan === "free"} onClick={chooseAutomatic} />
+                <ChoiceCard icon={<Pencil size={20} />} title={t("manualJournal")} text={t("manualDescription")} badge={t("freeIncluded")} continueLabel={t("continue")} exploreLabel={t("explorePlatforms")} onClick={chooseManual} />
+                <ChoiceCard icon={<Zap size={20} />} title={t("connectPlatform")} text={t("connectDescription")} badge={premiumStatus.plan === "free" ? t("paidRequired") : t("activePlan", { plan: premiumStatus.plan })} continueLabel={t("continue")} exploreLabel={t("explorePlatforms")} locked={premiumStatus.plan === "free"} onClick={chooseAutomatic} />
               </div>
             ) : null}
 
@@ -326,7 +328,7 @@ export function PropAccountDialog({
                       </div>
                       <p className="truncate text-[10px] text-ink-mute">{accountKind === "manual" ? "Included with every plan" : selectedPlatform.mode === "csv" ? `${selectedPlatform.market} · CSV history import` : `${selectedPlatform.market} · Read-only auto sync`}</p>
                     </div>
-                    <button type="button" onClick={goBack} className="ml-auto shrink-0 rounded-lg px-2.5 py-1.5 text-[10px] font-bold text-zinc-400 transition hover:bg-white/[.06] hover:text-white">Change</button>
+                    <button type="button" onClick={goBack} className="ml-auto shrink-0 rounded-lg px-2.5 py-1.5 text-[10px] font-bold text-zinc-400 transition hover:bg-white/[.06] hover:text-white">{t("change")}</button>
                   </div>
 
                   <div className="rounded-2xl border border-white/10 bg-black p-4 sm:p-5">
@@ -338,6 +340,7 @@ export function PropAccountDialog({
                     size={size}
                     setSize={setSize}
                     placeholder={accountKind === "manual" ? "Manual account" : selectedPlatform.mode === "csv" ? `${selectedPlatform.name} account` : "FTMO MT5 100K"}
+                    labels={{ accountName: t("accountName"), privateLabel: t("privateLabel"), propFirm: t("propFirm"), broker: t("broker"), startingBalance: t("startingBalance"), prop: t("prop"), real: t("real") }}
                   />
 
                   {accountKind === "automatic" && selectedPlatform.id === "mt5" ? (
@@ -363,10 +366,10 @@ export function PropAccountDialog({
 
           {step === 3 ? (
             <div className="sticky bottom-0 flex items-center gap-2 border-t border-white/8 bg-surface px-4 py-3 sm:justify-end sm:px-5 sm:py-4">
-              <Button type="button" variant="outline" onClick={() => onOpenChange(false)} className="flex-1 sm:flex-none">Cancel</Button>
+              <Button type="button" variant="outline" onClick={() => onOpenChange(false)} className="flex-1 sm:flex-none">{t("cancel")}</Button>
               <Button disabled={isSubmitting} className="flex-1 bg-white font-semibold text-black hover:bg-zinc-200 sm:flex-none">
                 {isSubmitting ? <LoaderCircle className="animate-spin" /> : <Plus size={18} />}
-                {createsProcessingMt5 ? "Create and sync" : "Add account"}
+                {createsProcessingMt5 ? t("createAndSync") : t("addAccount")}
               </Button>
             </div>
           ) : null}
@@ -392,7 +395,7 @@ export function PropAccountDialog({
   );
 }
 
-function ChoiceCard({ icon, title, text, badge, locked = false, onClick }: { icon: ReactNode; title: string; text: string; badge: string; locked?: boolean; onClick: () => void }) {
+function ChoiceCard({ icon, title, text, badge, continueLabel, exploreLabel, locked = false, onClick }: { icon: ReactNode; title: string; text: string; badge: string; continueLabel: string; exploreLabel: string; locked?: boolean; onClick: () => void }) {
   return (
     <button
       type="button"
@@ -407,7 +410,7 @@ function ChoiceCard({ icon, title, text, badge, locked = false, onClick }: { ico
         <h3 className="text-base font-bold sm:text-lg">{title}</h3>
         <p className="mt-1.5 max-w-xs text-xs font-medium leading-5 text-ink-mute">{text}</p>
       </div>
-      <span className="mt-4 inline-flex items-center gap-1.5 text-[11px] font-bold text-zinc-300">{locked ? <Sparkles size={13} /> : null}{locked ? "Explore platforms" : "Continue"}<ChevronRight className="transition group-hover:translate-x-1" size={14} /></span>
+      <span className="mt-4 inline-flex items-center gap-1.5 text-[11px] font-bold text-zinc-300">{locked ? <Sparkles size={13} /> : null}{locked ? exploreLabel : continueLabel}<ChevronRight className="transition group-hover:translate-x-1" size={14} /></span>
     </button>
   );
 }
@@ -420,6 +423,7 @@ function AccountBasics({
   size,
   setSize,
   placeholder,
+  labels,
 }: {
   accountType: "prop" | "real";
   changeAccountType: (value: "prop" | "real") => void;
@@ -428,6 +432,7 @@ function AccountBasics({
   size: number;
   setSize: (value: number) => void;
   placeholder: string;
+  labels: { accountName: string; privateLabel: string; propFirm: string; broker: string; startingBalance: string; prop: string; real: string };
 }) {
   return (
     <div className="space-y-4">
@@ -442,20 +447,20 @@ function AccountBasics({
               accountType === type ? "bg-white text-black" : "text-ink-mute hover:bg-white/[.04] hover:text-zinc-100",
             )}
           >
-            {type}
+            {type === "prop" ? labels.prop : labels.real}
           </button>
         ))}
       </div>
 
       <div className="space-y-2">
-          <Label className="text-xs font-semibold uppercase tracking-wider text-ink-mute">Account name *</Label>
+          <Label className="text-xs font-semibold uppercase tracking-wider text-ink-mute">{labels.accountName} *</Label>
           <Input name="name" required maxLength={80} placeholder={placeholder} className="h-11 border-white/10 bg-[#090909]" />
-          <p className="text-[10px] leading-4 text-ink-subtle">A private label used only inside your workspace.</p>
+          <p className="text-[10px] leading-4 text-ink-subtle">{labels.privateLabel}</p>
       </div>
 
       <div className="grid gap-3 sm:grid-cols-2">
         <div className="space-y-2">
-          <Label className="text-xs font-semibold uppercase tracking-wider text-ink-mute">{accountType === "prop" ? "Prop firm" : "Broker"} *</Label>
+          <Label className="text-xs font-semibold uppercase tracking-wider text-ink-mute">{accountType === "prop" ? labels.propFirm : labels.broker} *</Label>
           <Input
             value={firm}
             onChange={(event) => setFirm(event.target.value)}
@@ -470,7 +475,7 @@ function AccountBasics({
           <datalist id="tradoxy-brokers">{BROKERS.map((item) => <option key={item} value={item} />)}</datalist>
         </div>
         <div className="space-y-2">
-          <Label className="text-xs font-semibold uppercase tracking-wider text-ink-mute">Starting balance *</Label>
+          <Label className="text-xs font-semibold uppercase tracking-wider text-ink-mute">{labels.startingBalance} *</Label>
           <div className="relative">
             <span className="pointer-events-none absolute inset-y-0 left-3 flex items-center font-mono text-sm text-zinc-500">$</span>
             <Input
