@@ -72,14 +72,22 @@ function NavigationProgressBar({ active }: { active: boolean }) {
 
   useEffect(() => {
     if (!active) return;
-    setVisible(true);
-    setProgress(12);
 
-    const timer = window.setInterval(() => {
-      setProgress((current) => (current >= 90 ? current : current + (90 - current) * 0.18));
-    }, 180);
+    let interval: number | undefined;
+    const reveal = window.setTimeout(() => {
+      setVisible(true);
+      setProgress(12);
+      interval = window.setInterval(() => {
+        setProgress((current) =>
+          current >= 90 ? current : current + (90 - current) * 0.18,
+        );
+      }, 180);
+    }, 120);
 
-    return () => window.clearInterval(timer);
+    return () => {
+      window.clearTimeout(reveal);
+      if (interval !== undefined) window.clearInterval(interval);
+    };
   }, [active]);
 
   useEffect(() => {

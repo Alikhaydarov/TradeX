@@ -35,16 +35,6 @@ const UserSettingsDialog = dynamic(
   { ssr: false },
 );
 
-const CORE_WORKSPACE_ROUTES = [
-  "/",
-  "/dashboard",
-  "/calendar",
-  "/trades",
-  "/analytics",
-  "/accounts",
-  "/profile",
-];
-
 function communityRouteFromPath(pathname: string) {
   const match = pathname.match(
     /^\/community\/([^/]+)(?:\/(overview|analytics|leaderboard|members|chat))?\/?$/,
@@ -173,43 +163,6 @@ function WorkspaceAppRouterShellInner({
     const timer = window.setTimeout(() => setNotificationsMounted(true), 800);
     return () => window.clearTimeout(timer);
   }, []);
-
-  useEffect(() => {
-    if (!user) return;
-
-    let cancelled = false;
-    const timers: number[] = [];
-    const routes = CORE_WORKSPACE_ROUTES.filter((route) => route !== pathname);
-
-    const prefetchInStages = (index = 0) => {
-      if (cancelled || index >= routes.length) return;
-      const route = routes[index];
-      router.prefetch(route);
-      preloadWorkspaceRoute(route);
-      timers.push(
-        window.setTimeout(() => prefetchInStages(index + 1), 450),
-      );
-    };
-
-    const idleWindow = window as Window & {
-      requestIdleCallback?: (callback: () => void, options?: { timeout: number }) => number;
-      cancelIdleCallback?: (handle: number) => void;
-    };
-    const idleHandle = idleWindow.requestIdleCallback?.(
-      () => prefetchInStages(),
-      { timeout: 2200 },
-    );
-    const timeoutHandle = idleHandle === undefined
-      ? window.setTimeout(() => prefetchInStages(), 900)
-      : undefined;
-
-    return () => {
-      cancelled = true;
-      if (idleHandle !== undefined) idleWindow.cancelIdleCallback?.(idleHandle);
-      if (timeoutHandle !== undefined) window.clearTimeout(timeoutHandle);
-      timers.forEach((timer) => window.clearTimeout(timer));
-    };
-  }, [pathname, router, user]);
 
   useEffect(() => {
     if (!user) {
