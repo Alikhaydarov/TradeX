@@ -639,9 +639,9 @@ function MonthlyCalendar({
 
 function MonthNavigation({ year, month, onShift, large = false }: { year: number; month: number; onShift: (delta: number) => void; large?: boolean }) {
   return (
-    <div className="flex items-center justify-center gap-4">
+    <div className="flex min-w-0 items-center justify-center gap-2 sm:gap-4">
       <Button variant="ghost" size={large ? "icon" : "icon-sm"} onClick={() => onShift(-1)} aria-label="Previous month"><ChevronLeft className={large ? "size-6" : "size-4"} /></Button>
-      <strong className={`${large ? "min-w-40 text-center text-2xl" : "min-w-32 text-center text-base"} font-semibold text-white`}>{monthName(year, month)}</strong>
+      <strong className={`${large ? "min-w-0 flex-1 text-center text-lg sm:min-w-40 sm:flex-none sm:text-2xl" : "min-w-28 text-center text-base sm:min-w-32"} truncate font-semibold text-white`}>{monthName(year, month)}</strong>
       <Button variant="ghost" size={large ? "icon" : "icon-sm"} onClick={() => onShift(1)} aria-label="Next month"><ChevronRight className={large ? "size-6" : "size-4"} /></Button>
     </div>
   );
@@ -779,9 +779,9 @@ function MobileMonthGrid({
   onOpenDay: (day: number) => void;
 }) {
   return (
-    <div className="rounded-[1.75rem] border border-white/10 bg-surface p-4 shadow-[inset_0_1px_0_rgba(255,255,255,.025)]">
-      <div className="grid grid-cols-7 gap-2">
-        {MOBILE_WEEKDAYS.map((day, index) => <div key={`${day}-${index}`} className={`grid aspect-square place-items-center rounded-xl border border-white/8 bg-black text-base font-semibold ${index >= 5 ? "text-ink-subtle" : "text-zinc-200"}`}>{day}</div>)}
+    <div className="rounded-2xl border border-white/10 bg-surface p-2.5 min-[390px]:p-3.5 shadow-[inset_0_1px_0_rgba(255,255,255,.025)]">
+      <div className="grid grid-cols-7 gap-1 min-[390px]:gap-1.5">
+        {MOBILE_WEEKDAYS.map((day, index) => <div key={`${day}-${index}`} className={`grid aspect-square place-items-center rounded-lg border border-white/8 bg-black text-[11px] font-semibold min-[390px]:text-xs ${index >= 5 ? "text-ink-subtle" : "text-zinc-200"}`}>{day}</div>)}
         {weeks.flat().map((day, index) => {
           if (!day) return <div key={`empty-${index}`} className="aspect-square" />;
           const entries = entriesByDay.get(day) || [];
@@ -790,9 +790,9 @@ function MobileMonthGrid({
           const count = mode === "journal" ? entries.length : events.length;
           const today = isTodayDate(year, month, day);
           return (
-            <button key={day} type="button" onClick={() => onOpenDay(day)} className={`relative grid aspect-square place-items-center rounded-xl border text-lg font-medium transition active:scale-95 ${count && mode === "journal" ? resultSurface(pnl) : "border-white/10 bg-surface text-ink-strong"}`}>
+            <button key={day} type="button" onClick={() => onOpenDay(day)} aria-label={`Open ${monthName(year, month)} ${day}${count ? `, ${count} ${mode === "journal" ? "trades" : "events"}` : ""}`} className={`relative grid aspect-square min-w-0 place-items-center rounded-lg border text-sm font-medium transition hover:border-white/20 active:scale-95 min-[390px]:text-base ${count && mode === "journal" ? resultSurface(pnl) : "border-white/10 bg-surface text-ink-strong"}`}>
               <span>{day}</span>
-              {count ? <span className={`absolute bottom-1.5 size-1.5 rounded-full ${mode === "economic" || pnl >= 0 ? "bg-emerald-400" : "bg-rose-400"}`} /> : null}
+              {count ? <span className={`absolute bottom-1 size-1 rounded-full min-[390px]:bottom-1.5 min-[390px]:size-1.5 ${mode === "economic" || pnl >= 0 ? "bg-emerald-400" : "bg-rose-400"}`} /> : null}
               {today ? <span className="absolute -bottom-1 left-1/2 h-0.5 w-6 -translate-x-1/2 rounded-full bg-emerald-400" /> : null}
             </button>
           );

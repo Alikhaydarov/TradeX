@@ -426,7 +426,7 @@ export function TradeDetailPage({ tradeId, onBack }: { tradeId: string; onBack: 
   const sideGood = trade.side === "Long";
 
   return (
-    <div className="mx-auto max-w-[1480px] space-y-4 px-3 py-4 pb-28 sm:px-5 sm:pb-8 lg:px-6">
+    <div className="mx-auto max-w-[1480px] space-y-3 px-3 py-3 pb-[calc(6rem+env(safe-area-inset-bottom))] sm:space-y-4 sm:px-5 sm:py-4 sm:pb-8 lg:px-6">
       {toast ? (
         <div className="fixed right-3 top-3 z-[10000] rounded-xl border border-white/10 bg-surface-raised/95 px-3 py-2 text-xs font-semibold text-zinc-100 shadow-2xl">
           {toast}
@@ -441,7 +441,7 @@ export function TradeDetailPage({ tradeId, onBack }: { tradeId: string; onBack: 
 
       <Card className={CARD}>
         <CardContent className="p-0">
-          <div className="flex flex-col gap-4 p-4 sm:p-5 lg:flex-row lg:items-center lg:justify-between">
+          <div className="flex flex-col gap-4 p-3.5 sm:p-5 lg:flex-row lg:items-center lg:justify-between">
             <div className="flex min-w-0 items-start gap-3 sm:items-center">
               <Button type="button" variant="outline" size="icon" onClick={onBack} className="shrink-0 border-white/10 bg-surface">
                 <ArrowLeft size={17} />
@@ -461,8 +461,8 @@ export function TradeDetailPage({ tradeId, onBack }: { tradeId: string; onBack: 
               </div>
             </div>
 
-            <div className="flex flex-wrap items-center gap-2 lg:justify-end">
-              <div className="mr-auto min-w-[132px] text-left lg:mr-3 lg:text-right">
+            <div className="grid grid-cols-[minmax(0,1fr)_auto_auto] items-center gap-2 sm:flex sm:flex-wrap lg:justify-end">
+              <div className="min-w-0 text-left sm:mr-auto lg:mr-3 lg:text-right">
                 <p className={LABEL}>Net P&amp;L</p>
                 <p className={`mt-0.5 font-mono text-xl font-bold ${positive ? "text-emerald-300" : "text-rose-300"}`}>
                   {positive ? "+" : ""}{money.format(trade.pnl)}
@@ -470,7 +470,7 @@ export function TradeDetailPage({ tradeId, onBack }: { tradeId: string; onBack: 
               </div>
               <Button type="button" variant="outline" size="icon" title="Share trade" onClick={() => void shareTrade()} className="border-white/10 bg-surface"><Share2 size={15} /></Button>
               <Button type="button" variant="outline" size="icon" title="Copy trade link" onClick={() => void copyLink()} className="border-white/10 bg-surface"><Copy size={15} /></Button>
-              <Button type="button" onClick={() => setEditing((current) => !current)} className={editing ? "bg-zinc-800 text-white hover:bg-zinc-700" : "bg-white text-black hover:bg-zinc-200"}>
+              <Button type="button" onClick={() => setEditing((current) => !current)} className={`col-span-2 w-full sm:col-auto sm:w-auto ${editing ? "bg-zinc-800 text-white hover:bg-zinc-700" : "bg-white text-black hover:bg-zinc-200"}`}>
                 {editing ? <X size={15} /> : <Edit3 size={15} />}{editing ? "Cancel" : "Edit"}
               </Button>
               <Button type="button" variant="outline" onClick={() => void deleteTrade()} disabled={deleting} className="border-rose-400/15 bg-rose-400/[.055] text-rose-300 hover:bg-rose-400/10 hover:text-rose-200">
@@ -655,14 +655,14 @@ export function TradeDetailPage({ tradeId, onBack }: { tradeId: string; onBack: 
       </Card>
 
       {editing ? (
-        <div className="fixed inset-x-0 bottom-0 z-[9998] border-t border-white/10 bg-black/94 p-3 backdrop-blur sm:static sm:border-0 sm:bg-transparent sm:p-0">
+        <div className="fixed inset-x-0 bottom-0 z-[9998] border-t border-white/10 bg-black p-3 pb-[max(.75rem,env(safe-area-inset-bottom))] sm:static sm:border-0 sm:bg-transparent sm:p-0">
           <div className="mx-auto flex max-w-[1540px] gap-2 sm:justify-end">
             <Button type="button" variant="outline" onClick={() => { setDraft(editableFrom(trade)); setEditing(false); }} className="flex-1 border-white/10 bg-surface sm:flex-none"><X size={15} /> Cancel</Button>
             <Button type="button" onClick={() => void saveTrade()} disabled={saving} className="flex-1 bg-white text-black hover:bg-zinc-200 sm:flex-none">{saving ? <LoaderCircle className="animate-spin" size={15} /> : <Save size={15} />} Save changes</Button>
           </div>
         </div>
       ) : (
-        <div className="fixed inset-x-0 bottom-0 z-[9998] grid grid-cols-3 gap-2 border-t border-white/10 bg-black/94 p-3 backdrop-blur sm:hidden">
+        <div className="fixed inset-x-0 bottom-0 z-[9998] grid grid-cols-3 gap-2 border-t border-white/10 bg-black p-3 pb-[max(.75rem,env(safe-area-inset-bottom))] sm:hidden">
           <Button type="button" variant="outline" onClick={() => setEditing(true)} className="border-white/10 bg-surface"><Edit3 size={15} /> Edit</Button>
           <Button type="button" variant="outline" onClick={() => fileInputRef.current?.click()} className="border-white/10 bg-surface"><ImagePlus size={15} /> Image</Button>
           <Button type="button" onClick={() => void shareTrade()} className="bg-white text-black hover:bg-zinc-200"><Share2 size={15} /> Share</Button>
