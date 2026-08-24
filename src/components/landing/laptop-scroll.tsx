@@ -1,96 +1,80 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import type { ReactNode } from "react";
+import { motion, useScroll, useTransform } from "motion/react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 
-import { readPin, useReducedMotion, useScrollSignal } from "./scroll-3d";
+import { useReducedMotion } from "./scroll-3d";
 
 /**
- * The hero device, opening as you scroll.
- *
- * A laptop sits tilted away from the reader at the top of the page. As the
- * section scrolls, the lid rotates upright, the base falls away, and the
- * screen scales until it is simply the dashboard, filling the frame.
- *
- * The section is deliberately taller than the viewport and its inner frame is
- * pinned to the top while it passes, so the whole thing plays on the reader's
- * own scroll - the wheel is never captured and the page always scrolls past.
- *
- * Everything is one transform per element, so it composites on the GPU.
+ * A scroll-controlled laptop reveal. The lid opens first, then the keyboard
+ * falls away while the product grows into the viewport. Motion values update
+ * transforms directly, keeping React out of the scroll loop.
  */
 export function LaptopScroll({ children }: { children: ReactNode }) {
   const sectionRef = useRef<HTMLElement>(null);
-  const frameRef = useRef<HTMLDivElement>(null);
-  const screenRef = useRef<HTMLDivElement>(null);
-  const baseRef = useRef<HTMLDivElement>(null);
-  const reduced = useReducedMotion();
-
-  useScrollSignal(sectionRef, (_progress, _leave, node) => {
-    const pin = readPin(node);
-
-    const frame = frameRef.current;
-    if (frame) frame.style.transform = `translate3d(0, ${pin.offset}px, 0)`;
-
-    // Finish opening a little before the frame is released, so the dashboard
-    // gets a beat at full size before the page moves on.
-    const p = 1 - Math.pow(1 - Math.min(1, pin.progress / 0.85), 2.2);
-
-    const screen = screenRef.current;
-    if (screen) {
-      screen.style.transform = `translateY(${(1 - p) * 4}%) rotateX(${
-        (1 - p) * 26
-      }deg) scale(${0.82 + p * 0.18})`;
-    }
-
-    const base = baseRef.current;
-    if (base) {
-      // The keyboard half tips down and out of the way as the lid comes up.
-      base.style.opacity = String(Math.max(0, 1 - p * 1.9));
-      base.style.transform = `rotateX(${68 + p * 22}deg) translateY(${p * 30}px)`;
-    }
+  const reduceMotion = useReducedMotion();
+  const { scrollYProgress } = useScroll({
+    target: sectionRef,
+    offset: ["start start", "end end"],
   });
 
-  // With motion reduced there is nothing to open, so the section collapses to
-  // the height of the finished dashboard and simply shows it. Leaving the
-  // pinned frame in place would freeze the lid half-way, which is worse than
-  // having no effect at all.
-  if (reduced) {
-    return (
-      <section className="mx-auto mt-12 w-[min(1100px,calc(100%-48px))] max-sm:w-[calc(100%-24px)]" aria-hidden="true">
-        <div className="overflow-hidden rounded-[18px] border border-black/10 bg-[#0a0a0a] shadow-[0_40px_100px_-60px_rgba(0,0,0,.6)] max-sm:rounded-xl">
-          {children}
-        </div>
-      </section>
-    );
-  }
+  const screenRotate = useTransform(scrollYProgress, [0, 0.52], [reduceMotion ? 14 : 52, 0]);
+  const screenScale = useTransform(scrollYProgress, [0, 0.54, 0.9], [reduceMotion ? 0.9 : 0.74, 0.9, 1]);
+  const screenY = useTransform(scrollYProgress, [0, 0.55], [reduceMotion ? 22 : 70, 0]);
+  const screenRadius = useTransform(scrollYProgress, [0.45, 0.9], [22, 14]);
+  const deckRotate = useTransform(scrollYProgress, [0, 0.58], [reduceMotion ? 78 : 68, 88]);
+  const deckY = useTransform(scrollYProgress, [0, 0.58], [0, reduceMotion ? 18 : 42]);
+  const deckOpacity = useTransform(scrollYProgress, [0, 0.34, 0.64], [1, 0.8, 0]);
+  const shadowOpacity = useTransform(scrollYProgress, [0, 0.55], [0.34, 0]);
 
   return (
     <section
       ref={sectionRef}
-      className="relative -mt-[20vh] h-[180vh] max-sm:-mt-[10vh] max-sm:h-[150vh]"
-      aria-hidden="true"
+      className="relative -mt-16 h-[175svh] max-sm:-mt-8 max-sm:h-[155svh]"
+      aria-label="Scroll to open the Tradoxy dashboard preview"
     >
-      <div
-        ref={frameRef}
-        className="absolute inset-x-0 top-0 flex h-svh items-center justify-center will-change-transform"
-      >
+      <div className="sticky top-0 flex h-svh items-center justify-center overflow-hidden">
         <div
-          className="w-[min(1100px,calc(100%-48px))] max-sm:w-[calc(100%-24px)]"
-          style={{ perspective: "1600px" }}
+          className="w-[min(1120px,calc(100%-36px))] max-sm:w-[calc(100%-18px)]"
+          style={{ perspective: "1800px" }}
         >
-          <div style={{ transformStyle: "preserve-3d" }}>
-            <div
-              ref={screenRef}
-              className="origin-bottom overflow-hidden rounded-[18px] border border-black/10 bg-[#0a0a0a] shadow-[0_60px_140px_-70px_rgba(0,0,0,.7)] max-sm:rounded-xl"
-              style={{ transform: "rotateX(26deg) scale(.82)" }}
+          <div className="relative" style={{ transformStyle: "preserve-3d" }}>
+            <motion.div
+              className="relative z-10 origin-bottom overflow-hidden border border-black/15 bg-[#080808] shadow-[0_55px_130px_-60px_rgba(0,0,0,.8)]"
+              style={{
+                rotateX: screenRotate,
+                scale: screenScale,
+                y: screenY,
+                borderRadius: screenRadius,
+                transformPerspective: 1800,
+              }}
             >
+              <div className="absolute inset-x-0 top-0 z-20 flex h-5 items-center justify-center bg-black/25 max-sm:h-3">
+                <span className="size-1.5 rounded-full bg-white/20 max-sm:size-1" />
+              </div>
               {children}
-            </div>
+            </motion.div>
 
-            <div
-              ref={baseRef}
-              className="mx-auto h-[26px] w-[86%] origin-top rounded-b-[14px] bg-gradient-to-b from-[#c9c9cc] to-[#8f8f95]"
-              style={{ transform: "rotateX(68deg)" }}
+            <motion.div
+              className="relative z-0 mx-auto h-[76px] w-[82%] origin-top rounded-b-[24px] border border-black/15 bg-[#b9b9bb] shadow-[0_30px_55px_-30px_rgba(0,0,0,.65)] max-sm:h-[42px] max-sm:rounded-b-[14px]"
+              style={{
+                rotateX: deckRotate,
+                y: deckY,
+                opacity: deckOpacity,
+                transformPerspective: 1800,
+              }}
+            >
+              <div className="mx-auto mt-3 grid w-[72%] grid-cols-12 gap-1 opacity-45 max-sm:mt-2 max-sm:gap-0.5">
+                {Array.from({ length: 36 }).map((_, index) => (
+                  <span key={index} className="h-1.5 rounded-[2px] bg-black/45 max-sm:h-1" />
+                ))}
+              </div>
+              <span className="absolute bottom-2 left-1/2 h-3 w-[20%] -translate-x-1/2 rounded border border-black/20 max-sm:bottom-1 max-sm:h-2" />
+            </motion.div>
+
+            <motion.div
+              className="pointer-events-none absolute -bottom-10 left-1/2 h-16 w-[70%] -translate-x-1/2 rounded-[50%] bg-black blur-2xl"
+              style={{ opacity: shadowOpacity }}
             />
           </div>
         </div>
@@ -99,16 +83,9 @@ export function LaptopScroll({ children }: { children: ReactNode }) {
   );
 }
 
-const ROLES = ["companion", "journal", "record", "review"];
+const ROLES = ["trade", "session", "review", "lesson"];
 const ROLE_MS = 2400;
 
-/**
- * The last word of the headline, cycling through what the product is.
- *
- * It runs on a timer rather than on scroll because it sits above the fold,
- * where there is no scroll to read yet. Under reduced motion it stops on the
- * first word and never moves.
- */
 export function RotatingWord({ className }: { className?: string }) {
   const [index, setIndex] = useState(0);
 
@@ -123,7 +100,6 @@ export function RotatingWord({ className }: { className?: string }) {
 
   return (
     <span className={`relative inline-block align-baseline ${className ?? ""}`}>
-      {/* The widest word reserves the space, so the line never reflows. */}
       <span className="invisible" aria-hidden="true">
         {ROLES.reduce((a, b) => (b.length > a.length ? b : a))}
       </span>

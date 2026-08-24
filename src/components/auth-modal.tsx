@@ -1,8 +1,10 @@
 "use client";
 
 import { ArrowRight, Check, Eye, EyeOff, Mail, X } from "lucide-react";
+import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { useAuth, type AuthProviderName } from "./auth-context";
+import { TradoxyMark } from "./tradoxy-mark";
 
 type AuthMode = "login" | "register";
 
@@ -49,6 +51,7 @@ export function AuthModal({
   const [pending, setPending] = useState<string | null>(null);
   const [confirmationEmail, setConfirmationEmail] = useState<string | null>(null);
   const closeRef = useRef(onClose);
+  const reduceMotion = useReducedMotion();
 
   useEffect(() => {
     closeRef.current = onClose;
@@ -65,8 +68,6 @@ export function AuthModal({
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [initialMode, open]);
-
-  if (!open) return null;
 
   const oauth = async (provider: AuthProviderName) => {
     setError(null);
@@ -94,18 +95,33 @@ export function AuthModal({
   };
 
   return (
-    <div className="fixed inset-0 z-[80] grid place-items-center overflow-y-auto bg-black/95 p-3 sm:p-6" onMouseDown={onClose}>
-      <section
+    <AnimatePresence>
+      {open && (
+      <motion.div
+        initial={reduceMotion ? false : { opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        transition={{ duration: 0.22 }}
+        className="fixed inset-0 z-[80] grid place-items-center overflow-y-auto bg-black/92 p-3 backdrop-blur-md sm:p-6"
+        onMouseDown={onClose}
+      >
+      <motion.section
+        initial={reduceMotion ? false : { opacity: 0, y: 24, scale: 0.975 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        exit={{ opacity: 0, y: 14, scale: 0.985 }}
+        transition={{ duration: 0.38, ease: [0.22, 1, 0.36, 1] }}
         role="dialog"
         aria-modal="true"
         aria-labelledby="auth-modal-title"
         onMouseDown={(event) => event.stopPropagation()}
-        className="relative my-auto w-full max-w-[460px] overflow-hidden rounded-[28px] border border-white/12 bg-surface shadow-[0_30px_100px_rgba(0,0,0,.8)]"
+        className="relative my-auto w-full max-w-[460px] overflow-hidden rounded-[24px] border border-white/12 bg-[#090909] shadow-[0_30px_100px_rgba(0,0,0,.8)]"
       >
         <div className="pointer-events-none absolute inset-x-12 top-0 h-px bg-gradient-to-r from-transparent via-white/70 to-transparent" />
         <div className="p-5 sm:p-7">
           <div className="flex items-center">
-            <span className="grid size-9 place-items-center rounded-xl border border-white/15 bg-white text-xs font-black text-black">TD</span>
+            <span className="grid size-9 place-items-center rounded-xl border border-white/15 bg-white text-black">
+              <TradoxyMark className="size-4" />
+            </span>
             <span className="ml-3 text-sm font-bold tracking-tight">Tradoxy</span>
             <button onClick={onClose} className="ml-auto grid size-9 place-items-center rounded-full text-ink-mute transition hover:bg-white/8 hover:text-white" aria-label="Close">
               <X size={19} />
@@ -198,7 +214,9 @@ export function AuthModal({
             </>
           )}
         </div>
-      </section>
-    </div>
+      </motion.section>
+      </motion.div>
+      )}
+    </AnimatePresence>
   );
 }

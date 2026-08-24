@@ -140,12 +140,12 @@
   }
 
   html {
-    @apply w-full overflow-x-hidden bg-black;
+    @apply w-full overflow-x-clip bg-black;
     color-scheme: dark;
   }
 
   body {
-    @apply m-0 min-h-dvh w-full overflow-x-hidden bg-black text-[#f7f7fa];
+    @apply m-0 min-h-dvh w-full overflow-x-clip bg-black text-[#f7f7fa];
   }
 
   button,

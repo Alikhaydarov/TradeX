@@ -1,6 +1,7 @@
 "use client";
 
 import { ArrowRight, Check, ShieldCheck } from "lucide-react";
+import { motion } from "motion/react";
 import Link from "next/link";
 
 import { TradoxyMark } from "../tradoxy-mark";
@@ -56,41 +57,81 @@ export function LandingHero({
   onLogin: () => void;
   onRegister: () => void;
 }) {
+  const enter = (delay: number, distance = 18) => ({
+    initial: { opacity: 0, y: distance },
+    animate: { opacity: 1, y: 0 },
+    transition: { duration: 0.72, delay, ease: [0.22, 1, 0.36, 1] as const },
+  });
+
   return (
-    <section className="relative mx-auto w-[min(1180px,calc(100%-48px))] pt-16 text-center max-sm:w-[min(calc(100%-30px),1180px)] max-sm:pt-10">
-      <h1 className="mx-auto max-w-4xl text-[clamp(36px,6.4vw,78px)] font-light leading-[1.08] tracking-[-0.03em] text-black">
-        Your trading{" "}
-        <RotatingWord className="text-black/30" />
-      </h1>
+    <section className="relative mx-auto flex min-h-[72svh] w-[min(1180px,calc(100%-48px))] flex-col items-center justify-center pb-28 pt-14 text-center max-sm:min-h-[68svh] max-sm:w-[min(calc(100%-30px),1180px)] max-sm:pb-20 max-sm:pt-8">
+      <motion.div
+        {...enter(0)}
+        className="mb-7 inline-flex items-center gap-2 rounded-full border border-black/10 bg-white/50 px-3 py-1.5 text-[11px] font-medium text-black/55 shadow-sm backdrop-blur-md"
+      >
+        <span className="relative flex size-2">
+          <span className="absolute inline-flex size-full rounded-full bg-emerald-500 opacity-40 motion-safe:animate-ping" />
+          <span className="relative inline-flex size-2 rounded-full bg-emerald-600" />
+        </span>
+        A trading journal that learns with you
+      </motion.div>
 
-      <p className="mx-auto mt-7 max-w-sm text-[14px] leading-7 text-black/45">
-        Tradoxy keeps the reasoning behind a trade, measures how you executed it,
-        and lets you share progress that came from a real account.
-      </p>
+      <motion.p
+        {...enter(0.08)}
+        className="text-[clamp(13px,1.4vw,16px)] font-medium uppercase text-black/38"
+      >
+        Tradoxy
+      </motion.p>
 
-      <div className="mt-9 flex items-center justify-center gap-2.5">
+      <motion.h1
+        {...enter(0.14, 24)}
+        className="mx-auto mt-4 max-w-5xl text-[clamp(42px,7vw,84px)] font-light leading-[1.04] tracking-normal text-black"
+      >
+        Trade with a process.<br />
+        Grow with every <RotatingWord className="text-black/32" />
+      </motion.h1>
+
+      <motion.p
+        {...enter(0.24)}
+        className="mx-auto mt-7 max-w-xl text-[15px] leading-7 text-black/48 max-sm:max-w-sm max-sm:text-[14px]"
+      >
+        Journal the decision, review the execution, and turn real account data
+        into a repeatable trading edge.
+      </motion.p>
+
+      <motion.div {...enter(0.32)} className="mt-9 flex flex-wrap items-center justify-center gap-2.5">
         <button
           onClick={onRegister}
-          className="inline-flex items-center gap-2 rounded-full bg-black px-6 py-3 text-[13px] text-white transition-opacity hover:opacity-85"
+          className="group inline-flex min-h-12 items-center gap-2 rounded-full bg-black px-7 py-3 text-[13px] font-semibold text-white shadow-[0_16px_36px_-20px_rgba(0,0,0,.8)] transition-transform duration-300 hover:-translate-y-0.5 active:translate-y-0"
         >
-          Start for free <ArrowRight size={15} />
+          Start your journal <ArrowRight size={15} className="transition-transform duration-300 group-hover:translate-x-0.5" />
         </button>
         <button
           onClick={onLogin}
-          className="rounded-full border border-black/12 px-6 py-3 text-[13px] text-black/70 transition-colors hover:border-black/30 hover:text-black"
+          className="min-h-12 rounded-full border border-black/12 bg-white/25 px-7 py-3 text-[13px] font-medium text-black/70 transition-all duration-300 hover:border-black/30 hover:bg-white/55 hover:text-black"
         >
-          I have an account
+          Sign in
         </button>
-      </div>
+      </motion.div>
 
-      <div className="mt-6 flex items-center justify-center gap-6 text-[12px] text-black/35">
+      <motion.div {...enter(0.4)} className="mt-6 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-[12px] text-black/35">
         <span className="inline-flex items-center gap-1.5">
           <ShieldCheck size={14} /> Secure sign-in
         </span>
         <span className="inline-flex items-center gap-1.5">
           <Check size={14} /> No card required
         </span>
-      </div>
+      </motion.div>
+
+      <motion.div
+        {...enter(0.48)}
+        className="absolute inset-x-0 bottom-5 mx-auto flex w-fit items-center gap-3 text-[10px] font-medium uppercase text-black/28"
+        aria-hidden="true"
+      >
+        <span>Journal</span><span className="h-px w-8 bg-black/14" />
+        <span>Review</span><span className="h-px w-8 bg-black/14" />
+        <span>Improve</span>
+      </motion.div>
     </section>
   );
 }
