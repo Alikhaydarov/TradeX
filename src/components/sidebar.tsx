@@ -5,11 +5,9 @@ import { useTranslations } from "next-intl";
 import type { User } from "@supabase/supabase-js";
 import {
   CalendarDays,
-  Check,
   ChevronDown,
   CircleHelp,
   CreditCard,
-  Globe,
   Home,
   LayoutDashboard,
   LogIn,
@@ -25,7 +23,7 @@ import {
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { apiRequest } from "@/lib/api-client";
-import { useLanguage, type Locale } from "@/lib/i18n";
+import { useLanguage } from "@/lib/i18n";
 import { useAuth } from "./auth-context";
 import { useActiveAccountStore } from "./active-account-context";
 import { usePremiumStatus } from "./use-premium-status";
@@ -121,7 +119,7 @@ export function Sidebar({
   const [accountQuery, setAccountQuery] = useState("");
   const [logoutConfirmOpen, setLogoutConfirmOpen] = useState(false);
   const [hasCommunityAccess, setHasCommunityAccess] = useState(false);
-  const { t, locale, locales, labels, setLocale } = useLanguage();
+  const { t } = useLanguage();
   const shell = useTranslations("shell");
   const { status: premium } = usePremiumStatus(Boolean(user));
   const { signOut } = useAuth();
@@ -287,11 +285,6 @@ export function Sidebar({
   const openMobileLogout = () =>
     runMobileAccountAction(() => setLogoutConfirmOpen(true));
   const openMobileLogin = () => runMobileAccountAction(onLogin);
-  const selectMobileLocale = (nextLocale: Locale) => {
-    setLocale(nextLocale);
-    setMobileAccountActionsOpen(false);
-  };
-
   const renderNavButton = (
     item: { id: Section; label: string; icon: typeof Home },
     mobile = false,
@@ -523,23 +516,6 @@ export function Sidebar({
                     ? shell("manageSubscription")
                     : shell("viewPlans")}
                 </DropdownMenuItem>
-                {locales.map((value, index) => (
-                  <DropdownMenuItem
-                    key={value}
-                    onClick={() => setLocale(value)}
-                    className="flex items-center justify-between px-3 py-2.5"
-                  >
-                    <span className={`flex items-center gap-2 ${index ? "pl-6" : ""}`}>
-                      {!index ? <Globe size={14} /> : null}
-                      {labels[value]}
-                    </span>
-                    {locale === value ? (
-                      <span className="text-[10px] font-bold text-ink-soft">
-                        {shell("active")}
-                      </span>
-                    ) : null}
-                  </DropdownMenuItem>
-                ))}
                 <DropdownMenuItem
                   onClick={openHelpCenter}
                   className="px-3 py-2.5"
@@ -715,7 +691,9 @@ export function Sidebar({
                 <Settings2 size={18} />
               </span>
               <span className="min-w-0 flex-1">
-                <strong className="block text-sm text-white">Settings</strong>
+                <strong className="block text-sm text-white">
+                  {shell("settings")}
+                </strong>
                 <small className="mt-0.5 block truncate text-[11px] text-ink-mute">
                   Profile, security and workspace
                 </small>
@@ -735,7 +713,9 @@ export function Sidebar({
               </span>
               <span className="min-w-0 flex-1">
                 <strong className="block text-sm text-white">
-                  {premium.isPremium ? "Manage subscription" : "View plans"}
+                  {premium.isPremium
+                    ? shell("manageSubscription")
+                    : shell("viewPlans")}
                 </strong>
                 <small className="mt-0.5 block truncate text-[11px] text-ink-mute">
                   Current plan: {planLabel}
@@ -764,39 +744,6 @@ export function Sidebar({
               </span>
               <ChevronDown className="-rotate-90 text-ink-subtle" size={17} />
             </button>
-          </div>
-
-          <div className="mt-3 rounded-2xl border border-white/10 bg-surface p-3">
-            <div className="flex items-center gap-3">
-              <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-white/[.055] text-zinc-200">
-                <Globe size={18} />
-              </span>
-              <div className="min-w-0 flex-1">
-                <strong className="block text-sm text-white">
-                  {shell("language")}
-                </strong>
-                <small className="mt-0.5 block text-[11px] text-ink-mute">
-                  {shell("chooseLanguage")}
-                </small>
-              </div>
-            </div>
-            <div className="mt-3 grid grid-cols-2 gap-2">
-              {locales.map((value) => (
-                <button
-                  key={value}
-                  type="button"
-                  onClick={() => selectMobileLocale(value)}
-                  className={`flex min-h-11 items-center justify-center gap-2 rounded-xl border px-3 text-xs font-bold transition ${
-                    locale === value
-                      ? "border-white/20 bg-white text-black"
-                      : "border-white/10 bg-black text-ink-strong hover:bg-white/[.05]"
-                  }`}
-                >
-                  {locale === value ? <Check size={14} /> : null}
-                  {labels[value]}
-                </button>
-              ))}
-            </div>
           </div>
 
           {user ? (

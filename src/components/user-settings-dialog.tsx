@@ -281,13 +281,13 @@ function SettingsContent() {
               type="button"
               onClick={closeOrGoBack}
               className="grid size-11 shrink-0 place-items-center rounded-full text-ink-strong transition hover:bg-white/[.06] hover:text-white active:scale-95"
-              aria-label={section ? "Back to settings" : "Close settings"}
+              aria-label={section ? settingsText("back") : settingsText("close")}
             >
               <ArrowLeft size={24} strokeWidth={2} />
             </button>
             <div className="min-w-0 flex-1">
               <h2 className="truncate text-xl font-black tracking-[-0.025em] text-white sm:text-2xl">
-                Settings
+                {settingsText("title")}
               </h2>
               <p className="mt-0.5 truncate text-sm text-ink-mute">
                 @{displayHandle.replace(/^@/, "")}
@@ -295,7 +295,7 @@ function SettingsContent() {
             </div>
             <button
               type="button"
-              aria-label="Close settings"
+              aria-label={settingsText("close")}
               onClick={() => setSettingsOpen(false)}
               className="hidden size-10 shrink-0 place-items-center rounded-xl border border-white/10 text-ink-soft transition hover:bg-white/5 hover:text-white sm:grid"
             >
