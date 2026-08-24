@@ -51,6 +51,7 @@ export function AuthModal({
   const [pending, setPending] = useState<string | null>(null);
   const [confirmationEmail, setConfirmationEmail] = useState<string | null>(null);
   const closeRef = useRef(onClose);
+  const dialogRef = useRef<HTMLElement>(null);
   const reduceMotion = useReducedMotion();
 
   useEffect(() => {
@@ -62,21 +63,54 @@ export function AuthModal({
     setMode(initialMode);
     setError(null);
     setConfirmationEmail(null);
+    const opener = document.activeElement instanceof HTMLElement
+      ? document.activeElement
+      : null;
     const previousOverflow = document.body.style.overflow;
     const previousPaddingRight = document.body.style.paddingRight;
     const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
     document.body.style.overflow = "hidden";
     if (scrollbarWidth > 0) document.body.style.paddingRight = `${scrollbarWidth}px`;
     const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") closeRef.current();
+      if (event.key === "Escape") {
+        closeRef.current();
+        return;
+      }
+      if (event.key !== "Tab") return;
+      const focusable = Array.from(
+        dialogRef.current?.querySelectorAll<HTMLElement>(
+          'button:not([disabled]), input:not([disabled]), a[href], [tabindex]:not([tabindex="-1"])',
+        ) ?? [],
+      ).filter((element) => element.offsetParent !== null);
+      if (focusable.length === 0) return;
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
     };
     window.addEventListener("keydown", onKeyDown);
     return () => {
       window.removeEventListener("keydown", onKeyDown);
       document.body.style.overflow = previousOverflow;
       document.body.style.paddingRight = previousPaddingRight;
+      opener?.focus({ preventScroll: true });
     };
   }, [initialMode, open]);
+
+  useEffect(() => {
+    if (!open || confirmationEmail) return;
+    const frame = window.requestAnimationFrame(() => {
+      dialogRef.current?.querySelector<HTMLElement>("[data-auth-primary]")?.focus({
+        preventScroll: true,
+      });
+    });
+    return () => window.cancelAnimationFrame(frame);
+  }, [confirmationEmail, mode, open]);
 
   const oauth = async (provider: AuthProviderName) => {
     setError(null);
@@ -115,6 +149,7 @@ export function AuthModal({
         onMouseDown={onClose}
       >
       <motion.section
+        ref={dialogRef}
         initial={reduceMotion ? false : { opacity: 0, y: 24, scale: 0.975 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
         exit={{ opacity: 0, y: 14, scale: 0.985 }}
@@ -196,12 +231,12 @@ export function AuthModal({
                 {mode === "register" && (
                   <label className="block">
                     <span className="sr-only">Full name</span>
-                    <input value={name} onChange={(event) => setName(event.target.value)} autoComplete="name" required minLength={2} maxLength={60} placeholder="Full name" className="h-12 w-full rounded-xl border border-white/10 bg-black px-4 text-sm outline-none transition placeholder:text-ink-faint focus:border-white/35" />
+                    <input data-auth-primary value={name} onChange={(event) => setName(event.target.value)} autoComplete="name" required minLength={2} maxLength={60} placeholder="Full name" className="h-12 w-full rounded-xl border border-white/10 bg-black px-4 text-sm outline-none transition placeholder:text-ink-faint focus:border-white/35" />
                   </label>
                 )}
                 <label className="relative block">
                   <Mail className="absolute left-4 top-1/2 size-4 -translate-y-1/2 text-ink-subtle" />
-                  <input type="email" value={email} onChange={(event) => setEmail(event.target.value)} autoComplete="email" required maxLength={254} placeholder="Email address" className="h-12 w-full rounded-xl border border-white/10 bg-black pl-11 pr-4 text-sm outline-none transition placeholder:text-ink-faint focus:border-white/35" />
+                  <input data-auth-primary={mode === "login" ? "" : undefined} type="email" value={email} onChange={(event) => setEmail(event.target.value)} autoComplete="email" required maxLength={254} placeholder="Email address" className="h-12 w-full rounded-xl border border-white/10 bg-black pl-11 pr-4 text-sm outline-none transition placeholder:text-ink-faint focus:border-white/35" />
                 </label>
                 <label className="relative block">
                   <input type={showPassword ? "text" : "password"} value={password} onChange={(event) => setPassword(event.target.value)} autoComplete={mode === "login" ? "current-password" : "new-password"} required minLength={8} maxLength={128} placeholder="Password (8+ characters)" className="h-12 w-full rounded-xl border border-white/10 bg-black px-4 pr-12 text-sm outline-none transition placeholder:text-ink-faint focus:border-white/35" />
