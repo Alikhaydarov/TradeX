@@ -110,9 +110,6 @@ export function Sidebar({
 }) {
   const { accounts, activeAccountId, setActiveAccount } =
     useActiveAccountStore();
-  const [profileUsername, setProfileUsername] = useState("");
-  const [profileAvatar, setProfileAvatar] = useState("");
-  const [profileFullName, setProfileFullName] = useState("");
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [mobileAccountActionsOpen, setMobileAccountActionsOpen] = useState(false);
   const [accountSwitcherOpen, setAccountSwitcherOpen] = useState(false);
@@ -122,21 +119,21 @@ export function Sidebar({
   const { t } = useLanguage();
   const shell = useTranslations("shell");
   const { status: premium } = usePremiumStatus(Boolean(user));
-  const { signOut } = useAuth();
+  const { profile, signOut } = useAuth();
   const { hidePersonalInfo, maskValue, setSettingsOpen } =
     useWorkspacePreferences();
   const name = String(
-    profileFullName ||
+    profile?.fullName ||
       user?.user_metadata.full_name ||
       user?.user_metadata.name ||
       "Mehmon trader",
   );
   const username = usernameFromUser(user);
   const handle = user
-    ? `@${profileUsername || username}`
+    ? `@${profile?.username || username}`
     : "Sign in with Google";
   const avatar =
-    profileAvatar ||
+    profile?.avatarUrl ||
     (typeof user?.user_metadata.avatar_url === "string"
       ? user.user_metadata.avatar_url
       : null);
@@ -162,36 +159,6 @@ export function Sidebar({
         .includes(query),
     );
   }, [accountQuery, accounts]);
-
-  useEffect(() => {
-    if (!user) return;
-
-    let active = true;
-    apiRequest<{
-      profile: {
-        username?: string | null;
-        is_verified?: boolean | null;
-        avatar_url?: string | null;
-        full_name?: string | null;
-      };
-    }>("/api/profile", { cacheMs: 30_000 })
-      .then(({ profile }) => {
-        if (!active) return;
-        setProfileUsername(profile.username || "");
-        setProfileAvatar(profile.avatar_url || "");
-        setProfileFullName(profile.full_name || "");
-      })
-      .catch(() => {
-        if (!active) return;
-        setProfileUsername("");
-        setProfileAvatar("");
-        setProfileFullName("");
-      });
-
-    return () => {
-      active = false;
-    };
-  }, [user]);
 
   useEffect(() => {
     const open = () => setMobileMenuOpen(true);

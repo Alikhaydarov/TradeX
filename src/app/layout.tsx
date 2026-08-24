@@ -5,6 +5,7 @@ import { NextIntlClientProvider } from "next-intl";
 import { getLocale, getMessages } from "next-intl/server";
 
 import { AuthProvider } from "@/components/auth-context";
+import type { AuthProfileIdentity } from "@/components/auth-context";
 import { APP_ROOT_TAILWIND_CLASS } from "@/components/tailwind/app-tailwind-classes";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
 import { getSupabaseServerClient } from "@/lib/supabase/server";
@@ -72,6 +73,21 @@ export default async function RootLayout({
   const { data } = supabase
     ? await supabase.auth.getUser()
     : { data: { user: null } };
+  let initialProfile: AuthProfileIdentity | null = null;
+  if (supabase && data.user) {
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("username, full_name, avatar_url")
+      .eq("id", data.user.id)
+      .maybeSingle();
+    if (profile) {
+      initialProfile = {
+        username: profile.username || "",
+        fullName: profile.full_name || "",
+        avatarUrl: profile.avatar_url || "",
+      };
+    }
+  }
 
   return (
     <html
@@ -83,6 +99,7 @@ export default async function RootLayout({
         <NextIntlClientProvider locale={locale} messages={messages}>
           <AuthProvider
             initialUser={data.user}
+            initialProfile={initialProfile}
             initialConfigured={configured}
           >
             {children}

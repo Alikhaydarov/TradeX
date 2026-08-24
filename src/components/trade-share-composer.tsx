@@ -642,7 +642,7 @@ async function uploadDataUrl(dataUrl: string, filename: string): Promise<string>
 /* ─── Component ───────────────────────────────────────────────────────────── */
 
 export function TradeShareComposer({ trade, onClose }: TradeShareComposerProps) {
-  const { user } = useAuth();
+  const { profile, user } = useAuth();
   const [caption, setCaption]       = useState("");
   const [feedCardUrl, setFeedCardUrl] = useState("");
   const [storyCardUrl, setStoryCardUrl] = useState("");
@@ -653,14 +653,19 @@ export function TradeShareComposer({ trade, onClose }: TradeShareComposerProps) 
   const [activeTab, setActiveTab]   = useState<"feed" | "story">("feed");
   const [theme, setTheme]           = useState<ShareTheme>(DEFAULT_THEME);
 
-  const username  = String(user?.user_metadata?.user_name ?? user?.email?.split("@")[0] ?? "you");
-  const fullName  = String(user?.user_metadata?.full_name ?? user?.user_metadata?.name ?? username);
+  const username = String(
+    profile?.username || user?.user_metadata?.user_name || user?.email?.split("@")[0] || "you",
+  );
+  const fullName = String(
+    profile?.fullName || user?.user_metadata?.full_name || user?.user_metadata?.name || username,
+  );
   // Memoised so the card effect below does not redraw on every render.
   const author = useMemo<CardAuthor>(
     () => ({ name: fullName, handle: username }),
     [fullName, username],
   );
-  const avatarUrl = typeof user?.user_metadata?.avatar_url === "string" ? user.user_metadata.avatar_url : null;
+  const avatarUrl = profile?.avatarUrl ||
+    (typeof user?.user_metadata?.avatar_url === "string" ? user.user_metadata.avatar_url : null);
 
   useEffect(() => {
     if (!trade) {

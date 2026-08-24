@@ -13,6 +13,7 @@ import { apiRequest } from "@/lib/api-client";
 
 interface AuthContextValue {
   user: User | null;
+  profile: AuthProfileIdentity | null;
   loading: boolean;
   configured: boolean;
   signInWithOAuth: (provider: AuthProviderName) => Promise<string | null>;
@@ -24,6 +25,12 @@ interface AuthContextValue {
     password: string,
   ) => Promise<{ error: string | null; requiresEmailConfirmation: boolean }>;
   signOut: () => Promise<void>;
+}
+
+export interface AuthProfileIdentity {
+  username: string;
+  fullName: string;
+  avatarUrl: string;
 }
 
 export type AuthProviderName = "google" | "apple";
@@ -56,13 +63,16 @@ function writeCachedUser(user: User | null) {
 export function AuthProvider({
   children,
   initialUser = null,
+  initialProfile = null,
   initialConfigured = true,
 }: {
   children: ReactNode;
   initialUser?: User | null;
+  initialProfile?: AuthProfileIdentity | null;
   initialConfigured?: boolean;
 }) {
   const [user, setUser] = useState<User | null>(initialUser);
+  const [profile, setProfile] = useState<AuthProfileIdentity | null>(initialProfile);
   const [configured, setConfigured] = useState(initialConfigured);
   const [loading] = useState(false);
 
@@ -114,9 +124,42 @@ export function AuthProvider({
     };
   }, [initialConfigured, initialUser]);
 
+  useEffect(() => {
+    if (!user) {
+      setProfile(null);
+      return;
+    }
+    if (initialProfile && user.id === initialUser?.id) return;
+
+    let active = true;
+    apiRequest<{
+      profile: {
+        username?: string | null;
+        full_name?: string | null;
+        avatar_url?: string | null;
+      };
+    }>("/api/profile", { cacheMs: 60_000 })
+      .then(({ profile: nextProfile }) => {
+        if (!active) return;
+        setProfile({
+          username: nextProfile.username || "",
+          fullName: nextProfile.full_name || "",
+          avatarUrl: nextProfile.avatar_url || "",
+        });
+      })
+      .catch(() => {
+        if (active) setProfile(null);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [initialProfile, initialUser?.id, user]);
+
   const value = useMemo<AuthContextValue>(
     () => ({
       user,
+      profile,
       loading,
       configured,
       async signInWithOAuth(provider) {
@@ -172,10 +215,11 @@ export function AuthProvider({
       async signOut() {
         await apiRequest<{ ok: boolean }>("/api/auth/signout", { method: "POST" });
         setUser(null);
+        setProfile(null);
         writeCachedUser(null);
       },
     }),
-    [configured, loading, user],
+    [configured, loading, profile, user],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
