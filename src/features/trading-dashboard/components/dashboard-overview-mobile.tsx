@@ -1,12 +1,11 @@
 "use client"
 
 import type { ComponentProps } from "react"
-import { useCallback, useEffect, useMemo, useState } from "react"
+import { useMemo } from "react"
 import { ArrowUpRight, BookOpen, CalendarDays, RefreshCw, ShieldCheck } from "lucide-react"
 
 import dynamic from "next/dynamic"
 
-import { useAuth } from "@/components/auth-context"
 import { InstrumentBadge } from "@/components/instrument-badge"
 import { Button } from "@/components/ui/button"
 import {
@@ -16,7 +15,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
-import { apiRequest } from "@/lib/api-client"
+import { useDashboardShellData } from "@/features/trading-dashboard/hooks/use-dashboard-shell-data"
 
 // Loaded after paint; the placeholder holds the chart's height so the card
 // does not jump when it arrives.
@@ -46,11 +45,6 @@ type MarketNewsEvent = {
   source: string
 }
 
-type MarketNewsResponse = {
-  events: MarketNewsEvent[]
-  limited: boolean
-}
-
 const money = new Intl.NumberFormat("en-US", {
   style: "currency",
   currency: "USD",
@@ -71,17 +65,6 @@ const COUNTRY_CURRENCY: Record<string, string> = {
 
 const MOBILE_CARD =
   "gap-0 overflow-hidden rounded-xl border-white/10 bg-surface py-0 shadow-none"
-
-function cleanUsername(value: unknown) {
-  return (
-    String(value ?? "")
-      .trim()
-      .toLowerCase()
-      .replace(/^@/, "")
-      .replace(/[^a-z0-9_.]/g, "")
-      .slice(0, 30) || "trader"
-  )
-}
 
 function clamp(value: number) {
   return Math.min(100, Math.max(0, Number.isFinite(value) ? value : 0))
@@ -142,51 +125,7 @@ export function DashboardOverviewMobile({
   onSeeAll,
   onAddTrade,
 }: DashboardOverviewMobileProps) {
-  const { user } = useAuth()
-  const fallbackUsername = useMemo(
-    () =>
-      cleanUsername(
-        user?.user_metadata.user_name ??
-          user?.user_metadata.preferred_username ??
-          user?.email?.split("@")[0],
-      ),
-    [user],
-  )
-  const [username, setUsername] = useState(fallbackUsername)
-  const [news, setNews] = useState<MarketNewsEvent[]>([])
-  const [newsLoading, setNewsLoading] = useState(true)
-
-  useEffect(() => {
-    setUsername(fallbackUsername)
-    if (!user) return
-
-    let active = true
-    void apiRequest<{ profile?: { username?: string | null } }>("/api/profile")
-      .then(({ profile }) => {
-        if (active && profile?.username) setUsername(cleanUsername(profile.username))
-      })
-      .catch(() => undefined)
-
-    return () => {
-      active = false
-    }
-  }, [fallbackUsername, user])
-
-  const loadNews = useCallback(async () => {
-    setNewsLoading(true)
-    try {
-      const response = await apiRequest<MarketNewsResponse>("/api/market-news")
-      setNews(response.events || [])
-    } catch {
-      setNews([])
-    } finally {
-      setNewsLoading(false)
-    }
-  }, [])
-
-  useEffect(() => {
-    void loadNews()
-  }, [loadNews])
+  const { username, news, newsLoading, refreshNews } = useDashboardShellData()
 
   const instrumentStats = useMemo(
     () =>
@@ -473,7 +412,7 @@ export function DashboardOverviewMobile({
           <Button
             variant="ghost"
             size="icon-sm"
-            onClick={() => void loadNews()}
+            onClick={() => void refreshNews()}
             disabled={newsLoading}
             aria-label="Refresh market news"
           >
