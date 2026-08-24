@@ -20,7 +20,6 @@ export function LaptopScroll({ children }: { children: ReactNode }) {
 
   const screenRotate = useTransform(scrollYProgress, [0, 0.52], [reduceMotion ? 14 : 52, 0]);
   const screenScale = useTransform(scrollYProgress, [0, 0.54, 0.9], [reduceMotion ? 0.9 : 0.74, 0.9, 1]);
-  const screenY = useTransform(scrollYProgress, [0, 0.55], [reduceMotion ? 22 : 70, 0]);
   const screenRadius = useTransform(scrollYProgress, [0.45, 0.9], [22, 14]);
   const deckRotate = useTransform(scrollYProgress, [0, 0.58], [reduceMotion ? 78 : 68, 88]);
   const deckY = useTransform(scrollYProgress, [0, 0.58], [0, reduceMotion ? 18 : 42]);
@@ -30,10 +29,14 @@ export function LaptopScroll({ children }: { children: ReactNode }) {
   return (
     <section
       ref={sectionRef}
+      data-laptop-scroll
       className="relative -mt-16 h-[175svh] max-sm:-mt-8 max-sm:h-[155svh]"
       aria-label="Scroll to open the Tradoxy dashboard preview"
     >
-      <div className="sticky top-0 flex h-svh items-center justify-center overflow-hidden">
+      <div
+        data-laptop-stage
+        className="sticky top-0 flex h-svh items-center justify-center overflow-hidden"
+      >
         <div
           className="w-[min(1120px,calc(100%-36px))] max-sm:w-[calc(100%-18px)]"
           style={{ perspective: "1800px" }}
@@ -44,7 +47,6 @@ export function LaptopScroll({ children }: { children: ReactNode }) {
               style={{
                 rotateX: screenRotate,
                 scale: screenScale,
-                y: screenY,
                 borderRadius: screenRadius,
                 transformPerspective: 1800,
               }}

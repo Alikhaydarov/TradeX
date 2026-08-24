@@ -52,7 +52,7 @@ export function TradoxyLoginLanding({
   }, []);
 
   return (
-    <main className="min-h-dvh bg-[#efedeb] text-black [--reveal-from:rgba(10,10,10,.26)] [--reveal-to:#0a0a0a]">
+    <main className="min-h-dvh overflow-x-clip bg-[#efedeb] text-black [--reveal-from:rgba(10,10,10,.26)] [--reveal-to:#0a0a0a]">
       <LandingNav onLogin={onLogin} onRegister={onRegister} />
 
       {authError && (

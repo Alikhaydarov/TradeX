@@ -1,7 +1,7 @@
 const classes = (...values: string[]) => values.join(" ");
 
 export const APP_ROOT_TAILWIND_CLASS = classes(
-  "min-h-dvh w-full overflow-x-hidden bg-black text-[#f4f4f5] antialiased [font-synthesis:none] [text-rendering:optimizeLegibility]",
+  "min-h-dvh w-full bg-black text-[#f4f4f5] antialiased [font-synthesis:none] [text-rendering:optimizeLegibility]",
   "[&_*]:min-w-0 [&_*]:[scrollbar-width:thin] [&_*]:[scrollbar-color:#2a2a2a_#050505]",
   "[&_*::-webkit-scrollbar]:size-[10px] [&_*::-webkit-scrollbar-track]:bg-[#050505]",
   "[&_*::-webkit-scrollbar-thumb]:rounded-full [&_*::-webkit-scrollbar-thumb]:border-2 [&_*::-webkit-scrollbar-thumb]:border-[#050505] [&_*::-webkit-scrollbar-thumb]:bg-[#242424] hover:[&_*::-webkit-scrollbar-thumb]:bg-[#303030]",
