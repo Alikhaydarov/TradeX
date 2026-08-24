@@ -607,6 +607,12 @@ export function SocialActions({
   useVisibleInterval(loadUnread, 30_000);
 
   useEffect(() => {
+    window.addEventListener("tradox:notifications-changed", loadUnread);
+    return () =>
+      window.removeEventListener("tradox:notifications-changed", loadUnread);
+  }, []);
+
+  useEffect(() => {
     const openSearch = (event: KeyboardEvent) => {
       if (!(event.metaKey || event.ctrlKey) || event.key.toLowerCase() !== "k")
         return;

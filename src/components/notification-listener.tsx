@@ -3,6 +3,7 @@
 import { Bell, BellRing, BrainCircuit, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { apiRequest } from "@/lib/api-client";
+import { getSupabaseBrowserClient } from "@/lib/supabase/browser";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "./auth-context";
 
@@ -165,9 +166,9 @@ export function NotificationListener() {
       }
     };
 
-    const poll = async () => {
+    const poll = async (includeHidden = false) => {
       if (polling.current) return;
-      if (document.hidden) return;
+      if (document.hidden && !includeHidden) return;
       polling.current = true;
 
       try {
@@ -184,6 +185,7 @@ export function NotificationListener() {
         }
 
         initialized.current = true;
+        window.dispatchEvent(new Event("tradox:notifications-changed"));
       } catch {
         // Notification polling is best-effort and should not break the app.
       } finally {
@@ -192,6 +194,23 @@ export function NotificationListener() {
     };
 
     void poll();
+    const supabase = getSupabaseBrowserClient();
+    const channel = supabase
+      ?.channel(`notifications:${user.id}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "notifications",
+          filter: `user_id=eq.${user.id}`,
+        },
+        () => {
+          void poll(true);
+        },
+      )
+      .subscribe();
+
     // This poller previously ran in background tabs too, so an idle open tab
     // kept hitting /api/social/notifications every 45s forever.
     const timer = window.setInterval(() => {
@@ -202,6 +221,7 @@ export function NotificationListener() {
     return () => {
       active = false;
       window.clearInterval(timer);
+      if (channel && supabase) void supabase.removeChannel(channel);
     };
   }, [user]);
 
