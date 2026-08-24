@@ -310,6 +310,7 @@ function SettingsContent() {
                 onQueryChange={setSearchQuery}
                 items={filteredItems}
                 onOpen={openDestination}
+                localeLabel={labels[locale]}
               />
             ) : (
               <main className="mx-auto w-full max-w-4xl space-y-4 p-4 sm:p-6">
@@ -626,47 +627,56 @@ function SettingsOverview({
   onQueryChange,
   items,
   onOpen,
+  localeLabel,
 }: {
   query: string;
   onQueryChange: (value: string) => void;
   items: SettingsItem[];
   onOpen: (destination: SettingsDestination) => void;
+  localeLabel: string;
 }) {
   return (
-    <main className="mx-auto w-full max-w-3xl px-4 py-4 sm:px-6 sm:py-6">
-      <label className="flex h-14 items-center gap-3 rounded-full bg-surface px-5 text-ink-mute ring-1 ring-white/[.025] focus-within:ring-white/10 sm:h-16">
-        <Search size={25} strokeWidth={1.8} className="shrink-0" />
+    <main className="mx-auto w-full max-w-4xl px-3 py-3 sm:px-6 sm:py-6">
+      <label className="flex h-12 items-center gap-3 rounded-xl border border-white/8 bg-surface px-4 text-ink-mute transition focus-within:border-white/15 focus-within:bg-surface-raised sm:max-w-md">
+        <Search size={18} strokeWidth={1.8} className="shrink-0" />
         <input
           type="search"
           value={query}
           onChange={(event) => onQueryChange(event.target.value)}
           placeholder="Search settings"
-          className="min-w-0 flex-1 bg-transparent text-[16px] text-white outline-none placeholder:text-ink-mute"
+          className="min-w-0 flex-1 bg-transparent text-sm text-white outline-none placeholder:text-ink-mute"
         />
       </label>
 
-      <div className="mt-6 divide-y divide-white/[.045]">
+      <div className="mt-4 grid gap-2 sm:grid-cols-2 sm:gap-3">
         {items.map(({ id, title, description, icon: Icon }) => (
           <button
             key={id}
             type="button"
             onClick={() => onOpen(id)}
-            className="group flex min-h-[104px] w-full items-start gap-4 px-1 py-5 text-left transition hover:bg-white/[.025] active:bg-white/[.045] sm:rounded-2xl sm:px-4"
+            className="group flex min-h-[82px] w-full items-center gap-3 rounded-2xl border border-white/[.07] bg-surface px-3.5 py-3 text-left transition hover:border-white/15 hover:bg-surface-raised active:scale-[.995] sm:min-h-[96px] sm:items-start sm:p-4"
           >
-            <span className="grid size-12 shrink-0 place-items-center text-ink-mute transition group-hover:text-ink-strong">
-              <Icon size={27} strokeWidth={1.75} />
+            <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-white/[.045] text-ink-mute transition group-hover:bg-white/[.07] group-hover:text-white sm:size-11">
+              <Icon size={20} strokeWidth={1.8} />
             </span>
-            <span className="min-w-0 flex-1 pt-0.5">
-              <strong className="block text-[17px] font-semibold leading-6 text-zinc-100 sm:text-lg">
-                {title}
-              </strong>
-              <span className="mt-1 block text-[14px] leading-5 text-ink-mute sm:text-[15px] sm:leading-6">
+            <span className="min-w-0 flex-1">
+              <span className="flex items-center gap-2">
+                <strong className="block truncate text-sm font-bold leading-5 text-zinc-100 sm:text-[15px]">
+                  {title}
+                </strong>
+                {id === "customization" ? (
+                  <span className="shrink-0 rounded-md bg-white/[.06] px-1.5 py-0.5 text-[9px] font-bold text-ink-soft">
+                    {localeLabel}
+                  </span>
+                ) : null}
+              </span>
+              <span className="mt-1 line-clamp-2 block text-xs leading-4 text-ink-mute sm:leading-5">
                 {description}
               </span>
             </span>
             <ChevronRight
               size={19}
-              className="mt-3 shrink-0 text-ink-faint transition group-hover:translate-x-0.5 group-hover:text-ink-soft"
+              className="shrink-0 text-ink-faint transition group-hover:translate-x-0.5 group-hover:text-ink-soft sm:mt-2"
             />
           </button>
         ))}

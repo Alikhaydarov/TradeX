@@ -502,32 +502,33 @@ export function Sidebar({
               </DropdownMenuTrigger>
               <DropdownMenuContent
                 align="end"
-                className="w-44 border-white/10 bg-surface"
+                className="w-56 rounded-2xl border-white/10 bg-surface p-1.5 shadow-2xl"
               >
                 <DropdownMenuItem
                   onClick={openSettings}
-                  className="px-3 py-2.5"
+                  className="rounded-xl px-3 py-2.5"
                 >
                   <Settings2 size={14} className="mr-2" />
                   {shell("settings")}
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={openPricing} className="px-3 py-2.5">
+                <DropdownMenuItem onClick={openPricing} className="rounded-xl px-3 py-2.5">
+                  <CreditCard size={14} className="mr-2" />
                   {premium.isPremium
                     ? shell("manageSubscription")
                     : shell("viewPlans")}
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   onClick={openHelpCenter}
-                  className="px-3 py-2.5"
+                  className="rounded-xl px-3 py-2.5"
                 >
                   <CircleHelp size={14} className="mr-2" />
                   {shell("helpCenter")}
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   onClick={() => setLogoutConfirmOpen(true)}
-                  className="px-3 py-2.5 text-rose-300 focus:text-rose-200"
+                  className="rounded-xl px-3 py-2.5 text-rose-300 focus:text-rose-200"
                 >
-                  {shell("logout")}
+                  <LogOut size={14} className="mr-2" /> {shell("logout")}
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -695,7 +696,7 @@ export function Sidebar({
                   {shell("settings")}
                 </strong>
                 <small className="mt-0.5 block truncate text-[11px] text-ink-mute">
-                  Profile, security and workspace
+                  Profile, security, language and workspace
                 </small>
               </span>
               <ChevronDown className="-rotate-90 text-ink-subtle" size={17} />
