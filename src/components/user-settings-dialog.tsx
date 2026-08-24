@@ -64,8 +64,8 @@ type ProfileResponse = {
 
 type SettingsItem = {
   id: SettingsDestination;
-  title: string;
-  description: string;
+  titleKey: `${string}Title`;
+  descriptionKey: `${string}Description`;
   icon: typeof UserRound;
   keywords: string;
 };
@@ -73,43 +73,43 @@ type SettingsItem = {
 const SETTINGS_ITEMS: SettingsItem[] = [
   {
     id: "basic",
-    title: "Your account",
-    description: "Manage your public identity, username and email.",
+    titleKey: "basicTitle",
+    descriptionKey: "basicDescription",
     icon: UserRound,
     keywords: "profile username email identity account",
   },
   {
     id: "security",
-    title: "Security and account access",
-    description: "Review sign-in identity and protect sensitive workspace data.",
+    titleKey: "securityTitle",
+    descriptionKey: "securityDescription",
     icon: ShieldCheck,
     keywords: "security privacy login access personal information",
   },
   {
     id: "billing",
-    title: "Subscription and billing",
-    description: "Manage your plan, payment method, invoices and receipts.",
+    titleKey: "billingTitle",
+    descriptionKey: "billingDescription",
     icon: CreditCard,
     keywords: "billing subscription plan stripe payment invoice pro standard",
   },
   {
     id: "customization",
-    title: "Privacy, display and languages",
-    description: "Control data visibility, language and workspace appearance.",
+    titleKey: "customizationTitle",
+    descriptionKey: "customizationDescription",
     icon: PaintbrushVertical,
     keywords: "privacy display appearance language accessibility hide personal",
   },
   {
     id: "symbols",
-    title: "Trading symbols",
-    description: "Add or remove instruments used in manual trade entries.",
+    titleKey: "symbolsTitle",
+    descriptionKey: "symbolsDescription",
     icon: Sparkles,
     keywords: "symbols instruments pairs markets custom manual",
   },
   {
     id: "account-sync",
-    title: "Trading accounts and sync",
-    description: "Manage account profiles, brokers and trade import connections.",
+    titleKey: "syncTitle",
+    descriptionKey: "syncDescription",
     icon: Database,
     keywords: "accounts sync mt5 ctrader tradovate csv broker import",
   },
@@ -139,6 +139,7 @@ function SettingsContent() {
   const { user } = useAuth();
   const { locale, locales, labels, setLocale } = useLanguage();
   const settingsText = useTranslations("settings");
+  const overviewText = useTranslations("settingsOverview");
   const { status: premium } = usePremiumStatus(Boolean(user));
   const {
     settingsOpen,
@@ -189,13 +190,18 @@ function SettingsContent() {
 
   const filteredItems = useMemo(() => {
     const query = searchQuery.trim().toLowerCase();
-    if (!query) return SETTINGS_ITEMS;
-    return SETTINGS_ITEMS.filter((item) =>
+    const localizedItems = SETTINGS_ITEMS.map((item) => ({
+      ...item,
+      title: overviewText(item.titleKey),
+      description: overviewText(item.descriptionKey),
+    }));
+    if (!query) return localizedItems;
+    return localizedItems.filter((item) =>
       `${item.title} ${item.description} ${item.keywords}`
         .toLowerCase()
         .includes(query),
     );
-  }, [searchQuery]);
+  }, [overviewText, searchQuery]);
 
   const displayHandle =
     username ||
@@ -311,6 +317,8 @@ function SettingsContent() {
                 items={filteredItems}
                 onOpen={openDestination}
                 localeLabel={labels[locale]}
+                searchPlaceholder={overviewText("search")}
+                noMatchText={overviewText("noMatch", { query: searchQuery })}
               />
             ) : (
               <main className="mx-auto w-full max-w-4xl space-y-4 p-4 sm:p-6">
@@ -628,12 +636,16 @@ function SettingsOverview({
   items,
   onOpen,
   localeLabel,
+  searchPlaceholder,
+  noMatchText,
 }: {
   query: string;
   onQueryChange: (value: string) => void;
-  items: SettingsItem[];
+  items: Array<SettingsItem & { title: string; description: string }>;
   onOpen: (destination: SettingsDestination) => void;
   localeLabel: string;
+  searchPlaceholder: string;
+  noMatchText: string;
 }) {
   return (
     <main className="mx-auto w-full max-w-4xl px-3 py-3 sm:px-6 sm:py-6">
@@ -643,7 +655,7 @@ function SettingsOverview({
           type="search"
           value={query}
           onChange={(event) => onQueryChange(event.target.value)}
-          placeholder="Search settings"
+          placeholder={searchPlaceholder}
           className="min-w-0 flex-1 bg-transparent text-sm text-white outline-none placeholder:text-ink-mute"
         />
       </label>
@@ -684,7 +696,7 @@ function SettingsOverview({
 
       {!items.length ? (
         <div className="grid min-h-52 place-items-center text-center text-sm text-ink-mute">
-          No settings match “{query}”.
+          {noMatchText}
         </div>
       ) : null}
     </main>
