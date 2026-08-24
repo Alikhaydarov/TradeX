@@ -31,12 +31,12 @@ export function LaptopScroll({ children }: { children: ReactNode }) {
     <section
       ref={sectionRef}
       data-laptop-scroll
-      className="relative -mt-16 h-[175svh] max-sm:-mt-8 max-sm:h-[155svh]"
+      className="relative -mt-24 h-[142svh] max-sm:-mt-10 max-sm:h-[132svh]"
       aria-label="Scroll to open the Tradoxy dashboard preview"
     >
       <div
         data-laptop-stage
-        className="sticky top-0 flex h-svh items-center justify-center overflow-hidden"
+        className="sticky top-0 flex h-svh -translate-y-[7svh] items-center justify-center overflow-hidden max-sm:-translate-y-[4svh]"
       >
         <div
           className="w-[min(1120px,calc(100%-36px))] max-sm:w-[calc(100%-18px)]"
@@ -61,7 +61,7 @@ export function LaptopScroll({ children }: { children: ReactNode }) {
 
             <motion.div
               data-laptop-deck
-              className="relative z-0 mx-auto h-[190px] w-[90%] origin-top rounded-b-[30px] border border-black/20 bg-[linear-gradient(145deg,#d8d8da_0%,#a6a6a9_50%,#d0d0d2_100%)] shadow-[inset_0_1px_0_rgba(255,255,255,.85),inset_0_-12px_25px_rgba(0,0,0,.12),0_42px_70px_-34px_rgba(0,0,0,.72)] max-sm:h-[108px] max-sm:w-[94%] max-sm:rounded-b-[17px]"
+              className="relative z-0 mx-auto h-[158px] w-[90%] origin-top rounded-b-[26px] border border-black/20 bg-[linear-gradient(145deg,#d8d8da_0%,#a6a6a9_50%,#d0d0d2_100%)] shadow-[inset_0_1px_0_rgba(255,255,255,.85),inset_0_-12px_25px_rgba(0,0,0,.12),0_42px_70px_-34px_rgba(0,0,0,.72)] max-sm:h-[94px] max-sm:w-[94%] max-sm:rounded-b-[17px]"
               style={{
                 rotateX: deckRotate,
                 y: deckY,
@@ -93,7 +93,7 @@ export function LaptopScroll({ children }: { children: ReactNode }) {
                 </div>
               </div>
 
-              <span className="absolute bottom-5 left-1/2 h-[54px] w-[34%] -translate-x-1/2 rounded-lg border border-black/25 bg-white/5 shadow-[inset_0_1px_2px_rgba(255,255,255,.35)] max-sm:bottom-2 max-sm:h-[30px] max-sm:rounded" />
+              <span className="absolute bottom-4 left-1/2 h-[42px] w-[34%] -translate-x-1/2 rounded-lg border border-black/25 bg-white/5 shadow-[inset_0_1px_2px_rgba(255,255,255,.35)] max-sm:bottom-2 max-sm:h-[25px] max-sm:rounded" />
               <span className="absolute inset-x-[1.5%] -bottom-3 h-4 origin-top rounded-b-[20px] border-x border-b border-black/25 bg-[linear-gradient(180deg,#aaa,#747477)] shadow-[0_8px_10px_-6px_rgba(0,0,0,.7)] max-sm:-bottom-1.5 max-sm:h-2 max-sm:rounded-b-[10px]" />
               <span className="absolute -bottom-3 left-1/2 z-10 h-1.5 w-[13%] -translate-x-1/2 rounded-b-full bg-[#d9d9db] shadow-[inset_0_-1px_1px_rgba(0,0,0,.35)] max-sm:-bottom-1.5 max-sm:h-1" />
             </motion.div>
