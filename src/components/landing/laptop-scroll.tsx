@@ -21,10 +21,11 @@ export function LaptopScroll({ children }: { children: ReactNode }) {
   const screenRotate = useTransform(scrollYProgress, [0, 0.52], [reduceMotion ? 14 : 52, 0]);
   const screenScale = useTransform(scrollYProgress, [0, 0.54, 0.9], [reduceMotion ? 0.9 : 0.74, 0.9, 1]);
   const screenRadius = useTransform(scrollYProgress, [0.45, 0.9], [22, 14]);
-  const deckRotate = useTransform(scrollYProgress, [0, 0.58], [reduceMotion ? 78 : 68, 88]);
-  const deckY = useTransform(scrollYProgress, [0, 0.58], [0, reduceMotion ? 18 : 42]);
-  const deckOpacity = useTransform(scrollYProgress, [0, 0.34, 0.64], [1, 0.8, 0]);
-  const shadowOpacity = useTransform(scrollYProgress, [0, 0.55], [0.34, 0]);
+  const screenOpacity = useTransform(scrollYProgress, [0, 0.82, 1], [1, 1, 0]);
+  const deckRotate = useTransform(scrollYProgress, [0, 0.58], [reduceMotion ? 64 : 56, 86]);
+  const deckY = useTransform(scrollYProgress, [0, 0.58], [-2, reduceMotion ? 18 : 48]);
+  const deckOpacity = useTransform(scrollYProgress, [0, 0.34, 0.64, 1], [1, 0.8, 0, 0]);
+  const shadowOpacity = useTransform(scrollYProgress, [0, 0.55, 1], [0.34, 0, 0]);
 
   return (
     <section
@@ -47,6 +48,7 @@ export function LaptopScroll({ children }: { children: ReactNode }) {
               style={{
                 rotateX: screenRotate,
                 scale: screenScale,
+                opacity: screenOpacity,
                 borderRadius: screenRadius,
                 transformPerspective: 1800,
               }}
@@ -58,7 +60,8 @@ export function LaptopScroll({ children }: { children: ReactNode }) {
             </motion.div>
 
             <motion.div
-              className="relative z-0 mx-auto h-[76px] w-[82%] origin-top rounded-b-[24px] border border-black/15 bg-[#b9b9bb] shadow-[0_30px_55px_-30px_rgba(0,0,0,.65)] max-sm:h-[42px] max-sm:rounded-b-[14px]"
+              data-laptop-deck
+              className="relative z-0 mx-auto h-[190px] w-[90%] origin-top rounded-b-[30px] border border-black/20 bg-[linear-gradient(145deg,#d8d8da_0%,#a6a6a9_50%,#d0d0d2_100%)] shadow-[inset_0_1px_0_rgba(255,255,255,.85),inset_0_-12px_25px_rgba(0,0,0,.12),0_42px_70px_-34px_rgba(0,0,0,.72)] max-sm:h-[108px] max-sm:w-[94%] max-sm:rounded-b-[17px]"
               style={{
                 rotateX: deckRotate,
                 y: deckY,
@@ -66,12 +69,33 @@ export function LaptopScroll({ children }: { children: ReactNode }) {
                 transformPerspective: 1800,
               }}
             >
-              <div className="mx-auto mt-3 grid w-[72%] grid-cols-12 gap-1 opacity-45 max-sm:mt-2 max-sm:gap-0.5">
-                {Array.from({ length: 36 }).map((_, index) => (
-                  <span key={index} className="h-1.5 rounded-[2px] bg-black/45 max-sm:h-1" />
-                ))}
+              <div className="absolute -top-2 left-[11%] h-3 w-[16%] rounded-full bg-[linear-gradient(180deg,#555,#111_55%,#777)] shadow-[0_1px_2px_rgba(0,0,0,.7)] max-sm:-top-1 max-sm:h-1.5" />
+              <div className="absolute -top-2 right-[11%] h-3 w-[16%] rounded-full bg-[linear-gradient(180deg,#555,#111_55%,#777)] shadow-[0_1px_2px_rgba(0,0,0,.7)] max-sm:-top-1 max-sm:h-1.5" />
+
+              <div className="mx-auto mt-5 flex w-[88%] items-start justify-center gap-[2.5%] max-sm:mt-2.5">
+                <div className="mt-1 grid w-[7%] grid-cols-3 gap-1 opacity-35 max-sm:gap-px">
+                  {Array.from({ length: 18 }).map((_, index) => (
+                    <span key={index} className="aspect-square rounded-full bg-black/65" />
+                  ))}
+                </div>
+                <div className="grid w-[72%] grid-cols-12 gap-1 rounded-lg bg-black/10 p-1.5 shadow-[inset_0_1px_5px_rgba(0,0,0,.25)] max-sm:gap-[2px] max-sm:rounded max-sm:p-[3px]">
+                  {Array.from({ length: 60 }).map((_, index) => (
+                    <span
+                      key={index}
+                      className="h-3 rounded-[2px] border border-white/10 bg-[linear-gradient(180deg,#343436,#161617)] shadow-[0_1px_1px_rgba(0,0,0,.5)] max-sm:h-1.5 max-sm:rounded-[1px]"
+                    />
+                  ))}
+                </div>
+                <div className="mt-1 grid w-[7%] grid-cols-3 gap-1 opacity-35 max-sm:gap-px">
+                  {Array.from({ length: 18 }).map((_, index) => (
+                    <span key={index} className="aspect-square rounded-full bg-black/65" />
+                  ))}
+                </div>
               </div>
-              <span className="absolute bottom-2 left-1/2 h-3 w-[20%] -translate-x-1/2 rounded border border-black/20 max-sm:bottom-1 max-sm:h-2" />
+
+              <span className="absolute bottom-5 left-1/2 h-[54px] w-[34%] -translate-x-1/2 rounded-lg border border-black/25 bg-white/5 shadow-[inset_0_1px_2px_rgba(255,255,255,.35)] max-sm:bottom-2 max-sm:h-[30px] max-sm:rounded" />
+              <span className="absolute inset-x-[1.5%] -bottom-3 h-4 origin-top rounded-b-[20px] border-x border-b border-black/25 bg-[linear-gradient(180deg,#aaa,#747477)] shadow-[0_8px_10px_-6px_rgba(0,0,0,.7)] max-sm:-bottom-1.5 max-sm:h-2 max-sm:rounded-b-[10px]" />
+              <span className="absolute -bottom-3 left-1/2 z-10 h-1.5 w-[13%] -translate-x-1/2 rounded-b-full bg-[#d9d9db] shadow-[inset_0_-1px_1px_rgba(0,0,0,.35)] max-sm:-bottom-1.5 max-sm:h-1" />
             </motion.div>
 
             <motion.div
