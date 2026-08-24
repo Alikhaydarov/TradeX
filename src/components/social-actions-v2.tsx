@@ -85,6 +85,10 @@ function useSocialNavigation() {
     (username: string) => router.push(profilePath(username)),
     [router],
   );
+  const prefetchProfile = useCallback(
+    (username: string) => router.prefetch(profilePath(username)),
+    [router],
+  );
 
   const toFeedPost = useCallback(
     (postId?: string | null) => {
@@ -99,7 +103,7 @@ function useSocialNavigation() {
     [router],
   );
 
-  return { toProfile, toFeedPost, push: router.push };
+  return { toProfile, prefetchProfile, toFeedPost, push: router.push };
 }
 
 function notificationMeta(type?: string) {
@@ -172,7 +176,7 @@ function Modal({
 }
 
 function SearchDialog({ onClose }: { onClose: () => void }) {
-  const { toProfile } = useSocialNavigation();
+  const { prefetchProfile, toProfile } = useSocialNavigation();
   const [query, setQuery] = useState("");
   const [users, setUsers] = useState<SearchUser[]>([]);
   const [loading, setLoading] = useState(false);
@@ -186,20 +190,16 @@ function SearchDialog({ onClose }: { onClose: () => void }) {
 
   useEffect(() => {
     let active = true;
-    const resetTimer = window.setTimeout(() => {
-      if (!active) return;
-      setUsers([]);
-    }, 0);
 
     if (cleanQuery.length < 2) {
       const timer = window.setTimeout(() => {
         if (!active) return;
+        setUsers([]);
         setLoading(false);
         setError(null);
       }, 0);
       return () => {
         active = false;
-        window.clearTimeout(resetTimer);
         window.clearTimeout(timer);
       };
     }
@@ -209,6 +209,7 @@ function SearchDialog({ onClose }: { onClose: () => void }) {
       setError(null);
       apiRequest<{ users: SearchUser[] }>(
         `/api/social/search?q=${encodeURIComponent(cleanQuery)}`,
+        { cacheMs: 15_000 },
       )
         .then((data) => {
           if (!active) return;
@@ -225,10 +226,9 @@ function SearchDialog({ onClose }: { onClose: () => void }) {
 
     return () => {
       active = false;
-      window.clearTimeout(resetTimer);
       window.clearTimeout(timer);
     };
-  }, [cleanQuery]);
+  }, [cleanQuery, prefetchProfile]);
 
   return (
     <Modal
@@ -297,6 +297,9 @@ function SearchDialog({ onClose }: { onClose: () => void }) {
           <button
             key={item.id}
             type="button"
+            onPointerDown={() => prefetchProfile(item.username)}
+            onMouseEnter={() => prefetchProfile(item.username)}
+            onFocus={() => prefetchProfile(item.username)}
             onClick={() => goToProfile(item.username)}
             className="flex min-h-[84px] w-full touch-manipulation items-center gap-3 border-b border-white/6 px-4 py-3.5 text-left transition hover:bg-surface active:bg-surface-raised"
           >

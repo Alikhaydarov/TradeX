@@ -150,13 +150,22 @@ export function useProfileController(
       return () => window.clearTimeout(timer);
     }
 
+    // App Router already resolved this profile on the server. Re-requesting
+    // the same payload immediately after hydration made search -> profile
+    // navigation feel slower and could visibly replace the seeded content.
+    if (seededRef.current) {
+      seededRef.current = false;
+      setLoadingProfile(false);
+      window.dispatchEvent(new Event("tradeup:profile-ready"));
+      return;
+    }
+
     let active = true;
     // With a server-resolved seed on screen there is nothing to wait for, so
     // the refresh runs silently instead of tearing the page back to a skeleton.
     const startTimer = window.setTimeout(() => {
       if (!active) return;
       if (!seededRef.current) setLoadingProfile(true);
-      seededRef.current = false;
       setError(null);
     }, 0);
 
