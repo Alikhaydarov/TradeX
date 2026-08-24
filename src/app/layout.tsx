@@ -41,7 +41,9 @@ export const metadata: Metadata = {
   metadataBase: new URL(appUrl),
   title: {
     default: "Tradoxy",
-    template: "%s | Tradoxy",
+    // Route metadata already contains the product suffix. Keeping the root
+    // template neutral prevents titles such as "Home | Tradoxy | Tradoxy".
+    template: "%s",
   },
   description:
     "Tradoxy: trading feed, private chats, journal and analytics workspace.",
