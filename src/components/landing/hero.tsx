@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowRight, Check, ShieldCheck } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { motion } from "motion/react";
 import Link from "next/link";
 
@@ -64,7 +64,7 @@ export function LandingHero({
   });
 
   return (
-    <section className="relative mx-auto flex min-h-[72svh] w-[min(1180px,calc(100%-48px))] flex-col items-center justify-center pb-28 pt-14 text-center max-sm:min-h-[68svh] max-sm:w-[min(calc(100%-30px),1180px)] max-sm:pb-20 max-sm:pt-8">
+    <section className="relative z-10 mx-auto flex min-h-[76svh] w-[min(1180px,calc(100%-48px))] flex-col items-center justify-start pb-40 pt-[10svh] text-center max-sm:min-h-[70svh] max-sm:w-[min(calc(100%-30px),1180px)] max-sm:pb-28 max-sm:pt-10">
       <motion.div
         {...enter(0)}
         className="mb-7 inline-flex items-center gap-2 rounded-full border border-black/10 bg-white/50 px-3 py-1.5 text-[11px] font-medium text-black/55 shadow-sm backdrop-blur-md"
@@ -114,24 +114,6 @@ export function LandingHero({
         </button>
       </motion.div>
 
-      <motion.div {...enter(0.4)} className="mt-6 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-[12px] text-black/35">
-        <span className="inline-flex items-center gap-1.5">
-          <ShieldCheck size={14} /> Secure sign-in
-        </span>
-        <span className="inline-flex items-center gap-1.5">
-          <Check size={14} /> No card required
-        </span>
-      </motion.div>
-
-      <motion.div
-        {...enter(0.48)}
-        className="absolute inset-x-0 bottom-5 mx-auto flex w-fit items-center gap-3 text-[10px] font-medium uppercase text-black/28"
-        aria-hidden="true"
-      >
-        <span>Journal</span><span className="h-px w-8 bg-black/14" />
-        <span>Review</span><span className="h-px w-8 bg-black/14" />
-        <span>Improve</span>
-      </motion.div>
     </section>
   );
 }

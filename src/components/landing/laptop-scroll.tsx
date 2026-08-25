@@ -31,12 +31,12 @@ export function LaptopScroll({ children }: { children: ReactNode }) {
     <section
       ref={sectionRef}
       data-laptop-scroll
-      className="relative -mt-24 h-[142svh] max-sm:-mt-10 max-sm:h-[132svh]"
+      className="relative z-20 -mt-[58svh] h-[174svh] max-sm:-mt-[24svh] max-sm:h-[136svh]"
       aria-label="Scroll to open the Tradoxy dashboard preview"
     >
       <div
         data-laptop-stage
-        className="sticky top-0 flex h-svh -translate-y-[7svh] items-center justify-center overflow-hidden max-sm:-translate-y-[4svh]"
+        className="sticky top-[10svh] flex h-[82svh] items-end justify-center overflow-hidden pb-[2svh] max-sm:top-[8svh] max-sm:h-[84svh] max-sm:pb-[6svh]"
       >
         <div
           className="w-[min(1480px,calc(100%-48px))] max-sm:w-[calc(100%-18px)]"
@@ -61,7 +61,7 @@ export function LaptopScroll({ children }: { children: ReactNode }) {
 
             <motion.div
               data-laptop-deck
-              className="relative z-0 mx-auto h-[158px] w-[90%] origin-top rounded-b-[26px] border border-black/20 bg-[linear-gradient(145deg,#d8d8da_0%,#a6a6a9_50%,#d0d0d2_100%)] shadow-[inset_0_1px_0_rgba(255,255,255,.85),inset_0_-12px_25px_rgba(0,0,0,.12),0_42px_70px_-34px_rgba(0,0,0,.72)] max-sm:h-[94px] max-sm:w-[94%] max-sm:rounded-b-[17px]"
+              className="relative z-0 mx-auto h-[150px] w-[92%] origin-top overflow-visible rounded-b-[24px] border border-black/15 bg-[linear-gradient(155deg,#e2e2e3_0%,#aaa9ac_48%,#d7d7d9_100%)] shadow-[inset_0_1px_0_rgba(255,255,255,.95),inset_0_-10px_22px_rgba(0,0,0,.1),0_42px_70px_-34px_rgba(0,0,0,.72)] max-sm:h-[90px] max-sm:w-[96%] max-sm:rounded-b-[15px]"
               style={{
                 rotateX: deckRotate,
                 y: deckY,
@@ -72,28 +72,20 @@ export function LaptopScroll({ children }: { children: ReactNode }) {
               <div className="absolute -top-2 left-[11%] h-3 w-[16%] rounded-full bg-[linear-gradient(180deg,#555,#111_55%,#777)] shadow-[0_1px_2px_rgba(0,0,0,.7)] max-sm:-top-1 max-sm:h-1.5" />
               <div className="absolute -top-2 right-[11%] h-3 w-[16%] rounded-full bg-[linear-gradient(180deg,#555,#111_55%,#777)] shadow-[0_1px_2px_rgba(0,0,0,.7)] max-sm:-top-1 max-sm:h-1.5" />
 
-              <div className="mx-auto mt-5 flex w-[88%] items-start justify-center gap-[2.5%] max-sm:mt-2.5">
-                <div className="mt-1 grid w-[7%] grid-cols-3 gap-1 opacity-35 max-sm:gap-px">
-                  {Array.from({ length: 18 }).map((_, index) => (
-                    <span key={index} className="aspect-square rounded-full bg-black/65" />
-                  ))}
-                </div>
-                <div className="grid w-[72%] grid-cols-12 gap-1 rounded-lg bg-black/10 p-1.5 shadow-[inset_0_1px_5px_rgba(0,0,0,.25)] max-sm:gap-[2px] max-sm:rounded max-sm:p-[3px]">
+              <div className="mx-auto mt-4 flex w-[89%] items-start justify-center gap-[2.2%] max-sm:mt-2">
+                <div className="mt-1 h-[78px] w-[8%] rounded-md bg-[radial-gradient(circle,rgba(45,45,47,.7)_1px,transparent_1.5px)] opacity-55 [background-size:6px_6px] max-sm:h-[43px] max-sm:[background-size:3px_3px]" />
+                <div className="grid w-[72%] grid-cols-12 gap-1 rounded-md border border-black/10 bg-black/10 p-1.5 shadow-[inset_0_1px_4px_rgba(0,0,0,.22)] max-sm:gap-[2px] max-sm:p-[3px]">
                   {Array.from({ length: 60 }).map((_, index) => (
                     <span
                       key={index}
-                      className="h-3 rounded-[2px] border border-white/10 bg-[linear-gradient(180deg,#343436,#161617)] shadow-[0_1px_1px_rgba(0,0,0,.5)] max-sm:h-1.5 max-sm:rounded-[1px]"
+                      className="h-3 rounded-[2px] border border-white/10 bg-[linear-gradient(180deg,#38383a,#171718)] shadow-[0_1px_1px_rgba(0,0,0,.45)] max-sm:h-1.5 max-sm:rounded-[1px]"
                     />
                   ))}
                 </div>
-                <div className="mt-1 grid w-[7%] grid-cols-3 gap-1 opacity-35 max-sm:gap-px">
-                  {Array.from({ length: 18 }).map((_, index) => (
-                    <span key={index} className="aspect-square rounded-full bg-black/65" />
-                  ))}
-                </div>
+                <div className="mt-1 h-[78px] w-[8%] rounded-md bg-[radial-gradient(circle,rgba(45,45,47,.7)_1px,transparent_1.5px)] opacity-55 [background-size:6px_6px] max-sm:h-[43px] max-sm:[background-size:3px_3px]" />
               </div>
 
-              <span className="absolute bottom-4 left-1/2 h-[42px] w-[34%] -translate-x-1/2 rounded-lg border border-black/25 bg-white/5 shadow-[inset_0_1px_2px_rgba(255,255,255,.35)] max-sm:bottom-2 max-sm:h-[25px] max-sm:rounded" />
+              <span className="absolute bottom-3.5 left-1/2 h-[40px] w-[34%] -translate-x-1/2 rounded-md border border-black/20 bg-white/5 shadow-[inset_0_1px_2px_rgba(255,255,255,.42)] max-sm:bottom-2 max-sm:h-[23px] max-sm:rounded" />
               <span className="absolute inset-x-[1.5%] -bottom-3 h-4 origin-top rounded-b-[20px] border-x border-b border-black/25 bg-[linear-gradient(180deg,#aaa,#747477)] shadow-[0_8px_10px_-6px_rgba(0,0,0,.7)] max-sm:-bottom-1.5 max-sm:h-2 max-sm:rounded-b-[10px]" />
               <span className="absolute -bottom-3 left-1/2 z-10 h-1.5 w-[13%] -translate-x-1/2 rounded-b-full bg-[#d9d9db] shadow-[inset_0_-1px_1px_rgba(0,0,0,.35)] max-sm:-bottom-1.5 max-sm:h-1" />
             </motion.div>
