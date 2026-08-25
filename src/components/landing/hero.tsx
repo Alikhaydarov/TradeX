@@ -18,18 +18,32 @@ export function LandingNav({
 }) {
   return (
     <nav className="relative z-10 mx-auto flex w-[min(1180px,calc(100%-48px))] items-center justify-between py-6 max-sm:w-[min(calc(100%-30px),1180px)]">
-      <Link href="/" className="flex items-center gap-2.5" aria-label="Tradoxy home">
+      <Link
+        href="/"
+        className="flex items-center gap-2.5"
+        aria-label="Tradoxy home"
+      >
         <span className="grid size-7 place-items-center rounded-lg bg-black">
           <TradoxyMark className="size-3.5 text-white" />
         </span>
-        <span className="text-[15px] tracking-[-0.01em] text-black">Tradoxy</span>
+        <span className="text-[15px] tracking-[-0.01em] text-black">
+          Tradoxy
+        </span>
       </Link>
 
       <div className="flex items-center gap-7 text-[13px] text-black/55 max-lg:hidden">
-        <a href="#angles" className="hover:text-black">Workspace</a>
-        <a href="#how" className="hover:text-black">How it works</a>
-        <a href="#plans" className="hover:text-black">Plans</a>
-        <a href="#faq" className="hover:text-black">FAQ</a>
+        <a href="#angles" className="hover:text-black">
+          Workspace
+        </a>
+        <a href="#how" className="hover:text-black">
+          How it works
+        </a>
+        <a href="#plans" className="hover:text-black">
+          Plans
+        </a>
+        <a href="#faq" className="hover:text-black">
+          FAQ
+        </a>
       </div>
 
       <div className="flex items-center gap-2">
@@ -64,7 +78,7 @@ export function LandingHero({
   });
 
   return (
-    <section className="relative z-10 mx-auto flex min-h-[76svh] w-[min(1180px,calc(100%-48px))] flex-col items-center justify-start pb-40 pt-[10svh] text-center max-sm:min-h-[70svh] max-sm:w-[min(calc(100%-30px),1180px)] max-sm:pb-28 max-sm:pt-10">
+    <section className="relative z-10 mx-auto flex min-h-[88svh] w-[min(1180px,calc(100%-48px))] flex-col items-center justify-start pb-44 pt-[8svh] text-center max-sm:min-h-[76svh] max-sm:w-[min(calc(100%-30px),1180px)] max-sm:pb-28 max-sm:pt-8">
       <motion.div
         {...enter(0)}
         className="mb-7 inline-flex items-center gap-2 rounded-full border border-black/10 bg-white/50 px-3 py-1.5 text-[11px] font-medium text-black/55 shadow-sm backdrop-blur-md"
@@ -87,7 +101,8 @@ export function LandingHero({
         {...enter(0.14, 24)}
         className="mx-auto mt-4 max-w-5xl text-[clamp(42px,7vw,84px)] font-light leading-[1.04] tracking-normal text-black"
       >
-        Trade with a process.<br />
+        Trade with a process.
+        <br />
         Grow with every <RotatingWord className="text-black/32" />
       </motion.h1>
 
@@ -99,12 +114,19 @@ export function LandingHero({
         into a repeatable trading edge.
       </motion.p>
 
-      <motion.div {...enter(0.32)} className="mt-9 flex flex-wrap items-center justify-center gap-2.5">
+      <motion.div
+        {...enter(0.32)}
+        className="mt-9 flex flex-wrap items-center justify-center gap-2.5"
+      >
         <button
           onClick={onRegister}
           className="group inline-flex min-h-12 items-center gap-2 rounded-full bg-black px-7 py-3 text-[13px] font-semibold text-white shadow-[0_16px_36px_-20px_rgba(0,0,0,.8)] transition-transform duration-300 hover:-translate-y-0.5 active:translate-y-0"
         >
-          Start your journal <ArrowRight size={15} className="transition-transform duration-300 group-hover:translate-x-0.5" />
+          Start your journal{" "}
+          <ArrowRight
+            size={15}
+            className="transition-transform duration-300 group-hover:translate-x-0.5"
+          />
         </button>
         <button
           onClick={onLogin}
@@ -113,7 +135,6 @@ export function LandingHero({
           Sign in
         </button>
       </motion.div>
-
     </section>
   );
 }
@@ -130,7 +151,7 @@ export function LandingDevice() {
 /** A calm, static picture of the dashboard - the product, not a stock photo. */
 function HeroBoard() {
   return (
-    <div className="p-7 max-sm:p-4" aria-hidden="true">
+    <div className="h-full overflow-hidden p-7 max-sm:p-4" aria-hidden="true">
       <div className="flex items-center justify-between border-b border-white/8 pb-4">
         <div className="flex items-center gap-2.5">
           <span className="grid size-6 place-items-center rounded-md bg-white">
@@ -145,11 +166,17 @@ function HeroBoard() {
 
       <div className="mt-5 grid gap-5 sm:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)]">
         <div>
-          <p className="text-[11px] uppercase tracking-[.16em] text-white/35">Net P&amp;L</p>
+          <p className="text-[11px] uppercase tracking-[.16em] text-white/35">
+            Net P&amp;L
+          </p>
           <p className="mt-1 text-[clamp(26px,4vw,38px)] font-light tabular-nums text-emerald-300">
             +$12,840.20
           </p>
-          <svg viewBox="0 0 640 200" preserveAspectRatio="none" className="mt-4 h-40 w-full">
+          <svg
+            viewBox="0 0 640 200"
+            preserveAspectRatio="none"
+            className="mt-4 h-40 w-full"
+          >
             <defs>
               <linearGradient id="tdx-hero-fill" x1="0" y1="0" x2="0" y2="1">
                 <stop offset="0%" stopColor="rgba(255,255,255,.18)" />
@@ -182,7 +209,9 @@ function HeroBoard() {
               className="flex items-center justify-between rounded-lg border border-white/8 bg-white/[.02] px-3.5 py-2.5"
             >
               <span className="text-[11px] text-white/40">{label}</span>
-              <span className="text-[13px] tabular-nums text-white">{value}</span>
+              <span className="text-[13px] tabular-nums text-white">
+                {value}
+              </span>
             </div>
           ))}
         </div>
