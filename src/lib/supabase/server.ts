@@ -1,5 +1,6 @@
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
+import { supabaseCookieOptions } from "../hosts";
 import { getSupabaseConfig, isSupabaseConfigured } from "./config";
 
 export async function getSupabaseServerClient() {
@@ -12,6 +13,7 @@ export async function getSupabaseServerClient() {
     url,
     publishableKey,
     {
+      cookieOptions: supabaseCookieOptions(),
       cookies: {
         getAll() {
           return cookieStore.getAll();
