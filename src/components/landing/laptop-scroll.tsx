@@ -19,7 +19,7 @@ export function LaptopScroll({ children }: { children: ReactNode }) {
   });
 
   const screenRotate = useTransform(scrollYProgress, [0, 0.52], [reduceMotion ? 14 : 52, 0]);
-  const screenScale = useTransform(scrollYProgress, [0, 0.54, 0.9], [reduceMotion ? 0.9 : 0.74, 0.9, 1]);
+  const screenScale = useTransform(scrollYProgress, [0, 0.54, 0.9], [reduceMotion ? 0.96 : 0.9, 0.97, 1]);
   const screenRadius = useTransform(scrollYProgress, [0.45, 0.9], [22, 14]);
   const screenOpacity = useTransform(scrollYProgress, [0, 0.82, 1], [1, 1, 0]);
   const deckRotate = useTransform(scrollYProgress, [0, 0.58], [reduceMotion ? 64 : 56, 86]);
@@ -39,7 +39,7 @@ export function LaptopScroll({ children }: { children: ReactNode }) {
         className="sticky top-0 flex h-svh -translate-y-[7svh] items-center justify-center overflow-hidden max-sm:-translate-y-[4svh]"
       >
         <div
-          className="w-[min(1120px,calc(100%-36px))] max-sm:w-[calc(100%-18px)]"
+          className="w-[min(1480px,calc(100%-48px))] max-sm:w-[calc(100%-18px)]"
           style={{ perspective: "1800px" }}
         >
           <div className="relative" style={{ transformStyle: "preserve-3d" }}>
