@@ -38,10 +38,10 @@ export function LaptopScroll({ children }: { children: ReactNode }) {
     <section
       ref={sectionRef}
       data-laptop-scroll
-      className="relative z-0 -mt-[55svh] h-[166svh] max-sm:-mt-[45svh] max-sm:h-[108svh]"
+      className="relative z-0 -mt-[55svh] h-[150svh] max-sm:-mt-[42svh] max-sm:h-[86svh]"
       aria-label="Scroll to open the Tradoxy dashboard preview"
     >
-      <div className="sticky top-0 flex h-svh items-center justify-center overflow-hidden">
+      <div className="sticky top-0 flex h-svh items-center justify-center overflow-hidden max-sm:h-[86svh]">
         <motion.div
           data-laptop-device
           className="relative w-[min(1320px,100vw)] max-sm:hidden"
@@ -58,7 +58,7 @@ export function LaptopScroll({ children }: { children: ReactNode }) {
           />
         </motion.div>
 
-        <div className="relative hidden w-[155vw] shrink-0 translate-y-20 max-sm:block">
+        <div className="relative hidden w-[155vw] shrink-0 translate-y-14 max-sm:block">
           <Image
             src="/landing/tradoxy-product-laptop.png"
             alt="Tradoxy trading analytics displayed on a premium laptop"

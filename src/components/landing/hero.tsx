@@ -229,14 +229,14 @@ function HeroBoard() {
  */
 export function LandingFigures() {
   return (
-    <section className="mx-auto mt-28 w-[min(1180px,calc(100%-48px))] max-sm:mt-20 max-sm:w-[min(calc(100%-30px),1180px)]">
+    <section className="mx-auto mt-20 w-[min(1180px,calc(100%-48px))] max-sm:mt-10 max-sm:w-[min(calc(100%-30px),1180px)]">
       <RevealWords
         as="h2"
         text="Key figures"
         className="text-center text-[clamp(24px,3vw,34px)] font-light tracking-[-0.02em]"
       />
 
-      <div className="mt-12 grid gap-10 text-center sm:grid-cols-2 lg:grid-cols-4">
+      <div className="mt-10 grid grid-cols-2 border-y border-black/10 text-center lg:grid-cols-4">
         <Figure value={7} label="Supported platforms" />
         <Figure value={0} prefix="$" label="Free plan, forever" />
         <Figure value={2} label="One-click history imports" />
@@ -256,11 +256,11 @@ function Figure({
   prefix?: string;
 }) {
   return (
-    <div>
-      <p className="text-[38px] font-light leading-none tracking-[-0.03em] text-black">
+    <div className="relative flex min-h-36 flex-col items-center justify-center px-3 py-8 after:absolute after:right-0 after:top-1/4 after:h-1/2 after:w-px after:bg-black/10 even:after:hidden lg:even:after:block lg:last:after:hidden max-sm:nth-[n+3]:border-t max-sm:nth-[n+3]:border-black/10">
+      <p className="text-[34px] font-light leading-none tracking-[-0.03em] text-black sm:text-[38px]">
         <CountUp value={value} prefix={prefix} />
       </p>
-      <p className="mt-3 text-[13px] text-black/40">{label}</p>
+      <p className="mt-3 text-[12px] leading-5 text-black/45 sm:text-[13px]">{label}</p>
     </div>
   );
 }
