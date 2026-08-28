@@ -105,7 +105,7 @@ export function LandingPlans() {
               </span>
               <span
                 className={`text-[12px] ${
-                  plan.highlight ? "text-white/45" : "text-black/40"
+                  plan.highlight ? "text-white/55" : "text-black/50"
                 }`}
               >
                 {plan.period}
@@ -113,7 +113,7 @@ export function LandingPlans() {
             </p>
             <p
               className={`mt-3 text-[13px] leading-6 ${
-                plan.highlight ? "text-white/55" : "text-black/45"
+                plan.highlight ? "text-white/65" : "text-black/55"
               }`}
             >
               {plan.tagline}
@@ -152,7 +152,7 @@ export function LandingPlans() {
         ))}
       </Scroll3DStage>
 
-      <p className="mt-7 text-center text-[12px] text-black/35">
+      <p className="mt-7 text-center text-[12px] leading-5 text-black/45">
         Billed monthly, cancel from the billing portal at any time. There is no
         trial — the Free plan is the trial, and it does not expire.
       </p>

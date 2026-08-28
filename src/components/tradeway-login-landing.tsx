@@ -82,7 +82,7 @@ export function TradoxyLoginLanding({
 
       <div
         id="angles"
-        className="rounded-t-[40px] bg-black text-white [--reveal-from:rgba(255,255,255,.24)] [--reveal-to:#ffffff] max-sm:rounded-t-[28px]"
+        className="rounded-[40px] bg-black text-white [--reveal-from:rgba(255,255,255,.24)] [--reveal-to:#ffffff] max-sm:rounded-[28px]"
       >
         <LandingRail />
         <LandingBento />

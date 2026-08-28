@@ -52,7 +52,7 @@ export function LandingFaq() {
             text="Frequently asked questions"
             className="max-w-xs text-[clamp(26px,3.4vw,40px)] font-light leading-[1.15] tracking-[-0.02em]"
           />
-          <p className="mt-5 max-w-xs text-[13px] leading-6 text-black/45">
+          <p className="mt-5 max-w-xs text-[13px] leading-6 text-black/55">
             Everything worth knowing before you make an account.
           </p>
           <Link
@@ -76,7 +76,7 @@ export function LandingFaq() {
                   className="mt-0.5 shrink-0 text-black/30 transition-transform duration-300 group-open:rotate-45"
                 />
               </summary>
-              <p className="mt-3 max-w-xl text-[13px] leading-7 text-black/50">
+              <p className="mt-3 max-w-xl text-[13px] leading-7 text-black/60">
                 {item.a}
               </p>
             </details>
