@@ -48,11 +48,15 @@ export function TradoxyLoginLanding({
     };
     setAuthError(messages[code] ?? "Sign-in could not be completed.");
     url.searchParams.delete("auth_error");
-    window.history.replaceState(null, "", `${url.pathname}${url.search}${url.hash}`);
+    window.history.replaceState(
+      null,
+      "",
+      `${url.pathname}${url.search}${url.hash}`,
+    );
   }, []);
 
   return (
-    <main className="min-h-dvh overflow-x-clip bg-[#efedeb] text-black [--reveal-from:rgba(10,10,10,.26)] [--reveal-to:#0a0a0a]">
+    <main className="min-h-dvh overflow-x-clip bg-[#f3f3f0] text-black [--reveal-from:rgba(10,10,10,.26)] [--reveal-to:#0a0a0a]">
       <LandingNav onLogin={onLogin} onRegister={onRegister} />
 
       {authError && (
