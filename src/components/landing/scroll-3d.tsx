@@ -1,7 +1,9 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import type { CSSProperties, ReactNode } from "react";
+
+export { useReducedMotion } from "@/lib/use-reduced-motion";
 
 /**
  * One controller for every scroll-driven element on the page.
@@ -87,7 +89,11 @@ function schedule(active: Controller) {
   active.frame = window.requestAnimationFrame(() => {
     active.frame = 0;
     active.visible.forEach((entry) => {
-      entry.apply(readProgress(entry.element), readLeave(entry.element), entry.element);
+      entry.apply(
+        readProgress(entry.element),
+        readLeave(entry.element),
+        entry.element,
+      );
     });
   });
 }
@@ -96,7 +102,11 @@ export function register(entry: Entry) {
   const active = getController();
   active.entries.set(entry.element, entry);
   active.observer.observe(entry.element);
-  entry.apply(readProgress(entry.element), readLeave(entry.element), entry.element);
+  entry.apply(
+    readProgress(entry.element),
+    readLeave(entry.element),
+    entry.element,
+  );
   return () => {
     active.observer.unobserve(entry.element);
     active.entries.delete(entry.element);
@@ -124,31 +134,11 @@ export function readPin(section: HTMLElement) {
   return { offset, travel, progress: offset / travel };
 }
 
-/**
- * Whether this visitor has asked the system to reduce motion.
- *
- * Sections that are built around movement need more than "skip the animation":
- * a pinned frame with its animation frozen half-way is worse than no effect at
- * all. They read this and render a plain, finished layout instead.
- *
- * It starts false so the server and the first client paint agree, then
- * corrects itself on mount.
- */
-export function useReducedMotion() {
-  const [reduced, setReduced] = useState(false);
-
-  useEffect(() => {
-    const query = window.matchMedia("(prefers-reduced-motion: reduce)");
-    const apply = () => setReduced(query.matches);
-    apply();
-    query.addEventListener("change", apply);
-    return () => query.removeEventListener("change", apply);
-  }, []);
-
-  return reduced;
-}
-
-export type ScrollApply = (progress: number, leave: number, element: HTMLElement) => void;
+export type ScrollApply = (
+  progress: number,
+  leave: number,
+  element: HTMLElement,
+) => void;
 
 /**
  * Subscribe any element to the shared scroll controller.
@@ -241,13 +231,17 @@ export function Scroll3D({
     // dropped here and a short fade-up is kept, so a visitor whose system asks
     // for less motion still gets a page that arrives rather than one that is
     // simply already there.
-    const gentle = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const gentle = window.matchMedia(
+      "(prefers-reduced-motion: reduce)",
+    ).matches;
 
     return register({
       element,
       apply: (raw, leave, node) => {
         if (gentle) {
-          const eased = easeOut(Math.min(1, Math.max(0, (raw - delay) / (1 - delay))));
+          const eased = easeOut(
+            Math.min(1, Math.max(0, (raw - delay) / (1 - delay))),
+          );
           node.style.opacity = String(Math.min(1, 0.2 + eased * 1.1));
           node.style.transform = `translate3d(0, ${(1 - eased) * 12}px, 0)`;
           return;
