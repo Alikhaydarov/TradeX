@@ -2,6 +2,7 @@
 
 import { usePathname } from "next/navigation";
 
+import { useAuth } from "./auth-context";
 import { ProAiCoachLauncher } from "./pro-ai-coach-launcher";
 
 const AI_LAUNCHER_PARITY = [
@@ -25,6 +26,9 @@ const AI_LAUNCHER_PARITY = [
 
 export function ProAiCoachLauncherBoundary() {
   const pathname = usePathname();
+  const { user } = useAuth();
+
+  if (!user) return null;
 
   return (
     <div className={AI_LAUNCHER_PARITY}>

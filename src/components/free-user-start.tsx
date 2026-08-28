@@ -16,13 +16,11 @@ import { Spinner } from "./ui/spinner";
 import { usePremiumStatus } from "./use-premium-status";
 import { useRouter } from "next/navigation";
 
-
-
 export function FreeUserStart({ children }: { children: ReactNode }) {
   const router = useRouter();
   const { accounts, loading: accountsLoading } = useActiveAccountStore();
-  const { status, loading: premiumLoading } = usePremiumStatus(true);
   const { user } = useAuth();
+  const { status, loading: premiumLoading } = usePremiumStatus(Boolean(user));
 
   if (accountsLoading || (premiumLoading && accounts.length === 0)) {
     return (

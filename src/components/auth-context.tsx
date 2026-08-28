@@ -18,7 +18,10 @@ interface AuthContextValue {
   configured: boolean;
   signInWithOAuth: (provider: AuthProviderName) => Promise<string | null>;
   signInWithGoogle: () => Promise<string | null>;
-  signInWithPassword: (email: string, password: string) => Promise<string | null>;
+  signInWithPassword: (
+    email: string,
+    password: string,
+  ) => Promise<string | null>;
   signUpWithPassword: (
     name: string,
     email: string,
@@ -35,30 +38,7 @@ export interface AuthProfileIdentity {
 
 export type AuthProviderName = "google" | "apple";
 
-const AUTH_CACHE_KEY = "tradeup:user";
 const AuthContext = createContext<AuthContextValue | null>(null);
-
-function readCachedUser() {
-  if (typeof window === "undefined") return null;
-
-  try {
-    const cached = window.localStorage.getItem(AUTH_CACHE_KEY);
-    return cached ? (JSON.parse(cached) as User) : null;
-  } catch {
-    return null;
-  }
-}
-
-function writeCachedUser(user: User | null) {
-  if (typeof window === "undefined") return;
-
-  try {
-    if (user) window.localStorage.setItem(AUTH_CACHE_KEY, JSON.stringify(user));
-    else window.localStorage.removeItem(AUTH_CACHE_KEY);
-  } catch {
-    // Ignore storage errors; server auth remains the source of truth.
-  }
-}
 
 export function AuthProvider({
   children,
@@ -72,57 +52,11 @@ export function AuthProvider({
   initialConfigured?: boolean;
 }) {
   const [user, setUser] = useState<User | null>(initialUser);
-  const [profile, setProfile] = useState<AuthProfileIdentity | null>(initialProfile);
-  const [configured, setConfigured] = useState(initialConfigured);
+  const [profile, setProfile] = useState<AuthProfileIdentity | null>(
+    initialProfile,
+  );
+  const configured = initialConfigured;
   const [loading] = useState(false);
-
-  useEffect(() => {
-    // The server already resolved auth during SSR and handed it to us as
-    // initialUser/initialConfigured. Re-fetching /api/auth/me and /api/health
-    // on every mount added two blocking round-trips per page load for a result
-    // we already had, so we only fall back to the network when the server did
-    // not give us a user.
-    if (initialUser) {
-      writeCachedUser(initialUser);
-      return;
-    }
-
-    let active = true;
-    let cacheTimer: number | null = null;
-    const cached = readCachedUser();
-    if (cached) {
-      cacheTimer = window.setTimeout(() => {
-        if (active) setUser(cached);
-      }, 0);
-    }
-
-    apiRequest<{ user: User | null }>("/api/auth/me")
-      .then((auth) => {
-        if (!active) return;
-        setUser(auth.user);
-        writeCachedUser(auth.user);
-      })
-      .catch(() => {
-        if (!active) return;
-        setUser(null);
-        writeCachedUser(null);
-      });
-
-    if (!initialConfigured) {
-      apiRequest<{ ok: boolean }>("/api/health")
-        .then((health) => {
-          if (active) setConfigured(health.ok);
-        })
-        .catch(() => {
-          if (active) setConfigured(false);
-        });
-    }
-
-    return () => {
-      active = false;
-      if (cacheTimer) window.clearTimeout(cacheTimer);
-    };
-  }, [initialConfigured, initialUser]);
 
   useEffect(() => {
     if (!user) {
@@ -207,16 +141,18 @@ export function AuthProvider({
           };
         } catch (error) {
           return {
-            error: error instanceof Error ? error.message : "Registration failed.",
+            error:
+              error instanceof Error ? error.message : "Registration failed.",
             requiresEmailConfirmation: false,
           };
         }
       },
       async signOut() {
-        await apiRequest<{ ok: boolean }>("/api/auth/signout", { method: "POST" });
+        await apiRequest<{ ok: boolean }>("/api/auth/signout", {
+          method: "POST",
+        });
         setUser(null);
         setProfile(null);
-        writeCachedUser(null);
       },
     }),
     [configured, loading, profile, user],
@@ -227,6 +163,7 @@ export function AuthProvider({
 
 export function useAuth() {
   const context = useContext(AuthContext);
-  if (!context) throw new Error("useAuth AuthProvider ichida ishlatilishi kerak");
+  if (!context)
+    throw new Error("useAuth AuthProvider ichida ishlatilishi kerak");
   return context;
 }
