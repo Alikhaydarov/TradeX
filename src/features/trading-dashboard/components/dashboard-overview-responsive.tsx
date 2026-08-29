@@ -3,9 +3,10 @@
 import {
   ArrowUpRight,
   BookOpen,
-  CalendarDays,
-  RefreshCw,
+  CheckCircle2,
+  Gauge,
   ShieldCheck,
+  Target,
   TrendingUp,
 } from "lucide-react"
 import {
@@ -40,7 +41,6 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from "@/components/ui/empty"
-import { useDashboardShellData } from "@/features/trading-dashboard/hooks/use-dashboard-shell-data"
 
 type WeeklyDay = {
   key: string
@@ -72,20 +72,6 @@ type MistakeStat = {
   trades: number
 }
 
-type MarketNewsEvent = {
-  id: string
-  date: string
-  country: string
-  currency: string
-  event: string
-  category: string
-  actual: string
-  forecast: string
-  previous: string
-  importance: number
-  source: string
-}
-
 interface DashboardOverviewProps {
   account: PropAccount
   stats: DashboardStats
@@ -115,36 +101,11 @@ const money = new Intl.NumberFormat("en-US", {
   maximumFractionDigits: 2,
 })
 
-const COUNTRY_CURRENCY: Record<string, string> = {
-  "united states": "USD",
-  "euro area": "EUR",
-  "united kingdom": "GBP",
-  japan: "JPY",
-  canada: "CAD",
-  australia: "AUD",
-  "new zealand": "NZD",
-  switzerland: "CHF",
-  china: "CNY",
-}
-
 const CARD_SURFACE =
   "flex min-h-0 flex-col gap-0 overflow-hidden rounded-xl border-white/10 bg-surface py-0 shadow-none"
 
 function clamp(value: number) {
   return Math.min(100, Math.max(0, Number.isFinite(value) ? value : 0))
-}
-
-function eventDate(value: string) {
-  const timezoneIncluded = /z$|[+-]\d{2}:?\d{2}$/i.test(value)
-  return new Date(timezoneIncluded ? value : `${value}Z`)
-}
-
-function eventCurrency(event: MarketNewsEvent) {
-  return (
-    event.currency ||
-    COUNTRY_CURRENCY[event.country.toLowerCase()] ||
-    event.country.slice(0, 3).toUpperCase()
-  )
 }
 
 function SectionHeader({
@@ -273,6 +234,42 @@ function BreakdownRow({
   )
 }
 
+function ReviewSignal({
+  icon: Icon,
+  label,
+  value,
+  tone = "neutral",
+}: {
+  icon: typeof Target
+  label: string
+  value: string
+  tone?: "positive" | "warning" | "neutral"
+}) {
+  const toneClass =
+    tone === "positive"
+      ? "text-emerald-300"
+      : tone === "warning"
+        ? "text-amber-300"
+        : "text-zinc-100"
+
+  return (
+    <div className="flex min-w-0 flex-col justify-center px-2.5 py-3 sm:px-4">
+      <div className="flex items-center gap-1.5 text-ink-mute">
+        <Icon className="size-3.5 shrink-0" />
+        <span className="truncate text-[9px] font-semibold uppercase tracking-[0.1em] sm:text-[10px]">
+          {label}
+        </span>
+      </div>
+      <p
+        className={`mt-2 truncate text-[11px] font-bold tabular-nums sm:text-[12px] ${toneClass}`}
+        title={value}
+      >
+        {value}
+      </p>
+    </div>
+  )
+}
+
 export function DashboardOverviewResponsive({
   account,
   stats,
@@ -292,8 +289,6 @@ export function DashboardOverviewResponsive({
   onSeeAll,
   onAddTrade,
 }: DashboardOverviewProps) {
-  const { username, news, newsLoading, newsLimited, refreshNews } = useDashboardShellData()
-
   const instrumentStats = useMemo(
     () =>
       [
@@ -318,13 +313,6 @@ export function DashboardOverviewResponsive({
   )
 
   const topSetup = setups[0]
-  const focus =
-    planRate < 70
-      ? "Protect process quality before increasing risk."
-      : stats.pf < 1 && monthCount > 2
-        ? "Reduce low-quality entries and protect downside."
-        : "Keep risk consistent and wait for A+ execution."
-
   const breakeven = Math.max(0, monthCount - stats.wins - stats.losses)
   const profitSegments = 14
   const positiveSegments =
@@ -337,12 +325,6 @@ export function DashboardOverviewResponsive({
           ),
         )
       : 0
-  const todayLabel = new Intl.DateTimeFormat("en-US", {
-    weekday: "short",
-    month: "short",
-    day: "2-digit",
-    year: "numeric",
-  }).format(new Date())
   const returnPercent = account.initialBalance
     ? (currentPnl / account.initialBalance) * 100
     : 0
@@ -351,51 +333,26 @@ export function DashboardOverviewResponsive({
 
   return (
     <div className="space-y-3 pb-24 sm:pb-5">
-      <section className="flex min-h-[52px] items-end justify-between gap-3 px-0.5">
+      <section className="flex min-h-10 items-center justify-between gap-3 px-0.5">
         <div className="min-w-0">
-          <h1 className="truncate text-[22px] font-medium tracking-[-0.04em] text-white min-[420px]:text-[25px] sm:text-[27px]">
-            Welcome back, {username}
-          </h1>
-          <p className="mt-0.5 text-[11px] font-medium text-ink-mute sm:text-[12px]">
-            {todayLabel}
+          <h2 className="truncate text-[15px] font-bold tracking-[-0.02em] text-white">
+            Performance snapshot
+          </h2>
+          <p className="mt-0.5 text-[10px] font-medium text-ink-mute sm:text-[11px]">
+            Account health and this week&apos;s execution
           </p>
         </div>
-        <div className="hidden items-center gap-2 sm:flex">
-          <span className="rounded-lg border border-white/10 bg-surface px-3 py-2 text-[11px] font-semibold text-ink-strong">
-            Current week
-          </span>
-          <span className="flex items-center gap-2 rounded-lg border border-white/10 bg-surface px-3 py-2 text-[11px] font-semibold text-ink-strong">
-            <span
-              className={`size-1.5 rounded-full ${
-                account.status === "Active" ? "bg-emerald-400" : "bg-amber-400"
-              }`}
-            />
-            {account.status}
-          </span>
-        </div>
+        <span className="flex shrink-0 items-center gap-2 rounded-lg border border-white/10 bg-surface px-2.5 py-1.5 text-[10px] font-semibold text-ink-strong">
+          <span
+            className={`size-1.5 rounded-full ${
+              account.status === "Active" ? "bg-emerald-400" : "bg-amber-400"
+            }`}
+          />
+          {account.status}
+        </span>
       </section>
 
       <WeeklyStrip weeklyStrip={weeklyStrip} formatTradePnl={formatTradePnl} />
-
-      <section className="grid overflow-hidden rounded-xl border border-white/10 bg-surface md:grid-cols-[minmax(0,1.5fr)_minmax(150px,.55fr)_minmax(150px,.55fr)]">
-        <div className="flex min-w-0 items-center gap-3 px-4 py-3">
-          <span className="grid size-8 shrink-0 place-items-center rounded-lg bg-white/[.05] text-zinc-300">
-            <ShieldCheck className="size-4" />
-          </span>
-          <div className="min-w-0">
-            <p className="text-[10px] font-bold uppercase tracking-[0.13em] text-ink-mute">Today&apos;s focus</p>
-            <p className="mt-0.5 truncate text-[12px] font-semibold text-zinc-200">{focus}</p>
-          </div>
-        </div>
-        <div className="border-t border-white/8 px-4 py-3 md:border-l md:border-t-0">
-          <p className="text-[10px] font-medium text-ink-mute">Plan alignment</p>
-          <p className={`mt-1 text-sm font-bold tabular-nums ${planRate >= 70 ? "text-emerald-300" : "text-amber-300"}`}>{Math.round(planRate)}%</p>
-        </div>
-        <div className="border-t border-white/8 px-4 py-3 md:border-l md:border-t-0">
-          <p className="truncate text-[10px] font-medium text-ink-mute">{topSetup ? "Leading setup" : "Open positions"}</p>
-          <p className="mt-1 truncate text-sm font-bold text-zinc-100">{topSetup?.name || openPositions.length}</p>
-        </div>
-      </section>
 
       <section className="grid items-stretch gap-3 xl:h-[392px] xl:grid-cols-2">
         <Card className={`${CARD_SURFACE} h-full`}>
@@ -666,84 +623,28 @@ export function DashboardOverviewResponsive({
         <Card className={`${CARD_SURFACE} h-full min-h-[156px]`}>
           <CardHeader className="h-[52px] shrink-0 border-b border-white/8 px-3.5 py-2.5 sm:px-4">
             <SectionHeader
-              title="High Impact News"
-              description={
-                newsLimited ? "Live calendar · limited feed" : "Today's upcoming releases"
-              }
-              action={
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon-sm"
-                  onClick={() => void refreshNews()}
-                  disabled={newsLoading}
-                  aria-label="Refresh market news"
-                  className="text-ink-soft"
-                >
-                  <RefreshCw className={`size-3.5 ${newsLoading ? "animate-spin" : ""}`} />
-                </Button>
-              }
+              title="Performance Review"
+              description="Actionable account signals"
             />
           </CardHeader>
-          <CardContent className="min-h-0 flex-1 overflow-hidden p-2">
-            {newsLoading ? (
-              <div className="space-y-1.5">
-                {Array.from({ length: 2 }, (_, index) => (
-                  <div
-                    key={index}
-                    className="h-[38px] animate-pulse rounded-lg bg-white/[.04]"
-                  />
-                ))}
-              </div>
-            ) : news.length ? (
-              <div>
-                {news.slice(0, 2).map((item) => {
-                  const date = eventDate(item.date)
-                  return (
-                    <article
-                      key={item.id}
-                      className="grid h-[43px] grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2 border-b border-white/8 px-1 last:border-0 min-[420px]:gap-2.5 min-[420px]:px-1.5"
-                    >
-                      <span className="grid h-7 min-w-9 place-items-center rounded-lg border border-white/10 bg-surface-raised px-1 text-[8px] font-bold text-zinc-200 min-[420px]:min-w-10 min-[420px]:px-1.5 min-[420px]:text-[10px]">
-                        {eventCurrency(item)}
-                      </span>
-                      <div className="min-w-0">
-                        <p className="truncate text-[10px] font-semibold text-white min-[420px]:text-[11px]">
-                          {item.event}
-                        </p>
-                        <p className="truncate text-[8px] text-ink-mute min-[420px]:text-[10px]">
-                          {item.country}
-                        </p>
-                      </div>
-                      <div className="text-right">
-                        <p className="text-[10px] font-semibold tabular-nums text-zinc-200 min-[420px]:text-[10px]">
-                          {Number.isNaN(date.getTime())
-                            ? "TBD"
-                            : date.toLocaleTimeString([], {
-                                hour: "2-digit",
-                                minute: "2-digit",
-                              })}
-                        </p>
-                        <div className="mt-1 flex justify-end gap-0.5" aria-label="High impact">
-                          {Array.from({ length: 3 }, (_, index) => (
-                            <span key={index} className="size-1.5 rounded-full bg-rose-400" />
-                          ))}
-                        </div>
-                      </div>
-                    </article>
-                  )
-                })}
-              </div>
-            ) : (
-              <div className="grid h-full place-items-center text-center">
-                <div>
-                  <CalendarDays className="mx-auto size-4 text-ink-mute" />
-                  <p className="mt-2 text-[12px] font-semibold text-ink-strong">
-                    No high-impact releases found
-                  </p>
-                </div>
-              </div>
-            )}
+          <CardContent className="grid min-h-0 flex-1 grid-cols-3 divide-x divide-white/8 p-0">
+            <ReviewSignal
+              icon={Target}
+              label="Plan"
+              value={`${Math.round(planRate)}%`}
+              tone={planRate >= 70 ? "positive" : "warning"}
+            />
+            <ReviewSignal
+              icon={Gauge}
+              label="Expectancy"
+              value={stats.pf >= 1 ? "Positive" : "Review"}
+              tone={stats.pf >= 1 ? "positive" : "warning"}
+            />
+            <ReviewSignal
+              icon={topSetup ? CheckCircle2 : ShieldCheck}
+              label={topSetup ? "Top setup" : "Open"}
+              value={topSetup?.name || String(openPositions.length)}
+            />
           </CardContent>
         </Card>
       </section>
