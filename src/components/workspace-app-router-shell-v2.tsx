@@ -21,7 +21,10 @@ import { Sidebar } from "./sidebar";
 import type { WorkspaceBootstrap } from "@/lib/server/workspace-bootstrap";
 import type { Section } from "./types";
 import { JournalSeedProvider } from "./journal/journal-seed-context";
-import { NavigationProgressProvider, useNavigation } from "./navigation-progress";
+import {
+  NavigationProgressProvider,
+  useNavigation,
+} from "./navigation-progress";
 import { WorkspaceBootLoader } from "./workspace-boot-loader";
 import { WorkspacePreferencesProvider } from "./workspace-preferences-context";
 import { WorkspaceTopbar } from "./workspace-topbar";
@@ -267,7 +270,10 @@ function WorkspaceAppRouterShellInner({
 
   return (
     <>
-      <ActiveAccountProvider initialAccounts={bootstrap?.accounts}>
+      <ActiveAccountProvider
+        initialAccounts={bootstrap?.accounts}
+        initialActiveAccountId={bootstrap?.activeAccountId}
+      >
         <JournalSeedProvider entries={bootstrap?.journalEntries}>
           <WorkspaceBootLoader bootstrapped={Boolean(bootstrap)} />
           <div className="workspace-shell flex h-dvh w-full overflow-hidden bg-black p-0 text-foreground">

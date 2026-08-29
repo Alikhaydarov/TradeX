@@ -1,11 +1,17 @@
 import type { PropAccount } from "@/components/types";
+import { cookies } from "next/headers";
 import { accountFromRow, type AccountRow } from "@/lib/workspace-accounts";
-import { JOURNAL_ENTRY_SELECT, journalEntryFromRow, type JournalEntryRow } from "@/lib/journal-entry";
+import {
+  JOURNAL_ENTRY_SELECT,
+  journalEntryFromRow,
+  type JournalEntryRow,
+} from "@/lib/journal-entry";
 import type { JournalEntry } from "@/components/types";
 import { getSupabaseServerClient } from "@/lib/supabase/server";
 
 export interface WorkspaceBootstrap {
   accounts: PropAccount[];
+  activeAccountId: string | null;
   isAdmin: boolean;
   /**
    * Every journal entry for this user, newest first. The client slices this per
@@ -33,7 +39,12 @@ export interface WorkspaceBootstrap {
 const JOURNAL_BOOTSTRAP_LIMIT = 500;
 
 export async function getWorkspaceBootstrap(): Promise<WorkspaceBootstrap> {
-  const empty: WorkspaceBootstrap = { accounts: [], isAdmin: false, journalEntries: [] };
+  const empty: WorkspaceBootstrap = {
+    accounts: [],
+    activeAccountId: null,
+    isAdmin: false,
+    journalEntries: [],
+  };
 
   const supabase = await getSupabaseServerClient();
   if (!supabase) return empty;
@@ -57,13 +68,24 @@ export async function getWorkspaceBootstrap(): Promise<WorkspaceBootstrap> {
       .limit(JOURNAL_BOOTSTRAP_LIMIT),
   ]);
 
+  const accounts = accountsResult.error
+    ? []
+    : ((accountsResult.data ?? []) as AccountRow[]).map(accountFromRow);
+  const savedAccountId = (await cookies()).get(
+    "tradoxy.active-account-id",
+  )?.value;
+
   return {
-    accounts: accountsResult.error
-      ? []
-      : ((accountsResult.data ?? []) as AccountRow[]).map(accountFromRow),
+    accounts,
+    activeAccountId:
+      accounts.find((account) => account.id === savedAccountId)?.id ??
+      accounts[0]?.id ??
+      null,
     isAdmin: adminResult.error ? false : Boolean(adminResult.data),
     journalEntries: journalResult.error
       ? []
-      : ((journalResult.data ?? []) as JournalEntryRow[]).map(journalEntryFromRow),
+      : ((journalResult.data ?? []) as JournalEntryRow[]).map(
+          journalEntryFromRow,
+        ),
   };
 }
