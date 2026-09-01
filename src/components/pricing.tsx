@@ -45,7 +45,7 @@ interface StripeConfigStatus {
     currency: "USD";
     interval: "month";
     linked: boolean;
-    priceId: string | null;
+    priceId?: string | null;
   }>;
 }
 

@@ -1,4 +1,5 @@
 import { authenticateRequest, badRequest, serverError, unauthorized } from "@/lib/backend/auth";
+import { rateLimitOrResponse } from "@/lib/backend/request-security";
 import { getSupabaseServerClient } from "@/lib/supabase/server";
 import { notifyUsers } from "@/lib/server/push";
 import { after } from "next/server";
@@ -100,6 +101,11 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   const auth = await authenticateRequest(request);
   if (!auth) return unauthorized();
+
+  // Posting is cheap for us and cheap for a script, which is what makes a feed
+  // floodable. Generous enough that no real person will meet it.
+  const flood = await rateLimitOrResponse(auth, "tradox-post-create", 20, 600);
+  if (flood) return flood;
 
   const body = (await request.json()) as {
     content?: string;
