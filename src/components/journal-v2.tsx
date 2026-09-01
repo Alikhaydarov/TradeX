@@ -19,7 +19,6 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { apiRequest } from "../lib/api-client";
 import { DashboardOverview } from "@/features/trading-dashboard/components/dashboard-overview";
 import { JournalAccountList } from "./journal/journal-account-list";
-import { JournalTradeEditor } from "./journal/journal-trade-editor";
 import { JournalGallery } from "./journal/journal-gallery";
 import { JournalFilters, type JournalTradeRange as TradeRange } from "./journal/journal-filters";
 import {
@@ -50,10 +49,7 @@ import { Skeleton } from "./ui/skeleton";
 import { useActiveAccountStore } from "./active-account-context";
 import { useAuth } from "./auth-context";
 import { InstrumentBadge } from "./instrument-badge";
-import { PropAccountDialog } from "./prop-account-dialog";
 import { PropFirmLogo } from "./prop-firm-logo";
-import { Mt5Settings } from "./mt5-settings";
-import { TradeReviewModal } from "./trade-review-modal";
 import { useWorkspacePreferences } from "./workspace-preferences-context";
 import type { JournalEntry, OpenPosition, PropAccount } from "./types";
 
@@ -67,6 +63,51 @@ const JournalScoreRadar = dynamic(
   () => import("./journal-charts").then((m) => m.JournalScoreRadar),
   { ssr: false, loading: () => <div className="h-full w-full" /> },
 );
+
+// Dialogs and the MT5 settings panel: ~2,500 lines that only ever render after
+// a click, but which used to be bundled into the chunk shared by /dashboard,
+// /trades, /analytics and /accounts - so every workspace route paid for them on
+// first load. Split out, they are fetched when the thing that opens them is
+// first used.
+const DialogFallback = () => (
+  <div className="fixed inset-0 z-50 grid place-items-center bg-black/60">
+    <Spinner className="size-6 text-white/70" />
+  </div>
+);
+
+const JournalTradeEditor = dynamic(
+  () => import("./journal/journal-trade-editor").then((m) => m.JournalTradeEditor),
+  { ssr: false, loading: DialogFallback },
+);
+const PropAccountDialog = dynamic(
+  () => import("./prop-account-dialog").then((m) => m.PropAccountDialog),
+  { ssr: false, loading: DialogFallback },
+);
+const TradeReviewModal = dynamic(
+  () => import("./trade-review-modal").then((m) => m.TradeReviewModal),
+  { ssr: false, loading: DialogFallback },
+);
+const Mt5Settings = dynamic(
+  () => import("./mt5-settings").then((m) => m.Mt5Settings),
+  { ssr: false, loading: () => <Skeleton className="h-64 rounded-xl" /> },
+);
+
+/**
+ * True once `open` has been true at least once.
+ *
+ * A dialog that is always mounted defeats the point of code-splitting it - the
+ * chunk downloads with the page. Mounting it only while open would fix that but
+ * would also cut off its close animation, so this latches: nothing is fetched
+ * until the first open, and after that the component stays mounted and behaves
+ * exactly as before.
+ */
+function useMountedOnce(open: boolean) {
+  const [mounted, setMounted] = useState(open);
+  useEffect(() => {
+    if (open) setMounted(true);
+  }, [open]);
+  return mounted || open;
+}
 
 type AccountRow = {
   id: string;
@@ -277,6 +318,8 @@ export function JournalV2({
   const [calendarView, setCalendarView] = useState<"year" | "month">(() => calendarMonthFromPath(pathname) ? "month" : "year");
   const [accountOpen, setAccountOpen] = useState(false);
   const [tradeOpen, setTradeOpen] = useState(false);
+  const accountDialogMounted = useMountedOnce(accountOpen);
+  const tradeDialogMounted = useMountedOnce(tradeOpen);
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState<string | null>(null);
   const [query, setQuery] = useState("");
@@ -896,19 +939,23 @@ export function JournalV2({
           onDelete={removeAccount}
         />
       )}
-      <PropAccountDialog
-        open={accountOpen}
-        saving={saving}
-        onOpenChange={setAccountOpen}
-        onSave={createAccount}
-      />
-      <TradeReviewModal
-        open={tradeOpen}
-        saving={saving}
-        account={account}
-        onOpenChange={setTradeOpen}
-        onSave={addTrade}
-      />
+      {accountDialogMounted ? (
+        <PropAccountDialog
+          open={accountOpen}
+          saving={saving}
+          onOpenChange={setAccountOpen}
+          onSave={createAccount}
+        />
+      ) : null}
+      {tradeDialogMounted ? (
+        <TradeReviewModal
+          open={tradeOpen}
+          saving={saving}
+          account={account}
+          onOpenChange={setTradeOpen}
+          onSave={addTrade}
+        />
+      ) : null}
     </div>
   );
 }
