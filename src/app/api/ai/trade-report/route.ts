@@ -1,5 +1,6 @@
 import { authenticateRequest, serverError, unauthorized } from "@/lib/backend/auth";
 import { requirePremium } from "@/lib/backend/premium";
+import { rateLimitOrResponse } from "@/lib/backend/request-security";
 import { buildAiCoachReport, mapJournalTrade } from "@/lib/backend/trade-ai-coach";
 
 export const runtime = "nodejs";
@@ -11,6 +12,14 @@ async function handleTradeReport(request: Request) {
   try {
     const locked = await requirePremium(auth);
     if (locked) return locked;
+
+    // This route reaches an external LLM, so an unbounded caller is a billing
+    // problem, not just a load problem. Same shape as /api/ai/chat: a short
+    // burst window plus a longer one.
+    const burst = await rateLimitOrResponse(auth, "tradox-ai-report-burst", 1, 20);
+    if (burst) return burst;
+    const window = await rateLimitOrResponse(auth, "tradox-ai-report-window", 10, 3600);
+    if (window) return window;
 
     const url = new URL(request.url);
     const accountId = url.searchParams.get("accountId");
