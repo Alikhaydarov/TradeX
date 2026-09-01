@@ -8,7 +8,7 @@ import { AuthProvider } from "@/components/auth-context";
 import type { AuthProfileIdentity } from "@/components/auth-context";
 import { APP_ROOT_TAILWIND_CLASS } from "@/components/tailwind/app-tailwind-classes";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
-import { getSupabaseServerClient } from "@/lib/supabase/server";
+import { getServerAuth } from "@/lib/supabase/session";
 import "./globals.css";
 
 const dmSans = DM_Sans({
@@ -69,16 +69,13 @@ export default async function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   const [locale, messages] = await Promise.all([getLocale(), getMessages()]);
   const configured = isSupabaseConfigured();
-  const supabase = await getSupabaseServerClient();
-  const { data } = supabase
-    ? await supabase.auth.getUser()
-    : { data: { user: null } };
+  const { supabase, user } = await getServerAuth();
   let initialProfile: AuthProfileIdentity | null = null;
-  if (supabase && data.user) {
+  if (supabase && user) {
     const { data: profile } = await supabase
       .from("profiles")
       .select("username, full_name, avatar_url")
-      .eq("id", data.user.id)
+      .eq("id", user.id)
       .maybeSingle();
     if (profile) {
       initialProfile = {
@@ -98,7 +95,7 @@ export default async function RootLayout({
       <body className={`${appTypographyClass} ${APP_ROOT_TAILWIND_CLASS}`}>
         <NextIntlClientProvider locale={locale} messages={messages}>
           <AuthProvider
-            initialUser={data.user}
+            initialUser={user}
             initialProfile={initialProfile}
             initialConfigured={configured}
           >

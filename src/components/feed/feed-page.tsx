@@ -3,6 +3,7 @@
 import { Check, Newspaper, X } from "lucide-react";
 
 import { SkeletonBlock, XSpinner } from "../app-loader";
+import type { PostReply } from "../types";
 import { MediaImage } from "../media-image";
 import {
   AlertDialog,
@@ -31,8 +32,18 @@ import {
 } from "../ui/empty";
 import { Textarea } from "../ui/textarea";
 import { MemoizedPostCard as PostCard } from "./post-card";
+
 import { PostComposer } from "./post-composer";
 import { useFeedData } from "./use-feed-data";
+
+/**
+ * Stable identity for the "no replies loaded yet" case, which is every post
+ * until its thread is opened. A fresh `[]` literal here would be a new
+ * reference on every render of this list, and PostCard's shallow `memo`
+ * comparison would fail for every card - so one like would re-render the whole
+ * feed instead of the single card that changed.
+ */
+const NO_REPLIES: PostReply[] = [];
 
 export type FeedPageProps = {
   onLogin: () => void;
@@ -107,7 +118,7 @@ export function FeedPage({ onLogin }: FeedPageProps) {
                 isAdmin={feed.isAdmin}
                 acting={feed.actingId === post.id}
                 openReplies={feed.openReplies === post.id}
-                replies={feed.repliesByPost[post.id] ?? []}
+                replies={feed.repliesByPost[post.id] ?? NO_REPLIES}
                 replyDraft={feed.replyDrafts[post.id] ?? ""}
                 loadingReplies={feed.loadingReplies === post.id}
                 savingReply={feed.savingReply === post.id}

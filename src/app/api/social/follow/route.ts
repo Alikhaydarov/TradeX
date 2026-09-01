@@ -1,4 +1,5 @@
 import { authenticateRequest, badRequest, serverError, unauthorized } from "@/lib/backend/auth";
+import { rateLimitOrResponse } from "@/lib/backend/request-security";
 import { sendSocialNotification } from "@/lib/backend/social-notifications";
 
 export const runtime = "nodejs";
@@ -6,6 +7,11 @@ export const runtime = "nodejs";
 export async function POST(request: Request) {
   const auth = await authenticateRequest(request);
   if (!auth) return unauthorized();
+
+  // Each follow fans out a notification insert to the target, so an unbounded
+  // follow/unfollow loop is a way to spam someone's notification list.
+  const flood = await rateLimitOrResponse(auth, "tradox-follow", 60, 600);
+  if (flood) return flood;
 
   const body = (await request.json()) as { targetUserId?: string };
   const targetUserId = body.targetUserId?.trim();

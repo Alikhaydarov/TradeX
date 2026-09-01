@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import { ProfileRouteContent } from "@/components/routes/workspace-route-content";
 import type { ProfileSeed } from "@/components/profile/use-profile-controller";
 import { loadProfileView } from "@/lib/server/profile-view";
-import { getSupabaseServerClient } from "@/lib/supabase/server";
+import { getServerAuth } from "@/lib/supabase/session";
 
 type UsernameProfilePageProps = {
   params: Promise<{ username: string }>;
@@ -25,11 +25,8 @@ export default async function UsernameProfilePage({
   // Resolved here rather than from a useEffect after hydration. Opening someone
   // else's profile used to mean waiting for the bundle, then the route chunk,
   // then this query - three serial waits before the page showed anything.
-  const supabase = await getSupabaseServerClient();
-  const { data: viewer } = supabase
-    ? await supabase.auth.getUser()
-    : { data: { user: null } };
-  const result = await loadProfileView(handle, viewer.user?.id ?? null);
+  const { user: viewer } = await getServerAuth();
+  const result = await loadProfileView(handle, viewer?.id ?? null);
 
   return (
     <ProfileRouteContent

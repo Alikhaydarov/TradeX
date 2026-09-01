@@ -1,13 +1,18 @@
 import { authenticateRequest, serverError, unauthorized } from "@/lib/backend/auth";
 import { requireProAi } from "@/lib/backend/pro-ai";
+import { consumeRateLimit } from "@/lib/backend/request-security";
 
 export const runtime = "nodejs";
 export const maxDuration = 30;
 
 const MODEL = "openai/gpt-oss-20b";
 const FOREX_FACTORY_URL = "https://nfs.faireconomy.media/ff_calendar_thisweek.json";
-const syncTimes = new Map<string, number>();
-const SYNC_COOLDOWN_MS = 5 * 60 * 1000;
+// One sync per user per five minutes. This used to be a module-level Map,
+// which on serverless means "per lambda instance": every cold start reset it,
+// and a caller could sidestep the cooldown entirely just by making requests
+// until one landed on a fresh instance. The counter now lives in Postgres, so
+// it holds however many instances are running.
+const SYNC_COOLDOWN_SECONDS = 5 * 60;
 
 type AccountRow = {
   id: string;
@@ -410,12 +415,15 @@ export async function POST(request: Request) {
   const accessError = await requireProAi(auth);
   if (accessError) return accessError;
 
-  const nowMs = Date.now();
-  const previous = syncTimes.get(auth.user.id) ?? 0;
-  if (nowMs - previous < SYNC_COOLDOWN_MS) {
+  const cooldown = await consumeRateLimit(
+    auth,
+    "tradox-ai-notification-sync",
+    1,
+    SYNC_COOLDOWN_SECONDS,
+  );
+  if (!cooldown.allowed) {
     return Response.json({ created: 0, skipped: true });
   }
-  syncTimes.set(auth.user.id, nowMs);
 
   try {
     const { data: accounts, error: accountError } = await auth.supabase

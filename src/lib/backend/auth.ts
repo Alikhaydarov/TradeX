@@ -1,6 +1,6 @@
 import { createClient, type SupabaseClient, type User } from "@supabase/supabase-js";
 import { getSupabaseConfig } from "@/lib/supabase/config";
-import { getSupabaseServerClient } from "@/lib/supabase/server";
+import { getServerAuth } from "@/lib/supabase/session";
 
 export interface ApiAuth {
   supabase: SupabaseClient;
@@ -14,11 +14,12 @@ export async function authenticateRequest(request: Request): Promise<ApiAuth | n
     : null;
 
   if (!token) {
-    const supabase = await getSupabaseServerClient();
-    if (!supabase) return null;
-    const { data, error } = await supabase.auth.getUser();
-    if (error || !data.user) return null;
-    return { supabase, user: data.user };
+    // Shares the request-scoped result with the layout/bootstrap, so a page
+    // render plus the API calls it triggers cost one auth round-trip, not one
+    // per caller.
+    const { supabase, user } = await getServerAuth();
+    if (!supabase || !user) return null;
+    return { supabase, user };
   }
 
   const { url, publishableKey } = getSupabaseConfig();

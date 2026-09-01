@@ -4,6 +4,12 @@ import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
 
 import type { ProfileSeed } from "../profile/use-profile-controller";
+import {
+  CalendarRouteSkeleton,
+  ChartRouteSkeleton,
+  ListRouteSkeleton,
+  PanelRouteSkeleton,
+} from "./route-skeleton";
 
 const loadJournalAccounts = () =>
   import("../journal/journal-accounts").then(
@@ -49,27 +55,52 @@ const loadTradeDetailPage = () =>
     (module) => module.TradeDetailPage,
   );
 
-const JournalAccounts = dynamic(loadJournalAccounts);
+// Each of these renders `null` until its chunk arrives, so every one needs a
+// `loading` shape - otherwise the first visit to a route is a blank panel for
+// as long as the network takes.
+const JournalAccounts = dynamic(loadJournalAccounts, {
+  loading: () => <ListRouteSkeleton rows={4} />,
+});
 
-const JournalStats = dynamic(loadJournalStats);
+const JournalStats = dynamic(loadJournalStats, {
+  loading: () => <ChartRouteSkeleton />,
+});
 
-const JournalTradeList = dynamic(loadJournalTradeList);
+const JournalTradeList = dynamic(loadJournalTradeList, {
+  loading: () => <ListRouteSkeleton rows={8} />,
+});
 
-const JournalAnalytics = dynamic(loadJournalAnalytics);
+const JournalAnalytics = dynamic(loadJournalAnalytics, {
+  loading: () => <ChartRouteSkeleton />,
+});
 
-const JournalCalendar = dynamic(loadJournalCalendar);
+const JournalCalendar = dynamic(loadJournalCalendar, {
+  loading: () => <CalendarRouteSkeleton />,
+});
 
-const AccountSettings = dynamic(loadAccountSettings);
+const AccountSettings = dynamic(loadAccountSettings, {
+  loading: () => <PanelRouteSkeleton />,
+});
 
-const Account = dynamic(loadProfilePage);
+const Account = dynamic(loadProfilePage, {
+  loading: () => <PanelRouteSkeleton />,
+});
 
-const CommunityWorkspace = dynamic(loadCommunityWorkspace);
+const CommunityWorkspace = dynamic(loadCommunityWorkspace, {
+  loading: () => <ListRouteSkeleton rows={5} />,
+});
 
-const Pricing = dynamic(loadPricing);
+const Pricing = dynamic(loadPricing, {
+  loading: () => <PanelRouteSkeleton />,
+});
 
-const AdminPanel = dynamic(loadAdminPanel);
+const AdminPanel = dynamic(loadAdminPanel, {
+  loading: () => <ListRouteSkeleton rows={6} />,
+});
 
-const TradeDetailPage = dynamic(loadTradeDetailPage);
+const TradeDetailPage = dynamic(loadTradeDetailPage, {
+  loading: () => <PanelRouteSkeleton />,
+});
 
 function warm(loader: () => Promise<unknown>) {
   void loader().catch(() => undefined);

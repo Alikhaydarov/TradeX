@@ -1,9 +1,9 @@
 import { authenticateRequest, unauthorized } from "@/lib/backend/auth";
 import { requireProAi } from "@/lib/backend/pro-ai";
 import {
-  consumeRateLimit,
   isUuid,
   privateJson,
+  rateLimitOrResponse,
   readJsonBody,
   redactSensitiveText,
   rejectCrossSiteMutation,
@@ -222,23 +222,6 @@ async function buildAccountContext(
       note: sanitizeUntrustedNote(trade.note),
     })),
   };
-}
-
-async function rateLimitOrResponse(
-  auth: NonNullable<Awaited<ReturnType<typeof authenticateRequest>>>,
-  action: string,
-  limit: number,
-  windowSeconds: number,
-) {
-  const result = await consumeRateLimit(auth, action, limit, windowSeconds);
-  if (result.allowed) return null;
-  return privateJson(
-    { error: "Too many requests. Please try again shortly." },
-    {
-      status: 429,
-      headers: { "Retry-After": String(result.retryAfterSeconds) },
-    },
-  );
 }
 
 export async function GET(request: Request) {

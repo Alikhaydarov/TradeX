@@ -1,8 +1,17 @@
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
+import { cache } from "react";
 import { getSupabaseConfig, isSupabaseConfigured } from "./config";
 
-export async function getSupabaseServerClient() {
+/**
+ * Request-scoped Supabase client for server code.
+ *
+ * Wrapped in React's `cache()` so every caller inside a single request shares
+ * one client instance. Creating the client is cheap, but sharing it is what
+ * lets `getServerAuth()` (below, in ./session) dedupe the expensive part: the
+ * `auth.getUser()` network hop to Supabase.
+ */
+export const getSupabaseServerClient = cache(async () => {
   if (!isSupabaseConfigured()) return null;
 
   const cookieStore = await cookies();
@@ -28,4 +37,4 @@ export async function getSupabaseServerClient() {
       },
     },
   );
-}
+});

@@ -7,7 +7,7 @@ import {
   type JournalEntryRow,
 } from "@/lib/journal-entry";
 import type { JournalEntry } from "@/components/types";
-import { getSupabaseServerClient } from "@/lib/supabase/server";
+import { getServerAuth } from "@/lib/supabase/session";
 
 export interface WorkspaceBootstrap {
   accounts: PropAccount[];
@@ -46,23 +46,20 @@ export async function getWorkspaceBootstrap(): Promise<WorkspaceBootstrap> {
     journalEntries: [],
   };
 
-  const supabase = await getSupabaseServerClient();
-  if (!supabase) return empty;
-
-  const { data: userData } = await supabase.auth.getUser();
-  if (!userData.user) return empty;
+  const { supabase, user } = await getServerAuth();
+  if (!supabase || !user) return empty;
 
   const [accountsResult, adminResult, journalResult] = await Promise.all([
     supabase
       .from("prop_accounts")
       .select("*")
-      .eq("user_id", userData.user.id)
+      .eq("user_id", user.id)
       .order("created_at", { ascending: false }),
     supabase.rpc("is_admin"),
     supabase
       .from("journal_entries")
       .select(JOURNAL_ENTRY_SELECT)
-      .eq("user_id", userData.user.id)
+      .eq("user_id", user.id)
       .order("traded_at", { ascending: false })
       .order("created_at", { ascending: false })
       .limit(JOURNAL_BOOTSTRAP_LIMIT),

@@ -176,3 +176,29 @@ export async function consumeRateLimit(
     source: "memory",
   };
 }
+
+/**
+ * Consumes one allowance and, when the caller is over it, returns the 429 to
+ * send back. Returns null when the request may proceed.
+ *
+ * Every route that spends money or does real work on a user's behalf should
+ * start with one of these. `/api/ai/chat` had it from the start; the pattern
+ * lived there as a private helper, which is why the routes added later did not
+ * pick it up.
+ */
+export async function rateLimitOrResponse(
+  auth: ApiAuth,
+  action: string,
+  limit: number,
+  windowSeconds: number,
+) {
+  const result = await consumeRateLimit(auth, action, limit, windowSeconds);
+  if (result.allowed) return null;
+  return privateJson(
+    { error: "Too many requests. Please try again shortly." },
+    {
+      status: 429,
+      headers: { "Retry-After": String(result.retryAfterSeconds) },
+    },
+  );
+}
