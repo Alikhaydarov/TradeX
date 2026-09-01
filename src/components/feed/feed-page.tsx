@@ -102,7 +102,8 @@ export function FeedPage({ onLogin }: FeedPageProps) {
             Community tape
           </h2>
           <span className="ml-auto text-[10px] text-ink-subtle">
-            {feed.posts.length} posts
+            {feed.posts.length}
+            {feed.nextCursor ? "+" : ""} posts
           </span>
         </div>
 
@@ -150,6 +151,25 @@ export function FeedPage({ onLogin }: FeedPageProps) {
                   </EmptyDescription>
                 </EmptyHeader>
               </Empty>
+            ) : null}
+
+            {feed.nextCursor ? (
+              <div className="flex justify-center pt-1">
+                <Button
+                  variant="outline"
+                  className="w-full sm:w-auto"
+                  disabled={feed.loadingMore}
+                  onClick={() => void feed.loadMore()}
+                >
+                  {feed.loadingMore ? (
+                    <>
+                      <XSpinner size="sm" /> Loading
+                    </>
+                  ) : (
+                    "Load more"
+                  )}
+                </Button>
+              </div>
             ) : null}
           </div>
         )}
