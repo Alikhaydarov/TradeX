@@ -1,6 +1,6 @@
 "use client";
 
-import { Check, Newspaper, X } from "lucide-react";
+import { Check, Flag, Newspaper, X } from "lucide-react";
 
 import { SkeletonBlock, XSpinner } from "../app-loader";
 import type { PostReply } from "../types";
@@ -31,6 +31,11 @@ import {
   EmptyTitle,
 } from "../ui/empty";
 import { Textarea } from "../ui/textarea";
+import {
+  POST_REPORT_NOTE_MAX,
+  POST_REPORT_REASONS,
+  isPostReportReason,
+} from "@/lib/post-report";
 import { MemoizedPostCard as PostCard } from "./post-card";
 
 import { PostComposer } from "./post-composer";
@@ -129,6 +134,7 @@ export function FeedPage({ onLogin }: FeedPageProps) {
                 onToggleBookmark={feed.toggleBookmark}
                 onEdit={feed.openEditPost}
                 onDelete={feed.openDeleteModal}
+                onReport={feed.openReport}
                 onOpenMedia={feed.setLightboxUrl}
                 onToggleReplies={feed.toggleReplies}
                 onToggleRepost={feed.toggleRepost}
@@ -259,6 +265,92 @@ export function FeedPage({ onLogin }: FeedPageProps) {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <Dialog
+        open={Boolean(feed.reportTarget)}
+        onOpenChange={(open) => {
+          if (!open && !feed.reportingPost) feed.setReportTarget(null);
+        }}
+      >
+        <DialogContent className="sm:max-w-md">
+          {feed.reportDone ? (
+            <>
+              <DialogHeader>
+                <DialogTitle>Thanks - report sent</DialogTitle>
+                <DialogDescription>
+                  A moderator will review this post. You won&apos;t hear back on
+                  every report, but each one is looked at.
+                </DialogDescription>
+              </DialogHeader>
+              <Button
+                className="ml-auto"
+                onClick={() => feed.setReportTarget(null)}
+              >
+                Close
+              </Button>
+            </>
+          ) : (
+            <>
+              <DialogHeader>
+                <DialogTitle>Report this post</DialogTitle>
+                <DialogDescription>
+                  Reports go to the moderators, not to the author. They will not
+                  see who reported them.
+                </DialogDescription>
+              </DialogHeader>
+
+              <fieldset className="space-y-1.5">
+                <legend className="sr-only">Reason</legend>
+                {POST_REPORT_REASONS.map((reason) => (
+                  <label
+                    key={reason.value}
+                    className={`flex cursor-pointer items-center gap-2.5 rounded-lg border px-3 py-2.5 text-sm transition-colors ${
+                      feed.reportReason === reason.value
+                        ? "border-white/25 bg-white/[.06] text-zinc-100"
+                        : "border-border bg-transparent text-ink-soft hover:bg-white/[.03]"
+                    }`}
+                  >
+                    <input
+                      type="radio"
+                      name="report-reason"
+                      value={reason.value}
+                      checked={feed.reportReason === reason.value}
+                      onChange={(event) => {
+                        const next = event.target.value;
+                        if (isPostReportReason(next)) feed.setReportReason(next);
+                      }}
+                      className="size-3.5 accent-white"
+                    />
+                    {reason.label}
+                  </label>
+                ))}
+              </fieldset>
+
+              <Textarea
+                value={feed.reportNote}
+                onChange={(event) => feed.setReportNote(event.target.value)}
+                maxLength={POST_REPORT_NOTE_MAX}
+                placeholder="Anything else the moderator should know (optional)"
+                className="min-h-20"
+              />
+
+              <div className="flex items-center gap-3">
+                <span className="text-xs tabular-nums text-ink-mute">
+                  {feed.reportNote.length}/{POST_REPORT_NOTE_MAX}
+                </span>
+                <Button
+                  className="ml-auto"
+                  disabled={feed.reportingPost}
+                  onClick={() => void feed.submitReport()}
+                >
+                  {feed.reportingPost ? <XSpinner size="sm" /> : <Flag size={16} />}
+                  Send report
+                </Button>
+              </div>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
 
       <Dialog
         open={Boolean(feed.editingPost)}
