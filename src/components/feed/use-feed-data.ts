@@ -15,6 +15,11 @@ import {
   toSocialPost,
   type SocialPostRecord,
 } from "@/lib/social-format";
+import {
+  isPostReportReason,
+  POST_REPORT_NOTE_MAX,
+  type PostReportReason,
+} from "@/lib/post-report";
 import { useAuth } from "../auth-context";
 import type { JournalEntry, Post, PostReply } from "../types";
 import { usePremiumStatus } from "../use-premium-status";
@@ -148,6 +153,11 @@ export function useFeedData(onLogin: () => void) {
   const [isAdmin, setIsAdmin] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [lightboxUrl, setLightboxUrl] = useState<string | null>(null);
+  const [reportTarget, setReportTarget] = useState<Post | null>(null);
+  const [reportReason, setReportReason] = useState<PostReportReason>("spam");
+  const [reportNote, setReportNote] = useState("");
+  const [reportingPost, setReportingPost] = useState(false);
+  const [reportDone, setReportDone] = useState(false);
   const viewed = useRef(new Set<string>());
   const pendingViews = useRef(new Set<string>());
   const viewRetries = useRef(new Map<string, number>());
@@ -826,6 +836,54 @@ export function useFeedData(onLogin: () => void) {
     }
   }, [deleteTarget, invalidateFeedCache, user]);
 
+  const openReport = useCallback(
+    (post: Post) => {
+      if (!user) {
+        onLogin();
+        return;
+      }
+      setReportReason("spam");
+      setReportNote("");
+      setReportDone(false);
+      setReportTarget(post);
+    },
+    [onLogin, user],
+  );
+
+  /**
+   * Sends the report.
+   *
+   * The server treats a second report of the same post by the same person as a
+   * success rather than an error, so the only outcome the reporter ever sees is
+   * "thanks" - they are never asked to remember whether they already did this.
+   */
+  const submitReport = useCallback(async () => {
+    if (!reportTarget || reportingPost) return;
+    if (!isPostReportReason(reportReason)) return;
+
+    setReportingPost(true);
+    setError(null);
+    try {
+      await apiRequest(`/api/posts/${reportTarget.id}/report`, {
+        method: "POST",
+        body: JSON.stringify({
+          reason: reportReason,
+          note: reportNote.trim().slice(0, POST_REPORT_NOTE_MAX) || undefined,
+        }),
+      });
+      setReportDone(true);
+    } catch (nextError) {
+      setError(
+        nextError instanceof Error
+          ? nextError.message
+          : "Report could not be sent.",
+      );
+      setReportTarget(null);
+    } finally {
+      setReportingPost(false);
+    }
+  }, [reportNote, reportReason, reportTarget, reportingPost]);
+
   const closeShareComposer = useCallback(() => {
     setShareTarget(null);
     void loadPosts(true);
@@ -865,6 +923,16 @@ export function useFeedData(onLogin: () => void) {
     error,
     lightboxUrl,
     setLightboxUrl,
+    reportTarget,
+    setReportTarget,
+    reportReason,
+    setReportReason,
+    reportNote,
+    setReportNote,
+    reportingPost,
+    reportDone,
+    openReport,
+    submitReport,
     observePost,
     openProfile,
     openJournal,

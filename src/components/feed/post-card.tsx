@@ -3,6 +3,7 @@
 import {
   Bookmark,
   Eye,
+  Flag,
   Heart,
   Link2,
   MessageCircle,
@@ -150,6 +151,7 @@ export function PostCard({
   onToggleBookmark,
   onEdit,
   onDelete,
+  onReport,
   onOpenMedia,
   onToggleReplies,
   onToggleRepost,
@@ -172,6 +174,7 @@ export function PostCard({
   onToggleBookmark: (post: Post) => void;
   onEdit: (post: Post) => void;
   onDelete: (post: Post) => void;
+  onReport: (post: Post) => void;
   onOpenMedia: (url: string) => void;
   onToggleReplies: (post: Post) => void;
   onToggleRepost: (post: Post) => void;
@@ -249,6 +252,14 @@ export function PostCard({
                   <Bookmark />
                   {post.bookmarked ? "Remove bookmark" : "Bookmark"}
                 </DropdownMenuItem>
+                {!ownsPost && userId ? (
+                  <DropdownMenuItem
+                    onClick={() => onReport(post)}
+                    className="min-h-9 px-2.5"
+                  >
+                    <Flag /> Report post
+                  </DropdownMenuItem>
+                ) : null}
                 {canManage ? <DropdownMenuSeparator /> : null}
                 {ownsPost ? (
                   <DropdownMenuItem
