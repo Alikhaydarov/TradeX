@@ -10,7 +10,8 @@
     "check:ui-parity": "node tools/check-ui-parity-scope.mjs",
     "check:billing": "node tools/check-billing-env.mjs",
     "audit:ui": "node tools/audit-ui-performance.mjs",
-    "audit:responsive": "node tools/audit-responsive-ui.mjs"
+    "audit:responsive": "node tools/audit-responsive-ui.mjs",
+    "audit:rendered": "node tools/audit-rendered-ui.mjs"
   },
   "dependencies": {
     "@supabase/ssr": "^0.10.3",
@@ -40,6 +41,7 @@
     "@types/react-dom": "^19.0.0",
     "eslint": "^9.17.0",
     "eslint-config-next": "^16.1.6",
+    "playwright": "^1.63.0",
     "postcss": "^8.4.49",
     "tailwindcss": "^4.1.0",
     "typescript": "^5.7.2"

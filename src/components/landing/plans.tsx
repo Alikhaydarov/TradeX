@@ -105,7 +105,7 @@ export function LandingPlans() {
               </span>
               <span
                 className={`text-[12px] ${
-                  plan.highlight ? "text-white/55" : "text-black/50"
+                  plan.highlight ? "text-white/55" : "text-black/65"
                 }`}
               >
                 {plan.period}
@@ -129,8 +129,10 @@ export function LandingPlans() {
                 >
                   <Check
                     size={14}
+                    // Icons are graphical objects: WCAG asks 3:1, and black/30
+                    // on the light card measured 1.9:1.
                     className={`mt-1.5 shrink-0 ${
-                      plan.highlight ? "text-white/40" : "text-black/30"
+                      plan.highlight ? "text-white/60" : "text-black/50"
                     }`}
                   />
                   {feature}
@@ -152,7 +154,7 @@ export function LandingPlans() {
         ))}
       </Scroll3DStage>
 
-      <p className="mt-7 text-center text-[12px] leading-5 text-black/45">
+      <p className="mt-7 text-center text-[12px] leading-5 text-black/60">
         Billed monthly, cancel from the billing portal at any time. There is no
         trial — the Free plan is the trial, and it does not expire.
       </p>

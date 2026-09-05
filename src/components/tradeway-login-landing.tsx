@@ -56,7 +56,7 @@ export function TradoxyLoginLanding({
   }, []);
 
   return (
-    <main className="min-h-dvh overflow-x-clip bg-[#f3f3f0] text-black [--reveal-from:rgba(10,10,10,.26)] [--reveal-to:#0a0a0a]">
+    <main className="min-h-dvh overflow-x-clip bg-[#f3f3f0] text-black [--reveal-from:rgba(10,10,10,.62)] [--reveal-to:#0a0a0a]">
       <LandingNav onLogin={onLogin} onRegister={onRegister} />
 
       {authError && (
@@ -82,7 +82,7 @@ export function TradoxyLoginLanding({
 
       <div
         id="angles"
-        className="rounded-[40px] bg-black text-white [--reveal-from:rgba(255,255,255,.24)] [--reveal-to:#ffffff] max-sm:rounded-[28px]"
+        className="rounded-[40px] bg-black text-white [--reveal-from:rgba(255,255,255,.55)] [--reveal-to:#ffffff] max-sm:rounded-[28px]"
       >
         <LandingRail />
         <LandingBento />
@@ -96,7 +96,7 @@ export function TradoxyLoginLanding({
       <section className="mx-auto w-[min(1180px,calc(100%-48px))] pb-24 max-sm:w-[min(calc(100%-30px),1180px)]">
         <div className="flex flex-wrap items-center justify-between gap-8 rounded-2xl bg-black px-10 py-14 max-sm:px-7 max-sm:py-10">
           <div>
-            <p className="text-[11px] uppercase tracking-[.18em] text-white/35">
+            <p className="text-[11px] uppercase tracking-[.18em] text-white/55">
               Your next session starts here
             </p>
             <h2 className="mt-4 max-w-md text-[clamp(24px,3.2vw,36px)] font-light leading-[1.2] tracking-[-0.02em] text-white">
@@ -112,7 +112,7 @@ export function TradoxyLoginLanding({
         </div>
       </section>
 
-      <footer className="mx-auto flex w-[min(1180px,calc(100%-48px))] flex-wrap items-center justify-between gap-4 border-t border-black/8 py-8 text-[12px] text-black/40 max-sm:w-[min(calc(100%-30px),1180px)]">
+      <footer className="mx-auto flex w-[min(1180px,calc(100%-48px))] flex-wrap items-center justify-between gap-4 border-t border-black/8 py-8 text-[12px] text-black/60 max-sm:w-[min(calc(100%-30px),1180px)]">
         <Link href="/" className="flex items-center gap-2.5 text-black">
           <span className="grid size-6 place-items-center rounded-md bg-black">
             <TradoxyMark className="size-3 text-white" />
