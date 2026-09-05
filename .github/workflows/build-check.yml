@@ -102,6 +102,8 @@ jobs:
         run: npm run check:ui-parity
       - name: Lint
         run: npm run lint
+      - name: Unit tests
+        run: npm test
       - name: Build and capture log
         id: build
         shell: bash

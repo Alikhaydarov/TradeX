@@ -11,6 +11,7 @@ import {
 import type { ReactNode } from "react";
 import { useActiveAccountStore } from "./active-account-context";
 import { useAuth } from "./auth-context";
+import { onboardingCopy } from "@/lib/onboarding-copy";
 import { Button } from "./ui/button";
 import { Spinner } from "./ui/spinner";
 import { usePremiumStatus } from "./use-premium-status";
@@ -30,7 +31,15 @@ export function FreeUserStart({ children }: { children: ReactNode }) {
     );
   }
 
-  if (status.plan !== "free" || accounts.length > 0) return children;
+  // Gated on having no accounts, not on being on the free plan. It used to be
+  // `status.plan !== "free" || accounts.length > 0`, which meant someone who had
+  // just paid for Standard or Pro - the person with the most reason to expect a
+  // guided start - landed on a dashboard of zeros with nothing telling them the
+  // next step is to connect an account. Whether the workspace is empty is the
+  // thing that decides this; the plan only decides the wording.
+  if (accounts.length > 0) return children;
+
+  const copy = onboardingCopy(status);
 
   const firstName = String(
     user?.user_metadata.full_name ?? user?.user_metadata.name ?? "Trader",
@@ -47,11 +56,11 @@ export function FreeUserStart({ children }: { children: ReactNode }) {
               Getting started
             </p>
             <p className="mt-1 text-sm font-semibold text-ink-soft">
-              Free workspace
+              {copy.workspace}
             </p>
           </div>
           <span className="rounded-full border border-white/10 bg-white/[.04] px-3 py-1.5 text-[10px] font-bold text-ink-soft">
-            1 account included
+            {copy.badge}
           </span>
         </header>
 
@@ -64,8 +73,7 @@ export function FreeUserStart({ children }: { children: ReactNode }) {
               Welcome, {firstName}. Build your trading record.
             </h1>
             <p className="mt-4 max-w-lg text-sm leading-6 text-ink-mute sm:text-base">
-              Start with one account. Tradoxy will turn your trades into a clear
-              journal, calendar and performance review.
+              {copy.intro}
             </p>
             <Button
               onClick={() => router.push("/accounts?new=1")}
@@ -73,9 +81,7 @@ export function FreeUserStart({ children }: { children: ReactNode }) {
             >
               <Plus size={16} /> Add your first account <ArrowRight size={15} />
             </Button>
-            <p className="mt-3 text-[11px] text-ink-faint">
-              Manual accounts are free. No card required.
-            </p>
+            <p className="mt-3 text-[11px] text-ink-faint">{copy.reassurance}</p>
 
             <div className="mt-9 space-y-1 border-t border-white/8 pt-5">
               <StartStep
@@ -87,7 +93,7 @@ export function FreeUserStart({ children }: { children: ReactNode }) {
               <StartStep
                 number="02"
                 title="Add your trades"
-                text="Journal manually or sync when your plan supports it."
+                text={copy.step2}
               />
               <StartStep
                 number="03"

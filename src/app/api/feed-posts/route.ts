@@ -1,9 +1,17 @@
 import { authenticateRequest, serverError } from "@/lib/backend/auth";
+import {
+  encodeFeedCursor,
+  feedKeysetFilter,
+  parseFeedCursor,
+} from "@/lib/backend/feed-cursor";
 import { hasVerifiedPremiumAccess } from "@/lib/premium-plan";
 import { SOCIAL_POST_SELECT } from "@/lib/social-format";
 import { getSupabaseServerClient } from "@/lib/supabase/server";
 
 export const runtime = "nodejs";
+
+const DEFAULT_LIMIT = 25;
+const MAX_LIMIT = 50;
 
 interface PostRow {
   id: string;
@@ -27,22 +35,41 @@ export async function GET(request: Request) {
   const supabase = await getSupabaseServerClient();
   if (!supabase) return serverError("Database ulanmagan.");
 
+  const url = new URL(request.url);
+  const requestedLimit = Number.parseInt(url.searchParams.get("limit") ?? "", 10);
+  const limit = Number.isFinite(requestedLimit)
+    ? Math.min(MAX_LIMIT, Math.max(1, requestedLimit))
+    : DEFAULT_LIMIT;
+  const cursor = parseFeedCursor(url.searchParams.get("cursor"));
+
+  let query = supabase
+    .from("posts")
+    .select(SOCIAL_POST_SELECT)
+    .eq("is_archived", false)
+    .not("symbol", "is", null)
+    .not("side", "is", null)
+    .not("trade_result", "is", null);
+
+  if (cursor) {
+    query = query.or(feedKeysetFilter(cursor));
+  }
+
   const [{ data: posts, error }, auth] = await Promise.all([
-    supabase
-      .from("posts")
-      .select(SOCIAL_POST_SELECT)
-      .eq("is_archived", false)
-      .not("symbol", "is", null)
-      .not("side", "is", null)
-      .not("trade_result", "is", null)
+    query
       .order("created_at", { ascending: false })
-      .limit(50),
+      .order("id", { ascending: false })
+      .limit(limit),
     authenticateRequest(request),
   ]);
 
   if (error) return serverError(error.message);
 
   const rawPosts = (posts ?? []) as PostRow[];
+  // Only offer a cursor when the page came back full. A short page is the end
+  // of the feed, and handing back a cursor there would make the client fetch an
+  // empty page just to discover that.
+  const nextCursor =
+    rawPosts.length === limit ? encodeFeedCursor(rawPosts[rawPosts.length - 1]) : null;
   const userIds = Array.from(new Set(rawPosts.map((post) => post.user_id).filter(Boolean)));
   const postIds = rawPosts.map((post) => post.id);
 
@@ -83,13 +110,20 @@ export async function GET(request: Request) {
   });
 
   if (!auth || !interactions) {
-    return Response.json({ posts: hydratedPosts, likedPostIds: [], bookmarkedPostIds: [], repostedPostIds: [] });
+    return Response.json({
+      posts: hydratedPosts,
+      nextCursor,
+      likedPostIds: [],
+      bookmarkedPostIds: [],
+      repostedPostIds: [],
+    });
   }
 
   const [likes, bookmarks, reposts] = interactions;
 
   return Response.json({
     posts: hydratedPosts,
+    nextCursor,
     likedPostIds: likes.data?.map((item) => item.post_id) ?? [],
     bookmarkedPostIds: bookmarks.data?.map((item) => item.post_id) ?? [],
     repostedPostIds: reposts.data?.map((item) => item.post_id) ?? [],

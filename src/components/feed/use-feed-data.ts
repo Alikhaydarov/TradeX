@@ -25,9 +25,32 @@ type PostRecord = SocialPostRecord;
 const FEED_CACHE_TTL_MS = 30_000;
 const feedSnapshots = new Map<
   string,
-  { posts: Post[]; fetchedAt: number }
+  { posts: Post[]; fetchedAt: number; nextCursor: string | null }
 >();
+const FEED_PAGE_SIZE = 25;
 const recordedViewKeys = new Set<string>();
+
+interface FeedResponse {
+  posts: PostRecord[];
+  nextCursor?: string | null;
+  likedPostIds: string[];
+  bookmarkedPostIds: string[];
+  repostedPostIds: string[];
+}
+
+/** Maps a page of records onto Post, carrying the viewer's own interactions. */
+function hydrateFeedPage(data: FeedResponse) {
+  const liked = new Set(data.likedPostIds);
+  const bookmarked = new Set(data.bookmarkedPostIds);
+  const reposted = new Set(data.repostedPostIds);
+  return data.posts.map((post) =>
+    toSocialPost(post, {
+      liked: liked.has(post.id),
+      bookmarked: bookmarked.has(post.id),
+      reposted: reposted.has(post.id),
+    }),
+  );
+}
 
 function feedCacheKey(userId?: string) {
   return userId ? `viewer:${userId}` : "viewer:guest";
@@ -103,6 +126,8 @@ export function useFeedData(onLogin: () => void) {
 
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
+  const [nextCursor, setNextCursor] = useState<string | null>(null);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [actingId, setActingId] = useState<string | null>(null);
   const [openReplies, setOpenReplies] = useState<string | null>(null);
   const [repliesByPost, setRepliesByPost] = useState<
@@ -137,6 +162,7 @@ export function useFeedData(onLogin: () => void) {
 
     if (snapshot) {
       setPosts(snapshot.posts);
+      setNextCursor(snapshot.nextCursor);
       setLoading(false);
       if (isFresh && !force) return Promise.resolve();
     } else {
@@ -144,32 +170,65 @@ export function useFeedData(onLogin: () => void) {
     }
 
     setError(null);
-    return apiRequest<{
-      posts: PostRecord[];
-      likedPostIds: string[];
-      bookmarkedPostIds: string[];
-      repostedPostIds: string[];
-    }>("/api/feed-posts")
+    return apiRequest<FeedResponse>(
+      `/api/feed-posts?limit=${FEED_PAGE_SIZE}`,
+    )
       .then((data) => {
-        const liked = new Set(data.likedPostIds);
-        const bookmarked = new Set(data.bookmarkedPostIds);
-        const reposted = new Set(data.repostedPostIds);
-        const nextPosts = data.posts.map((post) =>
-          toSocialPost(post, {
-            liked: liked.has(post.id),
-            bookmarked: bookmarked.has(post.id),
-            reposted: reposted.has(post.id),
-          }),
-        );
+        const nextPosts = hydrateFeedPage(data);
+        const cursor = data.nextCursor ?? null;
         feedSnapshots.set(cacheKey, {
           posts: nextPosts,
           fetchedAt: Date.now(),
+          nextCursor: cursor,
         });
         setPosts(nextPosts);
+        setNextCursor(cursor);
       })
       .catch((nextError: Error) => setError(nextError.message))
       .finally(() => setLoading(false));
   }, [user?.id]);
+
+  /**
+   * Appends the next page.
+   *
+   * The feed used to be a hard `limit(50)` with no way to ask for more, so the
+   * fifty-first post was simply unreachable. Paging is keyset-based, which
+   * matters for a feed people post into while reading: an offset would shift
+   * under them and show duplicates.
+   *
+   * New posts arriving above the cursor are not a problem for correctness, but
+   * a post already on screen could come back in a later page after being
+   * edited, so the merge is keyed by id rather than blindly concatenated.
+   */
+  const loadMore = useCallback(() => {
+    if (!nextCursor || loadingMore) return Promise.resolve();
+    setLoadingMore(true);
+    setError(null);
+
+    return apiRequest<FeedResponse>(
+      `/api/feed-posts?limit=${FEED_PAGE_SIZE}&cursor=${encodeURIComponent(nextCursor)}`,
+    )
+      .then((data) => {
+        const cursor = data.nextCursor ?? null;
+        const page = hydrateFeedPage(data);
+        setPosts((current) => {
+          const seen = new Set(current.map((post) => post.id));
+          const merged = [
+            ...current,
+            ...page.filter((post) => !seen.has(post.id)),
+          ];
+          feedSnapshots.set(feedCacheKey(user?.id), {
+            posts: merged,
+            fetchedAt: Date.now(),
+            nextCursor: cursor,
+          });
+          return merged;
+        });
+        setNextCursor(cursor);
+      })
+      .catch((nextError: Error) => setError(nextError.message))
+      .finally(() => setLoadingMore(false));
+  }, [loadingMore, nextCursor, user?.id]);
 
   const invalidateFeedCache = useCallback(() => {
     feedSnapshots.delete(feedCacheKey(user?.id));
@@ -776,6 +835,9 @@ export function useFeedData(onLogin: () => void) {
     user,
     posts,
     loading,
+    nextCursor,
+    loadingMore,
+    loadMore,
     actingId,
     openReplies,
     repliesByPost,
