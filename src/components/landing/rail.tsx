@@ -41,7 +41,7 @@ const ANGLES = [
     body: "Net P&L, win rate and profit factor across every connected account, with a calendar that shows the streaks.",
     art: (
       <div className="rounded-lg border border-white/8 bg-white/[.03] p-4">
-        <p className="text-[11px] uppercase tracking-[.16em] text-white/40">Net P&amp;L</p>
+        <p className="text-[11px] uppercase tracking-[.16em] text-white/60">Net P&amp;L</p>
         <p className="mt-1 text-[26px] font-light tabular-nums text-emerald-300">
           +$12,840
         </p>
@@ -73,7 +73,7 @@ const ANGLES = [
             </span>
           ))}
         </div>
-        <p className="mt-4 text-[11px] uppercase tracking-[.16em] text-white/40">
+        <p className="mt-4 text-[11px] uppercase tracking-[.16em] text-white/60">
           Weekly review
         </p>
         <p className="mt-1 text-[15px] font-light text-white">12 traders checked in</p>
@@ -118,7 +118,7 @@ export function LandingRail() {
         className="mx-auto w-[min(1180px,calc(100%-48px))] py-24 max-sm:w-[min(calc(100%-30px),1180px)]"
         aria-labelledby="angles-heading"
       >
-        <p className="text-[11px] uppercase tracking-[.18em] text-white/35">
+        <p className="text-[11px] uppercase tracking-[.18em] text-white/55">
           The workspace
         </p>
         <h2
@@ -159,7 +159,7 @@ export function LandingRail() {
         className="absolute inset-x-0 top-0 flex h-svh flex-col justify-center overflow-hidden will-change-transform"
       >
         <div className="mx-auto w-[min(1180px,calc(100%-48px))] max-sm:w-[min(calc(100%-30px),1180px)]">
-          <p className="text-[11px] uppercase tracking-[.18em] text-white/35">
+          <p className="text-[11px] uppercase tracking-[.18em] text-white/55">
             The workspace
           </p>
           <h2

@@ -45,7 +45,11 @@ export function RevealWords({
       const at = index / count;
       const lit = Math.min(1, Math.max(0, (head - at) * count * 0.5 + 0.5));
       span.style.color = lit > 0.5 ? to : from;
-      span.style.opacity = String(0.55 + lit * 0.45);
+      // Floor of .75 rather than .55: at .55 the unlit words measured 1.81:1
+      // against the section background, under even the 3:1 large-text minimum,
+      // so a sentence nobody had scrolled past yet was genuinely hard to read.
+      // The wave is still visible - it just starts from a legible state.
+      span.style.opacity = String(0.75 + lit * 0.25);
     });
   }, { motionSafe: false });
 

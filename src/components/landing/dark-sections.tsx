@@ -55,7 +55,7 @@ export function LandingBento() {
               <TradoxyMark className="size-7 text-black" />
             </span>
             <p className="mt-6 text-[15px] font-light text-white">Tradoxy</p>
-            <p className="mt-2 text-[12px] leading-6 text-white/40">
+            <p className="mt-2 text-[12px] leading-6 text-white/60">
               One workspace,
               <br />
               every account.
@@ -89,7 +89,7 @@ function BentoCard({
     >
       <div className="flex items-start justify-between">
         <step.icon size={19} className="text-white/50" />
-        <span className="text-[11px] tabular-nums text-white/25">
+        <span className="text-[11px] tabular-nums text-white/50">
           {String(index + 1).padStart(2, "0")}
         </span>
       </div>
@@ -142,7 +142,7 @@ export function LandingPlatforms() {
               className="size-9 rounded-lg bg-white/90 object-contain p-1"
             />
             <p className="mt-4 text-[13px] text-white">{platform.name}</p>
-            <p className="mt-1 text-[11px] text-white/35">{platform.note}</p>
+            <p className="mt-1 text-[11px] text-white/55">{platform.note}</p>
           </Scroll3D>
         ))}
       </Scroll3DStage>

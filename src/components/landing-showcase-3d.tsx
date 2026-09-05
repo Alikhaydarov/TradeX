@@ -453,7 +453,7 @@ export function LandingShowcase3D() {
       aria-labelledby="showcase-heading"
     >
       <div className="text-center">
-        <p className="text-[11px] uppercase tracking-[.18em] text-white/35">
+        <p className="text-[11px] uppercase tracking-[.18em] text-white/55">
           Inside the workspace
         </p>
         <h2
@@ -492,7 +492,11 @@ export function LandingShowcase3D() {
               return (
                 <article
                   key={screen.id}
-                  aria-hidden={offset !== 0}
+                  // Every panel, not just the ones behind: these are scaled
+                  // pictures of the app rendered at 7px, unreadable by design.
+                  // The label, title and benefit below carry the same meaning
+                  // in real text, and the tablist provides the navigation.
+                  aria-hidden="true"
                   className="absolute inset-x-0 top-0 mx-auto flex h-[256px] w-[86%] flex-col overflow-hidden rounded-2xl border border-white/10 bg-[#0a0a0a] p-4 shadow-[0_30px_80px_-30px_rgba(0,0,0,.9)] transition-all duration-700 ease-out sm:h-[246px]"
                   style={{
                     transform: reduced

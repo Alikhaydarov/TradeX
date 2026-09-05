@@ -38,7 +38,13 @@ export function LaptopScroll({ children }: { children: ReactNode }) {
     <section
       ref={sectionRef}
       data-laptop-scroll
-      className="relative z-0 -mt-[55svh] h-[150svh] max-sm:-mt-[42svh] max-sm:h-[86svh]"
+      // The pull-up used to be 55svh, which lifted the laptop so far that its
+      // top edge landed above the hero's sub-copy and secondary CTA: dark
+      // product photo behind dark text, with "Sign in" reduced to a ghost.
+      // Mobile never had the problem (shorter hero, 42svh), so this is the
+      // desktop value coming down to match. The parallax is unchanged - the
+      // laptop simply enters from below the hero instead of on top of it.
+      className="relative z-0 -mt-[23svh] h-[150svh] max-sm:-mt-[42svh] max-sm:h-[86svh]"
       aria-label="Scroll to open the Tradoxy dashboard preview"
     >
       <div className="sticky top-0 flex h-svh items-center justify-center overflow-hidden max-sm:h-[86svh]">

@@ -31,17 +31,17 @@ export function LandingNav({
         </span>
       </Link>
 
-      <div className="flex items-center gap-7 text-[13px] text-black/55 max-lg:hidden">
-        <a href="#angles" className="hover:text-black">
+      <div className="flex items-center gap-5 text-[13px] text-black/60 max-lg:hidden">
+        <a href="#angles" className="-my-1 rounded px-2 py-1.5 transition-colors hover:text-black">
           Workspace
         </a>
-        <a href="#how" className="hover:text-black">
+        <a href="#how" className="-my-1 rounded px-2 py-1.5 transition-colors hover:text-black">
           How it works
         </a>
-        <a href="#plans" className="hover:text-black">
+        <a href="#plans" className="-my-1 rounded px-2 py-1.5 transition-colors hover:text-black">
           Plans
         </a>
-        <a href="#faq" className="hover:text-black">
+        <a href="#faq" className="-my-1 rounded px-2 py-1.5 transition-colors hover:text-black">
           FAQ
         </a>
       </div>
@@ -92,7 +92,7 @@ export function LandingHero({
 
       <motion.p
         {...enter(0.08)}
-        className="text-[clamp(13px,1.4vw,16px)] font-medium uppercase text-black/38"
+        className="text-[clamp(13px,1.4vw,16px)] font-medium uppercase text-black/55"
       >
         Tradoxy
       </motion.p>
@@ -103,12 +103,12 @@ export function LandingHero({
       >
         Trade with a process.
         <br />
-        Grow with every <RotatingWord className="text-black/32" />
+        Grow with every <RotatingWord className="text-black/50" />
       </motion.h1>
 
       <motion.p
         {...enter(0.24)}
-        className="mx-auto mt-7 max-w-xl text-[15px] leading-7 text-black/48 max-sm:max-w-sm max-sm:text-[14px]"
+        className="mx-auto mt-7 max-w-xl text-[15px] leading-7 text-black/60 max-sm:max-w-sm max-sm:text-[14px]"
       >
         Journal the decision, review the execution, and turn real account data
         into a repeatable trading edge.
@@ -166,7 +166,7 @@ function HeroBoard() {
 
       <div className="mt-5 grid gap-5 sm:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)]">
         <div>
-          <p className="text-[11px] uppercase tracking-[.16em] text-white/35">
+          <p className="text-[11px] uppercase tracking-[.16em] text-white/55">
             Net P&amp;L
           </p>
           <p className="mt-1 text-[clamp(26px,4vw,38px)] font-light tabular-nums text-emerald-300">
@@ -208,7 +208,7 @@ function HeroBoard() {
               key={label}
               className="flex items-center justify-between rounded-lg border border-white/8 bg-white/[.02] px-3.5 py-2.5"
             >
-              <span className="text-[11px] text-white/40">{label}</span>
+              <span className="text-[11px] text-white/60">{label}</span>
               <span className="text-[13px] tabular-nums text-white">
                 {value}
               </span>
@@ -260,7 +260,7 @@ function Figure({
       <p className="text-[34px] font-light leading-none tracking-[-0.03em] text-black sm:text-[38px]">
         <CountUp value={value} prefix={prefix} />
       </p>
-      <p className="mt-3 text-[12px] leading-5 text-black/45 sm:text-[13px]">{label}</p>
+      <p className="mt-3 text-[12px] leading-5 text-black/60 sm:text-[13px]">{label}</p>
     </div>
   );
 }

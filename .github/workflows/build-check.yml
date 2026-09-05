@@ -122,3 +122,9 @@ jobs:
       - name: Fail when build failed
         if: steps.build.outputs.status != '0'
         run: exit 1
+      # Greps catch shapes; this catches what a browser actually paints -
+      # unreadable text, targets too small to hit, a page that scrolls sideways.
+      - name: Install chromium for the rendered audit
+        run: npx playwright install --with-deps chromium
+      - name: Rendered UI audit
+        run: npm run audit:rendered
