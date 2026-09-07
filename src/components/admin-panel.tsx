@@ -5,6 +5,7 @@ import { useEffect, useMemo, useState } from "react";
 import { apiRequest } from "@/lib/api-client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { ReportQueue } from "./admin/report-queue";
 import { SkeletonBlock } from "./app-loader";
 import { TraderAvatar } from "./trader-avatar";
 import { VerifiedBadge } from "./verified-badge";
@@ -202,6 +203,8 @@ export function AdminPanel({ onLogin }: { onLogin: () => void }) {
       </header>
 
       <div className="p-2.5 sm:p-4 md:p-5">
+        <ReportQueue />
+
         {error ? (
           <div className="mb-4 rounded-2xl border border-rose-300/15 bg-rose-400/10 px-4 py-3 text-sm text-rose-200">
             {error}
