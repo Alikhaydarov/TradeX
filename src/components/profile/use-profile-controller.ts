@@ -555,6 +555,78 @@ export function useProfileController(
     viewObserver.current.observe(node);
   };
 
+  const togglePostLike = async (post: Post) => {
+    if (!user || post.timelineType !== "post") return;
+    const previous = { liked: post.liked, likes: post.likes };
+    const liked = !post.liked;
+    setPosts((current) => current.map((item) =>
+      item.id === post.id
+        ? { ...item, liked, likes: Math.max(0, item.likes + (liked ? 1 : -1)) }
+        : item,
+    ));
+    try {
+      const state = await apiRequest<{ liked: boolean; likes: number }>(
+        `/api/posts/${post.id}/like`,
+        { method: "POST" },
+      );
+      setPosts((current) => current.map((item) =>
+        item.id === post.id ? { ...item, ...state } : item,
+      ));
+    } catch (nextError) {
+      setPosts((current) => current.map((item) =>
+        item.id === post.id ? { ...item, ...previous } : item,
+      ));
+      setError(nextError instanceof Error ? nextError.message : "Like failed.");
+    }
+  };
+
+  const togglePostRepost = async (post: Post) => {
+    if (!user || post.timelineType !== "post") return;
+    const previous = { reposted: post.reposted, reposts: post.reposts };
+    const reposted = !post.reposted;
+    setPosts((current) => current.map((item) =>
+      item.id === post.id
+        ? { ...item, reposted, reposts: Math.max(0, item.reposts + (reposted ? 1 : -1)) }
+        : item,
+    ));
+    try {
+      const state = await apiRequest<{ reposted: boolean; reposts: number }>(
+        `/api/posts/${post.id}/repost`,
+        { method: "POST" },
+      );
+      setPosts((current) => current.map((item) =>
+        item.id === post.id ? { ...item, ...state } : item,
+      ));
+    } catch (nextError) {
+      setPosts((current) => current.map((item) =>
+        item.id === post.id ? { ...item, ...previous } : item,
+      ));
+      setError(nextError instanceof Error ? nextError.message : "Repost failed.");
+    }
+  };
+
+  const togglePostBookmark = async (post: Post) => {
+    if (!user || post.timelineType !== "post") return;
+    const bookmarked = !post.bookmarked;
+    setPosts((current) => current.map((item) =>
+      item.id === post.id ? { ...item, bookmarked } : item,
+    ));
+    try {
+      const state = await apiRequest<{ bookmarked: boolean }>(
+        `/api/posts/${post.id}/bookmark`,
+        { method: "POST" },
+      );
+      setPosts((current) => current.map((item) =>
+        item.id === post.id ? { ...item, bookmarked: state.bookmarked } : item,
+      ));
+    } catch (nextError) {
+      setPosts((current) => current.map((item) =>
+        item.id === post.id ? { ...item, bookmarked: post.bookmarked } : item,
+      ));
+      setError(nextError instanceof Error ? nextError.message : "Bookmark failed.");
+    }
+  };
+
   return {
     user,
     configured,
@@ -606,5 +678,8 @@ export function useProfileController(
     openConnections,
     toggleConnectionFollow,
     observePostView,
+    togglePostLike,
+    togglePostRepost,
+    togglePostBookmark,
   };
 }

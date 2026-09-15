@@ -117,6 +117,9 @@ export function ProfilePage({ onLogin, profileUsername, seed }: ProfilePageProps
           loading={controller.loadingProfile}
           onTabChange={controller.setActiveTab}
           observePostView={controller.observePostView}
+          onToggleLike={(post) => void controller.togglePostLike(post)}
+          onToggleRepost={(post) => void controller.togglePostRepost(post)}
+          onToggleBookmark={(post) => void controller.togglePostBookmark(post)}
         />
       </div>
 

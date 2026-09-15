@@ -120,16 +120,26 @@ function ActionButton({
         ? `hover:bg-rose-400/10 hover:text-rose-300 ${active ? "bg-rose-400/10 text-rose-300" : ""}`
         : `hover:bg-white/[.06] hover:text-zinc-100 ${active ? "bg-white/[.06] text-zinc-100" : ""}`;
 
+  const motionClass = active
+    ? tone === "negative"
+      ? "tx-action-pop"
+      : tone === "positive"
+        ? "tx-action-turn"
+        : "tx-action-pop"
+    : "";
+
   return (
     <button
       type="button"
       onClick={onClick}
       aria-label={label}
       aria-pressed={active}
-      className={`inline-flex h-9 items-center justify-center gap-1.5 rounded-lg px-2.5 text-[11px] font-medium tabular-nums transition-colors ${toneClass} ${FOCUS_RING}`}
+      className={`group/action inline-flex h-9 items-center justify-center gap-1.5 rounded-lg px-2.5 text-[11px] font-medium tabular-nums transition-[color,background-color,transform] duration-150 active:scale-90 ${toneClass} ${FOCUS_RING}`}
     >
-      {children}
-      {count !== undefined ? formatCount(count) : null}
+      <span className={`grid size-5 place-items-center ${motionClass}`}>
+        {children}
+      </span>
+      {count !== undefined ? <span aria-live="polite">{formatCount(count)}</span> : null}
     </button>
   );
 }
@@ -374,6 +384,17 @@ export function PostCard({
                 <Eye size={15} strokeWidth={1.75} />
                 {formatCount(post.views)}
               </span>
+              <ActionButton
+                label={post.bookmarked ? "Remove bookmark" : "Bookmark"}
+                active={post.bookmarked}
+                onClick={() => onToggleBookmark(post)}
+              >
+                <Bookmark
+                  size={15}
+                  strokeWidth={1.75}
+                  fill={post.bookmarked ? "currentColor" : "none"}
+                />
+              </ActionButton>
               <ActionButton label="Share" onClick={() => onShare(post)}>
                 <Share2 size={15} strokeWidth={1.75} />
               </ActionButton>
