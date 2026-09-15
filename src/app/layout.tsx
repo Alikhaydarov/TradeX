@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import type { CSSProperties } from "react";
-import { DM_Sans } from "next/font/google";
+import { Inter } from "next/font/google";
 import { NextIntlClientProvider } from "next-intl";
 import { getLocale, getMessages } from "next-intl/server";
 
@@ -11,16 +11,15 @@ import { isSupabaseConfigured } from "@/lib/supabase/config";
 import { getServerAuth } from "@/lib/supabase/session";
 import "./globals.css";
 
-const dmSans = DM_Sans({
-  variable: "--font-dm-sans",
+const inter = Inter({
+  variable: "--font-inter",
   subsets: ["latin"],
   display: "swap",
 });
 
 const appFontVariables = {
   "--font-app":
-    'var(--font-dm-sans), "DM Sans", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
-  "--font-inter": "var(--font-app)",
+    'var(--font-inter), Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
   "--font-geist-mono": "var(--font-app)",
 } as CSSProperties;
 
@@ -89,7 +88,7 @@ export default async function RootLayout({
   return (
     <html
       lang={locale}
-      className={`dark ${dmSans.variable}`}
+      className={`dark ${inter.variable}`}
       style={appFontVariables}
     >
       <body className={`${appTypographyClass} ${APP_ROOT_TAILWIND_CLASS}`}>

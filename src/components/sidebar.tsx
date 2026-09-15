@@ -268,7 +268,7 @@ export function Sidebar({
           if (mobile) setMobileMenuOpen(false);
           onChange(id);
         }}
-        className={`group flex w-full items-center gap-2 rounded-xl px-2.5 py-2 text-left transition ${
+      className={`group flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-left transition-colors duration-150 ${
           mobile ? "min-h-11" : ""
         } ${
           selected
@@ -294,7 +294,7 @@ export function Sidebar({
       onOpenChange={setAccountSwitcherOpen}
     >
       <div
-        className={`${mobile ? "flex w-full items-center gap-2 rounded-2xl border border-white/10 bg-surface p-3" : "mt-4 flex w-full items-center gap-2 rounded-[0.95rem] border border-white/8 bg-surface p-2 transition hover:bg-surface"}`}
+        className={`${mobile ? "flex w-full items-center gap-2 rounded-lg border border-white/10 bg-surface p-3" : "mt-4 flex w-full items-center gap-2 rounded-lg border border-white/8 bg-surface p-2 transition-colors hover:border-white/12 hover:bg-surface-raised"}`}
       >
         <button
           type="button"
@@ -320,7 +320,7 @@ export function Sidebar({
         <DropdownMenuTrigger asChild>
           <button
             type="button"
-            className={`${mobile ? "size-9" : "size-8"} grid shrink-0 place-items-center rounded-xl border border-white/8 bg-surface text-ink-soft transition hover:bg-surface-raised hover:text-white`}
+            className={`${mobile ? "size-9" : "size-8"} grid shrink-0 place-items-center rounded-lg border border-white/8 bg-black text-ink-soft transition hover:bg-surface-raised hover:text-white`}
             aria-label="Open account switcher"
           >
             <ChevronDown
@@ -401,7 +401,7 @@ export function Sidebar({
       <aside className="fixed left-[max(1rem,calc((100vw-1860px)/2+1rem))] top-3 z-40 hidden h-[calc(100dvh-1.5rem)] w-[252px] shrink-0 flex-col rounded-[1rem] border border-white/8 bg-black p-3 shadow-none lg:flex">
         <button
           onClick={() => onChange("feed")}
-          className="flex items-center gap-3 rounded-2xl px-2 py-1.5 text-left transition-colors hover:bg-surface"
+          className="flex items-center gap-3 rounded-lg px-2 py-1.5 text-left transition-colors hover:bg-surface"
           aria-label="Tradoxy home"
         >
           <TradoxyBrand />
@@ -444,7 +444,7 @@ export function Sidebar({
         </div>
 
         <div className="mt-auto">
-          <div className="flex w-full items-center gap-3 rounded-2xl border border-white/10 bg-surface p-2 text-left shadow-[inset_0_1px_0_rgba(255,255,255,.035)] transition-colors hover:bg-surface-raised">
+          <div className="flex w-full items-center gap-3 rounded-lg border border-white/10 bg-surface p-2 text-left transition-colors hover:border-white/15 hover:bg-surface-raised">
             <TraderAvatar
               name={name}
               value={avatar}
@@ -469,16 +469,16 @@ export function Sidebar({
               </DropdownMenuTrigger>
               <DropdownMenuContent
                 align="end"
-                className="w-56 rounded-2xl border-white/10 bg-surface p-1.5 shadow-2xl"
+                  className="w-56 rounded-lg border-white/10 bg-surface p-1.5 shadow-2xl"
               >
                 <DropdownMenuItem
                   onClick={openSettings}
-                  className="rounded-xl px-3 py-2.5"
+                  className="rounded-md px-3 py-2.5"
                 >
                   <Settings2 size={14} className="mr-2" />
                   {shell("settings")}
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={openPricing} className="rounded-xl px-3 py-2.5">
+                <DropdownMenuItem onClick={openPricing} className="rounded-md px-3 py-2.5">
                   <CreditCard size={14} className="mr-2" />
                   {premium.isPremium
                     ? shell("manageSubscription")
@@ -486,14 +486,14 @@ export function Sidebar({
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   onClick={openHelpCenter}
-                  className="rounded-xl px-3 py-2.5"
+                  className="rounded-md px-3 py-2.5"
                 >
                   <CircleHelp size={14} className="mr-2" />
                   {shell("helpCenter")}
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   onClick={() => setLogoutConfirmOpen(true)}
-                  className="rounded-xl px-3 py-2.5 text-rose-300 focus:text-rose-200"
+                  className="rounded-md px-3 py-2.5 text-rose-300 focus:text-rose-200"
                 >
                   <LogOut size={14} className="mr-2" /> {shell("logout")}
                 </DropdownMenuItem>
@@ -573,7 +573,7 @@ export function Sidebar({
               </div>
 
               <div className="border-t border-white/8 p-3">
-                <div className="flex w-full items-center gap-3 rounded-2xl border border-white/10 bg-surface p-2.5 text-left">
+                <div className="flex w-full items-center gap-3 rounded-lg border border-white/10 bg-surface p-2.5 text-left">
                   <TraderAvatar
                     name={name}
                     value={avatar}
