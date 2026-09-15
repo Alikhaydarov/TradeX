@@ -1,11 +1,12 @@
 "use client";
 
-import { Download, LoaderCircle, Share2, X } from "lucide-react";
+import { Download, ImageIcon, LoaderCircle, Send, Share2, X } from "lucide-react";
 import { useEffect, useState, useMemo } from "react";
 import { apiRequest } from "@/lib/api-client";
 import { useAuth } from "./auth-context";
 import { MediaImage } from "./media-image";
 import { Dialog, DialogContent } from "./ui/dialog";
+import { Switch } from "./ui/switch";
 import type { JournalEntry } from "./types";
 import { drawTradoxyMark } from "@/lib/tradoxy-mark";
 
@@ -652,6 +653,7 @@ export function TradeShareComposer({ trade, onClose }: TradeShareComposerProps) 
   const [error, setError]           = useState("");
   const [activeTab, setActiveTab]   = useState<"feed" | "story">("feed");
   const [theme, setTheme]           = useState<ShareTheme>(DEFAULT_THEME);
+  const [includeGeneratedCard, setIncludeGeneratedCard] = useState(false);
 
   const username = String(
     profile?.username || user?.user_metadata?.user_name || user?.email?.split("@")[0] || "you",
@@ -682,13 +684,20 @@ export function TradeShareComposer({ trade, onClose }: TradeShareComposerProps) 
     if (trade.note?.trim() && text.length < 220) text += `\n${trade.note.trim().slice(0, 280 - text.length - 1)}`;
     setCaption(text);
     setShared(false); setError(""); setActiveTab("feed");
+    setIncludeGeneratedCard(false);
 
   }, [trade]);
 
-  // Cards are redrawn on every theme change. Both formats are generated up
-  // front so switching the Post/Story tab is instant rather than a re-render.
+  // Generating two full-resolution canvases and uploading one of them is the
+  // expensive part of sharing. Keep it opt-in so a text/data post is instant.
+  // Once enabled, both formats are prepared together so tab switching is free.
   useEffect(() => {
-    if (!trade) return;
+    if (!trade || !includeGeneratedCard) {
+      setGenerating(false);
+      setFeedCardUrl("");
+      setStoryCardUrl("");
+      return;
+    }
     let active = true;
     setGenerating(true); setFeedCardUrl(""); setStoryCardUrl("");
     Promise.all([
@@ -701,7 +710,7 @@ export function TradeShareComposer({ trade, onClose }: TradeShareComposerProps) 
       })
       .catch(() => { if (active) setGenerating(false); });
     return () => { active = false; };
-  }, [author, trade, theme]);
+  }, [author, includeGeneratedCard, trade, theme]);
 
 
   /**
@@ -757,7 +766,7 @@ export function TradeShareComposer({ trade, onClose }: TradeShareComposerProps) 
     setSharing(true); setError("");
     try {
       let shareImageUrl: string | undefined;
-      if (feedCardUrl) {
+      if (includeGeneratedCard && feedCardUrl) {
         try {
           shareImageUrl = await uploadDataUrl(
             feedCardUrl,
@@ -819,9 +828,10 @@ export function TradeShareComposer({ trade, onClose }: TradeShareComposerProps) 
             </button>
           ) : (
             <button type="button" onClick={() => void post()}
-              disabled={sharing || !caption.trim()}
-              className="rounded-full bg-white px-4 py-1.5 text-xs font-black text-black transition hover:bg-zinc-200 disabled:opacity-40">
-              {sharing ? "..." : "🚀 Post"}
+              disabled={sharing || !caption.trim() || (includeGeneratedCard && generating)}
+              className="inline-flex h-8 items-center gap-1.5 rounded-lg bg-white px-3 text-xs font-bold text-black transition hover:bg-zinc-200 disabled:opacity-40">
+              {sharing ? <LoaderCircle className="size-3.5 animate-spin" /> : <Send className="size-3.5" />}
+              Post
             </button>
           )}
         </div>
@@ -910,7 +920,27 @@ export function TradeShareComposer({ trade, onClose }: TradeShareComposerProps) 
 
             {/* Image preview tabs */}
             <div className="border-t border-[#1a1a1a] px-4 pb-2 pt-3">
-              <div className="mb-3 flex gap-1">
+              <div className="flex items-center justify-between gap-3 rounded-lg border border-white/8 bg-white/[.025] px-3 py-2.5">
+                <div className="flex min-w-0 items-center gap-2.5">
+                  <span className="grid size-8 shrink-0 place-items-center rounded-lg bg-white/[.055] text-ink-soft">
+                    <ImageIcon className="size-4" />
+                  </span>
+                  <div className="min-w-0">
+                    <p className="truncate text-xs font-semibold text-white">Generated trade card</p>
+                    <p className="truncate text-[10px] text-ink-mute">
+                      {includeGeneratedCard ? "Card will be attached to this post" : "Post instantly without a generated image"}
+                    </p>
+                  </div>
+                </div>
+                <Switch
+                  checked={includeGeneratedCard}
+                  onCheckedChange={setIncludeGeneratedCard}
+                  aria-label="Attach generated trade card"
+                />
+              </div>
+
+              {includeGeneratedCard ? <>
+              <div className="mb-3 mt-3 flex gap-1">
                 {(["feed", "story"] as const).map((tab) => (
                   <button key={tab} type="button" onClick={() => setActiveTab(tab)}
                     aria-pressed={activeTab === tab}
@@ -987,6 +1017,7 @@ export function TradeShareComposer({ trade, onClose }: TradeShareComposerProps) 
                   <Download size={13} /> .png
                 </button>
               </div>
+              </> : null}
             </div>
 
             {/* Footer */}
