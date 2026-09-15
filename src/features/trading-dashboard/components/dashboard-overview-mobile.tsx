@@ -2,7 +2,7 @@
 
 import type { ComponentProps } from "react"
 import { useMemo } from "react"
-import { ArrowUpRight, BookOpen, CalendarDays, RefreshCw, ShieldCheck } from "lucide-react"
+import { ArrowUpRight, BookOpen, Gauge, ShieldCheck, Target } from "lucide-react"
 
 import dynamic from "next/dynamic"
 
@@ -15,7 +15,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
-import { useDashboardShellData } from "@/features/trading-dashboard/hooks/use-dashboard-shell-data"
 
 // Loaded after paint; the placeholder holds the chart's height so the card
 // does not jump when it arrives.
@@ -31,37 +30,11 @@ import type { DashboardOverviewResponsive } from "./dashboard-overview-responsiv
 
 type DashboardOverviewMobileProps = ComponentProps<typeof DashboardOverviewResponsive>
 
-type MarketNewsEvent = {
-  id: string
-  date: string
-  country: string
-  currency: string
-  event: string
-  category: string
-  actual: string
-  forecast: string
-  previous: string
-  importance: number
-  source: string
-}
-
 const money = new Intl.NumberFormat("en-US", {
   style: "currency",
   currency: "USD",
   maximumFractionDigits: 0,
 })
-
-const COUNTRY_CURRENCY: Record<string, string> = {
-  "united states": "USD",
-  "euro area": "EUR",
-  "united kingdom": "GBP",
-  japan: "JPY",
-  canada: "CAD",
-  australia: "AUD",
-  "new zealand": "NZD",
-  switzerland: "CHF",
-  china: "CNY",
-}
 
 const MOBILE_CARD =
   "gap-0 overflow-hidden rounded-xl border-white/10 bg-surface py-0 shadow-none"
@@ -77,34 +50,43 @@ function prettySymbol(symbol: string) {
   return value
 }
 
-function dashboardDate() {
-  const parts = new Intl.DateTimeFormat("en-GB", {
-    weekday: "short",
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-  }).formatToParts(new Date())
-  const get = (type: Intl.DateTimeFormatPartTypes) =>
-    parts.find((part) => part.type === type)?.value ?? ""
-
-  return `${get("weekday")} ${get("day")} ${get("month")}, ${get("year")}`
-}
-
-function eventDate(value: string) {
-  const timezoneIncluded = /z$|[+-]\d{2}:?\d{2}$/i.test(value)
-  return new Date(timezoneIncluded ? value : `${value}Z`)
-}
-
-function eventCurrency(event: MarketNewsEvent) {
-  return (
-    event.currency ||
-    COUNTRY_CURRENCY[event.country.toLowerCase()] ||
-    event.country.slice(0, 3).toUpperCase()
-  )
-}
-
 function StatDivider() {
   return <div className="h-px bg-white/10" />
+}
+
+function ReviewRow({
+  icon: Icon,
+  label,
+  value,
+  positive,
+}: {
+  icon: typeof Target
+  label: string
+  value: string
+  positive?: boolean
+}) {
+  return (
+    <div className="grid min-h-12 grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2.5">
+      <span className="grid size-7 place-items-center rounded-lg bg-white/[.045] text-ink-soft">
+        <Icon className="size-3.5" />
+      </span>
+      <span className="truncate text-[11px] font-medium text-ink-soft">
+        {label}
+      </span>
+      <strong
+        className={`max-w-28 truncate text-[11px] font-bold tabular-nums ${
+          positive === true
+            ? "text-emerald-300"
+            : positive === false
+              ? "text-amber-300"
+              : "text-zinc-100"
+        }`}
+        title={value}
+      >
+        {value}
+      </strong>
+    </div>
+  )
 }
 
 export function DashboardOverviewMobile({
@@ -125,8 +107,6 @@ export function DashboardOverviewMobile({
   onSeeAll,
   onAddTrade,
 }: DashboardOverviewMobileProps) {
-  const { username, news, newsLoading, refreshNews } = useDashboardShellData()
-
   const instrumentStats = useMemo(
     () =>
       [
@@ -155,20 +135,16 @@ export function DashboardOverviewMobile({
     ? "******"
     : `${currentPnl >= 0 ? "+" : "-"}${money.format(Math.abs(currentPnl))}`
   const topSetup = setups[0]
-  const focus =
-    planRate < 70
-      ? "Follow the plan before adding risk."
-      : stats.pf < 1 && monthCount > 2
-        ? "Protect downside and filter weaker entries."
-        : "Stay patient and execute only A+ setups."
 
   return (
     <div className="w-full min-w-0 space-y-3 overflow-x-clip pb-24">
       <section className="px-0.5 pb-0.5 pt-1">
-        <h1 className="truncate text-xl font-semibold leading-tight tracking-[-0.025em] text-white">
-          Welcome back, {username}
-        </h1>
-        <p className="mt-1 text-[11px] font-medium text-ink-mute">{dashboardDate()}</p>
+        <h2 className="truncate text-[15px] font-bold tracking-[-0.02em] text-white">
+          Performance snapshot
+        </h2>
+        <p className="mt-0.5 text-[10px] font-medium text-ink-mute">
+          Account health and this week&apos;s execution
+        </p>
       </section>
 
       <div className="-mx-0.5 overflow-x-auto px-0.5 pb-0.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
@@ -184,20 +160,6 @@ export function DashboardOverviewMobile({
           ))}
         </div>
       </div>
-
-      <Card className={MOBILE_CARD}>
-        <CardContent className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 px-3.5 py-3">
-          <span className="grid size-8 place-items-center rounded-lg bg-white/[.05] text-zinc-300"><ShieldCheck className="size-4" /></span>
-          <div className="min-w-0">
-            <p className="text-[9px] font-bold uppercase tracking-[0.12em] text-ink-mute">Today&apos;s focus</p>
-            <p className="mt-0.5 truncate text-[11px] font-semibold text-zinc-200">{focus}</p>
-          </div>
-          <div className="text-right">
-            <p className={`text-sm font-bold tabular-nums ${planRate >= 70 ? "text-emerald-300" : "text-amber-300"}`}>{Math.round(planRate)}%</p>
-            <p className="text-[8px] text-ink-mute">{topSetup?.name || `${openPositions.length} open`}</p>
-          </div>
-        </CardContent>
-      </Card>
 
       <Card className={`${MOBILE_CARD} min-h-[360px]`}>
         <CardHeader className="relative border-b-0 px-4 pb-1 pt-4">
@@ -404,61 +366,31 @@ export function DashboardOverviewMobile({
       <Card className={MOBILE_CARD}>
         <CardHeader className="flex flex-row items-center justify-between border-b border-white/8 px-4 py-3.5">
           <div>
-            <CardTitle className="text-[15px] font-bold text-white">High Impact News</CardTitle>
+            <CardTitle className="text-[15px] font-bold text-white">Performance Review</CardTitle>
             <CardDescription className="mt-0.5 text-[10px] text-ink-subtle">
-              Today's upcoming releases
+              Actionable account signals
             </CardDescription>
           </div>
-          <Button
-            variant="ghost"
-            size="icon-sm"
-            onClick={() => void refreshNews()}
-            disabled={newsLoading}
-            aria-label="Refresh market news"
-          >
-            <RefreshCw className={`size-3.5 ${newsLoading ? "animate-spin" : ""}`} />
-          </Button>
+          <ShieldCheck className="size-4 text-ink-subtle" />
         </CardHeader>
-        <CardContent className="p-2">
-          {newsLoading ? (
-            <div className="space-y-2 py-1">
-              {Array.from({ length: 2 }, (_, index) => (
-                <div key={index} className="h-12 animate-pulse rounded-xl bg-white/[.04]" />
-              ))}
-            </div>
-          ) : news.length ? (
-            news.slice(0, 3).map((item) => {
-              const date = eventDate(item.date)
-              return (
-                <article
-                  key={item.id}
-                  className="grid min-h-[54px] grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2.5 border-b border-white/8 px-1 last:border-0"
-                >
-                  <span className="grid h-8 min-w-11 place-items-center rounded-lg border border-white/10 bg-surface-raised px-2 text-[10px] font-bold text-zinc-200">
-                    {eventCurrency(item)}
-                  </span>
-                  <div className="min-w-0">
-                    <p className="truncate text-[11px] font-semibold text-white">{item.event}</p>
-                    <p className="truncate text-[10px] text-ink-subtle">{item.country}</p>
-                  </div>
-                  <p className="text-[10px] font-semibold tabular-nums text-ink-strong">
-                    {Number.isNaN(date.getTime())
-                      ? "TBD"
-                      : date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
-                  </p>
-                </article>
-              )
-            })
-          ) : (
-            <div className="grid min-h-32 place-items-center py-5 text-center">
-              <div>
-                <CalendarDays className="mx-auto size-4 text-ink-subtle" />
-                <p className="mt-2 text-sm font-semibold text-ink-strong">
-                  No high-impact releases found
-                </p>
-              </div>
-            </div>
-          )}
+        <CardContent className="divide-y divide-white/8 px-4 py-1">
+          <ReviewRow
+            icon={Target}
+            label="Plan alignment"
+            value={`${Math.round(planRate)}%`}
+            positive={planRate >= 70}
+          />
+          <ReviewRow
+            icon={Gauge}
+            label="Profit expectancy"
+            value={stats.pf >= 1 ? "Positive" : "Review"}
+            positive={stats.pf >= 1}
+          />
+          <ReviewRow
+            icon={ShieldCheck}
+            label={topSetup ? "Leading setup" : "Open positions"}
+            value={topSetup?.name || String(openPositions.length)}
+          />
         </CardContent>
       </Card>
     </div>
