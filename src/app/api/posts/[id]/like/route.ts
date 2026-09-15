@@ -22,7 +22,10 @@ export async function POST(
 
   const mutation = existing
     ? auth.supabase.from("post_likes").delete().eq("post_id", postId).eq("user_id", auth.user.id)
-    : auth.supabase.from("post_likes").insert({ post_id: postId, user_id: auth.user.id });
+    : auth.supabase.from("post_likes").upsert(
+        { post_id: postId, user_id: auth.user.id },
+        { onConflict: "post_id,user_id", ignoreDuplicates: true },
+      );
   const { error } = await mutation;
   if (error) return serverError(error.message);
 

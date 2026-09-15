@@ -26,10 +26,10 @@ export async function POST(
         .delete()
         .eq("post_id", postId)
         .eq("user_id", auth.user.id)
-    : auth.supabase.from("post_reposts").insert({
-        post_id: postId,
-        user_id: auth.user.id,
-      });
+    : auth.supabase.from("post_reposts").upsert(
+        { post_id: postId, user_id: auth.user.id },
+        { onConflict: "post_id,user_id", ignoreDuplicates: true },
+      );
 
   const { error } = await mutation;
   if (error) return serverError(error.message);

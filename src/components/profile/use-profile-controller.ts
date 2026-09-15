@@ -125,6 +125,7 @@ export function useProfileController(
   const [achievementBusy, setAchievementBusy] = useState(false);
   const viewedPosts = useRef<Set<string>>(new Set());
   const pendingPostViews = useRef<Set<string>>(new Set());
+  const pendingSocialActions = useRef<Set<string>>(new Set());
   const postViewRetries = useRef<Map<string, number>>(new Map());
   const postViewRetryTimers = useRef<Set<number>>(new Set());
   const viewObserver = useRef<IntersectionObserver | null>(null);
@@ -557,6 +558,9 @@ export function useProfileController(
 
   const togglePostLike = async (post: Post) => {
     if (!user || post.timelineType !== "post") return;
+    const actionKey = `like:${post.id}`;
+    if (pendingSocialActions.current.has(actionKey)) return;
+    pendingSocialActions.current.add(actionKey);
     const previous = { liked: post.liked, likes: post.likes };
     const liked = !post.liked;
     setPosts((current) => current.map((item) =>
@@ -577,11 +581,16 @@ export function useProfileController(
         item.id === post.id ? { ...item, ...previous } : item,
       ));
       setError(nextError instanceof Error ? nextError.message : "Like failed.");
+    } finally {
+      pendingSocialActions.current.delete(actionKey);
     }
   };
 
   const togglePostRepost = async (post: Post) => {
     if (!user || post.timelineType !== "post") return;
+    const actionKey = `repost:${post.id}`;
+    if (pendingSocialActions.current.has(actionKey)) return;
+    pendingSocialActions.current.add(actionKey);
     const previous = { reposted: post.reposted, reposts: post.reposts };
     const reposted = !post.reposted;
     setPosts((current) => current.map((item) =>
@@ -602,11 +611,16 @@ export function useProfileController(
         item.id === post.id ? { ...item, ...previous } : item,
       ));
       setError(nextError instanceof Error ? nextError.message : "Repost failed.");
+    } finally {
+      pendingSocialActions.current.delete(actionKey);
     }
   };
 
   const togglePostBookmark = async (post: Post) => {
     if (!user || post.timelineType !== "post") return;
+    const actionKey = `bookmark:${post.id}`;
+    if (pendingSocialActions.current.has(actionKey)) return;
+    pendingSocialActions.current.add(actionKey);
     const bookmarked = !post.bookmarked;
     setPosts((current) => current.map((item) =>
       item.id === post.id ? { ...item, bookmarked } : item,
@@ -624,6 +638,8 @@ export function useProfileController(
         item.id === post.id ? { ...item, bookmarked: post.bookmarked } : item,
       ));
       setError(nextError instanceof Error ? nextError.message : "Bookmark failed.");
+    } finally {
+      pendingSocialActions.current.delete(actionKey);
     }
   };
 

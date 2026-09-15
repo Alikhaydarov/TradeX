@@ -175,16 +175,16 @@ function ProfilePost({
             </a>
           ) : null}
           <div className="mt-3 grid max-w-md grid-cols-5 text-ink-mute">
-            <span className="flex h-8 items-center gap-1.5 rounded-full text-[12px] transition hover:text-ink-strong">
+            <span className="flex h-8 items-center gap-1.5 whitespace-nowrap rounded-full text-[12px] transition hover:text-ink-strong">
               <MessageCircle size={16} /> {post.replies}
             </span>
-            <button type="button" disabled={!interactive} onClick={() => onToggleRepost(post)} aria-label="Repost" aria-pressed={post.reposted} className={`flex h-8 items-center gap-1.5 rounded-lg px-1.5 text-[12px] transition active:scale-90 disabled:pointer-events-none ${post.reposted ? "bg-emerald-400/10 text-emerald-300" : "hover:bg-emerald-400/10 hover:text-emerald-200"}`}>
+            <button type="button" disabled={!interactive} onClick={() => onToggleRepost(post)} aria-label="Repost" aria-pressed={post.reposted} className={`flex h-8 items-center gap-1.5 whitespace-nowrap rounded-lg px-1.5 text-[12px] transition active:scale-90 disabled:pointer-events-none ${post.reposted ? "bg-emerald-400/10 text-emerald-300" : "hover:bg-emerald-400/10 hover:text-emerald-200"}`}>
               <Repeat2 size={16} /> {post.reposts}
             </button>
-            <button type="button" disabled={!interactive} onClick={() => onToggleLike(post)} aria-label="Like" aria-pressed={post.liked} className={`flex h-8 items-center gap-1.5 rounded-lg px-1.5 text-[12px] transition active:scale-90 disabled:pointer-events-none ${post.liked ? "bg-rose-400/10 text-rose-300" : "hover:bg-rose-400/10 hover:text-rose-200"}`}>
+            <button type="button" disabled={!interactive} onClick={() => onToggleLike(post)} aria-label="Like" aria-pressed={post.liked} className={`flex h-8 items-center gap-1.5 whitespace-nowrap rounded-lg px-1.5 text-[12px] transition active:scale-90 disabled:pointer-events-none ${post.liked ? "bg-rose-400/10 text-rose-300" : "hover:bg-rose-400/10 hover:text-rose-200"}`}>
               <span className={post.liked ? "tx-action-pop" : ""}><Heart size={16} fill={post.liked ? "currentColor" : "none"} /></span> {post.likes}
             </button>
-            <span className="flex h-8 items-center gap-1.5 rounded-full text-[12px] transition hover:text-ink-strong">
+            <span className="flex h-8 items-center gap-1.5 whitespace-nowrap rounded-full text-[12px] transition hover:text-ink-strong">
               <Eye size={16} /> {formatCount(post.views)}
             </span>
             <button type="button" disabled={!interactive} onClick={() => onToggleBookmark(post)} aria-label={post.bookmarked ? "Remove bookmark" : "Bookmark"} aria-pressed={post.bookmarked} className={`flex h-8 items-center gap-1.5 rounded-lg px-1.5 text-[12px] transition active:scale-90 disabled:pointer-events-none ${post.bookmarked ? "bg-white/[.06] text-white" : "hover:bg-white/[.06] hover:text-ink-strong"}`}>

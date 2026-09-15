@@ -134,7 +134,7 @@ function ActionButton({
       onClick={onClick}
       aria-label={label}
       aria-pressed={active}
-      className={`group/action inline-flex h-9 items-center justify-center gap-1.5 rounded-lg px-2.5 text-[11px] font-medium tabular-nums transition-[color,background-color,transform] duration-150 active:scale-90 ${toneClass} ${FOCUS_RING}`}
+      className={`group/action inline-flex h-9 items-center justify-center gap-1.5 whitespace-nowrap rounded-lg px-2.5 text-[11px] font-medium tabular-nums transition-[color,background-color,transform] duration-150 active:scale-90 ${toneClass} ${FOCUS_RING}`}
     >
       <span className={`grid size-5 place-items-center ${motionClass}`}>
         {children}
@@ -378,7 +378,7 @@ export function PostCard({
 
             <div className="flex items-center gap-0.5">
               <span
-                className="inline-flex h-9 items-center gap-1.5 px-2.5 text-[11px] tabular-nums"
+                className="inline-flex h-9 items-center gap-1.5 whitespace-nowrap px-2.5 text-[11px] tabular-nums"
                 aria-label={`${post.views} views`}
               >
                 <Eye size={15} strokeWidth={1.75} />

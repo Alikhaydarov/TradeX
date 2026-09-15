@@ -125,6 +125,7 @@ export function useFeedData(onLogin: () => void) {
   const [lightboxUrl, setLightboxUrl] = useState<string | null>(null);
   const viewed = useRef(new Set<string>());
   const pendingViews = useRef(new Set<string>());
+  const pendingSocialActions = useRef(new Set<string>());
   const viewRetries = useRef(new Map<string, number>());
   const viewRetryTimers = useRef(new Set<number>());
   const observer = useRef<IntersectionObserver | null>(null);
@@ -403,6 +404,9 @@ export function useFeedData(onLogin: () => void) {
         onLogin();
         return;
       }
+      const actionKey = `like:${post.id}`;
+      if (pendingSocialActions.current.has(actionKey)) return;
+      pendingSocialActions.current.add(actionKey);
       invalidateFeedCache();
       const optimisticLiked = !post.liked;
       const optimisticLikes = Math.max(
@@ -439,6 +443,8 @@ export function useFeedData(onLogin: () => void) {
             ? nextError.message
             : "Like could not be saved.",
         );
+      } finally {
+        pendingSocialActions.current.delete(actionKey);
       }
     },
     [invalidateFeedCache, onLogin, user],
@@ -450,6 +456,9 @@ export function useFeedData(onLogin: () => void) {
         onLogin();
         return;
       }
+      const actionKey = `bookmark:${post.id}`;
+      if (pendingSocialActions.current.has(actionKey)) return;
+      pendingSocialActions.current.add(actionKey);
       invalidateFeedCache();
       const bookmarked = !post.bookmarked;
       setPosts((current) =>
@@ -482,6 +491,8 @@ export function useFeedData(onLogin: () => void) {
             ? nextError.message
             : "Bookmark could not be saved.",
         );
+      } finally {
+        pendingSocialActions.current.delete(actionKey);
       }
     },
     [invalidateFeedCache, onLogin, user],
@@ -493,6 +504,9 @@ export function useFeedData(onLogin: () => void) {
         onLogin();
         return;
       }
+      const actionKey = `repost:${post.id}`;
+      if (pendingSocialActions.current.has(actionKey)) return;
+      pendingSocialActions.current.add(actionKey);
       invalidateFeedCache();
       const reposted = !post.reposted;
       const reposts = Math.max(
@@ -531,6 +545,8 @@ export function useFeedData(onLogin: () => void) {
             ? nextError.message
             : "Repost could not be saved.",
         );
+      } finally {
+        pendingSocialActions.current.delete(actionKey);
       }
     },
     [invalidateFeedCache, onLogin, user],
