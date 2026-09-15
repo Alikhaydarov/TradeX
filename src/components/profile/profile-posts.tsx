@@ -231,8 +231,8 @@ export function ProfilePosts({
         : posts.filter((post) => post.timelineType !== "reply");
 
   return (
-    <section className="border-b border-border bg-black sm:mt-2 sm:overflow-hidden sm:rounded-lg sm:border">
-      <div className="sticky top-14 z-10 grid grid-cols-3 border-b border-border bg-black/95 backdrop-blur-md">
+    <section className="border-b border-border bg-black sm:mt-3 sm:overflow-hidden sm:rounded-lg sm:border">
+      <div className="sticky top-14 z-10 grid grid-cols-3 border-b border-border bg-black/95 backdrop-blur-md lg:top-16">
         {tabs.map((tab) => {
           const active = activeTab === tab.id;
           return (
