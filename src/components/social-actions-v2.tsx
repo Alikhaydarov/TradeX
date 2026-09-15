@@ -214,6 +214,9 @@ function SearchDialog({ onClose }: { onClose: () => void }) {
         .then((data) => {
           if (!active) return;
           setUsers(data.users);
+          data.users.slice(0, 5).forEach((item) => {
+            prefetchProfile(item.username);
+          });
         })
         .catch((err) => {
           if (active)

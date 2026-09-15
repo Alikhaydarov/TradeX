@@ -1,6 +1,13 @@
 "use client";
 
-import { Download, ImageIcon, LoaderCircle, Send, Share2, X } from "lucide-react";
+import {
+  Download,
+  ImageIcon,
+  LoaderCircle,
+  Send,
+  Share2,
+  X,
+} from "lucide-react";
 import { useEffect, useState, useMemo } from "react";
 import { apiRequest } from "@/lib/api-client";
 import { useAuth } from "./auth-context";
@@ -15,7 +22,10 @@ interface TradeShareComposerProps {
   onClose: () => void;
 }
 
-const cash = new Intl.NumberFormat("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const cash = new Intl.NumberFormat("en-US", {
+  minimumFractionDigits: 2,
+  maximumFractionDigits: 2,
+});
 
 /* ─── Canvas helpers ──────────────────────────────────────────────────────── */
 
@@ -30,13 +40,24 @@ function loadImg(src: string): Promise<HTMLImageElement | null> {
 }
 
 /** Round-rect polyfill for older browsers */
-function rRect(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, r: number) {
+function rRect(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  w: number,
+  h: number,
+  r: number,
+) {
   ctx.beginPath();
   ctx.moveTo(x + r, y);
-  ctx.lineTo(x + w - r, y); ctx.arcTo(x + w, y, x + w, y + r, r);
-  ctx.lineTo(x + w, y + h - r); ctx.arcTo(x + w, y + h, x + w - r, y + h, r);
-  ctx.lineTo(x + r, y + h); ctx.arcTo(x, y + h, x, y + h - r, r);
-  ctx.lineTo(x, y + r); ctx.arcTo(x, y, x + r, y, r);
+  ctx.lineTo(x + w - r, y);
+  ctx.arcTo(x + w, y, x + w, y + r, r);
+  ctx.lineTo(x + w, y + h - r);
+  ctx.arcTo(x + w, y + h, x + w - r, y + h, r);
+  ctx.lineTo(x + r, y + h);
+  ctx.arcTo(x, y + h, x, y + h - r, r);
+  ctx.lineTo(x, y + r);
+  ctx.arcTo(x, y, x + r, y, r);
   ctx.closePath();
 }
 
@@ -56,7 +77,16 @@ function seededRandom(seedStr: string) {
 }
 
 /** Faint procedural candlestick strip drawn when a trade has no attached chart screenshot, so the card never looks empty. */
-function drawGhostCandles(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, accent: string, win: boolean, seedStr: string) {
+function drawGhostCandles(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  w: number,
+  h: number,
+  accent: string,
+  win: boolean,
+  seedStr: string,
+) {
   const rnd = seededRandom(seedStr);
   const count = Math.max(8, Math.round(w / 46));
   const colW = w / count;
@@ -76,7 +106,10 @@ function drawGhostCandles(ctx: CanvasRenderingContext2D, x: number, y: number, w
     const up = close < open;
     ctx.strokeStyle = "rgba(255,255,255,0.08)";
     ctx.lineWidth = 2;
-    ctx.beginPath(); ctx.moveTo(cx, y + top); ctx.lineTo(cx, y + bottom); ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(cx, y + top);
+    ctx.lineTo(cx, y + bottom);
+    ctx.stroke();
     ctx.fillStyle = up ? `${accent}26` : "rgba(255,255,255,0.07)";
     rRect(ctx, cx - colW * 0.24, bodyTop, colW * 0.48, bodyH, 2);
     ctx.fill();
@@ -84,7 +117,6 @@ function drawGhostCandles(ctx: CanvasRenderingContext2D, x: number, y: number, w
   }
   ctx.restore();
 }
-
 
 /* ── SHARE THEMES ──────────────────────────────────────────────────────────
  * Two tiers, matching how traders actually pick: a flat colour wash, or a
@@ -110,19 +142,96 @@ export type ShareTheme = {
 };
 
 export const SHARE_THEMES: ShareTheme[] = [
-  { id: "onyx",     label: "Onyx",     tier: "color", from: "#0a0a0a", to: "#1c1c1c" },
-  { id: "midnight", label: "Midnight", tier: "color", from: "#08131f", mid: "#0e2337", to: "#16354f" },
-  { id: "ember",    label: "Ember",    tier: "color", from: "#1b0d05", mid: "#3a1a0a", to: "#5a2a10" },
-  { id: "plum",     label: "Plum",     tier: "color", from: "#140a20", mid: "#241238", to: "#3a1d58" },
-  { id: "crimson",  label: "Crimson",  tier: "color", from: "#1c0709", mid: "#360d14", to: "#54141f" },
-  { id: "sand",     label: "Sand",     tier: "color", from: "#1c1710", mid: "#3a2f22", to: "#5d4b35" },
+  { id: "onyx", label: "Onyx", tier: "color", from: "#0a0a0a", to: "#1c1c1c" },
+  {
+    id: "midnight",
+    label: "Midnight",
+    tier: "color",
+    from: "#08131f",
+    mid: "#0e2337",
+    to: "#16354f",
+  },
+  {
+    id: "ember",
+    label: "Ember",
+    tier: "color",
+    from: "#1b0d05",
+    mid: "#3a1a0a",
+    to: "#5a2a10",
+  },
+  {
+    id: "plum",
+    label: "Plum",
+    tier: "color",
+    from: "#140a20",
+    mid: "#241238",
+    to: "#3a1d58",
+  },
+  {
+    id: "crimson",
+    label: "Crimson",
+    tier: "color",
+    from: "#1c0709",
+    mid: "#360d14",
+    to: "#54141f",
+  },
+  {
+    id: "sand",
+    label: "Sand",
+    tier: "color",
+    from: "#1c1710",
+    mid: "#3a2f22",
+    to: "#5d4b35",
+  },
 
-  { id: "azure",    label: "Azure",    tier: "premium", from: "#050a12", to: "#0a1622", glow: "#38bdf8" },
-  { id: "magenta",  label: "Magenta",  tier: "premium", from: "#0f050f", to: "#1b0a1b", glow: "#e879f9" },
-  { id: "violet",   label: "Violet",   tier: "premium", from: "#0a0714", to: "#140d24", glow: "#a78bfa" },
-  { id: "emerald",  label: "Emerald",  tier: "premium", from: "#04100b", to: "#081d14", glow: "#34d399" },
-  { id: "ruby",     label: "Ruby",     tier: "premium", from: "#120507", to: "#1f0a0e", glow: "#fb7185" },
-  { id: "amber",    label: "Amber",    tier: "premium", from: "#120c02", to: "#1f1605", glow: "#fbbf24" },
+  {
+    id: "azure",
+    label: "Azure",
+    tier: "premium",
+    from: "#050a12",
+    to: "#0a1622",
+    glow: "#38bdf8",
+  },
+  {
+    id: "magenta",
+    label: "Magenta",
+    tier: "premium",
+    from: "#0f050f",
+    to: "#1b0a1b",
+    glow: "#e879f9",
+  },
+  {
+    id: "violet",
+    label: "Violet",
+    tier: "premium",
+    from: "#0a0714",
+    to: "#140d24",
+    glow: "#a78bfa",
+  },
+  {
+    id: "emerald",
+    label: "Emerald",
+    tier: "premium",
+    from: "#04100b",
+    to: "#081d14",
+    glow: "#34d399",
+  },
+  {
+    id: "ruby",
+    label: "Ruby",
+    tier: "premium",
+    from: "#120507",
+    to: "#1f0a0e",
+    glow: "#fb7185",
+  },
+  {
+    id: "amber",
+    label: "Amber",
+    tier: "premium",
+    from: "#120c02",
+    to: "#1f1605",
+    glow: "#fbbf24",
+  },
 ];
 
 export const DEFAULT_THEME = SHARE_THEMES[0];
@@ -175,7 +284,11 @@ function paintThemeFrame(
   ctx.save();
   ctx.strokeStyle = theme.glow;
   ctx.shadowColor = theme.glow;
-  for (const [blur, width, alpha] of [[54, 10, 0.35], [26, 6, 0.6], [10, 3, 1]] as const) {
+  for (const [blur, width, alpha] of [
+    [54, 10, 0.35],
+    [26, 6, 0.6],
+    [10, 3, 1],
+  ] as const) {
     ctx.globalAlpha = alpha;
     ctx.shadowBlur = blur;
     ctx.lineWidth = width;
@@ -184,7 +297,6 @@ function paintThemeFrame(
   }
   ctx.restore();
 }
-
 
 /**
  * The family the app is actually rendering in.
@@ -261,18 +373,25 @@ function fadedRule(
 }
 
 /* ── FEED CARD  1080 × 1080 ────────────────────────────────────────────────── */
-async function makeFeedCard(trade: JournalEntry, theme: ShareTheme, author: CardAuthor): Promise<string> {
+async function makeFeedCard(
+  trade: JournalEntry,
+  theme: ShareTheme,
+  author: CardAuthor,
+): Promise<string> {
   const font = await resolveCardFont();
   const S = 1080;
   const canvas = document.createElement("canvas");
-  canvas.width = S; canvas.height = S;
+  canvas.width = S;
+  canvas.height = S;
   const ctx = canvas.getContext("2d");
   if (!ctx) return "";
 
   const win = trade.pnl >= 0;
   const accent = win ? "#34d399" : "#f87171";
-  const dateStr = new Date(`${trade.rawDate}T00:00:00`).toLocaleDateString("en-GB",
-    { day: "numeric", month: "short", year: "numeric" });
+  const dateStr = new Date(`${trade.rawDate}T00:00:00`).toLocaleDateString(
+    "en-GB",
+    { day: "numeric", month: "short", year: "numeric" },
+  );
 
   /* Theme wash, then the card itself floating inside it. */
   paintThemeBackground(ctx, theme, S, S, true);
@@ -307,8 +426,8 @@ async function makeFeedCard(trade: JournalEntry, theme: ShareTheme, author: Card
   ctx.stroke();
   ctx.restore();
 
-  const X = PAD + 62;               // text column
-  const RIGHT = S - PAD - 62;       // right-aligned column
+  const X = PAD + 62; // text column
+  const RIGHT = S - PAD - 62; // right-aligned column
 
   /* Brand, top right: the mark plus the wordmark, then the instrument class. */
   const markSize = 34;
@@ -391,7 +510,8 @@ async function makeFeedCard(trade: JournalEntry, theme: ShareTheme, author: Card
     ctx.font = `700 38px ${font}`;
     if (ctx.measureText(val).width <= max) return val;
     let out = val;
-    while (out.length > 1 && ctx.measureText(`${out}...`).width > max) out = out.slice(0, -1);
+    while (out.length > 1 && ctx.measureText(`${out}...`).width > max)
+      out = out.slice(0, -1);
     return `${out}...`;
   };
   const contextLabel = (label: string, value: string, x: number) => {
@@ -406,7 +526,9 @@ async function makeFeedCard(trade: JournalEntry, theme: ShareTheme, author: Card
   contextLabel("Account", trade.accountName?.trim() || "Personal", X);
   contextLabel(
     "Setup",
-    setupRaw && !isInternalLabel(setupRaw) ? setupRaw : trade.marketType?.trim() || "Discretionary",
+    setupRaw && !isInternalLabel(setupRaw)
+      ? setupRaw
+      : trade.marketType?.trim() || "Discretionary",
     X + (CW - 124) / 2,
   );
 
@@ -441,7 +563,10 @@ async function makeFeedCard(trade: JournalEntry, theme: ShareTheme, author: Card
   let credit = `Verified trade by ${author.name}`;
   if (ctx.measureText(credit).width > nameRoom) {
     credit = author.name;
-    while (credit.length > 1 && ctx.measureText(`${credit}...`).width > nameRoom) {
+    while (
+      credit.length > 1 &&
+      ctx.measureText(`${credit}...`).width > nameRoom
+    ) {
       credit = credit.slice(0, -1);
     }
     if (credit !== author.name) credit = `${credit}...`;
@@ -460,36 +585,51 @@ async function makeFeedCard(trade: JournalEntry, theme: ShareTheme, author: Card
   /* The neon frame hugs the card, not the canvas edge. */
   paintThemeFrame(ctx, theme, S, S, PAD, CARD_R);
 
-  return canvas.toDataURL("image/png", 1);
+  return canvas.toDataURL("image/webp", 0.9);
 }
 
 /* ── STORY CARD  1080 × 1920 ──────────────────────────────────────────────── */
-async function makeStoryCard(trade: JournalEntry, theme: ShareTheme, author: CardAuthor): Promise<string> {
+async function makeStoryCard(
+  trade: JournalEntry,
+  theme: ShareTheme,
+  author: CardAuthor,
+): Promise<string> {
   const font = await resolveCardFont();
-  const W = 1080, H = 1920;
+  const W = 1080,
+    H = 1920;
   const canvas = document.createElement("canvas");
-  canvas.width = W; canvas.height = H;
+  canvas.width = W;
+  canvas.height = H;
   const ctx = canvas.getContext("2d");
   if (!ctx) return "";
 
-  const win     = trade.pnl >= 0;
-  const accent  = win ? "#34d399" : "#f87171";
-  const dateStr = new Date(`${trade.rawDate}T00:00:00`).toLocaleDateString("en-US",
-    { month: "short", day: "numeric", year: "numeric" });
+  const win = trade.pnl >= 0;
+  const accent = win ? "#34d399" : "#f87171";
+  const dateStr = new Date(`${trade.rawDate}T00:00:00`).toLocaleDateString(
+    "en-US",
+    { month: "short", day: "numeric", year: "numeric" },
+  );
 
   const draw = (chart: HTMLImageElement | null) => {
     /* background */
     paintThemeBackground(ctx, theme, W, H, false);
 
     /* accent strip */
-    ctx.fillStyle = accent; ctx.fillRect(0, 0, 6, H);
+    ctx.fillStyle = accent;
+    ctx.fillRect(0, 0, 6, H);
 
     /* ghost chart background (upper half) */
     if (chart) {
       const scale = Math.max(W / chart.width, (H * 0.52) / chart.height);
       ctx.save();
       ctx.globalAlpha = 0.14;
-      ctx.drawImage(chart, (W - chart.width * scale) / 2, 0, chart.width * scale, chart.height * scale);
+      ctx.drawImage(
+        chart,
+        (W - chart.width * scale) / 2,
+        0,
+        chart.width * scale,
+        chart.height * scale,
+      );
       ctx.globalAlpha = 1;
       ctx.restore();
     }
@@ -498,8 +638,9 @@ async function makeStoryCard(trade: JournalEntry, theme: ShareTheme, author: Car
     const vig = ctx.createLinearGradient(0, 0, 0, H * 0.56);
     vig.addColorStop(0, "rgba(6,6,6,1)");
     vig.addColorStop(0.6, "rgba(6,6,6,0.88)");
-    vig.addColorStop(1,   "rgba(6,6,6,0)");
-    ctx.fillStyle = vig; ctx.fillRect(0, 0, W, H * 0.56);
+    vig.addColorStop(1, "rgba(6,6,6,0)");
+    ctx.fillStyle = vig;
+    ctx.fillRect(0, 0, W, H * 0.56);
 
     const X = 80;
 
@@ -510,7 +651,13 @@ async function makeStoryCard(trade: JournalEntry, theme: ShareTheme, author: Car
     /* accent dot */
     ctx.fillStyle = accent;
     ctx.beginPath();
-    ctx.arc(X + ctx.measureText("TRADEWAY").width + 20, 128, 10, 0, Math.PI * 2);
+    ctx.arc(
+      X + ctx.measureText("TRADEWAY").width + 20,
+      128,
+      10,
+      0,
+      Math.PI * 2,
+    );
     ctx.fill();
 
     /* date */
@@ -524,14 +671,24 @@ async function makeStoryCard(trade: JournalEntry, theme: ShareTheme, author: Car
     ctx.fillText(trade.symbol, X, 378);
 
     /* chips */
-    const chip = (label: string, x: number, y: number, bg2: string, fg: string) => {
+    const chip = (
+      label: string,
+      x: number,
+      y: number,
+      bg2: string,
+      fg: string,
+    ) => {
       ctx.font = `800 27px ${font}`;
       const tw = ctx.measureText(label).width + 44;
-      ctx.fillStyle = bg2; rRect(ctx, x, y, tw, 54, 14); ctx.fill();
-      ctx.fillStyle = fg; ctx.fillText(label, x + 22, y + 37);
+      ctx.fillStyle = bg2;
+      rRect(ctx, x, y, tw, 54, 14);
+      ctx.fill();
+      ctx.fillStyle = fg;
+      ctx.fillText(label, x + 22, y + 37);
       return tw + 16;
     };
-    const sBg = trade.side === "Long" ? "rgba(52,211,153,.2)" : "rgba(248,113,113,.2)";
+    const sBg =
+      trade.side === "Long" ? "rgba(52,211,153,.2)" : "rgba(248,113,113,.2)";
     const sFg = trade.side === "Long" ? "#34d399" : "#f87171";
     const rLabel = trade.pnl > 0 ? "WIN" : trade.pnl < 0 ? "LOSS" : "BE";
     const rBg = win ? "rgba(52,211,153,.2)" : "rgba(248,113,113,.2)";
@@ -548,7 +705,8 @@ async function makeStoryCard(trade: JournalEntry, theme: ShareTheme, author: Car
     /* R value */
     let statsY = 680;
     if (trade.resultR && Math.abs(trade.resultR) > 0.01) {
-      ctx.fillStyle = accent; ctx.globalAlpha = 0.72;
+      ctx.fillStyle = accent;
+      ctx.globalAlpha = 0.72;
       ctx.font = `700 56px ${font}`;
       ctx.fillText(`${trade.resultR.toFixed(2)}R`, X, 682);
       ctx.globalAlpha = 1;
@@ -565,40 +723,66 @@ async function makeStoryCard(trade: JournalEntry, theme: ShareTheme, author: Car
     const tag = (val: string, x: number, y: number) => {
       ctx.font = `600 27px ${font}`;
       const tw = ctx.measureText(val).width + 32;
-      ctx.fillStyle = "rgba(255,255,255,0.07)"; rRect(ctx, x, y, tw, 46, 12); ctx.fill();
-      ctx.fillStyle = "#9ca3af"; ctx.fillText(val, x + 16, y + 32);
+      ctx.fillStyle = "rgba(255,255,255,0.07)";
+      rRect(ctx, x, y, tw, 46, 12);
+      ctx.fill();
+      ctx.fillStyle = "#9ca3af";
+      ctx.fillText(val, x + 16, y + 32);
       return tw + 16;
     };
     const tagY2 = statsY + 36;
     const setupTag2 = trade.setup?.trim();
     const sessionTag2 = trade.session?.trim();
-    if (setupTag2 && !isInternalLabel(setupTag2))     tagX += tag(setupTag2, tagX, tagY2);
-    if (sessionTag2 && !isInternalLabel(sessionTag2)) tag(sessionTag2, tagX, tagY2);
+    if (setupTag2 && !isInternalLabel(setupTag2))
+      tagX += tag(setupTag2, tagX, tagY2);
+    if (sessionTag2 && !isInternalLabel(sessionTag2))
+      tag(sessionTag2, tagX, tagY2);
 
     /* ── Clear chart image (lower section) ── */
-    const chartZoneTop = 920, chartZoneH = 760;
+    const chartZoneTop = 920,
+      chartZoneH = 760;
     if (chart) {
-      const scale = Math.min((W - 100) / chart.width, chartZoneH / chart.height);
-      const cw3 = chart.width * scale, ch3 = chart.height * scale;
-      const cx3 = (W - cw3) / 2, cy3 = chartZoneTop + (chartZoneH - ch3) / 2;
+      const scale = Math.min(
+        (W - 100) / chart.width,
+        chartZoneH / chart.height,
+      );
+      const cw3 = chart.width * scale,
+        ch3 = chart.height * scale;
+      const cx3 = (W - cw3) / 2,
+        cy3 = chartZoneTop + (chartZoneH - ch3) / 2;
 
       /* card bg */
       ctx.fillStyle = "rgba(255,255,255,0.04)";
-      rRect(ctx, cx3 - 18, cy3 - 18, cw3 + 36, ch3 + 36, 20); ctx.fill();
+      rRect(ctx, cx3 - 18, cy3 - 18, cw3 + 36, ch3 + 36, 20);
+      ctx.fill();
       ctx.drawImage(chart, cx3, cy3, cw3, ch3);
-      ctx.strokeStyle = "rgba(255,255,255,0.07)"; ctx.lineWidth = 2;
-      rRect(ctx, cx3 - 18, cy3 - 18, cw3 + 36, ch3 + 36, 20); ctx.stroke();
+      ctx.strokeStyle = "rgba(255,255,255,0.07)";
+      ctx.lineWidth = 2;
+      rRect(ctx, cx3 - 18, cy3 - 18, cw3 + 36, ch3 + 36, 20);
+      ctx.stroke();
     } else {
       /* no chart image — subtle procedural candle backdrop, colored to match the actual outcome */
       ctx.fillStyle = "rgba(255,255,255,0.02)";
-      rRect(ctx, X, chartZoneTop, W - X * 2, chartZoneH, 20); ctx.fill();
-      drawGhostCandles(ctx, X + 40, chartZoneTop + 40, W - X * 2 - 80, chartZoneH - 80, accent, win, `${trade.id}-story`);
+      rRect(ctx, X, chartZoneTop, W - X * 2, chartZoneH, 20);
+      ctx.fill();
+      drawGhostCandles(
+        ctx,
+        X + 40,
+        chartZoneTop + 40,
+        W - X * 2 - 80,
+        chartZoneH - 80,
+        accent,
+        win,
+        `${trade.id}-story`,
+      );
     }
 
     /* bottom gradient overlay */
     const btm = ctx.createLinearGradient(0, H * 0.87, 0, H);
-    btm.addColorStop(0, "rgba(6,6,6,0)"); btm.addColorStop(1, "rgba(6,6,6,0.96)");
-    ctx.fillStyle = btm; ctx.fillRect(0, H * 0.87, W, H * 0.13);
+    btm.addColorStop(0, "rgba(6,6,6,0)");
+    btm.addColorStop(1, "rgba(6,6,6,0.96)");
+    ctx.fillStyle = btm;
+    ctx.fillRect(0, H * 0.87, W, H * 0.13);
 
     /* Footer: attribution, then the brand. This said "tradeway.app" long after
        the product was renamed, so every shared story carried the old name. */
@@ -611,7 +795,13 @@ async function makeStoryCard(trade: JournalEntry, theme: ShareTheme, author: Car
     ctx.font = `700 30px ${font}`;
     const brandW = ctx.measureText("Tradoxy").width;
     const brandLeft = (W - (brandSize + 14 + brandW)) / 2;
-    drawTradoxyMark(ctx, brandLeft, H - 62 - brandSize + 6, brandSize, "#c6c6ce");
+    drawTradoxyMark(
+      ctx,
+      brandLeft,
+      H - 62 - brandSize + 6,
+      brandSize,
+      "#c6c6ce",
+    );
     ctx.textAlign = "left";
     ctx.fillStyle = "#c6c6ce";
     ctx.fillText("Tradoxy", brandLeft + brandSize + 14, H - 44);
@@ -620,23 +810,35 @@ async function makeStoryCard(trade: JournalEntry, theme: ShareTheme, author: Car
 
     paintThemeFrame(ctx, theme, W, H, 40, 62);
 
-    return canvas.toDataURL("image/png", 1);
+    return canvas.toDataURL("image/webp", 0.9);
   };
 
   if (trade.imageUrls?.[0]) {
     const img = await loadImg(trade.imageUrls[0]);
-    try { return draw(img); } catch { return draw(null); }
+    try {
+      return draw(img);
+    } catch {
+      return draw(null);
+    }
   }
   return draw(null);
 }
 
-async function uploadDataUrl(dataUrl: string, filename: string): Promise<string> {
-  const blob = await fetch(dataUrl).then((r) => r.blob());
+async function uploadDataUrl(
+  dataUrl: string,
+  filename: string,
+): Promise<string> {
+  const file = dataUrlToFile(dataUrl, filename);
   const form = new FormData();
-  form.append("image", new File([blob], filename, { type: "image/png" }));
-  const res = await fetch("/api/posts/image", { method: "POST", credentials: "same-origin", body: form });
+  form.append("image", file);
+  const res = await fetch("/api/posts/image", {
+    method: "POST",
+    credentials: "same-origin",
+    body: form,
+  });
   const json = (await res.json()) as { imageUrl?: string; error?: string };
-  if (!res.ok || !json.imageUrl) throw new Error(json.error ?? "Image upload failed");
+  if (!res.ok || !json.imageUrl)
+    throw new Error(json.error ?? "Image upload failed");
   return json.imageUrl;
 }
 
@@ -653,50 +855,70 @@ function dataUrlToFile(dataUrl: string, filename: string) {
 
 /* ─── Component ───────────────────────────────────────────────────────────── */
 
-export function TradeShareComposer({ trade, onClose }: TradeShareComposerProps) {
+export function TradeShareComposer({
+  trade,
+  onClose,
+}: TradeShareComposerProps) {
   const { profile, user } = useAuth();
-  const [caption, setCaption]       = useState("");
+  const [caption, setCaption] = useState("");
   const [feedCardUrl, setFeedCardUrl] = useState("");
   const [storyCardUrl, setStoryCardUrl] = useState("");
   const [generating, setGenerating] = useState(false);
-  const [sharing, setSharing]       = useState(false);
-  const [shared, setShared]         = useState(false);
-  const [error, setError]           = useState("");
-  const [activeTab, setActiveTab]   = useState<"feed" | "story">("feed");
-  const [theme, setTheme]           = useState<ShareTheme>(DEFAULT_THEME);
+  const [sharing, setSharing] = useState(false);
+  const [shared, setShared] = useState(false);
+  const [error, setError] = useState("");
+  const [activeTab, setActiveTab] = useState<"feed" | "story">("feed");
+  const [theme, setTheme] = useState<ShareTheme>(DEFAULT_THEME);
   const [includeGeneratedCard, setIncludeGeneratedCard] = useState(false);
 
   const username = String(
-    profile?.username || user?.user_metadata?.user_name || user?.email?.split("@")[0] || "you",
+    profile?.username ||
+      user?.user_metadata?.user_name ||
+      user?.email?.split("@")[0] ||
+      "you",
   );
   const fullName = String(
-    profile?.fullName || user?.user_metadata?.full_name || user?.user_metadata?.name || username,
+    profile?.fullName ||
+      user?.user_metadata?.full_name ||
+      user?.user_metadata?.name ||
+      username,
   );
   // Memoised so the card effect below does not redraw on every render.
   const author = useMemo<CardAuthor>(
     () => ({ name: fullName, handle: username }),
     [fullName, username],
   );
-  const avatarUrl = profile?.avatarUrl ||
-    (typeof user?.user_metadata?.avatar_url === "string" ? user.user_metadata.avatar_url : null);
+  const avatarUrl =
+    profile?.avatarUrl ||
+    (typeof user?.user_metadata?.avatar_url === "string"
+      ? user.user_metadata.avatar_url
+      : null);
 
   useEffect(() => {
     if (!trade) {
-      setCaption(""); setFeedCardUrl(""); setStoryCardUrl(""); setShared(false); setError(""); return;
+      setCaption("");
+      setFeedCardUrl("");
+      setStoryCardUrl("");
+      setShared(false);
+      setError("");
+      return;
     }
     const win = trade.pnl >= 0;
     const parts = [
       `${trade.symbol} ${trade.side.toUpperCase()}`,
       `${win ? "+" : "\u2212"}$${cash.format(Math.abs(trade.pnl))}`,
     ];
-    if (trade.resultR && Math.abs(trade.resultR) > 0.01) parts.push(`${trade.resultR.toFixed(2)}R`);
+    if (trade.resultR && Math.abs(trade.resultR) > 0.01)
+      parts.push(`${trade.resultR.toFixed(2)}R`);
     if (trade.setup?.trim()) parts.push(trade.setup.trim());
     let text = parts.join(" · ");
-    if (trade.note?.trim() && text.length < 220) text += `\n${trade.note.trim().slice(0, 280 - text.length - 1)}`;
+    if (trade.note?.trim() && text.length < 220)
+      text += `\n${trade.note.trim().slice(0, 280 - text.length - 1)}`;
     setCaption(text);
-    setShared(false); setError(""); setActiveTab("feed");
+    setShared(false);
+    setError("");
+    setActiveTab("feed");
     setIncludeGeneratedCard(false);
-
   }, [trade]);
 
   // Generating two full-resolution canvases and uploading one of them is the
@@ -710,19 +932,26 @@ export function TradeShareComposer({ trade, onClose }: TradeShareComposerProps) 
       return;
     }
     let active = true;
-    setGenerating(true); setFeedCardUrl(""); setStoryCardUrl("");
+    setGenerating(true);
+    setFeedCardUrl("");
+    setStoryCardUrl("");
     Promise.all([
       makeFeedCard(trade, theme, author),
       makeStoryCard(trade, theme, author),
     ])
       .then(([feed, story]) => {
         if (!active) return;
-        setFeedCardUrl(feed); setStoryCardUrl(story); setGenerating(false);
+        setFeedCardUrl(feed);
+        setStoryCardUrl(story);
+        setGenerating(false);
       })
-      .catch(() => { if (active) setGenerating(false); });
-    return () => { active = false; };
+      .catch(() => {
+        if (active) setGenerating(false);
+      });
+    return () => {
+      active = false;
+    };
   }, [author, includeGeneratedCard, trade, theme]);
-
 
   /**
    * Hands the rendered card to the OS share sheet.
@@ -752,13 +981,15 @@ export function TradeShareComposer({ trade, onClose }: TradeShareComposerProps) 
       // consume the browser's short-lived user activation and mobile browsers
       // then rejected navigator.share even though the user tapped the button.
       const file = dataUrlToFile(url, filename);
-      const supportsFileShare = canShareFiles() && (() => {
-        try {
-          return navigator.canShare({ files: [file] });
-        } catch {
-          return false;
-        }
-      })();
+      const supportsFileShare =
+        canShareFiles() &&
+        (() => {
+          try {
+            return navigator.canShare({ files: [file] });
+          } catch {
+            return false;
+          }
+        })();
 
       if (supportsFileShare) {
         await navigator.share({
@@ -786,16 +1017,18 @@ export function TradeShareComposer({ trade, onClose }: TradeShareComposerProps) 
 
   const post = async () => {
     if (!trade || !caption.trim() || sharing) return;
-    setSharing(true); setError("");
+    setSharing(true);
+    setError("");
     try {
       let shareImageUrl: string | undefined;
-      if (includeGeneratedCard && feedCardUrl) {
-        try {
-          shareImageUrl = await uploadDataUrl(
-            feedCardUrl,
-            `${trade.symbol}-${trade.rawDate}-tradoxy.png`,
-          );
-        } catch { /* post without card if upload fails */ }
+      if (includeGeneratedCard) {
+        if (!feedCardUrl) {
+          throw new Error("Generated trade card is not ready yet.");
+        }
+        shareImageUrl = await uploadDataUrl(
+          feedCardUrl,
+          `${trade.symbol}-${trade.rawDate}-tradoxy.webp`,
+        );
       }
       await apiRequest("/api/posts", {
         method: "POST",
@@ -832,28 +1065,52 @@ export function TradeShareComposer({ trade, onClose }: TradeShareComposerProps) 
   const win = trade.pnl >= 0;
 
   return (
-    <Dialog open={Boolean(trade)} onOpenChange={(v) => { if (!v) onClose(); }}>
+    <Dialog
+      open={Boolean(trade)}
+      onOpenChange={(v) => {
+        if (!v) onClose();
+      }}
+    >
       <DialogContent
         showCloseButton={false}
         className="max-h-[95dvh] overflow-hidden border border-[#2a2a2a] bg-surface p-0 shadow-2xl shadow-black/80 sm:max-w-lg"
       >
         {/* Header */}
         <div className="flex items-center justify-between border-b border-[#2a2a2a] px-4 py-3">
-          <button type="button" onClick={onClose}
-            className="grid h-8 w-8 place-items-center rounded-full text-[#8a8a8a] transition hover:bg-[#2a2a2a] hover:text-white">
+          <button
+            type="button"
+            onClick={onClose}
+            className="grid h-8 w-8 place-items-center rounded-full text-[#8a8a8a] transition hover:bg-[#2a2a2a] hover:text-white"
+          >
             <X size={16} />
           </button>
-          <span className="text-sm font-bold text-[#f1f1f1]">Trade ulashish</span>
+          <span className="text-sm font-bold text-[#f1f1f1]">
+            Trade ulashish
+          </span>
           {shared ? (
-            <button type="button" onClick={onClose}
-              className="rounded-full border border-[#2a2a2a] px-4 py-1.5 text-xs font-bold text-[#f1f1f1] transition hover:bg-[#1f1f1f]">
+            <button
+              type="button"
+              onClick={onClose}
+              className="rounded-full border border-[#2a2a2a] px-4 py-1.5 text-xs font-bold text-[#f1f1f1] transition hover:bg-[#1f1f1f]"
+            >
               Yopish
             </button>
           ) : (
-            <button type="button" onClick={() => void post()}
-              disabled={sharing || !caption.trim() || (includeGeneratedCard && generating)}
-              className="inline-flex h-8 items-center gap-1.5 rounded-lg bg-white px-3 text-xs font-bold text-black transition hover:bg-zinc-200 disabled:opacity-40">
-              {sharing ? <LoaderCircle className="size-3.5 animate-spin" /> : <Send className="size-3.5" />}
+            <button
+              type="button"
+              onClick={() => void post()}
+              disabled={
+                sharing ||
+                !caption.trim() ||
+                (includeGeneratedCard && generating)
+              }
+              className="inline-flex h-8 items-center gap-1.5 rounded-lg bg-white px-3 text-xs font-bold text-black transition hover:bg-zinc-200 disabled:opacity-40"
+            >
+              {sharing ? (
+                <LoaderCircle className="size-3.5 animate-spin" />
+              ) : (
+                <Send className="size-3.5" />
+              )}
               Post
             </button>
           )}
@@ -863,22 +1120,33 @@ export function TradeShareComposer({ trade, onClose }: TradeShareComposerProps) 
         {shared ? (
           <div className="flex flex-col items-center justify-center gap-4 py-14 text-center">
             <span className="text-5xl">🚀</span>
-            <h3 className="text-lg font-bold text-[#f1f1f1]">Post ulashildi!</h3>
+            <h3 className="text-lg font-bold text-[#f1f1f1]">
+              Post ulashildi!
+            </h3>
             <p className="text-sm text-[#8a8a8a]">Tradoxy feedida chiqdi.</p>
             {storyCardUrl && (
               <div className="mt-2 flex flex-wrap justify-center gap-2">
-                <button type="button" onClick={() => void shareToDevice("story")}
-                  className="flex items-center gap-2 rounded-full bg-white px-5 py-2.5 text-sm font-semibold text-black transition hover:bg-zinc-200">
+                <button
+                  type="button"
+                  onClick={() => void shareToDevice("story")}
+                  className="flex items-center gap-2 rounded-full bg-white px-5 py-2.5 text-sm font-semibold text-black transition hover:bg-zinc-200"
+                >
                   <Share2 size={15} /> Story sifatida ulashish
                 </button>
-                <button type="button" onClick={() => downloadCard("story")}
-                  className="flex items-center gap-2 rounded-full border border-white/12 px-5 py-2.5 text-sm font-semibold text-ink-soft transition hover:border-white/25 hover:text-white">
+                <button
+                  type="button"
+                  onClick={() => downloadCard("story")}
+                  className="flex items-center gap-2 rounded-full border border-white/12 px-5 py-2.5 text-sm font-semibold text-ink-soft transition hover:border-white/25 hover:text-white"
+                >
                   <Download size={15} /> .png
                 </button>
               </div>
             )}
-            <button type="button" onClick={onClose}
-              className="mt-1 text-sm text-[#8a8a8a] transition hover:text-[#f1f1f1]">
+            <button
+              type="button"
+              onClick={onClose}
+              className="mt-1 text-sm text-[#8a8a8a] transition hover:text-[#f1f1f1]"
+            >
               Yopish
             </button>
           </div>
@@ -888,7 +1156,11 @@ export function TradeShareComposer({ trade, onClose }: TradeShareComposerProps) 
             <div className="flex gap-3 p-4">
               <div className="shrink-0">
                 {avatarUrl ? (
-                  <MediaImage src={avatarUrl} alt={fullName} className="h-10 w-10 rounded-full object-cover ring-1 ring-white/10" />
+                  <MediaImage
+                    src={avatarUrl}
+                    alt={fullName}
+                    className="h-10 w-10 rounded-full object-cover ring-1 ring-white/10"
+                  />
                 ) : (
                   <div className="grid h-10 w-10 place-items-center rounded-full bg-gradient-to-br from-zinc-700 to-zinc-900 text-[11px] font-black uppercase text-zinc-200 ring-1 ring-white/10">
                     {fullName.slice(0, 2)}
@@ -898,41 +1170,82 @@ export function TradeShareComposer({ trade, onClose }: TradeShareComposerProps) 
               <div className="min-w-0 flex-1">
                 <p className="mb-1.5 text-sm font-semibold text-[#f1f1f1]">
                   {fullName}
-                  <span className="ml-1.5 text-xs font-normal text-[#8a8a8a]">@{username}</span>
+                  <span className="ml-1.5 text-xs font-normal text-[#8a8a8a]">
+                    @{username}
+                  </span>
                 </p>
-                <textarea value={caption} onChange={(e) => setCaption(e.target.value)}
-                  maxLength={280} rows={3} placeholder="Trade haqida yozing..." autoFocus
-                  className="w-full resize-none bg-transparent text-[15px] leading-6 text-[#f1f1f1] placeholder:text-[#5a5a5a] outline-none" />
+                <textarea
+                  value={caption}
+                  onChange={(e) => setCaption(e.target.value)}
+                  maxLength={280}
+                  rows={3}
+                  placeholder="Trade haqida yozing..."
+                  autoFocus
+                  className="w-full resize-none bg-transparent text-[15px] leading-6 text-[#f1f1f1] placeholder:text-[#5a5a5a] outline-none"
+                />
 
                 {/* Trade preview card */}
-                <div className={`mt-3 overflow-hidden rounded-2xl border ${win ? "border-emerald-500/25" : "border-rose-500/25"} bg-surface-raised`}>
-                  <div className={`flex items-center justify-between px-4 py-3 ${win ? "bg-emerald-500/[.06]" : "bg-rose-500/[.06]"}`}>
+                <div
+                  className={`mt-3 overflow-hidden rounded-2xl border ${win ? "border-emerald-500/25" : "border-rose-500/25"} bg-surface-raised`}
+                >
+                  <div
+                    className={`flex items-center justify-between px-4 py-3 ${win ? "bg-emerald-500/[.06]" : "bg-rose-500/[.06]"}`}
+                  >
                     <div className="flex min-w-0 items-center gap-2">
-                      <span className="text-sm font-bold text-[#f1f1f1]">{trade.symbol}</span>
-                      <span className={`rounded px-1.5 py-0.5 text-[10px] font-black ${trade.side === "Long" ? "bg-emerald-500/20 text-emerald-300" : "bg-rose-500/20 text-rose-300"}`}>
+                      <span className="text-sm font-bold text-[#f1f1f1]">
+                        {trade.symbol}
+                      </span>
+                      <span
+                        className={`rounded px-1.5 py-0.5 text-[10px] font-black ${trade.side === "Long" ? "bg-emerald-500/20 text-emerald-300" : "bg-rose-500/20 text-rose-300"}`}
+                      >
                         {trade.side.toUpperCase()}
                       </span>
-                      {trade.setup?.trim() ? <span className="truncate text-[11px] text-[#8a8a8a]">{trade.setup}</span> : null}
+                      {trade.setup?.trim() ? (
+                        <span className="truncate text-[11px] text-[#8a8a8a]">
+                          {trade.setup}
+                        </span>
+                      ) : null}
                     </div>
-                    <span className={`ml-3 shrink-0 font-mono text-base font-black ${win ? "text-emerald-300" : "text-rose-300"}`}>
+                    <span
+                      className={`ml-3 shrink-0 font-mono text-base font-black ${win ? "text-emerald-300" : "text-rose-300"}`}
+                    >
                       {win ? "+" : "−"}${cash.format(Math.abs(trade.pnl))}
                     </span>
                   </div>
                   <div className="flex items-center gap-3 border-t border-[#2a2a2a] px-4 py-2">
-                    {trade.resultR && Math.abs(trade.resultR) > 0.01
-                      ? <span className="font-mono text-[11px] text-[#8a8a8a]">{trade.resultR.toFixed(2)}R</span>
-                      : null}
-                    {trade.session?.trim() ? <span className="text-[11px] text-[#8a8a8a]">{trade.session}</span> : null}
-                    <span className="text-[11px] text-[#8a8a8a]">{trade.date}</span>
-                    <span className={`ml-auto rounded px-1.5 py-0.5 text-[10px] font-black ${win ? "bg-emerald-500/15 text-emerald-300" : "bg-rose-500/15 text-rose-300"}`}>
+                    {trade.resultR && Math.abs(trade.resultR) > 0.01 ? (
+                      <span className="font-mono text-[11px] text-[#8a8a8a]">
+                        {trade.resultR.toFixed(2)}R
+                      </span>
+                    ) : null}
+                    {trade.session?.trim() ? (
+                      <span className="text-[11px] text-[#8a8a8a]">
+                        {trade.session}
+                      </span>
+                    ) : null}
+                    <span className="text-[11px] text-[#8a8a8a]">
+                      {trade.date}
+                    </span>
+                    <span
+                      className={`ml-auto rounded px-1.5 py-0.5 text-[10px] font-black ${win ? "bg-emerald-500/15 text-emerald-300" : "bg-rose-500/15 text-rose-300"}`}
+                    >
                       {trade.pnl > 0 ? "WIN" : trade.pnl < 0 ? "LOSS" : "BE"}
                     </span>
                   </div>
                   {trade.imageUrls?.length ? (
-                    <div className={`grid gap-px border-t border-[#2a2a2a] ${trade.imageUrls.length === 1 ? "" : trade.imageUrls.length === 2 ? "grid-cols-2" : "grid-cols-3"}`}>
+                    <div
+                      className={`grid gap-px border-t border-[#2a2a2a] ${trade.imageUrls.length === 1 ? "" : trade.imageUrls.length === 2 ? "grid-cols-2" : "grid-cols-3"}`}
+                    >
                       {trade.imageUrls.slice(0, 3).map((url, i) => (
-                        <div key={i} className="aspect-square overflow-hidden bg-black">
-                          <MediaImage src={url} alt="" className="h-full w-full object-cover" />
+                        <div
+                          key={i}
+                          className="aspect-square overflow-hidden bg-black"
+                        >
+                          <MediaImage
+                            src={url}
+                            alt=""
+                            className="h-full w-full object-cover"
+                          />
                         </div>
                       ))}
                     </div>
@@ -949,9 +1262,13 @@ export function TradeShareComposer({ trade, onClose }: TradeShareComposerProps) 
                     <ImageIcon className="size-4" />
                   </span>
                   <div className="min-w-0">
-                    <p className="truncate text-xs font-semibold text-white">Generated trade card</p>
+                    <p className="truncate text-xs font-semibold text-white">
+                      Generated trade card
+                    </p>
                     <p className="truncate text-[10px] text-ink-mute">
-                      {includeGeneratedCard ? "Card will be attached to this post" : "Post instantly without a generated image"}
+                      {includeGeneratedCard
+                        ? "Card will be attached to this post"
+                        : "Post instantly without a generated image"}
                     </p>
                   </div>
                 </div>
@@ -962,93 +1279,126 @@ export function TradeShareComposer({ trade, onClose }: TradeShareComposerProps) 
                 />
               </div>
 
-              {includeGeneratedCard ? <>
-              <div className="mb-3 mt-3 flex gap-1">
-                {(["feed", "story"] as const).map((tab) => (
-                  <button key={tab} type="button" onClick={() => setActiveTab(tab)}
-                    aria-pressed={activeTab === tab}
-                    className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition ${activeTab === tab ? "bg-white/10 text-[#f1f1f1]" : "text-ink-subtle hover:text-ink-soft"}`}>
-                    {tab === "feed" ? "Post · 1:1" : "Story · 9:16"}
-                  </button>
-                ))}
-              </div>
-
-              <div className={`relative mx-auto overflow-hidden rounded-xl bg-surface-raised ${activeTab === "story" ? "aspect-[9/16] max-w-[164px]" : "aspect-square max-w-[260px]"}`}>
-                {generating ? (
-                  <div className="grid h-full place-items-center">
-                    <LoaderCircle size={22} className="animate-spin text-ink-subtle" />
+              {includeGeneratedCard ? (
+                <>
+                  <div className="mb-3 mt-3 flex gap-1">
+                    {(["feed", "story"] as const).map((tab) => (
+                      <button
+                        key={tab}
+                        type="button"
+                        onClick={() => setActiveTab(tab)}
+                        aria-pressed={activeTab === tab}
+                        className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition ${activeTab === tab ? "bg-white/10 text-[#f1f1f1]" : "text-ink-subtle hover:text-ink-soft"}`}
+                      >
+                        {tab === "feed" ? "Post · 1:1" : "Story · 9:16"}
+                      </button>
+                    ))}
                   </div>
-                ) : (
-                  <MediaImage src={activeTab === "feed" ? feedCardUrl : storyCardUrl}
-                    alt={activeTab === "feed" ? "Feed card preview" : "IG Story preview"}
-                    className="h-full w-full object-cover" />
-                )}
-              </div>
 
-              <div className="mt-4">
-                <p className="mb-2 text-[11px] font-semibold uppercase tracking-[.14em] text-ink-subtle">
-                  Color theme
-                </p>
-                <div className="grid grid-cols-6 gap-2">
-                  {SHARE_THEMES.filter((item) => item.tier === "color").map((item) => (
+                  <div
+                    className={`relative mx-auto overflow-hidden rounded-xl bg-surface-raised ${activeTab === "story" ? "aspect-[9/16] max-w-[164px]" : "aspect-square max-w-[260px]"}`}
+                  >
+                    {generating ? (
+                      <div className="grid h-full place-items-center">
+                        <LoaderCircle
+                          size={22}
+                          className="animate-spin text-ink-subtle"
+                        />
+                      </div>
+                    ) : (
+                      <MediaImage
+                        src={activeTab === "feed" ? feedCardUrl : storyCardUrl}
+                        alt={
+                          activeTab === "feed"
+                            ? "Feed card preview"
+                            : "IG Story preview"
+                        }
+                        className="h-full w-full object-cover"
+                      />
+                    )}
+                  </div>
+
+                  <div className="mt-4">
+                    <p className="mb-2 text-[11px] font-semibold uppercase tracking-[.14em] text-ink-subtle">
+                      Color theme
+                    </p>
+                    <div className="grid grid-cols-6 gap-2">
+                      {SHARE_THEMES.filter((item) => item.tier === "color").map(
+                        (item) => (
+                          <button
+                            key={item.id}
+                            type="button"
+                            onClick={() => setTheme(item)}
+                            aria-label={item.label}
+                            aria-pressed={theme.id === item.id}
+                            style={themeSwatchStyle(item)}
+                            className={`aspect-square rounded-lg border transition ${theme.id === item.id ? "border-white ring-2 ring-white/60" : "border-white/12 hover:border-white/35"}`}
+                          />
+                        ),
+                      )}
+                    </div>
+
+                    <p className="mb-2 mt-4 text-[11px] font-semibold uppercase tracking-[.14em] text-ink-subtle">
+                      Premium theme
+                    </p>
+                    <div className="grid grid-cols-6 gap-2">
+                      {SHARE_THEMES.filter(
+                        (item) => item.tier === "premium",
+                      ).map((item) => (
+                        <button
+                          key={item.id}
+                          type="button"
+                          onClick={() => setTheme(item)}
+                          aria-label={item.label}
+                          aria-pressed={theme.id === item.id}
+                          style={themeSwatchStyle(item)}
+                          className={`aspect-square rounded-lg border transition ${theme.id === item.id ? "border-white ring-2 ring-white/60" : "border-white/12 hover:border-white/35"}`}
+                        />
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="mt-4 flex flex-wrap justify-center gap-2">
                     <button
-                      key={item.id}
                       type="button"
-                      onClick={() => setTheme(item)}
-                      aria-label={item.label}
-                      aria-pressed={theme.id === item.id}
-                      style={themeSwatchStyle(item)}
-                      className={`aspect-square rounded-lg border transition ${theme.id === item.id ? "border-white ring-2 ring-white/60" : "border-white/12 hover:border-white/35"}`}
-                    />
-                  ))}
-                </div>
-
-                <p className="mb-2 mt-4 text-[11px] font-semibold uppercase tracking-[.14em] text-ink-subtle">
-                  Premium theme
-                </p>
-                <div className="grid grid-cols-6 gap-2">
-                  {SHARE_THEMES.filter((item) => item.tier === "premium").map((item) => (
+                      onClick={() => void shareToDevice(activeTab)}
+                      disabled={
+                        generating ||
+                        !(activeTab === "feed" ? feedCardUrl : storyCardUrl)
+                      }
+                      className="flex items-center gap-2 rounded-lg bg-white px-4 py-2 text-xs font-semibold text-black transition hover:bg-zinc-200 disabled:opacity-50"
+                    >
+                      <Share2 size={13} />
+                      {activeTab === "feed"
+                        ? "Post sifatida ulashish"
+                        : "Story sifatida ulashish"}
+                    </button>
                     <button
-                      key={item.id}
                       type="button"
-                      onClick={() => setTheme(item)}
-                      aria-label={item.label}
-                      aria-pressed={theme.id === item.id}
-                      style={themeSwatchStyle(item)}
-                      className={`aspect-square rounded-lg border transition ${theme.id === item.id ? "border-white ring-2 ring-white/60" : "border-white/12 hover:border-white/35"}`}
-                    />
-                  ))}
-                </div>
-              </div>
-
-              <div className="mt-4 flex flex-wrap justify-center gap-2">
-                <button
-                  type="button"
-                  onClick={() => void shareToDevice(activeTab)}
-                  disabled={generating || !(activeTab === "feed" ? feedCardUrl : storyCardUrl)}
-                  className="flex items-center gap-2 rounded-lg bg-white px-4 py-2 text-xs font-semibold text-black transition hover:bg-zinc-200 disabled:opacity-50"
-                >
-                  <Share2 size={13} />
-                  {activeTab === "feed" ? "Post sifatida ulashish" : "Story sifatida ulashish"}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => downloadCard(activeTab)}
-                  disabled={generating || !(activeTab === "feed" ? feedCardUrl : storyCardUrl)}
-                  className="flex items-center gap-2 rounded-lg border border-white/12 px-4 py-2 text-xs font-semibold text-ink-soft transition hover:border-white/25 hover:text-white disabled:opacity-50"
-                >
-                  <Download size={13} /> .png
-                </button>
-              </div>
-              </> : null}
+                      onClick={() => downloadCard(activeTab)}
+                      disabled={
+                        generating ||
+                        !(activeTab === "feed" ? feedCardUrl : storyCardUrl)
+                      }
+                      className="flex items-center gap-2 rounded-lg border border-white/12 px-4 py-2 text-xs font-semibold text-ink-soft transition hover:border-white/25 hover:text-white disabled:opacity-50"
+                    >
+                      <Download size={13} /> .png
+                    </button>
+                  </div>
+                </>
+              ) : null}
             </div>
 
             {/* Footer */}
             <div className="flex items-center justify-between px-4 py-3">
-              <span className={`text-[11px] ${caption.length > 250 ? "text-amber-400" : "text-[#8a8a8a]"}`}>
+              <span
+                className={`text-[11px] ${caption.length > 250 ? "text-amber-400" : "text-[#8a8a8a]"}`}
+              >
                 {caption.length} / 280
               </span>
-              {error ? <span className="text-xs text-rose-300">{error}</span> : null}
+              {error ? (
+                <span className="text-xs text-rose-300">{error}</span>
+              ) : null}
             </div>
           </div>
         )}

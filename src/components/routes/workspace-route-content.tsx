@@ -4,6 +4,7 @@ import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
 
 import type { ProfileSeed } from "../profile/use-profile-controller";
+import { ProfilePage } from "../profile/profile-page";
 import {
   CalendarRouteSkeleton,
   ChartRouteSkeleton,
@@ -37,13 +38,8 @@ const loadJournalCalendar = () =>
 const loadAccountSettings = () =>
   import("../account-settings").then((module) => module.AccountSettings);
 
-const loadProfilePage = () =>
-  import("../profile/profile-page").then((module) => module.ProfilePage);
-
 const loadCommunityWorkspace = () =>
-  import("../community-workspace").then(
-    (module) => module.CommunityWorkspace,
-  );
+  import("../community-workspace").then((module) => module.CommunityWorkspace);
 
 const loadPricing = () => import("../pricing").then((module) => module.Pricing);
 
@@ -82,10 +78,6 @@ const AccountSettings = dynamic(loadAccountSettings, {
   loading: () => <PanelRouteSkeleton />,
 });
 
-const Account = dynamic(loadProfilePage, {
-  loading: () => <PanelRouteSkeleton />,
-});
-
 const CommunityWorkspace = dynamic(loadCommunityWorkspace, {
   loading: () => <ListRouteSkeleton rows={5} />,
 });
@@ -114,9 +106,7 @@ export function preloadWorkspaceRoute(pathname: string) {
   if (pathname === "/analytics") return warm(loadJournalAnalytics);
   if (pathname.startsWith("/calendar")) return warm(loadJournalCalendar);
   if (pathname === "/settings") return warm(loadAccountSettings);
-  if (pathname === "/profile" || /^\/[^/]+$/.test(pathname)) {
-    return warm(loadProfilePage);
-  }
+  if (pathname === "/profile" || /^\/[^/]+$/.test(pathname)) return;
   if (pathname.startsWith("/community")) return warm(loadCommunityWorkspace);
   if (pathname === "/pricing") return warm(loadPricing);
   if (pathname === "/superadmin" || pathname === "/admin") {
@@ -163,7 +153,7 @@ export function ProfileRouteContent({
   seed?: ProfileSeed;
 }) {
   return (
-    <Account onLogin={openLogin} profileUsername={username} seed={seed} />
+    <ProfilePage onLogin={openLogin} profileUsername={username} seed={seed} />
   );
 }
 
@@ -182,9 +172,6 @@ export function AdminRouteContent() {
 export function TradeDetailRouteContent({ tradeId }: { tradeId: string }) {
   const router = useRouter();
   return (
-    <TradeDetailPage
-      tradeId={tradeId}
-      onBack={() => router.push("/trades")}
-    />
+    <TradeDetailPage tradeId={tradeId} onBack={() => router.push("/trades")} />
   );
 }

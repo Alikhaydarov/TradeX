@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 
 import { useActiveAccountStore } from "./active-account-context";
 import { useAuth } from "./auth-context";
@@ -32,9 +32,6 @@ export function WorkspaceBootLoader({
   const [forceReady, setForceReady] = useState(false);
   const [finishing, setFinishing] = useState(false);
   const [visible, setVisible] = useState(true);
-  const spoke = useRef(false);
-  const utterance = useRef<SpeechSynthesisUtterance | null>(null);
-
   const displayName = String(
     profile?.username ||
       profile?.fullName ||
@@ -67,60 +64,6 @@ export function WorkspaceBootLoader({
       window.clearTimeout(forceTimer);
     };
   }, []);
-
-  const speakWelcome = useCallback(() => {
-    if (!("speechSynthesis" in window)) return false;
-    try {
-      const synth = window.speechSynthesis;
-      const message = new SpeechSynthesisUtterance(
-        `Welcome back, ${displayName}`,
-      );
-      const voices = synth.getVoices();
-      message.voice =
-        voices.find((voice) => /Google US English/i.test(voice.name)) ||
-        voices.find((voice) => voice.lang.toLowerCase().startsWith("en-us")) ||
-        voices.find((voice) => voice.lang.toLowerCase().startsWith("en")) ||
-        null;
-      message.lang = message.voice?.lang || "en-US";
-      message.rate = 1.02;
-      message.pitch = 0.96;
-      message.volume = 0.7;
-      message.onstart = () => {
-        spoke.current = true;
-      };
-      message.onend = () => {
-        utterance.current = null;
-      };
-      message.onerror = () => {
-        utterance.current = null;
-      };
-      utterance.current = message;
-      spoke.current = true;
-      synth.cancel();
-      synth.resume();
-      synth.speak(message);
-      return true;
-    } catch {
-      return false;
-    }
-  }, [displayName]);
-
-  useEffect(() => {
-    if (mode !== "welcome" || spoke.current || !entered || !displayName) return;
-    if (!("speechSynthesis" in window)) return;
-
-    const synth = window.speechSynthesis;
-    const startSpeech = () => {
-      if (!spoke.current) speakWelcome();
-    };
-    const speechTimer = window.setTimeout(startSpeech, 560);
-    synth.addEventListener("voiceschanged", startSpeech, { once: true });
-
-    return () => {
-      window.clearTimeout(speechTimer);
-      synth.removeEventListener("voiceschanged", startSpeech);
-    };
-  }, [displayName, entered, mode, speakWelcome]);
 
   const appReady = bootstrapped || !accountsLoading || forceReady;
 
