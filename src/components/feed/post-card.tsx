@@ -191,19 +191,19 @@ export function PostCard({
     <article
       id={`post-${post.id}`}
       ref={(node) => observePost(node, post.id)}
-      className="rounded-2xl border border-white/8 bg-surface px-3 py-4 shadow-[inset_0_1px_0_rgba(255,255,255,.025)] transition-colors hover:border-white/12 hover:bg-surface sm:px-5 sm:py-5"
+      className="rounded-lg border border-white/8 bg-surface px-3 py-3.5 shadow-[inset_0_1px_0_rgba(255,255,255,.025)] transition-colors hover:border-white/12 hover:bg-surface sm:px-4 sm:py-4"
     >
-      <div className="flex gap-3.5">
+      <div className="flex gap-3">
         <button
           type="button"
           onClick={() => onOpenProfile(post.handle)}
-          className={`size-11 shrink-0 rounded-full sm:size-12 ${FOCUS_RING}`}
+          className={`size-10 shrink-0 rounded-full ${FOCUS_RING}`}
           aria-label={`Open ${post.name}'s profile`}
         >
           <TraderAvatar
             name={post.name}
             value={post.avatar}
-            className="size-11 rounded-full text-xs ring-1 ring-white/10 sm:size-12"
+            className="size-10 rounded-full text-xs ring-1 ring-white/10"
           />
         </button>
 
@@ -274,7 +274,7 @@ export function PostCard({
           </div>
 
           {post.symbol ? (
-            <div className="mt-3 flex flex-wrap items-center gap-2 rounded-xl border border-white/8 bg-white/[.02] px-3 py-2.5">
+            <div className="mt-2.5 flex flex-wrap items-center gap-2 rounded-lg border border-white/8 bg-white/[.02] px-3 py-2">
               <InstrumentBadge
                 symbol={post.symbol}
                 compact
@@ -319,7 +319,7 @@ export function PostCard({
           ) : null}
 
           {post.text && post.text !== `${post.symbol} trade` ? (
-            <p className="mt-3 whitespace-pre-line text-[15px] leading-6 text-zinc-100">
+            <p className="mt-2.5 whitespace-pre-line text-[14px] leading-5.5 text-zinc-100 sm:text-[15px] sm:leading-6">
               {post.text}
             </p>
           ) : null}
@@ -332,7 +332,7 @@ export function PostCard({
             />
           ) : null}
 
-          <div className="mt-3 flex items-center justify-between gap-1 text-ink-mute">
+          <div className="mt-2.5 flex items-center justify-between gap-1 text-ink-mute">
             <div className="flex items-center gap-0.5">
               <ActionButton
                 label="Replies"

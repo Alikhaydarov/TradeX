@@ -107,7 +107,7 @@
   --chart-3: oklch(0.48 0 0);
   --chart-4: oklch(0.38 0 0);
   --chart-5: oklch(0.28 0 0);
-  --radius: 0.95rem;
+  --radius: 0.5rem;
   --sidebar: #000000;
   --sidebar-foreground: #f8f8f8;
   --sidebar-primary: #ffffff;
