@@ -640,6 +640,17 @@ async function uploadDataUrl(dataUrl: string, filename: string): Promise<string>
   return json.imageUrl;
 }
 
+function dataUrlToFile(dataUrl: string, filename: string) {
+  const [header, encoded = ""] = dataUrl.split(",", 2);
+  const mime = header.match(/^data:([^;]+)/)?.[1] || "image/png";
+  const binary = atob(encoded);
+  const bytes = new Uint8Array(binary.length);
+  for (let index = 0; index < binary.length; index += 1) {
+    bytes[index] = binary.charCodeAt(index);
+  }
+  return new File([bytes], filename, { type: mime });
+}
+
 /* ─── Component ───────────────────────────────────────────────────────────── */
 
 export function TradeShareComposer({ trade, onClose }: TradeShareComposerProps) {
@@ -737,10 +748,19 @@ export function TradeShareComposer({ trade, onClose }: TradeShareComposerProps) 
     const filename = `${trade.symbol}-${trade.rawDate}-${suffix}.png`;
 
     try {
-      const blob = await (await fetch(url)).blob();
-      const file = new File([blob], filename, { type: "image/png" });
+      // Keep file creation synchronous. Awaiting fetch(dataUrl) here used to
+      // consume the browser's short-lived user activation and mobile browsers
+      // then rejected navigator.share even though the user tapped the button.
+      const file = dataUrlToFile(url, filename);
+      const supportsFileShare = canShareFiles() && (() => {
+        try {
+          return navigator.canShare({ files: [file] });
+        } catch {
+          return false;
+        }
+      })();
 
-      if (canShareFiles() && navigator.canShare({ files: [file] })) {
+      if (supportsFileShare) {
         await navigator.share({
           files: [file],
           title: `${trade.symbol} ${trade.side.toUpperCase()}`,
@@ -753,11 +773,14 @@ export function TradeShareComposer({ trade, onClose }: TradeShareComposerProps) 
       a.href = url;
       a.download = filename;
       a.click();
-      setError("Bu qurilma to'g'ridan-to'g'ri ulashishni qo'llamaydi - rasm yuklab olindi.");
     } catch (shareError) {
-      // A cancelled share sheet rejects too; that is not a failure worth showing.
+      // Closing the native share sheet is a normal user action. For browser
+      // limitations, downloading is a more useful fallback than a red error.
       if ((shareError as Error)?.name === "AbortError") return;
-      setError("Ulashib bo'lmadi. Rasmni yuklab olib qo'lda joylashingiz mumkin.");
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      a.click();
     }
   };
 
