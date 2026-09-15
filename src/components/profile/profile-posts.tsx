@@ -20,20 +20,23 @@ import type { ProfileTab } from "./profile-types";
 
 const tabs: Array<{ id: ProfileTab; label: string }> = [
   { id: "posts", label: "Posts" },
+  { id: "replies", label: "Replies" },
   { id: "media", label: "Media" },
 ];
 
 function EmptyTab({ tab }: { tab: ProfileTab }) {
-  const title = tab === "posts" ? "No posts yet" : "No media yet";
-  const description =
-    tab === "posts" ? "Posts will appear here." : "Image posts will appear here.";
+  const copy = {
+    posts: ["No posts yet", "Posts and reposts will appear here."],
+    replies: ["No replies yet", "Replies to other traders will appear here."],
+    media: ["No media yet", "Posts with charts and images will appear here."],
+  }[tab];
 
   return (
     <div className="grid min-h-64 place-items-center px-8 text-center">
       <div>
         <ImageIcon className="mx-auto text-ink-subtle" size={36} />
-        <h3 className="mt-4 text-2xl font-black">{title}</h3>
-        <p className="mt-2 text-sm text-ink-mute">{description}</p>
+        <h3 className="mt-4 text-xl font-bold">{copy[0]}</h3>
+        <p className="mt-2 text-sm text-ink-mute">{copy[1]}</p>
       </div>
     </div>
   );
@@ -48,8 +51,10 @@ function ProfilePost({
 }) {
   return (
     <article
-      ref={(node) => observePostView(node, post.id)}
-      className="group border-b border-white/8 bg-surface-raised px-4 py-5 last:border-b-0 transition hover:bg-surface-raised sm:px-6"
+      ref={(node) => {
+        if (post.timelineType === "post") observePostView(node, post.id);
+      }}
+      className="group border-b border-white/8 bg-black px-4 py-4 last:border-b-0 transition-colors hover:bg-white/[.025] sm:px-5"
     >
       <div className="grid grid-cols-[40px_minmax(0,1fr)] gap-3 sm:grid-cols-[48px_minmax(0,1fr)] sm:gap-4">
         <TraderAvatar
@@ -76,7 +81,7 @@ function ProfilePost({
             <p className="text-xs text-ink-mute">{post.time}</p>
           </div>
           {post.symbol ? (
-            <div className="mt-3 flex flex-wrap items-center gap-2 rounded-2xl border border-white/8 bg-black px-3 py-2.5 shadow-[inset_0_1px_0_rgba(255,255,255,.04)]">
+            <div className="mt-3 flex flex-wrap items-center gap-2 rounded-lg border border-white/8 bg-surface px-3 py-2.5">
               <InstrumentBadge
                 symbol={post.symbol}
                 compact
@@ -113,7 +118,7 @@ function ProfilePost({
             </p>
           ) : null}
           {post.timelineType === "reply" && post.parentPostText ? (
-            <div className="mt-3 rounded-2xl border border-white/8 bg-black px-3 py-3 text-xs text-ink-soft">
+            <div className="mt-3 rounded-lg border border-white/8 bg-surface px-3 py-3 text-xs text-ink-soft">
               <div className="mb-1 text-[10px] font-black uppercase tracking-[0.16em] text-ink-subtle">
                 Original post
               </div>
@@ -199,20 +204,29 @@ export function ProfilePosts({
   observePostView: (node: HTMLElement | null, postId: string) => void;
 }) {
   const mediaPosts = posts.filter(
-    (post) => post.imageUrl || post.chartImageUrl || post.shareImageUrl,
+    (post) =>
+      Boolean(post.imageUrls?.length) ||
+      post.imageUrl ||
+      post.chartImageUrl ||
+      post.shareImageUrl,
   );
-  const visiblePosts = activeTab === "posts" ? posts : mediaPosts;
+  const visiblePosts =
+    activeTab === "replies"
+      ? posts.filter((post) => post.timelineType === "reply")
+      : activeTab === "media"
+        ? mediaPosts
+        : posts.filter((post) => post.timelineType !== "reply");
 
   return (
-    <section className="border-b border-border bg-card sm:mt-2 sm:overflow-hidden sm:rounded-lg sm:border">
-      <div className="relative z-10 grid grid-cols-2 border-b border-border bg-card">
+    <section className="border-b border-border bg-black sm:mt-2 sm:overflow-hidden sm:rounded-lg sm:border">
+      <div className="sticky top-14 z-10 grid grid-cols-3 border-b border-border bg-black/95 backdrop-blur-md">
         {tabs.map((tab) => {
           const active = activeTab === tab.id;
           return (
             <button
               key={tab.id}
               onClick={() => onTabChange(tab.id)}
-              className={`relative min-w-0 px-2 py-3 text-xs font-black transition-colors ${
+              className={`relative min-w-0 px-2 py-3.5 text-xs font-bold transition-colors ${
                 active
                   ? "text-white"
                   : "text-ink-mute hover:bg-white/[.03] hover:text-ink-strong"
@@ -220,7 +234,7 @@ export function ProfilePosts({
             >
               {tab.label}
               {active ? (
-                <span className="absolute inset-x-8 bottom-0 h-0.5 rounded-full bg-white" />
+                <span className="absolute inset-x-[30%] bottom-0 h-0.5 rounded-full bg-white" />
               ) : null}
             </button>
           );

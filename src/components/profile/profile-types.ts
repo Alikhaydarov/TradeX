@@ -32,4 +32,4 @@ export interface ConnectionUser {
   isSelf?: boolean;
 }
 
-export type ProfileTab = "posts" | "media";
+export type ProfileTab = "posts" | "replies" | "media";

@@ -88,7 +88,7 @@ export function ProfilePage({ onLogin, profileUsername, seed }: ProfilePageProps
         </div>
       ) : null}
 
-      <div className="mx-auto max-w-3xl px-0 sm:px-4 sm:py-3">
+      <div className="mx-auto max-w-2xl px-0 sm:px-4 sm:py-3">
         <ProfileHeader
           profile={controller.profile}
           stats={controller.stats}
@@ -96,7 +96,7 @@ export function ProfilePage({ onLogin, profileUsername, seed }: ProfilePageProps
           saved={controller.saved}
           uploadingBanner={controller.uploadingBanner}
           bannerInputRef={controller.bannerInputRef}
-          postCount={controller.posts.length}
+          postCount={controller.posts.filter((post) => post.timelineType === "post").length}
           followLoading={controller.followLoading}
           onBannerFile={(file) => void controller.uploadBanner(file)}
           onSignOut={() => void controller.signOut()}

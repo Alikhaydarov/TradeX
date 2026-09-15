@@ -141,9 +141,6 @@ export async function loadProfileView(
       .select(SOCIAL_POST_SELECT)
       .eq("user_id", profile.id)
       .eq("is_archived", false)
-      .not("symbol", "is", null)
-      .not("side", "is", null)
-      .not("trade_result", "is", null)
       .order("created_at", { ascending: false })
       .limit(50),
     supabase
