@@ -154,7 +154,7 @@ function Modal({
   return createPortal(
     <div className="fixed inset-0 isolate z-[2147483647] flex min-h-dvh w-full items-start justify-center overflow-y-auto bg-black/82 px-2 py-[max(.5rem,env(safe-area-inset-top))] sm:p-4">
       <div className="absolute inset-0" onClick={onClose} aria-hidden="true" />
-      <section className="relative z-10 flex min-h-0 max-h-[calc(100dvh-1rem)] w-full max-w-xl flex-col overflow-hidden rounded-[24px] border border-white/10 bg-surface text-white shadow-2xl shadow-black/80 sm:h-[min(92dvh,760px)] sm:max-h-[calc(100dvh-2rem)] sm:rounded-[30px]">
+      <section className="relative z-10 flex min-h-0 max-h-[calc(100dvh-1rem)] w-full max-w-xl flex-col overflow-hidden rounded-lg border border-white/10 bg-surface text-white shadow-2xl shadow-black/80 sm:h-[min(92dvh,760px)] sm:max-h-[calc(100dvh-2rem)]">
         <header className="flex items-center gap-3 border-b border-white/8 px-4 py-4">
           <div className="min-w-0 flex-1">
             <h2 className="text-xl font-black leading-6">{title}</h2>
