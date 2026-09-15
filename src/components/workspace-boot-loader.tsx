@@ -6,8 +6,8 @@ import { useActiveAccountStore } from "./active-account-context";
 import { useAuth } from "./auth-context";
 import { TradoxyMark } from "./tradoxy-mark";
 
-const INTRO_MS = 1050;
-const FADE_MS = 220;
+const INTRO_MS = 2100;
+const FADE_MS = 280;
 const FORCE_READY_MS = 3500;
 
 /**
@@ -65,14 +65,14 @@ export function WorkspaceBootLoader({
           `Welcome back, ${displayName}`,
         );
         message.lang = "en-US";
-        message.rate = 0.96;
+        message.rate = 1.05;
         message.pitch = 0.94;
         message.volume = 0.55;
         window.speechSynthesis.speak(message);
       } catch {
         // Autoplay speech is optional and may be blocked by the browser.
       }
-    }, 160);
+    }, 620);
     return () => window.clearTimeout(timer);
   }, [displayName, entered]);
 
@@ -101,22 +101,22 @@ export function WorkspaceBootLoader({
       role="status"
       aria-live="polite"
       aria-label={`Welcome back, ${displayName}`}
-      className={`fixed inset-0 z-[2147483647] grid place-items-center overflow-hidden bg-black px-6 transition-opacity duration-200 ${finishing ? "pointer-events-none opacity-0" : "opacity-100"}`}
+      className={`fixed inset-0 z-[2147483647] grid place-items-center overflow-hidden bg-black px-6 transition-opacity duration-300 ${finishing ? "pointer-events-none opacity-0" : "opacity-100"}`}
     >
       <div
         className={`flex w-full max-w-lg flex-col items-center text-center transition-[opacity,transform] duration-500 ease-out ${entered ? "translate-y-0 opacity-100" : "translate-y-5 opacity-0"}`}
       >
-        <span className="grid size-12 place-items-center rounded-lg border border-white/12 bg-white/[.04] shadow-[0_16px_60px_rgba(255,255,255,.06)]">
+        <span className="tx-welcome-logo grid size-12 place-items-center rounded-lg border border-white/12 bg-white/[.04] shadow-[0_16px_60px_rgba(255,255,255,.06)]">
           <TradoxyMark className="size-5 text-white" />
         </span>
 
-        <p className="mt-6 text-[10px] font-semibold uppercase tracking-[0.22em] text-white/45">
+        <p className="tx-welcome-eyebrow mt-6 text-[10px] font-semibold uppercase tracking-[0.22em] text-white/45">
           Tradoxy workspace
         </p>
-        <h1 className="mt-2 text-balance text-3xl font-semibold leading-tight text-white sm:text-4xl">
+        <h1 className="tx-welcome-title mt-2 text-balance text-3xl font-semibold leading-tight text-white sm:text-4xl">
           Welcome back, {displayName}
         </h1>
-        <p className="mt-3 text-sm text-white/48">Your trading desk is ready.</p>
+        <p className="tx-welcome-subtitle mt-3 text-sm text-white/48">Your trading desk is ready.</p>
 
         <div className="mt-8 h-px w-44 overflow-hidden bg-white/10">
           <span className="tx-welcome-progress block h-full bg-white" />
