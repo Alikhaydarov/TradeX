@@ -244,6 +244,15 @@
   100% { transform: rotate(0) scale(1); }
 }
 
+@keyframes tx-welcome-progress {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(0); }
+}
+
+.tx-welcome-progress {
+  animation: tx-welcome-progress 1050ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
 .tx-action-pop {
   animation: tx-action-pop 280ms cubic-bezier(0.2, 0.8, 0.2, 1);
 }
@@ -276,7 +285,8 @@
 
 @media (prefers-reduced-motion: reduce) {
   .tx-action-pop,
-  .tx-action-turn {
+  .tx-action-turn,
+  .tx-welcome-progress {
     animation: none;
   }
   .tx-skeleton::after {

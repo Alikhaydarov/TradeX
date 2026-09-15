@@ -1,35 +1,19 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { useActiveAccountStore } from "./active-account-context";
-import { Spinner } from "./ui/spinner";
+import { useAuth } from "./auth-context";
 import { TradoxyMark } from "./tradoxy-mark";
 
-/**
- * How long the splash stays up once the app is interactive.
- *
- * This is the only deliberate delay in the boot path. Hydration on a warm load
- * can finish in well under a frame, and flashing a black overlay for 80ms reads
- * as a glitch rather than a brand moment - so the splash holds briefly, then
- * fades. Tune this one number if it feels long or short; nothing else gates it.
- */
-const SETTLE_MS = 80;
-const FADE_MS = 100;
+const INTRO_MS = 1050;
+const FADE_MS = 220;
+const FORCE_READY_MS = 3500;
 
 /**
- * Covers the gap between first paint and an interactive app.
- *
- * The previous version blocked on `GET /api/profile` and threw the response
- * away - the splash was waiting on a round-trip whose result nothing read, so
- * every refresh paid for it. Then it stopped rendering entirely once the server
- * bootstrap landed, which is why the loader disappeared on refresh.
- *
- * Now it renders during SSR, so it is part of the very first paint instead of
- * appearing a frame later, and it leaves on hydration rather than on the
- * network. When there is no server bootstrap it still waits for the client to
- * finish loading accounts, because in that case there genuinely is nothing to
- * show yet.
+ * A single branded entrance for a fresh app load. The shared workspace layout
+ * stays mounted during route changes, so this does not replay between pages.
+ * Nothing network-bound can keep the user behind the overlay indefinitely.
  */
 export function WorkspaceBootLoader({
   bootstrapped = false,
@@ -37,39 +21,69 @@ export function WorkspaceBootLoader({
   bootstrapped?: boolean;
 }) {
   const { loading: accountsLoading } = useActiveAccountStore();
-  const [hydrated, setHydrated] = useState(false);
-  const [settled, setSettled] = useState(false);
-  const [finishing, setFinishing] = useState(false);
-  // Server bootstrap already delivered the account and journal payload. In
-  // that path an overlay only hides ready UI, so start fully dismissed.
-  const [visible, setVisible] = useState(() => !bootstrapped);
-
-  useEffect(() => {
-    if (bootstrapped) return;
-    setHydrated(true);
-    const timer = window.setTimeout(() => setSettled(true), SETTLE_MS);
-    return () => window.clearTimeout(timer);
-  }, [bootstrapped]);
-
-  // A safety valve: if the un-bootstrapped path never resolves, the splash must
-  // still leave rather than trap the user behind it.
+  const { profile, user } = useAuth();
+  const [entered, setEntered] = useState(false);
+  const [minimumElapsed, setMinimumElapsed] = useState(false);
   const [forceReady, setForceReady] = useState(false);
+  const [finishing, setFinishing] = useState(false);
+  const [visible, setVisible] = useState(true);
+  const spoke = useRef(false);
+
+  const displayName = String(
+    profile?.username ||
+      profile?.fullName ||
+      user?.user_metadata?.user_name ||
+      user?.user_metadata?.full_name ||
+      user?.email?.split("@")[0] ||
+      "trader",
+  ).replace(/^@/, "");
+
   useEffect(() => {
-    if (bootstrapped) return;
-    const timer = window.setTimeout(() => setForceReady(true), 3500);
+    const frame = window.requestAnimationFrame(() => setEntered(true));
+    const introTimer = window.setTimeout(
+      () => setMinimumElapsed(true),
+      INTRO_MS,
+    );
+    const forceTimer = window.setTimeout(
+      () => setForceReady(true),
+      FORCE_READY_MS,
+    );
+    return () => {
+      window.cancelAnimationFrame(frame);
+      window.clearTimeout(introTimer);
+      window.clearTimeout(forceTimer);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (spoke.current || !entered || !displayName) return;
+    spoke.current = true;
+    const timer = window.setTimeout(() => {
+      if (!("speechSynthesis" in window)) return;
+      try {
+        const message = new SpeechSynthesisUtterance(
+          `Welcome back, ${displayName}`,
+        );
+        message.lang = "en-US";
+        message.rate = 0.96;
+        message.pitch = 0.94;
+        message.volume = 0.55;
+        window.speechSynthesis.speak(message);
+      } catch {
+        // Autoplay speech is optional and may be blocked by the browser.
+      }
+    }, 160);
     return () => window.clearTimeout(timer);
-  }, [bootstrapped]);
+  }, [displayName, entered]);
 
-  const ready =
-    forceReady ||
-    (hydrated && settled && (bootstrapped || !accountsLoading));
+  const appReady = bootstrapped || !accountsLoading || forceReady;
 
   useEffect(() => {
-    if (!ready || !visible) return;
+    if (!minimumElapsed || !appReady || !visible) return;
     setFinishing(true);
     const timer = window.setTimeout(() => setVisible(false), FADE_MS);
     return () => window.clearTimeout(timer);
-  }, [ready, visible]);
+  }, [appReady, minimumElapsed, visible]);
 
   useEffect(() => {
     if (!visible) return;
@@ -80,36 +94,33 @@ export function WorkspaceBootLoader({
     };
   }, [visible]);
 
-  const progress = useMemo(() => {
-    if (finishing || forceReady) return 100;
-    return Math.min(94, 20 + (hydrated ? 45 : 0) + (settled ? 29 : 0));
-  }, [finishing, forceReady, hydrated, settled]);
-
   if (!visible) return null;
 
   return (
     <div
       role="status"
       aria-live="polite"
-      aria-label="Loading Tradoxy"
-      className={`fixed inset-0 z-[2147483647] grid place-items-center bg-black transition-opacity duration-100 ${finishing ? "opacity-0" : "opacity-100"}`}
+      aria-label={`Welcome back, ${displayName}`}
+      className={`fixed inset-0 z-[2147483647] grid place-items-center overflow-hidden bg-black px-6 transition-opacity duration-200 ${finishing ? "pointer-events-none opacity-0" : "opacity-100"}`}
     >
-      <div className="flex -translate-y-4 flex-col items-center gap-5">
-        <div className="relative grid size-16 place-items-center">
-          <Spinner
-            className="absolute inset-0 size-16 text-white/35"
-            strokeWidth={1.25}
-          />
-          <TradoxyMark className="relative size-6 text-white" />
-        </div>
+      <div
+        className={`flex w-full max-w-lg flex-col items-center text-center transition-[opacity,transform] duration-500 ease-out ${entered ? "translate-y-0 opacity-100" : "translate-y-5 opacity-0"}`}
+      >
+        <span className="grid size-12 place-items-center rounded-lg border border-white/12 bg-white/[.04] shadow-[0_16px_60px_rgba(255,255,255,.06)]">
+          <TradoxyMark className="size-5 text-white" />
+        </span>
 
-        <div className="h-[3px] w-40 overflow-hidden rounded-full bg-white/10">
-          <div
-            className="h-full rounded-full bg-white transition-[width] duration-300 ease-out"
-            style={{ width: `${progress}%` }}
-          />
+        <p className="mt-6 text-[10px] font-semibold uppercase tracking-[0.22em] text-white/45">
+          Tradoxy workspace
+        </p>
+        <h1 className="mt-2 text-balance text-3xl font-semibold leading-tight text-white sm:text-4xl">
+          Welcome back, {displayName}
+        </h1>
+        <p className="mt-3 text-sm text-white/48">Your trading desk is ready.</p>
+
+        <div className="mt-8 h-px w-44 overflow-hidden bg-white/10">
+          <span className="tx-welcome-progress block h-full bg-white" />
         </div>
-        <span className="sr-only">Loading your Tradoxy workspace</span>
       </div>
     </div>
   );
