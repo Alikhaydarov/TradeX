@@ -1,12 +1,13 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { Volume2 } from "lucide-react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import { useActiveAccountStore } from "./active-account-context";
 import { useAuth } from "./auth-context";
 import { TradoxyMark } from "./tradoxy-mark";
 
-const INTRO_MS = 2100;
+const INTRO_MS = 2800;
 const FADE_MS = 280;
 const FORCE_READY_MS = 3500;
 
@@ -27,7 +28,10 @@ export function WorkspaceBootLoader({
   const [forceReady, setForceReady] = useState(false);
   const [finishing, setFinishing] = useState(false);
   const [visible, setVisible] = useState(true);
+  const [voiceFallback, setVoiceFallback] = useState(false);
   const spoke = useRef(false);
+  const voiceStarted = useRef(false);
+  const utterance = useRef<SpeechSynthesisUtterance | null>(null);
 
   const displayName = String(
     profile?.username ||
@@ -55,26 +59,55 @@ export function WorkspaceBootLoader({
     };
   }, []);
 
+  const speakWelcome = useCallback(() => {
+    if (!("speechSynthesis" in window)) {
+      setVoiceFallback(true);
+      return;
+    }
+    try {
+      const synth = window.speechSynthesis;
+      const message = new SpeechSynthesisUtterance(
+        `Welcome back, ${displayName}`,
+      );
+      const voices = synth.getVoices();
+      message.voice =
+        voices.find((voice) => /Google US English/i.test(voice.name)) ||
+        voices.find((voice) => voice.lang.toLowerCase().startsWith("en-us")) ||
+        voices.find((voice) => voice.lang.toLowerCase().startsWith("en")) ||
+        null;
+      message.lang = message.voice?.lang || "en-US";
+      message.rate = 1.02;
+      message.pitch = 0.96;
+      message.volume = 0.7;
+      message.onstart = () => {
+        voiceStarted.current = true;
+        setVoiceFallback(false);
+      };
+      message.onend = () => {
+        utterance.current = null;
+      };
+      message.onerror = () => setVoiceFallback(true);
+      utterance.current = message;
+      synth.cancel();
+      synth.resume();
+      synth.speak(message);
+    } catch {
+      setVoiceFallback(true);
+    }
+  }, [displayName]);
+
   useEffect(() => {
     if (spoke.current || !entered || !displayName) return;
     spoke.current = true;
-    const timer = window.setTimeout(() => {
-      if (!("speechSynthesis" in window)) return;
-      try {
-        const message = new SpeechSynthesisUtterance(
-          `Welcome back, ${displayName}`,
-        );
-        message.lang = "en-US";
-        message.rate = 1.05;
-        message.pitch = 0.94;
-        message.volume = 0.55;
-        window.speechSynthesis.speak(message);
-      } catch {
-        // Autoplay speech is optional and may be blocked by the browser.
-      }
-    }, 620);
-    return () => window.clearTimeout(timer);
-  }, [displayName, entered]);
+    const speechTimer = window.setTimeout(speakWelcome, 620);
+    const fallbackTimer = window.setTimeout(() => {
+      if (!voiceStarted.current) setVoiceFallback(true);
+    }, 1250);
+    return () => {
+      window.clearTimeout(speechTimer);
+      window.clearTimeout(fallbackTimer);
+    };
+  }, [displayName, entered, speakWelcome]);
 
   const appReady = bootstrapped || !accountsLoading || forceReady;
 
@@ -106,9 +139,13 @@ export function WorkspaceBootLoader({
       <div
         className={`flex w-full max-w-lg flex-col items-center text-center transition-[opacity,transform] duration-500 ease-out ${entered ? "translate-y-0 opacity-100" : "translate-y-5 opacity-0"}`}
       >
-        <span className="tx-welcome-logo grid size-12 place-items-center rounded-lg border border-white/12 bg-white/[.04] shadow-[0_16px_60px_rgba(255,255,255,.06)]">
-          <TradoxyMark className="size-5 text-white" />
-        </span>
+        <div className="tx-welcome-frame flex w-full items-center justify-center gap-4">
+          <span className="h-px w-12 bg-white/10 sm:w-20" />
+          <span className="tx-welcome-logo grid size-12 shrink-0 place-items-center rounded-lg border border-white/12 bg-white/[.04] shadow-[0_16px_60px_rgba(255,255,255,.06)]">
+            <TradoxyMark className="size-5 text-white" />
+          </span>
+          <span className="h-px w-12 bg-white/10 sm:w-20" />
+        </div>
 
         <p className="tx-welcome-eyebrow mt-6 text-[10px] font-semibold uppercase tracking-[0.22em] text-white/45">
           Tradoxy workspace
@@ -117,6 +154,16 @@ export function WorkspaceBootLoader({
           Welcome back, {displayName}
         </h1>
         <p className="tx-welcome-subtitle mt-3 text-sm text-white/48">Your trading desk is ready.</p>
+
+        {voiceFallback ? (
+          <button
+            type="button"
+            onClick={speakWelcome}
+            className="tx-welcome-voice mt-5 inline-flex h-9 items-center gap-2 rounded-lg border border-white/12 bg-white/[.04] px-3 text-xs font-medium text-white/75 transition hover:border-white/25 hover:bg-white/[.08] hover:text-white active:scale-95"
+          >
+            <Volume2 size={14} /> Play welcome
+          </button>
+        ) : null}
 
         <div className="mt-8 h-px w-44 overflow-hidden bg-white/10">
           <span className="tx-welcome-progress block h-full bg-white" />
