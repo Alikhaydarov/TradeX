@@ -1,0 +1,9 @@
+import { BarChart3, Check, ShieldCheck } from "lucide-react";
+import { Brand } from "./brand";
+
+export function AuthShell({ title, subtitle, children }: { title: string; subtitle: string; children: React.ReactNode }) {
+  return <main className="auth-layout">
+    <section className="auth-showcase"><Brand/><div className="auth-showcase-copy"><p className="section-label">Trading intelligence, without noise</p><h1>Every decision becomes data you can improve.</h1><p>Journal execution, protect your downside and review the patterns that actually move your results.</p><div className="auth-proof-grid">{["Account-aware review", "Hard risk guardrails", "Private AI coaching"].map(item=><div key={item}><Check size={14}/>{item}</div>)}</div></div><div className="auth-preview" aria-hidden="true"><div className="auth-preview-top"><span><BarChart3 size={15}/> Performance overview</span><b>Last 30 days</b></div><div className="auth-preview-value"><span>Net performance</span><strong>+$12,840.20</strong></div><svg viewBox="0 0 620 170" role="presentation"><path d="M0 142 C56 130 76 146 121 112 S192 128 238 82 S304 96 350 64 S420 84 468 42 S548 56 620 14" fill="none" stroke="currentColor" strokeWidth="3"/><path d="M0 142 C56 130 76 146 121 112 S192 128 238 82 S304 96 350 64 S420 84 468 42 S548 56 620 14 L620 170 L0 170 Z" fill="url(#chartFill)"/><defs><linearGradient id="chartFill" x1="0" y1="0" x2="0" y2="1"><stop stopColor="#43e1b0" stopOpacity=".22"/><stop offset="1" stopColor="#43e1b0" stopOpacity="0"/></linearGradient></defs></svg></div></section>
+    <section className="auth-panel"><div className="auth-mobile-brand"><Brand/></div><div className="auth-card"><span className="auth-icon"><ShieldCheck size={19}/></span><h2>{title}</h2><p>{subtitle}</p>{children}</div></section>
+  </main>;
+}

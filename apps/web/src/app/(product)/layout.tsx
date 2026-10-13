@@ -1,4 +1,20 @@
 import { AppShell } from "@/components/app-shell";
+import { createClient } from "@/lib/supabase/server";
+import { isSupabaseConfigured } from "@/lib/supabase/config";
+import { redirect } from "next/navigation";
 
-export default function ProductLayout({ children }: { children: React.ReactNode }) { return <AppShell>{children}</AppShell>; }
+export const dynamic = "force-dynamic";
 
+export default async function ProductLayout({ children }: { children: React.ReactNode }) {
+  let user: { name: string; email: string; initials: string } | undefined;
+  if (isSupabaseConfigured()) {
+    const supabase = await createClient();
+    const { data } = await supabase.auth.getUser();
+    if (!data.user) redirect("/sign-in");
+    if (data.user) {
+      const name = String(data.user.user_metadata?.full_name || data.user.email?.split("@")[0] || "Trader");
+      user = { name, email: data.user.email || "", initials: name.split(/\s+/).slice(0,2).map(part=>part[0]).join("").toUpperCase() };
+    }
+  }
+  return <AppShell user={user}>{children}</AppShell>;
+}
