@@ -1,0 +1,35 @@
+@import "tailwindcss";
+
+:root {
+  --background: #080d17;
+  --secondary: #101827;
+  --card: #141e2e;
+  --elevated: #1b293b;
+  --border: #27364a;
+  --primary: #35d6ad;
+  --accent: #6875f5;
+  --foreground: #f5f7fb;
+  --muted: #91a0b5;
+  --warning: #f2b65b;
+  --danger: #f16b78;
+  --gold: #d9b978;
+}
+
+* { box-sizing: border-box; border-color: var(--border); }
+html { background: var(--background); scroll-behavior: smooth; }
+body { margin: 0; background: var(--background); color: var(--foreground); font-family: var(--font-sans), sans-serif; }
+button, input { font: inherit; }
+button, a { -webkit-tap-highlight-color: transparent; }
+::selection { background: rgb(53 214 173 / 28%); }
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: var(--background); }
+::-webkit-scrollbar-thumb { background: #27364a; border: 3px solid var(--background); border-radius: 999px; }
+
+@keyframes reveal { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+.reveal { animation: reveal .55s cubic-bezier(.2,.8,.2,1) both; }
+.reveal-delay { animation-delay: .12s; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; }
+}
+

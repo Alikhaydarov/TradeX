@@ -1,0 +1,16 @@
+{
+  "name": "@tradoxy/database",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": { ".": "./src/client.ts" },
+  "scripts": {
+    "generate": "prisma generate",
+    "migrate": "prisma migrate dev",
+    "studio": "prisma studio",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": { "@prisma/client": "^6.15.0" },
+  "devDependencies": { "@tradoxy/config": "workspace:*", "@types/node": "^24.3.0", "prisma": "^6.15.0", "typescript": "^5.9.2" }
+}
+

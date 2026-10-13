@@ -1,0 +1,10 @@
+{
+  "name": "@tradoxy/worker",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": { "dev": "tsx watch src/main.ts", "build": "tsc", "start": "node dist/main.js", "typecheck": "tsc --noEmit", "lint": "eslint src" },
+  "dependencies": { "@tradoxy/broker": "workspace:*", "@tradoxy/database": "workspace:*", "bullmq": "^5.58.5", "ioredis": "^5.7.0" },
+  "devDependencies": { "@tradoxy/config": "workspace:*", "@types/node": "^24.3.0", "eslint": "^9.34.0", "tsx": "^4.20.5", "typescript": "^5.9.2" }
+}
+

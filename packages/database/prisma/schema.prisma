@@ -1,0 +1,305 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  USER
+  ADMIN
+  SUPERADMIN
+}
+
+enum Plan {
+  FREE
+  STANDARD
+  PRO
+}
+
+enum AccountType {
+  MANUAL
+  MT5
+  DEMO
+}
+
+enum AccountStatus {
+  PENDING
+  ACTIVE
+  PAUSED
+  ERROR
+  ARCHIVED
+}
+
+enum TradeSide {
+  BUY
+  SELL
+}
+
+enum TradeStatus {
+  OPEN
+  CLOSED
+  CANCELED
+}
+
+enum NotificationType {
+  SYSTEM
+  TRADE
+  RISK
+  COACH
+  SOCIAL
+  BILLING
+}
+
+enum EvaluationStatus {
+  DRAFT
+  ACTIVE
+  PASSED
+  FAILED
+  CANCELED
+}
+
+model User {
+  id            String   @id @default(uuid()) @db.Uuid
+  email         String   @unique @db.Citext
+  username      String   @unique @db.Citext
+  passwordHash  String
+  role          UserRole @default(USER)
+  plan          Plan     @default(FREE)
+  locale        String   @default("en")
+  timezone      String   @default("UTC")
+  avatarUrl     String?
+  onboardingAt  DateTime?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  accounts      TradingAccount[]
+  sessions      Session[]
+  notifications Notification[]
+  coachThreads  CoachThread[]
+  evaluations   Evaluation[]
+  achievements  UserAchievement[]
+
+  @@index([plan])
+  @@index([createdAt])
+}
+
+model Session {
+  id           String   @id @default(uuid()) @db.Uuid
+  userId       String   @db.Uuid
+  refreshHash  String
+  userAgent    String?
+  ipAddress    String?
+  expiresAt    DateTime
+  revokedAt    DateTime?
+  createdAt    DateTime @default(now())
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@index([userId, expiresAt])
+}
+
+model TradingAccount {
+  id             String        @id @default(uuid()) @db.Uuid
+  userId         String        @db.Uuid
+  name           String
+  type           AccountType
+  status         AccountStatus @default(PENDING)
+  broker          String?
+  externalId      String?
+  currency        String        @default("USD")
+  startingBalance Decimal       @db.Decimal(18, 2)
+  balance         Decimal       @db.Decimal(18, 2)
+  equity          Decimal       @db.Decimal(18, 2)
+  lastSyncedAt    DateTime?
+  archivedAt      DateTime?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  user            User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  trades          Trade[]
+  snapshots       AccountSnapshot[]
+  riskProfiles    RiskProfile[]
+  evaluations     Evaluation[]
+  credentials     BrokerCredential?
+  @@unique([userId, externalId])
+  @@index([userId, status])
+}
+
+model BrokerCredential {
+  id             String         @id @default(uuid()) @db.Uuid
+  accountId      String         @unique @db.Uuid
+  encryptedValue String
+  keyVersion     Int            @default(1)
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+  account        TradingAccount @relation(fields: [accountId], references: [id], onDelete: Cascade)
+}
+
+model AccountSnapshot {
+  id        String         @id @default(uuid()) @db.Uuid
+  accountId String         @db.Uuid
+  balance   Decimal        @db.Decimal(18, 2)
+  equity    Decimal        @db.Decimal(18, 2)
+  margin    Decimal?       @db.Decimal(18, 2)
+  capturedAt DateTime      @default(now())
+  account   TradingAccount @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  @@index([accountId, capturedAt(sort: Desc)])
+}
+
+model Trade {
+  id          String         @id @default(uuid()) @db.Uuid
+  accountId   String         @db.Uuid
+  externalId  String?
+  symbol      String
+  side        TradeSide
+  status      TradeStatus    @default(OPEN)
+  volume      Decimal        @db.Decimal(18, 4)
+  entryPrice  Decimal        @db.Decimal(24, 8)
+  exitPrice   Decimal?       @db.Decimal(24, 8)
+  stopLoss    Decimal?       @db.Decimal(24, 8)
+  takeProfit  Decimal?       @db.Decimal(24, 8)
+  commission  Decimal        @default(0) @db.Decimal(18, 2)
+  swap        Decimal        @default(0) @db.Decimal(18, 2)
+  grossPnl    Decimal?       @db.Decimal(18, 2)
+  netPnl      Decimal?       @db.Decimal(18, 2)
+  riskReward  Decimal?       @db.Decimal(10, 4)
+  rating      Int?
+  notes       String?
+  openedAt    DateTime
+  closedAt    DateTime?
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+  account     TradingAccount @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  screenshots TradeScreenshot[]
+  tags         TradeTag[]
+  @@unique([accountId, externalId])
+  @@index([accountId, openedAt(sort: Desc)])
+  @@index([accountId, closedAt(sort: Desc)])
+  @@index([symbol])
+}
+
+model TradeScreenshot {
+  id        String   @id @default(uuid()) @db.Uuid
+  tradeId   String   @db.Uuid
+  objectKey String
+  caption   String?
+  createdAt DateTime @default(now())
+  trade     Trade    @relation(fields: [tradeId], references: [id], onDelete: Cascade)
+  @@index([tradeId])
+}
+
+model Tag {
+  id        String     @id @default(uuid()) @db.Uuid
+  name      String
+  color     String?
+  tradeTags TradeTag[]
+  @@unique([name])
+}
+
+model TradeTag {
+  tradeId String @db.Uuid
+  tagId   String @db.Uuid
+  trade   Trade  @relation(fields: [tradeId], references: [id], onDelete: Cascade)
+  tag     Tag    @relation(fields: [tagId], references: [id], onDelete: Cascade)
+  @@id([tradeId, tagId])
+}
+
+model RiskProfile {
+  id                String         @id @default(uuid()) @db.Uuid
+  accountId         String         @db.Uuid
+  maxDailyLossPct   Decimal        @db.Decimal(6, 3)
+  maxOverallLossPct Decimal        @db.Decimal(6, 3)
+  maxTradeRiskPct   Decimal        @db.Decimal(6, 3)
+  maxOpenPositions  Int
+  isActive          Boolean        @default(true)
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+  account           TradingAccount @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  @@index([accountId, isActive])
+}
+
+model Evaluation {
+  id            String           @id @default(uuid()) @db.Uuid
+  userId        String           @db.Uuid
+  accountId     String?          @db.Uuid
+  name          String
+  status        EvaluationStatus @default(DRAFT)
+  profitTarget  Decimal          @db.Decimal(6, 3)
+  maxDailyLoss  Decimal          @db.Decimal(6, 3)
+  maxTotalLoss  Decimal          @db.Decimal(6, 3)
+  minimumDays   Int
+  startedAt     DateTime?
+  completedAt   DateTime?
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
+  user          User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  account       TradingAccount?  @relation(fields: [accountId], references: [id], onDelete: SetNull)
+  @@index([userId, status])
+}
+
+model CoachThread {
+  id        String         @id @default(uuid()) @db.Uuid
+  userId    String         @db.Uuid
+  title     String
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+  user      User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  messages  CoachMessage[]
+  @@index([userId, updatedAt(sort: Desc)])
+}
+
+model CoachMessage {
+  id        String      @id @default(uuid()) @db.Uuid
+  threadId  String      @db.Uuid
+  role      String
+  content   Json
+  model     String?
+  tokens    Int?
+  createdAt DateTime    @default(now())
+  thread    CoachThread @relation(fields: [threadId], references: [id], onDelete: Cascade)
+  @@index([threadId, createdAt])
+}
+
+model Notification {
+  id        String           @id @default(uuid()) @db.Uuid
+  userId    String           @db.Uuid
+  type      NotificationType
+  title     String
+  body      String
+  data      Json?
+  readAt    DateTime?
+  createdAt DateTime         @default(now())
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@index([userId, readAt, createdAt(sort: Desc)])
+}
+
+model Achievement {
+  id          String            @id @default(uuid()) @db.Uuid
+  key         String            @unique
+  title       String
+  description String
+  points      Int
+  users       UserAchievement[]
+}
+
+model UserAchievement {
+  userId        String      @db.Uuid
+  achievementId String      @db.Uuid
+  earnedAt      DateTime    @default(now())
+  user          User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  achievement   Achievement @relation(fields: [achievementId], references: [id], onDelete: Cascade)
+  @@id([userId, achievementId])
+}
+
+model AuditLog {
+  id          String   @id @default(uuid()) @db.Uuid
+  actorId     String?  @db.Uuid
+  action      String
+  resource    String
+  resourceId  String?
+  metadata    Json?
+  ipAddress   String?
+  createdAt   DateTime @default(now())
+  @@index([resource, resourceId])
+  @@index([actorId, createdAt(sort: Desc)])
+}
+
