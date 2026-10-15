@@ -25,6 +25,7 @@ import { useWorkspaceUser } from "./app-shell";
 import { SocialPost } from "./social-post";
 import { DataLoader } from "./data-loader";
 import { WelcomeHeading } from "./welcome-heading";
+import type { CommunityFeedData } from "@/lib/community-feed-data";
 
 async function compressPostImage(file: File) {
   const url = URL.createObjectURL(file);
@@ -59,12 +60,19 @@ async function compressPostImage(file: File) {
   }
 }
 
-export function CommunityFeed() {
+export function CommunityFeed({
+  initialFeed,
+}: {
+  initialFeed?: CommunityFeedData;
+}) {
   const viewer = useWorkspaceUser();
   const client = useQueryClient();
   const params = useSearchParams();
   const targetPost = params.get("post");
-  const feed = useQuery(feedOptions);
+  const feed = useQuery({
+    ...feedOptions,
+    ...(initialFeed ? { initialData: initialFeed } : {}),
+  });
   const shared = useQuery({
     queryKey: ["social", "shared", targetPost],
     queryFn: async ({ signal }) =>

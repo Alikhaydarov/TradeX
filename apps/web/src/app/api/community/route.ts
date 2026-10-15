@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getRouteAuth } from "@/lib/supabase/route-auth";
+import { loadCommunityFeed } from "@/lib/community-feed-data";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -12,74 +13,26 @@ export async function GET(request: Request) {
   const postId = new URL(request.url).searchParams.get("post");
   if (postId && !/^[0-9a-f-]{36}$/i.test(postId))
     return NextResponse.json({ error: "Invalid post." }, { status: 400 });
-  let query = auth.supabase
-    .from("posts")
-    .select(
-      "id,user_id,content,author_name,author_handle,author_avatar,image_url,symbol,side,likes_count,replies_count,reposts_count,views_count,created_at",
-    )
-    .eq("is_archived", false)
-    .order("created_at", { ascending: false })
-    .limit(postId ? 1 : 40);
-  if (postId) query = query.eq("id", postId);
-  const { data: posts, error } = await query.abortSignal(request.signal);
-
-  if (error)
-    return NextResponse.json(
-      { error: "Community posts could not be loaded." },
-      { status: 500 },
+  try {
+    const data = await loadCommunityFeed(
+      auth.supabase,
+      auth.user.id,
+      postId,
+      request.signal,
     );
-
-  const postIds = (posts ?? []).map((post) => post.id);
-  const authorIds = [...new Set((posts ?? []).map((post) => post.user_id))];
-  const [likes, reposts, profiles] = postIds.length
-    ? await Promise.all([
-        auth.supabase
-          .from("post_likes")
-          .select("post_id")
-          .eq("user_id", auth.user.id)
-          .in("post_id", postIds),
-        auth.supabase
-          .from("post_reposts")
-          .select("post_id")
-          .eq("user_id", auth.user.id)
-          .in("post_id", postIds),
-        auth.supabase
-          .from("profiles")
-          .select("id,username,full_name,avatar_url")
-          .in("id", authorIds),
-      ])
-    : [
-        { data: [], error: null },
-        { data: [], error: null },
-        { data: [], error: null },
-      ];
-  if (likes.error || reposts.error || profiles.error)
+    return NextResponse.json(data, {
+      headers: { "Cache-Control": "private, no-store" },
+    });
+  } catch (error) {
+    const message =
+      error instanceof Error
+        ? error.message
+        : "Community posts could not be loaded.";
     return NextResponse.json(
-      { error: "Post details could not be loaded. Please retry." },
-      { status: 503 },
+      { error: message },
+      { status: message.startsWith("Post details") ? 503 : 500 },
     );
-  const profileById = new Map(
-    (profiles.data ?? []).map((profile) => [profile.id, profile]),
-  );
-
-  return NextResponse.json(
-    {
-      posts: (posts ?? []).map((post) => {
-        const profile = profileById.get(post.user_id);
-        return profile
-          ? {
-              ...post,
-              author_name: profile.full_name,
-              author_handle: profile.username,
-              author_avatar: profile.avatar_url,
-            }
-          : post;
-      }),
-      likedPostIds: (likes.data ?? []).map((item) => item.post_id),
-      repostedPostIds: (reposts.data ?? []).map((item) => item.post_id),
-    },
-    { headers: { "Cache-Control": "private, no-store" } },
-  );
+  }
 }
 
 export async function POST(request: Request) {

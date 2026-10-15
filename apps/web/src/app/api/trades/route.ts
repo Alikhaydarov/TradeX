@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getRouteAuth } from "@/lib/supabase/route-auth";
+import { loadTradeList } from "@/lib/trade-list-data";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -11,33 +12,22 @@ export async function GET(request: Request) {
   const accountId = new URL(request.url).searchParams.get("account");
   if (accountId && accountId !== "all" && !/^[0-9a-f-]{36}$/i.test(accountId))
     return NextResponse.json({ error: "Invalid account." }, { status: 400 });
-  let tradesQuery = auth.supabase
-    .from("journal_entries")
-    .select(
-      "id,prop_account_id,account_name,symbol,side,entry_price,exit_price,quantity,fees,pnl,note,traded_at,result_r,created_at",
-    )
-    .eq("user_id", auth.user.id)
-    .order("traded_at", { ascending: false })
-    .limit(250);
-  if (accountId && accountId !== "all")
-    tradesQuery = tradesQuery.eq("prop_account_id", accountId);
-  const [accountsResult, tradesResult] = await Promise.all([
-    auth.supabase
-      .from("prop_accounts")
-      .select("id,name,firm,account_size,initial_balance,status,market_type")
-      .eq("user_id", auth.user.id)
-      .order("created_at", { ascending: false }),
-    tradesQuery.abortSignal(request.signal),
-  ]);
-  if (accountsResult.error || tradesResult.error)
+  try {
+    const data = await loadTradeList(
+      auth.supabase,
+      auth.user.id,
+      accountId,
+      request.signal,
+    );
+    return NextResponse.json(data, {
+      headers: { "Cache-Control": "private, no-store" },
+    });
+  } catch {
     return NextResponse.json(
       { error: "Your journal could not be loaded. Refresh and try again." },
       { status: 500 },
     );
-  return NextResponse.json(
-    { accounts: accountsResult.data ?? [], trades: tradesResult.data ?? [] },
-    { headers: { "Cache-Control": "private, no-store" } },
-  );
+  }
 }
 
 export async function POST(request: Request) {

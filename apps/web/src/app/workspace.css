@@ -923,7 +923,7 @@ textarea {
 }
 .welcome-heading-intro {
   color: #a7a7ad;
-  animation: welcome-rise 0.36s ease-out both;
+  animation: welcome-rise 0.2s ease-out both;
 }
 .welcome-heading-name {
   min-width: 0;
@@ -934,7 +934,7 @@ textarea {
   text-decoration-color: #35664a;
   text-decoration-thickness: 2px;
   text-underline-offset: 7px;
-  animation: welcome-rise 0.42s ease-out both;
+  animation: welcome-rise 0.24s ease-out both;
 }
 .welcome-heading > p {
   margin: 8px 0 0;

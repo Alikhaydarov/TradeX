@@ -29,8 +29,13 @@ export default function ProductLayout({
 async function ProductWorkspace({ children }: { children: React.ReactNode }) {
   let user: WorkspaceUser | undefined;
   let accounts: TradingAccount[] = [];
-  if (isSupabaseConfigured()) {
-    const data = await getWorkspaceBootstrap();
+  const [bootstrap, selectedAccountId, cookieStore] = await Promise.all([
+    isSupabaseConfigured() ? getWorkspaceBootstrap() : null,
+    getSelectedAccountId(),
+    cookies(),
+  ]);
+  if (bootstrap) {
+    const data = bootstrap;
     if (!data.user) redirect("/sign-in");
     const name = String(
       data.profile?.full_name ||
@@ -55,8 +60,7 @@ async function ProductWorkspace({ children }: { children: React.ReactNode }) {
     };
     accounts = data.accounts;
   }
-  const selectedAccountId = await getSelectedAccountId();
-  const pnlMode = (await cookies()).get("tradoxy_pnl")?.value;
+  const pnlMode = cookieStore.get("tradoxy_pnl")?.value;
   return (
     <WorkspaceQueryProvider key={user?.id ?? "anonymous"}>
       <AppShell

@@ -17,30 +17,10 @@ import {
 } from "lucide-react";
 import { summarizeTrades } from "@/lib/journal-metrics";
 import { clientApi as api } from "@/lib/client-api";
+import type { TradeListData } from "@/lib/trade-list-data";
 
-type Account = {
-  id: string;
-  name: string;
-  firm: string;
-  account_size: number;
-  status: string;
-  market_type: string;
-};
-type Trade = {
-  id: string;
-  prop_account_id: string | null;
-  account_name: string;
-  symbol: string;
-  side: "Long" | "Short";
-  entry_price: number;
-  exit_price: number;
-  quantity: number;
-  fees: number;
-  pnl: number;
-  note: string;
-  traded_at: string;
-  result_r: number;
-};
+type Account = TradeListData["accounts"][number];
+type Trade = TradeListData["trades"][number];
 
 const currency = new Intl.NumberFormat(undefined, {
   style: "currency",
@@ -124,8 +104,10 @@ function MobileTrade({
 
 export function TradeJournal({
   selectedAccountId,
+  initialData,
 }: {
   selectedAccountId: string | null;
+  initialData?: TradeListData;
 }) {
   const searchParams = useSearchParams();
   const client = useQueryClient();
@@ -147,10 +129,12 @@ export function TradeJournal({
   const journal = useQuery({
     queryKey: journalKey,
     queryFn: ({ signal }) =>
-      api<{ accounts: Account[]; trades: Trade[] }>(
+      api<TradeListData>(
         `/api/trades?account=${encodeURIComponent(accountFilter)}`,
         { signal },
       ),
+    initialData:
+      accountFilter === (selectedAccountId || "all") ? initialData : undefined,
     refetchInterval: 30_000,
   });
   const accounts = journal.data?.accounts ?? [];
@@ -166,7 +150,10 @@ export function TradeJournal({
       queryKey: ["journal"],
       refetchType: "none",
     });
-    void client.invalidateQueries({ queryKey: ["accounts"], refetchType: "none" });
+    void client.invalidateQueries({
+      queryKey: ["accounts"],
+      refetchType: "none",
+    });
     router.refresh();
   }
   useEffect(() => {
