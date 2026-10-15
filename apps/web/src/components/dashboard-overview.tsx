@@ -113,6 +113,9 @@ export function DashboardOverview({
     const key = date.toISOString().slice(0, 10);
     return { date, key, ...(dayMap.get(key) ?? { count: 0, pnl: 0 }) };
   });
+  const weekToDate = week.filter((day) => day.key <= dayKey);
+  const weeklyTrades = weekToDate.reduce((sum, day) => sum + day.count, 0);
+  const weeklyPnl = weekToDate.reduce((sum, day) => sum + day.pnl, 0);
   const recent = [...eligible]
     .sort((a, b) => b.traded_at.localeCompare(a.traded_at))
     .slice(0, 3);
@@ -138,22 +141,27 @@ export function DashboardOverview({
             year: "numeric",
           })}
         />
-        <div className="ui-segmented" aria-label="Performance period">
-          {(
-            [
-              ["week", "Week"],
-              ["month", "Month"],
-              ["all", "All time"],
-            ] as const
-          ).map(([value, label]) => (
-            <Link
-              key={value}
-              href={"/dashboard?period=" + value}
-              aria-current={period === value ? "true" : undefined}
-            >
-              {label}
-            </Link>
-          ))}
+        <div className="original-dashboard-controls">
+          <Link href="/trades?add=1" className="original-dashboard-add">
+            <Plus size={15} /> Add trade
+          </Link>
+          <div className="ui-segmented" aria-label="Performance period">
+            {(
+              [
+                ["week", "Week"],
+                ["month", "Month"],
+                ["all", "All time"],
+              ] as const
+            ).map(([value, label]) => (
+              <Link
+                key={value}
+                href={"/dashboard?period=" + value}
+                aria-current={period === value ? "true" : undefined}
+              >
+                {label}
+              </Link>
+            ))}
+          </div>
         </div>
       </header>
       {failed && (
@@ -161,6 +169,22 @@ export function DashboardOverview({
           Your journal could not be loaded. Please refresh to try again.
         </p>
       )}
+      <div className="original-week-heading">
+        <div>
+          <span>THIS WEEK</span>
+          <strong>
+            {weeklyTrades} {weeklyTrades === 1 ? "trade" : "trades"} recorded
+          </strong>
+        </div>
+        <p
+          className={
+            weeklyPnl > 0 ? "text-profit" : weeklyPnl < 0 ? "text-loss" : ""
+          }
+        >
+          <Money value={weeklyPnl} compact />
+          <span>net result</span>
+        </p>
+      </div>
       <section className="original-week" aria-label="This week's trading">
         {week.map((day) => (
           <Link

@@ -901,7 +901,7 @@ textarea {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  color: #91a9a0;
+  color: #91b9a7;
   font-size: 10px;
   font-weight: 650;
 }
@@ -916,49 +916,120 @@ textarea {
   display: flex;
   flex-wrap: wrap;
   column-gap: 0.35em;
-  margin: 6px 0 0;
-  font-size: 21px;
-  font-weight: 640;
-  line-height: 1.28;
+  margin: 9px 0 0;
+  font-size: clamp(25px, 2.3vw, 34px);
+  font-weight: 650;
+  line-height: 1.18;
 }
 .welcome-heading-intro {
   color: #a7a7ad;
-  animation: welcome-rise 0.48s ease-out both;
+  animation: welcome-rise 0.36s ease-out both;
 }
 .welcome-heading-name {
   min-width: 0;
   max-width: 100%;
   overflow-wrap: anywhere;
   color: var(--foreground);
-  animation: welcome-rise 0.48s 0.1s ease-out both;
+  text-decoration: underline;
+  text-decoration-color: #35664a;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 7px;
+  animation: welcome-rise 0.42s ease-out both;
 }
 .welcome-heading > p {
-  margin: 5px 0 0;
+  margin: 8px 0 0;
   color: var(--muted);
-  font-size: 11px;
-  animation: welcome-rise 0.48s 0.18s ease-out both;
+  font-size: 12px;
 }
 @keyframes welcome-rise {
   from {
-    opacity: 0;
-    transform: translateY(5px);
+    transform: translateY(4px);
   }
   to {
-    opacity: 1;
     transform: translateY(0);
   }
 }
 .original-dashboard {
   display: grid;
-  gap: 12px;
+  gap: 14px;
 }
 .original-dashboard-heading {
   display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 20px;
+  min-height: 94px;
+  padding-bottom: 19px;
+  border-bottom: 1px solid var(--border);
+}
+.original-dashboard-controls {
+  display: flex;
   align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+.original-dashboard-add {
+  display: inline-flex;
+  min-height: 36px;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border: 1px solid #e8e8e8;
+  border-radius: 6px;
+  background: #ededed;
+  padding: 0 12px;
+  color: #111;
+  font-size: 12px;
+  font-weight: 650;
+  transition:
+    background 0.16s,
+    transform 0.16s;
+}
+.original-dashboard-add:hover {
+  background: #fff;
+  transform: translateY(-1px);
+}
+.original-dashboard-add:focus-visible,
+.original-week > a:focus-visible,
+.community-profile-link:focus-visible,
+.social-feed-tabs > button:focus-visible {
+  outline: 2px solid #85d6a5;
+  outline-offset: 3px;
+}
+.original-week-heading {
+  display: flex;
+  align-items: end;
   justify-content: space-between;
   gap: 12px;
-  min-height: 40px;
-  margin-bottom: 2px;
+  padding: 3px 1px 0;
+}
+.original-week-heading > div {
+  display: grid;
+  gap: 4px;
+}
+.original-week-heading > div > span {
+  color: #8d9c95;
+  font-size: 10px;
+  font-weight: 700;
+}
+.original-week-heading strong {
+  font-size: 15px;
+  font-weight: 600;
+}
+.original-week-heading > p {
+  display: flex;
+  align-items: baseline;
+  gap: 7px;
+  margin: 0;
+  font-size: 14px;
+  font-weight: 650;
+  white-space: nowrap;
+}
+.original-week-heading > p > span:last-child {
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 500;
 }
 .original-week {
   display: grid;
@@ -968,18 +1039,24 @@ textarea {
 .original-week > a {
   min-width: 0;
   display: grid;
-  gap: 10px;
-  padding: 12px;
+  gap: 13px;
+  padding: 13px;
   background: var(--card);
   border: 1px solid var(--border);
   border-radius: 8px;
-  transition: border-color 0.15s;
+  transition:
+    border-color 0.16s,
+    background 0.16s,
+    transform 0.16s;
 }
 .original-week > a:hover {
-  border-color: #555;
+  border-color: #545454;
+  background: #141716;
+  transform: translateY(-2px);
 }
 .original-week > a.is-today {
-  border-color: #4a4a4a;
+  border-color: #426450;
+  background: #101712;
 }
 .original-week > a > div {
   display: flex;
@@ -1028,7 +1105,7 @@ textarea {
   justify-content: space-between;
   gap: 12px;
   border-bottom: 1px solid var(--border);
-  padding: 16px;
+  padding: 19px 20px;
 }
 .original-equity header p {
   font-size: 11px;
@@ -1037,7 +1114,7 @@ textarea {
 .original-equity header strong {
   display: block;
   margin-top: 4px;
-  font-size: 30px;
+  font-size: clamp(27px, 2.5vw, 36px);
   font-weight: 500;
   line-height: 1.2;
 }
@@ -1363,9 +1440,24 @@ textarea {
   .original-dashboard-heading {
     align-items: flex-start;
     flex-wrap: wrap;
+    gap: 16px;
+    padding-bottom: 16px;
   }
-  .original-dashboard-heading .ui-segmented {
+  .original-dashboard-controls {
+    width: 100%;
+    justify-content: space-between;
+  }
+  .original-dashboard-controls .ui-segmented {
     margin-left: auto;
+  }
+  .original-week-heading strong {
+    font-size: 13px;
+  }
+  .original-week-heading > p {
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 1px;
+    font-size: 12px;
   }
   .original-week {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -2404,24 +2496,38 @@ textarea {
   align-items: center;
   justify-content: space-between;
   gap: 16px;
-  margin: 0 0 16px;
+  margin: 0 0 22px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid var(--border);
 }
 .community-profile-link {
   flex-shrink: 0;
   display: flex;
   align-items: center;
   gap: 5px;
+  border: 1px solid var(--border);
   border-radius: 6px;
-  padding: 9px 11px;
-  color: #bbb;
-  font-size: 11px;
+  padding: 10px 12px;
+  color: #d2d2d2;
+  font-size: 12px;
+  transition:
+    background 0.16s,
+    border-color 0.16s;
+}
+.community-profile-link:hover {
+  border-color: #555;
+  background: #171717;
 }
 .community-composer {
   gap: 13px;
   border-color: #292929;
   border-radius: 8px;
   background: var(--card);
-  padding: 20px;
+  padding: 22px;
+  transition: border-color 0.18s;
+}
+.community-composer:focus-within {
+  border-color: #496454;
 }
 .community-composer-avatar,
 .community-post-avatar,
@@ -2488,7 +2594,7 @@ textarea {
   height: 58px;
   align-items: center;
   justify-content: space-between;
-  margin-top: 13px;
+  margin-top: 20px;
   border-bottom: 1px solid #2a2a2a;
 }
 .community-stream-label > button {
@@ -2512,6 +2618,10 @@ textarea {
   color: #8b8b8b;
   font-size: 12px;
   font-weight: 500;
+  transition: color 0.16s;
+}
+.social-feed-tabs > button:hover {
+  color: #e4e4e4;
 }
 .social-feed-tabs > button[aria-pressed="true"] {
   color: #f1f1f1;
@@ -4039,17 +4149,19 @@ textarea {
     margin-left: 30px;
   }
   .community-heading {
-    margin-bottom: 21px;
+    align-items: flex-start;
+    margin-bottom: 16px;
+    padding-bottom: 17px;
   }
   .welcome-heading h1 {
-    font-size: 18px;
+    font-size: 24px;
   }
   .community-heading .welcome-heading > p {
     max-width: 220px;
   }
   .community-profile-link {
     padding: 8px;
-    font-size: 10px;
+    font-size: 11px;
   }
   .community-profile-link > svg {
     display: none;
