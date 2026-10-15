@@ -3,6 +3,7 @@ import "@fontsource-variable/inter/wght.css";
 import "./globals.css";
 import "./workspace.css";
 import "./public-entry.css";
+import "./loading.css";
 
 export const metadata: Metadata = {
   title: { default: "Tradoxy", template: "%s | Tradoxy" },

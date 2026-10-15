@@ -2,17 +2,21 @@
 
 import { ProductModal } from "./product-modal";
 import { Money } from "./pnl-preferences";
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { useSearchParams } from "next/navigation";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { WorkspaceLoader } from "./workspace-loader";
 import {
   ArrowUpRight,
   ChevronDown,
   LoaderCircle,
+  RefreshCw,
   Plus,
   Trash2,
   X,
 } from "lucide-react";
 import { summarizeTrades } from "@/lib/journal-metrics";
+import { clientApi as api } from "@/lib/client-api";
 
 type Account = {
   id: string;
@@ -37,18 +41,6 @@ type Trade = {
   traded_at: string;
   result_r: number;
 };
-
-async function api<T>(url: string, init?: RequestInit) {
-  const response = await fetch(url, {
-    ...init,
-    headers: { "Content-Type": "application/json", ...init?.headers },
-    cache: "no-store",
-  });
-  const payload = await response.json().catch(() => ({}));
-  if (!response.ok)
-    throw new Error(payload.error || "Could not complete the request.");
-  return payload as T;
-}
 
 const currency = new Intl.NumberFormat(undefined, {
   style: "currency",
@@ -136,9 +128,8 @@ export function TradeJournal({
   selectedAccountId: string | null;
 }) {
   const searchParams = useSearchParams();
-  const [accounts, setAccounts] = useState<Account[]>([]);
-  const [trades, setTrades] = useState<Trade[]>([]);
-  const [loading, setLoading] = useState(true);
+  const client = useQueryClient();
+  const router = useRouter();
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [query, setQuery] = useState(() => searchParams.get("symbol") || "");
@@ -152,26 +143,31 @@ export function TradeJournal({
     () => searchParams.get("add") === "1",
   );
 
-  const load = useCallback(async () => {
-    setError("");
-    try {
-      const data = await api<{ accounts: Account[]; trades: Trade[] }>(
-        "/api/trades",
-      );
-      setAccounts(data.accounts);
-      setTrades(data.trades);
-    } catch (cause) {
-      setError(
-        cause instanceof Error ? cause.message : "Journal could not be loaded.",
-      );
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    void load();
-  }, [load]);
+  const journalKey = ["journal", accountFilter];
+  const journal = useQuery({
+    queryKey: journalKey,
+    queryFn: ({ signal }) =>
+      api<{ accounts: Account[]; trades: Trade[] }>(
+        `/api/trades?account=${encodeURIComponent(accountFilter)}`,
+        { signal },
+      ),
+    refetchInterval: 30_000,
+  });
+  const accounts = journal.data?.accounts ?? [];
+  const trades = useMemo(() => journal.data?.trades ?? [], [journal.data]);
+  const loading = journal.isPending;
+  const writeLock = useRef(false);
+  function updateTrades(update: (trades: Trade[]) => Trade[]) {
+    client.setQueryData<{ accounts: Account[]; trades: Trade[] }>(
+      journalKey,
+      (current) => current && { ...current, trades: update(current.trades) },
+    );
+    void client.invalidateQueries({
+      queryKey: ["journal"],
+      refetchType: "none",
+    });
+    router.refresh();
+  }
   useEffect(() => {
     setAccountFilter(searchParams.get("account") || selectedAccountId || "all");
   }, [selectedAccountId, searchParams]);
@@ -206,35 +202,44 @@ export function TradeJournal({
 
   async function saveTrade(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (writeLock.current) return;
+    writeLock.current = true;
     setSaving(true);
     setError("");
     const form = new FormData(event.currentTarget);
     const payload = Object.fromEntries(form.entries());
     try {
+      await client.cancelQueries({ queryKey: ["journal"] });
       const result = await api<{ trade: Trade }>("/api/trades", {
         method: "POST",
         body: JSON.stringify(payload),
       });
-      setTrades((current) => [result.trade, ...current]);
+      updateTrades((current) => [result.trade, ...current]);
       setFormOpen(false);
     } catch (cause) {
       setError(
         cause instanceof Error ? cause.message : "Trade could not be saved.",
       );
     } finally {
+      writeLock.current = false;
       setSaving(false);
     }
   }
 
   async function deleteTrade(id: string) {
+    if (writeLock.current) return;
     if (!window.confirm("Delete this trade from your journal?")) return;
+    writeLock.current = true;
     try {
+      await client.cancelQueries({ queryKey: ["journal"] });
       await api(`/api/trades/${id}`, { method: "DELETE" });
-      setTrades((current) => current.filter((trade) => trade.id !== id));
+      updateTrades((current) => current.filter((trade) => trade.id !== id));
     } catch (cause) {
       setError(
         cause instanceof Error ? cause.message : "Trade could not be deleted.",
       );
+    } finally {
+      writeLock.current = false;
     }
   }
 
@@ -246,17 +251,37 @@ export function TradeJournal({
           <h1>Trade journal</h1>
           <p>One clear record for every decision, outcome and lesson.</p>
         </div>
-        <button
-          type="button"
-          className="trade-add-button"
-          onClick={() => setFormOpen(true)}
-        >
-          <Plus size={16} /> Add trade
-        </button>
+        <div className="trade-journal-actions">
+          <button
+            type="button"
+            className="icon-button"
+            aria-label="Refresh journal"
+            title="Refresh journal"
+            onClick={() => void journal.refetch()}
+            disabled={journal.isFetching}
+          >
+            <RefreshCw
+              size={16}
+              className={journal.isFetching ? "animate-spin" : ""}
+            />
+          </button>
+          <button
+            type="button"
+            className="trade-add-button"
+            onClick={() => setFormOpen(true)}
+          >
+            <Plus size={16} /> Add trade
+          </button>
+        </div>
       </header>
-      {error && (
+      {(error || journal.error) && (
         <div className="trade-error" role="alert">
-          {error}
+          {error || journal.error?.message}
+          {journal.isError && (
+            <button type="button" onClick={() => void journal.refetch()}>
+              Retry
+            </button>
+          )}
           <button aria-label="Dismiss error" onClick={() => setError("")}>
             <X size={15} />
           </button>
@@ -325,9 +350,7 @@ export function TradeJournal({
           </div>
         </div>
         {loading ? (
-          <div className="trade-loading">
-            <LoaderCircle className="animate-spin" size={18} /> Loading journal
-          </div>
+          <WorkspaceLoader label="Loading journal" />
         ) : shown.length ? (
           <>
             <div className="trade-mobile-list">

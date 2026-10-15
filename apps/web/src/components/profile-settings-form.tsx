@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { Check, LoaderCircle, Save, UserRound } from "lucide-react";
 
 export function ProfileSettingsForm({
@@ -17,6 +18,7 @@ export function ProfileSettingsForm({
   avatar: string | null;
 }) {
   const router = useRouter();
+  const client = useQueryClient();
   const [value, setValue] = useState(username);
   const [error, setError] = useState("");
   const [saved, setSaved] = useState(false);
@@ -44,6 +46,8 @@ export function ProfileSettingsForm({
       if (!response.ok)
         throw new Error(result.error || "Profile could not be updated.");
       setValue(result.username);
+      void client.invalidateQueries({ queryKey: ["social"] });
+      void client.invalidateQueries({ queryKey: ["search"] });
       router.refresh();
       setSaved(true);
     } catch (cause) {

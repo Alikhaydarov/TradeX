@@ -30,6 +30,10 @@ import {
 } from "lucide-react";
 import { createContext, useContext, useEffect, useRef, useState } from "react";
 import { Brand } from "./brand";
+import { ProfileLink } from "./profile-link";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { clientApi } from "@/lib/client-api";
+import { profileOptions } from "@/lib/social-data";
 import {
   Money,
   PnlModeMenu,
@@ -60,6 +64,7 @@ const destinations = [
   ["Profile settings", "/settings/profile", Settings],
 ] as const;
 export type WorkspaceUser = {
+  id?: string;
   name: string;
   email: string;
   initials: string;
@@ -104,41 +109,38 @@ export function AppShell({
   const [accountQuery, setAccountQuery] = useState("");
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
-  const [people, setPeople] = useState<SearchProfile[]>([]);
-  const [searchState, setSearchState] = useState<
-    "idle" | "loading" | "done" | "error"
-  >("idle");
+  const queryClient = useQueryClient();
+  const normalizedQuery = query.trim().replace(/^@/, "");
+  const [searchTerm, setSearchTerm] = useState("");
   useEffect(() => {
-    setPeople([]);
-    if (query.trim().length < 2) {
-      setSearchState("idle");
-      return;
-    }
-    const controller = new AbortController();
-    setSearchState("loading");
-    const timer = window.setTimeout(() => {
-      fetch("/api/search?q=" + encodeURIComponent(query.trim()), {
-        signal: controller.signal,
-        cache: "no-store",
-      })
-        .then(async (response) => {
-          if (!response.ok) throw new Error("Search unavailable");
-          return response.json();
-        })
-        .then((data) => {
-          if (controller.signal.aborted) return;
-          setPeople(data.profiles ?? []);
-          setSearchState("done");
-        })
-        .catch(() => {
-          if (!controller.signal.aborted) setSearchState("error");
-        });
-    }, 250);
-    return () => {
-      window.clearTimeout(timer);
-      controller.abort();
-    };
-  }, [query]);
+    const timer = window.setTimeout(() => setSearchTerm(normalizedQuery), 150);
+    return () => window.clearTimeout(timer);
+  }, [normalizedQuery]);
+  const search = useQuery({
+    queryKey: ["search", searchTerm],
+    queryFn: ({ signal }) =>
+      clientApi<{ profiles: SearchProfile[] }>(
+        "/api/search?q=" + encodeURIComponent(searchTerm),
+        { signal },
+      ),
+    enabled: searchTerm.length >= 2 && normalizedQuery === searchTerm,
+    staleTime: 60_000,
+  });
+  const people =
+    normalizedQuery === searchTerm ? (search.data?.profiles ?? []) : [];
+  const searchState =
+    normalizedQuery.length < 2
+      ? "idle"
+      : normalizedQuery !== searchTerm || search.isPending
+        ? "loading"
+        : search.isError
+          ? "error"
+          : "done";
+  useEffect(() => {
+    if (normalizedQuery !== searchTerm) return;
+    for (const person of search.data?.profiles.slice(0, 2) ?? [])
+      void queryClient.prefetchQuery(profileOptions(person.username));
+  }, [search.data, queryClient, normalizedQuery, searchTerm]);
   const [accounts, setAccounts] = useState<TradingAccount[]>(
     initialAccounts ?? [],
   );
@@ -632,9 +634,9 @@ export function AppShell({
                     <p>No matching traders.</p>
                   )}
                   {people.map((person) => (
-                    <Link
+                    <ProfileLink
                       key={person.id}
-                      href={"/u/" + encodeURIComponent(person.username)}
+                      username={person.username}
                       onClick={() => searchDialog.current?.close()}
                     >
                       <span className="workspace-avatar">
@@ -658,7 +660,7 @@ export function AppShell({
                         <small>@{person.username}</small>
                       </span>
                       <ArrowRight size={15} />
-                    </Link>
+                    </ProfileLink>
                   ))}
                 </section>
               )}

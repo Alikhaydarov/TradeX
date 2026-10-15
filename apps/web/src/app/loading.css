@@ -1,0 +1,49 @@
+.workspace-loader {
+  display: flex;
+  min-height: 220px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  background: #000;
+  color: #fff;
+}
+.workspace-loader-fullscreen {
+  min-height: 100dvh;
+}
+.workspace-loader-mark {
+  display: grid;
+  width: 48px;
+  height: 48px;
+  place-items: center;
+  border: 1px solid #262626;
+  border-radius: 8px;
+  background: #0a0a0a;
+}
+.workspace-loader-ring {
+  width: 18px;
+  height: 18px;
+  border: 1.5px solid #333;
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: workspace-spin 700ms linear infinite;
+}
+.workspace-loader-mark img {
+  filter: invert(1);
+}
+.trade-journal-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+@keyframes workspace-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .workspace-loader-ring,
+  .community-actions button.is-liked svg {
+    animation: none;
+  }
+}

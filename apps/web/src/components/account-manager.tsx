@@ -4,6 +4,7 @@ import { ProductModal } from "./product-modal";
 import { Money } from "./pnl-preferences";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useQueryClient } from "@tanstack/react-query";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   Activity,
@@ -44,6 +45,7 @@ const money = (value: number) => <Money value={value} balance />;
 
 export function AccountManager() {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -90,6 +92,10 @@ export function AccountManager() {
         body: JSON.stringify(fields),
       });
       setAccounts((current) => [result.account, ...current]);
+      void queryClient.invalidateQueries({
+        queryKey: ["journal"],
+        refetchType: "none",
+      });
       setModal(false);
       document.cookie =
         "tradoxy_account=" +
@@ -116,6 +122,11 @@ export function AccountManager() {
       return;
     try {
       await api(`/api/accounts/${account.id}`, { method: "DELETE" });
+      queryClient.removeQueries({ queryKey: ["journal", account.id] });
+      void queryClient.invalidateQueries({
+        queryKey: ["journal"],
+        refetchType: "none",
+      });
       setAccounts((current) =>
         current.filter((item) => item.id !== account.id),
       );

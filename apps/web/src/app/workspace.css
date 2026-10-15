@@ -2519,6 +2519,12 @@ textarea {
 .community-post-content {
   min-width: 0;
 }
+.community-composer-body {
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
 .community-post-byline {
   flex-wrap: wrap;
   row-gap: 3px;
@@ -2566,7 +2572,8 @@ textarea {
   font-size: 11px;
 }
 .community-actions {
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
   justify-content: space-between;
   gap: 10px;
   margin-top: 16px;
@@ -2574,11 +2581,28 @@ textarea {
 .community-actions button,
 .community-views {
   min-width: 40px;
-  height: 34px;
+  height: 44px;
   gap: 7px;
   border-radius: 5px;
   font-size: 11px;
   white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+.community-actions svg {
+  flex-shrink: 0;
+}
+.community-actions span {
+  white-space: nowrap;
+  overflow-wrap: normal;
+  word-break: normal;
+}
+.community-actions button:focus-visible {
+  outline: 2px solid #eee;
+  outline-offset: 2px;
+}
+.community-actions button:disabled {
+  opacity: 0.8;
+  cursor: wait;
 }
 .community-actions button {
   padding: 0 4px;
@@ -2587,8 +2611,8 @@ textarea {
     background 0.15s;
 }
 .community-actions button:hover {
-  background: #15211a;
-  color: #adcfb7;
+  background: #191919;
+  color: #eee;
 }
 .community-actions button.is-liked {
   color: #fb8aab;
@@ -2597,7 +2621,7 @@ textarea {
   animation: heart-pop 0.28s ease-out;
 }
 .community-actions button.is-reposted {
-  color: var(--primary);
+  color: var(--profit);
 }
 .community-views {
   margin-left: 0;
@@ -2607,6 +2631,26 @@ textarea {
 .community-replies {
   border-color: #282828;
   padding-top: 15px;
+}
+.community-replies[hidden] {
+  display: none;
+}
+.community-reply > div:last-child {
+  min-width: 0;
+}
+.community-action-error {
+  margin-top: 8px;
+  color: #fda4af;
+  font-size: 12px;
+}
+.community-error button {
+  margin-left: 12px;
+  text-decoration: underline;
+}
+.community-no-replies {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 .community-reply p {
   font-size: 13px;
@@ -4030,12 +4074,13 @@ textarea {
   }
   .community-actions {
     gap: 3px;
+    margin-left: -44px;
   }
   .community-actions button,
   .community-views {
-    min-width: 29px;
+    min-width: 40px;
     gap: 4px;
-    font-size: 10px;
+    font-size: 11px;
   }
   .community-actions svg {
     width: 17px;

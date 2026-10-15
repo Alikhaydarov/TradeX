@@ -8,14 +8,25 @@ import { getSelectedAccountId } from "@/lib/selected-account";
 import { getWorkspaceBootstrap } from "@/lib/workspace-bootstrap";
 import { redirect } from "next/navigation";
 import { cookies } from "next/headers";
+import { Suspense } from "react";
+import { WorkspaceQueryProvider } from "@/components/workspace-query-provider";
+import { WorkspaceLoader } from "@/components/workspace-loader";
 
 export const dynamic = "force-dynamic";
 
-export default async function ProductLayout({
+export default function ProductLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  return (
+    <Suspense fallback={<WorkspaceLoader fullscreen />}>
+      <ProductWorkspace>{children}</ProductWorkspace>
+    </Suspense>
+  );
+}
+
+async function ProductWorkspace({ children }: { children: React.ReactNode }) {
   let user: WorkspaceUser | undefined;
   let accounts: TradingAccount[] = [];
   if (isSupabaseConfigured()) {
@@ -30,6 +41,7 @@ export default async function ProductLayout({
     const avatar =
       data.profile?.avatar_url || data.user.user_metadata?.avatar_url;
     user = {
+      id: data.user.id,
       name,
       email: data.user.email || "",
       initials: name
@@ -46,15 +58,17 @@ export default async function ProductLayout({
   const selectedAccountId = await getSelectedAccountId();
   const pnlMode = (await cookies()).get("tradoxy_pnl")?.value;
   return (
-    <AppShell
-      user={user}
-      initialAccounts={accounts}
-      initialSelectedAccountId={selectedAccountId}
-      initialPnlMode={
-        pnlMode === "percentage" || pnlMode === "hidden" ? pnlMode : "money"
-      }
-    >
-      {children}
-    </AppShell>
+    <WorkspaceQueryProvider key={user?.id ?? "anonymous"}>
+      <AppShell
+        user={user}
+        initialAccounts={accounts}
+        initialSelectedAccountId={selectedAccountId}
+        initialPnlMode={
+          pnlMode === "percentage" || pnlMode === "hidden" ? pnlMode : "money"
+        }
+      >
+        {children}
+      </AppShell>
+    </WorkspaceQueryProvider>
   );
 }
