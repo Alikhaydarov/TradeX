@@ -566,8 +566,8 @@ textarea {
 }
 .workspace-user-menu > summary {
   display: grid;
-  width: 26px;
-  height: 34px;
+  width: 40px;
+  height: 40px;
   place-items: center;
   list-style: none;
   color: #888;
@@ -3775,18 +3775,18 @@ textarea {
     background: #000;
   }
   .workspace-mobile-account .account-select {
-    width: 170px;
-    height: 28px;
+    width: min(240px, calc(100% - 54px));
+    height: 44px;
     border: 0;
     background: transparent;
     padding: 0;
     color: #bbb;
-    font-size: 11px;
+    font-size: 13px;
   }
   .workspace-mobile-account > a {
     display: grid;
-    width: 30px;
-    height: 30px;
+    width: 44px;
+    height: 44px;
     place-items: center;
     margin-left: auto;
     color: #8b8b8b;
@@ -3815,6 +3815,10 @@ textarea {
   }
 }
 @media (max-width: 639px) {
+  .workspace-breadcrumb > small,
+  .workspace-breadcrumb .header-account-chip {
+    display: none;
+  }
   .workspace-header {
     min-height: 64px;
     gap: 5px;
@@ -3831,7 +3835,7 @@ textarea {
     gap: 8px;
   }
   .workspace-header-add {
-    width: 36px;
+    width: 40px;
     justify-content: center;
     padding: 0;
   }
@@ -3839,7 +3843,7 @@ textarea {
     display: none;
   }
   .workspace-search {
-    width: 36px;
+    width: 40px;
     padding: 0;
     justify-content: center;
   }

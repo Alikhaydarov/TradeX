@@ -23,7 +23,7 @@ import {
 } from "@/lib/social-data";
 import { useWorkspaceUser } from "./app-shell";
 import { SocialPost } from "./social-post";
-import { WorkspaceLoader } from "./workspace-loader";
+import { DataLoader } from "./data-loader";
 
 async function compressPostImage(file: File) {
   const url = URL.createObjectURL(file);
@@ -345,7 +345,7 @@ export function CommunityFeed() {
         {targetPost && (
           <div className="community-list">
             {shared.isPending ? (
-              <WorkspaceLoader label="Loading shared post" />
+              !feed.isPending && <DataLoader label="Loading shared post" />
             ) : shared.isError ? (
               <p role="alert" className="community-error">
                 {shared.error.message}
@@ -360,7 +360,7 @@ export function CommunityFeed() {
           </div>
         )}
         {feed.isPending ? (
-          <WorkspaceLoader label="Loading posts" />
+          <DataLoader label="Loading posts" />
         ) : visiblePosts.length ? (
           <div className="community-list">
             {visiblePosts.map((post) => (

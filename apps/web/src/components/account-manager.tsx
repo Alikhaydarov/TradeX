@@ -4,8 +4,10 @@ import { ProductModal } from "./product-modal";
 import { Money } from "./pnl-preferences";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useQueryClient } from "@tanstack/react-query";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMemo, useRef, useState } from "react";
+import { clientApi } from "@/lib/client-api";
+import { DataLoader } from "./data-loader";
 import {
   Activity,
   LoaderCircle,
@@ -43,44 +45,45 @@ async function api<T>(url: string, init?: RequestInit) {
 }
 const money = (value: number) => <Money value={value} balance />;
 
-export function AccountManager() {
+export function AccountManager({
+  initialAccounts,
+}: {
+  initialAccounts?: Account[];
+}) {
   const router = useRouter();
   const queryClient = useQueryClient();
-  const [accounts, setAccounts] = useState<Account[]>([]);
-  const [loading, setLoading] = useState(true);
+  const query = useQuery({
+    queryKey: ["accounts"],
+    queryFn: ({ signal }) =>
+      clientApi<{ accounts: Account[] }>("/api/accounts", { signal }),
+    initialData: initialAccounts ? { accounts: initialAccounts } : undefined,
+    staleTime: 30_000,
+  });
+  const accounts = query.data?.accounts;
+  const [deleting, setDeleting] = useState<string | null>(null);
+  const writeLock = useRef(false);
+  function setAccounts(update: (current: Account[]) => Account[]) {
+    queryClient.setQueryData<{ accounts: Account[] }>(
+      ["accounts"],
+      (current) => ({ accounts: update(current?.accounts ?? []) }),
+    );
+  }
   const [saving, setSaving] = useState(false);
   const [modal, setModal] = useState(false);
   const [error, setError] = useState("");
   const portfolio = useMemo(
     () =>
-      accounts.reduce(
+      (accounts ?? []).reduce(
         (total, account) =>
           total + Number(account.initial_balance) + Number(account.pnl),
         0,
       ),
     [accounts],
   );
-  const load = useCallback(async () => {
-    setError("");
-    try {
-      const result = await api<{ accounts: Account[] }>("/api/accounts");
-      setAccounts(result.accounts);
-    } catch (cause) {
-      setError(
-        cause instanceof Error
-          ? cause.message
-          : "Accounts could not be loaded.",
-      );
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-  useEffect(() => {
-    void load();
-  }, [load]);
-
   async function create(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (writeLock.current) return;
+    writeLock.current = true;
     setSaving(true);
     setError("");
     const fields = Object.fromEntries(
@@ -91,7 +94,10 @@ export function AccountManager() {
         method: "POST",
         body: JSON.stringify(fields),
       });
-      setAccounts((current) => [result.account, ...current]);
+      setAccounts((current) => [
+        { ...result.account, pnl: 0, trades: 0 },
+        ...current,
+      ]);
       void queryClient.invalidateQueries({
         queryKey: ["journal"],
         refetchType: "none",
@@ -109,17 +115,21 @@ export function AccountManager() {
           : "Account could not be created.",
       );
     } finally {
+      writeLock.current = false;
       setSaving(false);
     }
   }
 
   async function remove(account: Account) {
+    if (writeLock.current) return;
     if (
       !window.confirm(
         `Delete “${account.name}”? Existing trades will remain in your journal.`,
       )
     )
       return;
+    writeLock.current = true;
+    setDeleting(account.id);
     try {
       await api(`/api/accounts/${account.id}`, { method: "DELETE" });
       queryClient.removeQueries({ queryKey: ["journal", account.id] });
@@ -143,6 +153,9 @@ export function AccountManager() {
           ? cause.message
           : "Account could not be deleted.",
       );
+    } finally {
+      writeLock.current = false;
+      setDeleting(null);
     }
   }
 
@@ -150,49 +163,54 @@ export function AccountManager() {
     <div className="account-manager">
       <header className="account-manager-header">
         <div>
-          <p className="section-label">YOUR CAPITAL</p>
           <h1>Trading accounts</h1>
-          <p>
-            Keep prop challenges and personal accounts organized in one place.
-          </p>
         </div>
         <button className="account-add-button" onClick={() => setModal(true)}>
           <Plus size={16} /> Add account
         </button>
       </header>
-      {error && (
+      {(error || query.error) && (
         <div role="alert" className="trade-error">
-          {error}
-          <button aria-label="Dismiss" onClick={() => setError("")}>
-            <X size={15} />
-          </button>
+          {error || query.error?.message}
+          {query.isError && (
+            <button onClick={() => void query.refetch()}>Retry</button>
+          )}
+          {error && (
+            <button aria-label="Dismiss" onClick={() => setError("")}>
+              <X size={15} />
+            </button>
+          )}
         </div>
       )}
-      <section className="account-portfolio">
-        <span>
-          <WalletCards size={17} /> Total tracked capital
-        </span>
-        <strong>{money(portfolio)}</strong>
-        <small>
-          {accounts.length} {accounts.length === 1 ? "account" : "accounts"} ·
-          starting balance plus journal results
-        </small>
-      </section>
+      {accounts && (
+        <section className="account-portfolio">
+          <span>
+            <WalletCards size={17} /> Total tracked capital
+          </span>
+          <strong>{money(portfolio)}</strong>
+          <small>
+            {accounts.length} {accounts.length === 1 ? "account" : "accounts"}
+          </small>
+        </section>
+      )}
       <div className="account-list-heading">
         <div>
           <h2>Your accounts</h2>
-          <p>Balances reflect the trades recorded in your journal.</p>
         </div>
-        <button onClick={() => void load()} aria-label="Refresh accounts">
-          <RefreshCw size={15} />
+        <button
+          disabled={query.isFetching}
+          onClick={() => void query.refetch()}
+          aria-label="Refresh accounts"
+        >
+          <RefreshCw
+            size={15}
+            className={query.isFetching && accounts ? "animate-spin" : ""}
+          />
         </button>
       </div>
-      {loading ? (
-        <div className="account-list-loading">
-          <LoaderCircle className="animate-spin" size={18} />
-          Loading accounts
-        </div>
-      ) : accounts.length ? (
+      {query.isPending ? (
+        <DataLoader label="Loading accounts" />
+      ) : accounts?.length ? (
         <div className="account-grid">
           {accounts.map((account) => (
             <article className="account-card" key={account.id}>
@@ -202,6 +220,7 @@ export function AccountManager() {
                 </span>
                 <span className="account-status-pill">{account.status}</span>
                 <button
+                  disabled={deleting !== null}
                   className="account-delete"
                   onClick={() => void remove(account)}
                   aria-label={`Delete ${account.name}`}
@@ -235,10 +254,6 @@ export function AccountManager() {
                   <small>Trades</small>
                   {account.trades}
                 </span>
-                <span>
-                  <small>Account size</small>
-                  {money(Number(account.account_size))}
-                </span>
               </div>
               <footer>
                 <span>{account.phase}</span>
@@ -262,7 +277,7 @@ export function AccountManager() {
             </article>
           ))}
         </div>
-      ) : (
+      ) : query.isError ? null : (
         <div className="account-empty">
           <span>
             <WalletCards size={21} />

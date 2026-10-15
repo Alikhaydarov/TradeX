@@ -16,11 +16,15 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { clientApi } from "@/lib/client-api";
 import { profileOptions, type TraderProfileData } from "@/lib/social-data";
 import { SocialPost, initials } from "./social-post";
-import { WorkspaceLoader } from "./workspace-loader";
+import { DataLoader } from "./data-loader";
+import { ProfileConnections } from "./profile-connections";
 
 export function TraderProfile({ username }: { username: string }) {
   const client = useQueryClient();
   const [tab, setTab] = useState<"posts" | "reposts" | "media">("posts");
+  const [connections, setConnections] = useState<
+    "followers" | "following" | null
+  >(null);
   const query = useQuery(profileOptions(username));
   const reposts = useQuery({
     ...profileOptions(username, "reposts"),
@@ -70,6 +74,7 @@ export function TraderProfile({ username }: { username: string }) {
           item.queryKey[2] !== username.toLowerCase(),
         refetchType: "none",
       });
+      void client.invalidateQueries({ queryKey: ["connections"] });
     },
     onError: (_error, _active, previous) => {
       if (previous)
@@ -84,7 +89,7 @@ export function TraderProfile({ username }: { username: string }) {
         );
     },
   });
-  if (query.isPending) return <WorkspaceLoader label="Loading trader" />;
+  if (query.isPending) return <DataLoader label="Loading trader" />;
   if (!data)
     return (
       <div className="profile-not-found">
@@ -187,12 +192,22 @@ export function TraderProfile({ username }: { username: string }) {
             </span>
           </div>
           <div className="profile-counts">
-            <span>
+            <button
+              type="button"
+              className="min-h-11 hover:underline"
+              onClick={() => setConnections("following")}
+              aria-haspopup="dialog"
+            >
               <strong>{following}</strong> Following
-            </span>
-            <span>
+            </button>
+            <button
+              type="button"
+              className="min-h-11 hover:underline"
+              onClick={() => setConnections("followers")}
+              aria-haspopup="dialog"
+            >
               <strong>{followers}</strong> Followers
-            </span>
+            </button>
           </div>
         </div>
       </section>
@@ -220,7 +235,7 @@ export function TraderProfile({ username }: { username: string }) {
         ))}
       </div>
       {tab === "reposts" && reposts.isPending ? (
-        <WorkspaceLoader label="Loading reposts" />
+        <DataLoader label="Loading reposts" />
       ) : tab === "reposts" && reposts.isError ? (
         <div role="alert" className="community-error">
           {reposts.error.message}
@@ -250,6 +265,14 @@ export function TraderProfile({ username }: { username: string }) {
               : "Trading notes shared by this trader will appear here."}
           </p>
         </div>
+      )}
+      {connections && (
+        <ProfileConnections
+          key={username}
+          username={username}
+          initialTab={connections}
+          onClose={() => setConnections(null)}
+        />
       )}
     </div>
   );

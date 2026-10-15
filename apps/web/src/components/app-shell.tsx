@@ -34,6 +34,7 @@ import { ProfileLink } from "./profile-link";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { clientApi } from "@/lib/client-api";
 import { profileOptions } from "@/lib/social-data";
+import { isTradingRoute } from "@/lib/workspace-routes";
 import {
   Money,
   PnlModeMenu,
@@ -61,7 +62,7 @@ const destinations = [
   ...journalItems,
   ...workspaceItems,
   ["Accounts", "/accounts", WalletCards],
-  ["Profile settings", "/settings/profile", Settings],
+  ["Settings", "/settings", Settings],
 ] as const;
 export type WorkspaceUser = {
   id?: string;
@@ -104,10 +105,24 @@ export function AppShell({
   const searchDialog = useRef<HTMLDialogElement>(null);
   const logoutDialog = useRef<HTMLDialogElement>(null);
   const accountMenu = useRef<HTMLDetailsElement>(null);
+  const userMenu = useRef<HTMLDetailsElement>(null);
   const sidebar = useRef<HTMLElement>(null);
   const navigationTrigger = useRef<HTMLButtonElement>(null);
   const [accountQuery, setAccountQuery] = useState("");
   const [open, setOpen] = useState(false);
+  const tradingPage = isTradingRoute(pathname);
+  const socialHome = pathname === "/home" || pathname === "/community";
+  function closeNavigation() {
+    setOpen(false);
+    if (userMenu.current) userMenu.current.open = false;
+    if (accountMenu.current) accountMenu.current.open = false;
+  }
+  useEffect(() => {
+    setOpen(false);
+    if (userMenu.current) userMenu.current.open = false;
+    if (accountMenu.current) accountMenu.current.open = false;
+    searchDialog.current?.close();
+  }, [pathname]);
   const [query, setQuery] = useState("");
   const queryClient = useQueryClient();
   const normalizedQuery = query.trim().replace(/^@/, "");
@@ -271,7 +286,19 @@ export function AppShell({
       return (
         <Link
           key={href}
-          href={href}
+          href={
+            href === "/profile" && user?.username
+              ? `/u/${encodeURIComponent(user.username)}`
+              : href
+          }
+          onPointerEnter={() => {
+            if (href === "/profile" && user?.username)
+              void queryClient.prefetchQuery(profileOptions(user.username));
+          }}
+          onFocus={() => {
+            if (href === "/profile" && user?.username)
+              void queryClient.prefetchQuery(profileOptions(user.username));
+          }}
           onClick={() => setOpen(false)}
           aria-current={active ? "page" : undefined}
           className={"workspace-nav-link" + (active ? " is-active" : "")}
@@ -315,7 +342,11 @@ export function AppShell({
             aria-label="Workspace navigation"
           >
             <div className="workspace-brand">
-              <Link href="/home" aria-label="Tradoxy home">
+              <Link
+                href="/home"
+                aria-label="Tradoxy home"
+                onClick={closeNavigation}
+              >
                 <Brand subtitle />
               </Link>
               <button
@@ -326,95 +357,103 @@ export function AppShell({
                 <X size={20} />
               </button>
             </div>
-            <div className="workspace-account">
-              <Link
-                href="/accounts"
-                className="workspace-account-summary"
-                title="Manage accounts"
-                onClick={() => setOpen(false)}
-              >
-                <i className={account ? "has-account" : ""} />
-                <span>
-                  <strong>{account?.name || "All Accounts"}</strong>
-                  <small>
-                    {account ? (
-                      <Money value={Number(account.initial_balance)} balance />
-                    ) : (
-                      `${accounts.length} trading accounts`
-                    )}
-                  </small>
-                </span>
-              </Link>
-              <details
-                ref={accountMenu}
-                className="workspace-account-switcher"
-                onBlur={(event) => {
-                  if (!event.currentTarget.contains(event.relatedTarget))
-                    event.currentTarget.open = false;
-                }}
-                onKeyDown={(event) => {
-                  if (event.key === "Escape") event.currentTarget.open = false;
-                }}
-              >
-                <summary
-                  aria-label="Open account switcher"
-                  title="Switch account"
+            {tradingPage && (
+              <div className="workspace-account">
+                <Link
+                  href="/accounts"
+                  className="workspace-account-summary"
+                  title="Manage accounts"
+                  onClick={() => setOpen(false)}
                 >
-                  <ChevronDown size={15} />
-                </summary>
-                <div className="account-switcher-menu">
-                  <label>
-                    <Search size={16} />
-                    <input
-                      aria-label="Search account"
-                      placeholder="Search account"
-                      value={accountQuery}
-                      onChange={(event) => setAccountQuery(event.target.value)}
-                    />
-                  </label>
-                  <button type="button" onClick={() => selectAccount("all")}>
-                    <span>All accounts</span>
-                    {selectedAccountId === "all" && <Check size={15} />}
-                  </button>
-                  {accounts
-                    .filter((item) =>
-                      item.name
-                        .toLowerCase()
-                        .includes(accountQuery.toLowerCase()),
-                    )
-                    .map((item) => (
-                      <button
-                        key={item.id}
-                        type="button"
-                        aria-pressed={item.id === selectedAccountId}
-                        onClick={() => selectAccount(item.id)}
-                      >
-                        <span>
-                          <strong>{item.name}</strong>
-                          <small>
-                            <Money
-                              value={Number(item.initial_balance)}
-                              balance
-                            />
-                          </small>
-                        </span>
-                        {item.id === selectedAccountId && <Check size={15} />}
-                      </button>
-                    ))}
-                  {accountQuery &&
-                    !accounts.some((item) =>
-                      item.name
-                        .toLowerCase()
-                        .includes(accountQuery.toLowerCase()),
-                    ) && <p>No accounts found.</p>}
-                  <Link href="/accounts" onClick={() => setOpen(false)}>
-                    <Settings size={14} />
-                    Manage accounts
-                    <ArrowRight size={14} />
-                  </Link>
-                </div>
-              </details>
-            </div>
+                  <i className={account ? "has-account" : ""} />
+                  <span>
+                    <strong>{account?.name || "All Accounts"}</strong>
+                    <small>
+                      {account ? (
+                        <Money
+                          value={Number(account.initial_balance)}
+                          balance
+                        />
+                      ) : (
+                        `${accounts.length} trading accounts`
+                      )}
+                    </small>
+                  </span>
+                </Link>
+                <details
+                  ref={accountMenu}
+                  className="workspace-account-switcher"
+                  onBlur={(event) => {
+                    if (!event.currentTarget.contains(event.relatedTarget))
+                      event.currentTarget.open = false;
+                  }}
+                  onKeyDown={(event) => {
+                    if (event.key === "Escape")
+                      event.currentTarget.open = false;
+                  }}
+                >
+                  <summary
+                    aria-label="Open account switcher"
+                    title="Switch account"
+                  >
+                    <ChevronDown size={15} />
+                  </summary>
+                  <div className="account-switcher-menu">
+                    <label>
+                      <Search size={16} />
+                      <input
+                        aria-label="Search account"
+                        placeholder="Search account"
+                        value={accountQuery}
+                        onChange={(event) =>
+                          setAccountQuery(event.target.value)
+                        }
+                      />
+                    </label>
+                    <button type="button" onClick={() => selectAccount("all")}>
+                      <span>All accounts</span>
+                      {selectedAccountId === "all" && <Check size={15} />}
+                    </button>
+                    {accounts
+                      .filter((item) =>
+                        item.name
+                          .toLowerCase()
+                          .includes(accountQuery.toLowerCase()),
+                      )
+                      .map((item) => (
+                        <button
+                          key={item.id}
+                          type="button"
+                          aria-pressed={item.id === selectedAccountId}
+                          onClick={() => selectAccount(item.id)}
+                        >
+                          <span>
+                            <strong>{item.name}</strong>
+                            <small>
+                              <Money
+                                value={Number(item.initial_balance)}
+                                balance
+                              />
+                            </small>
+                          </span>
+                          {item.id === selectedAccountId && <Check size={15} />}
+                        </button>
+                      ))}
+                    {accountQuery &&
+                      !accounts.some((item) =>
+                        item.name
+                          .toLowerCase()
+                          .includes(accountQuery.toLowerCase()),
+                      ) && <p>No accounts found.</p>}
+                    <Link href="/accounts" onClick={() => setOpen(false)}>
+                      <Settings size={14} />
+                      Manage accounts
+                      <ArrowRight size={14} />
+                    </Link>
+                  </div>
+                </details>
+              </div>
+            )}
             <nav className="workspace-navigation">
               {navLinks(primaryItems)}
               <p>Workspace</p>
@@ -448,6 +487,7 @@ export function AppShell({
                   )}
                 </span>
                 <Link
+                  onClick={closeNavigation}
                   href={
                     user?.username
                       ? "/u/" + encodeURIComponent(user.username)
@@ -461,16 +501,32 @@ export function AppShell({
                       : user?.email || "Your profile"}
                   </span>
                 </Link>
-                <details className="workspace-user-menu">
+                <details
+                  ref={userMenu}
+                  className="workspace-user-menu"
+                  onBlur={(event) => {
+                    if (!event.currentTarget.contains(event.relatedTarget))
+                      event.currentTarget.open = false;
+                  }}
+                  onKeyDown={(event) => {
+                    if (event.key === "Escape")
+                      event.currentTarget.open = false;
+                  }}
+                >
                   <summary aria-label="Profile menu">
                     <MoreHorizontal size={20} />
                   </summary>
                   <div>
-                    <Link href="/settings/profile">
+                    <Link href="/settings" onClick={closeNavigation}>
                       <Settings size={15} />
                       Settings
                     </Link>
-                    <button onClick={() => logoutDialog.current?.showModal()}>
+                    <button
+                      onClick={() => {
+                        closeNavigation();
+                        logoutDialog.current?.showModal();
+                      }}
+                    >
                       <LogOut size={15} />
                       Sign out
                     </button>
@@ -520,40 +576,44 @@ export function AppShell({
                     <Command size={11} />K
                   </kbd>
                 </button>
-                <Link
-                  href={
-                    pathname === "/home" || pathname === "/community"
-                      ? "#compose-post"
-                      : "/trades?add=1"
-                  }
-                  className="workspace-header-add"
-                  title={
-                    pathname === "/home" || pathname === "/community"
-                      ? "Post trade"
-                      : "Add trade"
-                  }
-                  aria-label={
-                    pathname === "/home" || pathname === "/community"
-                      ? "Post trade"
-                      : "Add trade"
-                  }
-                >
-                  <Plus size={17} />
-                  <span>
-                    {pathname === "/home" || pathname === "/community"
-                      ? "Post trade"
-                      : "Add trade"}
-                  </span>
-                </Link>
-                <PnlModeMenu />
+                {(tradingPage || socialHome) && (
+                  <Link
+                    href={
+                      pathname === "/home" || pathname === "/community"
+                        ? "#compose-post"
+                        : "/trades?add=1"
+                    }
+                    className="workspace-header-add"
+                    title={
+                      pathname === "/home" || pathname === "/community"
+                        ? "Post trade"
+                        : "Add trade"
+                    }
+                    aria-label={
+                      pathname === "/home" || pathname === "/community"
+                        ? "Post trade"
+                        : "Add trade"
+                    }
+                  >
+                    <Plus size={17} />
+                    <span>
+                      {pathname === "/home" || pathname === "/community"
+                        ? "Post trade"
+                        : "Add trade"}
+                    </span>
+                  </Link>
+                )}
+                {(tradingPage || pathname === "/accounts") && <PnlModeMenu />}
               </div>
             </header>
-            <div className="workspace-mobile-account">
-              {accountControl}
-              <Link href="/accounts" aria-label="Manage accounts">
-                <ListFilter size={17} />
-              </Link>
-            </div>
+            {tradingPage && (
+              <div className="workspace-mobile-account">
+                {accountControl}
+                <Link href="/accounts" aria-label="Manage accounts">
+                  <ListFilter size={17} />
+                </Link>
+              </div>
+            )}
             <main
               id="workspace-content"
               className={

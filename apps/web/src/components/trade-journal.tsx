@@ -5,7 +5,7 @@ import { Money } from "./pnl-preferences";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { WorkspaceLoader } from "./workspace-loader";
+import { DataLoader } from "./data-loader";
 import {
   ArrowUpRight,
   ChevronDown,
@@ -166,6 +166,7 @@ export function TradeJournal({
       queryKey: ["journal"],
       refetchType: "none",
     });
+    void client.invalidateQueries({ queryKey: ["accounts"], refetchType: "none" });
     router.refresh();
   }
   useEffect(() => {
@@ -350,7 +351,7 @@ export function TradeJournal({
           </div>
         </div>
         {loading ? (
-          <WorkspaceLoader label="Loading journal" />
+          <DataLoader label="Loading journal" />
         ) : shown.length ? (
           <>
             <div className="trade-mobile-list">

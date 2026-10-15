@@ -1,5 +1,5 @@
-import { WorkspaceLoader } from "@/components/workspace-loader";
+import { DataLoader } from "@/components/data-loader";
 
 export default function Loading() {
-  return <WorkspaceLoader />;
+  return <DataLoader />;
 }

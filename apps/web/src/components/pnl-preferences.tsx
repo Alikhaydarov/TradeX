@@ -21,15 +21,53 @@ export function PnlPreferences({
   initialMode?: PnlMode;
 }) {
   const [mode, setMode] = useState<PnlMode>(initialMode);
+  function changeMode(nextMode: PnlMode) {
+    setMode(nextMode);
+    document.cookie = `tradoxy_pnl=${nextMode}; Path=/; Max-Age=31536000; SameSite=Lax`;
+    try {
+      localStorage.setItem("tradoxy:pnl-mode", nextMode);
+    } catch {
+      /* Cookie remains the source of truth. */
+    }
+  }
   return (
     <PnlContext.Provider value={{ mode, balance }}>
-      <PnlSetter.Provider value={setMode}>
+      <PnlSetter.Provider value={changeMode}>
         <div data-pnl-mode={mode}>{children}</div>
       </PnlSetter.Provider>
     </PnlContext.Provider>
   );
 }
 const PnlSetter = createContext<(mode: PnlMode) => void>(() => {});
+
+export function PnlDisplaySettings() {
+  const { mode } = useContext(PnlContext);
+  const setMode = useContext(PnlSetter);
+  return (
+    <fieldset className="mt-6 max-w-xl">
+      <legend className="mb-3 text-sm font-medium">Profit &amp; loss</legend>
+      <div className="divide-y divide-neutral-800 rounded-lg border border-neutral-800">
+        {options.map((option) => (
+          <label
+            key={option.value}
+            className="flex min-h-14 cursor-pointer items-center gap-3 px-4 text-sm hover:bg-neutral-950"
+          >
+            <option.icon size={17} className="text-neutral-400" />
+            <span className="flex-1">{option.label}</span>
+            <input
+              className="size-4 accent-white"
+              type="radio"
+              name="pnl-mode"
+              value={option.value}
+              checked={mode === option.value}
+              onChange={() => setMode(option.value)}
+            />
+          </label>
+        ))}
+      </div>
+    </fieldset>
+  );
+}
 
 export function PnlModeMenu() {
   const { mode } = useContext(PnlContext);
@@ -60,12 +98,6 @@ export function PnlModeMenu() {
             aria-pressed={mode === option.value}
             onClick={() => {
               setMode(option.value);
-              document.cookie = `tradoxy_pnl=${option.value}; Path=/; Max-Age=31536000; SameSite=Lax`;
-              try {
-                localStorage.setItem("tradoxy:pnl-mode", option.value);
-              } catch {
-                /* Preferences still work when storage is unavailable. */
-              }
               if (menu.current) menu.current.open = false;
             }}
           >

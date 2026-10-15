@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { Check, LoaderCircle, Save, UserRound } from "lucide-react";
 
@@ -23,9 +23,12 @@ export function ProfileSettingsForm({
   const [error, setError] = useState("");
   const [saved, setSaved] = useState(false);
   const [saving, setSaving] = useState(false);
+  const savingRef = useRef(false);
+  const [savedUsername, setSavedUsername] = useState(username);
 
   async function save(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (savingRef.current) return;
     setError("");
     setSaved(false);
     const normalized = value.trim().toLowerCase().replace(/^@/, "");
@@ -36,6 +39,7 @@ export function ProfileSettingsForm({
       return;
     }
     setSaving(true);
+    savingRef.current = true;
     try {
       const response = await fetch("/api/profile", {
         method: "PATCH",
@@ -46,6 +50,7 @@ export function ProfileSettingsForm({
       if (!response.ok)
         throw new Error(result.error || "Profile could not be updated.");
       setValue(result.username);
+      setSavedUsername(result.username);
       void client.invalidateQueries({ queryKey: ["social"] });
       void client.invalidateQueries({ queryKey: ["search"] });
       router.refresh();
@@ -57,6 +62,7 @@ export function ProfileSettingsForm({
           : "Profile could not be updated.",
       );
     } finally {
+      savingRef.current = false;
       setSaving(false);
     }
   }
@@ -81,6 +87,9 @@ export function ProfileSettingsForm({
         <div className="flex h-10 items-center rounded-md border border-[var(--border)] bg-[#0b0d0f] px-3 focus-within:border-[var(--primary)]">
           <span className="text-sm text-[var(--muted)]">@</span>
           <input
+            aria-label="Username"
+            disabled={saving}
+            aria-invalid={Boolean(error)}
             value={value}
             onChange={(event) => {
               setValue(event.target.value);
@@ -127,7 +136,8 @@ export function ProfileSettingsForm({
       <button
         type="submit"
         disabled={
-          saving || value.trim().toLowerCase().replace(/^@/, "") === username
+          saving ||
+          value.trim().toLowerCase().replace(/^@/, "") === savedUsername
         }
         className="inline-flex h-10 items-center gap-2 rounded-md bg-[var(--primary)] px-4 text-sm font-semibold text-[#07100d] disabled:cursor-not-allowed disabled:opacity-45"
       >
