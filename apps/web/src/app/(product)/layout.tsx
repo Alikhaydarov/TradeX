@@ -1,22 +1,55 @@
-import { AppShell } from "@/components/app-shell";
-import { createClient } from "@/lib/supabase/server";
+import {
+  AppShell,
+  type WorkspaceUser,
+  type TradingAccount,
+} from "@/components/app-shell";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
 import { getSelectedAccountId } from "@/lib/selected-account";
+import { getWorkspaceBootstrap } from "@/lib/workspace-bootstrap";
 import { redirect } from "next/navigation";
 
 export const dynamic = "force-dynamic";
 
-export default async function ProductLayout({ children }: { children: React.ReactNode }) {
-  let user: { name: string; email: string; initials: string } | undefined;
+export default async function ProductLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  let user: WorkspaceUser | undefined;
+  let accounts: TradingAccount[] = [];
   if (isSupabaseConfigured()) {
-    const supabase = await createClient();
-    const { data } = await supabase.auth.getUser();
+    const data = await getWorkspaceBootstrap();
     if (!data.user) redirect("/sign-in");
-    if (data.user) {
-      const name = String(data.user.user_metadata?.full_name || data.user.email?.split("@")[0] || "Trader");
-      user = { name, email: data.user.email || "", initials: name.split(/\s+/).slice(0,2).map(part=>part[0]).join("").toUpperCase() };
-    }
+    const name = String(
+      data.profile?.full_name ||
+        data.user.user_metadata?.full_name ||
+        data.user.email?.split("@")[0] ||
+        "Trader",
+    );
+    const avatar =
+      data.profile?.avatar_url || data.user.user_metadata?.avatar_url;
+    user = {
+      name,
+      email: data.user.email || "",
+      initials: name
+        .split(/\s+/)
+        .slice(0, 2)
+        .map((part) => part[0])
+        .join("")
+        .toUpperCase(),
+      username: data.profile?.username ?? undefined,
+      avatarUrl: typeof avatar === "string" ? avatar : null,
+    };
+    accounts = data.accounts;
   }
   const selectedAccountId = await getSelectedAccountId();
-  return <AppShell user={user} initialSelectedAccountId={selectedAccountId}>{children}</AppShell>;
+  return (
+    <AppShell
+      user={user}
+      initialAccounts={accounts}
+      initialSelectedAccountId={selectedAccountId}
+    >
+      {children}
+    </AppShell>
+  );
 }

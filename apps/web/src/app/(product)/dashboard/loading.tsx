@@ -1,2 +1,18 @@
-export default function Loading() { return <div className="space-y-4 animate-pulse"><div className="h-20 rounded-lg bg-[#101827]"/><div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">{Array.from({length:4}).map((_,i)=><div key={i} className="h-32 rounded-lg bg-[#101827]"/>)}</div><div className="h-[360px] rounded-lg bg-[#101827]"/></div>; }
-
+export default function Loading() {
+  return (
+    <div
+      className="dashboard-loading"
+      role="status"
+      aria-label="Loading your dashboard"
+      aria-busy="true"
+    >
+      <div className="dashboard-loading-title" />
+      <div className="dashboard-loading-metrics">
+        {Array.from({ length: 4 }).map((_, i) => (
+          <div key={i} />
+        ))}
+      </div>
+      <div className="dashboard-loading-chart" />
+    </div>
+  );
+}

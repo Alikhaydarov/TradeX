@@ -1,6 +1,12 @@
-import { Activity } from "lucide-react";
-
 export function Brand() {
-  return <div className="flex items-center gap-2.5"><span className="grid size-8 place-items-center rounded-md bg-[#35D6AD] text-[#080D17]"><Activity size={17} strokeWidth={2.5} /></span><span className="text-[15px] font-semibold">Tradoxy</span></div>;
+  return (
+    <div className="tradoxy-brand">
+      <span className="tradoxy-mark" aria-hidden="true">
+        tr<span>.</span>
+      </span>
+      <span>
+        tradoxy<span className="brand-period">.</span>
+      </span>
+    </div>
+  );
 }
-
