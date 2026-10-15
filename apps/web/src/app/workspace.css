@@ -969,28 +969,6 @@ textarea {
   flex-wrap: wrap;
   justify-content: flex-end;
 }
-.original-dashboard-add {
-  display: inline-flex;
-  min-height: 36px;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  border: 1px solid #e8e8e8;
-  border-radius: 6px;
-  background: #ededed;
-  padding: 0 12px;
-  color: #111;
-  font-size: 12px;
-  font-weight: 650;
-  transition:
-    background 0.16s,
-    transform 0.16s;
-}
-.original-dashboard-add:hover {
-  background: #fff;
-  transform: translateY(-1px);
-}
-.original-dashboard-add:focus-visible,
 .original-week > a:focus-visible,
 .community-profile-link:focus-visible,
 .social-feed-tabs > button:focus-visible {

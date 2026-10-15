@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowUpRight, ArrowDownRight, Plus, TrendingUp } from "lucide-react";
+import { ArrowUpRight, ArrowDownRight, TrendingUp } from "lucide-react";
 import type { JournalTrade } from "@/lib/journal-data";
 import { Money } from "./pnl-preferences";
 import { WelcomeHeading } from "./welcome-heading";
@@ -45,6 +45,7 @@ export function DashboardOverview({
   const included = eligible.filter(
     (trade) => trade.traded_at.slice(0, 10) >= from,
   );
+  const hasClosedHistory = eligible.some((trade) => trade.pnl !== null);
   const closed = included.filter((trade) => trade.pnl !== null);
   const wins = closed.filter((trade) => Number(trade.pnl) > 0);
   const losses = closed.filter((trade) => Number(trade.pnl) < 0);
@@ -142,9 +143,6 @@ export function DashboardOverview({
           })}
         />
         <div className="original-dashboard-controls">
-          <Link href="/trades?add=1" className="original-dashboard-add">
-            <Plus size={15} /> Add trade
-          </Link>
           <div className="ui-segmented" aria-label="Performance period">
             {(
               [
@@ -296,11 +294,22 @@ export function DashboardOverview({
           ) : (
             <div className="original-equity-empty">
               <TrendingUp size={23} />
-              <h3>No balance curve yet</h3>
-              <p>Add your first closed trade to start your journal.</p>
-              <Link href="/trades?add=1" className="ui-button">
-                <Plus size={14} />
-                Add first trade
+              <h3>
+                No closed trades{" "}
+                {period === "all" ? "yet" : periodLabel.toLowerCase()}
+              </h3>
+              <p>
+                {hasClosedHistory
+                  ? "Your earlier results are still available in all-time view."
+                  : "Your balance curve appears after your first closed trade."}
+              </p>
+              <Link
+                href={
+                  hasClosedHistory ? "/dashboard?period=all" : "/trades?add=1"
+                }
+                className="ui-button"
+              >
+                {hasClosedHistory ? "View all time" : "Add first trade"}
               </Link>
             </div>
           )}
