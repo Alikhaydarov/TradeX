@@ -1,6 +1,7 @@
 import { AppShell } from "@/components/app-shell";
 import { createClient } from "@/lib/supabase/server";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
+import { getSelectedAccountId } from "@/lib/selected-account";
 import { redirect } from "next/navigation";
 
 export const dynamic = "force-dynamic";
@@ -16,5 +17,6 @@ export default async function ProductLayout({ children }: { children: React.Reac
       user = { name, email: data.user.email || "", initials: name.split(/\s+/).slice(0,2).map(part=>part[0]).join("").toUpperCase() };
     }
   }
-  return <AppShell user={user}>{children}</AppShell>;
+  const selectedAccountId = await getSelectedAccountId();
+  return <AppShell user={user} initialSelectedAccountId={selectedAccountId}>{children}</AppShell>;
 }

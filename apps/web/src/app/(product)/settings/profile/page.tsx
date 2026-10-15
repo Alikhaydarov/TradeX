@@ -1,5 +1,15 @@
-import { Save, UserRound } from "lucide-react";
+import { redirect } from "next/navigation";
 import { PageHeader, Panel } from "@/components/page-primitives";
+import { ProfileSettingsForm } from "@/components/profile-settings-form";
+import { createClient } from "@/lib/supabase/server";
 
-export default function ProfileSettingsPage(){return <div className="space-y-4"><PageHeader eyebrow="Preferences" title="Profile settings" description="Manage the personal details shown in your workspace."/><Panel title="Basic information" description="Your email remains tied to your verified identity."><div className="max-w-xl space-y-5"><div className="flex items-center gap-4"><span className="grid size-14 place-items-center rounded-lg bg-[#1B293B] text-[#35D6AD]"><UserRound size={23}/></span><div><p className="font-semibold">Alex Morgan</p><p className="mt-1 text-xs text-[#91A0B5]">Pro member</p></div></div><label className="block"><span className="mb-2 block text-xs text-[#91A0B5]">Username</span><input defaultValue="alexmorgan" className="h-10 w-full rounded-md border border-[#27364A] bg-[#080D17] px-3 text-sm outline-none focus:border-[#35D6AD]"/></label><label className="block"><span className="mb-2 block text-xs text-[#91A0B5]">Email</span><input value="alex@example.com" readOnly className="h-10 w-full cursor-not-allowed rounded-md border border-[#27364A] bg-[#080D17] px-3 text-sm text-[#91A0B5]"/></label><button className="inline-flex h-10 items-center gap-2 rounded-md bg-[#35D6AD] px-4 text-sm font-semibold text-[#080D17]"><Save size={16}/> Save changes</button></div></Panel></div>}
+export const dynamic = "force-dynamic";
 
+export default async function ProfileSettingsPage() {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) redirect("/sign-in");
+  const { data: profile } = await supabase.from("profiles").select("username,full_name,avatar_url").eq("id", user.id).maybeSingle();
+  const fallbackName = String(user.user_metadata?.full_name || user.user_metadata?.name || user.email?.split("@")[0] || "Trader");
+  return <div className="space-y-4"><PageHeader eyebrow="Preferences" title="Profile settings" description="Manage the identity traders see on your public profile and posts."/><Panel title="Basic information" description="Your email is managed securely by your sign-in provider."><ProfileSettingsForm email={user.email ?? ""} username={profile?.username ?? ""} name={profile?.full_name ?? fallbackName} avatar={profile?.avatar_url ?? null}/></Panel></div>;
+}

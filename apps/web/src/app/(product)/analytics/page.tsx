@@ -1,5 +1,41 @@
+import Link from "next/link";
 import { Activity, BarChart3, Percent, Trophy } from "lucide-react";
 import { MetricCard, PageHeader, Panel } from "@/components/page-primitives";
+import { getJournalData, money, summarizeTrades } from "@/lib/journal-data";
 
-export default function AnalyticsPage(){return <div className="space-y-4"><PageHeader eyebrow="Intelligence" title="Performance analytics" description="Separate genuine edge from noise with account-aware statistics and behavior diagnostics."/><div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4"><MetricCard label="Expectancy" value="$56.36" helper="Per closed trade" icon={Activity} tone="positive"/><MetricCard label="Average R" value="1.38R" helper="Across 22 trades" icon={BarChart3}/><MetricCard label="Win rate" value="68.2%" helper="15 wins · 7 losses" icon={Percent}/><MetricCard label="Best setup" value="Breakout" helper="2.04 profit factor" icon={Trophy} tone="positive"/></div><div className="grid gap-4 xl:grid-cols-[1.5fr_1fr]"><Panel title="Performance distribution" description="Net P&L by trading day"><div className="flex h-64 items-end gap-2">{[42,65,35,82,55,92,48,72,58,88,38,75].map((h,i)=><div key={i} className="flex-1 rounded-t bg-[#35D6AD]/70" style={{height:`${h}%`}}/>)}</div></Panel><Panel title="Behavior signals" description="Patterns worth reviewing"><div className="space-y-3">{[["Plan adherence","91%"],["Revenge trade risk","Low"],["Overtrading","2 sessions"],["Early exits","18%"]].map(([a,b])=><div key={a} className="flex items-center justify-between rounded-md border border-[#27364A] bg-[#080D17] p-3 text-sm"><span className="text-[#91A0B5]">{a}</span><span className="font-medium">{b}</span></div>)}</div></Panel></div></div>}
+export const dynamic = "force-dynamic";
 
+export default async function AnalyticsPage() {
+  const { trades, failed } = await getJournalData();
+  const summary = summarizeTrades(trades);
+  const symbols = new Map<string, { pnl: number; trades: number; wins: number }>();
+  for (const trade of trades) {
+    const item = symbols.get(trade.symbol) ?? { pnl: 0, trades: 0, wins: 0 };
+    item.pnl += trade.pnl ?? 0;
+    item.trades += 1;
+    if ((trade.pnl ?? 0) > 0) item.wins += 1;
+    symbols.set(trade.symbol, item);
+  }
+  const ranked = [...symbols].sort((a, b) => b[1].pnl - a[1].pnl).slice(0, 6);
+  const days = new Map<string, number>();
+  for (const trade of trades) days.set(trade.traded_at.slice(0, 10), (days.get(trade.traded_at.slice(0, 10)) ?? 0) + (trade.pnl ?? 0));
+  const distribution = [...days].slice(0, 20).reverse();
+  const scale = Math.max(1, ...distribution.map(([, value]) => Math.abs(value)));
+
+  return <div className="space-y-4">
+    <PageHeader eyebrow="Journal intelligence" title="Performance analytics" description="Understand your actual outcomes, instrument by instrument. Values use your latest 1,000 recorded trades." action={<Link href="/trades" className="rounded-md border border-[#202529] bg-[#0f1214] px-3 py-2 text-sm hover:bg-[#15191c]">Open journal</Link>}/>
+    {failed && <p role="status" className="rounded-md border border-[#54373a] bg-[#1a1011] px-4 py-3 text-sm text-[#ff9ea7]">Your analytics could not be loaded. Please retry.</p>}
+    <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4"><MetricCard label="Expectancy" value={money(summary.expectancy)} helper="Per closed trade" icon={Activity} tone={summary.expectancy >= 0 ? "positive" : "warning"}/><MetricCard label="Average R" value={`${summary.averageR.toFixed(2)}R`} helper="Recorded risk multiple" icon={BarChart3}/><MetricCard label="Win rate" value={`${summary.winRate.toFixed(1)}%`} helper={`${summary.wins} wins · ${summary.losses} losses`} icon={Percent}/><MetricCard label="Profit factor" value={Number.isFinite(summary.profitFactor) ? summary.profitFactor.toFixed(2) : "∞"} helper="Gross profit / gross loss" icon={Trophy} tone="positive"/></div>
+    <div className="grid gap-4 xl:grid-cols-[1.5fr_1fr]">
+      <Panel title="Daily realized P&amp;L" description={`Net ${money(summary.pnl)} across ${trades.length} trades`}>
+        {distribution.length ? <div className="flex min-h-64 items-end gap-1.5 overflow-x-auto pb-6 pt-3">{distribution.map(([day, value])=><div key={day} className="group relative flex h-52 min-w-3 flex-1 items-end" title={`${day}: ${money(value)}`}><div className={`w-full rounded-t-sm ${value >= 0 ? "bg-[#43e1b0]/75" : "bg-[#f16b78]/75"}`} style={{height:`${Math.max(3,Math.abs(value)/scale*100)}%`}}/><span className="absolute -bottom-5 left-1/2 hidden -translate-x-1/2 whitespace-nowrap text-[9px] text-[#899196] group-hover:block">{day.slice(5)}</span></div>)}</div> : <div className="grid min-h-64 place-items-center text-center"><div><p className="text-sm">Not enough journal data yet</p><p className="mt-1 text-xs text-[#899196]">Log a few trades to reveal your performance pattern.</p></div></div>}
+      </Panel>
+      <Panel title="By instrument" description="Ranked by net realized P&amp;L">
+        {ranked.length ? <div className="divide-y divide-[#202529]">{ranked.map(([symbol, item])=><div key={symbol} className="flex items-center justify-between gap-4 py-3 first:pt-0 last:pb-0"><div className="min-w-0"><p className="truncate text-sm font-semibold">{symbol}</p><p className="mt-1 text-xs text-[#899196]">{item.trades} trades · {item.trades ? (item.wins / item.trades * 100).toFixed(0) : 0}% wins</p></div><strong className={`shrink-0 font-mono text-sm ${item.pnl >= 0 ? "text-[#43e1b0]" : "text-[#f16b78]"}`}>{money(item.pnl)}</strong></div>)}</div> : <p className="text-sm text-[#899196]">Your traded instruments will appear here.</p>}
+      </Panel>
+    </div>
+    <Panel title="Outcome snapshot" description="A transparent summary from your journal">
+      <div className="grid gap-3 sm:grid-cols-3"><div className="rounded-md border border-[#202529] bg-[#080a0b] p-4"><p className="text-xs text-[#899196]">Closed trades</p><p className="mt-2 font-mono text-xl">{summary.closed}</p></div><div className="rounded-md border border-[#202529] bg-[#080a0b] p-4"><p className="text-xs text-[#899196]">Gross P&amp;L</p><p className={`mt-2 font-mono text-xl ${summary.pnl >= 0 ? "text-[#43e1b0]" : "text-[#f16b78]"}`}>{money(summary.pnl)}</p></div><div className="rounded-md border border-[#202529] bg-[#080a0b] p-4"><p className="text-xs text-[#899196]">Top instrument</p><p className="mt-2 font-mono text-xl">{ranked[0]?.[0] ?? "—"}</p></div></div>
+    </Panel>
+  </div>;
+}
