@@ -2,6 +2,7 @@ import Link from "next/link";
 import { ArrowUpRight, ArrowDownRight, Plus, TrendingUp } from "lucide-react";
 import type { JournalTrade } from "@/lib/journal-data";
 import { Money } from "./pnl-preferences";
+import { WelcomeHeading } from "./welcome-heading";
 
 export type JournalPeriod = "all" | "month" | "week";
 const dateLabel = (value: Date, options: Intl.DateTimeFormatOptions) =>
@@ -11,6 +12,7 @@ const dateLabel = (value: Date, options: Intl.DateTimeFormatOptions) =>
 
 export function DashboardOverview({
   name,
+  username,
   trades,
   failed = false,
   period = "month",
@@ -18,6 +20,7 @@ export function DashboardOverview({
   now = new Date().toISOString(),
 }: {
   name: string;
+  username?: string | null;
   trades: JournalTrade[];
   failed?: boolean;
   period?: JournalPeriod;
@@ -125,18 +128,16 @@ export function DashboardOverview({
   return (
     <div className="original-dashboard">
       <header className="original-dashboard-heading">
-        <div>
-          <h2>Performance snapshot</h2>
-          <p>
-            {name.split(" ")[0]} ·{" "}
-            {dateLabel(today, {
-              weekday: "short",
-              day: "numeric",
-              month: "long",
-              year: "numeric",
-            })}
-          </p>
-        </div>
+        <WelcomeHeading
+          eyebrow="PERFORMANCE / OVERVIEW"
+          name={username ? `@${username}` : name.split(" ")[0] || "Trader"}
+          detail={dateLabel(today, {
+            weekday: "short",
+            day: "numeric",
+            month: "long",
+            year: "numeric",
+          })}
+        />
         <div className="ui-segmented" aria-label="Performance period">
           {(
             [

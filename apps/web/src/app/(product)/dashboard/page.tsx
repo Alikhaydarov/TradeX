@@ -39,6 +39,7 @@ export default async function DashboardPage({
   return (
     <DashboardOverview
       name={name}
+      username={workspace.profile?.username}
       trades={trades}
       failed={failed}
       period={period}

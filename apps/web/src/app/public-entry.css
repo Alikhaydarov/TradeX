@@ -38,12 +38,14 @@
   font-size: 25px;
   font-weight: 600;
   line-height: 1.25;
+  animation: welcome-rise 0.48s ease-out both;
 }
 .original-auth .auth2-card > p {
   font-size: 13px;
   line-height: 1.65;
   color: var(--muted);
   margin-top: 10px;
+  animation: welcome-rise 0.48s 0.1s ease-out both;
 }
 .original-auth-footer {
   display: flex;
@@ -362,5 +364,11 @@
   .original-auth-footer {
     line-height: 1.6;
     text-align: center;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .original-auth h1,
+  .original-auth .auth2-card > p {
+    animation: none;
   }
 }

@@ -24,6 +24,7 @@ import {
 import { useWorkspaceUser } from "./app-shell";
 import { SocialPost } from "./social-post";
 import { DataLoader } from "./data-loader";
+import { WelcomeHeading } from "./welcome-heading";
 
 async function compressPostImage(file: File) {
   const url = URL.createObjectURL(file);
@@ -178,7 +179,15 @@ export function CommunityFeed() {
     <div className="social-layout">
       <div className="community-page">
         <header className="community-heading">
-          <h1>Community tape</h1>
+          <WelcomeHeading
+            eyebrow="COMMUNITY / HOME"
+            name={
+              viewer?.username
+                ? `@${viewer.username}`
+                : viewer?.name?.split(" ")[0] || "trader"
+            }
+            detail="Join the conversation around today's market."
+          />
           <Link
             href={
               viewer?.username
