@@ -1,7 +1,9 @@
 import Link from "next/link";
 import { Activity, BarChart3, Percent, Trophy } from "lucide-react";
 import { MetricCard, PageHeader, Panel } from "@/components/page-primitives";
-import { getJournalData, money, summarizeTrades } from "@/lib/journal-data";
+import { getJournalData, summarizeTrades } from "@/lib/journal-data";
+import { Money } from "@/components/pnl-preferences";
+const money = (value: number) => <Money value={value} />;
 
 export const dynamic = "force-dynamic";
 
@@ -90,7 +92,11 @@ export default async function AnalyticsPage() {
       <div className="grid gap-4 xl:grid-cols-[1.5fr_1fr]">
         <Panel
           title="Daily realized P&amp;L"
-          description={`Net ${money(summary.pnl)} across ${trades.length} trades`}
+          description={
+            <>
+              Net {money(summary.pnl)} across {trades.length} trades
+            </>
+          }
         >
           {distribution.length ? (
             <div className="flex min-h-64 items-end gap-1.5 overflow-x-auto pb-6 pt-3">
@@ -98,7 +104,7 @@ export default async function AnalyticsPage() {
                 <div
                   key={day}
                   className="group relative flex h-52 min-w-3 flex-1 items-end"
-                  title={`${day}: ${money(value)}`}
+                  aria-label={day}
                 >
                   <div
                     className={`w-full rounded-t-sm ${value >= 0 ? "bg-[var(--primary)]/75" : "bg-[var(--danger)]/75"}`}

@@ -1,6 +1,7 @@
 "use client";
 
 import { ProductModal } from "./product-modal";
+import { Money } from "./pnl-preferences";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -39,12 +40,7 @@ async function api<T>(url: string, init?: RequestInit) {
   if (!response.ok) throw new Error(payload.error || "Request failed.");
   return payload as T;
 }
-const money = (value: number) =>
-  new Intl.NumberFormat(undefined, {
-    style: "currency",
-    currency: "USD",
-    maximumFractionDigits: 0,
-  }).format(value);
+const money = (value: number) => <Money value={value} balance />;
 
 export function AccountManager() {
   const router = useRouter();
@@ -218,7 +214,10 @@ export function AccountManager() {
                 <span>
                   <small>Journal P&amp;L</small>
                   <b className={account.pnl >= 0 ? "positive" : "negative"}>
-                    {money(Number(account.pnl))}
+                    <Money
+                      value={Number(account.pnl)}
+                      basis={Number(account.initial_balance)}
+                    />
                   </b>
                 </span>
                 <span>

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "@fontsource-variable/inter/wght.css";
 import "./globals.css";
 import "./workspace.css";
+import "./public-entry.css";
 
 export const metadata: Metadata = {
   title: { default: "Tradoxy", template: "%s | Tradoxy" },

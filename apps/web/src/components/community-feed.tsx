@@ -4,7 +4,6 @@ import Link from "next/link";
 import Image from "next/image";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
-  ArrowRight,
   ArrowUpRight,
   Check,
   Eye,
@@ -13,7 +12,6 @@ import {
   Link2,
   LoaderCircle,
   MessageCircle,
-  NotebookPen,
   RefreshCw,
   Repeat2,
   Send,
@@ -396,17 +394,6 @@ export function CommunityFeed() {
       feedView === "all" ||
       (feedView === "media" ? Boolean(post.image_url) : Boolean(post.symbol)),
   );
-  const symbols = [
-    ...posts.reduce((map, post) => {
-      if (post.symbol) map.set(post.symbol, (map.get(post.symbol) ?? 0) + 1);
-      return map;
-    }, new Map<string, number>()),
-  ]
-    .sort((a, b) => b[1] - a[1])
-    .slice(0, 5);
-  const people = [
-    ...new Map(posts.map((post) => [post.user_id, post])).values(),
-  ].slice(0, 4);
   async function sharePost(post: Post) {
     try {
       const url = window.location.origin + "/community#post-" + post.id;
@@ -430,11 +417,7 @@ export function CommunityFeed() {
       <div className="community-page">
         <header className="community-heading">
           <div>
-            <p className="section-label">The trader network</p>
-            <h1>
-              Community<span>.</span>
-            </h1>
-            <p>Real trades. Honest reviews. Better together.</p>
+            <h1>Community tape</h1>
           </div>
           <Link
             href={
@@ -447,7 +430,11 @@ export function CommunityFeed() {
             Your profile <ArrowUpRight size={14} />
           </Link>
         </header>
-        <form className="community-composer" onSubmit={createPost}>
+        <form
+          id="compose-post"
+          className="community-composer"
+          onSubmit={createPost}
+        >
           <div className="community-composer-avatar">
             {viewer?.avatarUrl?.startsWith("http") ? (
               <Image
@@ -806,67 +793,6 @@ export function CommunityFeed() {
           </div>
         )}
       </div>
-      <aside className="community-discover">
-        <section>
-          <p className="social-aside-label">IN THE CONVERSATION</p>
-          <h2>Markets on the radar</h2>
-          {symbols.length ? (
-            symbols.map(([symbol, count]) => (
-              <Link
-                className="social-symbol-row"
-                key={symbol}
-                href={"/trades?symbol=" + encodeURIComponent(symbol)}
-              >
-                <span>
-                  <strong>{symbol}</strong>
-                  <small>
-                    {count} post{count === 1 ? "" : "s"} in the latest feed
-                  </small>
-                </span>
-                <ArrowUpRight size={16} />
-              </Link>
-            ))
-          ) : (
-            <p className="social-aside-empty">
-              Instruments shared by traders will appear here.
-            </p>
-          )}
-        </section>
-        <section>
-          <p className="social-aside-label">FROM YOUR FEED</p>
-          <h2>Meet the traders</h2>
-          {people.map((person) => (
-            <Link
-              className="social-person-row"
-              key={person.user_id}
-              href={"/u/" + encodeURIComponent(person.author_handle)}
-            >
-              <span className="community-post-avatar">
-                {initials(person.author_name)}
-              </span>
-              <span>
-                <strong>{person.author_name}</strong>
-                <small>@{person.author_handle}</small>
-              </span>
-              <ArrowUpRight size={15} />
-            </Link>
-          ))}
-          {!people.length && (
-            <p className="social-aside-empty">
-              Traders will appear as your community grows.
-            </p>
-          )}
-        </section>
-        <section className="social-journal-prompt">
-          <NotebookPen size={22} />
-          <h2>Every trade has a story.</h2>
-          <p>Capture yours while the details are still fresh.</p>
-          <Link href="/trades?add=1">
-            Open your journal <ArrowRight size={15} />
-          </Link>
-        </section>
-        <footer>Tradoxy · Built around your process.</footer>
-      </aside>
     </div>
   );
 }

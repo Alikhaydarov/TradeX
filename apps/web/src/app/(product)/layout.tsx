@@ -7,6 +7,7 @@ import { isSupabaseConfigured } from "@/lib/supabase/config";
 import { getSelectedAccountId } from "@/lib/selected-account";
 import { getWorkspaceBootstrap } from "@/lib/workspace-bootstrap";
 import { redirect } from "next/navigation";
+import { cookies } from "next/headers";
 
 export const dynamic = "force-dynamic";
 
@@ -43,11 +44,15 @@ export default async function ProductLayout({
     accounts = data.accounts;
   }
   const selectedAccountId = await getSelectedAccountId();
+  const pnlMode = (await cookies()).get("tradoxy_pnl")?.value;
   return (
     <AppShell
       user={user}
       initialAccounts={accounts}
       initialSelectedAccountId={selectedAccountId}
+      initialPnlMode={
+        pnlMode === "percentage" || pnlMode === "hidden" ? pnlMode : "money"
+      }
     >
       {children}
     </AppShell>

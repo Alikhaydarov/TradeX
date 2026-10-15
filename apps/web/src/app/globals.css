@@ -5,17 +5,18 @@
     "Inter Variable", ui-sans-serif, system-ui, -apple-system,
     BlinkMacSystemFont, "Segoe UI", sans-serif;
   --font-mono: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
-  --background: #050505;
-  --secondary: #090909;
-  --card: #0c0c0c;
-  --elevated: #171717;
-  --border: #242424;
-  --primary: #86efac;
-  --accent: #a7b4ff;
-  --foreground: #f5f7f7;
-  --muted: #949494;
+  --background: #000000;
+  --secondary: #101010;
+  --card: #0a0a0a;
+  --elevated: #181818;
+  --border: #202020;
+  --primary: #ffffff;
+  --profit: #6ee7b7;
+  --accent: #e4e4e7;
+  --foreground: #f7f7fa;
+  --muted: #a8a8b2;
   --warning: #f2b65b;
-  --danger: var(--danger);
+  --danger: #fda4af;
   --gold: #d9b978;
 }
 
@@ -72,7 +73,10 @@ a {
   border: 1px solid transparent;
   border-radius: 7px;
   color: var(--muted);
-  transition: 0.18s ease;
+  transition:
+    color 0.18s ease,
+    background-color 0.18s ease,
+    border-color 0.18s ease;
 }
 .icon-button:hover {
   border-color: var(--border);

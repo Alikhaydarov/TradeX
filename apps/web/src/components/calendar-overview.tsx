@@ -2,20 +2,10 @@ import Link from "next/link";
 import { ArrowRight, ChevronLeft, ChevronRight, Plus } from "lucide-react";
 import type { JournalTrade } from "@/lib/journal-data";
 import { CalendarMonthSwitcher } from "./calendar-month-switcher";
+import { Money } from "./pnl-preferences";
 
-const money = (value: number) =>
-  new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-    maximumFractionDigits: 0,
-  }).format(value);
-const compactMoney = (value: number) =>
-  new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-    notation: "compact",
-    maximumFractionDigits: 1,
-  }).format(value);
+const money = (value: number) => <Money value={value} />;
+const compactMoney = (value: number) => <Money value={value} compact />;
 const keyForMonth = (date: Date) => date.toISOString().slice(0, 7);
 const format = (date: Date, options: Intl.DateTimeFormatOptions) =>
   new Intl.DateTimeFormat("en-US", { ...options, timeZone: "UTC" }).format(
@@ -166,13 +156,7 @@ export function CalendarOverview({
                       month: "long",
                       day: "numeric",
                     }) +
-                    (result
-                      ? ": " +
-                        money(result.pnl) +
-                        ", " +
-                        result.count +
-                        " trades"
-                      : ": no trades")
+                    (result ? ": " + result.count + " trades" : ": no trades")
                   }
                 >
                   <span className="calendar-day-number">

@@ -4,6 +4,7 @@ import {
 } from "@/components/dashboard-overview";
 import { getJournalData } from "@/lib/journal-data";
 import { getWorkspaceBootstrap } from "@/lib/workspace-bootstrap";
+import { getSelectedAccountId } from "@/lib/selected-account";
 
 export const dynamic = "force-dynamic";
 
@@ -28,12 +29,20 @@ export default async function DashboardPage({
       user?.email?.split("@")[0] ||
       "Trader",
   );
+  const selected = await getSelectedAccountId();
+  const initialBalance = workspace.accounts
+    .filter((account) => !selected || account.id === selected)
+    .reduce(
+      (total, account) => total + Number(account.initial_balance || 0),
+      0,
+    );
   return (
     <DashboardOverview
       name={name}
       trades={trades}
       failed={failed}
       period={period}
+      initialBalance={initialBalance}
     />
   );
 }

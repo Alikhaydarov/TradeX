@@ -1,13 +1,13 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
+import { OriginalLanding } from "@/components/original-landing";
 
 export default async function Home() {
   if (isSupabaseConfigured()) {
     const supabase = await createClient();
     const { data } = await supabase.auth.getClaims();
-    redirect(data?.claims ? "/dashboard" : "/sign-in");
+    if (data?.claims) redirect("/home");
   }
-  redirect("/sign-in?error=configuration");
+  return <OriginalLanding />;
 }
-

@@ -1,6 +1,7 @@
 "use client";
 
 import { ProductModal } from "./product-modal";
+import { Money } from "./pnl-preferences";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import {
@@ -94,7 +95,7 @@ function MobileTrade({
         <strong
           className={Number(trade.pnl) >= 0 ? "text-profit" : "text-loss"}
         >
-          {currency.format(Number(trade.pnl))}
+          <Money value={Number(trade.pnl)} />
         </strong>
         <ChevronDown size={15} />
       </summary>
@@ -265,7 +266,7 @@ export function TradeJournal({
         <article>
           <span>Net P&amp;L</span>
           <strong className={summary.pnl >= 0 ? "positive" : "negative"}>
-            {currency.format(summary.pnl)}
+            <Money value={summary.pnl} />
           </strong>
           <small>Filtered trades</small>
         </article>
@@ -377,7 +378,7 @@ export function TradeJournal({
                           Number(trade.pnl) >= 0 ? "positive" : "negative"
                         }
                       >
-                        {currency.format(Number(trade.pnl))}
+                        <Money value={Number(trade.pnl)} />
                         <small>{Number(trade.result_r).toFixed(2)}R</small>
                       </td>
                       <td>
