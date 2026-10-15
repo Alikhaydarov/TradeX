@@ -3587,6 +3587,9 @@ textarea {
 .mobile-trade-entry + .mobile-trade-entry {
   border-top: 1px solid var(--border);
 }
+.mobile-trade-entry { display: flex; min-height: 76px; align-items: center; gap: 10px; padding: 12px; color: var(--foreground); }
+.mobile-trade-entry > strong { font-size: 12px; font-variant-numeric: tabular-nums; }
+.mobile-trade-entry > svg:last-child { color: var(--muted); }
 .mobile-trade-entry > summary {
   display: flex;
   min-height: 78px;
@@ -3794,6 +3797,14 @@ textarea {
 .account-card > footer a {
   font-size: 11px;
 }
+.account-card .account-card-main { display: block; color: inherit; }
+.account-card-main > header { display: flex; align-items: center; gap: 11px; }
+.account-card-main .account-card-identity { min-width: 0; flex: 1; }
+.account-card-main h3 { margin: 0; font-size: 14px; }
+.account-card-main .account-firm { margin-top: 2px; font-size: 11px; }
+.trade-clickable-row { cursor: pointer; }
+.trade-clickable-row:hover { background: #121212; }
+.trade-clickable-row:focus-visible { outline: 2px solid #737373; outline-offset: -2px; }
 .profile-verified-icon {
   flex-shrink: 0;
   color: #9cbdff;

@@ -7,7 +7,7 @@ export async function loadAccountSummaries(supabase: Supabase, userId: string) {
     supabase
       .from("prop_accounts")
       .select(
-        "id,name,firm,phase,market_type,account_size,initial_balance,profit_target,max_drawdown,daily_drawdown,start_date,status,created_at",
+        "id,name,firm,phase,market_type,account_size,initial_balance,profit_target,max_drawdown,daily_drawdown,start_date,status,account_type,platform,import_source,created_at",
       )
       .eq("user_id", userId)
       .order("created_at", { ascending: false }),

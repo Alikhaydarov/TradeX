@@ -5,11 +5,13 @@ import { Money } from "./pnl-preferences";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useMemo, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { clientApi } from "@/lib/client-api";
 import { DataLoader } from "./data-loader";
 import {
   Activity,
+  ArrowUpRight,
+  Settings2,
   LoaderCircle,
   Plus,
   RefreshCw,
@@ -30,6 +32,9 @@ type Account = {
   max_drawdown: number;
   daily_drawdown: number;
   status: string;
+  account_type: string | null;
+  platform: string | null;
+  import_source: string | null;
   pnl: number;
   trades: number;
 };
@@ -47,8 +52,10 @@ const money = (value: number) => <Money value={value} balance />;
 
 export function AccountManager({
   initialAccounts,
+  paid = false,
 }: {
   initialAccounts?: Account[];
+  paid?: boolean;
 }) {
   const router = useRouter();
   const queryClient = useQueryClient();
@@ -70,16 +77,8 @@ export function AccountManager({
   }
   const [saving, setSaving] = useState(false);
   const [modal, setModal] = useState(false);
+  const [platform, setPlatform] = useState("manual");
   const [error, setError] = useState("");
-  const portfolio = useMemo(
-    () =>
-      (accounts ?? []).reduce(
-        (total, account) =>
-          total + Number(account.initial_balance) + Number(account.pnl),
-        0,
-      ),
-    [accounts],
-  );
   async function create(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (writeLock.current) return;
@@ -182,20 +181,9 @@ export function AccountManager({
           )}
         </div>
       )}
-      {accounts && (
-        <section className="account-portfolio">
-          <span>
-            <WalletCards size={17} /> Total tracked capital
-          </span>
-          <strong>{money(portfolio)}</strong>
-          <small>
-            {accounts.length} {accounts.length === 1 ? "account" : "accounts"}
-          </small>
-        </section>
-      )}
       <div className="account-list-heading">
         <div>
-          <h2>Your accounts</h2>
+          <h2>Your accounts <span className="account-count">{accounts?.length ?? 0}</span></h2>
         </div>
         <button
           disabled={query.isFetching}
@@ -214,66 +202,17 @@ export function AccountManager({
         <div className="account-grid">
           {accounts.map((account) => (
             <article className="account-card" key={account.id}>
+              <Link className="account-card-main" href="/dashboard" prefetch={false} onClick={() => { document.cookie = "tradoxy_account=" + account.id + "; Path=/; Max-Age=31536000; SameSite=Lax"; router.refresh(); }} aria-label={`Open ${account.name} dashboard`}>
               <header>
                 <span className="account-card-icon">
-                  <Activity size={17} />
+                  {account.platform?.toLowerCase() === "mt5" ? <b>5</b> : <Activity size={17} />}
                 </span>
+                <div className="account-card-identity"><h3>{account.name}</h3><p className="account-firm">{account.firm || (account.account_type === "real" ? "Real account" : "Prop account")} · {account.platform && account.platform !== "manual" ? account.platform.toUpperCase() : account.market_type}</p></div>
                 <span className="account-status-pill">{account.status}</span>
-                <button
-                  disabled={deleting !== null}
-                  className="account-delete"
-                  onClick={() => void remove(account)}
-                  aria-label={`Delete ${account.name}`}
-                >
-                  <Trash2 size={15} />
-                </button>
               </header>
-              <h3>{account.name}</h3>
-              <p className="account-firm">
-                {account.firm || "Personal account"} <span>·</span>{" "}
-                {account.market_type}
-              </p>
-              <strong className="account-card-balance">
-                {money(Number(account.initial_balance) + Number(account.pnl))}
-              </strong>
-              <div className="account-card-meta">
-                <span>
-                  <small>Starting balance</small>
-                  {money(Number(account.initial_balance))}
-                </span>
-                <span>
-                  <small>Journal P&amp;L</small>
-                  <b className={account.pnl >= 0 ? "positive" : "negative"}>
-                    <Money
-                      value={Number(account.pnl)}
-                      basis={Number(account.initial_balance)}
-                    />
-                  </b>
-                </span>
-                <span>
-                  <small>Trades</small>
-                  {account.trades}
-                </span>
-              </div>
-              <footer>
-                <span>{account.phase}</span>
-                {account.profit_target > 0 && (
-                  <span>Target {money(Number(account.profit_target))}</span>
-                )}
-                <Link
-                  href="/dashboard"
-                  prefetch={false}
-                  onClick={() => {
-                    document.cookie =
-                      "tradoxy_account=" +
-                      account.id +
-                      "; Path=/; Max-Age=31536000; SameSite=Lax";
-                    router.refresh();
-                  }}
-                >
-                  Open dashboard <span aria-hidden="true">→</span>
-                </Link>
-              </footer>
+              <div className="account-card-balance-row"><div><small>Balance</small><strong>{money(Number(account.initial_balance) + Number(account.pnl))}</strong></div><div className={account.pnl >= 0 ? "positive" : "negative"}><small>Net P&amp;L</small><b><Money value={Number(account.pnl)} basis={Number(account.initial_balance)} /></b></div></div>
+              </Link>
+              <footer><span>{account.trades} trades</span><div><Link href={`/accounts/${account.id}`} aria-label={`Settings for ${account.name}`} title="Account settings"><Settings2 size={16} /></Link><button disabled={deleting !== null} className="account-delete" onClick={() => void remove(account)} aria-label={`Delete ${account.name}`} title="Delete account"><Trash2 size={15} /></button><Link href="/dashboard" prefetch={false} onClick={() => { document.cookie = "tradoxy_account=" + account.id + "; Path=/; Max-Age=31536000; SameSite=Lax"; router.refresh(); }} aria-label={`Open ${account.name} dashboard`} title="Open dashboard"><ArrowUpRight size={16} /></Link></div></footer>
             </article>
           ))}
         </div>
@@ -319,6 +258,13 @@ export function AccountManager({
               </button>
             </header>
             <form onSubmit={create}>
+              <label>Connection
+                <select name="platform" value={platform} onChange={(event) => setPlatform(event.target.value)}>
+                  <option value="manual">Manual journal</option><option value="mt5">MetaTrader 5 · auto sync</option><option value="tradovate">Tradovate · CSV</option><option value="ninjatrader">NinjaTrader · CSV</option><option value="projectx">Project X · CSV</option><option value="ctrader">cTrader · CSV</option><option value="matchtrader">MatchTrader · CSV</option>
+                </select>
+              </label>
+              {platform !== "manual" && <p className="account-connection-hint">{paid ? `Set up ${platform === "mt5" ? "MT5 sync" : "CSV import"} in account settings after creating this account.` : "Platform connections require Standard or Pro. Manual journaling is free."}</p>}
+              <label>Account category<select name="accountType"><option value="prop">Prop challenge</option><option value="real">Real account</option></select></label>
               <label className="trade-note-field">
                 Account name
                 <input
@@ -399,7 +345,7 @@ export function AccountManager({
                 <button
                   type="button"
                   className="trade-cancel"
-                  disabled={saving}
+                  disabled={saving || (platform !== "manual" && !paid)}
                   onClick={() => setModal(false)}
                 >
                   Cancel

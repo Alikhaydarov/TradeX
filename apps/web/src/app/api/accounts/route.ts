@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getRouteAuth } from "@/lib/supabase/route-auth";
 import { loadAccountSummaries } from "@/lib/account-summaries";
+import { hasPaidAccess } from "@/lib/paid-access";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -48,7 +49,12 @@ export async function POST(request: Request) {
     body.marketType === "Crypto"
       ? body.marketType
       : "CFD";
+  const platform = typeof body.platform === "string" ? body.platform.toLowerCase() : "manual";
+  const allowedPlatforms = ["manual", "mt5", "tradovate", "ninjatrader", "projectx", "ctrader", "matchtrader"];
+  if (platform !== "manual" && !(await hasPaidAccess(auth.supabase, auth.user.id)))
+    return NextResponse.json({ error: "Platform connections require Standard or Pro." }, { status: 403 });
   if (
+    !allowedPlatforms.includes(platform) ||
     name.length < 2 ||
     name.length > 80 ||
     ![
@@ -85,9 +91,12 @@ export async function POST(request: Request) {
       daily_drawdown: dailyDrawdown,
       start_date: new Date().toISOString().slice(0, 10),
       status: "Active",
+      account_type: body.accountType === "real" ? "real" : "prop",
+      platform,
+      import_source: platform === "mt5" ? "mt5_bridge" : ["tradovate", "ninjatrader", "ctrader"].includes(platform) ? platform : "manual",
     })
     .select(
-      "id,name,firm,phase,market_type,account_size,initial_balance,profit_target,max_drawdown,daily_drawdown,start_date,status,created_at",
+      "id,name,firm,phase,market_type,account_size,initial_balance,profit_target,max_drawdown,daily_drawdown,start_date,status,account_type,platform,import_source,created_at",
     )
     .single();
   if (error || !data)

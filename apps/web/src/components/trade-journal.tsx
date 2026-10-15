@@ -1,6 +1,7 @@
 "use client";
 
 import { ProductModal } from "./product-modal";
+import Link from "next/link";
 import { Money } from "./pnl-preferences";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -8,7 +9,6 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { DataLoader } from "./data-loader";
 import {
   ArrowUpRight,
-  ChevronDown,
   LoaderCircle,
   RefreshCw,
   Plus,
@@ -22,11 +22,6 @@ import type { TradeListData } from "@/lib/trade-list-data";
 type Account = TradeListData["accounts"][number];
 type Trade = TradeListData["trades"][number];
 
-const currency = new Intl.NumberFormat(undefined, {
-  style: "currency",
-  currency: "USD",
-  maximumFractionDigits: 2,
-});
 const dateLabel = (value: string) =>
   new Intl.DateTimeFormat(undefined, {
     month: "short",
@@ -37,14 +32,11 @@ const dateLabel = (value: string) =>
 
 function MobileTrade({
   trade,
-  onDelete,
 }: {
   trade: Trade;
-  onDelete: () => void;
 }) {
   return (
-    <details className="mobile-trade-entry">
-      <summary>
+    <Link className="mobile-trade-entry" href={`/trades/${trade.id}`}>
         <span
           className={
             "mobile-trade-direction " +
@@ -69,36 +61,8 @@ function MobileTrade({
         >
           <Money value={Number(trade.pnl)} />
         </strong>
-        <ChevronDown size={15} />
-      </summary>
-      <div className="mobile-trade-detail">
-        <p>{trade.account_name}</p>
-        <dl>
-          {[
-            ["Entry", Number(trade.entry_price).toLocaleString()],
-            ["Exit", Number(trade.exit_price).toLocaleString()],
-            ["Size", Number(trade.quantity).toLocaleString()],
-            ["Fees", currency.format(Number(trade.fees))],
-            [
-              "Return",
-              trade.result_r === null
-                ? "—"
-                : Number(trade.result_r).toFixed(2) + "R",
-            ],
-          ].map(([label, value]) => (
-            <div key={label}>
-              <dt>{label}</dt>
-              <dd>{value}</dd>
-            </div>
-          ))}
-        </dl>
-        {trade.note && <p className="mobile-trade-note">{trade.note}</p>}
-        <button type="button" onClick={onDelete}>
-          <Trash2 size={14} />
-          Delete trade
-        </button>
-      </div>
-    </details>
+        <ArrowUpRight size={15} />
+    </Link>
   );
 }
 
@@ -343,11 +307,7 @@ export function TradeJournal({
           <>
             <div className="trade-mobile-list">
               {shown.map((trade) => (
-                <MobileTrade
-                  key={trade.id}
-                  trade={trade}
-                  onDelete={() => void deleteTrade(trade.id)}
-                />
+                <MobileTrade key={trade.id} trade={trade} />
               ))}
             </div>
             <div className="trade-table-scroll">
@@ -367,7 +327,10 @@ export function TradeJournal({
                 </thead>
                 <tbody>
                   {shown.map((trade) => (
-                    <tr key={trade.id}>
+                    <tr key={trade.id} className="trade-clickable-row" role="link" tabIndex={0}
+                      aria-label={`Open ${trade.symbol} trade details`}
+                      onClick={() => router.push(`/trades/${trade.id}`)}
+                      onKeyDown={(event) => { if (event.key === "Enter") router.push(`/trades/${trade.id}`); }}>
                       <td>
                         <strong>{trade.symbol}</strong>
                         {trade.note && <small>{trade.note}</small>}
@@ -395,7 +358,7 @@ export function TradeJournal({
                       <td>
                         <button
                           className="trade-delete-button"
-                          onClick={() => void deleteTrade(trade.id)}
+                          onClick={(event) => { event.stopPropagation(); void deleteTrade(trade.id); }}
                           aria-label={`Delete ${trade.symbol} trade`}
                         >
                           <Trash2 size={15} />
