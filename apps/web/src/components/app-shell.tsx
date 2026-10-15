@@ -500,7 +500,6 @@ export function AppShell({
               <details
                 className="workspace-tools"
                 open={
-                  sidebarCollapsed ||
                   workspaceItems.some(([, href]) => pathname === href) ||
                   undefined
                 }
@@ -510,6 +509,9 @@ export function AppShell({
                 </summary>
                 {navLinks(workspaceItems)}
               </details>
+              <div className="workspace-collapsed-tools">
+                {navLinks(workspaceItems)}
+              </div>
             </nav>
             <div className="workspace-sidebar-bottom">
               <div className="workspace-profile">

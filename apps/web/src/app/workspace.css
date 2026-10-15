@@ -139,6 +139,9 @@ textarea {
 .workspace-tools {
   margin-top: 18px;
 }
+.workspace-collapsed-tools {
+  display: none;
+}
 .workspace-tools > summary {
   display: flex;
   align-items: center;
@@ -604,7 +607,7 @@ textarea {
   .is-sidebar-collapsed .workspace-account-switcher,
   .is-sidebar-collapsed .workspace-navigation > p,
   .is-sidebar-collapsed .workspace-nav-link > span:last-child,
-  .is-sidebar-collapsed .workspace-tools > summary,
+  .is-sidebar-collapsed .workspace-tools,
   .is-sidebar-collapsed .workspace-profile-label,
   .is-sidebar-collapsed .workspace-user-menu {
     display: none;
@@ -631,7 +634,8 @@ textarea {
     justify-content: center;
     padding: 7px;
   }
-  .is-sidebar-collapsed .workspace-tools {
+  .is-sidebar-collapsed .workspace-collapsed-tools {
+    display: block;
     margin-top: 8px;
   }
   .is-sidebar-collapsed .workspace-profile {
