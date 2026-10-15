@@ -19,6 +19,8 @@ import {
   LogOut,
   Menu,
   MoreHorizontal,
+  PanelLeftClose,
+  PanelLeftOpen,
   Plus,
   Search,
   Settings,
@@ -110,6 +112,17 @@ export function AppShell({
   const navigationTrigger = useRef<HTMLButtonElement>(null);
   const [accountQuery, setAccountQuery] = useState("");
   const [open, setOpen] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  useEffect(() => {
+    setSidebarCollapsed(
+      window.localStorage.getItem("tradoxy:sidebar-collapsed") === "true",
+    );
+  }, []);
+  function toggleSidebar() {
+    const next = !sidebarCollapsed;
+    setSidebarCollapsed(next);
+    window.localStorage.setItem("tradoxy:sidebar-collapsed", String(next));
+  }
   const tradingPage = isTradingRoute(pathname);
   const socialHome = pathname === "/home" || pathname === "/community";
   function closeNavigation() {
@@ -301,6 +314,8 @@ export function AppShell({
           }}
           onClick={() => setOpen(false)}
           aria-current={active ? "page" : undefined}
+          aria-label={label}
+          title={sidebarCollapsed ? label : undefined}
           className={"workspace-nav-link" + (active ? " is-active" : "")}
         >
           <span className="workspace-nav-icon">
@@ -323,7 +338,11 @@ export function AppShell({
               )
         }
       >
-        <div className="workspace-root">
+        <div
+          className={
+            "workspace-root" + (sidebarCollapsed ? " is-sidebar-collapsed" : "")
+          }
+        >
           <a href="#workspace-content" className="skip-link">
             Skip to content
           </a>
@@ -350,6 +369,22 @@ export function AppShell({
                 <Brand subtitle />
               </Link>
               <button
+                type="button"
+                className="workspace-sidebar-toggle"
+                aria-label={
+                  sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"
+                }
+                aria-expanded={!sidebarCollapsed}
+                title={sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+                onClick={toggleSidebar}
+              >
+                {sidebarCollapsed ? (
+                  <PanelLeftOpen size={18} />
+                ) : (
+                  <PanelLeftClose size={18} />
+                )}
+              </button>
+              <button
                 aria-label="Close navigation"
                 className="icon-button lg:hidden"
                 onClick={() => setOpen(false)}
@@ -366,6 +401,10 @@ export function AppShell({
                   onClick={() => setOpen(false)}
                 >
                   <i className={account ? "has-account" : ""} />
+                  <WalletCards
+                    className="workspace-account-collapsed-icon"
+                    size={18}
+                  />
                   <span>
                     <strong>{account?.name || "All Accounts"}</strong>
                     <small>
@@ -461,6 +500,7 @@ export function AppShell({
               <details
                 className="workspace-tools"
                 open={
+                  sidebarCollapsed ||
                   workspaceItems.some(([, href]) => pathname === href) ||
                   undefined
                 }
@@ -473,32 +513,36 @@ export function AppShell({
             </nav>
             <div className="workspace-sidebar-bottom">
               <div className="workspace-profile">
-                <span className="workspace-avatar">
-                  {user?.avatarUrl?.startsWith("http") ? (
-                    <Image
-                      src={user.avatarUrl}
-                      alt=""
-                      width={34}
-                      height={34}
-                      unoptimized
-                    />
-                  ) : (
-                    user?.initials || "TR"
-                  )}
-                </span>
                 <Link
                   onClick={closeNavigation}
+                  aria-label="Your profile"
+                  title={sidebarCollapsed ? "Your profile" : undefined}
                   href={
                     user?.username
                       ? "/u/" + encodeURIComponent(user.username)
                       : "/settings/profile"
                   }
                 >
-                  <strong>{user?.name || "Trader"}</strong>
-                  <span>
-                    {user?.username
-                      ? "@" + user.username
-                      : user?.email || "Your profile"}
+                  <span className="workspace-avatar">
+                    {user?.avatarUrl?.startsWith("http") ? (
+                      <Image
+                        src={user.avatarUrl}
+                        alt=""
+                        width={34}
+                        height={34}
+                        unoptimized
+                      />
+                    ) : (
+                      user?.initials || "TR"
+                    )}
+                  </span>
+                  <span className="workspace-profile-label">
+                    <strong>{user?.name || "Trader"}</strong>
+                    <span>
+                      {user?.username
+                        ? "@" + user.username
+                        : user?.email || "Your profile"}
+                    </span>
                   </span>
                 </Link>
                 <details
