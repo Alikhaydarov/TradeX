@@ -3984,6 +3984,9 @@ textarea {
     color: var(--primary);
   }
   .workspace-mobile-account {
+    position: sticky;
+    top: 64px;
+    z-index: 29;
     display: flex;
     height: 45px;
     align-items: center;
